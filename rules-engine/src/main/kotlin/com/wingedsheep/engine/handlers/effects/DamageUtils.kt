@@ -824,7 +824,12 @@ object DamageUtils {
             val existingLifeLost = container.get<com.wingedsheep.engine.state.components.player.LifeLostAmountThisTurnComponent>()
                 ?: com.wingedsheep.engine.state.components.player.LifeLostAmountThisTurnComponent()
             var updated = WasDealtDamageThisTurnComponent.markedOn(container, isCombatDamage)
-                .with(com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent(existing.amount + amount))
+                .with(
+                    com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent(
+                        amount = existing.amount + amount,
+                        noncombatAmount = existing.noncombatAmount + if (isCombatDamage) 0 else amount,
+                    )
+                )
             if (causedLifeLoss) {
                 updated = updated
                     .with(com.wingedsheep.engine.state.components.player.LifeLostThisTurnComponent)

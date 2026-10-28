@@ -845,6 +845,20 @@ class DynamicAmountEvaluator(
                             ?.get<com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent>()
                             ?.amount ?: 0
                     }
+                    // Opponents who have since lost the game still count (Chandra's Incinerator
+                    // ruling): their damage history stays on their entity, so widen EachOpponent
+                    // back past the active-player filter.
+                    TurnTracker.NONCOMBAT_DAMAGE_RECEIVED -> {
+                        val players = if (amount.player is Player.EachOpponent) {
+                            val ownTeam = state.teamOf(context.controllerId).toHashSet()
+                            state.turnOrder.filter { it !in ownTeam }
+                        } else playerIds
+                        players.sumOf { playerId ->
+                            state.getEntity(playerId)
+                                ?.get<com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent>()
+                                ?.noncombatAmount ?: 0
+                        }
+                    }
                     TurnTracker.DAMAGE_RECEIVED_FROM_ARTIFACTS -> playerIds.sumOf { playerId ->
                         state.getEntity(playerId)
                             ?.get<com.wingedsheep.engine.state.components.player.DamageReceivedFromArtifactsThisTurnComponent>()

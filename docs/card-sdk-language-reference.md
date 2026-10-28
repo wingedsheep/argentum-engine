@@ -17543,6 +17543,12 @@ of `AddMana`, `AddColorlessMana` and `AddDynamicMana` / `AddManaInAnyCombination
 - `OPPONENT_CREATURES_EXILED` — opponent creatures you exiled.
 - `OPPONENTS_WHO_LOST_LIFE` — count of opponents who lost life.
 - `DAMAGE_RECEIVED` — damage received by player.
+- `NONCOMBAT_DAMAGE_RECEIVED` — the noncombat slice of `DAMAGE_RECEIVED`: noncombat damage dealt to
+  the player this turn from any source (prevented damage doesn't count; life gained doesn't net
+  against it). Over `Player.EachOpponent` it sums every opponent, including ones who have since lost
+  the game. Facade `DynamicAmounts.noncombatDamageReceivedThisTurn(player = EachOpponent)` — Chandra's
+  Incinerator's "costs {X} less, where X is the total amount of noncombat damage dealt to your
+  opponents this turn" via `CostReductionSource.Dynamic`.
 - `DAMAGE_RECEIVED_FROM_ARTIFACTS` — damage dealt to the player this turn by artifact sources
   (a source that is an artifact when it deals the damage). Combat and non-combat both count;
   prevented damage does not. Powers Reverse Polarity ("twice the damage dealt to you so far this

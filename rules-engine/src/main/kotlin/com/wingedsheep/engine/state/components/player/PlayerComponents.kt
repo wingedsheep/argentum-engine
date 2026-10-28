@@ -1441,10 +1441,14 @@ data class TapForManaGrantsComponent(
  *
  * Used by Final Punishment: "Target player loses life equal to the damage
  * already dealt to that player this turn."
+ *
+ * [noncombatAmount] is the noncombat slice of [amount] — `TurnTracker.NONCOMBAT_DAMAGE_RECEIVED`
+ * (Chandra's Incinerator).
  */
 @Serializable
 data class DamageReceivedThisTurnComponent(
-    val amount: Int = 0
+    val amount: Int = 0,
+    val noncombatAmount: Int = 0,
 ) : Component
 
 /**

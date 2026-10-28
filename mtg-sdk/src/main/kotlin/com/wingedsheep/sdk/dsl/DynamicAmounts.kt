@@ -847,6 +847,14 @@ object DynamicAmounts {
     fun damageReceivedThisTurn(player: Player = Player.You): DynamicAmount =
         DynamicAmount.TurnTracking(player, TurnTracker.DAMAGE_RECEIVED)
 
+    /**
+     * The noncombat damage [player] has been dealt this turn, from any source. Over the default
+     * `Player.EachOpponent` it is "the total amount of noncombat damage dealt to your opponents this
+     * turn" (Chandra's Incinerator), counting opponents who have since lost the game.
+     */
+    fun noncombatDamageReceivedThisTurn(player: Player = Player.EachOpponent): DynamicAmount =
+        DynamicAmount.TurnTracking(player, TurnTracker.NONCOMBAT_DAMAGE_RECEIVED)
+
     /** The number of creatures that left the battlefield under [player]'s control this turn. */
     fun creaturesLeftBattlefieldThisTurn(player: Player = Player.You): DynamicAmount =
         DynamicAmount.TurnTracking(player, TurnTracker.CREATURES_LEFT_BATTLEFIELD)

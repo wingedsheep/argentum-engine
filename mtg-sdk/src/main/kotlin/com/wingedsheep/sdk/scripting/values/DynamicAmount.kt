@@ -40,6 +40,15 @@ enum class TurnTracker {
     OPPONENTS_WHO_LOST_LIFE,
     /** Total damage received by the player this turn. */
     DAMAGE_RECEIVED,
+    /**
+     * Total **noncombat** damage dealt to the player this turn, from any source — the noncombat
+     * slice of [DAMAGE_RECEIVED]; prevented damage doesn't count, and life gained never nets
+     * against it. The amount-carrying counterpart of the [DEALT_NONCOMBAT_DAMAGE] indicator. Over
+     * `Player.EachOpponent` it sums every opponent, including ones who have since lost the game:
+     * "the total amount of noncombat damage dealt to your opponents this turn" (Chandra's
+     * Incinerator).
+     */
+    NONCOMBAT_DAMAGE_RECEIVED,
     /** Total damage dealt to the player this turn by artifact sources (Reverse Polarity). */
     DAMAGE_RECEIVED_FROM_ARTIFACTS,
     /**
@@ -415,6 +424,7 @@ enum class TurnTracker {
         OPPONENT_CREATURES_EXILED -> "the number of creatures that were exiled under your opponents' control this turn"
         OPPONENTS_WHO_LOST_LIFE -> "the number of opponents who lost life this turn"
         DAMAGE_RECEIVED -> "the damage already dealt to that player this turn"
+        NONCOMBAT_DAMAGE_RECEIVED -> "the total amount of noncombat damage dealt to ${player.description} this turn"
         DAMAGE_RECEIVED_FROM_ARTIFACTS -> "the damage dealt to ${player.description} so far this turn by artifacts"
         DAMAGE_RECEIVED_FROM_SOURCE -> "the damage this has dealt to ${player.description} this turn"
         LIFE_GAINED -> "the amount of life ${player.description} gained this turn"
