@@ -466,6 +466,13 @@ object PermanentEntryReplacements {
 
     /** The prompt for a [ChoiceType.CREATURE_ON_BATTLEFIELD] choice, shared by both entry paths. */
     fun chosenPermanentPrompt(cardComponent: CardComponent, choice: EntersWithChoice): String {
+        // A choice with a rider says what the pick is for (Deadpool: "… — exchange the text boxes
+        // of this creature and the chosen creature").
+        val purpose = choice.then?.description?.replaceFirstChar { it.lowercase() }?.let { " — $it" } ?: ""
+        return choosePermanentPhrase(cardComponent, choice) + purpose
+    }
+
+    private fun choosePermanentPhrase(cardComponent: CardComponent, choice: EntersWithChoice): String {
         val filter = choice.permanentFilter
         if (filter != null) {
             return (if (choice.mayChooseNothing) "You may choose " else "Choose ") +
