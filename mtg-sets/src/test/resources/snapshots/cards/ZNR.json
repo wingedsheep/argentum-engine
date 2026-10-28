@@ -104,6 +104,89 @@
     ]
 }
 
+// Adventure Awaits
+{
+    "name": "Adventure Awaits",
+    "manaCost": "{1}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Look at the top five cards of your library. You may reveal a creature card from among them and put it into your hand. Put the rest on the bottom of your library in a random order. If you didn't put a card into your hand this way, draw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 5
+                        }
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "creature",
+                    "storeSelected": "selected1",
+                    "storeRemainder": "remainder1",
+                    "prompt": "You may reveal a creature card and put it into your hand",
+                    "selectedLabel": "Put into your hand",
+                    "remainderLabel": "Put on bottom",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "remainder1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Bottom"
+                    },
+                    "order": "Random"
+                },
+                {
+                    "type": "ConditionalOnCollection",
+                    "collection": "selected1",
+                    "ifNotEmpty": {
+                        "type": "MoveCollection",
+                        "from": "selected1",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Hand"
+                        },
+                        "revealed": true
+                    },
+                    "ifEmpty": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "177",
+        "artist": "Billy Christian",
+        "flavorText": "\"Good, we're all here. Let's get started!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/b/db50f988-da46-4b9b-9cc5-78497df2df8b.jpg?1783929342"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Akoum Hellhound
 {
     "name": "Akoum Hellhound",
@@ -918,6 +1001,78 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Bala Ged Recovery
+{
+    "name": "Bala Ged Recovery",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return target card from your graveyard to your hand.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Hand"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Bala Ged Sanctuary",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "This land enters tapped.\n{T}: Add {G}.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Bala Ged Sanctuary:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "GREEN"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ],
+            "replacementEffects": [
+                "EntersTapped"
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "180",
+            "rarity": "UNCOMMON",
+            "artist": "Lucas Staniec",
+            "flavorText": "\"I know it's around here somewhere.\"\n—Doral, Bala Ged guide",
+            "imageUri": "https://cards.scryfall.io/normal/back/c/5/c5cb3052-358d-44a7-8cfd-cd31b236494a.jpg?1783929347"
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "180",
+        "rarity": "UNCOMMON",
+        "artist": "Lucas Staniec",
+        "flavorText": "\"Always have a backup plan.\"\n—Doral, Bala Ged guide",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c5cb3052-358d-44a7-8cfd-cd31b236494a.jpg?1783929347"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ],
+    "layout": "MODAL_DFC"
 }
 
 // Blood Beckoning
@@ -4362,6 +4517,157 @@
     ]
 }
 
+// Inscription of Abundance
+{
+    "name": "Inscription of Abundance",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Kicker {2}{G}\nChoose one. If this spell was kicked, choose any number instead.\n• Put two +1/+1 counters on target creature.\n• Target player gains X life, where X is the greatest power among creatures they control.\n• Target creature you control fights target creature you don't control.",
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{2}{G}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 2,
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Put two +1/+1 counters on target creature"
+                },
+                {
+                    "effect": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "AggregateBattlefield",
+                            "player": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "filter": "creature",
+                            "aggregation": "MAX",
+                            "property": "POWER"
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Target player gains X life, where X is the greatest power among creatures they control"
+                },
+                {
+                    "effect": {
+                        "type": "Fight",
+                        "target1": {
+                            "type": "BoundVariable",
+                            "name": "t2"
+                        },
+                        "target2": {
+                            "type": "BoundVariable",
+                            "name": "t3"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "id": "t2"
+                        },
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "controllerPredicate": {
+                                        "type": "ControllerNot",
+                                        "predicate": "ControlledByYou"
+                                    }
+                                }
+                            },
+                            "id": "t3"
+                        }
+                    ],
+                    "description": "Target creature you control fights target creature you don't control"
+                }
+            ],
+            "chooseCount": 3,
+            "minChooseCount": 1,
+            "dynamicChooseCount": {
+                "type": "Conditional",
+                "condition": "WasKicked",
+                "ifTrue": {
+                    "type": "Fixed",
+                    "amount": 3
+                },
+                "ifFalse": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "186",
+        "rarity": "RARE",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/c/fcd2e01e-a143-4b62-8b01-d253fb35c590.jpg?1783929341",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "If more than one mode is chosen, perform them in the order written. Nothing can happen in between, however, and no player may choose to take actions. Any abilities that trigger will be put onto the stack after the spell has finished resolving."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If any targets become illegal, the other targets will still be affected as appropriate."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If the second mode is chosen and each creature the target player controls has negative power, that player doesn't gain or lose life."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If either target creature is an illegal target as Inscription of Abundance resolves with its last mode chosen, no creature will deal or be dealt damage."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If you kick Inscription of Abundance, you can't choose any one mode more than once."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Inscription of Insight
 {
     "name": "Inscription of Insight",
@@ -5150,6 +5456,87 @@
     ]
 }
 
+// Kazandu Mammoth
+{
+    "name": "Kazandu Mammoth",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Creature — Elephant",
+    "oracleText": "Landfall — Whenever a land you control enters, this creature gets +2/+2 until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kazandu Mammoth:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Kazandu Valley",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "This land enters tapped.\n{T}: Add {G}.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Kazandu Valley:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "GREEN"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ],
+            "replacementEffects": [
+                "EntersTapped"
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "189",
+            "rarity": "RARE",
+            "artist": "Grzegorz Rutkowski",
+            "flavorText": "\"The elves stick to the trees. Here, where the trees welcome the sky and leave room for grazing herds—this is our land.\"\n—Triel, Kazandu tuskcaller",
+            "imageUri": "https://cards.scryfall.io/normal/back/2/f/2f632537-63bf-4490-86e6-e6067b9c1a3b.jpg?1783929346"
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "189",
+        "rarity": "RARE",
+        "artist": "Grzegorz Rutkowski",
+        "flavorText": "\"It doesn't obey me. It cooperates with me.\"\n—Triel, Kazandu tuskcaller",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/f/2f632537-63bf-4490-86e6-e6067b9c1a3b.jpg?1783929346"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ],
+    "layout": "MODAL_DFC"
+}
+
 // Kazandu Nectarpot
 {
     "name": "Kazandu Nectarpot",
@@ -5185,6 +5572,78 @@
         "artist": "Simon Dominic",
         "flavorText": "\"The scythe-like forelegs are crucial for its survival, because it tastes really good and every inhabitant of Murasa knows it.\"\n—Arhana, Kazandu trapfinder",
         "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c9d3f4a-ef83-454e-b8a1-1fc5d5f44be8.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Kazandu Stomper
+{
+    "name": "Kazandu Stomper",
+    "manaCost": "{5}{G}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "Trample (This creature can deal excess combat damage to the player or planeswalker it's attacking.)\nWhen this creature enters, return up to two lands you control to their owner's hand.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 5
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kazandu Stomper:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "land",
+                                "player": "You"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Return up to two lands you control to their owner's hand",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, return up to two lands you control to their owner's hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "191",
+        "artist": "Sam Rowan",
+        "flavorText": "Elves revere cycles of renewal, but they prefer cycles that don't involve their homes getting smashed.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/afdfe5aa-8b15-4a89-a22a-03baf6afa4e7.jpg?1783929338"
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -5268,6 +5727,101 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ],
+    "layout": "MODAL_DFC"
+}
+
+// Khalni Ambush
+{
+    "name": "Khalni Ambush",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature you control fights target creature you don't control. (Each deals damage equal to its power to the other.)",
+    "script": {
+        "spellEffect": {
+            "type": "Fight",
+            "target1": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "target2": {
+                "type": "BoundVariable",
+                "name": "t1"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControllerNot",
+                            "predicate": "ControlledByYou"
+                        }
+                    }
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Khalni Territory",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "This land enters tapped.\n{T}: Add {G}.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Khalni Territory:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "GREEN"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ],
+            "replacementEffects": [
+                "EntersTapped"
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "192",
+            "rarity": "UNCOMMON",
+            "artist": "Grzegorz Rutkowski",
+            "flavorText": "\"If you wander into the Khalni Garden without knowing the signs of a scythecat's territory, you're not going to live long enough to learn.\"\n—Raff Slugeater, goblin shortcutter",
+            "imageUri": "https://cards.scryfall.io/normal/back/9/9/99535539-aa73-41ed-86ab-21c97b92620d.jpg?1783929343"
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "192",
+        "rarity": "UNCOMMON",
+        "artist": "Grzegorz Rutkowski",
+        "flavorText": "\"The difference between life and death in Ora Ondar is about three seconds of startled screaming.\"\n—Raff Slugeater, goblin shortcutter",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/99535539-aa73-41ed-86ab-21c97b92620d.jpg?1783929343",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "If either target is an illegal target as Khalni Ambush resolves, no creature will deal or be dealt damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ],
     "layout": "MODAL_DFC"
 }
@@ -6667,6 +7221,76 @@
     ]
 }
 
+// Might of Murasa
+{
+    "name": "Might of Murasa",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Kicker {2}{G} (You may pay an additional {2}{G} as you cast this spell.)\nTarget creature gets +3/+3 until end of turn. If this spell was kicked, that creature gets +5/+5 until end of turn instead.",
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{2}{G}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": "WasKicked"
+            },
+            "then": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": 5
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": 5
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            },
+            "otherwise": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": 3
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": 3
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "194",
+        "artist": "Lie Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/42914fd9-e56e-4c3e-a445-fdfa45a45178.jpg?1783929336"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Mind Carver
 {
     "name": "Mind Carver",
@@ -7688,6 +8312,76 @@
     ]
 }
 
+// Nissa's Zendikon
+{
+    "name": "Nissa's Zendikon",
+    "manaCost": "{3}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant land\nEnchanted land is a 4/4 Elemental creature with reach and haste. It's still a land.\nWhen enchanted land dies, return that card to its owner's hand.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nissa's Zendikon:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "TriggeringEntity",
+                    "destination": "Hand"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "AnimateLandGroup",
+                "filter": {
+                    "baseFilter": "land",
+                    "scope": "AttachedTo"
+                },
+                "power": 4,
+                "toughness": 4,
+                "creatureSubtypes": [
+                    "Elemental"
+                ]
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "REACH",
+                "filter": {
+                    "baseFilter": "land",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE",
+                "filter": {
+                    "baseFilter": "land",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "197",
+        "artist": "Campbell White",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd37ea0e-ff72-4522-aa5b-d46bff832a34.jpg?1783929336"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Nullpriest of Oblivion
 {
     "name": "Nullpriest of Oblivion",
@@ -8499,6 +9193,117 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Reclaim the Wastes
+{
+    "name": "Reclaim the Wastes",
+    "manaCost": "{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Kicker {3} (You may pay an additional {3} as you cast this spell.)\nSearch your library for a basic land card, reveal it, put it into your hand, then shuffle. If this spell was kicked, search your library for two basic land cards instead of one.",
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{3}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": "WasKicked"
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "FromZone",
+                            "zone": "Library",
+                            "filter": "basicland"
+                        },
+                        "storeAs": "searchable",
+                        "search": true
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "searchable",
+                        "selection": {
+                            "type": "ChooseUpTo",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        "storeSelected": "found",
+                        "prompt": "Search your library for up to two basic land cards to put into your hand",
+                        "selectedLabel": "Put into your hand"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "found",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Hand"
+                        },
+                        "revealed": true
+                    },
+                    "ShuffleLibrary",
+                    "EmitLibrarySearchedEvent"
+                ]
+            },
+            "otherwise": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "FromZone",
+                            "zone": "Library",
+                            "filter": "basicland"
+                        },
+                        "storeAs": "searchable",
+                        "search": true
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "searchable",
+                        "selection": {
+                            "type": "ChooseUpTo",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        "storeSelected": "found",
+                        "prompt": "Search your library for a basic land card to put into your hand",
+                        "selectedLabel": "Put into your hand"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "found",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Hand"
+                        },
+                        "revealed": true
+                    },
+                    "ShuffleLibrary",
+                    "EmitLibrarySearchedEvent"
+                ]
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "200",
+        "artist": "Wylie Beckert",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/805faf2e-97dc-4b77-bc02-a4cae980f041.jpg?1783929334"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -10821,6 +11626,35 @@
     ]
 }
 
+// Springmantle Cleric
+{
+    "name": "Springmantle Cleric",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Elf Cleric",
+    "oracleText": "This creature enters with a +1/+1 counter on it for each color of mana spent to cast it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": "DistinctColorsManaSpent"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "rarity": "UNCOMMON",
+        "artist": "Cristi Balanescu",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8d822730-6d81-4dbc-a3c3-ce96d29a1078.jpg?1783929332"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Squad Commander
 {
     "name": "Squad Commander",
@@ -10912,6 +11746,43 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Strength of Solidarity
+{
+    "name": "Strength of Solidarity",
+    "manaCost": "{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose target creature you control. Put a +1/+1 counter on it for each creature in your party. (Your party consists of up to one each of Cleric, Rogue, Warrior, and Wizard.)",
+    "script": {
+        "spellEffect": {
+            "type": "AddDynamicCounters",
+            "counterType": "PLUS_ONE_PLUS_ONE",
+            "amount": "PartySize",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "206",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"This expedition doesn't succeed unless we all succeed!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/9/090b3da4-c942-480e-9997-bb9c20e8d62d.jpg?1783929330"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -11131,6 +12002,76 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Tangled Florahedron
+{
+    "name": "Tangled Florahedron",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "{T}: Add {G}.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tangled Florahedron:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Tangled Vale",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "This land enters tapped.\n{T}: Add {G}.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Tangled Vale:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "GREEN"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ],
+            "replacementEffects": [
+                "EntersTapped"
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "211",
+            "rarity": "UNCOMMON",
+            "artist": "Randy Vargas",
+            "flavorText": "\"We would do well to open our eyes and remember what it is to wonder.\"\n—Doral, Bala Ged guide",
+            "imageUri": "https://cards.scryfall.io/normal/back/2/3/235d1ffc-72aa-40a2-95dc-3f6a8d495061.jpg?1783929335"
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "211",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Vargas",
+        "flavorText": "\"As Bala Ged regrows, new forms of life blossom with unfettered wonder.\"\n—Doral, Bala Ged guide",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/235d1ffc-72aa-40a2-95dc-3f6a8d495061.jpg?1783929335"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ],
+    "layout": "MODAL_DFC"
 }
 
 // Taunting Arbormage
@@ -11899,6 +12840,157 @@
     ]
 }
 
+// Turntimber Symbiosis
+{
+    "name": "Turntimber Symbiosis",
+    "manaCost": "{4}{G}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Look at the top seven cards of your library. You may put a creature card from among them onto the battlefield. If that card has mana value 3 or less, it enters with three additional +1/+1 counters on it. Put the rest on the bottom of your library in a random order.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 7
+                        }
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "creature",
+                    "storeSelected": "selected1",
+                    "storeRemainder": "remainder1",
+                    "prompt": "You may put a creature card onto the battlefield (mana value 3 or less: it enters with three additional +1/+1 counters)",
+                    "selectedLabel": "Put onto the battlefield",
+                    "remainderLabel": "Put on the bottom",
+                    "showAllCards": true
+                },
+                {
+                    "type": "ConditionalOnCollection",
+                    "collection": "selected1",
+                    "ifNotEmpty": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "PipelineTarget",
+                            "collectionName": "selected1"
+                        },
+                        "destination": "Battlefield",
+                        "fromZone": "Library",
+                        "entryCounters": [
+                            {
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": {
+                                    "type": "Conditional",
+                                    "condition": {
+                                        "type": "Compare",
+                                        "left": {
+                                            "type": "StoredCardManaValue",
+                                            "collectionName": "selected1"
+                                        },
+                                        "operator": "LTE",
+                                        "right": {
+                                            "type": "Fixed",
+                                            "amount": 3
+                                        }
+                                    },
+                                    "ifTrue": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    },
+                                    "ifFalse": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "remainder1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Bottom"
+                    },
+                    "order": "Random"
+                }
+            ]
+        }
+    },
+    "backFace": {
+        "name": "Turntimber, Serpentine Wood",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "As this land enters, you may pay 3 life. If you don't, it enters tapped.\n{T}: Add {G}.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Turntimber, Serpentine Wood:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "GREEN"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ],
+            "replacementEffects": [
+                {
+                    "type": "EntersTapped",
+                    "payLifeCost": 3
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "215",
+            "rarity": "MYTHIC",
+            "artist": "Randy Vargas",
+            "flavorText": "The trees here twist around spikes of mana, feeding off the flowing power.\n—Jori En, expedition leader",
+            "imageUri": "https://cards.scryfall.io/normal/back/6/1/61bd69ea-1e9e-46b0-b1a1-ed7fdbe3deb6.jpg?1783929333"
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "215",
+        "rarity": "MYTHIC",
+        "artist": "Randy Vargas",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/61bd69ea-1e9e-46b0-b1a1-ed7fdbe3deb6.jpg?1783929333",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "Use the mana value of the creature card as it exists in your library to determine whether it receives +1/+1 counters, ignoring any replacement effects (such as that of Glasspool Mimic) that will change its mana value once it's on the battlefield."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If a card in a player's library has {X} in its mana cost, X is considered to be 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ],
+    "layout": "MODAL_DFC"
+}
+
 // Utility Knife
 {
     "name": "Utility Knife",
@@ -12110,6 +13202,165 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Vastwood Fortification
+{
+    "name": "Vastwood Fortification",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Put a +1/+1 counter on target creature.",
+    "script": {
+        "spellEffect": {
+            "type": "AddCounters",
+            "counterType": "PLUS_ONE_PLUS_ONE",
+            "count": 1,
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Vastwood Thicket",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "This land enters tapped.\n{T}: Add {G}.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Vastwood Thicket:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "GREEN"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ],
+            "replacementEffects": [
+                "EntersTapped"
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "216",
+            "rarity": "UNCOMMON",
+            "artist": "Sidharth Chaturvedi",
+            "flavorText": "\"Never underestimate the ferocity of the imperative to thrive.\"\n—Eyza, Joraga guide",
+            "imageUri": "https://cards.scryfall.io/normal/back/3/a/3a7fd24e-84d8-405d-86e4-0571a9e23cc2.jpg?1783929332"
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "216",
+        "rarity": "UNCOMMON",
+        "artist": "Sidharth Chaturvedi",
+        "flavorText": "\"When you understand nature's ways, you're never unarmed.\"\n—Eyza, Joraga guide",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3a7fd24e-84d8-405d-86e4-0571a9e23cc2.jpg?1783929332"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ],
+    "layout": "MODAL_DFC"
+}
+
+// Vastwood Surge
+{
+    "name": "Vastwood Surge",
+    "manaCost": "{3}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Kicker {4} (You may pay an additional {4} as you cast this spell.)\nSearch your library for up to two basic land cards, put them onto the battlefield tapped, then shuffle. If this spell was kicked, put two +1/+1 counters on each creature you control.",
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{4}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "basicland"
+                    },
+                    "storeAs": "searchable",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "storeSelected": "found",
+                    "prompt": "Search your library for up to two basic land cards to put onto the battlefield tapped",
+                    "selectedLabel": "Put onto the battlefield tapped"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "placement": "Tapped"
+                    }
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent",
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "WasKicked"
+                    },
+                    "then": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        "body": {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 2,
+                            "target": "IterationEntity"
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "217",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Rainville",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/6974363c-0d0d-4270-a25e-ab84b0c03f4e.jpg?1783929326"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
