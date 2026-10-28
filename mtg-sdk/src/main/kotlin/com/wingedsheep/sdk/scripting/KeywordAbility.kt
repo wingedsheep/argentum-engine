@@ -1870,8 +1870,9 @@ sealed interface KeywordAbility {
         fun prototype(cost: String, power: Int, toughness: Int): KeywordAbility =
             Prototype(ManaCost.parse(cost), power, toughness)
 
-        /** Create Evoke with mana cost from string. */
-        fun evoke(cost: String): KeywordAbility = Evoke(ManaCost.parse(cost))
+        /** Create Evoke with mana cost from string, plus an optional non-mana part. */
+        fun evoke(cost: String, additionalCost: AdditionalCost? = null): KeywordAbility =
+            Evoke(ManaCost.parse(cost), additionalCost)
 
         /**
          * Create Emerge with mana cost from string (CR 702.119). Prefer the `emerge(cost)` DSL

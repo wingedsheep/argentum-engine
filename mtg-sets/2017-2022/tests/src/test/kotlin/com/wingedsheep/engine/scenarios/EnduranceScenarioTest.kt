@@ -29,11 +29,12 @@ import io.kotest.matchers.shouldNotBe
  */
 class EnduranceScenarioTest : ScenarioTestBase() {
 
-    private fun game(vararg hand: String, lands: Int = 0) = scenario()
+    private fun game(vararg hand: String, lands: Int = 0, ownGraveyard: String? = null) = scenario()
         .withPlayers("Player", "Opponent")
         .withCardInHand(1, "Endurance")
         .apply { hand.forEach { withCardInHand(1, it) } }
         .apply { if (lands > 0) withLandsOnBattlefield(1, "Forest", lands) }
+        .apply { ownGraveyard?.let { withCardInGraveyard(1, it) } }
         .withCardInGraveyard(2, "Grizzly Bears")
         .withCardInGraveyard(2, "Lightning Bolt")
         .withCardInLibrary(1, "Forest")
@@ -129,7 +130,7 @@ class EnduranceScenarioTest : ScenarioTestBase() {
         }
 
         test("up to one: choosing no player leaves every graveyard alone") {
-            val game = game("Llanowar Elves")
+            val game = game("Llanowar Elves", ownGraveyard = "Hill Giant")
             game.evoke("Llanowar Elves").error shouldBe null
             game.resolveStack()
             val decision = game.state.pendingDecision as? ChooseTargetsDecision
@@ -143,7 +144,7 @@ class EnduranceScenarioTest : ScenarioTestBase() {
             }
             game.state.getGraveyard(game.player1Id).map {
                 game.state.getEntity(it)!!.get<CardComponent>()!!.name
-            } shouldContain "Endurance"
+            } shouldContain "Hill Giant"
         }
     }
 }

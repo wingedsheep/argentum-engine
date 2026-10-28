@@ -238,6 +238,9 @@ export interface KeywordAlternativeCost {
  * card carries two of these keywords, and a second one would need its own row rather than a
  * different shape of this one.
  */
+/** "Exile a Goblin card…" → "exile a Goblin card…": only the sentence case changes. */
+const lowerFirst = (text: string) => text.charAt(0).toLowerCase() + text.slice(1)
+
 export function keywordAlternativeCostFor(cardInfo: ClientCard): KeywordAlternativeCost | null {
   if (cardInfo.bestow) {
     return {
@@ -276,7 +279,7 @@ export function keywordAlternativeCostFor(cardInfo: ClientCard): KeywordAlternat
       // dragged the card out to hard-cast it needs to see before clicking. A non-mana evoke cost
       // (Endurance's "exile a green card from your hand") leads, since it is the price itself.
       hint: cardInfo.evoke.additionalCostDescription
-        ? `${cardInfo.evoke.additionalCostDescription.toLowerCase()} — sacrificed as it enters`
+        ? `${lowerFirst(cardInfo.evoke.additionalCostDescription)} — sacrificed as it enters`
         : 'evoke — sacrificed as it enters, keeping only its ETB',
     }
   }
