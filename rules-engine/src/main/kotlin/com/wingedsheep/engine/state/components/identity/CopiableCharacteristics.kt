@@ -34,7 +34,8 @@ fun ComponentContainer.copiableCardComponent(): CardComponent? {
     }
     // CR 712.8g: a copy of a melded permanent has mana value 0, not the summed front faces'.
     if (has<MeldedComponent>()) return card.copy(manaValueOverride = null)
-    return get<FlippedComponent>()?.unflippedCard ?: card
+    // An exchanged text box isn't a copiable value (CR 707.2): copy the permanent's own text.
+    return ownCardUnderTextExchange() ?: get<FlippedComponent>()?.unflippedCard ?: card
 }
 
 /** A face-down double-faced source still makes a double-faced token, with only public values. */

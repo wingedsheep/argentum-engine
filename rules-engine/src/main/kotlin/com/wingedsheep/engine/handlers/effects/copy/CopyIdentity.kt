@@ -10,6 +10,12 @@ import com.wingedsheep.engine.state.components.identity.*
 
 /** Install copiable identity without changing status; a retained flipped status selects its alternative. */
 fun ComponentContainer.withCopyIdentity(identity: CardComponent, registry: CardRegistry): ComponentContainer {
+    // An exchanged text box (layer 3) sits on top of whatever copiable values layer 1 leaves.
+    get<TextBoxExchangeComponent>()?.let { exchange ->
+        return without<TextBoxExchangeComponent>()
+            .withCopyIdentity(identity.withRulesTextOf(exchange.textOf), registry)
+            .with(exchange.copy(ownCard = identity))
+    }
     val upright = identity.withRestoredFlipSide(registry)
     val flipped = has<FlippedComponent>()
     val active = (if (flipped) upright.flipSide ?: upright else upright)

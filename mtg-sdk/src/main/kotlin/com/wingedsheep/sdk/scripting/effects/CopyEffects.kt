@@ -201,3 +201,37 @@ data class BecomeCopyOfLinkedExileEffect(
         "${affected.description} becomes a copy of a creature card exiled with this, " +
             "for as long as this remains attached to it"
 }
+
+/**
+ * Exchange the text boxes of two permanents (CR 701.12h, 612.5): the rules text of each becomes
+ * the previous rules text of the other. A layer 3 text-changing effect (CR 613.1c) — names, mana
+ * costs, type lines, colors and power/toughness stay where they were; only the abilities move.
+ *
+ * Both objects must be on the battlefield as the exchange happens; if either isn't, nothing is
+ * exchanged (CR 701.12a). The exchange locks in: either permanent leaving the battlefield later
+ * leaves the other's new text alone, and a permanent that leaves takes back its own printed text
+ * (CR 400.7). Granted abilities (layer 6) aren't rules text and stay on the permanent they were
+ * granted to. Text-changing effects aren't copiable values (CR 707.2), so a copy of an exchanged
+ * permanent copies its printed text.
+ *
+ * The exchange lasts indefinitely — "As Deadpool enters, you may exchange his text box and another
+ * creature's" (Deadpool, Trading Card) runs it from an
+ * [com.wingedsheep.sdk.scripting.OnEnterRun] pipeline with [second] the chosen creature. A
+ * duration-bounded exchange ("for as long as this enchantment remains on the battlefield") would
+ * need a duration axis; no card asks for one yet.
+ *
+ * Closest existing types: [ExchangeControlEffect] exchanges a layer 2 characteristic through two
+ * floating effects, which can't carry a whole set of abilities; the copy effects
+ * ([EachPermanentBecomesCopyOfTargetEffect], [BecomeCopyOfLinkedExileEffect]) install every
+ * copiable value of one object onto others in layer 1 and are one-directional, whereas this swaps
+ * only the rules text both ways and is not itself copiable.
+ */
+@SerialName("ExchangeTextBoxes")
+@Serializable
+data class ExchangeTextBoxesEffect(
+    val first: EffectTarget,
+    val second: EffectTarget
+) : Effect {
+    override val description: String =
+        "Exchange the text boxes of ${first.description} and ${second.description}"
+}

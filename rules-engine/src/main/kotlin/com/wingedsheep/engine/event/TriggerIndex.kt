@@ -543,6 +543,7 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.DamagePreventionShieldCreatedEvent,
             is com.wingedsheep.engine.core.BlockerDeclarationPolicyChangedEvent,
             is com.wingedsheep.engine.core.TextChangedEvent,
+            is com.wingedsheep.engine.core.TextBoxesExchangedEvent,
             is com.wingedsheep.engine.core.MaximumHandSizeReducedEvent,
             is com.wingedsheep.engine.core.MaximumHandSizeRemovedEvent,
             is com.wingedsheep.engine.core.PhaseChangedEvent,

@@ -1868,6 +1868,7 @@ is PermanentsSacrificedEvent -> {
             is DamagePreventionShieldCreatedEvent,
             is BlockerDeclarationPolicyChangedEvent,
             is TextChangedEvent,
+            is com.wingedsheep.engine.core.TextBoxesExchangedEvent,
             is LandTappedForManaEvent,
             is ManaAbilityResolvedEvent,
             is DecisionRequestedEvent,

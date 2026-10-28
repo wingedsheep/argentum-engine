@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.permanent.types
 
+import com.wingedsheep.engine.state.components.identity.ownCardUnderTextExchange
 import com.wingedsheep.engine.handlers.effects.copy.withCopyIdentity
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.components.identity.copiableCardComponent
@@ -69,6 +70,7 @@ class BecomeCopyOfLinkedExileExecutor(private val cardRegistry: CardRegistry) : 
         // chain still reverts to the printed identity.
         val existingCopyOf = affectedContainer.get<CopyOfComponent>()
         val originalSnapshot = existingCopyOf?.originalCardComponent
+            ?: affectedContainer.ownCardUnderTextExchange()
             ?: affectedContainer.get<com.wingedsheep.engine.state.components.identity.FlippedComponent>()?.unflippedCard ?: currentCard
         val originalDefinitionId = existingCopyOf?.originalCardDefinitionId ?: currentCard.cardDefinitionId
 

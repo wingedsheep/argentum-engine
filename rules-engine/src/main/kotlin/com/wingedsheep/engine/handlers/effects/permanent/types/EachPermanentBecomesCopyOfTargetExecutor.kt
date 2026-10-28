@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.permanent.types
 
+import com.wingedsheep.engine.state.components.identity.ownCardUnderTextExchange
 import com.wingedsheep.engine.state.components.identity.copiableCardComponent
 import com.wingedsheep.engine.state.components.identity.recordCopyLayer
 import com.wingedsheep.engine.handlers.effects.copy.withCopyIdentity
@@ -203,7 +204,7 @@ internal fun becomeCopyInPlace(
     // If this permanent is already a copy, keep the existing pre-copy snapshot
     // so a chain of copy effects still reverts to the printed identity on exit.
     val existingCopyOf = container.get<CopyOfComponent>()
-    val originalCardSnapshot = existingCopyOf?.originalCardComponent ?: container.get<com.wingedsheep.engine.state.components.identity.FlippedComponent>()?.unflippedCard ?: currentCard
+    val originalCardSnapshot = existingCopyOf?.originalCardComponent ?: container.ownCardUnderTextExchange() ?: container.get<com.wingedsheep.engine.state.components.identity.FlippedComponent>()?.unflippedCard ?: currentCard
     val originalDefinitionId =
         existingCopyOf?.originalCardDefinitionId ?: currentCard.cardDefinitionId
 

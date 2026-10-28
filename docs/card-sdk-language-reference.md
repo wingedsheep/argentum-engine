@@ -3346,6 +3346,15 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   the condition fails — so a pump that wears off, a re-tap, or a re-acquired source never
   re-grabs the creature.
 - `ExchangeControlEffect(target1, target2)` — swap control of two permanents.
+- `ExchangeTextBoxesEffect(first, second)` (facade `Effects.ExchangeTextBoxes(first, second)`) — exchange the
+  text boxes of two permanents (CR 612.5, 701.12h): each one's rules text — abilities, keywords, oracle text —
+  becomes the other's previous rules text; names, mana costs, colors, types and power/toughness stay put.
+  Indefinite: the side that leaves the battlefield is a new object with its own text (CR 400.7), the other keeps
+  what it got. Not a copiable value (CR 707.2) — a copy of an exchanged permanent copies its own text, and a copy
+  effect applied later keeps the exchanged text on top. Nothing happens unless both resolve to different
+  face-up permanents on the battlefield. Deadpool, Trading Card's "As Deadpool enters, you may exchange his text
+  box and another creature's" is an `OnEnterRun` pipeline: `chooseUpTo(1, gather(Creature, excludeSelf = true))`
+  then `ExchangeTextBoxes(EffectTarget.Self, chosen.asTarget(0))`.
 - `ChangeOwnershipEffect(card = ContextTarget(0), newOwner = Controller)` (facade `Effects.ChangeOwnership(card, newOwner)`) —
   `newOwner` becomes the **owner** of `card` (CR 407.3), the one thing only the ante cards do: Darkpact's "You
   own target card in the ante", Bronze Tablet's "that player owns this card and you own the other exiled card"

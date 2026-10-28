@@ -2733,6 +2733,11 @@ data class ManaPoolChangedEvent(val playerId: EntityId) : GameEvent
 @SerialName("TextChangedEvent")
 data class TextChangedEvent(val targetId: EntityId, val fromWord: String, val toWord: String) : GameEvent
 
+/** Two permanents exchanged text boxes (CR 612.5) — each now has the other's rules text. */
+@Serializable
+@SerialName("TextBoxesExchangedEvent")
+data class TextBoxesExchangedEvent(val firstId: EntityId, val secondId: EntityId) : GameEvent
+
 @Serializable
 @SerialName("PlayerActionPermissionsChangedEvent")
 data class PlayerActionPermissionsChangedEvent(val playerId: EntityId) : GameEvent

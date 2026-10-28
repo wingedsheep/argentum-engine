@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.view.projection
 
+import com.wingedsheep.engine.state.components.identity.ownCardUnderTextExchange
 import com.wingedsheep.engine.mechanics.combat.BandsWithOtherRules
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.effects.AnnouncedDivision
@@ -463,6 +464,10 @@ internal class CardProjector(
         val container = frame.container
         val cardComponent = frame.cardComponent
         val cardDef = frame.cardDef
+        // Under an exchanged text box the definition carries the other card's abilities; art,
+        // rulings and printed supertypes are still this card's own.
+        val printedDef = container.ownCardUnderTextExchange()
+            ?.let { cardRegistry.getCard(it.cardDefinitionId) } ?: cardDef
         val spellOnStack = frame.spellOnStack
         val onBattlefield = frame.zoneType == Zone.BATTLEFIELD
 
@@ -569,18 +574,18 @@ internal class CardProjector(
             // Targets for spells/abilities on stack (for targeting arrows)
             targets = StackTextRenderer.toClientTargets(container.get<TargetsComponent>()),
             imageUri = state.imageOverrideFor(entityId)
-                ?: cardDef?.metadata?.imageUriByCreatureSubtype
+                ?: printedDef?.metadata?.imageUriByCreatureSubtype
                     ?.entries
                     ?.firstOrNull { (subtype) -> subtype in typeLine.subtypes }
                     ?.value
                 ?: cardComponent.imageUri
-                ?: cardDef?.metadata?.imageUri,
+                ?: printedDef?.metadata?.imageUri,
             // A flipped flip card (CR 710) is the same physical card turned upside down, so its
             // single image is rotated 180° to read the flip half.
-            imageRotation = ((cardDef?.metadata?.imageRotation ?: 0) +
+            imageRotation = ((printedDef?.metadata?.imageRotation ?: 0) +
                 (if (container.has<FlippedComponent>()) 180 else 0)) % 360,
             activeEffects = cardEffects,
-            rulings = cardDef?.metadata?.rulings?.map {
+            rulings = printedDef?.metadata?.rulings?.map {
                 ClientRuling(date = it.date, text = it.text)
             } ?: emptyList(),
             optionalCostLabel = spell.optionalCostLabel,
@@ -609,8 +614,8 @@ internal class CardProjector(
             // Syndrome's copy designated Ring-bearer) is simply legendary, so "not legendary" is a lie
             // about it and the client would otherwise badge it both ways at once.
             nonLegendaryCopy = onBattlefield
-                && cardDef != null
-                && Supertype.LEGENDARY in cardDef.typeLine.supertypes
+                && printedDef != null
+                && Supertype.LEGENDARY in printedDef.typeLine.supertypes
                 && Supertype.LEGENDARY !in cardComponent.typeLine.supertypes
                 && Supertype.LEGENDARY !in typeLine.supertypes,
             legendaryByEffect = onBattlefield

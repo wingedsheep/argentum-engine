@@ -127,6 +127,7 @@ import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.ForceSacrificeEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
 import com.wingedsheep.sdk.scripting.effects.ExchangeControlEffect
+import com.wingedsheep.sdk.scripting.effects.ExchangeTextBoxesEffect
 import com.wingedsheep.sdk.scripting.effects.ChangeOwnershipEffect
 import com.wingedsheep.sdk.scripting.effects.CreatureStat
 import com.wingedsheep.sdk.scripting.effects.ExchangeLifeAndStatEffect
@@ -4492,6 +4493,17 @@ object Effects {
         target1: EffectTarget,
         target2: EffectTarget
     ): Effect = ExchangeControlEffect(target1, target2)
+
+    /**
+     * Exchange the text boxes of two permanents (CR 701.12h) — each one's rules text becomes the
+     * other's. Indefinite. "As Deadpool enters, you may exchange his text box and another
+     * creature's" is an `OnEnterRun` pipeline: `chooseUpTo(1, gather(creatures, excludeSelf))`, then
+     * `ExchangeTextBoxes(EffectTarget.Self, chosen.asTarget(0))`.
+     */
+    fun ExchangeTextBoxes(
+        first: EffectTarget,
+        second: EffectTarget
+    ): Effect = ExchangeTextBoxesEffect(first, second)
 
     /**
      * The player who controls the most creatures of the given subtype gains control of the target.

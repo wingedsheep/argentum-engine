@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects
 
+import com.wingedsheep.engine.state.components.identity.revertTextBoxExchange
 import com.wingedsheep.engine.state.components.battlefield.chosenCreatureChoice
 import com.wingedsheep.engine.state.components.identity.copiableDoubleFacedComponent
 import com.wingedsheep.engine.state.components.identity.copiableNumericKeywords
@@ -886,6 +887,11 @@ class ZoneTransitionService(
             val preStripAttackRecord = newState.getEntity(entityId)
                 ?.get<com.wingedsheep.engine.state.components.combat.TimesAttackedThisTurnComponent>()
 
+            // An exchanged text box ends with the object (CR 400.7). Before the copy revert, which
+            // would otherwise carry the exchanged text onto the restored identity.
+            newState = newState.updateEntity(entityId) { c ->
+                c.revertTextBoxExchange(cardRegistry)
+            }
             // Revert permanent-level copy effects (Clone / Mockingbird / "becomes a copy of").
             // Per CR 400.7, a card that changes zones becomes a new object — its copy effect
             // ends and the card returns to its printed characteristics.

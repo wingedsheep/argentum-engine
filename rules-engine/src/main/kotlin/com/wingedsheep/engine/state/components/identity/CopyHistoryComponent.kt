@@ -37,7 +37,7 @@ fun ComponentContainer.recordCopyLayer(
             .without<CopyWhileAttachedComponent>()
     }
     val existing = get<CopyHistoryComponent>()
-    val current = get<FlippedComponent>()?.unflippedCard ?: get<CardComponent>() ?: return this
+    val current = ownCardUnderTextExchange() ?: get<FlippedComponent>()?.unflippedCard ?: get<CardComponent>() ?: return this
     val currentCopy = get<CopyOfComponent>()
     val history = existing ?: run {
         // Entry copies can already have an expiry marker before the first battlefield recopy.

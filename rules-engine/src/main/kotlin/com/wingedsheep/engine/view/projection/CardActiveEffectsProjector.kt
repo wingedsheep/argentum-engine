@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.view.projection
 
+import com.wingedsheep.engine.state.components.identity.TextBoxExchangeComponent
 import com.wingedsheep.sdk.scripting.MustAttackDefender
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -116,7 +117,27 @@ internal class CardActiveEffectsProjector(
      * Check for text replacements. A global color-word change (Swirl the Mists) is one badge per
      * chosen color rather than one per replaced word, so it doesn't stack four badges on every card.
      */
-    private fun textReplacementBadges(state: GameState, entityId: EntityId): List<ClientCardEffect> {
+    private fun textReplacementBadges(state: GameState, entityId: EntityId): List<ClientCardEffect> =
+        textBoxExchangeBadges(state, entityId) + wordReplacementBadges(state, entityId)
+
+    /**
+     * An exchanged text box (Deadpool, Trading Card): the card image still shows the printed text,
+     * so the badge says whose rules text the permanent has now and spells it out.
+     */
+    private fun textBoxExchangeBadges(state: GameState, entityId: EntityId): List<ClientCardEffect> {
+        val exchange = state.getEntity(entityId)?.get<TextBoxExchangeComponent>() ?: return emptyList()
+        val text = exchange.textOf.oracleText.ifBlank { "no rules text" }
+        return listOf(
+            ClientCardEffect(
+                effectId = "text_box_exchanged",
+                name = "Text Swapped",
+                description = "Has ${exchange.textOf.name}'s rules text: $text",
+                icon = "text-change"
+            )
+        )
+    }
+
+    private fun wordReplacementBadges(state: GameState, entityId: EntityId): List<ClientCardEffect> {
         val all = TextChanges.of(state, entityId)?.replacements ?: return emptyList()
         val own = state.getEntity(entityId)?.get<TextReplacementComponent>()?.replacements.orEmpty()
         val globalBadges = all.dropLast(own.size).map { it.toWord }.distinct().map { toWord ->
