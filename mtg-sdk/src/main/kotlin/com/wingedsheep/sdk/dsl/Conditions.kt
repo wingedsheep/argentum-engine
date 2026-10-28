@@ -2690,7 +2690,15 @@ object Conditions {
      * The Sibsig Ceremony).
      */
     val TriggeringEntityWasCast: ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.TriggeringEntityWasCast
+        com.wingedsheep.sdk.scripting.conditions.TriggeringEntityWasCast()
+
+    /**
+     * If you cast the triggering entity from [zone] — `TriggeringEntityWasCastFrom(Zone.HAND)` is
+     * "if you cast it from your hand". Negate it for "if you didn't cast it from your hand"
+     * (Chainer, Nightmare Adept), which also holds when the permanent wasn't cast at all.
+     */
+    fun TriggeringEntityWasCastFrom(zone: Zone): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.TriggeringEntityWasCast(zone = zone)
 
     /**
      * Intervening-if: "if no mana was spent to cast it" about the triggering spell (Boromir, Warden

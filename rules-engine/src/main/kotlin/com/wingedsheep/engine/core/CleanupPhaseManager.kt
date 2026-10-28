@@ -1269,10 +1269,11 @@ class CleanupPhaseManager(
         }
 
         // 7a. Expire granted static abilities (e.g. Full Steam Ahead's "can't be blocked by
-        // more than one creature") with EndOfTurn duration.
+        // more than one creature") with EndOfTurn duration, and one-shot NextUse grants never
+        // used (Chainer, Nightmare Adept's "cast a creature spell from your graveyard this turn").
         if (newState.grantedStaticAbilities.isNotEmpty()) {
             val remainingGrants = newState.grantedStaticAbilities.filter { grant ->
-                grant.duration !is Duration.EndOfTurn
+                grant.duration !is Duration.EndOfTurn && grant.duration !is Duration.NextUse
             }
             newState = newState.copy(grantedStaticAbilities = remainingGrants)
         }

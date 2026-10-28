@@ -74,6 +74,79 @@
     }
 }
 
+// Chainer, Nightmare Adept
+{
+    "name": "Chainer, Nightmare Adept",
+    "manaCost": "{2}{B}{R}",
+    "typeLine": "Legendary Creature — Human Minion",
+    "oracleText": "Discard a card: You may cast a creature spell from your graveyard this turn. Activate only once each turn.\nWhenever a nontoken creature you control enters, if you didn't cast it from your hand, it gains haste until your next turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Chainer, Nightmare Adept:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": "TriggeringEntity",
+                    "duration": "UntilYourNextTurn"
+                },
+                "interveningIf": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "TriggeringEntityWasCast",
+                        "zone": "Hand"
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Chainer, Nightmare Adept:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": "AtomDiscard"
+                },
+                "effect": {
+                    "type": "GrantStaticAbility",
+                    "ability": {
+                        "type": "MayCastFromGraveyard",
+                        "filter": "creature"
+                    },
+                    "target": "Controller",
+                    "duration": {
+                        "type": "NextUse",
+                        "sourceDescription": "you cast a creature spell from your graveyard"
+                    }
+                },
+                "restrictions": [
+                    "OncePerTurn"
+                ],
+                "descriptionOverride": "Discard a card: You may cast a creature spell from your graveyard this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "rarity": "MYTHIC",
+        "artist": "Steve Prescott",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d7b0a8f8-d368-45e6-a546-984e7b1913e0.jpg?1783932800"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Idol of Oblivion
 {
     "name": "Idol of Oblivion",

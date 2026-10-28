@@ -8,6 +8,7 @@ import com.wingedsheep.engine.legality.LegalityKernel
 import com.wingedsheep.engine.core.AlternativeCostType
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.GraveyardCastRiderSelection
+import com.wingedsheep.engine.event.GrantedStaticAbility
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.mechanics.BestowCasts
 import com.wingedsheep.engine.mechanics.DisturbCasts
@@ -44,6 +45,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.CastSpellTypesFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
+import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantFlashToSpellType
 import com.wingedsheep.sdk.scripting.GrantMayCastFromLinkedExile
@@ -346,35 +348,62 @@ class CastZoneResolver(
         // other players' graveyards too. Grants without it are held to the caster's own graveyard
         // by `mayCastFromGraveyardGrantApplies`.
         if (state.turnOrder.none { cardId in state.getZone(ZoneKey(it, Zone.GRAVEYARD)) }) return emptyList()
-        return mayCastFromGraveyardGrantsWithSources(state, playerId, cardId).map { it.second }
+        return mayCastFromGraveyardGrantsWithSources(state, playerId, cardId).map { it.grant }
+    }
+
+    /**
+     * One applicable [MayCastFromGraveyard] grant: the permission, the object its `oncePerTurn`
+     * allowance is tracked against, and — for a one-shot durational grant
+     * ([Duration.NextUse], Chainer, Nightmare Adept's "you may cast a creature spell from your
+     * graveyard this turn") — the granted record itself, which the cast that uses it removes.
+     */
+    private data class GraveyardCastGrant(
+        val sourceId: EntityId,
+        val grant: MayCastFromGraveyard,
+        val oneShot: GrantedStaticAbility? = null
+    ) {
+        /** Authorizes any number of casts: neither once-per-turn nor a one-shot permission. */
+        val unlimited: Boolean get() = !grant.oncePerTurn && oneShot == null
+    }
+
+    /**
+     * What a graveyard cast through a [MayCastFromGraveyard] grant uses up, if anything — see
+     * [graveyardCastAllowanceToSpend].
+     */
+    sealed interface GraveyardCastAllowance {
+        /** Mark this granter's once-per-turn allowance used. */
+        data class OncePerTurn(val sourceId: EntityId) : GraveyardCastAllowance
+
+        /** Remove this one-shot ([Duration.NextUse]) grant: its single permission is spent. */
+        data class OneShot(val grant: GrantedStaticAbility) : GraveyardCastAllowance
     }
 
     /**
      * Every applicable [MayCastFromGraveyard] grant paired with the permanent it hangs off — the
      * source-aware form of [applicableMayCastFromGraveyardGrants]. The source id is what an
      * `oncePerTurn` grant's per-turn allowance is tracked against, so both the applies-check and
-     * [oncePerTurnGraveyardCastSourceToConsume] read the grant through this one enumeration.
+     * [graveyardCastAllowanceToSpend] read the grant through this one enumeration.
      */
     private fun mayCastFromGraveyardGrantsWithSources(
         state: GameState,
         playerId: EntityId,
         cardId: EntityId
-    ): List<Pair<EntityId, MayCastFromGraveyard>> {
-        val matches = mutableListOf<Pair<EntityId, MayCastFromGraveyard>>()
+    ): List<GraveyardCastGrant> {
+        val matches = mutableListOf<GraveyardCastGrant>()
         val battlefield = state.getBattlefield()
         // Resolved through `controlledActiveStaticAbilities`, so a grant behind a condition
         // (Exploration Broodship's station 8+ threshold) counts only while it holds. Kept in step
         // with `enumerateGraveyardCast`.
         for ((permId, sa) in state.controlledActiveStaticAbilities(playerId, cardRegistry, conditionEvaluator)) {
             if (sa is MayCastFromGraveyard && mayCastFromGraveyardGrantApplies(state, playerId, cardId, sa, permId)) {
-                matches.add(permId to sa)
+                matches.add(GraveyardCastGrant(permId, sa))
             }
         }
         // An emblem the player has (Wrenn and Realmbreaker's −7) holds the grant from outside every
         // zone; the emblem entity is its source. Kept in step with `enumerateGraveyardCast`.
         for ((emblemId, sa) in state.emblemStaticAbilitiesOf(playerId)) {
             if (sa is MayCastFromGraveyard && mayCastFromGraveyardGrantApplies(state, playerId, cardId, sa, emblemId)) {
-                matches.add(emblemId to sa)
+                matches.add(GraveyardCastGrant(emblemId, sa))
             }
         }
         // Durational grants recorded in grantedStaticAbilities, in three anchorings. Anchored to
@@ -399,7 +428,7 @@ class CastZoneResolver(
             val playerWide = grant.entityId == playerId || (grant.entityId in battlefield && controller == playerId)
             if (!playerWide && grant.entityId != cardId) continue
             if (mayCastFromGraveyardGrantApplies(state, playerId, cardId, sa, grant.entityId)) {
-                matches.add(grant.entityId to sa)
+                matches.add(GraveyardCastGrant(grant.entityId, sa, oneShot = grant.takeIf { it.duration is Duration.NextUse }))
             }
         }
         return matches
@@ -414,7 +443,7 @@ class CastZoneResolver(
      *
      * When several apply, an unlimited riderless grant wins (no use spent, nothing attached), then
      * any unlimited one, then the first once-per-turn source — the same "burn a use only when
-     * nothing unlimited could have authorized it" rule as [oncePerTurnGraveyardCastSourceToConsume].
+     * nothing unlimited could have authorized it" rule as [graveyardCastAllowanceToSpend].
      * `PlayLandHandler` asks only after every other graveyard land permission (Crucible of Worlds,
      * Muldrotha, a per-card may-play, mayhem) has declined, so those never spend this allowance.
      */
@@ -424,30 +453,33 @@ class CastZoneResolver(
         cardId: EntityId
     ): Pair<EntityId, MayCastFromGraveyard>? {
         if (cardId !in state.getZone(ZoneKey(playerId, Zone.GRAVEYARD))) return null
-        val grants = mayCastFromGraveyardGrantsWithSources(state, playerId, cardId).filter { it.second.playsLands }
-        return grants.firstOrNull { !it.second.oncePerTurn && !it.second.hasEntryRider }
-            ?: grants.firstOrNull { !it.second.oncePerTurn }
+        // A one-shot (NextUse) grant is a cast permission only — no card hands out a one-shot land
+        // play, and `PlayLandHandler` has no path to spend one — so it never authorizes a land.
+        val grants = mayCastFromGraveyardGrantsWithSources(state, playerId, cardId)
+            .filter { it.grant.playsLands && it.oneShot == null }
+        val chosen = grants.firstOrNull { it.unlimited && !it.grant.hasEntryRider }
+            ?: grants.firstOrNull { it.unlimited }
             ?: grants.firstOrNull()
+        return chosen?.let { it.sourceId to it.grant }
     }
 
     /**
-     * After a graveyard cast authorized by a [MayCastFromGraveyard] grant, the permanent whose
-     * `oncePerTurn` allowance should be marked used — or null when an unlimited grant already
-     * authorized the same cast, so no per-turn use is burned. Mirrors
+     * After a graveyard cast authorized by a [MayCastFromGraveyard] grant, the allowance it uses up —
+     * or null when an unlimited grant already authorized the same cast, so nothing is spent. Mirrors
      * [com.wingedsheep.engine.mechanics.mana.CostCalculator.oncePerTurnFreeCastSourceToConsume]:
-     * with several once-per-turn sources, the first eligible one pays.
+     * with several once-per-turn sources, the first eligible one pays. A one-shot
+     * ([Duration.NextUse]) grant pays only when no once-per-turn allowance could: the per-turn use
+     * renews next turn, while the one-shot permission is gone once spent.
      */
-    fun oncePerTurnGraveyardCastSourceToConsume(
+    fun graveyardCastAllowanceToSpend(
         state: GameState,
         playerId: EntityId,
         cardId: EntityId
-    ): EntityId? {
-        var candidate: EntityId? = null
-        for ((sourceId, sa) in mayCastFromGraveyardGrantsWithSources(state, playerId, cardId)) {
-            if (!sa.oncePerTurn) return null
-            if (candidate == null) candidate = sourceId
-        }
-        return candidate
+    ): GraveyardCastAllowance? {
+        val grants = mayCastFromGraveyardGrantsWithSources(state, playerId, cardId)
+        if (grants.any { it.unlimited }) return null
+        grants.firstOrNull { it.grant.oncePerTurn }?.let { return GraveyardCastAllowance.OncePerTurn(it.sourceId) }
+        return grants.firstNotNullOfOrNull { it.oneShot }?.let { GraveyardCastAllowance.OneShot(it) }
     }
 
     /**

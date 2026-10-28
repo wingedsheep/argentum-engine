@@ -468,8 +468,10 @@ sealed interface Duration {
     }
 
     /**
-     * Effect is consumed the first time its replacement effect is applied
-     * or end of turn if not consumed.
+     * Effect is consumed the first time it is used, or ends at end of turn if not consumed: the
+     * first time its replacement effect is applied, or — on a granted `MayCastFromGraveyard` — the
+     * first graveyard cast it authorizes ("you may cast a creature spell from your graveyard this
+     * turn", Chainer, Nightmare Adept).
      */
     @SerialName("NextUse")
     @Serializable

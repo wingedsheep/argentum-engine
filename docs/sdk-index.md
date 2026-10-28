@@ -440,7 +440,7 @@ Families:
 - `TriggeringEntityHadCounters` — Condition: "if it had counters on it" (intervening-if for dies/leaves triggers).
 - `TriggeringEntityHadMinusOneMinusOneCounter` — Condition: "if it had a -1/-1 counter on it" (intervening-if for dies/leaves triggers).
 - `TriggeringEntityWas(filter: GameObjectFilter)` — Condition: "if it was filter" — an intervening-if for dies/leaves triggers that matches the triggering permanent's **last-known** type line (CR 603.10, 608.2h): the projected card types and subtype…
-- `TriggeringEntityWasCast` — Condition: "if you cast it" referring to the *triggering* entity (not the ability's source).
+- `TriggeringEntityWasCast(zone: Zone?)` — Condition: "if you cast it" referring to the *triggering* entity (not the ability's source).
 - `TriggeringEntityWasHistoric` — Condition: "if it was historic" (legendary, artifact, or Saga).
 - `TriggeringEntityWasNotPutByThisSource` — Condition: "if it wasn't put onto the battlefield with this ability".
 - `TriggeringSpellCastWithoutPayingMana` — Condition: "if no mana was spent to cast it" — about the TRIGGERING spell (the triggering-entity counterpart of NoManaSpentToCast, which reads the ability source's own cast record).
@@ -605,7 +605,7 @@ Families:
 - `Duration.EndOfTurn` — Effect lasts until end of turn.
 - `Duration.EndOfYourNextTurn` — Effect lasts through the *whole* of your next turn, ending during that turn's cleanup step (CR 514.2, the same moment an "until end of turn" effect ends) — "until the end of your next turn".
 - `Duration.EndOfYourNextUpkeep` — Effect lasts until the end of your next upkeep step — it outlives the upkeep it was created in (and every other player's turn) and ends as your following upkeep step ends, so it is still in force w…
-- `Duration.NextUse(sourceDescription: String)` — Effect is consumed the first time its replacement effect is applied or end of turn if not consumed.
+- `Duration.NextUse(sourceDescription: String)` — Effect is consumed the first time it is used, or ends at end of turn if not consumed: the first time its replacement effect is applied, or — on a granted `MayCastFromGraveyard` — the first graveyar…
 - `Duration.Permanent` — Effect is permanent (static abilities, auras while attached).
 - `Duration.UntilAffectedOwnersNextTurn` — Effect lasts until the beginning of the affected card's **owner's** next turn — "until that player's next turn" where "that player" is the player whose hand the card went to (Firestorm Phoenix).
 - `Duration.UntilAfterAffectedControllersNextUntap(count: Int)` — Effect lasts through the affected entity's controller's next count untap steps, then expires.

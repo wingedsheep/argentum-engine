@@ -329,8 +329,17 @@ internal class CastRecords(
         }
 
         if (castFromZone == Zone.GRAVEYARD) {
-            zoneResolver.oncePerTurnGraveyardCastSourceToConsume(originState, action.playerId, action.cardId)?.let { source ->
-                newState = newState.updateEntity(source) { c -> c.with(MayCastFromGraveyardUsedThisTurnComponent) }
+            when (val spent = zoneResolver.graveyardCastAllowanceToSpend(originState, action.playerId, action.cardId)) {
+                is CastZoneResolver.GraveyardCastAllowance.OncePerTurn ->
+                    newState = newState.updateEntity(spent.sourceId) { c -> c.with(MayCastFromGraveyardUsedThisTurnComponent) }
+                // One permission, one cast: drop that grant (the first equal record, so a second
+                // identical grant — Chainer activated again after re-entering — still stands).
+                is CastZoneResolver.GraveyardCastAllowance.OneShot -> {
+                    val remaining = newState.grantedStaticAbilities.toMutableList()
+                    remaining.remove(spent.grant)
+                    newState = newState.copy(grantedStaticAbilities = remaining)
+                }
+                null -> {}
             }
         }
         return newState

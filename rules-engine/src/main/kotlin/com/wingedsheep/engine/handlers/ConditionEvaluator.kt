@@ -373,7 +373,7 @@ class ConditionEvaluator(
             TriggeringEntityHadCounters,
             TriggeringEntityHadMinusOneMinusOneCounter,
             is TriggeringEntityWas,
-            TriggeringEntityWasCast,
+            is TriggeringEntityWasCast,
             TriggeringEntityWasHistoric,
             TriggeringEntityWasNotPutByThisSource,
             is PlayerIs,
@@ -919,7 +919,7 @@ class ConditionEvaluator(
             is SacrificedPermanentWasSuspected -> ifResolution { evaluateSacrificedPermanentWasSuspected(it) }
             is YouSacrificedPermanentThisWay -> ifResolution { evaluateYouSacrificedPermanentThisWay(it) }
             is TriggeringEntityWasHistoric -> ifResolution { evaluateTriggeringEntityWasHistoric(state, it) }
-            is TriggeringEntityWasCast -> ifResolution { evaluateTriggeringEntityWasCast(state, it) }
+            is TriggeringEntityWasCast -> ifResolution { evaluateTriggeringEntityWasCast(state, it, condition.zone) }
             is com.wingedsheep.sdk.scripting.conditions.TriggeringSpellCastWithoutPayingMana ->
                 ifResolution { evaluateTriggeringSpellCastWithoutPayingMana(state, it) }
             is com.wingedsheep.sdk.scripting.conditions.TriggeringSpellManaSpentAtLeast ->
@@ -1814,7 +1814,12 @@ class ConditionEvaluator(
         // cast-origin marker component stamped on the permanent as it resolved onto the battlefield.
         sourceId ?: return false
         val entity = state.getEntity(sourceId) ?: return false
-        return when (zone) {
+        return castFromMarker(entity, zone)
+    }
+
+    /** The cast-origin marker stamped on a permanent as it resolved from a spell cast from [zone]. */
+    private fun castFromMarker(entity: com.wingedsheep.engine.state.ComponentContainer, zone: Zone): Boolean =
+        when (zone) {
             Zone.HAND -> entity.has<CastFromHandComponent>()
             Zone.GRAVEYARD -> entity.has<CastFromGraveyardComponent>()
             Zone.LIBRARY -> entity.has<CastFromLibraryComponent>()
@@ -1823,7 +1828,6 @@ class ConditionEvaluator(
                 >()
             else -> false
         }
-    }
 
     /**
      * "if it wasn't cast or no mana was spent to cast it." The engine stamps a
@@ -2174,9 +2178,11 @@ class ConditionEvaluator(
      * it" triggers where the source is a separate permanent. Tokens, reanimated, and
      * "put onto the battlefield" permanents lack these markers and are correctly excluded.
      */
-    private fun evaluateTriggeringEntityWasCast(state: GameState, context: EffectContext): Boolean {
+    private fun evaluateTriggeringEntityWasCast(state: GameState, context: EffectContext, zone: Zone?): Boolean {
         val entityId = context.triggeringEntityId ?: return false
-        return state.getEntity(entityId)?.has<WasCastComponent>() == true
+        val entity = state.getEntity(entityId) ?: return false
+        if (!entity.has<WasCastComponent>()) return false
+        return zone == null || castFromMarker(entity, zone)
     }
 
     private fun evaluateTriggeringEntityEnteredOrWasCastFromGraveyard(

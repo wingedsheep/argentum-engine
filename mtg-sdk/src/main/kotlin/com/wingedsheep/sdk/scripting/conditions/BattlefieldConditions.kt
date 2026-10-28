@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.text.TextReplacer
+import com.wingedsheep.sdk.core.Zone
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -80,16 +81,26 @@ data object TriggeringEntityWasHistoric : Condition {
 /**
  * Condition: "if you cast it" referring to the *triggering* entity (not the ability's source).
  * True when the entering permanent that triggered the ability was cast — i.e. it carries a
- * cast-origin marker (cast from hand or graveyard) — and false when it was put onto the
- * battlefield by another effect (token, reanimation, "put onto the battlefield"). This is the
- * sibling of [com.wingedsheep.sdk.scripting.conditions.WasCast] for "whenever a creature you
- * control enters, if you cast it" triggers, where the source is a separate permanent and the
- * cast subject is the entering creature (e.g. The Sibsig Ceremony).
+ * cast-origin marker — and false when it was put onto the battlefield by another effect (token,
+ * reanimation, "put onto the battlefield"). This is the sibling of
+ * [com.wingedsheep.sdk.scripting.conditions.WasCast] for "whenever a creature you control enters,
+ * if you cast it" triggers, where the source is a separate permanent and the cast subject is the
+ * entering creature (e.g. The Sibsig Ceremony).
+ *
+ * [zone] narrows it to a cast from one zone — `Zone.HAND` reads "if you cast it from your hand",
+ * the triggering-entity sibling of [com.wingedsheep.sdk.scripting.conditions.WasCastFromHand].
+ * Negated, that is Chainer, Nightmare Adept's "if you didn't cast it from your hand", which holds
+ * for a creature cast from another zone *and* for one that wasn't cast at all. Null (the default)
+ * accepts a cast from any zone.
  */
 @SerialName("TriggeringEntityWasCast")
 @Serializable
-data object TriggeringEntityWasCast : Condition {
-    override val description: String = "if you cast it"
+data class TriggeringEntityWasCast(val zone: Zone? = null) : Condition {
+    override val description: String = when (zone) {
+        null -> "if you cast it"
+        Zone.HAND -> "if you cast it from your hand"
+        else -> "if you cast it from ${zone.displayName}"
+    }
 }
 
 /**
