@@ -10047,7 +10047,7 @@
 // Pelakka Predation
 {
     "name": "Pelakka Predation",
-    "manaCost": "{2}{B}{B}",
+    "manaCost": "{2}{B}",
     "typeLine": "Sorcery",
     "oracleText": "Target opponent reveals their hand. You choose a card from it with mana value 3 or greater. That player discards that card.",
     "script": {

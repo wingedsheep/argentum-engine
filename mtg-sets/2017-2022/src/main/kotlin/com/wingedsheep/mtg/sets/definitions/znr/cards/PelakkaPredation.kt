@@ -15,7 +15,7 @@ import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
 
 /**
- * Pelakka Predation {2}{B}{B} // Pelakka Caverns — Zendikar Rising #120
+ * Pelakka Predation {2}{B} // Pelakka Caverns — Zendikar Rising #120
  * Sorcery // Land · Modal double-faced card
  *
  * Front — Pelakka Predation: "Target opponent reveals their hand. You choose a card from it with
@@ -26,7 +26,7 @@ import com.wingedsheep.sdk.scripting.effects.Chooser
  * front face's mana value, and {X} counts as 0 there.
  */
 private val PelakkaPredationFront = card("Pelakka Predation") {
-    manaCost = "{2}{B}{B}"
+    manaCost = "{2}{B}"
     colorIdentity = "B"
     typeLine = "Sorcery"
     oracleText = "Target opponent reveals their hand. You choose a card from it with mana value 3 or greater. " +
