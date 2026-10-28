@@ -1,3 +1,109 @@
+// Acquisitions Expert
+{
+    "name": "Acquisitions Expert",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "When this creature enters, target opponent reveals a number of cards from their hand equal to the number of creatures in your party. You choose one of those cards. That player discards that card. (Your party consists of up to one each of Cleric, Rogue, Warrior, and Wizard.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Acquisitions Expert:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": "PartySize"
+                            },
+                            "chooser": "TargetPlayer",
+                            "storeSelected": "selected1",
+                            "prompt": "Choose cards to reveal",
+                            "selectedLabel": "Reveal"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "selected1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "selected1",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected3",
+                            "prompt": "Choose a revealed card for that player to discard",
+                            "selectedLabel": "Discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected3",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "89",
+        "rarity": "UNCOMMON",
+        "artist": "Anna Steinbauer",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/281336c7-ca7c-4c91-bdfb-d253a965cb7c.jpg?1783929383",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "If there are no creatures in your party as Acquisitions Expert's ability resolves, the target opponent reveals no cards and you choose no card."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If an ability of a creature counts the number of creatures in your party, that number is counted as the ability resolves. If that creature is still on the battlefield when the ability resolves, it'll be counted if appropriate."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Akoum Hellhound
 {
     "name": "Akoum Hellhound",
@@ -718,6 +824,90 @@
     ]
 }
 
+// Blood Beckoning
+{
+    "name": "Blood Beckoning",
+    "manaCost": "{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Kicker {3} (You may pay an additional {3} as you cast this spell.)\nReturn target creature card from your graveyard to your hand. If this spell was kicked, instead return two target creature cards from your graveyard to your hand.",
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{3}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Hand"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ],
+        "kickerTargetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t1"
+            },
+            {
+                "type": "TargetOther",
+                "baseRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature own:you",
+                        "zone": "Graveyard"
+                    }
+                },
+                "id": "t2"
+            }
+        ],
+        "kickerSpellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t2"
+                    },
+                    "destination": "Hand"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "artist": "Cristi Balanescu",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/c/0cb88075-14f8-4ac9-b947-5ca1d30938f1.jpg?1783929382"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Blood Price
 {
     "name": "Blood Price",
@@ -788,6 +978,68 @@
         "artist": "Antonio José Manzanedo",
         "flavorText": "Blood is the oldest currency.",
         "imageUri": "https://cards.scryfall.io/normal/front/d/f/df14d32d-fe53-4370-8298-fab528ff12db.jpg?1783929381"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Bloodchief's Thirst
+{
+    "name": "Bloodchief's Thirst",
+    "manaCost": "{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Kicker {2}{B} (You may pay an additional {2}{B} as you cast this spell.)\nDestroy target creature or planeswalker with mana value 2 or less. If this spell was kicked, instead destroy target creature or planeswalker.",
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{2}{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|planeswalker mv<=2"
+                },
+                "id": "t0"
+            }
+        ],
+        "kickerTargetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|planeswalker"
+                },
+                "id": "t1"
+            }
+        ],
+        "kickerSpellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t1"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        }
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Rainville",
+        "flavorText": "\"We are free. It is our duty to live well.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/5/059e8447-6b1c-4651-a734-a8fea2cbf7b2.jpg?1783929380"
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -2330,6 +2582,59 @@
     }
 }
 
+// Deadly Alliance
+{
+    "name": "Deadly Alliance",
+    "manaCost": "{4}{B}",
+    "typeLine": "Instant",
+    "oracleText": "This spell costs {1} less to cast for each creature in your party. (Your party consists of up to one each of Cleric, Rogue, Warrior, and Wizard.)\nDestroy target creature or planeswalker.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetCreatureOrPlaneswalker",
+                "id": "t0"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "Dynamic",
+                        "amount": "PartySize"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "artist": "Kieran Yanner",
+        "flavorText": "\"He could handle any one of us, but he's no match for all of us!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/007a5c8c-ed0b-4844-9393-a3d25d4ffa1d.jpg?1783929380",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying, add any cost increases, then apply any cost reductions. The mana value of the spell is determined only by its mana cost, no matter what the total cost to cast the spell was."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Deliberate
 {
     "name": "Deliberate",
@@ -2400,6 +2705,72 @@
         "artist": "Kieran Yanner",
         "flavorText": "Taborax's cultists are the latest in a long history of beings who have desired to see Zendikar torn to pieces.",
         "imageUri": "https://cards.scryfall.io/normal/front/8/3/836f5197-e42b-45e0-8170-1b0a8a5beebd.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Drana's Silencer
+{
+    "name": "Drana's Silencer",
+    "manaCost": "{5}{B}",
+    "typeLine": "Creature — Vampire Rogue",
+    "oracleText": "When this creature enters, target creature an opponent controls gets -X/-X until end of turn, where X is the number of creatures in your party. (Your party consists of up to one each of Cleric, Rogue, Warrior, and Wizard.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Drana's Silencer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Multiply",
+                        "amount": "PartySize",
+                        "multiplier": -1
+                    },
+                    "toughnessModifier": {
+                        "type": "Multiply",
+                        "amount": "PartySize",
+                        "multiplier": -1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "artist": "Mads Ahm",
+        "flavorText": "\"Hush.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/59224f9a-deb2-4dd4-b2d4-967232c14254.jpg?1783929379",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "The value of X is determined only as Drana's Silencer's ability resolves. Once that happens, the value of X won't change later in the turn even if the number of creatures in your party changes."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If an ability of a creature counts the number of creatures in your party, that number is counted as the ability resolves. If that creature is still on the battlefield when the ability resolves, it'll be counted if appropriate."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -2706,6 +3077,49 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Expedition Skulker
+{
+    "name": "Expedition Skulker",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Vampire Rogue",
+    "oracleText": "This creature has deathtouch as long as you control another Rogue. (Any amount of damage it deals to a creature is enough to destroy it.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "DEATHTOUCH",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent Rogue",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "artist": "Mathias Kollros",
+        "flavorText": "Rogues bring an array of useful skills to the work of an adventuring party: stealth, agility, the ability to locate and disarm traps, and a subtle, deadly fighting style.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/2966b1f0-3d30-4d92-87e5-f39ceacefbd2.jpg?1783929378"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -3501,6 +3915,49 @@
         "artist": "Darek Zabrocki",
         "flavorText": "Death comes in many forms on Guul Draz, most of them slow, subtle, and agonizing. At least a monstrous crocodile offers a swift death.",
         "imageUri": "https://cards.scryfall.io/normal/front/b/9/b996743e-7f48-49d8-948b-ceb75bddf215.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Hagra Constrictor
+{
+    "name": "Hagra Constrictor",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Snake",
+    "oracleText": "This creature enters with two +1/+1 counters on it.\nEach creature you control with a +1/+1 counter on it has menace. (A creature with menace can't be blocked except by two or more creatures.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeywordByCounter",
+                "keyword": "MENACE",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "controllerOnly": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 2,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "105",
+        "artist": "Simon Dominic",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f971b71a-af69-43a7-b06c-e80eaaaf4a5f.jpg?1783929375",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "Multiple instances of menace on the same creature are redundant."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -5017,6 +5474,65 @@
     "layout": "MODAL_DFC"
 }
 
+// Malakir Blood-Priest
+{
+    "name": "Malakir Blood-Priest",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Vampire Cleric",
+    "oracleText": "When this creature enters, each opponent loses X life and you gain X life, where X is the number of creatures in your party. (Your party consists of up to one each of Cleric, Rogue, Warrior, and Wizard.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Malakir Blood-Priest:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": "PartySize",
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": "PartySize"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "110",
+        "artist": "Scott Murphy",
+        "flavorText": "\"From your veins to mine.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3d14ea81-d303-47db-90b4-7d10588f7ea6.jpg?1783929373",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "In a Two-Headed Giant game, Malakir Blood-Priest's ability causes the opposing team to lose twice X life and you to gain X life."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If an ability of a creature counts the number of creatures in your party, that number is counted as the ability resolves. If that creature is still on the battlefield when the ability resolves, it'll be counted if appropriate."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Malakir Rebirth
 {
     "name": "Malakir Rebirth",
@@ -5616,6 +6132,274 @@
     ]
 }
 
+// Mind Carver
+{
+    "name": "Mind Carver",
+    "manaCost": "{B}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "When this Equipment enters, attach it to target creature you control.\nEquipped creature gets +1/+0. It gets +3/+1 instead as long as an opponent has eight or more cards in their graveyard.\nEquip {2}{B} ({2}{B}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mind Carver:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Mind Carver:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 0
+                },
+                "condition": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "GreatestAmongPlayers",
+                            "players": "EachOpponent",
+                            "inner": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 8
+                        }
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 3,
+                    "toughnessBonus": 1
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "GreatestAmongPlayers",
+                        "players": "EachOpponent",
+                        "inner": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Graveyard"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 8
+                    }
+                }
+            }
+        ]
+    },
+    "equipCost": "{2}{B}",
+    "metadata": {
+        "collectorNumber": "113",
+        "rarity": "UNCOMMON",
+        "artist": "Scott Murphy",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/0/105b6e18-bcd8-43b7-870d-6c7e5c06f99b.jpg?1783929373",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "An ability that offers a bonus if an opponent has eight or more cards in their graveyard won't provide additional benefits if more than one opponent has eight or more cards in their graveyard. There are also no additional benefits no matter how many cards are in an opponent's graveyard, as long as there are at least eight."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "Attaching an Equipment with its enters-the-battlefield triggered ability isn't the same as using its equip ability. You don't pay mana for the attachment, and if the Equipment enters at a time you couldn't cast a sorcery, you can still attach it to a creature you control."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If the target creature becomes an illegal target, the Equipment remains on the battlefield unattached."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Mind Drain
+{
+    "name": "Mind Drain",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent discards two cards, mills a card, and loses 1 life. You gain 1 life. (To mill a card, a player puts the top card of their library into their graveyard.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "hand"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "hand",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "chooser": "TargetPlayer",
+                    "storeSelected": "discarded",
+                    "prompt": "Choose 2 cards to discard"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "discarded",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "moveType": "Discard"
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "artist": "Grzegorz Rutkowski",
+        "flavorText": "\"The meal was exquisite. The conversation, less so.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/0683d586-a54b-425a-a24d-2efb2342f150.jpg?1783929372",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "If the target opponent can discard only one card or can't discard any cards, they still mill a card and lose 1 life, and you gain 1 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Molten Blast
 {
     "name": "Molten Blast",
@@ -6033,6 +6817,156 @@
     "layout": "MODAL_DFC"
 }
 
+// Nimana Skitter-Sneak
+{
+    "name": "Nimana Skitter-Sneak",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "As long as an opponent has eight or more cards in their graveyard, this creature gets +1/+0 and has menace. (It can't be blocked except by two or more creatures.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "CompositeStaticAbility",
+                    "abilities": [
+                        {
+                            "type": "ModifyStats",
+                            "powerBonus": 1,
+                            "toughnessBonus": 0,
+                            "filter": {
+                                "baseFilter": "permanent",
+                                "scope": "Self"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "MENACE",
+                            "filter": {
+                                "baseFilter": "permanent",
+                                "scope": "Self"
+                            }
+                        }
+                    ]
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "GreatestAmongPlayers",
+                        "players": "EachOpponent",
+                        "inner": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Graveyard"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 8
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "116",
+        "artist": "Campbell White",
+        "flavorText": "\"When navigating dangerous terrain, one hundred legs are better than two.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/a/ea080141-6262-4595-8058-b2969b3f016b.jpg?1783929371",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "Once a single creature has blocked Nimana Skitter-Sneak, causing it to gain menace won't cause it to become unblocked or remove that blocking creature from combat."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "An ability that offers a bonus if an opponent has eight or more cards in their graveyard won't provide additional benefits if more than one opponent has eight or more cards in their graveyard. There are also no additional benefits no matter how many cards are in an opponent's graveyard, as long as there are at least eight."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Nimana Skydancer
+{
+    "name": "Nimana Skydancer",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "Flash\nFlying\nWhen this creature enters, target opponent mills two cards. (They put the top two cards of their library into their graveyard.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nimana Skydancer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "artist": "Bryan Sola",
+        "flavorText": "The Free City of Nimana is a great place to recruit adventurers with shady skill sets.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e72eaa0f-cbec-45a1-b390-cbbedf5a02f2.jpg?1783929372"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Nissa of Shadowed Boughs
 {
     "name": "Nissa of Shadowed Boughs",
@@ -6274,6 +7208,85 @@
         "rarity": "RARE",
         "artist": "Yongjae Choi",
         "imageUri": "https://cards.scryfall.io/normal/front/0/8/086fc7fb-efcf-4676-8455-39b63edaec6a.jpg?1783929369"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Oblivion's Hunger
+{
+    "name": "Oblivion's Hunger",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature you control gains indestructible until end of turn. Draw a card if that creature has a +1/+1 counter on it. (Damage and effects that say \"destroy\" don't destroy the creature.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "numericProperty": {
+                                    "type": "CounterCount",
+                                    "counterType": "PLUS_ONE_PLUS_ONE"
+                                }
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "artist": "Izzy",
+        "flavorText": "\"Indulge the void. Become the void. Consume all you touch.\"\n—Drana, the last bloodchief",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/a/faf65512-8228-48f4-ba7b-d861b66d28c9.jpg?1783929368",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "If the target creature is an illegal target by the time Oblivion's Hunger tries to resolve, the spell doesn't resolve. You don't draw a card if the target has or had a +1/+1 counter on it."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -7940,6 +8953,95 @@
     "layout": "MODAL_DFC"
 }
 
+// Shadow Stinger
+{
+    "name": "Shadow Stinger",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Vampire Rogue",
+    "oracleText": "Tap another untapped Rogue you control: This creature gains deathtouch until end of turn.\nWhenever this creature deals combat damage to a player, that player mills three cards. (They put the top three cards of their library into their graveyard.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shadow Stinger:2",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "player": "TriggeringPlayer",
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "TriggeringPlayer"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature deals combat damage to a player, that player mills three cards."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Shadow Stinger:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomTapPermanents",
+                        "filter": "permanent Rogue",
+                        "excludeSelf": true
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "DEATHTOUCH",
+                    "target": "Self"
+                },
+                "descriptionOverride": "Tap another untapped Rogue you control: This creature gains deathtouch until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "123",
+        "rarity": "UNCOMMON",
+        "artist": "John Thacker",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/9/093e0b1e-2cd9-4743-9c0e-b8f3fbc41798.jpg?1783929367",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "You can tap any other untapped Rogue you control, including one you haven't controlled continuously since the beginning of your most recent turn, to pay the cost of Shadow Stinger's first ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Shell Shield
 {
     "name": "Shell Shield",
@@ -9580,6 +10682,90 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Thwart the Grave
+{
+    "name": "Thwart the Grave",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "This spell costs {1} less to cast for each creature in your party. (Your party consists of up to one each of Cleric, Rogue, Warrior, and Wizard.)\nReturn target creature card and up to one target Cleric, Rogue, Warrior, or Wizard creature card from your graveyard to the battlefield.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature Cleric|Rogue|Warrior|Wizard own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t1"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "Dynamic",
+                        "amount": "PartySize"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "130",
+        "rarity": "UNCOMMON",
+        "artist": "Wylie Beckert",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/d/bd037e51-9088-4145-8289-00a86fb72ca1.jpg?1783929367",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "Thwart the Grave's first target doesn't have to be one of the party creature types."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying, add any cost increases, then apply any cost reductions. The mana value of the spell is determined only by its mana cost, no matter what the total cost to cast the spell was."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
