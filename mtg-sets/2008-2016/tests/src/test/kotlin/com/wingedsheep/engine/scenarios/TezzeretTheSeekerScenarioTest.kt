@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.GameTestDriver
@@ -89,7 +90,12 @@ class TezzeretTheSeekerScenarioTest : FunSpec({
 
         var guard = 0
         while (!d.isPaused && d.state.stack.isNotEmpty() && guard++ < 10) d.bothPass()
-        if (d.isPaused) d.submitCardSelection(me, emptyList())
+        if (d.isPaused) {
+            withClue("the search must not offer the mana value 3 artifact at X = 2") {
+                ((d.pendingDecision as? SelectCardsDecision)?.options ?: emptyList()).contains(artifact) shouldBe false
+            }
+            d.submitCardSelection(me, emptyList())
+        }
         d.settle()
 
         withClue("the mana value 3 artifact stays in the library") {
