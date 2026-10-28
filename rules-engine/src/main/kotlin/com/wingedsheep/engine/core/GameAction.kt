@@ -521,6 +521,9 @@ data class ActivateAbility(
  *   "Cycling {X}{G}{G}"), chosen as the ability is activated (CR 107.3a). Null on the legal-actions
  *   submission path — the handler then raises a ChooseNumberDecision and re-enters with it bound.
  *   Ignored for cycling costs without `{X}`.
+ * @property grantedBy Which cycling ability to activate: null for the card's printed cycling, else
+ *   the permanent whose `GrantCyclingToCardsInHand` grants it (Rhet-Tomb Mystic). A card with both
+ *   has two cycling abilities and the legal-actions list offers one action per distinct cost.
  */
 @Serializable
 @SerialName("CycleCard")
@@ -528,7 +531,8 @@ data class CycleCard(
     override val playerId: EntityId,
     val cardId: EntityId,
     val paymentStrategy: PaymentStrategy = PaymentStrategy.AutoPay,
-    val xValue: Int? = null
+    val xValue: Int? = null,
+    val grantedBy: EntityId? = null
 ) : GameAction
 
 /**

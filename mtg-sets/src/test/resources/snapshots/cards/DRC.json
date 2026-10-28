@@ -201,6 +201,40 @@
     ]
 }
 
+// Rhet-Tomb Mystic
+{
+    "name": "Rhet-Tomb Mystic",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Zombie Bird Wizard",
+    "oracleText": "Flying\nEach creature card in your hand has cycling {1}{U}. ({1}{U}, Discard that card: Draw a card.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantCyclingToCardsInHand",
+                "filter": "creature",
+                "cost": "{1}{U}"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "rarity": "RARE",
+        "artist": "Irina Nordsol",
+        "flavorText": "\"Kefnet may be gone, but the thirst for wisdom never dies.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/131a68e6-09ee-4afd-a0e1-d63bbc0775e8.jpg?1783907752"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Temmet, Naktamun's Will
 {
     "name": "Temmet, Naktamun's Will",

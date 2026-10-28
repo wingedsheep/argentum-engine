@@ -302,6 +302,17 @@ describe('playLadderOptions', () => {
     expect(playLadderOptions(options).map((o) => o.actionType)).toEqual(['cast', 'cycle'])
   })
 
+  it('offers each cycling ability a card holds — printed and granted in hand (Rhet-Tomb Mystic)', () => {
+    const options = buildActionOptions(card('{5}{U}'), [
+      action({ manaCostString: '{5}{U}' }),
+      action({ action: { type: 'CycleCard' }, actionType: 'CycleCard', manaCostString: '{2}' }),
+      action({ action: { type: 'CycleCard', grantedBy: 'mystic' }, actionType: 'CycleCard', manaCostString: '{1}{U}' }),
+    ])
+    const cycles = playLadderOptions(options).filter((o) => o.actionType === 'cycle')
+    expect(cycles.map((o) => o.manaCost)).toEqual(['{2}', '{1}{U}'])
+    expect(new Set(cycles.map((o) => o.key)).size).toBe(2)
+  })
+
   it('leaves a battlefield permanent\'s activated abilities off the "ways to play" list', () => {
     // Hovering a creature on the battlefield: its {2} tap ability is not a way to play the card, and
     // would read as a price for casting it.

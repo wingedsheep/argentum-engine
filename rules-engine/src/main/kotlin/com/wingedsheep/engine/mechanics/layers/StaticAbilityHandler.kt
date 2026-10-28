@@ -1294,6 +1294,7 @@ class StaticAbilityHandler(
             is GrantWarpToCardsInHand,
             is GrantEmergeToOwnSpells,
             is GrantMiracleToCardsInHand,
+            is com.wingedsheep.sdk.scripting.GrantCyclingToCardsInHand,
             is MayCastFromGraveyard,
             is GraveyardCardsHaveCastKeyword,
             is com.wingedsheep.sdk.scripting.GraveyardCardsHaveEscape,

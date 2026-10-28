@@ -18,6 +18,7 @@ import com.wingedsheep.engine.handlers.actions.ActionHandler
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.handlers.effects.drawing.DrawCardsExecutor
 import com.wingedsheep.engine.mechanics.mana.ManaAbilitySideEffectExecutor
+import com.wingedsheep.engine.mechanics.CyclingGrants
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
@@ -32,7 +33,6 @@ import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.PreventCycling
 import kotlin.reflect.KClass
 import com.wingedsheep.engine.core.Outcome
@@ -87,8 +87,7 @@ class CycleCardHandler(
         val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId)
             ?: return "Card definition not found"
 
-        val cyclingAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Cycling>()
-            .firstOrNull { it.searchFilter == null }
+        val cyclingAbility = cyclingOption(state, action, cardDef)
             ?: return "This card doesn't have cycling"
 
         // The action is client-supplied: a negative X would underflow the cost substitution.
@@ -125,8 +124,7 @@ class CycleCardHandler(
         val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId)
             ?: return ExecutionResult.error(state, "Card definition not found")
 
-        val cyclingAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Cycling>()
-            .firstOrNull { it.searchFilter == null }
+        val cyclingAbility = cyclingOption(state, action, cardDef)
             ?: return ExecutionResult.error(state, "This card doesn't have cycling")
 
         // ---------------------------------------------------------------------
@@ -313,6 +311,15 @@ class CycleCardHandler(
      * of the card in hand (CR 702.29a), so Zirda's "abilities you activate" reaches it. Applied to
      * the X-substituted cost: the total is locked in once X is announced (CR 601.2f via 602.2b).
      */
+    /** The printed or granted cycling ability [action] names (`CycleCard.grantedBy`). */
+    private fun cyclingOption(
+        state: GameState,
+        action: CycleCard,
+        cardDef: com.wingedsheep.sdk.model.CardDefinition
+    ): CyclingGrants.CyclingOption? = CyclingGrants.chosenOption(
+        state, action.cardId, cardDef, action.playerId, action.grantedBy, cardRegistry, zones.predicateEvaluator
+    )
+
     private fun reduced(state: GameState, action: CycleCard, cost: ManaCost): ManaCost =
         castPermissionUtils?.applyActivatedAbilityCostReduction(cost, state, action.cardId, action.playerId)
             ?: cost

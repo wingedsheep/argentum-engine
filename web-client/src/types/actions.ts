@@ -265,6 +265,11 @@ export interface CycleCardAction {
    * engine raises its own ChooseNumber decision rather than defaulting X to 0.
    */
   readonly xValue?: number
+  /**
+   * Which cycling ability: omitted for the card's printed cycling, else the permanent granting
+   * cycling to cards in hand (Rhet-Tomb Mystic). Echoed back from the server's legal action.
+   */
+  readonly grantedBy?: EntityId
 }
 
 export interface TypecycleCardAction {

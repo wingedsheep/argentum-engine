@@ -1884,6 +1884,7 @@ Families:
 - `GrantChosenColor(filter: GroupFilter)` — Adds the chosen color (resolved from the source's `CastChoicesComponent`) to the target.
 - `GrantChosenSubtype(filter: GroupFilter, includeControlledSpells: Boolean, includeOwnedCardsOutsideBattlefield: Boolean)` — Grants the creature type chosen as the source entered (resolved from the source's `CastChoicesComponent`) to a group, in addition to their other types.
 - `GrantColor(color: Color, filter: GroupFilter)` — Adds a color to the target permanent.
+- `GrantCyclingToCardsInHand(filter: GameObjectFilter, cost: ManaCost)` — Grants cycling (CR 702.29) to cards in the granter's controller's hand that match filter.
 - `GrantDynamicStats(filter: GroupFilter, powerBonus: DynamicAmount, toughnessBonus: DynamicAmount)` — Grants dynamic power/toughness bonus based on a variable amount.
 - `GrantEmergeToOwnSpells(spellFilter: GameObjectFilter)` — Grants emerge (CR 702.119) to spells the granter's controller casts that match spellFilter, with an emerge cost equal to **each spell's own mana cost** — Herigast, Erupting Nullkite: "Each creature…
 - `GrantFlashToSpellType(filter: GameObjectFilter, controllerOnly: Boolean, nthOfTypePerTurn: Int?)` — Grants flash to spells matching a filter.

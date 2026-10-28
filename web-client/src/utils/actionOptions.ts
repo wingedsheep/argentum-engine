@@ -302,7 +302,10 @@ export function buildActionOptions(
   // "Kicked {G}" / "Kicked {1}{U}" / both — so every one the server offers gets its own option.
   const kickerActions = legalActions.filter((a) => a.actionType === 'CastWithKicker')
   const morphAction = legalActions.find((a) => a.actionType === 'CastFaceDown')
-  const cycleAction = legalActions.find((a) => a.action.type === 'CycleCard')
+  // A card can hold printed cycling plus cycling granted in hand (Rhet-Tomb Mystic), one action
+  // per distinct cost — so this is a filter, not a find.
+  const cycleActions = legalActions.filter((a) => a.action.type === 'CycleCard')
+  const cycleAction = cycleActions[0] ?? null
   const typecycleAction = legalActions.find((a) => a.action.type === 'TypecycleCard')
   const plotAction = legalActions.find((a) => a.action.type === 'PlotCard')
   const foretellAction = legalActions.find((a) => a.action.type === 'ForetellCard')
@@ -527,16 +530,16 @@ export function buildActionOptions(
   })
 
   // 4. Cycling
-  if (cycleAction) {
+  cycleActions.forEach((action, index) => {
     options.push({
-      key: 'cycle',
+      key: index === 0 ? 'cycle' : `cycle-${index}`,
       label: 'Cycle',
-      manaCost: cycleAction.manaCostString || null,
-      isAvailable: cycleAction.isAffordable !== false,
-      action: cycleAction,
+      manaCost: action.manaCostString || null,
+      isAvailable: action.isAffordable !== false,
+      action,
       actionType: 'cycle',
     })
-  }
+  })
 
   // 4b. Typecycling (e.g., Islandcycling, Swampcycling)
   if (typecycleAction) {

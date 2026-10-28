@@ -551,6 +551,33 @@ data class GrantMiracleToCardsInHand(
 }
 
 /**
+ * Grants cycling (CR 702.29) to cards in the granter's controller's hand that match [filter].
+ * Models oracle text like "Each creature card in your hand has cycling {1}{U}." (Rhet-Tomb Mystic).
+ *
+ * Read wherever printed plain [KeywordAbility.Cycling] is read — the cycling enumerator and
+ * `CycleCardHandler` both go through `CyclingGrants`, so a granted cycling is paid, discarded,
+ * counted and triggers exactly like a printed one. A card that already has cycling keeps it and
+ * gains this one beside it — two separate activated abilities — so the player picks
+ * which cost to pay. Hand-only by construction: cycling functions only from hand (CR 702.29a).
+ *
+ * @property filter Which cards in the controller's hand gain cycling (e.g. creature cards).
+ * @property cost The cycling cost the granted ability uses.
+ */
+@SerialName("GrantCyclingToCardsInHand")
+@Serializable
+data class GrantCyclingToCardsInHand(
+    val filter: GameObjectFilter,
+    val cost: ManaCost
+) : StaticAbility {
+    override val description: String =
+        "Each ${filter.description} in your hand has cycling $cost"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
  * Grants madness (CR 702.35) to cards the granter's controller **owns** that match [filter] and
  * aren't on the battlefield, with the madness cost equal to each card's own mana cost. Models
  * Falkenrath Gorger: "Each Vampire creature card you own that isn't on the battlefield has madness.

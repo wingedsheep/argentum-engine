@@ -5,6 +5,7 @@ import com.wingedsheep.engine.core.TypecycleCard
 import com.wingedsheep.engine.legalactions.ActionEnumerator
 import com.wingedsheep.engine.legalactions.EnumerationContext
 import com.wingedsheep.engine.legalactions.LegalAction
+import com.wingedsheep.engine.mechanics.CyclingGrants
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.scripting.KeywordAbility
 
@@ -33,11 +34,15 @@ class CyclingEnumerator : ActionEnumerator {
             // "sources" (Pithing Needle) forbids it.
             if (context.castPermissionUtils.isActivationForbidden(state, cardId, playerId)) continue
 
-            val cyclingAbilities = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Cycling>()
-            val plainCycling = cyclingAbilities.firstOrNull { it.searchFilter == null }
-            val typedCycling = cyclingAbilities.firstOrNull { it.searchFilter != null }
+            val typedCycling = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Cycling>()
+                .firstOrNull { it.searchFilter != null }
 
-            if (plainCycling != null) {
+            // Printed cycling plus any granted to this card in hand (Rhet-Tomb Mystic): one action
+            // per distinct cost, since each is its own activated ability the player may choose.
+            val plainOptions = CyclingGrants.plainCyclingOptions(
+                state, cardId, cardDef, playerId, context.cardRegistry, context.predicateEvaluator
+            )
+            for (plainCycling in plainOptions) {
                 // An `{X}` cycling cost (Webstrike Elite's "Cycling {X}{G}{G}") is affordable as
                 // soon as its fixed part is payable — X = 0 is always a legal announcement (CR
                 // 107.3a). Substituting X = 0 gives that baseline for both the check and the
@@ -62,7 +67,7 @@ class CyclingEnumerator : ActionEnumerator {
                     LegalAction(
                         actionType = "CycleCard",
                         description = "Cycle ${cardComponent.name}",
-                        action = CycleCard(playerId, cardId),
+                        action = CycleCard(playerId, cardId, grantedBy = plainCycling.grantedBy),
                         affordable = canAfford,
                         hasXCost = hasXCost,
                         maxAffordableX = maxAffordableX,
