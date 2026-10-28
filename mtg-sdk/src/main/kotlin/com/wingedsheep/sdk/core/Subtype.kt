@@ -270,6 +270,17 @@ value class Subtype(val value: String) {
         )
 
         /**
+         * All land types per comprehensive rules 205.3i — the basic ones plus Cave, Desert, Gate,
+         * Lair, Locus, Mine, Planet, Power-Plant, Sphere, Tower, Town and Urza's. A land whose
+         * subtype an effect *sets* loses every one of these it had (Rule 305.7), and "loses all
+         * land types" strips exactly these, leaving any non-land subtypes (e.g. Dryad Arbor's Dryad).
+         */
+        val ALL_LAND_TYPES: Set<String> = ALL_BASIC_LAND_TYPES + setOf(
+            "Cave", "Desert", "Gate", "Lair", "Locus", "Mine", "Planet", "Power-Plant", "Sphere",
+            "Tower", "Town", "Urza's"
+        )
+
+        /**
          * Creature types that make a card, spell, or permanent an *outlaw*
          * (Outlaws of Thunder Junction). A card is an outlaw if it has one or
          * more of these subtypes; "outlaw" itself is not a creature type.

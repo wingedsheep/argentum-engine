@@ -31,10 +31,19 @@ class BloodMoonScenarioTest : FunSpec({
         script = CardScript(),
     )
     val forest = basicLand("Forest") {}
+    val desertGate = CardDefinition(
+        name = "Test Desert Gate",
+        manaCost = ManaCost.ZERO,
+        typeLine = TypeLine(
+            cardTypes = setOf(CardType.LAND),
+            subtypes = setOf(Subtype("Desert"), Subtype("Gate")),
+        ),
+        script = CardScript(),
+    )
 
     fun newGame(): Pair<GameTestDriver, EntityId> {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(BloodMoon, tropicalIsland, forest))
+        driver.registerCards(TestCards.all + listOf(BloodMoon, tropicalIsland, forest, desertGate))
         driver.initMirrorMatch(deck = Deck.of("Forest" to 40), startingLife = 20)
         return driver to driver.activePlayer!!
     }
@@ -60,5 +69,13 @@ class BloodMoonScenarioTest : FunSpec({
         )
         val pool = driver.state.getEntity(player)?.get<ManaPoolComponent>() ?: ManaPoolComponent()
         pool.red shouldBe 1
+    }
+
+    test("a nonbasic land loses its non-basic land types too (Rule 305.7)") {
+        val (driver, player) = newGame()
+        driver.putPermanentOnBattlefield(player, "Blood Moon")
+        val desertGate = driver.putLandOnBattlefield(player, "Test Desert Gate")
+
+        driver.state.projectedState.getSubtypes(desertGate) shouldBe setOf("Mountain")
     }
 })

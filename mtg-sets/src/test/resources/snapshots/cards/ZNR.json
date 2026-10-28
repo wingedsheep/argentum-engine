@@ -6360,6 +6360,119 @@
     ]
 }
 
+// Lithoform Blight
+{
+    "name": "Lithoform Blight",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant land\nWhen this Aura enters, draw a card.\nEnchanted land loses all land types and abilities and has \"{T}: Add {C}\" and \"{T}, Pay 1 life: Add one mana of any color.\"",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lithoform Blight:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "SetLandTypesForGroup",
+                "filter": {
+                    "baseFilter": "land",
+                    "scope": "AttachedTo"
+                },
+                "landTypes": []
+            },
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Lithoform Blight:2",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddColorlessMana",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true,
+                    "descriptionOverride": "{T}: Add {C}."
+                },
+                "filter": {
+                    "baseFilter": "land",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Lithoform Blight:3",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            "CostTap",
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomPayLife",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "effect": "AddManaOfChoice",
+                    "timing": "ManaAbility",
+                    "isManaAbility": true,
+                    "descriptionOverride": "{T}, Pay 1 life: Add one mana of any color."
+                },
+                "filter": {
+                    "baseFilter": "land",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "rarity": "UNCOMMON",
+        "artist": "Denis Nigmatullin",
+        "flavorText": "Heedless of Nissa's warnings, Nahiri repeated history.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5b36d12e-9a68-4d3d-92e8-9840cd5320bc.jpg?1783929375",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "If the target land is an illegal target by the time Lithoform Blight tries to resolve, the spell doesn't resolve. It doesn't enter the battlefield, so you don't draw a card."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "The enchanted land keeps any other card types (such as artifact) and supertypes (such as basic or legendary) when it loses its land types."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Lithoform Engine
 {
     "name": "Lithoform Engine",

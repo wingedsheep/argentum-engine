@@ -481,10 +481,11 @@ sealed interface Modification {
     }
 
     /**
-     * Replace all basic land subtypes with the given set (Rule 305.7).
+     * Replace all land subtypes with the given set (Rule 305.7).
      * Used by "is an Island" effects that change a land's basic land types.
-     * Removes existing basic land subtypes (Plains, Island, Swamp, Mountain, Forest)
-     * and replaces them with the specified types.
+     * Removes every existing land type (basic ones and Desert, Gate, Urza's… — see
+     * `Subtype.ALL_LAND_TYPES`), keeps non-land subtypes, and adds the specified types.
+     * An empty set is "loses all land types" (Lithoform Blight).
      */
     @Serializable
     data class SetBasicLandTypes(val subtypes: Set<String>) : Modification {

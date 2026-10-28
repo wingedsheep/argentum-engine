@@ -284,9 +284,11 @@ internal class EffectApplicator(
                     values.types.addAll(newTypes)
                 }
                 is Modification.SetBasicLandTypes -> {
-                    val basicLandTypes = com.wingedsheep.sdk.core.Subtype.ALL_BASIC_LAND_TYPES
-                    values.subtypes.removeAll { it in basicLandTypes }
-                    values.types.removeAll { it in basicLandTypes }
+                    // Rule 305.7: the land loses *all* its old land types (Desert, Gate, Urza's…),
+                    // not only the basic ones; non-land subtypes (Dryad Arbor's Dryad) stay.
+                    val landTypes = com.wingedsheep.sdk.core.Subtype.ALL_LAND_TYPES
+                    values.subtypes.removeAll { it in landTypes }
+                    values.types.removeAll { it in landTypes }
                     values.subtypes.addAll(mod.subtypes)
                     values.types.addAll(mod.subtypes)
                     // The new type's intrinsic mana ability survives a same-source lose-all-
@@ -297,9 +299,9 @@ internal class EffectApplicator(
                     val chosenLandType = state.getEntity(effect.sourceId)
                         ?.chosenLandType()
                     if (chosenLandType != null) {
-                        val basicLandTypes = com.wingedsheep.sdk.core.Subtype.ALL_BASIC_LAND_TYPES
-                        values.subtypes.removeAll { it in basicLandTypes }
-                        values.types.removeAll { it in basicLandTypes }
+                        val landTypes = com.wingedsheep.sdk.core.Subtype.ALL_LAND_TYPES
+                        values.subtypes.removeAll { it in landTypes }
+                        values.types.removeAll { it in landTypes }
                         values.subtypes.add(chosenLandType)
                         values.types.add(chosenLandType)
                         values.basicLandTypesSetByEffect = true

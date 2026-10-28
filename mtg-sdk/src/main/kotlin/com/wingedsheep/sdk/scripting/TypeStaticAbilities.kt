@@ -539,7 +539,12 @@ data class GrantAdditionalTypesToGroup(
  *
  * @property filter Which lands are affected (e.g. all nonbasic lands — [GroupFilter] over
  *   `GameObjectFilter.NonbasicLand`, both players' lands).
- * @property landTypes The basic land type(s) to set (e.g. {"Mountain"}), replacing all others.
+ * An empty [landTypes] is "loses all land types and abilities" — every land type is removed and
+ * none is added (Lithoform Blight, with `filter = GroupFilter.attachedCreature()` for the
+ * enchanted land). Non-land subtypes and all card types / supertypes are kept.
+ *
+ * @property landTypes The basic land type(s) to set (e.g. {"Mountain"}), replacing every land type
+ *   the lands had (basic or not, CR 205.3i); empty to remove them all.
  */
 @SerialName("SetLandTypesForGroup")
 @Serializable
@@ -549,9 +554,13 @@ data class SetLandTypesForGroup(
 ) : StaticAbility {
     override val description: String = buildString {
         append(filter.description)
-        append(" are ")
-        append(landTypes.joinToString(" "))
-        append(" (they lose all other land types and abilities)")
+        if (landTypes.isEmpty()) {
+            append(" lose all land types and abilities")
+        } else {
+            append(" are ")
+            append(landTypes.joinToString(" "))
+            append(" (they lose all other land types and abilities)")
+        }
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {

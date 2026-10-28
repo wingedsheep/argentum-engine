@@ -10267,18 +10267,23 @@ staticAbility {
 - `GrantKeywordByCounter` — Aurification — keyword based on counters present.
 - `AddCreatureTypeByCounter` — subtype based on counters present.
 - `SetEnchantedLandType(landType)` — "Enchanted land is an Island" — replaces the enchanted
-  land's basic land types with a fixed type (Rule 305.7). (Sea's Claim)
+  land's land types (every one, basic or not — `Subtype.ALL_LAND_TYPES`, CR 205.3i) with a fixed
+  type (Rule 305.7). (Sea's Claim)
 - `SetLandTypesForGroup(filter, landTypes)` — the **group** counterpart of `SetEnchantedLandType`
   (and the "set/replace" counterpart of `GrantAdditionalTypesToGroup`, which *adds* and keeps
   abilities): "[filter] are [types]. (They lose all other land types and abilities and have the new
   type's mana ability.)" Realizes CR 305.7 over a whole group of lands as two continuous effects —
-  Layer 4 `SetBasicLandTypes` (replace the basic land subtypes) + Layer 6 `RemoveAllAbilities`
+  Layer 4 `SetBasicLandTypes` (remove every land type — Desert, Gate, Urza's… too — keeping non-land
+  subtypes, then add the new ones) + Layer 6 `RemoveAllAbilities`
   (strip printed abilities). The new type's **intrinsic** mana ability (Mountain → "{T}: Add {R}")
   is derived from the projected subtype by `IntrinsicManaAbilities` and survives the ability
   suppression, so the lands still tap for the appropriate color. Gate behind a
   `ConditionalStaticAbility` for conditional variants. Blood Moon / Magus of the Moon
   (`filter = GroupFilter(GameObjectFilter.NonbasicLand)`, `landTypes = setOf("Mountain")`); Zhao,
   the Moon Slayer gates the same on `Conditions.SourceCounterCountAtLeast(CounterType.CONQUEROR, 1)`.
+  An **empty** `landTypes` is "loses all land types and abilities": pair it with
+  `filter = GroupFilter.attachedCreature()` and `GrantActivatedAbility` for the replacement mana
+  abilities (granted abilities survive the wipe). (Lithoform Blight)
 - `SetEnchantedLandTypeFromChosen` — "Enchanted land is the chosen type" — same, but reads the
   type from the source's `ChosenLandTypeComponent` (paired with
   `EntersWithChoice(ChoiceType.BASIC_LAND_TYPE)`). Chosen-value counterpart to
