@@ -96,6 +96,7 @@ fun lkiPolicyFor(reference: EffectTarget.SingleEntity): LkiPolicy = when (refere
     EffectTarget.TargetingSource,
     // The damage source is read where it is now; a departed one is simply gone (no snapshot taken).
     EffectTarget.DamageSource,
+    EffectTarget.DamageRecipient,
     -> LkiPolicy.LIVE_ONLY
 }
 

@@ -95,6 +95,11 @@ data class TriggerContext(
     /** The object that dealt the triggering damage (`EffectTarget.DamageSource`); null outside damage triggers. */
     val damageSourceId: EntityId? = null,
     /**
+     * What was dealt the triggering damage (`EffectTarget.DamageRecipient`) — a permanent, or the
+     * player when the damage went to one; null outside damage triggers.
+     */
+    val damageRecipientId: EntityId? = null,
+    /**
      * The damage source's controller at the instant the triggering damage was dealt (CR 603.10),
      * read off the event's `sourceLastKnown`. "That creature's controller" (Backfire) still names
      * a player once the source has left the battlefield before resolution — a token that died to
@@ -402,6 +407,7 @@ data class TriggerContext(
                 is DamageDealtEvent -> TriggerContext(
                     triggeringEntityId = event.targetId,
                     damageSourceId = event.sourceId,
+                    damageRecipientId = event.targetId,
                     damageSourceControllerId = event.sourceLastKnown?.controllerId,
                     triggeringPlayerId = event.targetLastKnown?.controllerId,
                     damageAmount = event.amount,

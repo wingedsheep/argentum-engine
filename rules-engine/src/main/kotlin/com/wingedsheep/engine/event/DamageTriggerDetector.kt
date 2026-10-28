@@ -172,6 +172,7 @@ class DamageTriggerDetector(
                     triggerContext = TriggerContext(
                         triggeringEntityId = sourceId,
                         damageSourceId = sourceId,
+                        damageRecipientId = damagedEntityId,
                         damageSourceControllerId = event.sourceLastKnown?.controllerId,
                         damageAmount = event.amount
                     )
@@ -223,6 +224,7 @@ class DamageTriggerDetector(
                             triggerContext = TriggerContext(
                                 triggeringEntityId = damageSourceId,
                                 damageSourceId = damageSourceId,
+                                damageRecipientId = damagedPlayerId,
                                 damageSourceControllerId = event.sourceLastKnown?.controllerId,
                                 damageAmount = event.amount
                             )
@@ -342,10 +344,12 @@ class DamageTriggerDetector(
             // recipient is a player, also carry it as the triggering player so
             // "…to a player, [that player] …" payoffs (Fear of Burning Alive's
             // "target creature that player controls") resolve Player.TriggeringPlayer
-            // to the damaged player rather than the source.
+            // to the damaged player rather than the source. The recipient itself stays
+            // reachable as EffectTarget.DamageRecipient ("destroy that planeswalker", Zagras).
             TriggerContext(
                 triggeringEntityId = event.sourceId,
                 damageSourceId = event.sourceId,
+                damageRecipientId = event.targetId,
                 damageSourceControllerId = event.sourceLastKnown?.controllerId,
                 triggeringPlayerId = event.targetId.takeIf { it in state.turnOrder },
                 damageAmount = event.amount,
@@ -454,6 +458,7 @@ class DamageTriggerDetector(
                                 triggerContext = TriggerContext(
                                     triggeringEntityId = damagedPlayerId,
                                     damageSourceId = damageSourceId,
+                                    damageRecipientId = damagedPlayerId,
                                     damageSourceControllerId = event.sourceLastKnown?.controllerId,
                                     damageAmount = event.amount
                                 )

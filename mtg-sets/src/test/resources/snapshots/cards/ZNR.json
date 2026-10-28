@@ -17838,6 +17838,83 @@
     ]
 }
 
+// Zagras, Thief of Heartbeats
+{
+    "name": "Zagras, Thief of Heartbeats",
+    "manaCost": "{4}{B}{R}",
+    "typeLine": "Legendary Creature — Vampire Rogue",
+    "oracleText": "This spell costs {1} less to cast for each creature in your party. (Your party consists of up to one each of Cleric, Rogue, Warrior, and Wizard.)\nFlying, deathtouch, haste\nOther creatures you control have deathtouch.\nWhenever a creature you control deals combat damage to a planeswalker, destroy that planeswalker.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "DEATHTOUCH",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Zagras, Thief of Heartbeats:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": "planeswalker"
+                    },
+                    "sourceFilter": "creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "DamageRecipient",
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "Dynamic",
+                        "amount": "PartySize"
+                    }
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "DEATHTOUCH",
+                "filter": {
+                    "baseFilter": "creature ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "241",
+        "rarity": "RARE",
+        "artist": "Anna Steinbauer",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/ac81448c-f87b-4ca1-b951-b359216ab1d0.jpg?1783929317",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying, add any cost increases, then apply any cost reductions. The mana value of the spell is determined only by its mana cost, no matter what the total cost to cast the spell was."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Zareth San, the Trickster
 {
     "name": "Zareth San, the Trickster",

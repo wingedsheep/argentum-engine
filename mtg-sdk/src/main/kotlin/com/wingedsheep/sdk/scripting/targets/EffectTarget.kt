@@ -340,6 +340,21 @@ sealed interface EffectTarget {
     }
 
     /**
+     * DAMAGE RECIPIENT: the permanent that was dealt the damage of a deals-damage trigger — "that
+     * planeswalker" in "whenever a creature you control deals combat damage to a planeswalker,
+     * destroy that planeswalker" (Zagras, Thief of Heartbeats). The recipient counterpart of
+     * [DamageSource]: a deals-damage trigger with a source filter binds [TriggeringEntity] to the
+     * damage's *source*, so the damaged permanent needs its own name. On every other deals-damage
+     * trigger it is the same object as [TriggeringEntity]. Fixed when the trigger fires and read
+     * live, so a recipient that left the battlefield in response makes the effect a no-op.
+     */
+    @SerialName("DamageRecipient")
+    @Serializable
+    data object DamageRecipient : SingleEntity {
+        override val description: String = "that permanent"
+    }
+
+    /**
      * CONTROLLER OF TRIGGERING ENTITY: Refers to the controller/owner of the
      * entity that caused the trigger to fire.
      * Used for effects like Tephraderm: "deals that much damage to that spell's controller"

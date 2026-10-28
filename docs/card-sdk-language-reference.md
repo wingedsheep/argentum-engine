@@ -5638,6 +5638,14 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   resolution. Read live (a departed source makes the effect a no-op). Ogre-Head Helm: "whenever
   equipped creature deals combat damage to a player, you may sacrifice it" is
   `Effects.SacrificeTarget(EffectTarget.DamageSource)`.
+- `EffectTarget.DamageRecipient` — "that creature / that planeswalker" in a deals-damage trigger: what
+  was dealt the damage (`TriggerContext.damageRecipientId`). A deals-damage observer with a source filter
+  ("whenever a creature you control deals combat damage to …") binds `TriggeringEntity` to the damage's
+  *source*, so the damaged permanent is reachable only through this; on every other deals-damage trigger
+  it is the same object as `TriggeringEntity`. Fixed when the trigger fires, read live (a recipient that
+  left in response makes the effect a no-op). Zagras, Thief of Heartbeats:
+  `Triggers.a(GameObjectFilter.Creature.youControl()).dealsCombatDamage(Recipient.Object(GameObjectFilter.Planeswalker))`
+  with `Effects.Destroy(EffectTarget.DamageRecipient)`.
 - `EffectTarget.ControllerOfDamageSource` — "that creature's controller" in a deals-damage trigger:
   the damage source's current controller while it is on the battlefield, else its controller when it
   dealt the damage (CR 608.2h; a token that died to the same combat damage still names a player).
