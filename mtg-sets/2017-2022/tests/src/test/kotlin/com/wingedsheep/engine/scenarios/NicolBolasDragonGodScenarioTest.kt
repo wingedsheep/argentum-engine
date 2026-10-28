@@ -9,10 +9,15 @@ import com.wingedsheep.mtg.sets.definitions.war.cards.LilianaDreadhordeGeneral
 import com.wingedsheep.mtg.sets.definitions.war.cards.NarsetParterOfVeils
 import com.wingedsheep.mtg.sets.definitions.war.cards.NicolBolasDragonGod
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
 import io.kotest.assertions.withClue
+import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
@@ -25,7 +30,7 @@ import io.kotest.matchers.shouldNotBe
  *   −8: Each opponent who doesn't control a legendary creature or planeswalker loses the game.
  *
  * The borrowed abilities are `GainActivatedAbilitiesOfPermanents(abilities = LOYALTY)`: copies
- * sourced from Bolas, so they spend Bolas's loyalty and share his one-per-turn limit (CR 606.3).
+ * sourced from Bolas, so they spend Bolas's loyalty and share his one-per-turn limit (CR 606.3, 606.4).
  */
 class NicolBolasDragonGodScenarioTest : ScenarioTestBase() {
 
@@ -33,6 +38,23 @@ class NicolBolasDragonGodScenarioTest : ScenarioTestBase() {
     private val bolasMinusEight = NicolBolasDragonGod.activatedAbilities[2].id
     private val lilianaPlusOne = LilianaDreadhordeGeneral.activatedAbilities[0].id
     private val narsetMinusTwo = NarsetParterOfVeils.activatedAbilities[0].id
+
+    /** A planeswalker with one loyalty ability and one ordinary activated ability. */
+    private val tinker = card("Tinker, Test Walker") {
+        manaCost = "{2}"
+        typeLine = "Legendary Planeswalker — Tinker"
+        startingLoyalty = 3
+        oracleText = "{0}: You gain 2 life.\n+1: Tinker deals 1 damage to each opponent."
+        activatedAbility {
+            cost = Costs.Mana("{0}")
+            effect = Effects.GainLife(2)
+        }
+        loyaltyAbility(+1) {
+            effect = Effects.DealDamage(1, com.wingedsheep.sdk.scripting.targets.EffectTarget.PlayerRef(com.wingedsheep.sdk.scripting.references.Player.EachOpponent))
+        }
+    }
+    private val tinkerGainLife = tinker.activatedAbilities[0].id
+    private val tinkerPlusOne = tinker.activatedAbilities[1].id
 
     private fun TestGame.setLoyalty(id: EntityId, loyalty: Int) {
         state = state.updateEntity(id) { c -> c.with(CountersComponent().withAdded(CounterType.LOYALTY, loyalty)) }
@@ -42,7 +64,61 @@ class NicolBolasDragonGodScenarioTest : ScenarioTestBase() {
         state.getEntity(id)?.get<CountersComponent>()?.getCount(CounterType.LOYALTY)
 
     init {
+        cardRegistry.register(listOf(tinker))
+
         context("Nicol Bolas, Dragon-God") {
+
+            test("copies a planeswalker's loyalty abilities but not its other activated abilities") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Nicol Bolas, Dragon-God")
+                    .withCardOnBattlefield(2, "Tinker, Test Walker")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                val bolas = game.findPermanent("Nicol Bolas, Dragon-God")!!
+                game.setLoyalty(bolas, 4)
+                game.setLoyalty(game.findPermanent("Tinker, Test Walker")!!, 3)
+
+                withClue("the non-loyalty {0} ability isn't Bolas's") {
+                    game.execute(ActivateAbility(playerId = game.player1Id, sourceId = bolas, abilityId = tinkerGainLife))
+                        .error shouldNotBe null
+                }
+                game.execute(ActivateAbility(playerId = game.player1Id, sourceId = bolas, abilityId = tinkerPlusOne))
+                    .error shouldBe null
+                game.resolveStack()
+                game.getLifeTotal(2) shouldBe 19
+                game.loyalty(bolas) shouldBe 5
+            }
+
+            test("the copied ability shows its printed text, reading as Nicol Bolas") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Nicol Bolas, Dragon-God")
+                    .withCardOnBattlefield(2, "Tinker, Test Walker")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                val bolas = game.findPermanent("Nicol Bolas, Dragon-God")!!
+                val menu = game.getClientState(1).cards.getValue(bolas).planeswalkerAbilities!!
+                val copied = menu.single { it.abilityId == tinkerPlusOne.value }
+                copied.description shouldBe "Nicol Bolas deals 1 damage to each opponent"
+            }
+
+            test("two Bolases don't list each other's identical abilities twice") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Nicol Bolas, Dragon-God")
+                    .withCardOnBattlefield(2, "Nicol Bolas, Dragon-God")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                val mine = game.state.getBattlefield(game.player1Id).single { game.findPermanents("Nicol Bolas, Dragon-God").contains(it) }
+                val ids = game.getClientState(1).cards.getValue(mine).planeswalkerAbilities!!.map { it.abilityId }
+                ids.size shouldBe 3
+                ids shouldContain bolasPlusOne.value
+                ids shouldNotContain tinkerPlusOne.value
+            }
 
             test("activates another planeswalker's loyalty ability, paying with his own loyalty") {
                 val game = scenario()
@@ -92,7 +168,7 @@ class NicolBolasDragonGodScenarioTest : ScenarioTestBase() {
                     .error shouldNotBe null
             }
 
-            test("copies only loyalty abilities, and loses them when that planeswalker leaves") {
+            test("loses a copied ability when its planeswalker leaves") {
                 val game = scenario()
                     .withPlayers("Player", "Opponent")
                     .withCardOnBattlefield(1, "Nicol Bolas, Dragon-God")

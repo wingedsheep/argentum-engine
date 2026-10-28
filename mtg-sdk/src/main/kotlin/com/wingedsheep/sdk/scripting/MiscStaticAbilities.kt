@@ -1149,7 +1149,7 @@ enum class CopiedAbilities {
  * `grantedTo = GroupFilter.source()`, `sourceFilter = GameObjectFilter.Land.opponentControls()`,
  * `abilities = CopiedAbilities.NON_MANA`. Nicol Bolas, Dragon-God ("has all loyalty abilities of
  * all other planeswalkers on the battlefield") is `sourceFilter = GameObjectFilter.Planeswalker`,
- * `abilities = CopiedAbilities.LOYALTY` — a copied loyalty ability is the gainer's own (CR 606.3:
+ * `abilities = CopiedAbilities.LOYALTY` — a copied loyalty ability is the gainer's own (CR 606.3, 606.4:
  * it shares the gainer's one-loyalty-ability-per-turn limit and pays loyalty off the gainer).
  *
  * The engine recomputes the gained set continuously from projected state, so the gainer's

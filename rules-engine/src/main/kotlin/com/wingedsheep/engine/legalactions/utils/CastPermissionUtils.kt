@@ -1768,7 +1768,12 @@ class CastPermissionUtils(
                 }
                 if (!gainsAbilities) continue
 
-                // Collect copies of the source permanents' printed activated abilities.
+                // Collect copies of the source permanents' printed activated abilities. An ability the
+                // gainer already has itself is not copied again — two Nicol Bolas, Dragon-Gods share
+                // ability ids, and each would otherwise list the other's (identical) abilities twice.
+                val ownIds = state.getEntity(entityId)?.get<CardComponent>()
+                    ?.let { cardRegistry.getCard(it.cardDefinitionId) }
+                    ?.script?.activatedAbilities?.mapTo(HashSet()) { it.id }.orEmpty()
                 for (sourceId in state.getBattlefield()) {
                     if (sourceId == entityId) continue // a permanent doesn't copy its own abilities here
                     val sourceEntity = state.getEntity(sourceId) ?: continue
@@ -1785,6 +1790,7 @@ class CastPermissionUtils(
                     for (copied in com.wingedsheep.engine.state.components.identity.ownActivatedAbilities(sourceCard, sourceDef, sourceClassLevel)) {
                         if (copied.activateFromZone != com.wingedsheep.sdk.core.Zone.BATTLEFIELD) continue
                         if (!gain.abilities.includes(copied.isManaAbility, copied.isPlaneswalkerAbility)) continue
+                        if (copied.id in ownIds) continue
                         // "You may spend mana as though it were mana of any color to activate those
                         // abilities" reaches only these copies, not other abilities of the gainer.
                         val granted = if (gain.spendAsThoughAnyColor) {

@@ -11798,7 +11798,7 @@ staticAbility {
   is the printed clause: `ALL` ("all activated abilities"), `NON_MANA` ("… except mana abilities"),
   `NON_LOYALTY` ("… except for loyalty abilities"), or `LOYALTY` ("all loyalty abilities"). A copied
   loyalty ability is the gainer's own: it pays loyalty off the gainer and shares its
-  one-loyalty-ability-per-turn limit (CR 606.3). `spendAsThoughAnyColor = true` is "you may spend
+  one-loyalty-ability-per-turn limit (CR 606.3, 606.4). `spendAsThoughAnyColor = true` is "you may spend
   mana as though it were mana of any color to activate those abilities": each copy's colored pips accept any mana
   (`{C}` stays strict), scoped to the copies so abilities other sources grant the gainer aren't relaxed. (Sharkey, Tyrant of the Shire — "Sharkey has all
   activated abilities of lands your opponents control except mana abilities"; Scheming Fence —

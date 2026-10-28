@@ -152,7 +152,7 @@ internal class CardFacesProjector(
             val loyaltyX = ability.cost == AbilityCost.LoyaltyX
             val loyalty = (ability.cost as? AbilityCost.Loyalty)?.change
                 ?: if (loyaltyX) 0 else return@mapNotNull null
-            val description = (if (ability.id in grantedIds) donorOracleLine(state, ability) else if (loyaltyX) cardDef.oracleText.lines()
+            val description = (if (ability.id in grantedIds) donorOracleLine(state, ability, cardDef) else if (loyaltyX) cardDef.oracleText.lines()
                 .firstOrNull { it.startsWith("−X:") || it.startsWith("-X:") }
                 ?.substringAfter(":")?.trim() else oracleDescriptions[loyalty]?.removeFirstOrNull())
                 ?: ability.descriptionOverride
@@ -171,15 +171,24 @@ internal class CardFacesProjector(
      * abilities of all other planeswalkers" — Nicol Bolas, Dragon-God): the donor's own oracle line,
      * found by the ability's id among the printed loyalty abilities of the planeswalkers on the
      * battlefield. Null for an authored grant (Way of the Wildspeaker), which no card prints.
+     * The donor's name in that line reads as the gainer's — "if Ral Zarek is on the battlefield,
+     * Nicol Bolas deals the damage" (Nicol Bolas, Dragon-God ruling, 2024-01-12).
      */
-    private fun donorOracleLine(state: GameState, ability: com.wingedsheep.sdk.scripting.ActivatedAbility): String? {
+    private fun donorOracleLine(
+        state: GameState,
+        ability: com.wingedsheep.sdk.scripting.ActivatedAbility,
+        gainer: CardDefinition,
+    ): String? {
         val loyalty = (ability.cost as? AbilityCost.Loyalty)?.change ?: return null
         for (id in state.getBattlefield()) {
             val donor = state.getEntity(id)?.get<CardComponent>()?.cardDefinitionId?.let(cardRegistry::getCard) ?: continue
             val sameCost = donor.script.activatedAbilities.filter { it.cost == ability.cost }
             val index = sameCost.indexOfFirst { it.id == ability.id }
             if (index < 0) continue
-            return parseOracleLoyaltyLines(donor.oracleText)[loyalty]?.getOrNull(index)
+            val line = parseOracleLoyaltyLines(donor.oracleText)[loyalty]?.getOrNull(index) ?: return null
+            return line
+                .replace(donor.name, gainer.name)
+                .replace(donor.name.substringBefore(","), gainer.name.substringBefore(","))
         }
         return null
     }
