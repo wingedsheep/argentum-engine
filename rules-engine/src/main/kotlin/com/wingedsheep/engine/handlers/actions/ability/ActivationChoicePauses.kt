@@ -34,6 +34,7 @@ import com.wingedsheep.engine.mechanics.mana.buildAbilityPaymentContext
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.PlayerComponent
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Zone
@@ -433,7 +434,7 @@ internal class ActivationChoicePauses(
     // -------------------------------------------------------------------
     // Joint sacrifice cost (several `Sacrifice` atoms in one composite — Jarad, Golgari Lich Lord's
     // "Sacrifice a Swamp and a Forest"). Each atom is asked for in cost order, one decision per
-    // atom, and its picks are appended to `costPayment.sacrificedPermanents` as that atom's segment
+    // permanent, and its picks are appended to `costPayment.sacrificedPermanents` as that atom's segment
     // ([SacrificeCostAssignment]). Only permanents that leave the later atoms payable are offered,
     // so the lone Forest-that-is-also-a-Swamp can't be spent on the Swamp slot. Forced atoms were
     // already filled by [withForcedSacrifices]; this pauses only on a real choice.
@@ -449,11 +450,21 @@ internal class ActivationChoicePauses(
         val atom = atoms[index]
         val remaining = end - chosen.size
         val groups = costHandler.sacrificeAtomGroups(state, activation.effectiveCost, action.playerId, action.sourceId)
+        // "With different names": a name this atom's segment already holds can't be picked again.
+        val segmentNames = if (atom.distinctNames) {
+            chosen.drop(end - atom.count).mapNotNull { state.getEntity(it)?.get<CardComponent>()?.name }.toSet()
+        } else emptySet()
         val candidates = SacrificeCostAssignment.feasibleCandidates(groups, index, chosen.toSet(), remaining)
-        if (candidates.size < remaining) {
+            .filter { segmentNames.isEmpty() || state.getEntity(it)?.get<CardComponent>()?.name !in segmentNames }
+        if (candidates.isEmpty()) {
             return ExecutionResult.error(state, "Not enough permanents to ${atom.description}")
         }
-        val prompt = "Choose ${quantify(remaining, atom.filter.description)} to sacrifice for ${activation.sourceName}"
+        // One permanent per decision, even for an atom of count 2+: feasibility is checked per
+        // candidate, so a whole set picked at once could be jointly unpayable though each pick looks
+        // legal. Asking slot by slot re-checks after every pick (the resumer appends, re-entry
+        // recomputes), so every offered permanent always leaves the rest of the cost payable.
+        val left = if (remaining > 1) " ($remaining left)" else ""
+        val prompt = "Choose ${quantify(1, atom.filter.description)} to sacrifice for ${activation.sourceName}$left"
         return state.suspendForDecision(
             question = { decisionId ->
                 SelectCardsDecision(
@@ -462,14 +473,14 @@ internal class ActivationChoicePauses(
                     prompt = prompt,
                     context = castingContext(action, activation.sourceName),
                     options = candidates,
-                    minSelections = remaining,
-                    maxSelections = remaining
+                    minSelections = 1,
+                    maxSelections = 1
                 )
             },
             answer = ActivateAbilitySacrificeContinuation(
                 action = action,
                 sacrificeCandidates = candidates,
-                sacrificeCount = remaining,
+                sacrificeCount = 1,
                 distinctNames = atom.distinctNames
             )
         )

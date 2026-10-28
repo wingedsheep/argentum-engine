@@ -157,14 +157,7 @@ class ZoneActivatedAbilityEnumerator(
                 // are unpayable without enough permanents — and, with several atoms, without one
                 // disjoint assignment (a lone Swamp Forest dual pays one atom, not both). The engine
                 // asks which permanents when the bare action arrives, so there's no payload to build.
-                val sacrificeGroups = SacrificeCostAssignment.atoms(effectiveCost).map { atom ->
-                    SacrificeCostAssignment.Group(
-                        atom.count,
-                        context.costUtils.findAbilitySacrificeTargets(
-                            state, playerId, atom.filter, if (atom.excludeSelf) entityId else null, sourceId = entityId
-                        )
-                    )
-                }
+                val sacrificeGroups = SacrificeCostAssignment.groups(state, effectiveCost, playerId, entityId, context.predicateEvaluator)
                 if (sacrificeGroups.isNotEmpty() && !SacrificeCostAssignment.hasDisjointAssignment(sacrificeGroups)) continue
 
                 when (effectiveCost) {

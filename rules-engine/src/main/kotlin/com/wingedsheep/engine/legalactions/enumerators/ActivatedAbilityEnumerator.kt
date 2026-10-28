@@ -260,14 +260,7 @@ class ActivatedAbilityEnumerator(
                 // atom's own count check below can't see that, so gate the whole cost here.
                 val jointSacrifice = SacrificeCostAssignment.isJoint(effectiveCost)
                 if (jointSacrifice && !SacrificeCostAssignment.hasDisjointAssignment(
-                        SacrificeCostAssignment.atoms(effectiveCost).map { atom ->
-                            SacrificeCostAssignment.Group(
-                                atom.count,
-                                context.costUtils.findAbilitySacrificeTargets(
-                                    state, playerId, atom.filter, if (atom.excludeSelf) entityId else null, sourceId = entityId
-                                )
-                            )
-                        }
+                        SacrificeCostAssignment.groups(state, effectiveCost, playerId, entityId, context.predicateEvaluator)
                     )
                 ) continue
 

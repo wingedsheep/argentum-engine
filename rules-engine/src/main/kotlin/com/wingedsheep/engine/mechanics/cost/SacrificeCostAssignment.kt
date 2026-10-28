@@ -1,5 +1,9 @@
 package com.wingedsheep.engine.mechanics.cost
 
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.costs.CostAtom
@@ -17,8 +21,8 @@ import com.wingedsheep.sdk.scripting.costs.CostAtom
  *
  * Affordability is a small bipartite matching (atoms' slots × candidate permanents), solved here by
  * backtracking — the pools are a handful of permanents, so this stays cheap on the enumeration path.
- * The candidate pools themselves come from each call site (they already narrow by
- * [SacrificeCostLegality]); this object only knows about counts and ids.
+ * The candidate pools come from [groups] — the one definition the enumerators, the validator, the
+ * choice pauses and payment all read, so what is offered can't drift from what is accepted.
  */
 object SacrificeCostAssignment {
 
@@ -30,6 +34,34 @@ object SacrificeCostAssignment {
         is AbilityCost.Atom -> listOfNotNull(cost.atom as? CostAtom.Sacrifice)
         is AbilityCost.Composite -> cost.costs.flatMap { atoms(it) }
         else -> emptyList()
+    }
+
+    /**
+     * One [Group] per sacrifice atom in [cost], in cost order. Each pool is the battlefield permanents
+     * [playerId] controls (projected) that match the atom's filter — source-relative filters resolve
+     * against [sourceId] — less those no cost may sacrifice ([SacrificeCostLegality]) and, for
+     * "another", the source itself.
+     */
+    fun groups(
+        state: GameState,
+        cost: AbilityCost,
+        playerId: EntityId,
+        sourceId: EntityId?,
+        predicateEvaluator: PredicateEvaluator,
+    ): List<Group> {
+        val atoms = atoms(cost)
+        if (atoms.isEmpty()) return emptyList()
+        val projected = state.projectedState
+        val context = PredicateContext(controllerId = playerId, sourceId = sourceId)
+        val controlled = projected.getBattlefieldControlledBy(playerId).filter {
+            state.getEntity(it)?.get<CardComponent>() != null && SacrificeCostLegality.canSacrificeForCost(state, it)
+        }
+        return atoms.map { atom ->
+            Group(atom.count, controlled.filter { id ->
+                !(atom.excludeSelf && id == sourceId) &&
+                    predicateEvaluator.matches(state, projected, id, atom.filter, context)
+            })
+        }
     }
 
     /** True when [cost] holds two or more sacrifice atoms, so payment needs a joint assignment. */

@@ -50,14 +50,21 @@ class JaradGolgariLichLordScenarioTest : ScenarioTestBase() {
                 }
             }
 
-            test("sacrificing another creature drains each opponent for its power") {
+            test("sacrificing another creature drains each opponent for its last-known power") {
                 val game = base()
                     .withCardOnBattlefield(1, "Jarad, Golgari Lich Lord")
                     .withCardOnBattlefield(1, "Hill Giant")
+                    .withCardInHand(1, "Giant Growth")
                     .withLandsOnBattlefield(1, "Swamp", 2)
-                    .withLandsOnBattlefield(1, "Forest", 1)
+                    .withLandsOnBattlefield(1, "Forest", 2)
                     .build()
                 val jarad = game.findPermanent("Jarad, Golgari Lich Lord")!!
+                val giant = game.findPermanent("Hill Giant")!!
+
+                game.castSpell(1, "Giant Growth", giant).error shouldBe null
+                if (game.getPendingDecision() is SelectManaSourcesDecision) game.submitManaSourcesAutoPay()
+                game.resolveStack()
+                game.state.projectedState.getPower(giant) shouldBe 6
 
                 val result = game.execute(ActivateAbility(game.player1Id, jarad, drainAbility))
                 withClue("activation is legal: ${result.error}") { result.error shouldBe null }
@@ -67,7 +74,9 @@ class JaradGolgariLichLordScenarioTest : ScenarioTestBase() {
                 }
                 game.resolveStack()
 
-                game.getLifeTotal(2) shouldBe 17
+                withClue("the pumped 6 power it last had on the battlefield, not its printed 3") {
+                    game.getLifeTotal(2) shouldBe 14
+                }
                 game.getLifeTotal(1) shouldBe 20
                 withClue("Jarad itself was not a legal sacrifice") {
                     game.findPermanent("Jarad, Golgari Lich Lord") shouldNotBe null
@@ -107,32 +116,29 @@ class JaradGolgariLichLordScenarioTest : ScenarioTestBase() {
                 game.isInHand(1, "Jarad, Golgari Lich Lord") shouldBe true
             }
 
-            test("with a real choice, each land is asked for in turn and the needed dual is held back") {
+            test("with a real choice, the Swamp prompt holds back the dual the Forest slot needs") {
                 val game = base()
                     .withCardInGraveyard(1, "Jarad, Golgari Lich Lord")
-                    .withLandsOnBattlefield(1, "Swamp", 1)
+                    .withLandsOnBattlefield(1, "Swamp", 2)
                     .withLandsOnBattlefield(1, "Overgrown Tomb", 1)
-                    .withLandsOnBattlefield(1, "Forest", 1)
                     .build()
                 val jarad = game.findCardsInGraveyard(1, "Jarad, Golgari Lich Lord").single()
-                val swamp = game.findPermanent("Swamp")!!
+                val swamps = game.findPermanents("Swamp")
                 val tomb = game.findPermanent("Overgrown Tomb")!!
-                val forest = game.findPermanent("Forest")!!
 
                 game.execute(ActivateAbility(game.player1Id, jarad, returnAbility)).error shouldBe null
                 val swampPick = game.getPendingDecision().shouldBeInstanceOf<SelectCardsDecision>()
-                withClue("both Swamps leave a Forest behind, so both are offered") {
-                    swampPick.options.toSet() shouldBe setOf(swamp, tomb)
-                    swampPick.options shouldNotContain forest
+                withClue("Overgrown Tomb is a Swamp, but it is the only Forest, so only the basics are offered") {
+                    swampPick.options.toSet() shouldBe swamps.toSet()
+                    swampPick.options shouldNotContain tomb
                 }
-                game.selectCards(listOf(tomb)).error shouldBe null
+                game.selectCards(listOf(swamps.first())).error shouldBe null
 
-                withClue("only the basic Forest is left for the Forest slot — forced") {
+                withClue("the Tomb is the only Forest left — sacrificed for the Forest slot without a prompt") {
                     game.getPendingDecision() shouldBe null
                 }
-                game.isOnBattlefield("Swamp") shouldBe true
                 game.isOnBattlefield("Overgrown Tomb") shouldBe false
-                game.isOnBattlefield("Forest") shouldBe false
+                game.findPermanents("Swamp") shouldBe listOf(swamps.last())
                 game.resolveStack()
                 game.isInHand(1, "Jarad, Golgari Lich Lord") shouldBe true
             }

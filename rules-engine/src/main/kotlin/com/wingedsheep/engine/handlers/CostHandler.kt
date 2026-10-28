@@ -1883,26 +1883,14 @@ class CostHandler(private val zones: ZoneTransitionService) {
     ): List<EntityId> =
         SacrificeCostLegality.sacrificeableForCost(state, findMatchingPermanentsUnified(state, controllerId, filter, sourceId))
 
-    /** The permanents [atom] may take: [findSacrificeCostCandidates], less the source for "another". */
-    internal fun sacrificeAtomCandidates(
-        state: GameState,
-        atom: CostAtom.Sacrifice,
-        controllerId: EntityId,
-        sourceId: EntityId?,
-    ): List<EntityId> =
-        findSacrificeCostCandidates(state, controllerId, atom.filter, sourceId)
-            .let { if (atom.excludeSelf) it.filter { id -> id != sourceId } else it }
-
-    /** One [SacrificeCostAssignment.Group] per sacrifice atom in [cost], in cost order. */
+    /** One [SacrificeCostAssignment.Group] per sacrifice atom in [cost] — [SacrificeCostAssignment.groups]. */
     internal fun sacrificeAtomGroups(
         state: GameState,
         cost: AbilityCost,
         controllerId: EntityId,
         sourceId: EntityId?,
     ): List<SacrificeCostAssignment.Group> =
-        SacrificeCostAssignment.atoms(cost).map {
-            SacrificeCostAssignment.Group(it.count, sacrificeAtomCandidates(state, it, controllerId, sourceId))
-        }
+        SacrificeCostAssignment.groups(state, cost, controllerId, sourceId, predicateEvaluator)
 
     /**
      * Whether [cost]'s sacrifice atoms can all be paid at once with disjoint permanents. Trivially

@@ -959,8 +959,8 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   are paid by one **disjoint assignment** — each atom gets its own permanents, so a Swamp Forest dual
   pays one atom, never both. The ability is offered (battlefield and `activateFromZone` alike) only
   when such an assignment exists; the legal action carries no sacrifice picker, and the engine asks
-  atom by atom in cost order (`SelectCardsDecision`), offering only permanents that leave the later
-  atoms payable and auto-picking forced ones. A pre-filled `costPayment.sacrificedPermanents` is read
+  in cost order, one permanent per `SelectCardsDecision` (an atom of count 2+ is asked slot by slot),
+  offering only permanents that leave the rest of the cost payable and auto-picking forced ones. A pre-filled `costPayment.sacrificedPermanents` is read
   as ordered per-atom segments (first atom's `count`, then the next's). Works for any number of atoms
   (`SacrificeCostAssignment`); a single sacrifice atom behaves exactly as before.
 - `Costs.PayPlayerCounters(counterType, amount = 1)` — pay counters from the **activating player**,
