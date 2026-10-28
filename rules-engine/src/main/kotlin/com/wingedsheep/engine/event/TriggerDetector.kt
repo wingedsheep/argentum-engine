@@ -3648,6 +3648,8 @@ class TriggerDetector(
             val key = when (val trigger = pending.ability.trigger) {
                 is EventPattern.DamageReceivedEvent -> if (trigger.source == null)
                     listOf(pending.sourceId, pending.ability.id, pending.granterId, event.targetId) else null
+                // Only the unrestricted spelling folds; "a permanent or player" (Recipient.PermanentOrPlayer)
+                // reaches the same recipients but stays one trigger per recipient (Ghyrson Starn).
                 is EventPattern.DealsDamageEvent -> if (!trigger.batch && trigger.recipient == Recipient.Any)
                     listOf(pending.sourceId, pending.ability.id, pending.granterId, "dealt-by", event.sourceId) else null
                 else -> null

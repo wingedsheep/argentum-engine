@@ -7434,10 +7434,12 @@ damage to a blocker and (trampling over) the player triggers once per recipient,
 `TRIGGER_DAMAGE_AMOUNT`, where an unrestricted `Any` trigger fires once with the total. Use it whenever the
 effect names "that permanent or player" or gates on the per-recipient amount. Ghyrson Starn, Kelermorph —
 "whenever another source you control deals exactly 1 damage to a permanent or player, Ghyrson Starn deals 2
-damage to that permanent or player" — is `Triggers.a(Any.youControl()).dealsDamage(Recipient.PermanentOrPlayer)`
-+ `triggerRestriction = Conditions.All(EntityMatches(TriggeringEntity, Any.notSourceItself()),
-CompareAmounts(triggerDamageAmount(), EQ, fixed(1)))` + `Effects.DealDamage(2, EffectTarget.DamageRecipient)`
-("another source" is Talon of Pain's restriction, since the observer's `TriggeringEntity` is the damage source).
+damage to that permanent or player" — is `Triggers.a(Any.youControl().notSourceItself()).dealsDamage(
+Recipient.PermanentOrPlayer)` + `triggerRestriction = CompareAmounts(triggerDamageAmount(), EQ, fixed(1))` +
+`Effects.DealDamage(2, EffectTarget.DamageRecipient)`. A damage trigger's source filter reads source-relative
+predicates against the observing permanent, so "another source you control" is `notSourceItself()` right in
+the filter (Talon of Pain too), and a source that died to the damage it dealt — a token that traded in combat,
+already gone when triggers are detected — is read as it last existed (CR 603.10).
 
 Zone-change trigger filters also honor `sourceItself()` and its negation against the observing
 source identity, including branches of a heterogeneous filter union. This permits a single

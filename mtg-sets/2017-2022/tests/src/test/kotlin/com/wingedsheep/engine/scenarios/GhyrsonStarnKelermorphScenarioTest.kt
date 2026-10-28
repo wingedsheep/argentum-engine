@@ -2,6 +2,7 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.Outcome
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
+import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.`40k`.cards.GhyrsonStarnKelermorph
@@ -68,8 +69,31 @@ class GhyrsonStarnKelermorphScenarioTest : FunSpec({
         toughness = 1
     }
 
+    val weaken = card("Test Weaken") {
+        manaCost = "{R}"
+        typeLine = "Instant"
+        spell {
+            val victim = target(Targets.CreatureOrPlaneswalker)
+            effect = Effects.ModifyStats(-2, 0, victim)
+        }
+    }
+
+    val bruiser = card("Test Bruiser Wall") {
+        manaCost = "{1}"
+        typeLine = "Creature — Wall"
+        power = 1
+        toughness = 3
+    }
+
+    val pinger = card("Test Pinger") {
+        manaCost = "{1}"
+        typeLine = "Creature — Soldier"
+        power = 1
+        toughness = 1
+    }
+
     fun duel(): GameTestDriver = GameTestDriver().also {
-        it.registerCards(TestCards.all + listOf(GhyrsonStarnKelermorph, ping, sweep, trampler, wall, chump))
+        it.registerCards(TestCards.all + listOf(GhyrsonStarnKelermorph, ping, sweep, trampler, wall, chump, weaken, bruiser, pinger))
         it.initMirrorMatch(deck = Deck.of("Mountain" to 40), startingPlayer = 0)
         it.passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -87,6 +111,16 @@ class GhyrsonStarnKelermorphScenarioTest : FunSpec({
         giveMana(caster, Color.RED)
         castSpell(caster, spell, targets).outcome shouldBe Outcome.Done
         resolveStack()
+    }
+
+    fun GameTestDriver.attackInto(attacker: EntityId, blocker: EntityId?) {
+        removeSummoningSickness(attacker)
+        passPriorityUntil(Step.DECLARE_ATTACKERS)
+        declareAttackers(player1, listOf(attacker), player2).outcome shouldBe Outcome.Done
+        bothPass()
+        val blocks = if (blocker == null) emptyMap() else mapOf(blocker to listOf(attacker))
+        declareBlockers(player2, blocks).outcome shouldBe Outcome.Done
+        passPriorityUntil(Step.END_COMBAT)
     }
 
     test("a spell you control dealing exactly 1 damage to a player adds 2 more to that player") {
@@ -143,5 +177,25 @@ class GhyrsonStarnKelermorphScenarioTest : FunSpec({
         d.passPriorityUntil(Step.END_COMBAT)
         // 1 tramples over, then Ghyrson's trigger for the player adds 2.
         d.getLifeTotal(d.player2) shouldBe 17
+    }
+
+    test("Ghyrson dealing exactly 1 damage itself is not another source") {
+        val d = duel()
+        val ghyrson = d.putCreatureOnBattlefield(d.player1, "Ghyrson Starn, Kelermorph")
+        d.cast(d.player1, "Test Weaken", listOf(ghyrson))
+        d.attackInto(ghyrson, blocker = null)
+        d.getLifeTotal(d.player2) shouldBe 19
+    }
+
+    test("a token that dies to the same combat damage it dealt still triggers") {
+        val d = duel()
+        d.putCreatureOnBattlefield(d.player1, "Ghyrson Starn, Kelermorph")
+        val token = d.putCreatureOnBattlefield(d.player1, "Test Pinger")
+        d.replaceState(d.state.updateEntity(token) { it.with(TokenComponent) })
+        val bruiser = d.putCreatureOnBattlefield(d.player2, "Test Bruiser Wall")
+        d.attackInto(token, blocker = bruiser)
+        // The token's 1 damage and Ghyrson's 2 kill the 1/3; the token died to the 1/3's 1 damage.
+        d.findPermanent(d.player1, "Test Pinger") shouldBe null
+        d.findPermanent(d.player2, "Test Bruiser Wall") shouldBe null
     }
 })

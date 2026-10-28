@@ -2175,7 +2175,7 @@ class TriggerMatcher(
             lastKnown = event.targetLastKnown,
         )
         // Check sourceFilter (e.g., "creature you control" for Gossip's Talent)
-        val sourceMatches = matchesDamageSourceFilter(trigger.sourceFilter, event, state, controllerId)
+        val sourceMatches = matchesDamageSourceFilter(trigger.sourceFilter, event, state, controllerId, abilitySourceId)
         // "Excess damage" triggers (Fall of Cair Andros) fire only when the recipient took
         // damage past lethal — CR 120.4a. Non-creature targets and at-or-below-lethal hits leave
         // event.excessAmount at 0 and silently fail this gate.
@@ -2200,18 +2200,30 @@ class TriggerMatcher(
      * Shared by [matchesDealsDamageTrigger] and the damage-to-you observer path in
      * [DamageTriggerDetector.detectDamageToControllerTriggers], which reaches the same triggers
      * through a different index and must apply the same gate.
+     *
+     * [abilitySourceId] is the permanent bearing the observing ability, so a source-relative filter
+     * reads against it — "another source you control" is `Any.youControl().notSourceItself()`
+     * (Ghyrson Starn, Kelermorph; Talon of Pain).
      */
     fun matchesDamageSourceFilter(
         sourceFilter: GameObjectFilter?,
         event: DamageDealtEvent,
         state: GameState,
-        controllerId: EntityId?
+        controllerId: EntityId?,
+        abilitySourceId: EntityId? = null
     ): Boolean {
         if (sourceFilter == null || event.sourceId == null) return true
         val predicateContext = com.wingedsheep.engine.handlers.PredicateContext(
             controllerId = controllerId ?: EntityId(""),
-            sourceId = null
+            sourceId = abilitySourceId
         )
+        // A token source that died to the very damage it dealt (a 1/1 trading in combat) has
+        // ceased to exist by the time detection runs; it still dealt the damage, so read it as it
+        // last existed (CR 603.10) — the combat-damage batch triggers do the same.
+        val lastKnown = event.sourceLastKnown
+        if (state.getEntity(event.sourceId) == null && lastKnown != null) {
+            return predicateEvaluator.matchesSnapshot(state, lastKnown, sourceFilter, predicateContext)
+        }
         return predicateEvaluator.matches(
             state, state.projectedState, event.sourceId, sourceFilter, predicateContext
         )

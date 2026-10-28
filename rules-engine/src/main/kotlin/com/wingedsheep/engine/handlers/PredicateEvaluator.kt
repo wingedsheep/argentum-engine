@@ -376,6 +376,9 @@ class PredicateEvaluator(
             // permanent this very damage destroyed (Aegar, the Freezing Flame).
             is StatePredicate.WasDealtDamageThisTurnBy ->
                 snapshot.damageSources.any { it.matches(predicate.sourceFilter, context.controllerId) }
+            // A departed object is the effect's source only if it is that very object; with no
+            // source context the question has no answer.
+            StatePredicate.IsSource -> context.sourceId?.let { it == snapshot.entityId }
             is StatePredicate.Not -> matchesSnapshotState(state, snapshot, predicate.predicate, context)?.not()
             is StatePredicate.And -> {
                 val results = predicate.predicates.map { matchesSnapshotState(state, snapshot, it, context) }

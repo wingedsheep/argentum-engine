@@ -213,7 +213,7 @@ class DamageTriggerDetector(
                     ability.binding == TriggerBinding.ANY &&
                     matchesDamageType(trigger.damageType, event) &&
                     matcher.matchesDamageSourceFilter(
-                        trigger.sourceFilter, event, state, entry.controllerId
+                        trigger.sourceFilter, event, state, entry.controllerId, entry.entityId
                     )) {
                     triggers.add(
                         PendingTrigger(

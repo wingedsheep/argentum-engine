@@ -1769,11 +1769,14 @@ internal class CombatDamageManager(
             // Capture the recipient as it is now, while it's still on the battlefield. Combat-damage
             // SBAs move a dead creature (and sweep a dead token) before trigger detection, so
             // recipient-based triggers ("a creature you control / an opponent controls is dealt
-            // damage") rely on this last-known information to still match (CR 603.10).
+            // damage") rely on this last-known information to still match (CR 603.10). The source
+            // gets the same: a token that traded with this creature is gone by detection, and
+            // "a source you control deals damage" observers read it from here.
             events.add(DamageDealtEvent(sourceId, targetId, amount, true,
                 sourceName = sourceName, targetName = targetName, targetIsPlayer = false, targetWasFaceDown = targetIsFaceDown,
                 targetLastKnown = captureLastKnown(newState, targetId), excessAmount = excess,
-                sourceAttachmentIds = attachmentIdsOf(newState, sourceId)))
+                sourceAttachmentIds = attachmentIdsOf(newState, sourceId),
+                sourceLastKnown = captureLastKnown(newState, sourceId)))
         }
 
         return newState

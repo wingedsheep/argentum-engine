@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.dst.cards
 
 import com.wingedsheep.sdk.core.CounterType
-import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.Effects
@@ -21,9 +20,7 @@ val TalonOfPain = card("Talon of Pain") {
         "{X}, {T}, Remove X charge counters from this artifact: It deals X damage to any target."
 
     triggeredAbility {
-        trigger = Triggers.a(GameObjectFilter.Any.youControl()).dealsDamage(Recipient.Opponent)
-        // The source exclusion is checked only when damage triggers the ability.
-        triggerRestriction = Conditions.EntityMatches(EffectTarget.TriggeringEntity, GameObjectFilter.Any.notSourceItself())
+        trigger = Triggers.a(GameObjectFilter.Any.youControl().notSourceItself()).dealsDamage(Recipient.Opponent)
         effect = Effects.AddCounters(CounterType.CHARGE, 1, EffectTarget.Self)
     }
 

@@ -1930,7 +1930,15 @@
                         "type": "RecipientPlayer",
                         "player": "EachOpponent"
                     },
-                    "sourceFilter": "ctrl:you"
+                    "sourceFilter": {
+                        "statePredicates": [
+                            {
+                                "type": "StateNot",
+                                "predicate": "IsSource"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
                 },
                 "binding": "ANY",
                 "effect": {
@@ -1938,18 +1946,6 @@
                     "counterType": "CHARGE",
                     "count": 1,
                     "target": "Self"
-                },
-                "triggerRestriction": {
-                    "type": "EntityMatches",
-                    "entity": "TriggeringEntity",
-                    "filter": {
-                        "statePredicates": [
-                            {
-                                "type": "StateNot",
-                                "predicate": "IsSource"
-                            }
-                        ]
-                    }
                 }
             }
         ],

@@ -21,9 +21,9 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * Three Autostubs — Whenever another source you control deals exactly 1 damage to a permanent or
  * player, Ghyrson Starn deals 2 damage to that permanent or player.
  *
- * A source-filtered damage observer: `TriggeringEntity` is the damage source (so "another" is
- * Talon of Pain's `notSourceItself()` restriction on it), and "that permanent or player" is
- * `EffectTarget.DamageRecipient`. The recipient is `Recipient.PermanentOrPlayer`, not `Any`, so a
+ * A source-filtered damage observer: "another" is `notSourceItself()` in the source filter (read as
+ * the source last existed when a token died to the damage it dealt), and "that permanent or player"
+ * is `EffectTarget.DamageRecipient`. The recipient is `Recipient.PermanentOrPlayer`, not `Any`, so a
  * source dealing 1 to several recipients at once triggers once per recipient (ruling) rather than
  * folding into one trigger carrying the total.
  */
@@ -41,14 +41,11 @@ val GhyrsonStarnKelermorph = card("Ghyrson Starn, Kelermorph") {
     keywordAbility(KeywordAbility.Ward(WardCost.Mana("{2}")))
 
     triggeredAbility {
-        trigger = Triggers.a(GameObjectFilter.Any.youControl()).dealsDamage(Recipient.PermanentOrPlayer)
-        triggerRestriction = Conditions.All(
-            Conditions.EntityMatches(EffectTarget.TriggeringEntity, GameObjectFilter.Any.notSourceItself()),
-            Conditions.CompareAmounts(
-                DynamicAmounts.triggerDamageAmount(),
-                ComparisonOperator.EQ,
-                DynamicAmounts.fixed(1),
-            ),
+        trigger = Triggers.a(GameObjectFilter.Any.youControl().notSourceItself()).dealsDamage(Recipient.PermanentOrPlayer)
+        triggerRestriction = Conditions.CompareAmounts(
+            DynamicAmounts.triggerDamageAmount(),
+            ComparisonOperator.EQ,
+            DynamicAmounts.fixed(1),
         )
         effect = Effects.DealDamage(2, EffectTarget.DamageRecipient)
     }

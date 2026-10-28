@@ -309,7 +309,15 @@
                             }
                         ]
                     },
-                    "sourceFilter": "ctrl:you"
+                    "sourceFilter": {
+                        "statePredicates": [
+                            {
+                                "type": "StateNot",
+                                "predicate": "IsSource"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
                 },
                 "binding": "ANY",
                 "effect": {
@@ -321,33 +329,16 @@
                     "target": "DamageRecipient"
                 },
                 "triggerRestriction": {
-                    "type": "All",
-                    "conditions": [
-                        {
-                            "type": "EntityMatches",
-                            "entity": "TriggeringEntity",
-                            "filter": {
-                                "statePredicates": [
-                                    {
-                                        "type": "StateNot",
-                                        "predicate": "IsSource"
-                                    }
-                                ]
-                            }
-                        },
-                        {
-                            "type": "Compare",
-                            "left": {
-                                "type": "ContextProperty",
-                                "key": "TRIGGER_DAMAGE_AMOUNT"
-                            },
-                            "operator": "EQ",
-                            "right": {
-                                "type": "Fixed",
-                                "amount": 1
-                            }
-                        }
-                    ]
+                    "type": "Compare",
+                    "left": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    },
+                    "operator": "EQ",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
                 }
             }
         ]
