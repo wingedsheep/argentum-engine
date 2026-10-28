@@ -1179,6 +1179,53 @@
     ]
 }
 
+// Pressure Point
+{
+    "name": "Pressure Point",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Tap target creature.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "artist": "Chase Stone",
+        "flavorText": "By studying dragon anatomy, Jeskai monks have learned how to locate clusters of nerves that will incapacitate even the mightiest dragons.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/0/d0027360-736c-4b3e-b2cd-0d821cca587a.jpg?1783938712"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Renowned Weaponsmith
 {
     "name": "Renowned Weaponsmith",

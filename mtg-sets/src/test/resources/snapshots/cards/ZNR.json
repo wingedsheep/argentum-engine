@@ -1130,6 +1130,97 @@
     ]
 }
 
+// Cascade Seer
+{
+    "name": "Cascade Seer",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Merfolk Wizard",
+    "oracleText": "When this creature enters, scry X, where X is the number of creatures in your party. (Your party consists of up to one each of Cleric, Rogue, Warrior, and Wizard.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cascade Seer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": "PartySize",
+                                "isScry": true
+                            },
+                            "storeAs": "scried"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "scried",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "toBottom",
+                            "storeRemainder": "toTop",
+                            "prompt": "Scry: choose cards to put on the bottom of your library",
+                            "selectedLabel": "Put on bottom",
+                            "remainderLabel": "Put on top"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "toBottom",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "toTop",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Top"
+                            },
+                            "order": "ControllerChooses"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": "PartySize",
+                                    "operator": "GT",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    }
+                                }
+                            },
+                            "then": "EmitScriedEvent"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "artist": "Brian Valeza",
+        "flavorText": "\"Perhaps you can't see the path, but that doesn't mean it isn't there.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/13105c88-2926-40ad-bc7a-09d515aa36c6.jpg?1783929404"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Chilling Trap
 {
     "name": "Chilling Trap",
@@ -1357,6 +1448,161 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Concerted Defense
+{
+    "name": "Concerted Defense",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target noncreature spell unless its controller pays {1} plus an additional {1} for each creature in your party. (Your party consists of up to one each of Cleric, Rogue, Warrior, and Wizard.)",
+    "script": {
+        "spellEffect": {
+            "type": "Counter",
+            "condition": {
+                "type": "CounterCondition.UnlessPaysDynamic",
+                "amount": {
+                    "type": "Add",
+                    "left": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "right": "PartySize"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "noncreature",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Rallis",
+        "flavorText": "\"You mess with one of us, you mess with all of us!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/235c108d-3902-4c2e-919c-a5449cd2dc3c.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Confounding Conundrum
+{
+    "name": "Confounding Conundrum",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, draw a card.\nWhenever a land an opponent controls enters, if that player had another land enter the battlefield under their control this turn, they return a land they control to its owner's hand.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Confounding Conundrum:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            },
+            {
+                "id": "Confounding Conundrum:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:opponent",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "ControllerOfTriggeringEntity"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": "land",
+                                    "player": "You"
+                                },
+                                "storeAs": "confoundingConundrumLands"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "confoundingConundrumLands",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected1",
+                                "prompt": "Return a land you control to its owner's hand",
+                                "useTargetingUI": true
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "CardTypeEnteredUnderControlThisTurn",
+                        "player": "ControllerOfTriggeringEntity",
+                        "cardType": "LAND"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "descriptionOverride": "Whenever a land an opponent controls enters, if that player had another land enter the battlefield under their control this turn, they return a land they control to its owner's hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "rarity": "RARE",
+        "artist": "Bryan Sola",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/95e37936-913e-4b16-a5a8-8aed733d702d.jpg?1783929399",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "The player may return any land they control to its owner's hand, not just one of those that entered this turn."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If an opponent has had no lands enter under their control and then two or more lands enter at the same time, Confounding Conundrum's second ability triggers for each of those lands."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -2025,6 +2271,182 @@
     ]
 }
 
+// Emeria's Call
+{
+    "name": "Emeria's Call",
+    "manaCost": "{4}{W}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create two 4/4 white Angel Warrior creature tokens with flying. Non-Angel creatures you control gain indestructible until your next turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Angel",
+                        "Warrior"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ]
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "NotSubtype",
+                                        "subtype": "Angel"
+                                    }
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "INDESTRUCTIBLE",
+                        "target": "IterationEntity",
+                        "duration": "UntilYourNextTurn"
+                    }
+                }
+            ]
+        }
+    },
+    "backFace": {
+        "name": "Emeria, Shattered Skyclave",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "As this land enters, you may pay 3 life. If you don't, it enters tapped.\n{T}: Add {W}.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Emeria, Shattered Skyclave:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "WHITE"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ],
+            "replacementEffects": [
+                {
+                    "type": "EntersTapped",
+                    "payLifeCost": 3
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "12",
+            "rarity": "MYTHIC",
+            "artist": "Matt Stewart",
+            "flavorText": "\"You called it the castle of a god. It is less than that, and so much more.\"\n—Kasla, Emeria shepherd",
+            "imageUri": "https://cards.scryfall.io/normal/back/c/4/c470539a-9cc7-4175-8f7c-c982b6072b6d.jpg?1783929425"
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "MYTHIC",
+        "artist": "Matt Stewart",
+        "flavorText": "\"Iona no longer guards this place. We do.\"\n—Kasla, Emeria shepherd",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c470539a-9cc7-4175-8f7c-c982b6072b6d.jpg?1783929425"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ],
+    "layout": "MODAL_DFC"
+}
+
+// Expedition Diviner
+{
+    "name": "Expedition Diviner",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Merfolk Wizard",
+    "oracleText": "Flying\nAs long as you control another Wizard, this creature has \"When this creature dies, draw a card.\"",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantTriggeredAbility",
+                    "ability": {
+                        "id": "Expedition Diviner:1",
+                        "trigger": {
+                            "type": "ZoneChangeEvent",
+                            "from": "Battlefield",
+                            "to": "Graveyard"
+                        },
+                        "effect": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        "descriptionOverride": "When this creature dies, draw a card."
+                    },
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent Wizard",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "artist": "Heonhwa",
+        "flavorText": "Wizards' spells twist the fabric of reality to channel elemental energies, peer into the future, and even calm the Roil.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/9/090f6e94-fb5f-4861-a465-f11766303676.jpg?1783929398",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "Expedition Diviner has just one instance of its triggered ability, no matter how many other Wizards you control beyond the first."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If Expedition Diviner dies at the same time that each other Wizard you control leaves the battlefield, its ability triggers. For example, if the only creatures you control are two Expedition Diviners and both die at the same time, their abilities each trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Expedition Healer
 {
     "name": "Expedition Healer",
@@ -2461,6 +2883,100 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Glacial Grasp
+{
+    "name": "Glacial Grasp",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Tap target creature. Its controller mills two cards. That creature doesn't untap during its controller's next untap step. (They put the top two cards of their library into their graveyard.)\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "player": {
+                                    "type": "ControllerOf",
+                                    "targetDescription": "target creature"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "ControllerOf",
+                                    "targetDescription": "target creature"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "DOESNT_UNTAP",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "UntilAfterAffectedControllersNextUntap"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "artist": "Tomasz Jedruszek",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/8/381d84d6-7b34-44cb-a697-54b835ba1281.jpg?1783929398",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "If the target creature is an illegal target by the time Glacial Grasp tries to resolve, the spell doesn't resolve. No player mills or draws any cards, and the creature won't be stopped from untapping. If the target is legal but Glacial Grasp doesn't tap it (most likely because it's already tapped), the rest of Glacial Grasp's effects still happen: that creature won't untap during its controller's next untap step, that player mills two cards, and you draw a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -2994,6 +3510,77 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Jwari Disruption
+{
+    "name": "Jwari Disruption",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell unless its controller pays {1}.",
+    "script": {
+        "spellEffect": {
+            "type": "Counter",
+            "condition": {
+                "type": "CounterCondition.UnlessPaysMana",
+                "cost": "{1}"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Jwari Ruins",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "This land enters tapped.\n{T}: Add {U}.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Jwari Ruins:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "BLUE"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ],
+            "replacementEffects": [
+                "EntersTapped"
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "64",
+            "rarity": "UNCOMMON",
+            "artist": "Cliff Childs",
+            "flavorText": "\"The Ondu Skyclave was a center for rebellion against the capital in Makindi. Of course they built in deadly traps.\"\n—Nys Dal, Sea Gate trapfinder",
+            "imageUri": "https://cards.scryfall.io/normal/back/3/0/301750a7-d1fd-435e-bfa8-9d2fb22ad627.jpg?1783929400"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "rarity": "UNCOMMON",
+        "artist": "Cliff Childs",
+        "flavorText": "\"You worry too much.\"\n—Nys Dal, Sea Gate trapfinder",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/0/301750a7-d1fd-435e-bfa8-9d2fb22ad627.jpg?1783929400"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ],
+    "layout": "MODAL_DFC"
 }
 
 // Kabira Outrider
@@ -5068,6 +5655,82 @@
     ]
 }
 
+// Ondu Inversion
+{
+    "name": "Ondu Inversion",
+    "manaCost": "{6}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy all nonland permanents.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "nonland permanent"
+                    },
+                    "storeAs": "destroyAll_gathered"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "destroyAll_gathered",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy"
+                }
+            ]
+        }
+    },
+    "backFace": {
+        "name": "Ondu Skyruins",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "This land enters tapped.\n{T}: Add {W}.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Ondu Skyruins:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "WHITE"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ],
+            "replacementEffects": [
+                "EntersTapped"
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "30",
+            "rarity": "RARE",
+            "artist": "James Paick",
+            "flavorText": "\"It always seems so quiet in the aftermath of wrenching violence.\"\n—Nys Dal, Sea Gate trapfinder",
+            "imageUri": "https://cards.scryfall.io/normal/back/b/6/b6e6be8c-41c3-4348-a8dd-b40ceb24e9b4.jpg?1783929416"
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "rarity": "RARE",
+        "artist": "James Paick",
+        "flavorText": "\"At first rumble you'd best hold on tight and pray to any gods you still hold dear.\"\n—Nys Dal, Sea Gate trapfinder",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/6/b6e6be8c-41c3-4348-a8dd-b40ceb24e9b4.jpg?1783929416"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ],
+    "layout": "MODAL_DFC"
+}
+
 // Oran-Rief Ooze
 {
     "name": "Oran-Rief Ooze",
@@ -5379,6 +6042,109 @@
                 "text": "Whenever a land you control enters, each landfall ability of the permanents you control will trigger. You can put them on the stack in any order. The last ability you put on the stack will be the first one to resolve (As a result, you can have those abilities resolve in the order of your choosing.)."
             }
         ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Resolute Strike
+{
+    "name": "Resolute Strike",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +2/+2 until end of turn. If it's a Warrior, you may attach an Equipment you control to it.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "filter": "creature Warrior"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": "artifact Equipment",
+                                    "player": "You",
+                                    "includeAttachments": true
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected1",
+                                "prompt": "You may attach an Equipment you control to the Warrior",
+                                "selectedLabel": "Attach",
+                                "useTargetingUI": true
+                            },
+                            {
+                                "type": "AttachTargetEquipmentToCreature",
+                                "equipmentTarget": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "selected1"
+                                },
+                                "creatureTarget": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "artist": "Zezhou Chen",
+        "flavorText": "\"If you practice something often enough, it becomes part of you. That's why we train, and that's why we survive.\"\n—Tasha, Graypelt veteran",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/78b82476-4320-4719-9785-af8d68503234.jpg?1783929407"
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -5968,6 +6734,122 @@
     ]
 }
 
+// Sejiri Shelter
+{
+    "name": "Sejiri Shelter",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature you control gains protection from the color of your choice until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ChooseColorThen",
+            "then": {
+                "type": "GrantProtectionFromChosenColor",
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Sejiri Glacier",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "This land enters tapped.\n{T}: Add {W}.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Sejiri Glacier:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "WHITE"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ],
+            "replacementEffects": [
+                "EntersTapped"
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "37",
+            "rarity": "UNCOMMON",
+            "artist": "Darek Zabrocki",
+            "flavorText": "\"This place offers nothing and takes everything.\"\n—Enwor, Sea Gate Expeditionary House",
+            "imageUri": "https://cards.scryfall.io/normal/back/f/2/f25d56f9-aa54-4657-9ac9-e93fbba3e715.jpg?1783929413"
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "rarity": "UNCOMMON",
+        "artist": "Darek Zabrocki",
+        "flavorText": "\"It blocks the windswept salt and frigid air, but the loneliness of Sejiri remains.\"\n—Enwor, Sea Gate Expeditionary House",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f25d56f9-aa54-4657-9ac9-e93fbba3e715.jpg?1783929413"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ],
+    "layout": "MODAL_DFC"
+}
+
+// Shepherd of Heroes
+{
+    "name": "Shepherd of Heroes",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Angel Cleric",
+    "oracleText": "Flying\nWhen this creature enters, you gain 2 life for each creature in your party. (Your party consists of up to one each of Cleric, Rogue, Warrior, and Wizard.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shepherd of Heroes:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Multiply",
+                        "amount": "PartySize",
+                        "multiplier": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "artist": "Livia Prima",
+        "flavorText": "\"Rest, friends. I will protect you.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/f/1f70baa3-5232-4e10-80b4-a9ead6ed6ec3.jpg?1783929406"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Skyclave Apparition
 {
     "name": "Skyclave Apparition",
@@ -6063,6 +6945,81 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Skyclave Cleric
+{
+    "name": "Skyclave Cleric",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Kor Cleric",
+    "oracleText": "When this creature enters, you gain 2 life.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Skyclave Cleric:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "descriptionOverride": "When this creature enters, you gain 2 life."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Skyclave Basilica",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "This land enters tapped.\n{T}: Add {W}.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Skyclave Basilica:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "WHITE"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ],
+            "replacementEffects": [
+                "EntersTapped"
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "40",
+            "rarity": "UNCOMMON",
+            "artist": "Johannes Voss",
+            "flavorText": "\"As points of no return go, it is quite epic.\"\n—Aelah, expedition cleric",
+            "imageUri": "https://cards.scryfall.io/normal/back/0/1/014027c4-7f9d-4096-b308-ea4be574c0d4.jpg?1783929412"
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "rarity": "UNCOMMON",
+        "artist": "Johannes Voss",
+        "flavorText": "\"Well, she can jump farther than I can.\"\n—Aelah, expedition cleric",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/014027c4-7f9d-4096-b308-ea4be574c0d4.jpg?1783929412"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ],
+    "layout": "MODAL_DFC"
 }
 
 // Skyclave Geopede
@@ -6467,6 +7424,100 @@
     ]
 }
 
+// Squad Commander
+{
+    "name": "Squad Commander",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Kor Warrior",
+    "oracleText": "When this creature enters, create a 1/1 white Kor Warrior creature token for each creature in your party. (Your party consists of up to one each of Cleric, Rogue, Warrior, and Wizard.)\nAt the beginning of combat on your turn, if you have a full party, creatures you control get +1/+0 and gain indestructible until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Squad Commander:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": "PartySize",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Kor",
+                        "Warrior"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/3/13412797-f831-49fe-adf3-369cdfacdbd5.jpg?1783929500"
+                }
+            },
+            {
+                "id": "Squad Commander:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "INDESTRUCTIBLE",
+                                "target": "IterationEntity"
+                            }
+                        ]
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": "PartySize",
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "rarity": "RARE",
+        "artist": "Ekaterina Burmak",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c2ce186d-c9cd-41e9-bac2-ad9d36c4939f.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Sure-Footed Infiltrator
 {
     "name": "Sure-Footed Infiltrator",
@@ -6868,6 +7919,123 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Tazri, Beacon of Unity
+{
+    "name": "Tazri, Beacon of Unity",
+    "manaCost": "{4}{W}",
+    "typeLine": "Legendary Creature — Human Warrior",
+    "oracleText": "This spell costs {1} less to cast for each creature in your party.\n{2/U}{2/B}{2/R}{2/G}: Look at the top six cards of your library. You may reveal up to two Cleric, Rogue, Warrior, Wizard, and/or Ally cards from among them and put them into your hand. Put the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 6
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tazri, Beacon of Unity:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2/U}{2/B}{2/R}{2/G}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 6
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "filter": "Cleric|Rogue|Warrior|Wizard|Ally",
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "You may reveal up to two Cleric, Rogue, Warrior, Wizard, and/or Ally cards to put into your hand.",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "Dynamic",
+                        "amount": "PartySize"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d4b79138-5728-4541-9ea5-dce1a5ae7e6a.jpg",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "To determine the cost of Tazri's activated ability, you choose which cost you'll pay for each of the four mana symbols (either {2} or one mana of the appropriate color), add up the total cost, apply any additional costs, then apply any cost reductions."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "Tazri's activated ability lets you put up to two cards total into your hand, not two cards of each of the listed creature types."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "Ally is a creature type that doesn't appear in the Zendikar Rising set, but it has appeared in previous sets featuring the plane of Zendikar."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK",
+        "RED",
+        "GREEN"
     ]
 }
 
