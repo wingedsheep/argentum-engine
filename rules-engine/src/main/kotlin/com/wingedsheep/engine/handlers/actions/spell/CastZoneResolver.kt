@@ -465,18 +465,25 @@ class CastZoneResolver(
 
     /**
      * After a graveyard cast authorized by a [MayCastFromGraveyard] grant, the allowance it uses up —
-     * or null when an unlimited grant already authorized the same cast, so nothing is spent. Mirrors
-     * [com.wingedsheep.engine.mechanics.mana.CostCalculator.oncePerTurnFreeCastSourceToConsume]:
-     * with several once-per-turn sources, the first eligible one pays. A one-shot
-     * ([Duration.NextUse]) grant pays only when no once-per-turn allowance could: the per-turn use
-     * renews next turn, while the one-shot permission is gone once spent.
+     * or null when an unlimited grant authorized the cast, so nothing is spent.
+     *
+     * Only grants equal to [authorized] — the permission the cast went through
+     * ([findMayCastFromGraveyardGrant], honouring the player's choice) — can pay, so casting through
+     * Chainer, Nightmare Adept's free one-shot permission spends that permission rather than Kotis,
+     * Sibsig Champion's once-per-turn allowance, whose exile-three cost the cast never paid. Among
+     * equal grants an unlimited one pays nothing, then the first once-per-turn source pays (as in
+     * [com.wingedsheep.engine.mechanics.mana.CostCalculator.oncePerTurnFreeCastSourceToConsume]),
+     * then a one-shot ([Duration.NextUse]) grant is removed. With [authorized] null every
+     * applicable grant is a candidate.
      */
     fun graveyardCastAllowanceToSpend(
         state: GameState,
         playerId: EntityId,
-        cardId: EntityId
+        cardId: EntityId,
+        authorized: MayCastFromGraveyard?
     ): GraveyardCastAllowance? {
-        val grants = mayCastFromGraveyardGrantsWithSources(state, playerId, cardId)
+        val applicable = mayCastFromGraveyardGrantsWithSources(state, playerId, cardId)
+        val grants = applicable.filter { authorized == null || it.grant == authorized }.ifEmpty { applicable }
         if (grants.any { it.unlimited }) return null
         grants.firstOrNull { it.grant.oncePerTurn }?.let { return GraveyardCastAllowance.OncePerTurn(it.sourceId) }
         return grants.firstNotNullOfOrNull { it.oneShot }?.let { GraveyardCastAllowance.OneShot(it) }

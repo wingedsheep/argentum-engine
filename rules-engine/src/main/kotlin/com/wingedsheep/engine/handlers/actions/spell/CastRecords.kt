@@ -329,7 +329,9 @@ internal class CastRecords(
         }
 
         if (castFromZone == Zone.GRAVEYARD) {
-            when (val spent = zoneResolver.graveyardCastAllowanceToSpend(originState, action.playerId, action.cardId)) {
+            when (val spent = zoneResolver.graveyardCastAllowanceToSpend(
+                originState, action.playerId, action.cardId, authorization.graveyardCastRiderGrant
+            )) {
                 is CastZoneResolver.GraveyardCastAllowance.OncePerTurn ->
                     newState = newState.updateEntity(spent.sourceId) { c -> c.with(MayCastFromGraveyardUsedThisTurnComponent) }
                 // One permission, one cast: drop that grant (the first equal record, so a second

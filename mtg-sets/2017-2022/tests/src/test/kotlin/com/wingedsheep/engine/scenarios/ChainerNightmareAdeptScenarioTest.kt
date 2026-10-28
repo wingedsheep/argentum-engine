@@ -2,6 +2,7 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
+import com.wingedsheep.engine.state.components.battlefield.MayCastFromGraveyardUsedThisTurnComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
@@ -102,6 +103,26 @@ class ChainerNightmareAdeptScenarioTest : ScenarioTestBase() {
                 }
                 withClue("the permission covered one spell; a second creature can't be cast") {
                     game.castSpellFromGraveyard(1, "Walking Corpse").error shouldNotBe null
+                }
+            }
+
+            test("a cast through Chainer's permission spends it, not another grant's once-per-turn allowance") {
+                val game = scenario().chainerBoard()
+                    .withCardOnBattlefield(1, "Kotis, Sibsig Champion")
+                    .withCardInHand(1, "Forest")
+                    .withCardInGraveyard(1, "Grizzly Bears")
+                    .build()
+
+                game.activateChainer(discard = "Forest")
+                game.castSpellFromGraveyard(1, "Grizzly Bears").error shouldBe null
+                game.payAndResolve()
+
+                withClue("the free one-shot permission paid for the cast") {
+                    game.state.grantedStaticAbilities.shouldBeEmpty()
+                }
+                withClue("Kotis's exile-three allowance is still unused this turn") {
+                    val kotis = game.findPermanent("Kotis, Sibsig Champion")!!
+                    game.state.getEntity(kotis)!!.has<MayCastFromGraveyardUsedThisTurnComponent>() shouldBe false
                 }
             }
 

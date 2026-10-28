@@ -91,7 +91,8 @@ data object TriggeringEntityWasHistoric : Condition {
  * the triggering-entity sibling of [com.wingedsheep.sdk.scripting.conditions.WasCastFromHand].
  * Negated, that is Chainer, Nightmare Adept's "if you didn't cast it from your hand", which holds
  * for a creature cast from another zone *and* for one that wasn't cast at all. Null (the default)
- * accepts a cast from any zone.
+ * accepts a cast from any zone. The engine records a cast origin for hand, graveyard, library and
+ * exile; any other zone never matches.
  */
 @SerialName("TriggeringEntityWasCast")
 @Serializable
