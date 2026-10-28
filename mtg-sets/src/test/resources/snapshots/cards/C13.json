@@ -707,6 +707,130 @@
     ]
 }
 
+// Tempt with Vengeance
+{
+    "name": "Tempt with Vengeance",
+    "manaCost": "{X}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Tempting offer — Create X 1/1 red Elemental creature tokens with haste. Each opponent may create X 1/1 red Elemental creature tokens with haste. For each opponent who does, create X 1/1 red Elemental creature tokens with haste.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "count": "XValue",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Elemental"
+                    ],
+                    "keywords": [
+                        "HASTE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/6/8/686d9c3d-41dc-476d-93b7-75857b48b1b6.jpg?1783906799"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.MayDecide",
+                            "prompt": "Accept the tempting offer? (Create X 1/1 red Elemental creature tokens with haste)"
+                        },
+                        "then": {
+                            "type": "StorePlayer",
+                            "storeAs": "temptingOfferAccepter"
+                        },
+                        "descriptionOverride": "You may accept the tempting offer"
+                    },
+                    "collectCollections": {
+                        "temptingOfferAccepter": "temptingOfferAccepted"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": {
+                            "type": "InCollection",
+                            "collection": "temptingOfferAccepted"
+                        }
+                    },
+                    "body": {
+                        "type": "CreateToken",
+                        "count": "XValue",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "RED"
+                        ],
+                        "creatureTypes": [
+                            "Elemental"
+                        ],
+                        "keywords": [
+                            "HASTE"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/6/8/686d9c3d-41dc-476d-93b7-75857b48b1b6.jpg?1783906799"
+                    }
+                },
+                {
+                    "type": "RepeatDynamicTimes",
+                    "amount": {
+                        "type": "DistinctEntitiesInCollections",
+                        "collections": [
+                            "temptingOfferAccepted"
+                        ]
+                    },
+                    "body": {
+                        "type": "CreateToken",
+                        "count": "XValue",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "RED"
+                        ],
+                        "creatureTypes": [
+                            "Elemental"
+                        ],
+                        "keywords": [
+                            "HASTE"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/6/8/686d9c3d-41dc-476d-93b7-75857b48b1b6.jpg?1783906799"
+                    }
+                }
+            ],
+            "descriptionOverride": "Tempting offer — Create X 1/1 red Elemental creature tokens with haste. Each opponent may create X 1/1 red Elemental creature tokens with haste. For each opponent who does, create X 1/1 red Elemental creature tokens with haste."
+        }
+    },
+    "metadata": {
+        "collectorNumber": "125",
+        "rarity": "RARE",
+        "artist": "Ryan Barger",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/8/48ad7c26-edb5-4354-9872-87c667183be7.jpg?1783939666",
+        "rulings": [
+            {
+                "date": "2013-10-17",
+                "text": "Your opponents decide in turn order whether or not they accept the offer, starting with the opponent on your left. Each opponent will know the decisions of previous opponents in turn order when making their decision."
+            },
+            {
+                "date": "2013-10-17",
+                "text": "After each opponent has decided, the effect happens simultaneously for each one who accepted the offer. Then, the effect happens again for you a number of times equal to the number of opponents who accepted."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Toxic Deluge
 {
     "name": "Toxic Deluge",

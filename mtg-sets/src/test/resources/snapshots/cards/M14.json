@@ -1517,6 +1517,64 @@
     ]
 }
 
+// Ogre Battledriver
+{
+    "name": "Ogre Battledriver",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Ogre Warrior",
+    "oracleText": "Whenever another creature you control enters, that creature gets +2/+0 and gains haste until end of turn. (It can attack and {T} this turn.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ogre Battledriver:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": "TriggeringEntity"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "HASTE",
+                            "target": "TriggeringEntity"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever another creature you control enters, that creature gets +2/+0 and gains haste until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "rarity": "RARE",
+        "artist": "Greg Staples",
+        "flavorText": "Ogres are driven by passion, rage, and another ogre standing behind them with a whip.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bff2d740-22cc-4719-ac58-28621951e68d.jpg?1783939911"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Predatory Sliver
 {
     "name": "Predatory Sliver",

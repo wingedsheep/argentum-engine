@@ -1692,6 +1692,79 @@
     ]
 }
 
+// Diregraf Colossus
+{
+    "name": "Diregraf Colossus",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Zombie Giant",
+    "oracleText": "This creature enters with a +1/+1 counter on it for each Zombie card in your graveyard.\nWhenever you cast a Zombie spell, create a tapped 2/2 black Zombie creature token.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Diregraf Colossus:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Zombie"
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie"
+                    ],
+                    "tapped": true
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Graveyard",
+                    "filter": "Zombie"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "107",
+        "rarity": "RARE",
+        "artist": "Vincent Proce",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/9039e8f6-5513-4307-a1b5-07209dc8e1c8.jpg?1783937777",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "If Diregraf Colossus enters the battlefield from your graveyard, its first ability will count itself among the Zombie cards in your graveyard. Similarly, if it enters the battlefield at the same time as another Zombie card enters the battlefield from your graveyard, the ability will count that other Zombie."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "Diregraf Colossus's last ability won't trigger when you cast it because it's not on the battlefield yet."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Drogskol Cavalry
 {
     "name": "Drogskol Cavalry",
@@ -5561,6 +5634,111 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Relentless Dead
+{
+    "name": "Relentless Dead",
+    "manaCost": "{B}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\nWhen this creature dies, you may pay {B}. If you do, return it to its owner's hand.\nWhen this creature dies, you may pay {X}. If you do, return another target Zombie creature card with mana value X from your graveyard to the battlefield.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Relentless Dead:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{B}"
+                        }
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Hand",
+                        "fromZone": "Graveyard"
+                    }
+                }
+            },
+            {
+                "id": "Relentless Dead:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayDynamicManaCost",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "numericProperty": "ManaValue"
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Battlefield",
+                        "fromZone": "Graveyard"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature Zombie own:you",
+                        "zone": "Graveyard",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "rarity": "MYTHIC",
+        "artist": "Ryan Yee",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/a/2a0d7998-2f3d-43b8-a0be-6ff7e5c83223.jpg?1783937766",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "Relentless Dead's last two abilities trigger at the same time and can be put on the stack in either order. The ability put on the stack first will be the last to resolve."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "You decide whether to pay for each triggered ability as it resolves. If you do, the rest of that ability's effect happens before any player may take actions."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

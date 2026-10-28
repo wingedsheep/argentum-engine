@@ -3894,6 +3894,84 @@
     ]
 }
 
+// Plague Belcher
+{
+    "name": "Plague Belcher",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Zombie Beast",
+    "oracleText": "Menace\nWhen this creature enters, put two -1/-1 counters on target creature you control.\nWhenever another Zombie you control dies, each opponent loses 1 life.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Plague Belcher:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "MINUS_ONE_MINUS_ONE",
+                    "count": 2,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Plague Belcher:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Zombie ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "rarity": "RARE",
+        "artist": "Izzy",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/280ae211-f025-4971-83e6-118ca08a1911.jpg?1783936500",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "If another Zombie you control dies at the same time as Plague Belcher, Plague Belcher's last ability will trigger for that Zombie."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Pouncing Cheetah
 {
     "name": "Pouncing Cheetah",

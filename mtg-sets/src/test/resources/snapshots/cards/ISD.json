@@ -241,6 +241,51 @@
     ]
 }
 
+// Army of the Damned
+{
+    "name": "Army of the Damned",
+    "manaCost": "{5}{B}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create thirteen tapped 2/2 black Zombie creature tokens.\nFlashback {7}{B}{B}{B} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{7}{B}{B}{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "count": {
+                "type": "Fixed",
+                "amount": 13
+            },
+            "power": 2,
+            "toughness": 2,
+            "colors": [
+                "BLACK"
+            ],
+            "creatureTypes": [
+                "Zombie"
+            ],
+            "tapped": true
+        }
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "rarity": "MYTHIC",
+        "artist": "Ryan Pancoast",
+        "flavorText": "Sometimes death comes knocking. Sometimes it tears down the walls.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/6/260a4544-a1eb-4d07-943f-0401ae288e13.jpg?1783940961"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Avacyn's Pilgrim
 {
     "name": "Avacyn's Pilgrim",

@@ -381,6 +381,99 @@
     ]
 }
 
+// Cemetery Reaper
+{
+    "name": "Cemetery Reaper",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "Other Zombie creatures you control get +1/+1.\n{2}{B}, {T}: Exile target creature card from a graveyard. Create a 2/2 black Zombie creature token.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Cemetery Reaper:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{B}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "CreateToken",
+                            "power": 2,
+                            "toughness": 2,
+                            "colors": [
+                                "BLACK"
+                            ],
+                            "creatureTypes": [
+                                "Zombie"
+                            ]
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature Zombie ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "rarity": "RARE",
+        "artist": "Dave Allsop",
+        "flavorText": "Every grave cradles a recruit.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/639b48f0-3426-46cf-b857-4611f7de4826.jpg?1783942385",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "The creature card in a graveyard is exiled as part of the activated ability's effect, not as a cost. If that card has left the graveyard by the time the ability would resolve, the ability doesn't resolve and you don't get a Zombie token."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Centaur Courser
 {
     "name": "Centaur Courser",

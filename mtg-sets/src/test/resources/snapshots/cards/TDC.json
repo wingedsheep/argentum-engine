@@ -488,6 +488,100 @@
     ]
 }
 
+// Infantry Shield
+{
+    "name": "Infantry Shield",
+    "manaCost": "{2}{R}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature has menace and mobilize X, where X is its power. (Whenever it attacks, create X tapped and attacking 1/1 red Warrior creature tokens. Sacrifice them at the beginning of the next end step.)\nEquip {2}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Infantry Shield:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "MENACE"
+            },
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Infantry Shield:1",
+                    "trigger": "AttackEvent",
+                    "effect": {
+                        "type": "CreateToken",
+                        "count": {
+                            "type": "EntityProperty",
+                            "entity": "Self",
+                            "numericProperty": "Power"
+                        },
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "RED"
+                        ],
+                        "creatureTypes": [
+                            "Warrior"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7edc0515-a130-45a7-aa09-0e23bba41587.jpg?1742506712",
+                        "tapped": true,
+                        "attacking": true,
+                        "sacrificeAtStep": "END"
+                    },
+                    "descriptionOverride": "Mobilize X, where X is this creature's power (Whenever this creature attacks, create X tapped and attacking 1/1 red Warrior creature tokens. Sacrifice them at the beginning of the next end step.)"
+                }
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "35",
+        "rarity": "RARE",
+        "artist": "Xabi Gaztelua",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/37332798-462e-49d3-b197-72411ccf67e5.jpg?1783907173",
+        "rulings": [
+            {
+                "date": "2025-04-04",
+                "text": "You choose the player, planeswalker, or battle each Warrior token is attacking. They don't all have to attack the same one, and they don't have to attack the same player, planeswalker, or battle as the creature with mobilize."
+            },
+            {
+                "date": "2025-04-04",
+                "text": "Although the Warrior tokens enter as attacking creatures, they were never declared as attacking creatures. Abilities that trigger whenever a creature attacks won't trigger when the tokens enter attacking."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Jaws of Defeat
 {
     "name": "Jaws of Defeat",
@@ -626,6 +720,197 @@
         "BLACK",
         "GREEN",
         "BLUE"
+    ]
+}
+
+// Neriv, Crackling Vanguard
+{
+    "name": "Neriv, Crackling Vanguard",
+    "manaCost": "{2}{R}{W}{B}",
+    "typeLine": "Legendary Creature — Spirit Dragon",
+    "oracleText": "Flying, deathtouch\nWhen Neriv enters, create two 1/1 red Goblin creature tokens.\nWhenever Neriv attacks, exile a number of cards from the top of your library equal to the number of differently named tokens you control. During any turn you attacked with a commander, you may play those cards.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Neriv, Crackling Vanguard:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Goblin"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/e/2/e265ca24-96c0-4654-a8f3-bbffe288970a.jpg?1783906784"
+                }
+            },
+            {
+                "id": "Neriv, Crackling Vanguard:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "AggregateBattlefield",
+                                    "player": "You",
+                                    "filter": "token",
+                                    "aggregation": "DISTINCT_NAMES"
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "gathered0",
+                            "expiry": "Permanent",
+                            "condition": {
+                                "type": "PlayerAttackedWithCreaturesThisTurn",
+                                "filter": {
+                                    "statePredicates": [
+                                        "IsCommander"
+                                    ]
+                                },
+                                "atLeast": 1
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever Neriv attacks, exile a number of cards from the top of your library equal to the number of differently named tokens you control. During any turn you attacked with a commander, you may play those cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "rarity": "MYTHIC",
+        "artist": "Lucas Graciano",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/ac552ea3-f521-4c42-a846-21a73364e0ca.jpg?1783907190",
+        "rulings": [
+            {
+                "date": "2025-04-04",
+                "text": "The effect that creates a token may set the name of that token. A token that's a copy of something else has the name of the object it's a copy of, unless otherwise specified. All other tokens have a name that matches the subtypes of the token that was created plus the word \"Token.\" For example, an effect that says \"Create a 1/1 green Elf creature token\" creates a token that's name is \"Elf Token.\""
+            },
+            {
+                "date": "2025-04-04",
+                "text": "To determine the number of differently named tokens you control, count each token you control once, but only if its English name isn't the same as another token you've already counted this way. For example, if you control two tokens named \"Elf Token\" and one token named \"Goblin Token,\" you exile two cards from the top of your library."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE",
+        "BLACK"
+    ]
+}
+
+// Redoubled Stormsinger
+{
+    "name": "Redoubled Stormsinger",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Orc Wizard",
+    "oracleText": "First strike\nWhenever this creature attacks, for each creature token you control that entered this turn, create a tapped and attacking token that's a copy of that token. At the beginning of the next end step, sacrifice those tokens.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Redoubled Stormsinger:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "IsToken"
+                                ],
+                                "statePredicates": [
+                                    "EnteredThisTurn"
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "CreateTokenCopyOfTarget",
+                        "target": "IterationEntity",
+                        "tapped": true,
+                        "attacking": true,
+                        "sacrificeAtStep": "END",
+                        "attackDefender": "CONTROLLER_CHOOSES"
+                    }
+                },
+                "descriptionOverride": "Whenever this creature attacks, for each creature token you control that entered this turn, create a tapped and attacking token that's a copy of that token. At the beginning of the next end step, sacrifice those tokens."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "rarity": "RARE",
+        "artist": "Filipe Pagliuso",
+        "flavorText": "\"Blink or don't. You'll get hit either way.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/c/fcddd8e1-8b8e-43b9-9922-6c3317cc45ae.jpg?1783907172",
+        "rulings": [
+            {
+                "date": "2025-04-04",
+                "text": "Although the tokens are attacking, they were never declared as attacking creatures. This means that abilities that trigger whenever a creature attacks won't trigger when these tokens enter attacking."
+            },
+            {
+                "date": "2025-04-04",
+                "text": "Any enters-the-battlefield abilities of the copied token will trigger when the token enters the battlefield. Any \"as [this creature] enters\" or \"[this creature] enters with\" abilities of the copied token will also work."
+            },
+            {
+                "date": "2025-04-04",
+                "text": "Each of the tokens created by Redoubled Stormsinger's last ability copies the original characteristics of the token it's copying as stated by the effect that created that token."
+            },
+            {
+                "date": "2025-04-04",
+                "text": "If a creature token you control that entered this turn is copying something else, then the token enters the battlefield as whatever that creature token copied."
+            },
+            {
+                "date": "2025-04-04",
+                "text": "You declare which player, planeswalker, or battle each token is attacking as you put it onto the battlefield. It doesn't have to be the same player, planeswalker, or battle as Redoubled Stormsinger or any of the other tokens created by Redoubled Stormsinger's last ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

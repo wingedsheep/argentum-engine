@@ -2730,3 +2730,78 @@
         "GREEN"
     ]
 }
+
+// Zombie Apocalypse
+{
+    "name": "Zombie Apocalypse",
+    "manaCost": "{3}{B}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return all Zombie creature cards from your graveyard to the battlefield tapped, then destroy all Humans.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard",
+                        "filter": "creature Zombie"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "placement": "Tapped"
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "permanent Human"
+                            },
+                            "storeAs": "destroyAll_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "destroyAll_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "rarity": "RARE",
+        "artist": "Peter Mohrbacher",
+        "flavorText": "\"There will come a day so dark you will pray for death. On that day your prayers will be answered.\"\n—Minaldra, the Vizag Atum",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/fe662a08-a8b1-4f25-b7c0-dca1c7ad7271.jpg?1783940823",
+        "rulings": [
+            {
+                "date": "2011-01-22",
+                "text": "All Humans are destroyed, not just ones you control."
+            },
+            {
+                "date": "2011-01-22",
+                "text": "If a creature card in your graveyard is both a Zombie and a Human, it will be returned to the battlefield tapped, then be destroyed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}

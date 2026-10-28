@@ -1143,6 +1143,67 @@
     ]
 }
 
+// Divine Visitation
+{
+    "name": "Divine Visitation",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "If one or more creature tokens would be created under your control, that many 4/4 white Angel creature tokens with flying and vigilance are created instead.",
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "ReplaceTokenCreationWithToken",
+                "tokens": [
+                    {
+                        "type": "CreateToken",
+                        "power": 4,
+                        "toughness": 4,
+                        "colors": [
+                            "WHITE"
+                        ],
+                        "creatureTypes": [
+                            "Angel"
+                        ],
+                        "keywords": [
+                            "FLYING",
+                            "VIGILANCE"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/a/c/acb271a8-68bb-45e6-9f99-568479e92ea0.jpg?1783934064"
+                    }
+                ],
+                "appliesTo": {
+                    "type": "TokenCreationEvent",
+                    "tokenFilter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "rarity": "MYTHIC",
+        "artist": "Victor Adame Minguez",
+        "flavorText": "The angels appreciated the offer but politely declined to eat any birdseed.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/da3789d4-3621-44a1-bb72-8e3bbac8bf72.jpg?1783934201",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "The token's characteristics are entirely replaced by a 4/4 white Angel creature token with flying and vigilance. It doesn't have any abilities the token would have been created with. Anything else specified in the effect creating the token (such as tapped, attacking, \"That token gains haste,\" or \"Exile that token at end of combat\") still applies."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If you create a noncreature token that will be a creature as it enters the battlefield, perhaps because of an effect such as that of March of the Machines, Divine Visitation's effect doesn't apply to that token's creation."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If an effect changes under whose control a token would be created, that effect applies before Divine Visitation's effect applies. If an effect changes under whose control a token would enter the battlefield, that effect applies after Divine Visitation's effect is able to be applied."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Doom Whisperer
 {
     "name": "Doom Whisperer",

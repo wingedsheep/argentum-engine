@@ -3176,6 +3176,55 @@
     ]
 }
 
+// Open the Graves
+{
+    "name": "Open the Graves",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a nontoken creature you control dies, create a 2/2 black Zombie creature token.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Open the Graves:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "rarity": "RARE",
+        "artist": "Vincent Proce",
+        "flavorText": "It was a night like any other. It would soon become a night no one would ever forget.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9ced1022-abd9-4e22-a4f2-fef738295224.jpg?1783934563",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "If another creature you control dies at the same time that Open the Graves leaves the battlefield, you'll get a Zombie token."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Poison-Tip Archer
 {
     "name": "Poison-Tip Archer",
