@@ -45,12 +45,13 @@ class AddDynamicManaExecutor(
         }
 
         val restriction = ChosenTypeManaRestriction.bind(effect.restriction, state, context.sourceId)
+        val unit = context.manaUnitMultiplier
         val colors = effect.allowedColors.toList().sorted()
 
         // Single color — just add it all
         if (colors.size <= 1) {
             val color = colors.firstOrNull() ?: return EffectResult.success(state)
-            val newState = addMana(state, context.controllerId, mapOf(color to amount), restriction, effect.expiry)
+            val newState = addMana(state, context.controllerId, mapOf(color to amount * unit), restriction, effect.expiry)
             return EffectResult.success(newState)
         }
 
@@ -69,7 +70,8 @@ class AddDynamicManaExecutor(
                 allowedColors = effect.allowedColors,
                 restriction = restriction,
                 expiry = effect.expiry,
-                decisionHandler = decisionHandler
+                decisionHandler = decisionHandler,
+                unitMultiplier = unit,
             )
         }
 
@@ -86,7 +88,8 @@ class AddDynamicManaExecutor(
             firstColor = firstColor,
             secondColor = secondColor,
             restriction = restriction,
-            expiry = effect.expiry
+            expiry = effect.expiry,
+            unitMultiplier = unit,
         )
 
         val decisionResult = decisionHandler.createNumberDecision(
@@ -94,7 +97,8 @@ class AddDynamicManaExecutor(
             playerId = context.controllerId,
             sourceId = context.sourceId,
             sourceName = sourceName,
-            prompt = "Choose how much {${firstColor.symbol}} mana to add (rest will be {${secondColor.symbol}}). Total: $amount",
+            prompt = "Choose how much {${firstColor.symbol}} mana to add (rest will be {${secondColor.symbol}}). Total: $amount" +
+                multipliedSuffix(unit),
             minValue = 0,
             maxValue = amount,
             phase = DecisionPhase.RESOLUTION,
@@ -123,7 +127,8 @@ class AddDynamicManaExecutor(
             allowedColors: Set<Color>,
             restriction: ManaRestriction?,
             expiry: ManaExpiry = ManaExpiry.END_OF_TURN,
-            decisionHandler: DecisionHandler = DecisionHandler()
+            decisionHandler: DecisionHandler = DecisionHandler(),
+            unitMultiplier: Int = 1,
         ): EffectResult {
             val continuation = AddManaPipsContinuation(
                 playerId = playerId,
@@ -132,7 +137,8 @@ class AddDynamicManaExecutor(
                 remainingPips = remainingPips,
                 allowedColors = allowedColors,
                 restriction = restriction,
-                expiry = expiry
+                expiry = expiry,
+                unitMultiplier = unitMultiplier,
             )
 
             val decisionResult = decisionHandler.createColorDecision(
@@ -140,7 +146,7 @@ class AddDynamicManaExecutor(
                 playerId = playerId,
                 sourceId = sourceId,
                 sourceName = sourceName,
-                prompt = "Choose a color of mana to add ($remainingPips remaining)",
+                prompt = "Choose a color of mana to add ($remainingPips remaining)" + multipliedSuffix(unitMultiplier),
                 phase = DecisionPhase.RESOLUTION,
                 availableColors = allowedColors,
                 answer = continuation
@@ -151,6 +157,10 @@ class AddDynamicManaExecutor(
                 decisionResult.events
             )
         }
+
+        /** Prompt tail telling the player each chosen unit is multiplied (Nyxbloom Ancient). */
+        fun multipliedSuffix(unitMultiplier: Int): String =
+            if (unitMultiplier > 1) " — each becomes $unitMultiplier mana of that color" else ""
 
         /**
          * Add [amounts] to [playerId]'s pool. Mana with a [restriction] or a non-default [expiry] is

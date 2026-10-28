@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.legalactions.enumerators
 
+import com.wingedsheep.engine.handlers.actions.ability.hasTapCost
 import com.wingedsheep.engine.state.LifePaymentPurpose
 
 import com.wingedsheep.engine.mechanics.cost.SharedCreatureTypeTapCost
@@ -459,7 +460,7 @@ class ManaAbilityEnumerator(
     /**
      * The combined [com.wingedsheep.sdk.scripting.MultiplyManaOnSourceTap] factor for [entityId]
      * (Virtue of Strength: 3), for labelling only — the authoritative scaling happens in
-     * `ActivateAbilityHandler` (manual tap) and `ManaSolver` (auto-tap). Instances multiply
+     * `ActivatedManaAbilityResolver` (manual tap) and `ManaSolver` (auto-tap). Instances multiply
      * together, matching both of those.
      */
     private fun sourceTapManaMultiplier(
@@ -503,9 +504,10 @@ class ManaAbilityEnumerator(
             }
         }
 
-        // Multiplied output (Virtue of Strength) — label what the tap will actually produce, so
-        // the button reads "{T}: Add {G}{G}{G}" rather than the printed "{T}: Add {G}".
-        val manaMultiplier = sourceTapManaMultiplier(state, entityId, context)
+        // Multiplied output (Virtue of Strength, Nyxbloom Ancient) — label what the tap will
+        // actually produce, so the button reads "{T}: Add {G}{G}{G}" rather than the printed
+        // "{T}: Add {G}". Only abilities with {T} in their cost are "tapping for mana".
+        val manaMultiplier = if (ability.cost.hasTapCost()) sourceTapManaMultiplier(state, entityId, context) else 1
         if (manaMultiplier > 1) {
             val symbol = when {
                 effect is AddManaEffect && effect.amount is DynamicAmount.Fixed -> "{${effect.color.symbol}}"
@@ -521,6 +523,9 @@ class ManaAbilityEnumerator(
                 val total = baseAmount * manaMultiplier
                 if (total > 0) return "${ability.cost.description}: Add ${symbol.repeat(total)}"
             }
+            // Any other shape (a choice of color, a combination, each color among …) keeps its
+            // printed text and says how much more it makes.
+            return "${ability.description} (×$manaMultiplier)"
         }
 
         val amount = when (effect) {

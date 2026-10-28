@@ -334,6 +334,13 @@ data class EffectContext(
     /** Color chosen for "add one mana of any color" abilities */
     val manaColorChoice: Color? = null,
     /**
+     * How many mana each unit of an "add X mana in any combination of …" split becomes, set by the
+     * mana-ability resolver when a `MultiplyManaOnSourceTap` (Nyxbloom Ancient) applies. The player
+     * splits the printed X first and each chosen unit is then multiplied, so two {R}/{G} under a
+     * tripler give six of one colour or three of each — never five and one. 1 everywhere else.
+     */
+    val manaUnitMultiplier: Int = 1,
+    /**
      * Color chosen during a [com.wingedsheep.sdk.scripting.effects.ChooseColorThenEffect]
      * resolution. Set by the resumer before dispatching the inner effect; read by atomic
      * "...FromChosenColor" executors.

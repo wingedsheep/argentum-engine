@@ -512,6 +512,8 @@ data class AddDynamicManaContinuation(
     val restriction: ManaRestriction? = null,
     val expiry: com.wingedsheep.sdk.scripting.effects.ManaExpiry = com.wingedsheep.sdk.scripting.effects.ManaExpiry.END_OF_TURN,
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
+    /** Mana each chosen unit becomes — see [com.wingedsheep.engine.handlers.EffectContext.manaUnitMultiplier]. */
+    val unitMultiplier: Int = 1,
 ) : AnswerContinuation
 
 /**
@@ -536,6 +538,8 @@ data class AddManaPipsContinuation(
     val restriction: ManaRestriction? = null,
     val expiry: com.wingedsheep.sdk.scripting.effects.ManaExpiry = com.wingedsheep.sdk.scripting.effects.ManaExpiry.END_OF_TURN,
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
+    /** Mana each chosen pip becomes — see [com.wingedsheep.engine.handlers.EffectContext.manaUnitMultiplier]. */
+    val unitMultiplier: Int = 1,
 ) : AnswerContinuation
 
 /**

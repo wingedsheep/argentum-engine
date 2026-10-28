@@ -1171,7 +1171,10 @@ class MiscContinuationResumer(
 
         val newState = com.wingedsheep.engine.handlers.effects.mana.AddDynamicManaExecutor.addMana(
             state, continuation.playerId,
-            mapOf(continuation.firstColor to firstAmount, continuation.secondColor to secondAmount),
+            mapOf(
+                continuation.firstColor to firstAmount * continuation.unitMultiplier,
+                continuation.secondColor to secondAmount * continuation.unitMultiplier,
+            ),
             continuation.restriction,
             continuation.expiry
         ).let { ManaProvenanceTracker.markSnowProduction(state, it, continuation.sourceId, continuation.playerId) }
@@ -1196,9 +1199,10 @@ class MiscContinuationResumer(
         }
 
         val color = response.color
+        val unit = continuation.unitMultiplier
         val newState = com.wingedsheep.engine.handlers.effects.mana.AddDynamicManaExecutor.addMana(
             state, continuation.playerId,
-            mapOf(color to 1),
+            mapOf(color to unit),
             continuation.restriction,
             continuation.expiry
         ).let { ManaProvenanceTracker.markSnowProduction(state, it, continuation.sourceId, continuation.playerId) }
@@ -1207,11 +1211,11 @@ class MiscContinuationResumer(
             playerId = continuation.playerId,
             sourceId = continuation.sourceId,
             sourceName = continuation.sourceName,
-            white = if (color == com.wingedsheep.sdk.core.Color.WHITE) 1 else 0,
-            blue = if (color == com.wingedsheep.sdk.core.Color.BLUE) 1 else 0,
-            black = if (color == com.wingedsheep.sdk.core.Color.BLACK) 1 else 0,
-            red = if (color == com.wingedsheep.sdk.core.Color.RED) 1 else 0,
-            green = if (color == com.wingedsheep.sdk.core.Color.GREEN) 1 else 0,
+            white = if (color == com.wingedsheep.sdk.core.Color.WHITE) unit else 0,
+            blue = if (color == com.wingedsheep.sdk.core.Color.BLUE) unit else 0,
+            black = if (color == com.wingedsheep.sdk.core.Color.BLACK) unit else 0,
+            red = if (color == com.wingedsheep.sdk.core.Color.RED) unit else 0,
+            green = if (color == com.wingedsheep.sdk.core.Color.GREEN) unit else 0,
             colorless = 0
         )
 
@@ -1230,7 +1234,8 @@ class MiscContinuationResumer(
             remainingPips = remaining,
             allowedColors = continuation.allowedColors,
             restriction = continuation.restriction,
-            expiry = continuation.expiry
+            expiry = continuation.expiry,
+            unitMultiplier = unit,
         )
 
         return ExecutionResult.propagatePause(

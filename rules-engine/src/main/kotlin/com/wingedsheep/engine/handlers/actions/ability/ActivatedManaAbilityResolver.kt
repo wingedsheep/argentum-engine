@@ -141,11 +141,9 @@ internal class ActivatedManaAbilityResolver(
         // per-source provenance intact, and makes the ManaAddedEvent below report the real
         // amount for free. Gated on {T} in the cost: you are only "tapping a permanent for
         // mana" when the mana ability's cost includes the tap symbol.
-        if (costsTap) {
-            val manaMultiplier = manaProductionMultiplierFor(currentState, action.sourceId)
-            if (manaMultiplier > 1) {
-                finalEffect = multiplyManaProduced(finalEffect, manaMultiplier)
-            }
+        val manaMultiplier = if (costsTap) manaProductionMultiplierFor(currentState, action.sourceId) else 1
+        if (manaMultiplier > 1) {
+            finalEffect = multiplyManaProduced(finalEffect, manaMultiplier)
         }
         // Tapping a permanent you don't control under a "tap … for mana" grant (Piracy): the
         // grant's spending restriction rides on the mana, on top of any the ability already had.
@@ -183,6 +181,8 @@ internal class ActivatedManaAbilityResolver(
                 com.wingedsheep.engine.state.components.stack.captureLastKnown(stateBeforeActivation, action.sourceId) else null,
             // Dropped when another player chooses the color at resolution (Spectral Searchlight) —
             // the activator has no say in it, whatever the client sent.
+            // "X mana in any combination of …" is split first, then each unit multiplied.
+            manaUnitMultiplier = manaMultiplier,
             manaColorChoice = action.manaColorChoice.takeUnless {
                 com.wingedsheep.engine.mechanics.mana.ManaColorChoiceTiming
                     .chosenByAnotherPlayerAtResolution(finalEffect)
@@ -533,6 +533,10 @@ internal class ActivatedManaAbilityResolver(
      * Scales the mana [effect] produces by [multiplier], leaving everything else about it — color,
      * restriction, riders, expiry — untouched.
      *
+     * [AddDynamicManaEffect] ("X mana in any combination of …") is not rewritten: the player
+     * splits the printed X and each chosen unit is multiplied, which the executor does from
+     * `EffectContext.manaUnitMultiplier` — scaling X itself would allow splits the rules don't.
+     *
      * [AddOneManaOfEachColorAmongEffect] ("for each color among …, add one mana of that color",
      * Bloom Tender) has no amount to scale, so it runs [multiplier] times instead: the colors it
      * reads can't change between runs, so N runs are exactly "N times as much of that mana".
@@ -542,7 +546,6 @@ internal class ActivatedManaAbilityResolver(
             is AddManaEffect -> it.copy(amount = DynamicAmount.Multiply(it.amount, multiplier))
             is AddColorlessManaEffect -> it.copy(amount = DynamicAmount.Multiply(it.amount, multiplier))
             is AddManaOfChoiceEffect -> it.copy(amount = DynamicAmount.Multiply(it.amount, multiplier))
-            is AddDynamicManaEffect -> it.copy(amountSource = DynamicAmount.Multiply(it.amountSource, multiplier))
             is AddOneManaOfEachColorAmongEffect -> CompositeEffect(List(multiplier) { _ -> it })
             else -> it
         }

@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.ColorChosenResponse
+import com.wingedsheep.engine.core.NumberChosenResponse
 import com.wingedsheep.engine.core.Outcome
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
@@ -12,13 +14,17 @@ import com.wingedsheep.mtg.sets.definitions.ecl.cards.BloomTender
 import com.wingedsheep.mtg.sets.definitions.lea.cards.LlanowarElves
 import com.wingedsheep.mtg.sets.definitions.thb.cards.NyxbloomAncient
 import com.wingedsheep.mtg.sets.definitions.tla.cards.RaucousAudience
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.basicLand
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityId
+import com.wingedsheep.sdk.scripting.TimingRule
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -39,8 +45,21 @@ class NyxbloomAncientScenarioTest : FunSpec({
         typeLine = "Enchantment"
     }
 
+    fun comboTapper(name: String, colors: Set<Color>) = card(name) {
+        manaCost = ""
+        typeLine = "Artifact"
+        activatedAbility {
+            cost = Costs.Tap
+            effect = Effects.AddManaInAnyCombination(2, colors)
+            manaAbility = true
+            timing = TimingRule.ManaAbility
+        }
+    }
+    val GruulCombo = comboTapper("Test Gruul Combo", setOf(Color.RED, Color.GREEN))
+    val RainbowCombo = comboTapper("Test Rainbow Combo", Color.entries.toSet())
+
     val extraCards = listOf(
-        TestForest, TestMountain, RedCharm, NyxbloomAncient, LlanowarElves, BloomTender, RaucousAudience,
+        TestForest, TestMountain, RedCharm, GruulCombo, RainbowCombo, NyxbloomAncient, LlanowarElves, BloomTender, RaucousAudience,
     )
 
     fun createDriver(): GameTestDriver {
@@ -109,6 +128,39 @@ class NyxbloomAncientScenarioTest : FunSpec({
         driver.tapCreature(player, "Raucous Audience", RaucousAudience.activatedAbilities[0].id)
 
         driver.pool(player).green shouldBe 6
+    }
+
+    test("two mana in any combination of {R}/{G}: the split is of two, then each unit is tripled") {
+        // Ruling: the original amount and type are chosen, then tripled — so {R}{G} becomes
+        // RRRGGG; a five-and-one split of six is not an option.
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+        driver.putCreatureOnBattlefield(player, "Nyxbloom Ancient")
+        val combo = driver.putPermanentOnBattlefield(player, "Test Gruul Combo")
+
+        driver.submit(ActivateAbility(player, combo, GruulCombo.activatedAbilities[0].id))
+        val decision = driver.pendingDecision!!
+        (decision as com.wingedsheep.engine.core.ChooseNumberDecision).maxValue shouldBe 2
+        driver.submitDecision(player, NumberChosenResponse(decision.id, 1)).outcome shouldBe Outcome.Done
+
+        driver.pool(player).red shouldBe 3
+        driver.pool(player).green shouldBe 3
+    }
+
+    test("two mana in any combination of colors: two pips chosen, each tripled") {
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+        driver.putCreatureOnBattlefield(player, "Nyxbloom Ancient")
+        val combo = driver.putPermanentOnBattlefield(player, "Test Rainbow Combo")
+
+        driver.submit(ActivateAbility(player, combo, RainbowCombo.activatedAbilities[0].id))
+        driver.submitDecision(player, ColorChosenResponse(driver.pendingDecision!!.id, Color.BLUE))
+        driver.submitDecision(player, ColorChosenResponse(driver.pendingDecision!!.id, Color.BLACK))
+            .outcome shouldBe Outcome.Done
+
+        driver.pendingDecision shouldBe null
+        driver.pool(player).blue shouldBe 3
+        driver.pool(player).black shouldBe 3
     }
 
     test("two Nyxblooms multiply together — nine times as much") {
