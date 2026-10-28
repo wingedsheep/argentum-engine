@@ -206,13 +206,14 @@ data class DamageDealtEvent(
      */
     val sourceAttachmentIds: List<EntityId> = emptyList(),
     /**
-     * The damage source as it was at the instant damage was dealt to a player, or combat damage
-     * to a battle (CR 603.10). Combat-damage state-based actions move a source that died in the
+     * The damage source as it was at the instant the damage was dealt (CR 603.10) — set for every
+     * damage event whose source still existed then. Combat-damage state-based actions move a source that died in the
      * same step — a trampler that traded with its blocker, a creature dealt damage by a
      * first-striker's double-striking partner — before trigger detection runs, so the batched
      * "one or more creatures deal combat damage to you / to a player" triggers read its controller
      * and characteristics from here, and so does a damage trigger's "that creature's controller"
-     * (`TriggerContext.damageSourceControllerId`). `null` for damage to creatures.
+     * (`TriggerContext.damageSourceControllerId`), and a "source you control deals damage" observer
+     * reads a source gone from the battlefield (a token that traded in combat) from it.
      */
     val sourceLastKnown: com.wingedsheep.engine.state.components.stack.EntitySnapshot? = null,
 ) : GameEvent

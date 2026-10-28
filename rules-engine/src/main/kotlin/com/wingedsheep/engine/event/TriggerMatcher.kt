@@ -2217,11 +2217,15 @@ class TriggerMatcher(
             controllerId = controllerId ?: EntityId(""),
             sourceId = abilitySourceId
         )
-        // A token source that died to the very damage it dealt (a 1/1 trading in combat) has
-        // ceased to exist by the time detection runs; it still dealt the damage, so read it as it
-        // last existed (CR 603.10) — the combat-damage batch triggers do the same.
+        // A source that died to the very damage it dealt (a creature trading in combat) has left
+        // the battlefield by the time detection runs — a token has ceased to exist outright. It
+        // still dealt the damage, so read it as it last existed (CR 603.10): a stolen creature is
+        // still "you control", an animated land still a creature. The combat-damage batch triggers
+        // do the same. A noncombat source off the battlefield (a resolving spell) is read live.
         val lastKnown = event.sourceLastKnown
-        if (state.getEntity(event.sourceId) == null && lastKnown != null) {
+        val departed = state.getEntity(event.sourceId) == null ||
+            (event.isCombatDamage && event.sourceId !in state.getBattlefield())
+        if (departed && lastKnown != null) {
             return predicateEvaluator.matchesSnapshot(state, lastKnown, sourceFilter, predicateContext)
         }
         return predicateEvaluator.matches(

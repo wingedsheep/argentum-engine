@@ -709,7 +709,7 @@ object DamageUtils {
                 sourceTargetIdsAtDamage = sourceTargetIds,
                 sourceAttachmentIds = attachmentIdsOf(state, sourceId),
                 sourceLastKnown = sourceId
-                    ?.takeIf { targetIsPlayer && state.getEntity(it) != null }
+                    ?.takeIf { state.getEntity(it) != null }
                     ?.let { captureLastKnown(state, it) },
             )
         )
