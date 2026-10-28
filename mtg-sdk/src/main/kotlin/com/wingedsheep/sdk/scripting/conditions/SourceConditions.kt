@@ -226,26 +226,38 @@ data object NoManaSpentToCastEntered : Condition {
 }
 
 /**
- * Condition: "if one or more of them entered from exile or was cast from exile."
+ * Condition: "if one or more of them entered from [zone] or was cast from [zone]."
  *
  * The batch-enters, any-of counterpart of
  * [com.wingedsheep.sdk.scripting.conditions.TriggeringEntityEnteredOrWasCastFromGraveyard]:
  * evaluated over the permanents a batch-enters trigger captured (the
  * `Triggers.oneOrMore(filter).enter()` batch, exposed as the `trigger.captured` pipeline
- * collection), it is true iff **at least one** captured permanent came from exile — either put
- * onto the battlefield directly from exile or cast from exile. An empty capture is false.
+ * collection), it is true iff **at least one** captured permanent came from [zone] — either put
+ * onto the battlefield directly from it or cast from it. An empty capture is false.
  *
- * Note the quantifier: [NoManaSpentToCastEntered] is an *every* over the batch ("if **none** of
- * them …"), this one is an *any* ("if **one or more** of them …").
+ * [zone] is [Zone.EXILE] or [Zone.GRAVEYARD], the two zones the engine stamps entry and cast
+ * provenance for. Note the quantifier: [NoManaSpentToCastEntered] is an *every* over the batch
+ * ("if **none** of them …"), this one is an *any* ("if **one or more** of them …").
  *
- * Used by **Extraordinary Journey** as a real intervening-"if" (CR 603.4) rather than a
- * resolution-time gate, which matters because the ability also carries `oncePerTurn`: a batch with
- * no exile arrivals must not trigger at all, or it would burn the turn's single firing.
+ * Works as a real intervening-"if" (CR 603.4) as well as a resolution-time gate, which matters
+ * when the ability also carries `oncePerTurn`: a batch with no qualifying arrivals must not trigger
+ * at all, or it would burn the turn's single firing.
+ * - **Extraordinary Journey** — `AnyEnteredOrWasCastFrom(Zone.EXILE)`, once each turn.
+ * - **Kotis, Sibsig Champion** — `AnyEnteredOrWasCastFrom(Zone.GRAVEYARD)`.
  */
-@SerialName("AnyEnteredOrWasCastFromExile")
+@SerialName("AnyEnteredOrWasCastFrom")
 @Serializable
-data object AnyEnteredOrWasCastFromExile : Condition {
-    override val description: String = "one or more of them entered from exile or was cast from exile"
+data class AnyEnteredOrWasCastFrom(val zone: Zone) : Condition {
+    init {
+        require(zone == Zone.EXILE || zone == Zone.GRAVEYARD) {
+            "AnyEnteredOrWasCastFrom tracks EXILE or GRAVEYARD provenance, not $zone"
+        }
+    }
+
+    override val description: String = when (zone) {
+        Zone.GRAVEYARD -> "one or more of them entered from a graveyard or was cast from a graveyard"
+        else -> "one or more of them entered from exile or was cast from exile"
+    }
 }
 
 /**

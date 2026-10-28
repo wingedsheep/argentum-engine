@@ -1057,7 +1057,15 @@ object Conditions {
      * Journey.
      */
     val AnyEnteredOrWasCastFromExile: ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.AnyEnteredOrWasCastFromExile
+        com.wingedsheep.sdk.scripting.conditions.AnyEnteredOrWasCastFrom(Zone.EXILE)
+
+    /**
+     * "If one or more of them entered from a graveyard or was cast from a graveyard" — the
+     * graveyard twin of [AnyEnteredOrWasCastFromExile], same batch capture and timing. Kotis,
+     * Sibsig Champion.
+     */
+    val AnyEnteredOrWasCastFromGraveyard: ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.AnyEnteredOrWasCastFrom(Zone.GRAVEYARD)
 
     /**
      * If this permanent was cast from your hand.

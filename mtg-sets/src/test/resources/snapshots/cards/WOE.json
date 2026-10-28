@@ -5370,7 +5370,10 @@
                         "amount": 1
                     }
                 },
-                "interveningIf": "AnyEnteredOrWasCastFromExile",
+                "interveningIf": {
+                    "type": "AnyEnteredOrWasCastFrom",
+                    "zone": "Exile"
+                },
                 "oncePerTurn": true,
                 "descriptionOverride": "Whenever one or more nontoken creatures enter, if one or more of them entered from exile or was cast from exile, you draw a card. This ability triggers only once each turn."
             }
