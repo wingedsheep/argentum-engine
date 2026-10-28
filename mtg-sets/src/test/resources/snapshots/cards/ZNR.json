@@ -11980,6 +11980,131 @@
     ]
 }
 
+// Tajuru Paragon
+{
+    "name": "Tajuru Paragon",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Elf",
+    "oracleText": "Tajuru Paragon is also a Cleric, Rogue, Warrior, and Wizard.\nKicker {3} (You may pay an additional {3} as you cast this spell.)\nWhen this creature enters, if it was kicked, reveal the top six cards of your library. You may put a card that shares a creature type with it from among them into your hand. Put the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{3}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tajuru Paragon:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 6
+                                }
+                            },
+                            "storeAs": "gathered0",
+                            "revealed": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "SharesCreatureTypeWith",
+                                        "entity": "Self"
+                                    }
+                                ]
+                            },
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "You may put a card that shares a creature type with Tajuru Paragon into your hand.",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "interveningIf": "WasKicked"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantSubtype",
+                "subtype": "Cleric"
+            },
+            {
+                "type": "GrantSubtype",
+                "subtype": "Rogue"
+            },
+            {
+                "type": "GrantSubtype",
+                "subtype": "Warrior"
+            },
+            {
+                "type": "GrantSubtype",
+                "subtype": "Wizard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "209",
+        "rarity": "RARE",
+        "artist": "Cristi Balanescu",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a045dd0f-953a-4022-8f29-0758f2b6ccaa.jpg",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "If Tajuru Paragon leaves the battlefield before its triggered ability resolves, use its creature types as it last existed on the battlefield to determine which cards you may put into your hand."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "The ability that adds creature types to Tajuru Paragon applies in all zones, not just the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Tajuru Snarecaster
 {
     "name": "Tajuru Snarecaster",

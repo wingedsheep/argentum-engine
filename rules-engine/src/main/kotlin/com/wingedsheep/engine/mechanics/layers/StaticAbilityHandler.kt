@@ -301,7 +301,11 @@ class StaticAbilityHandler(
         // the static abilities of every currently-unlocked face (CR 709.5). Routing through
         // RoomFaceStatics is what lets a Room face's continuous statics project once its door is
         // unlocked; the component is re-baked on later unlocks by RoomDoorUnlocker.
-        val allStaticAbilities = RoomFaceStatics.activeStaticAbilities(container, cardDefinition) +
+        // A printed "[this] is also a [subtype]" is a CDA already folded into the entity's own type
+        // line ([CardDefinition.selfDefinedSubtypes], CR 604.3), so it isn't projected again as a
+        // timestamped layer-4 effect — CDAs apply before every other effect in their layer.
+        val allStaticAbilities = RoomFaceStatics.activeStaticAbilities(container, cardDefinition)
+            .filterNot { it is GrantSubtype && it.filter == GroupFilter.source() } +
             container.get<CardComponent>()?.copyStaticAbilities.orEmpty() +
             printedBandsWithOther(cardDefinition)
 

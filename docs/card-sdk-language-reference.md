@@ -10504,6 +10504,15 @@ staticAbility {
   **`filter` defaults to the source, not the attached creature** — unlike `ModifyStats` / `GrantKeyword`, which
   default to `attachedCreature()`. An Aura must pass `Filters.EnchantedCreature` explicitly or it silently makes
   *itself* the Knight and leaves the enchanted creature alone.
+  **On the card itself it is a characteristic-defining ability.** A top-level, unconditional
+  `GrantSubtype(subtype)` with the default source filter is the printed "[this] is also a [subtype]" — a CDA
+  (CR 604.3), which functions in **every zone**. `CardDefinition.selfDefinedSubtypes` derives those subtypes
+  (as `colors` derives devoid), and the engine folds them into the entity's own type line wherever the card is —
+  so a hand, graveyard, library or stack check ("Wizard card", "Cleric spell") sees them — rather than projecting
+  them as a timestamped layer-4 effect (CDAs apply first in their layer, CR 613.3, so a later "becomes a Frog"
+  still overwrites them). `CardDefinition.typeLine` stays as printed. One static per subtype: Tajuru Paragon is
+  `GrantSubtype("Cleric")`, `…("Rogue")`, `…("Warrior")`, `…("Wizard")` on a `Creature — Elf`, a full party by
+  itself. Wrapped in a condition, or granted by another object, it is an ordinary layer-4 effect. (Tajuru Paragon)
 - `HasCreatureTypesOf(source, retainedTypes = emptySet(), filter = GroupFilter.source())` — Layer 4
   type-changing static that gives the group **the creature types of the object `source` names**,
   replacing their own and leaving non-creature subtypes alone (CR 205.1b). `source` is an ordinary

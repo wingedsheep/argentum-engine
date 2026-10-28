@@ -316,6 +316,26 @@ data class CardDefinition(
         get() = Keyword.DEVOID in keywords || keywordAbilities.any { it.keyword == Keyword.DEVOID }
 
     /**
+     * The subtypes this card's own "[this] is also a [subtype]" abilities define — every top-level
+     * [com.wingedsheep.sdk.scripting.GrantSubtype] in [script] whose filter is the source itself
+     * (Tajuru Paragon: "Tajuru Paragon is also a Cleric, Rogue, Warrior, and Wizard."). Printed on
+     * the object it describes and unconditional, such an ability is characteristic-defining (CR
+     * 604.3a), and CDAs function in every zone (CR 604.3) — so, like [Keyword.DEVOID] in [colors],
+     * it belongs to the card's derived characteristics rather than to a battlefield-only layer-4
+     * effect: the engine folds these into the entity's type line wherever the card is, and doesn't
+     * also project them as a timestamped effect. [typeLine] itself stays as printed.
+     *
+     * A self-`GrantSubtype` wrapped in a condition ("as long as …") or granted by another object is
+     * not a CDA and isn't counted here; it stays an ordinary layer-4 effect.
+     */
+    val selfDefinedSubtypes: Set<Subtype>
+        get() = script.staticAbilities.mapNotNullTo(linkedSetOf()) { ability ->
+            (ability as? com.wingedsheep.sdk.scripting.GrantSubtype)
+                ?.takeIf { it.filter == com.wingedsheep.sdk.scripting.filters.unified.GroupFilter.source() }
+                ?.let { Subtype(it.subtype) }
+        }
+
+    /**
      * Color identity per CR 903.4: the colors of any mana symbols in the card's mana cost or
      * rules text, plus any colors defined by characteristic-defining abilities or color
      * indicators. Used by Commander/Brawl deck-construction to determine which cards may share

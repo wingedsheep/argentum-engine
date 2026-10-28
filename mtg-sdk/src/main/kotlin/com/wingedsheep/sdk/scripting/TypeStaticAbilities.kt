@@ -20,6 +20,11 @@ import kotlinx.serialization.Serializable
  * itself and leave the enchanted creature untouched — the failure is invisible without a
  * scenario test that asserts the subtype on the *host*.
  *
+ * With the default source filter, printed at the top of the card's own script and unconditional,
+ * this is the "[this] is also a [subtype]" characteristic-defining ability (CR 604.3 — Tajuru
+ * Paragon). It then functions in every zone: see
+ * [com.wingedsheep.sdk.model.CardDefinition.selfDefinedSubtypes].
+ *
  * @property subtype The creature subtype to add (e.g., "Knight")
  * @property filter What this ability applies to; defaults to the source, NOT the enchanted creature
  */
