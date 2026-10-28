@@ -985,6 +985,15 @@ object DynamicAmounts {
         DynamicAmount.TurnTracking(player, TurnTracker.CARDS_PUT_INTO_GRAVEYARD_FROM_LIBRARY)
 
     /**
+     * "The number of cards that were put into [player]'s graveyard from their hand this turn" —
+     * discards and every other hand → graveyard move; see
+     * [TurnTracker.CARDS_PUT_INTO_GRAVEYARD_FROM_HAND]. "From your hand or library" (Welcome the
+     * Dead) is `cardsPutIntoGraveyardFromHandThisTurn() + cardsPutIntoGraveyardFromLibraryThisTurn()`.
+     */
+    fun cardsPutIntoGraveyardFromHandThisTurn(player: Player = Player.You): DynamicAmount =
+        DynamicAmount.TurnTracking(player, TurnTracker.CARDS_PUT_INTO_GRAVEYARD_FROM_HAND)
+
+    /**
      * "The number of cards put into [player]'s graveyard from anywhere this turn" (Fraying Sanity,
      * with `Player.EnchantedPlayer`). Every origin zone counts, tokens don't; see
      * [TurnTracker.CARDS_PUT_INTO_GRAVEYARD].

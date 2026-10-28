@@ -1039,6 +1039,117 @@
     ]
 }
 
+// Welcome the Dead
+{
+    "name": "Welcome the Dead",
+    "manaCost": "{3}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Draw two cards, then discard a card and you lose 2 life. Create X tapped 2/2 black Zombie Druid creature tokens, where X is the number of cards that were put into your graveyard from your hand or library this turn.\nFlashback {5}{B} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{5}{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Controller"
+                },
+                {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Add",
+                        "left": {
+                            "type": "TurnTracking",
+                            "player": "You",
+                            "tracker": "CARDS_PUT_INTO_GRAVEYARD_FROM_HAND"
+                        },
+                        "right": {
+                            "type": "TurnTracking",
+                            "player": "You",
+                            "tracker": "CARDS_PUT_INTO_GRAVEYARD_FROM_LIBRARY"
+                        }
+                    },
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie",
+                        "Druid"
+                    ],
+                    "name": "Zombie Druid",
+                    "imageUri": "https://cards.scryfall.io/normal/front/f/1/f10d5813-7818-43e8-b08d-4ed8c54d0366.jpg?1783906785",
+                    "tapped": true
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "rarity": "RARE",
+        "artist": "Ioannis Fiore",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/4/f472ea5c-191e-4b19-8ea7-f8649af91530.jpg?1783907174"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Will of the Jeskai
 {
     "name": "Will of the Jeskai",

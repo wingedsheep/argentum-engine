@@ -24,12 +24,14 @@ import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
 /**
  * `TurnTracker.CARDS_PUT_INTO_GRAVEYARD` — "the number of cards put into [a player's] graveyard from
- * anywhere this turn" (Fraying Sanity). It is the size of the owner-keyed
+ * anywhere this turn" (Fraying Sanity) — and its per-origin siblings `CARDS_PUT_INTO_GRAVEYARD_FROM_HAND`
+ * / `_FROM_LIBRARY` (Welcome the Dead, Cruel Calculations). It is the size of the owner-keyed
  * `CardsPutIntoGraveyardThisTurnComponent` arrival list, so every origin zone counts, tokens don't
  * (a token isn't a card, CR 111.6), a card that arrives twice counts twice, and a card that has since
  * left the graveyard still counts.
@@ -53,12 +55,11 @@ class CardsPutIntoGraveyardThisTurnTrackerTest : FunSpec({
 
     val evaluator = PredicateEvaluator(cardRegistry = null)
 
+    fun GameTestDriver.amount(amount: DynamicAmount): Int =
+        evaluator.amounts.evaluate(state, amount, EffectContext(sourceId = null, controllerId = activePlayer!!))
+
     fun GameTestDriver.count(player: Player = Player.You): Int =
-        evaluator.amounts.evaluate(
-            state,
-            DynamicAmounts.cardsPutIntoGraveyardThisTurn(player),
-            EffectContext(sourceId = null, controllerId = activePlayer!!),
-        )
+        amount(DynamicAmounts.cardsPutIntoGraveyardThisTurn(player))
 
     fun GameTestDriver.move(entityId: EntityId, destination: Zone) {
         replaceState(zones.moveToZone(state = state, entityId = entityId, destinationZone = destination).state)
@@ -132,6 +133,30 @@ class CardsPutIntoGraveyardThisTurnTrackerTest : FunSpec({
 
         driver.count() shouldBe 3
         driver.count(Player.EachOpponent) shouldBe 1
+    }
+
+    test("the per-origin siblings count only hand or only library arrivals") {
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+        val opponent = driver.getOpponent(player)
+        fun fromHand(p: Player = Player.You) = driver.amount(DynamicAmounts.cardsPutIntoGraveyardFromHandThisTurn(p))
+        fun fromLibrary(p: Player = Player.You) = driver.amount(DynamicAmounts.cardsPutIntoGraveyardFromLibraryThisTurn(p))
+
+        driver.move(driver.putCardInHand(player, "Lightning Bolt"), Zone.GRAVEYARD)
+        driver.move(driver.putCardInHand(player, "Grizzly Bears"), Zone.GRAVEYARD)
+        driver.move(driver.putCardOnTopOfLibrary(player, "Mountain"), Zone.GRAVEYARD)
+        driver.move(driver.putCreatureOnBattlefield(player, "Grizzly Bears"), Zone.GRAVEYARD)
+        driver.move(driver.putCardInHand(opponent, "Grizzly Bears"), Zone.GRAVEYARD)
+
+        fromHand() shouldBe 2
+        fromLibrary() shouldBe 1
+        fromHand(Player.EachOpponent) shouldBe 1
+        fromLibrary(Player.EachOpponent) shouldBe 0
+        driver.count() shouldBe 4
+
+        driver.passPriorityUntil(Step.UPKEEP, opponent)
+        fromHand(Player.EachOpponent) shouldBe 0
+        fromLibrary(Player.EachOpponent) shouldBe 0
     }
 
     test("a card that leaves the graveyard still counts, and counts again when it returns") {

@@ -61,7 +61,7 @@ import com.wingedsheep.engine.state.components.player.PermanentLeftBattlefieldTh
 import com.wingedsheep.engine.state.components.player.CreatureLeftBattlefieldThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PermanentsSacrificedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CreatureCardsPutIntoGraveyardThisTurnComponent
-import com.wingedsheep.engine.state.components.player.CardsPutIntoGraveyardFromLibraryThisTurnComponent
+import com.wingedsheep.engine.state.components.player.CardsPutIntoGraveyardByOriginThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CardsPutIntoGraveyardThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PlayerDescendedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.SacrificedArtifactThisTurnComponent
@@ -2042,8 +2042,8 @@ class ZoneTransitionService(
          *  - creature cards, [CreatureCardsPutIntoGraveyardThisTurnComponent] (Macabre Reconstruction).
          *  - every card, by id, [CardsPutIntoGraveyardThisTurnComponent] (Crawling Sensation's
          *    first-time gate; its size is "cards put into their graveyard from anywhere", Fraying Sanity).
-         *  - library → graveyard moves, [CardsPutIntoGraveyardFromLibraryThisTurnComponent]
-         *    (Cruel Calculations).
+         *  - the count per origin zone, [CardsPutIntoGraveyardByOriginThisTurnComponent] (Cruel
+         *    Calculations reads library, Welcome the Dead hand + library).
          *
          * All keyed on the owner — "your graveyard" is the owner's — and turn history: the card need
          * not still be there.
@@ -2081,11 +2081,10 @@ class ZoneTransitionService(
                     )
                 )
             }
-            if (fromZone == Zone.LIBRARY) bump { p ->
+            bump { p ->
                 p.with(
-                    CardsPutIntoGraveyardFromLibraryThisTurnComponent(
-                        (p.get<CardsPutIntoGraveyardFromLibraryThisTurnComponent>()?.count ?: 0) + 1
-                    )
+                    (p.get<CardsPutIntoGraveyardByOriginThisTurnComponent>()
+                        ?: CardsPutIntoGraveyardByOriginThisTurnComponent()).plus(fromZone)
                 )
             }
             return newState

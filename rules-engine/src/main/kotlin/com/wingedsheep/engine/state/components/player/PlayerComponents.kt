@@ -1878,19 +1878,24 @@ data class PlayerDescendedThisTurnComponent(val count: Int = 0) : Component
 data class CreatureCardsPutIntoGraveyardThisTurnComponent(val count: Int = 0) : Component
 
 /**
- * Tracks the number of cards put into this player's graveyard **from their library** during the
- * current turn — milled, surveilled, or any other library → graveyard move. Cleared at end of turn
- * by CleanupPhaseManager.
+ * Counts the cards put into this player's graveyard during the current turn, by the zone each came
+ * **from** — library (milled, surveilled, any other library → graveyard move), hand (discarded, or
+ * put there by an effect), stack, and so on. Cleared at end of turn by CleanupPhaseManager.
  *
  * Recorded by the same `moveToZone` hook as [CreatureCardsPutIntoGraveyardThisTurnComponent] and
- * keyed on the card's owner (a library card only ever goes to its owner's graveyard). Turn history,
- * not a graveyard scan: a card that later leaves the graveyard still counts.
+ * keyed on the card's owner, tokens excluded (a token isn't a card, CR 111.6). Turn history, not a
+ * graveyard scan: a card that later leaves the graveyard still counts.
  *
- * Backs Cruel Calculations' "the number of cards that were put into target player's graveyard
- * from their library this turn".
+ * Backs `TurnTracker.CARDS_PUT_INTO_GRAVEYARD_FROM_LIBRARY` (Cruel Calculations) and
+ * `TurnTracker.CARDS_PUT_INTO_GRAVEYARD_FROM_HAND` (Welcome the Dead sums the two).
  */
 @Serializable
-data class CardsPutIntoGraveyardFromLibraryThisTurnComponent(val count: Int = 0) : Component
+data class CardsPutIntoGraveyardByOriginThisTurnComponent(val counts: Map<Zone, Int> = emptyMap()) : Component {
+    fun count(zone: Zone): Int = counts[zone] ?: 0
+
+    fun plus(zone: Zone): CardsPutIntoGraveyardByOriginThisTurnComponent =
+        copy(counts = counts + (zone to count(zone) + 1))
+}
 
 /**
  * The cards put into this player's graveyard from any other zone this turn, in arrival order (a

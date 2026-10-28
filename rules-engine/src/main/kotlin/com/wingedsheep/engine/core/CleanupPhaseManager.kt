@@ -72,7 +72,7 @@ import com.wingedsheep.engine.state.components.player.CardsLeftGraveyardThisTurn
 import com.wingedsheep.engine.state.components.player.PermanentsPutIntoHandFromBattlefieldThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CreatureCardsPutIntoGraveyardThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CardsPutIntoGraveyardThisTurnComponent
-import com.wingedsheep.engine.state.components.player.CardsPutIntoGraveyardFromLibraryThisTurnComponent
+import com.wingedsheep.engine.state.components.player.CardsPutIntoGraveyardByOriginThisTurnComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.PermanentsEnteredUnderControlThisTurnComponent
 import com.wingedsheep.engine.state.components.player.LifeGainedAmountThisTurnComponent
@@ -974,8 +974,8 @@ class CleanupPhaseManager(
                 if (result.has<CreatureCardsPutIntoGraveyardThisTurnComponent>()) {
                     result = result.without<CreatureCardsPutIntoGraveyardThisTurnComponent>()
                 }
-                if (result.has<CardsPutIntoGraveyardFromLibraryThisTurnComponent>()) {
-                    result = result.without<CardsPutIntoGraveyardFromLibraryThisTurnComponent>()
+                if (result.has<CardsPutIntoGraveyardByOriginThisTurnComponent>()) {
+                    result = result.without<CardsPutIntoGraveyardByOriginThisTurnComponent>()
                 }
                 if (result.has<CardsPutIntoGraveyardThisTurnComponent>()) {
                     result = result.without<CardsPutIntoGraveyardThisTurnComponent>()

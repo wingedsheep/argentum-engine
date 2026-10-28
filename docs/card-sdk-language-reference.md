@@ -15943,9 +15943,15 @@ default to "you" so card authors don't need to pass it explicitly.
 - `DynamicAmounts.cardsPutIntoGraveyardFromLibraryThisTurn(player)` /
   `TurnTracker.CARDS_PUT_INTO_GRAVEYARD_FROM_LIBRARY` — the number of cards put into `player`'s graveyard
   from their library this turn: mill, surveil, and every other library → graveyard move. Backed by the
-  per-player `CardsPutIntoGraveyardFromLibraryThisTurnComponent`, incremented in `ZoneTransitionService`
+  per-player `CardsPutIntoGraveyardByOriginThisTurnComponent` (a count per origin zone), incremented in `ZoneTransitionService`
   (keyed on the owner) and cleared at end of turn. Turn history — a card that later leaves the graveyard
   still counts. Cruel Calculations: `DrawCards(cardsPutIntoGraveyardFromLibraryThisTurn(Player.ContextPlayer(0)))`.
+- `DynamicAmounts.cardsPutIntoGraveyardFromHandThisTurn(player)` /
+  `TurnTracker.CARDS_PUT_INTO_GRAVEYARD_FROM_HAND` — the hand sibling: cards put into `player`'s graveyard
+  from their hand this turn (discards and every other hand → graveyard move; a discard replaced to exile by
+  madness doesn't count). Same per-origin component, same turn-history semantics. "From your hand or
+  library" sums the two with `+` — Welcome the Dead:
+  `CreateToken(count = cardsPutIntoGraveyardFromHandThisTurn() + cardsPutIntoGraveyardFromLibraryThisTurn(), …)`.
 - `DynamicAmounts.cardsPutIntoGraveyardThisTurn(player)` / `TurnTracker.CARDS_PUT_INTO_GRAVEYARD` — the
   number of cards put into `player`'s graveyard **from anywhere** this turn (resolved or countered spells,
   discards, deaths, sacrifices, mills, …). Reads the size of the owner-keyed
@@ -17505,6 +17511,8 @@ this turn").
 - `CARDS_PUT_INTO_GRAVEYARD_FROM_LIBRARY` — number of cards put into a player's graveyard from their
   library this turn (mill, surveil, …); recorded by the same `ZoneTransitionService` hook, keyed on the
   owner. Facade `DynamicAmounts.cardsPutIntoGraveyardFromLibraryThisTurn(player)` (Cruel Calculations).
+- `CARDS_PUT_INTO_GRAVEYARD_FROM_HAND` — the hand → graveyard sibling, same hook and component. Facade
+  `DynamicAmounts.cardsPutIntoGraveyardFromHandThisTurn(player)` (Welcome the Dead, summed with library).
 - `CARDS_PUT_INTO_GRAVEYARD` — number of cards put into a player's graveyard from any zone this turn,
   tokens excluded; the size of the owner's `CardsPutIntoGraveyardThisTurnComponent`. Facade
   `DynamicAmounts.cardsPutIntoGraveyardThisTurn(player)` (Fraying Sanity).

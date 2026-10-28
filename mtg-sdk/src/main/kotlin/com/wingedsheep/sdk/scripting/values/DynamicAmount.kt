@@ -233,10 +233,18 @@ enum class TurnTracker {
     /**
      * Number of cards put into the player's graveyard **from their library** this turn — mill,
      * surveil, and any other library → graveyard move, keyed on the card's owner. Backed by
-     * `CardsPutIntoGraveyardFromLibraryThisTurnComponent`, cleared at end of turn. Turn history:
+     * `CardsPutIntoGraveyardByOriginThisTurnComponent`, cleared at end of turn. Turn history:
      * a card that later leaves the graveyard still counts. Cruel Calculations draws this many.
      */
     CARDS_PUT_INTO_GRAVEYARD_FROM_LIBRARY,
+    /**
+     * Number of cards put into the player's graveyard **from their hand** this turn — discarded,
+     * or put there by any other effect (a hand → graveyard move), keyed on the card's owner. The
+     * hand sibling of [CARDS_PUT_INTO_GRAVEYARD_FROM_LIBRARY], backed by the same
+     * `CardsPutIntoGraveyardByOriginThisTurnComponent`. A discard replaced to elsewhere (madness
+     * exiles it) doesn't count. Welcome the Dead sums the two: "from your hand or library".
+     */
+    CARDS_PUT_INTO_GRAVEYARD_FROM_HAND,
     /**
      * Number of cards put into the player's graveyard **from anywhere** this turn — every zone
      * (battlefield, stack, hand, library, exile, command), keyed on the card's owner, tokens excluded
@@ -446,6 +454,8 @@ enum class TurnTracker {
             "the number of creature cards put into ${player.possessive} graveyard this turn"
         CARDS_PUT_INTO_GRAVEYARD_FROM_LIBRARY ->
             "the number of cards that were put into ${player.possessive} graveyard from their library this turn"
+        CARDS_PUT_INTO_GRAVEYARD_FROM_HAND ->
+            "the number of cards that were put into ${player.possessive} graveyard from their hand this turn"
         CARDS_PUT_INTO_GRAVEYARD ->
             "the number of cards put into ${player.possessive} graveyard from anywhere this turn"
         CARDS_DRAWN -> "the number of cards ${player.description} have drawn this turn"
