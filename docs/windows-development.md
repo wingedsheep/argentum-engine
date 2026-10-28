@@ -132,33 +132,9 @@ to be a Windows-specific defect in the command tool.
   they are staged, so CRLF in the working tree no longer turns into whole-file diffs.
   Scripts run through a shebang or `just` are pinned to LF on checkout, batch files to CRLF.
 
-### Conflux cache and coverage regeneration
-
-During the October 27, 2026 TRK update, `scripts/gen-set-totals` dropped Conflux (`CON`)
-and its 145 cards from `game-server/src/main/resources/coverage/set-totals.json`.
-Both that generator and `scripts/card-status` then cached each set as
-`~/.cache/scryfall/<code>.json`, so Conflux's cache was `con.json` — a reserved device
-name. On this Windows build (10.0.19045), native Python 3.13 reported
-`os.path.isreserved(...) == True`; `Path.write_text(...)` returned without error, but no
-file was created. The generator skipped the set with no cache and rewrote the whole
-output without it. (Node could create an ordinary `con.json`; the failure is specific to
-the API/runtime, but
-[Microsoft's filename guidance](https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file)
-advises avoiding reserved names even with an extension.)
-
-Both causes are now fixed in the scripts:
-
-- **Safe cache names.** [`scripts/scryfall_cache.py`](../scripts/scryfall_cache.py)
-  names every set's cache `set-<code>.json` (`set-con.json`) for every reader and writer,
-  and renames an existing bare `<code>.json` cache on first access.
-- **No silent drops.** A catalogued set with no cache entry keeps its previously published
-  entry in both coverage files, and the generator reports it ("kept the published totals
-  of N set(s) with no cache entry"). Refresh that set's cache to update it.
-
-The string `"CON"` inside JSON is harmless and remains the set's code. When reviewing a
-regeneration, compare set codes and card data rather than line counts:
-`card-status --refresh` refreshes every selected set (all by default), and `gen-set-totals`
-rewrites every cached set.
+- **Use safe filenames.** Per-set caches use `~/.cache/scryfall/set-<code>.json`
+  to avoid Windows reserved device names like CON. Legacy cache files are renamed
+  automatically on access, preserving their contents and freshness metadata.
 
 These notes document observed limitations. They do not waive the verification requirements
 or the rule against changing someone else's in-flight work.
