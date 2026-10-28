@@ -1,0 +1,81 @@
+{
+  "player1Name": "TRK Tester",
+  "player2Name": "Opponent",
+  "player1": {
+    "hand": [
+      "Troubling Tribbles",
+      "Shock",
+      "Shock"
+    ],
+    "graveyard": [],
+    "library": [
+      "Plains",
+      "Island",
+      "Mountain",
+      "Swamp",
+      "Forest",
+      "Plains",
+      "Island",
+      "Mountain",
+      "Swamp",
+      "Forest",
+      "Plains",
+      "Island"
+    ],
+    "lifeTotal": 20,
+    "battlefield": [
+      {
+        "name": "Troubling Tribbles"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Mountain"
+      }
+    ]
+  },
+  "player2": {
+    "hand": [],
+    "graveyard": [],
+    "library": [
+      "Plains",
+      "Island",
+      "Mountain",
+      "Swamp",
+      "Forest",
+      "Plains",
+      "Island",
+      "Mountain",
+      "Swamp",
+      "Forest",
+      "Plains",
+      "Island"
+    ],
+    "lifeTotal": 20,
+    "battlefield": [
+      {
+        "name": "Grizzly Bears"
+      }
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [
+    "UPKEEP",
+    "END"
+  ],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

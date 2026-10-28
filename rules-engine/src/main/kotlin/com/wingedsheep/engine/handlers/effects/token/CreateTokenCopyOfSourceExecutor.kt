@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers.effects.token
 
 import com.wingedsheep.engine.state.components.identity.copiableCardComponent
 import com.wingedsheep.engine.state.components.identity.copiableDoubleFacedComponent
+import com.wingedsheep.engine.state.components.identity.copiableContainer
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.GameEvent
@@ -79,7 +80,12 @@ class CreateTokenCopyOfSourceExecutor(
         val sourceId = context.sourceId
             ?: return EffectResult.success(state)
 
-        val sourceContainer = state.getEntity(sourceId)
+        // An ability keeps the source's copiable values after it leaves, including when a
+        // source token has ceased to exist or the card has returned as a different permanent.
+        val departedSource = context.lastKnownSourceSnapshot
+            ?.takeIf { context.sourceReferenceLost || sourceId !in state.getBattlefield() }
+            ?.copiableContainer()
+        val sourceContainer = departedSource ?: state.getEntity(sourceId)
             ?: return EffectResult.success(state)
 
         val sourceCard = sourceContainer.copiableCardComponent()

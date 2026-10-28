@@ -36,7 +36,8 @@ object GoldenSnapshot {
     /** Assert [actual] matches the golden at `resourcePath` (relative to the test resource root). */
     fun verify(resourcePath: String, actual: String) {
         val expected = actual.trimEnd() + "\n"
-        val existing = javaClass.getResource("/$resourcePath")?.readText()
+        // Git may check text resources out with CRLF on Windows; generated JSON uses LF.
+        val existing = javaClass.getResource("/$resourcePath")?.readText()?.replace("\r\n", "\n")
 
         if (updateMode) {
             val file = writeSource(resourcePath, expected)

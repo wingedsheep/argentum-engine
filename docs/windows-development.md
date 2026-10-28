@@ -118,13 +118,6 @@ to be a Windows-specific defect in the command tool.
   `engine/{handlers,mechanics}` caused a PowerShell parser error. Pass explicit paths.
   Likewise, `rg` was given a literal path containing `*.kt` and rejected it; use an existing
   directory plus `rg -g '*.kt'` to filter files instead.
-- **Facade allowlists currently compare platform-dependent path strings.**
-  `FacadeBoundaryTest` checks `rel.toString().endsWith(...)` against entries with `/`.
-  On Windows, `\` separators caused 16 already-allowlisted card entries to be reported as
-  violations. The test was left unchanged in the beam-me-up work, with user approval.
-  A proposed fix is to normalize the relative path to `/` before matching the allowlist.
-  Inspect the reported entries before treating this signature as a card regression; do not
-  disable the test or silently mark the full gate as passed.
 - **Choose text encoding explicitly.** A Python edit using its Windows default encoding
   corrupted existing UTF-8 punctuation in comments. Specify `encoding="utf-8"` for both
   reads and writes. Windows text writes also produce CRLF; the repository's

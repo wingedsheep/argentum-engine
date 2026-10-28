@@ -1,3 +1,1807 @@
+// Andoria
+{
+    "name": "Andoria",
+    "manaCost": "",
+    "typeLine": "Land — Planet",
+    "oracleText": "This land enters tapped.\nWhen this land enters, you gain 1 life.\n{T}: Add {U} or {R}.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Andoria:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Andoria:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Andoria:3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "275",
+        "artist": "Josu Hernaiz",
+        "flavorText": "\"Imperial commander's log: It's refreshing to see the icy drifts of Andoria again. The warmth of Federation vessels has made me soft, and I prefer strength.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0e9e72ef-3e34-4d19-aec0-b5e1ba84d244.jpg?1792632926"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "BLUE"
+    ]
+}
+
+// Assault Drone
+{
+    "name": "Assault Drone",
+    "manaCost": "{3}{B}",
+    "typeLine": "Artifact Creature — Borg",
+    "oracleText": "Artifact creatures you control get +1/+0.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0,
+                "filter": {
+                    "baseFilter": "artifact creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "artist": "Filipe Pagliuso",
+        "flavorText": "\"We have analyzed your defensive capabilities as being unable to withstand us. If you defend yourselves, you will be punished.\"\n—The Borg",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5ca2da7a-afbf-4b32-8ff6-ae899b9f70ad.jpg?1785981435"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Bajor
+{
+    "name": "Bajor",
+    "manaCost": "",
+    "typeLine": "Land — Planet",
+    "oracleText": "This land enters tapped.\nWhen this land enters, you gain 1 life.\n{T}: Add {R} or {W}.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bajor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Bajor:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Bajor:3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "277",
+        "artist": "John Di Giovanni",
+        "flavorText": "\"Commander's log: I'm taking Jake to tour Rakantha Province. We can serve these people only so well without meeting them where they live.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff5254a6-4961-4604-b65b-2eb0ce9b1c82.jpg?1792632930"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
+// Bat'leth
+{
+    "name": "Bat'leth",
+    "manaCost": "{2}{B}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "When this Equipment enters, target creature an opponent controls gets -2/-2 until end of turn.\nEquipped creature gets +2/+0.\nEquip {2} ({2}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bat'leth:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Bat'leth:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 0
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "94",
+        "rarity": "UNCOMMON",
+        "artist": "Tony Foti",
+        "flavorText": "\"Your tongue is as sharp as a warrior's! Let's see if your blade is as well!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/888e6e0f-43c3-4516-88ff-8a8d814478d4.jpg?1785981448"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Battle-Scarred Survivalist
+{
+    "name": "Battle-Scarred Survivalist",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Klingon Scout",
+    "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\nWhenever another creature dies, put a +1/+1 counter on this creature. This ability triggers only once each turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Battle-Scarred Survivalist:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "oncePerTurn": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "95",
+        "artist": "John Di Giovanni",
+        "flavorText": "\"I will rest when my blade knows vengeance.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c567253e-a2ee-45de-b3c6-3aeafbf8237b.jpg?1785981454"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Captain's Tutelage
+{
+    "name": "Captain's Tutelage",
+    "manaCost": "{1}{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Flash\nEnchant creature\nWhen this Aura enters, enchanted creature gains first strike until end of turn.\nEnchanted creature gets +2/+0.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Captain's Tutelage:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "target": "EnchantedCreature"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 0
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            },
+            "id": "target"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "144",
+        "artist": "Mark Spears",
+        "flavorText": "Starfleet tactical training demands cadets learn how to handle any situation—even failure.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/c/0c340eba-645d-416a-9ed4-f2303aa8c919.jpg?1785981528"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Cardassia Prime
+{
+    "name": "Cardassia Prime",
+    "manaCost": "",
+    "typeLine": "Land — Planet",
+    "oracleText": "This land enters tapped.\nWhen this land enters, you gain 1 life.\n{T}: Add {W} or {B}.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cardassia Prime:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Cardassia Prime:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Cardassia Prime:3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "280",
+        "artist": "Alex Negrea",
+        "flavorText": "\"Gul's log: I return to find the entire city of Lakat wiped away, our Dominion allies licking wounds, and the damned Federation offering support. I have swallowed many a rancid meal in this war, but nothing so bitter as my own pride.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d634424f-9148-46a5-95e3-4965a9226bb4.jpg?1792632933"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "WHITE"
+    ]
+}
+
+// Cetacean Ops
+{
+    "name": "Cetacean Ops",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Whale Officer",
+    "oracleText": "Ward {1} (Whenever this creature becomes the target of a spell or ability an opponent controls, counter it unless that player pays {1}.)\nWhenever you cast a noncreature spell, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{1}"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cetacean Ops:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "artist": "Arthur Haas",
+        "flavorText": "Various sapient whale species serve in Starfleet as navigators, scientists, and explorers.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/8/a8dc7ecd-e6f0-4050-9d5b-8436f60a1395.jpg?1792672912"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Cha'DIch Investigator
+{
+    "name": "Cha'DIch Investigator",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Klingon Warrior",
+    "oracleText": "When this creature enters, create a 2/1 red Klingon Warrior creature token with haste.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cha'DIch Investigator:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Klingon",
+                        "Warrior"
+                    ],
+                    "keywords": [
+                        "HASTE"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "97",
+        "artist": "Javier Charro",
+        "flavorText": "Klingons who challenge the High Council are denied the right of personal combat. They must select a second—a *cha'DIch*—to defend them.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/16281200-4660-4871-afd2-d4720e6a3197.jpg?1785981461"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Cloistered Telepath
+{
+    "name": "Cloistered Telepath",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Talosian Advisor",
+    "oracleText": "Flash\nWhen this creature enters, draw a card, then discard a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cloistered Telepath:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "50",
+        "artist": "Monztre",
+        "flavorText": "\"She has an illusion, and you have reality. May you find your way as pleasant.\"\n—The Keeper, magistrate of Talos IV",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/959318c1-3f7e-4418-91ce-be529af27972.jpg?1785981391"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Cold-Blooded Crew
+{
+    "name": "Cold-Blooded Crew",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Creature — Gorn Warrior",
+    "oracleText": "When this creature enters, put two +1/+1 counters on target creature.\nThis creature can't be blocked by creatures with power 2 or less.\nBasic landcycling {2} ({2}, Discard this card: Search your library for a basic land card, reveal it, put it into your hand, then shuffle.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}",
+            "searchFilter": {
+                "cardPredicates": [
+                    "IsBasicLand"
+                ]
+            },
+            "displayPrefix": "Basic landcycling"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cold-Blooded Crew:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 2,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "PowerAtMost",
+                            "max": 2
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "189",
+        "artist": "John Tyler Christopher",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/f/4f2d1830-baea-4735-b029-cb8c0b538d83.jpg?1785981563"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Collective Drone
+{
+    "name": "Collective Drone",
+    "manaCost": "{1}{B}",
+    "typeLine": "Artifact Creature — Borg",
+    "oracleText": "Collective Drone's power is equal to the number of artifact creatures you control.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "artifact creature"
+            }
+        },
+        "toughness": 2
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "rarity": "UNCOMMON",
+        "artist": "José Parodi",
+        "flavorText": "\"You will be assimilated.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/5/65b74daa-4606-4118-9752-b0dcd7a3f486.jpg?1785981469"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Command Decision
+{
+    "name": "Command Decision",
+    "manaCost": "{1}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Destroy target creature with power 4 or greater.\n• Draw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature pow>=4"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Destroy target creature with power 4 or greater"
+                },
+                {
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "description": "Draw a card"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "artist": "Raymond Bonilla",
+        "flavorText": "\"If we're going to be damned, let's be damned for what we really are.\"\n—Captain Jean-Luc Picard",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9f1f789b-5c08-4a4d-b3a3-4d51ad9f1a4d.jpg?1785981318"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Command Subadjunct
+{
+    "name": "Command Subadjunct",
+    "manaCost": "{W}",
+    "typeLine": "Artifact Creature — Borg",
+    "oracleText": "Artifact creatures you control have vigilance.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE",
+                "filter": {
+                    "baseFilter": "artifact creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "9",
+        "rarity": "UNCOMMON",
+        "artist": "Alex Negrea",
+        "flavorText": "The elegance of the Borg lies in how readily they integrate other species' solutions.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/5/853bf74d-0b61-43df-9018-0b40b624a9d1.jpg?1792753641"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Constable Odo
+{
+    "name": "Constable Odo",
+    "manaCost": "{3}{W/U}{W/U}",
+    "typeLine": "Legendary Creature — Shapeshifter Detective",
+    "oracleText": "When Constable Odo enters, choose one —\n• Tap target creature an opponent controls. Put two stun counters on it. (If a permanent with a stun counter would become untapped, remove one from it instead.)\n• Investigate twice. (To investigate, create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Constable Odo:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "TapUntap",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    },
+                                    {
+                                        "type": "AddCounters",
+                                        "counterType": "STUN",
+                                        "count": 2,
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    }
+                                ]
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:opponent"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Tap an opponent's creature and put two stun counters on it"
+                        },
+                        {
+                            "effect": {
+                                "type": "Investigate",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "description": "Investigate twice"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "230",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Rainville",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3df582e4-3bfb-4413-9b39-898f33a5c1fd.jpg?1792508297"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "WHITE"
+    ]
+}
+
+// Cybernetic Specialist
+{
+    "name": "Cybernetic Specialist",
+    "manaCost": "{2}",
+    "typeLine": "Artifact Creature — Human Scientist",
+    "oracleText": "When this creature enters, surveil 1. (Look at the top card of your library. You may put it into your graveyard.)\n{1}, {T}: Put target card from your graveyard on the bottom of your library.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cybernetic Specialist:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Surveil",
+                    "count": 1
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Cybernetic Specialist:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Library",
+                    "placement": "Bottom"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "262",
+        "artist": "Joan Piqué Llorens",
+        "flavorText": "What Airiam lost made what she kept so much more precious.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/1/b147f16e-a2d6-4d43-9213-9a2723b0d3ef.jpg?1786005495"
+    }
+}
+
+// D'Vana Tendi, Optimistic Ensign
+{
+    "name": "D'Vana Tendi, Optimistic Ensign",
+    "manaCost": "{1}{G/U}{G/U}",
+    "typeLine": "Legendary Creature — Orion Scientist",
+    "oracleText": "{T}: Untap another target permanent.\n{3}: Surveil 1. (Look at the top card of your library. You may put it into your graveyard.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "D'Vana Tendi, Optimistic Ensign:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ]
+            },
+            {
+                "id": "D'Vana Tendi, Optimistic Ensign:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "Surveil",
+                    "count": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "236",
+        "rarity": "UNCOMMON",
+        "artist": "Micah Epstein",
+        "flavorText": "\"I got to hold a heart!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/206239ca-341a-4f07-8149-a24ccf20ee45.jpg?1792508323"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
+// Data, New Life
+{
+    "name": "Data, New Life",
+    "manaCost": "{1}{U}",
+    "typeLine": "Legendary Artifact Creature — Android Scientist",
+    "oracleText": "Whenever you draw a card, put a +1/+1 counter on Data.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Data, New Life:1",
+                "trigger": "DrawEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "rarity": "UNCOMMON",
+        "artist": "Kieran Yanner",
+        "flavorText": "\"Does Data have a soul? I don't know that he has. I don't know that I have. But I have got to give him the freedom to explore that question himself.\"\n—Captain Phillipa Louvois",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/6/96b7e757-c64d-48c8-bd9c-caad5f3c78fb.jpg?1792753877"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Earth, Sector 001
+{
+    "name": "Earth, Sector 001",
+    "manaCost": "",
+    "typeLine": "Land — Planet",
+    "oracleText": "This land enters tapped.\nWhen this land enters, you gain 1 life.\n{T}: Add {G} or {U}.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Earth, Sector 001:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Earth, Sector 001:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Earth, Sector 001:3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "281",
+        "artist": "Colin Searle",
+        "flavorText": "\"Subcommander's log: We approach the human homeworld. I am curious to witness it myself. Perhaps it will yield insight into their illogical yet accomplished culture.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/5278d354-97c4-4c21-a902-2f9252b151eb.jpg?1792632943"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
+// Emergency Medical Hologram
+{
+    "name": "Emergency Medical Hologram",
+    "manaCost": "{W}",
+    "typeLine": "Artifact Creature — Illusion Doctor",
+    "oracleText": "When this creature enters, put a +1/+1 counter on target creature. You gain 1 life.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Emergency Medical Hologram:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "artist": "Kirk DouPonce",
+        "flavorText": "The EMH Mark 1 distills thousands of medical references and the experiences of forty-seven medical officers into a single unit, though its bedside manner leaves much to be desired.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dda6f965-cbdf-4dbc-b0b1-00c27e32f5f2.jpg?1786005719"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Federation Probe
+{
+    "name": "Federation Probe",
+    "manaCost": "{U}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "Flying\nWhen this creature enters, choose one —\n• Target creature gets +1/+1 until end of turn.\n• Surveil 1. (Look at the top card of your library. You may put it into your graveyard.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Federation Probe:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Target creature gets +1/+1 until end of turn."
+                        },
+                        {
+                            "effect": {
+                                "type": "Surveil",
+                                "count": 1
+                            },
+                            "description": "Surveil 1."
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "artist": "Racrufi",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f988ba84-fc78-41a2-b2f2-eebf78cee591.jpg?1785981405"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Ferenginar
+{
+    "name": "Ferenginar",
+    "manaCost": "",
+    "typeLine": "Land — Planet",
+    "oracleText": "This land enters tapped.\nWhen this land enters, you gain 1 life.\n{T}: Add {B} or {G}.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ferenginar:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Ferenginar:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Ferenginar:3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "283",
+        "artist": "Colin Searle",
+        "flavorText": "\"Operation chief's log: Heading back to the Ferengi homeworld to pick up more salvage. Raining again. The tubeworms aren't bad, but I just want to bite into something crisp again.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/7/17fab75f-7ff9-4c50-a6f7-03a85cd275bf.jpg?1792632949"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
+// Free Borg Revolutionaries
+{
+    "name": "Free Borg Revolutionaries",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Artifact Creature — Borg Rebel",
+    "oracleText": "When this creature enters, creatures you control get +1/+1 until end of turn.\nBasic landcycling {2} ({2}, Discard this card: Search your library for a basic land card, reveal it, put it into your hand, then shuffle.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}",
+            "searchFilter": {
+                "cardPredicates": [
+                    "IsBasicLand"
+                ]
+            },
+            "displayPrefix": "Basic landcycling"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Free Borg Revolutionaries:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "artist": "Smirtouille",
+        "flavorText": "\"Resistance is *not* futile.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/6711e910-e5a8-4602-9559-de5374bffff2.jpg?1785981345"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// General Chang, Cold Warrior
+{
+    "name": "General Chang, Cold Warrior",
+    "manaCost": "{B}",
+    "typeLine": "Legendary Creature — Klingon Warrior Officer",
+    "oracleText": "{1}, Sacrifice a creature: Put a +1/+1 counter on each Klingon you control.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "General Chang, Cold Warrior:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "permanent Klingon ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "rarity": "RARE",
+        "artist": "Cliff Nielsen",
+        "flavorText": "\"Be honest, Captain. Warrior to warrior. You do prefer it this way, don't you? As it was meant to be. No peace in our time.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c46a0910-215c-4757-8bfe-7eca479157a5.jpg?1786396042"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// He's Dead, Jim
+{
+    "name": "He's Dead, Jim",
+    "manaCost": "{3}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target creature. Surveil 1. (Look at the top card of your library. You may put it into your graveyard.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "Surveil",
+                    "count": 1
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "artist": "Crystal Fae",
+        "flavorText": "\"How can we be powerful enough to wipe out a planet and still be so helpless?\"\n—Dr. Leonard McCoy",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2c309b0d-94b4-405e-be6c-18b407323e51.jpg?1785981492"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Hit It!
+{
+    "name": "Hit It!",
+    "manaCost": "{1}{R}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Creatures you control have haste.\nWhen this enchantment enters, look at the top five cards of your library. Put a land card from among them onto the battlefield tapped and the rest into your graveyard.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hit It!:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "land",
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "prompt": "Put a land card from among them onto the battlefield tapped",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "Tapped"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "240",
+        "rarity": "RARE",
+        "artist": "Aaron J. Riley",
+        "flavorText": "\"I learned the best way to get into a cold stream was to jump right in.\"\n—Captain Christopher Pike",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/6266506f-fabf-4b53-8f93-6e2115a3e5a4.jpg?1792508342"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "RED"
+    ]
+}
+
+// Horta
+{
+    "name": "Horta",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Trample\nBasic landcycling {2} ({2}, Discard this card: Search your library for a basic land card, reveal it, put it into your hand, then shuffle.)",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 6
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}",
+            "searchFilter": {
+                "cardPredicates": [
+                    "IsBasicLand"
+                ]
+            },
+            "displayPrefix": "Basic landcycling"
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "152",
+        "artist": "Arthur Haas",
+        "flavorText": "Before miners discovered the Horta on Janus VI, silicon-based life was considered little more than science fiction.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/abf44662-62ad-47fb-9cfe-6bed47133de5.jpg?1785981533"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Humpback Whales
+{
+    "name": "Humpback Whales",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Creature — Whale",
+    "oracleText": "Vigilance, ward {2} (Whenever this creature becomes the target of a spell or ability an opponent controls, counter it unless that player pays {2}.)\nBasic landcycling {2} ({2}, Discard this card: Search your library for a basic land card, reveal it, put it into your hand, then shuffle.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 6
+    },
+    "keywords": [
+        "VIGILANCE",
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{2}"
+            }
+        },
+        {
+            "type": "Cycling",
+            "cost": "{2}",
+            "searchFilter": {
+                "cardPredicates": [
+                    "IsBasicLand"
+                ]
+            },
+            "displayPrefix": "Basic landcycling"
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "65",
+        "artist": "Evan Shipard",
+        "flavorText": "George and Gracie escaped extinction, and in the process, saved Earth.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/0/605263f0-08b6-4cc7-aba7-eb49850f8832.jpg?1785981416"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Interstellar Effigy
+{
+    "name": "Interstellar Effigy",
+    "manaCost": "{4}{U}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "When this creature enters, return target creature an opponent controls to its owner's hand.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Interstellar Effigy:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "artist": "Cliff Nielsen",
+        "flavorText": "\"My alter ego, so to speak. You must admit, he's effective. You would never have been frightened by me.\"\n—Balok",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4b7d505f-2a6b-4525-87c7-19e06d49c9df.jpg?1792672545"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// L'Rell, Fierce Visionary
+{
+    "name": "L'Rell, Fierce Visionary",
+    "manaCost": "{1}{B}{R}",
+    "typeLine": "Legendary Creature — Klingon Warrior",
+    "oracleText": "At the beginning of combat on your turn, create a 2/1 red Klingon Warrior creature token with haste. Sacrifice it at the beginning of the next end step.\n{2}, Sacrifice another creature or artifact: Surveil 1. (Look at the top card of your library. You may put it into your graveyard.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "L'Rell, Fierce Visionary:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Klingon",
+                        "Warrior"
+                    ],
+                    "keywords": [
+                        "HASTE"
+                    ],
+                    "sacrificeAtStep": "END"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "L'Rell, Fierce Visionary:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature|artifact",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Surveil",
+                    "count": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "247",
+        "rarity": "UNCOMMON",
+        "artist": "Patricia Pria",
+        "flavorText": "\"Conquer us, or we will never relent.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7b06bbb9-7c6d-4889-b55a-1de77c27fd18.jpg?1792508377"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
+// Malfunctioning Holodeck
+{
+    "name": "Malfunctioning Holodeck",
+    "manaCost": "{2}{W}",
+    "typeLine": "Artifact",
+    "oracleText": "Ward {2} (Whenever this artifact becomes the target of a spell or ability an opponent controls, counter it unless that player pays {2}.)\nWhen this artifact enters, exile target nonland permanent an opponent controls until this artifact leaves the battlefield.",
+    "keywords": [
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{2}"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Malfunctioning Holodeck:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveUntilSourceLeaves",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "nonland permanent ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "artist": "Pablo Mendoza",
+        "flavorText": "\"The holodeck safeties are still engaged, right?\"\n—Ensign Kei",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0faeffee-bb07-4b9d-8cdd-e9731bbd2396.jpg?1785981349"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Marooned
 {
     "name": "Marooned",
@@ -56,6 +1860,128 @@
     ]
 }
 
+// Moopsy
+{
+    "name": "Moopsy",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "Deathtouch\n{2}: This creature gains reach until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Moopsy:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "REACH",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "artist": "Brooklyn Smith",
+        "flavorText": "\"The moopsy is a small mammal known for its endearing appearance. The creature's diet consists of living bone tissue, which it liquefies and drinks via a process witnesses describe as 'upsettingly swift and graphic.'\"\n—*Lawmim Galactopedia*",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/dfbaf597-6be2-4aa0-88ae-cc4c94878add.jpg?1785981590"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Mugato
+{
+    "name": "Mugato",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Ape Beast",
+    "oracleText": "Reach, vigilance, deathtouch",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "REACH",
+        "VIGILANCE",
+        "DEATHTOUCH"
+    ],
+    "metadata": {
+        "collectorNumber": "208",
+        "rarity": "UNCOMMON",
+        "artist": "Chuck Lukacs",
+        "flavorText": "Despite their terrifying appearance, mugato are loving, social creatures who form strong family bonds, even mourning fallen family members.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/3/f3c68b20-f202-4d55-bef1-398d96e55c57.jpg?1785981595"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Munitions Enthusiast
+{
+    "name": "Munitions Enthusiast",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Klingon Warrior",
+    "oracleText": "Trample\nWhen this creature dies, it deals 1 damage to any target.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Munitions Enthusiast:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "158",
+        "rarity": "UNCOMMON",
+        "artist": "Lucio Parrillo",
+        "flavorText": "\"What is the point of your spikes?\" asked the *boqrat*. \"You cannot attack with them.\"\n\"Perhaps not,\" laughed the *targ*. \"But they bring me great joy!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6d73bb1c-39e3-429c-b6bb-96dae2254708.jpg?1785981544"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Open Communications
 {
     "name": "Open Communications",
@@ -88,6 +2014,623 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Organic Avulsion Unit
+{
+    "name": "Organic Avulsion Unit",
+    "manaCost": "{2}{B}",
+    "typeLine": "Artifact Creature — Borg",
+    "oracleText": "{2}: Artifact creatures you control gain menace until end of turn. (A creature with menace can't be blocked except by two or more creatures.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Organic Avulsion Unit:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "artifact creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "MENACE",
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "rarity": "UNCOMMON",
+        "artist": "Andrey Kuzinskiy",
+        "flavorText": "\"From this time forward, you will service us.\"\n—Locutus of Borg",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8cc06121-6ecd-44c3-90f9-34d492b031d4.jpg?1785981505"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Orion
+{
+    "name": "Orion",
+    "manaCost": "",
+    "typeLine": "Land — Planet",
+    "oracleText": "This land enters tapped.\nWhen this land enters, you gain 1 life.\n{T}: Add {R} or {G}.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Orion:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Orion:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Orion:3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "288",
+        "artist": "Simon Dominic",
+        "flavorText": "\"Ensign's log: Whoa-oa-oa! I've never been banned from a whole planet before! I've gotta start more beefs with pirates!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/dec37ff4-d6e9-4b87-865b-125b17162465.jpg?1792632952"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "RED"
+    ]
+}
+
+// Planetary Patrol
+{
+    "name": "Planetary Patrol",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Scout",
+    "oracleText": "Landfall — Whenever a land you control enters, this creature gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Planetary Patrol:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "163",
+        "artist": "Runa I. Rosenberger",
+        "flavorText": "\"Away team to *Enterprise*. No life signs anywhere. It's as if the entire colony simply walked away.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/163f5474-138d-4b47-a6f5-b1a0974e56a4.jpg?1785981552"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Primary Unimatrix Adjunct
+{
+    "name": "Primary Unimatrix Adjunct",
+    "manaCost": "{3}{W}",
+    "typeLine": "Artifact Creature — Borg",
+    "oracleText": "Artifact creatures you control have double strike.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOUBLE_STRIKE",
+                "filter": {
+                    "baseFilter": "artifact creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "rarity": "RARE",
+        "artist": "Jodie Muir",
+        "flavorText": "Each drone is defined by its role, but even authority provides no individual self. A brain is more useful than a toe, but neither is the body whole.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/9/b94a582c-11bb-4463-a826-bd0c79366752.jpg?1792753859"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Qo'noS
+{
+    "name": "Qo'noS",
+    "manaCost": "",
+    "typeLine": "Land — Planet",
+    "oracleText": "This land enters tapped.\nWhen this land enters, you gain 1 life.\n{T}: Add {B} or {R}.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Qo'noS:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Qo'noS:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Qo'noS:3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "291",
+        "artist": "Rockey Chen",
+        "flavorText": "\"General's log: We return triumphant! Let the streets of Qo'noS quake, for her warriors return with a hunger for new battle!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f1558d93-8a8a-45e0-bcdc-e6cd42f716dc.jpg?1792632963"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
+// Relentless Drednok
+{
+    "name": "Relentless Drednok",
+    "manaCost": "{B}",
+    "typeLine": "Artifact Creature — Robot",
+    "oracleText": "Lifelink\n{2}{B}, Exile this card from your graveyard: You draw a card and lose 1 life.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Relentless Drednok:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{B}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                },
+                "activateFromZone": "Graveyard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "artist": "Edouard",
+        "flavorText": "The Vau N'Akat created the Watchers to observe and the Drednoks to enforce.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/ce538db8-373d-4554-821e-cd96e795e37a.jpg?1786005690"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Risa
+{
+    "name": "Risa",
+    "manaCost": "",
+    "typeLine": "Land — Planet",
+    "oracleText": "This land enters tapped.\nWhen this land enters, you gain 1 life.\n{T}: Add {G} or {W}.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Risa:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Risa:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Risa:3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "293",
+        "artist": "Colin Searle",
+        "flavorText": "\"Lieutenant junior grade's log: We're approaching Risa for some much needed shore leave. I just picked up this old Todd Matthews detective novel. I bet it's great!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/8/c89e7680-9868-4fea-9aaf-6af03bfa0692.jpg?1792632968"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
+// Rogue Artificial Intelligence
+{
+    "name": "Rogue Artificial Intelligence",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "When this creature enters, choose one —\n• You gain 3 life.\n• Surveil 2. (Look at the top two cards of your library, then put any number of them into your graveyard and the rest on top of your library in any order.)\nBasic landcycling {2} ({2}, Discard this card: Search your library for a basic land card, reveal it, put it into your hand, then shuffle.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 5
+    },
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}",
+            "searchFilter": {
+                "cardPredicates": [
+                    "IsBasicLand"
+                ]
+            },
+            "displayPrefix": "Basic landcycling"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rogue Artificial Intelligence:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "description": "You gain 3 life"
+                        },
+                        {
+                            "effect": {
+                                "type": "Surveil",
+                                "count": 2
+                            },
+                            "description": "Surveil 2"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "126",
+        "artist": "José Parodi",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/d/edcce061-88c9-40bf-97f8-d0d3018e24dd.jpg?1785981516"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Romulus
+{
+    "name": "Romulus",
+    "manaCost": "",
+    "typeLine": "Land — Planet",
+    "oracleText": "This land enters tapped.\nWhen this land enters, you gain 1 life.\n{T}: Add {U} or {B}.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Romulus:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Romulus:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Romulus:3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "294",
+        "artist": "Carlos Dattoli",
+        "flavorText": "\"Centurion's log: With the commander's detainment at the hands of the Tal Shiar, it seems likely I will see a promotion upon our return. A shame she did not conceal her treachery better.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1bce111b-b07c-4589-9b6d-f0b5f320808c.jpg?1792632971"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "BLUE"
+    ]
+}
+
+// Rutherford, Upgraded Ensign
+{
+    "name": "Rutherford, Upgraded Ensign",
+    "manaCost": "{2}{W}",
+    "typeLine": "Legendary Creature — Human Artificer",
+    "oracleText": "When Rutherford enters, look at the top six cards of your library. You may reveal an artifact card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.\nWhenever you cast a Spacecraft spell, put a +1/+1 counter on target creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rutherford, Upgraded Ensign:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 6
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "artifact",
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "prompt": "You may reveal an artifact card from among them and put it into your hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Rutherford, Upgraded Ensign:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Spacecraft"
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "rarity": "UNCOMMON",
+        "artist": "Charles Chaisson",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/16a4d8ed-a918-4dfe-9976-0b68adb26afa.jpg?1792753861"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -141,5 +2684,609 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Silicate Surveyor
+{
+    "name": "Silicate Surveyor",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Tholian Scout",
+    "oracleText": "Reach\nWhen this creature enters, exile the top card of your library. Until the end of your next turn, you may play that card.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Silicate Surveyor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "impulseExiled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "impulseExiled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "impulseExiled",
+                            "expiry": {
+                                "type": "UntilControllerStep",
+                                "step": "CLEANUP",
+                                "includeCurrentTurn": false
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "172",
+        "artist": "Joan Piqué Llorens",
+        "flavorText": "The Tholian Assembly does not suffer trespassers lightly.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/6359ab5d-4151-4a0c-af13-d59c1b381bb0.jpg?1786005521"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Syndicate Liquidators
+{
+    "name": "Syndicate Liquidators",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Orion Pirate",
+    "oracleText": "Trample\nLandfall — Whenever a land you control enters, put two +1/+1 counters on target creature you control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Syndicate Liquidators:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 2,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "218",
+        "rarity": "UNCOMMON",
+        "artist": "Carlos C Diaz",
+        "flavorText": "\"The Orion Syndicate. An alliance of all the worst smugglers, pirates, and general malfeasants you'd cross two streets to avoid.\"\n—Constable Odo",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/8/18bb2edd-8dee-4714-a707-6542b6ebbd53.jpg?1786005573"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Tea, Earl Grey, Hot
+{
+    "name": "Tea, Earl Grey, Hot",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Food",
+    "oracleText": "When this artifact enters, draw a card.\n{2}, {T}, Sacrifice this artifact: Choose one —\n• This artifact deals 2 damage to target opponent.\n• You gain 3 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tea, Earl Grey, Hot:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Tea, Earl Grey, Hot:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetOpponent",
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Deal 2 damage to target opponent"
+                        },
+                        {
+                            "effect": {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "description": "You gain 3 life"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "269",
+        "artist": "Raymond Bonilla",
+        "flavorText": "Lapsang souchong for smoky body. Bergamot for sharpness. An insightful captain's cup.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/289e8ebe-ab0f-466b-a4e6-d5cf8411e724.jpg?1792591098"
+    }
+}
+
+// Troubling Tribbles
+{
+    "name": "Troubling Tribbles",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Tribble",
+    "oracleText": "This creature can't block.\nAt the beginning of your upkeep, create a token that's a copy of this creature.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Troubling Tribbles:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": "CreateTokenCopyOfSource"
+            }
+        ],
+        "staticAbilities": [
+            "CantBlock"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "rarity": "RARE",
+        "artist": "Filipe Pagliuso",
+        "flavorText": "\"They are detestable creatures.\"\n—Lieutenant Commander Worf",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0af3e535-83e6-422b-85c5-39d830cb072c.jpg?1792508160"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Type-2 Phaser
+{
+    "name": "Type-2 Phaser",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "When this Equipment enters, tap target creature an opponent controls and put a stun counter on it. (If a permanent with a stun counter would become untapped, remove one from it instead.)\nEquipped creature gets +3/+0.\nEquip {3} ({3}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Type-2 Phaser:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "STUN",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Type-2 Phaser:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 3,
+                "toughnessBonus": 0
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "271",
+        "rarity": "UNCOMMON",
+        "artist": "Wero Gallo",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/7/c704af22-7c42-45c7-b3a4-b414c4dd8e05.jpg?1792757435"
+    }
+}
+
+// Unexplored Territory
+{
+    "name": "Unexplored Territory",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{1}, {T}, Sacrifice this land: Search your library for a basic land card, put it onto the battlefield tapped, then shuffle.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Unexplored Territory:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Unexplored Territory:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "basicland"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a basic land card to put onto the battlefield tapped",
+                            "selectedLabel": "Put onto the battlefield tapped"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "Tapped"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "303",
+        "artist": "Raymond Bonilla",
+        "flavorText": "\"Does it count as 'explored' if everyone who was here died like four hundred years ago?\"\n—Lieutenant junior grade Beckett Mariner",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/a/ca1e60f1-11a9-4bb8-9f6e-5b652b49c517.jpg?1792591180"
+    }
+}
+
+// Vexing Drone
+{
+    "name": "Vexing Drone",
+    "manaCost": "{1}{W}",
+    "typeLine": "Artifact Creature — Borg",
+    "oracleText": "When this creature enters, tap target creature an opponent controls.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vexing Drone:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "artist": "Kristina WermoongRey",
+        "flavorText": "\"Freedom is irrelevant. Self-determination is irrelevant. You must comply.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/f/6f4b2476-8f93-4d4e-b664-233e82fcf212.jpg?1792591213"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Vulcan
+{
+    "name": "Vulcan",
+    "manaCost": "",
+    "typeLine": "Land — Planet",
+    "oracleText": "This land enters tapped.\nWhen this land enters, you gain 1 life.\n{T}: Add {W} or {U}.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vulcan:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Vulcan:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Vulcan:3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "305",
+        "artist": "John Di Giovanni",
+        "flavorText": "\"Chief engineer's log: Departing Vulcan. Good riddance. A whole planet hotter'n a Panhandle summer really tells you how every last Vulcan ended up makin' that face.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/c/fc3fe0da-8d93-4f1c-9aad-c2fdc9fe34fc.jpg?1792632981"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "WHITE"
+    ]
+}
+
+// Xenobotanist
+{
+    "name": "Xenobotanist",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Vulcan Scientist",
+    "oracleText": "{T}: Add one mana of any color.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Xenobotanist:1",
+                "cost": "CostTap",
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "224",
+        "artist": "Marta Nael",
+        "flavorText": "\"Electromagnetic stimulation triggers bioluminescence and causes a 22% increase in aesthetic appeal. But to what end?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/20a97cda-42b2-44f1-8e77-f64dd1c98f6f.jpg?1785981613"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Xindi Surveyors
+{
+    "name": "Xindi Surveyors",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Xindi Scientist",
+    "oracleText": "Landfall — Whenever a land you control enters, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Xindi Surveyors:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "225",
+        "artist": "Joan Piqué Llorens",
+        "flavorText": "Six sapient species evolved in parallel on Xindus. They learned to turn their differences into strengths . . . but only after civil war reduced their number to five.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/803608aa-ae69-45d2-ae48-f1688d2a6a0d.jpg?1786005515"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
