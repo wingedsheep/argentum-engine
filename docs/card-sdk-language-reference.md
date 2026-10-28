@@ -12078,8 +12078,7 @@ staticAbility {
   value greater than the number of lands that player controls") = `PlayersCantCastSpells(Player.EachOpponent,
   GameObjectFilter.Noncreature.withCardPredicate(CardPredicate.Not(CardPredicate.ManaValueAtMostDynamic(
   DynamicAmounts.landsYouControl()))))` counts the caster's lands, and an {X} spell's chosen X counts.
-  `conditionFromCaster =
-  true` evaluates `condition` from the *casting player's* seat instead, for timing relative to each
+  `conditionFromCaster = true` evaluates `condition` from the *casting player's* seat instead, for timing relative to each
   restricted player: Dosan the Falling Leaf = `PlayersCantCastSpells(Player.Each, condition =
   IsNotYourTurn, conditionFromCaster = true)` ("Players can cast spells only during their own turns"
   — correct in multiplayer, where a controller-relative pair of statics is not); Angelic Arbiter's
