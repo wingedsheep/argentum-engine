@@ -6,6 +6,7 @@ import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.lrw.cards.ThornOfAmethyst
 import com.wingedsheep.mtg.sets.definitions.ltr.cards.GrimaWormtongue
 import com.wingedsheep.mtg.sets.definitions.mmq.cards.Invigorate
 import com.wingedsheep.mtg.sets.definitions.scg.cards.SulfuricVortex
@@ -133,5 +134,34 @@ class InvigorateScenarioTest : FunSpec({
         driver.getLifeTotal(p3) shouldBe 23
         driver.getLifeTotal(p2) shouldBe 20
         driver.getLifeTotal(you) shouldBe 20
+    }
+
+    test("naming yourself, or a player who isn't an opponent, is rejected") {
+        val (driver, you, opponent) = twoPlayer()
+        driver.putLandOnBattlefield(you, "Forest")
+        val bear = driver.putCreatureOnBattlefield(you, "Grizzly Bears")
+        val invigorate = driver.putCardInHand(you, "Invigorate")
+
+        driver.submit(altCast(you, invigorate, bear, recipient = you)).error shouldNotBe null
+        driver.submit(altCast(you, invigorate, bear, recipient = bear)).error shouldNotBe null
+        driver.getLifeTotal(you) shouldBe 20
+        driver.getLifeTotal(opponent) shouldBe 20
+    }
+
+    test("a taxed alternative cost still names each opponent on its cast") {
+        val driver = GameTestDriver()
+        driver.registerCards(TestCards.all + listOf(Invigorate, ThornOfAmethyst))
+        val players = driver.initMultiplayer(List(3) { Deck.of("Forest" to 40) }, startingPlayer = 0)
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val (you, _, _) = players
+        driver.putLandOnBattlefield(you, "Forest")
+        driver.putPermanentOnBattlefield(you, "Thorn of Amethyst")
+        driver.putCreatureOnBattlefield(you, "Grizzly Bears")
+        val invigorate = driver.putCardInHand(you, "Invigorate")
+
+        val descriptions = altCasts(driver, you, invigorate).map { it.description }
+        descriptions shouldHaveSize 2
+        descriptions.toSet() shouldHaveSize 2
+        descriptions.forEach { it shouldContain "gain 3 life" }
     }
 })

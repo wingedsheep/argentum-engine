@@ -1737,6 +1737,62 @@
     ]
 }
 
+// Reverent Silence
+{
+    "name": "Reverent Silence",
+    "manaCost": "{3}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "If you control a Forest, rather than pay this spell's mana cost, you may have each other player gain 6 life.\nDestroy all enchantments.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "enchantment"
+                    },
+                    "storeAs": "destroyAll_gathered"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "destroyAll_gathered",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy"
+                }
+            ]
+        },
+        "selfAlternativeCost": {
+            "manaCost": "{0}",
+            "additionalCosts": [
+                {
+                    "type": "OthersGainLife",
+                    "amount": 6,
+                    "eachOtherPlayer": true
+                }
+            ],
+            "condition": {
+                "type": "Exists",
+                "player": "You",
+                "zone": "Battlefield",
+                "filter": "land Forest"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "artist": "Don Hazeltine",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/8/b82d3432-2167-4a65-8221-cb7b338e60d0.jpg?1783945815"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Rootwater Commando
 {
     "name": "Rootwater Commando",

@@ -1588,14 +1588,11 @@ object DamageUtils {
     }
 
     /**
-     * Check if life gain is prevented for a player by any PreventLifeGain replacement effect
-     * on the battlefield (e.g., Sulfuric Vortex, Erebos).
-     */
-    /**
-     * Whether [playerId] gains no life from a gain right now. With [prohibitionsOnly] the question
+     * Whether [playerId] gains no life from a gain right now — a lock on the player or a
+     * PreventLifeGain replacement on the battlefield (Sulfuric Vortex, Erebos). With [prohibitionsOnly] the question
      * is narrower — *can't* they gain life — so a "gains no life instead" replacement (Sulfuric
      * Vortex, `PreventLifeGain.replacesOnly`) doesn't count: a player may still be named to gain
-     * life to pay a cost under it (Invigorate ruling, 2020-08-07).
+     * life to pay a cost under it (CR 119.7; Invigorate ruling, 2020-08-07).
      */
     fun isLifeGainPrevented(state: GameState, playerId: EntityId, prohibitionsOnly: Boolean = false): Boolean {
         // Durable, source-independent lock conferred directly on the player

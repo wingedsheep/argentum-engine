@@ -1540,7 +1540,7 @@ class CastSpellEnumerator(
 
     /**
      * Post-process: a card's own alternative cost "have **an opponent** gain N life" (Invigorate)
-     * makes the caster name the opponent while casting (CR 601.2b). With one opponent who can gain
+     * makes the caster name the opponent as the cost is paid (CR 601.2h). With one opponent who can gain
      * life the cast stands as it is and the handler pays that opponent; with several, each
      * self-alternative cast is *replaced* by one twin per such opponent, pre-filling
      * [AdditionalCostPayment.lifeGainRecipient] — the gift pattern, so the pick needs no new client
@@ -1570,11 +1570,13 @@ class CastSpellEnumerator(
                 val opponentName = state.getEntity(opponentId)
                     ?.get<com.wingedsheep.engine.state.components.identity.PlayerComponent>()?.name ?: "opponent"
                 val payment = (cs.additionalCostPayment ?: AdditionalCostPayment.NONE).copy(lifeGainRecipient = opponentId)
+                // The label names the cost only for a free alternative; a taxed one reads "({1})",
+                // so the opponent is appended there rather than substituted.
+                val generic = cost.description.replaceFirstChar { it.lowercaseChar() }
+                val named = "have $opponentName gain ${cost.amount} life"
                 out.add(la.copy(
-                    description = la.description.replace(
-                        cost.description.replaceFirstChar { it.lowercaseChar() },
-                        "have $opponentName gain ${cost.amount} life"
-                    ),
+                    description = if (generic in la.description) la.description.replace(generic, named)
+                        else "${la.description} ($named)",
                     action = cs.copy(additionalCostPayment = payment)
                 ))
             }

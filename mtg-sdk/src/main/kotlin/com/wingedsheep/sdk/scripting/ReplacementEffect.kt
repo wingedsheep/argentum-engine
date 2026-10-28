@@ -2012,8 +2012,8 @@ data class ReplaceLifeGainWith(
  * life, that player gains no life instead" (Sulfuric Vortex).
  *
  * Both stop every gain alike. They differ only where a player *chooses* to gain life: a player who
- * can't gain life can't be named to gain it to pay a cost, while one whose gain is merely replaced
- * still can (Invigorate ruling, 2020-08-07).
+ * can't gain life can't be named to gain it to pay a cost (CR 119.7), while one whose gain is merely
+ * replaced still can (Invigorate ruling, 2020-08-07).
  *
  * @property replacesOnly True for the "gains no life instead" replacement wording (Sulfuric Vortex);
  *           false (the default) for a "can't gain life" prohibition

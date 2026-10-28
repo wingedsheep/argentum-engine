@@ -282,7 +282,7 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
      * have **an opponent** gain 3 life" (Invigorate) or "… have **each other player** gain 6 life"
      * (Reverent Silence). Only ever printed as the non-mana half of a [SelfAlternativeCost].
      *
-     * With [eachOtherPlayer] false the caster names one opponent while casting (CR 601.2b); the
+     * With [eachOtherPlayer] false the caster names one opponent as the cost is paid (CR 601.2h); the
      * engine offers one cast per opponent who could gain life, and the pick travels in
      * [AdditionalCostPayment.lifeGainRecipient]. A player who *can't* gain life can't be made to gain
      * it to pay, but one whose gain would be *replaced* (Sulfuric Vortex) still can — the cost's
