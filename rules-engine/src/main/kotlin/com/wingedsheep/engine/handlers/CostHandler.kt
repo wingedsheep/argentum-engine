@@ -15,6 +15,7 @@ import com.wingedsheep.engine.handlers.effects.life.LifePaymentService
 import com.wingedsheep.engine.mechanics.SummoningSicknessRules
 import com.wingedsheep.engine.mechanics.cost.CostPaymentService
 import com.wingedsheep.engine.mechanics.cost.SacrificeCostLegality
+import com.wingedsheep.engine.mechanics.cost.SacrificeCostAssignment
 import com.wingedsheep.engine.mechanics.cost.VariablePermanentsCost
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
@@ -251,7 +252,8 @@ class CostHandler(private val zones: ZoneTransitionService) {
                 true
             }
             is AbilityCost.Composite -> {
-                cost.costs.all { canPayAbilityCost(state, it, sourceId, controllerId, manaPool, abilityContext, granterId, lifePurpose) }
+                cost.costs.all { canPayAbilityCost(state, it, sourceId, controllerId, manaPool, abilityContext, granterId, lifePurpose) } &&
+                    canPaySacrificeAtomsJointly(state, cost, sourceId, controllerId)
             }
             AbilityCost.LoyaltyX -> true // X = 0 is always payable; the chosen X is checked at payment.
             is AbilityCost.Loyalty -> {
@@ -656,8 +658,31 @@ class CostHandler(private val zones: ZoneTransitionService) {
                 var currentState = state
                 var currentPool = manaPool
                 val allEvents = mutableListOf<GameEvent>()
+                // Several sacrifice atoms ("Sacrifice a Swamp and a Forest") each pay from their own
+                // ordered segment of the one chosen list ([SacrificeCostAssignment]); a single atom
+                // keeps the whole list, exactly as before.
+                val sacrificeAtoms = SacrificeCostAssignment.atoms(cost)
+                val jointSacrifice = sacrificeAtoms.size >= 2
+                if (jointSacrifice) {
+                    val chosen = choices.sacrificeChoices
+                    val total = sacrificeAtoms.sumOf { it.count }
+                    if (chosen.isNotEmpty() && chosen.size != total) {
+                        return CostPaymentResult.failure("Choose $total permanents to sacrifice (got ${chosen.size})")
+                    }
+                    if (chosen.toSet().size != chosen.size) {
+                        return CostPaymentResult.failure("A permanent can pay only one sacrifice cost")
+                    }
+                }
+                val sacrificeSegments = if (jointSacrifice) {
+                    SacrificeCostAssignment.segments(sacrificeAtoms, choices.sacrificeChoices)
+                } else emptyList()
+                var sacrificeAtomIndex = 0
                 for (subCost in cost.costs) {
-                    val result = payAbilityCost(currentState, subCost, sourceId, controllerId, currentPool, choices, abilityContext)
+                    val isSacrificeAtom = (subCost as? AbilityCost.Atom)?.atom is CostAtom.Sacrifice
+                    val subChoices = if (jointSacrifice && isSacrificeAtom) {
+                        choices.copy(sacrificeChoices = sacrificeSegments[sacrificeAtomIndex++])
+                    } else choices
+                    val result = payAbilityCost(currentState, subCost, sourceId, controllerId, currentPool, subChoices, abilityContext)
                     if (!result.success) return result
                     currentState = result.newState!!
                     currentPool = result.newManaPool!!
@@ -1857,6 +1882,42 @@ class CostHandler(private val zones: ZoneTransitionService) {
         sourceId: EntityId? = null
     ): List<EntityId> =
         SacrificeCostLegality.sacrificeableForCost(state, findMatchingPermanentsUnified(state, controllerId, filter, sourceId))
+
+    /** The permanents [atom] may take: [findSacrificeCostCandidates], less the source for "another". */
+    internal fun sacrificeAtomCandidates(
+        state: GameState,
+        atom: CostAtom.Sacrifice,
+        controllerId: EntityId,
+        sourceId: EntityId?,
+    ): List<EntityId> =
+        findSacrificeCostCandidates(state, controllerId, atom.filter, sourceId)
+            .let { if (atom.excludeSelf) it.filter { id -> id != sourceId } else it }
+
+    /** One [SacrificeCostAssignment.Group] per sacrifice atom in [cost], in cost order. */
+    internal fun sacrificeAtomGroups(
+        state: GameState,
+        cost: AbilityCost,
+        controllerId: EntityId,
+        sourceId: EntityId?,
+    ): List<SacrificeCostAssignment.Group> =
+        SacrificeCostAssignment.atoms(cost).map {
+            SacrificeCostAssignment.Group(it.count, sacrificeAtomCandidates(state, it, controllerId, sourceId))
+        }
+
+    /**
+     * Whether [cost]'s sacrifice atoms can all be paid at once with disjoint permanents. Trivially
+     * true for zero or one atom (each atom's own count check covers that); for several — "Sacrifice a
+     * Swamp and a Forest" — a lone Swamp Forest dual is not enough.
+     */
+    fun canPaySacrificeAtomsJointly(
+        state: GameState,
+        cost: AbilityCost,
+        sourceId: EntityId?,
+        controllerId: EntityId,
+    ): Boolean {
+        if (!SacrificeCostAssignment.isJoint(cost)) return true
+        return SacrificeCostAssignment.hasDisjointAssignment(sacrificeAtomGroups(state, cost, controllerId, sourceId))
+    }
 
     internal fun findMatchingPermanentsUnified(
         state: GameState,

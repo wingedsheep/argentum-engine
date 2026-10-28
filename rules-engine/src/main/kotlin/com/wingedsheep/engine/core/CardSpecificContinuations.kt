@@ -808,8 +808,14 @@ data class ActivateAbilityOpponentChooserContinuation(
  * resumed replay) or when candidate count ≤ required count (no real choice — CostHandler
  * auto-picks). Sage of Lat-Nam ({T}, Sacrifice an artifact: Draw a card) is the canonical case.
  *
- * @property action The original [ActivateAbility] (`costPayment.sacrificedPermanents` still empty),
- *   so the resumer can re-enter the handler with the chosen sacrifice victims filled in.
+ * A joint cost with several sacrifice atoms ("Sacrifice a Swamp and a Forest" — Jarad, Golgari Lich
+ * Lord) raises one of these per atom that is a real choice; the resumer *appends* each answer, so
+ * the list fills as ordered per-atom segments
+ * ([com.wingedsheep.engine.mechanics.cost.SacrificeCostAssignment]).
+ *
+ * @property action The original [ActivateAbility] (`costPayment.sacrificedPermanents` empty, or
+ *   holding the earlier atoms' segments for a joint cost), so the resumer can re-enter the handler
+ *   with the chosen sacrifice victims appended.
  * @property sacrificeCandidates The matching battlefield permanents offered to the player as
  *   options; used to validate the response is a subset of the originally legal candidates.
  * @property sacrificeCount Exact number of permanents the player must pick (`count` from the cost).

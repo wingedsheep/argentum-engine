@@ -272,10 +272,14 @@ class ActivateAbilityXCostContinuationResumer(
             }
         }
 
+        // Appended, not replaced: a joint sacrifice cost ("Sacrifice a Swamp and a Forest") asks
+        // atom by atom, and each answer is the next ordered segment of the one list. A single
+        // sacrifice atom pauses only with nothing chosen yet, so for it this is the whole list.
         val action = continuation.action
+        val prior = action.costPayment?.sacrificedPermanents ?: emptyList()
         val replay = action.copy(
             costPayment = (action.costPayment ?: AdditionalCostPayment())
-                .copy(sacrificedPermanents = response.selectedCards)
+                .copy(sacrificedPermanents = prior + response.selectedCards)
         )
         return reenter(handler.execute(state, replay), checkForMore)
     }

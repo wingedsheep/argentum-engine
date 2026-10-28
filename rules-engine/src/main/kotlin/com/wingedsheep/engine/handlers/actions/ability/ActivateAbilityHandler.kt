@@ -170,7 +170,7 @@ class ActivateAbilityHandler(
         val activation = when (val announced = announce(state, action)) {
             is Announcement.Announced -> if (lockedCost == null) announced.activation else announced.activation.copy(effectiveCost = lockedCost, effectiveXValue = lockedX)
             is Announcement.Rejected -> return ExecutionResult.error(state, announced.reason)
-        }
+        }.let { choicePauses.withForcedSacrifices(state, it) }
 
         val modal = (activation.ability.effect as? com.wingedsheep.sdk.scripting.effects.ModalEffect)
         if (modal != null && action.chosenModes == null) {

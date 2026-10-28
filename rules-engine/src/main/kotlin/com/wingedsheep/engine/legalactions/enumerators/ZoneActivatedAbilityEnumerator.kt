@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.legalactions.enumerators
 
+import com.wingedsheep.engine.mechanics.cost.SacrificeCostAssignment
 import com.wingedsheep.engine.state.LifePaymentPurpose
 
 import com.wingedsheep.engine.legalactions.surfacedRequirements
@@ -33,7 +34,8 @@ import com.wingedsheep.sdk.scripting.TimingRule
  *   ({1}{R}, Discard this card: Destroy target artifact) and Stegron the Dinosaur Man, plus
  *   Urban Retreat's "{2}, Return a tapped creature you control: put this onto the battlefield".
  *
- * Handles cost checking for Mana, Discard, DiscardSelf, ExileSelf, Blight, and Composite (with
+ * Handles cost checking for Mana, Discard, DiscardSelf, ExileSelf, Blight, Sacrifice (one or several
+ * atoms, jointly — [SacrificeCostAssignment]), and Composite (with
  * ReturnToHand), plus target requirements and X/auto-tap info.
  * [com.wingedsheep.engine.handlers.actions.ability.ActivateAbilityHandler] already accepts any
  * non-battlefield `activateFromZone` generically (owner + zone-membership check), so no handler
@@ -150,6 +152,20 @@ class ZoneActivatedAbilityEnumerator(
                 )
 
                 if (!com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment.canAffordAbility(state, playerId, effectiveCost)) continue
+
+                // Sacrifice atoms ("Sacrifice a Swamp and a Forest: Return Jarad from your graveyard")
+                // are unpayable without enough permanents — and, with several atoms, without one
+                // disjoint assignment (a lone Swamp Forest dual pays one atom, not both). The engine
+                // asks which permanents when the bare action arrives, so there's no payload to build.
+                val sacrificeGroups = SacrificeCostAssignment.atoms(effectiveCost).map { atom ->
+                    SacrificeCostAssignment.Group(
+                        atom.count,
+                        context.costUtils.findAbilitySacrificeTargets(
+                            state, playerId, atom.filter, if (atom.excludeSelf) entityId else null, sourceId = entityId
+                        )
+                    )
+                }
+                if (sacrificeGroups.isNotEmpty() && !SacrificeCostAssignment.hasDisjointAssignment(sacrificeGroups)) continue
 
                 when (effectiveCost) {
                     is AbilityCost.Atom -> when (val atom = effectiveCost.atom) {

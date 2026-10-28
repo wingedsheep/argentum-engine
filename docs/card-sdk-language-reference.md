@@ -954,6 +954,15 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   still resolves. Pair with `DynamicAmounts.countersRemovedAsCost()` for "the number … removed this
   way" — the counters are gone by resolution.
 - `Costs.Composite(c1, c2, ...)` — multiple costs paid together.
+  **Several sacrifice atoms in one composite** ("Sacrifice a Swamp and a Forest" — Jarad, Golgari
+  Lich Lord: `Costs.Composite(Costs.Sacrifice(Land.withSubtype(SWAMP)), Costs.Sacrifice(Land.withSubtype(FOREST)))`)
+  are paid by one **disjoint assignment** — each atom gets its own permanents, so a Swamp Forest dual
+  pays one atom, never both. The ability is offered (battlefield and `activateFromZone` alike) only
+  when such an assignment exists; the legal action carries no sacrifice picker, and the engine asks
+  atom by atom in cost order (`SelectCardsDecision`), offering only permanents that leave the later
+  atoms payable and auto-picking forced ones. A pre-filled `costPayment.sacrificedPermanents` is read
+  as ordered per-atom segments (first atom's `count`, then the next's). Works for any number of atoms
+  (`SacrificeCostAssignment`); a single sacrifice atom behaves exactly as before.
 - `Costs.PayPlayerCounters(counterType, amount = 1)` — pay counters from the **activating player**,
   never from the source permanent. `amount` accepts a nonnegative integer, `DynamicAmount.XValue`,
   or `DynamicAmount.ContextProperty(TARGETS_TOTAL_MANA_VALUE)` (priced from announced targets).

@@ -743,7 +743,7 @@ internal class ActivationValidator(
                     val subMana = subCost.manaCostOrNull
                     if (subMana != null) manaSolver.canPay(state, playerId, subMana, excludeSources = excludeSources, spellContext = abilityContext)
                     else costHandler.canPayAbilityCost(state, subCost, sourceId, playerId, manaPool, abilityContext, granterId, lifePurpose)
-                }
+                } && costHandler.canPaySacrificeAtomsJointly(state, cost, sourceId, playerId)
             }
             else -> costHandler.canPayAbilityCost(state, cost, sourceId, playerId, manaPool, abilityContext, granterId, lifePurpose)
         }

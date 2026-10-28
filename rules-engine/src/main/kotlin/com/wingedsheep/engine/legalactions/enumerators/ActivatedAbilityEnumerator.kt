@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.legalactions.enumerators
 
+import com.wingedsheep.engine.mechanics.cost.SacrificeCostAssignment
 import com.wingedsheep.engine.handlers.actions.ability.extractVariablePermanentsCost
 import com.wingedsheep.engine.state.LifePaymentPurpose
 
@@ -253,6 +254,22 @@ class ActivatedAbilityEnumerator(
                 var costAffordable = true
 
                 if (!com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment.canAffordAbility(state, playerId, effectiveCost)) continue
+
+                // Several sacrifice atoms in one cost ("Sacrifice a Swamp and a Forest") need one
+                // disjoint assignment — a lone Swamp Forest dual pays one atom, not both. Each
+                // atom's own count check below can't see that, so gate the whole cost here.
+                val jointSacrifice = SacrificeCostAssignment.isJoint(effectiveCost)
+                if (jointSacrifice && !SacrificeCostAssignment.hasDisjointAssignment(
+                        SacrificeCostAssignment.atoms(effectiveCost).map { atom ->
+                            SacrificeCostAssignment.Group(
+                                atom.count,
+                                context.costUtils.findAbilitySacrificeTargets(
+                                    state, playerId, atom.filter, if (atom.excludeSelf) entityId else null, sourceId = entityId
+                                )
+                            )
+                        }
+                    )
+                ) continue
 
                 when (effectiveCost) {
                     is AbilityCost.Tap -> {
@@ -941,6 +958,14 @@ class ActivatedAbilityEnumerator(
                         state, playerId, removeCountersAtom.filter, removeCountersAtom.counterType, entityId
                     )
                     else -> emptyList()
+                }
+
+                // A joint sacrifice cost has no single picker the client could fill: the engine asks
+                // atom by atom when the bare action arrives (ActivationChoicePauses), so surface no
+                // sacrifice payload rather than the last atom's pool.
+                if (jointSacrifice) {
+                    sacrificeTargets = null
+                    sacrificeCost = null
                 }
 
                 // Station-style multi-select shortcut (CR 702.184a): a single-creature tap cost
