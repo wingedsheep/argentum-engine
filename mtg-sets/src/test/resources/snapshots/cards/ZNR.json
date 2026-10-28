@@ -150,6 +150,65 @@
     ]
 }
 
+// Akoum Warrior
+{
+    "name": "Akoum Warrior",
+    "manaCost": "{5}{R}",
+    "typeLine": "Creature — Minotaur Warrior",
+    "oracleText": "Trample",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "backFace": {
+        "name": "Akoum Teeth",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "This land enters tapped.\n{T}: Add {R}.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Akoum Teeth:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "RED"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ],
+            "replacementEffects": [
+                "EntersTapped"
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "134",
+            "rarity": "UNCOMMON",
+            "artist": "Karl Kopinski",
+            "flavorText": "\"Rock. Lava. Gravity. They're not cruel, but they're not forgiving either.\"\n—Tyrux, expedition warrior",
+            "imageUri": "https://cards.scryfall.io/normal/back/d/8/d8ed0335-daa6-4dbe-a94d-4d56c8cfd093.jpg?1783929367"
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "134",
+        "rarity": "UNCOMMON",
+        "artist": "Karl Kopinski",
+        "flavorText": "\"I'm not cruel, but I have no patience for your mistakes.\"\n—Tyrux, expedition warrior",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d8ed0335-daa6-4dbe-a94d-4d56c8cfd093.jpg?1783929367"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ],
+    "layout": "MODAL_DFC"
+}
+
 // Allied Assault
 {
     "name": "Allied Assault",
@@ -659,6 +718,43 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Ardent Electromancer
+{
+    "name": "Ardent Electromancer",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "When this creature enters, add {R} for each creature in your party. (Your party consists of up to one each of Cleric, Rogue, Warrior, and Wizard.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ardent Electromancer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED",
+                    "amount": "PartySize"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "artist": "Lie Setiawan",
+        "flavorText": "\"Trust me, we won't need torches.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e8685c8e-935f-49f2-acf2-8e3c41c5b330.jpg?1783929361"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -1707,6 +1803,66 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Cinderclasm
+{
+    "name": "Cinderclasm",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Kicker {R} (You may pay an additional {R} as you cast this spell.)\nCinderclasm deals 1 damage to each creature. If it was kicked, it deals 2 damage to each creature instead.",
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{R}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            },
+            "body": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
+                "target": "IterationEntity"
+            }
+        },
+        "kickerSpellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            },
+            "body": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "target": "IterationEntity"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "rarity": "UNCOMMON",
+        "artist": "Campbell White",
+        "flavorText": "Every inferno begins with a spark.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/5/5516cf97-805f-4a21-a4c6-2d6e55865336.jpg?1783929361"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -3435,6 +3591,78 @@
     }
 }
 
+// Fireblade Charger
+{
+    "name": "Fireblade Charger",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Goblin Warrior",
+    "oracleText": "As long as this creature is equipped, it has haste.\nWhen this creature dies, it deals damage equal to its power to any target.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fireblade Charger:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            "IsEquipped"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "rarity": "UNCOMMON",
+        "artist": "Lie Setiawan",
+        "flavorText": "\"Down in flames\" isn't a destination, but a journey.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/a/ca657846-f352-4ac4-b2b3-d0ced6607163.jpg?1783929360"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Fissure Wizard
 {
     "name": "Fissure Wizard",
@@ -3804,6 +4032,104 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Goma Fada Vanguard
+{
+    "name": "Goma Fada Vanguard",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Whenever this creature attacks, target creature an opponent controls with power less than or equal to the number of Warriors you control can't block this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Goma Fada Vanguard:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "CantBlockTargetCreatures",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "PowerAtMostDynamic",
+                                    "amount": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": "permanent Warrior"
+                                    }
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByOpponent"
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "rarity": "UNCOMMON",
+        "artist": "Sean Sevestre",
+        "flavorText": "\"Her weapon's impressive, sure. But you should see her wield it.\"\n—Gred, expedition warrior",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/ce83962b-445a-4b44-ad8a-fada2c0a15b8.jpg?1783929359"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Grotag Bug-Catcher
+{
+    "name": "Grotag Bug-Catcher",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Goblin Warrior",
+    "oracleText": "Trample\nWhenever this creature attacks, it gets +1/+0 until end of turn for each creature in your party. (Your party consists of up to one each of Cleric, Rogue, Warrior, and Wizard.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Grotag Bug-Catcher:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": "PartySize",
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "artist": "Jakub Kasper",
+        "flavorText": "\"Everybody grab a leg!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5b310b01-f9cb-48ce-8af3-5957d3abf098.jpg?1783929359"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -4660,6 +4986,134 @@
     "layout": "MODAL_DFC"
 }
 
+// Kargan Intimidator
+{
+    "name": "Kargan Intimidator",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Cowards can't block Warriors.\n{1}: Choose one that hasn't been chosen this turn —\n• This creature gets +1/+1 until end of turn.\n• Target creature becomes a Coward until end of turn.\n• Target Warrior gains trample until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kargan Intimidator:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": "Self"
+                            },
+                            "description": "This creature gets +1/+1 until end of turn"
+                        },
+                        {
+                            "effect": {
+                                "type": "SetCreatureSubtypes",
+                                "subtypes": [
+                                    "Coward"
+                                ],
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "duration": "EndOfTurn"
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Target creature becomes a Coward until end of turn"
+                        },
+                        {
+                            "effect": {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature Warrior"
+                                    },
+                                    "id": "t1"
+                                }
+                            ],
+                            "description": "Target Warrior gains trample until end of turn"
+                        }
+                    ],
+                    "excludeModesChosenThisTurn": true,
+                    "countsAsModalSpell": false
+                },
+                "descriptionOverride": "{1}: Choose one that hasn't been chosen this turn — this creature gets +1/+1; or target creature becomes a Coward; or target Warrior gains trample (until end of turn)."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "HasSubtype",
+                            "subtype": "Coward"
+                        }
+                    ]
+                },
+                "filter": {
+                    "baseFilter": "creature Warrior"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "rarity": "RARE",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/0885acdc-9b4c-4e28-8785-9e721a27e81e.jpg?1783929359",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "Once a creature has blocked a Warrior, turning that creature into a Coward won't remove it from combat or cause the Warrior to become unblocked."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If you control two or more Kargan Intimidators, track which modes have been chosen each turn for each one's ability separately."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Kargan Warleader
 {
     "name": "Kargan Warleader",
@@ -4735,6 +5189,87 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Kazuul's Fury
+{
+    "name": "Kazuul's Fury",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "As an additional cost to cast this spell, sacrifice a creature.\nKazuul's Fury deals damage equal to the sacrificed creature's power to any target.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "EntityProperty",
+                "entity": "SacrificedAsCost",
+                "numericProperty": "Power"
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "creature"
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Kazuul's Cliffs",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "This land enters tapped.\n{T}: Add {R}.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Kazuul's Cliffs:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "RED"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ],
+            "replacementEffects": [
+                "EntersTapped"
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "146",
+            "rarity": "UNCOMMON",
+            "artist": "Karl Kopinski",
+            "flavorText": "\"The path up the cliffs is nothing but steep switchbacks and rickety lifts, made by elves, maintained by humans, and guarded by ogres. But it's the best way into the heart of Murasa.\"\n—Samila, Murasa Expeditionary House",
+            "imageUri": "https://cards.scryfall.io/normal/back/7/5/75240bbc-adc7-48ff-9523-c79776d710d3.jpg?1783929363"
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "146",
+        "rarity": "UNCOMMON",
+        "artist": "Karl Kopinski",
+        "flavorText": "\"The toll is steep, but the cliffs are steeper.\"\n—Samila, Murasa Expeditionary House",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/5/75240bbc-adc7-48ff-9523-c79776d710d3.jpg?1783929363"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ],
+    "layout": "MODAL_DFC"
 }
 
 // Kitesail Cleric
@@ -7884,6 +8419,89 @@
     ]
 }
 
+// Pyroclastic Hellion
+{
+    "name": "Pyroclastic Hellion",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Hellion",
+    "oracleText": "When this creature enters, you may return a land you control to its owner's hand. When you do, this creature deals 2 damage to each opponent.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pyroclastic Hellion:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": "land",
+                                    "player": "You"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected1",
+                                "prompt": "Return a land you control to its owner's hand",
+                                "useTargetingUI": true
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                }
+                            }
+                        ]
+                    },
+                    "reflexiveEffect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "EachOpponent"
+                        }
+                    },
+                    "descriptionOverride": "When this creature enters, you may return a land you control to its owner's hand. When you do, this creature deals 2 damage to each opponent."
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "artist": "Simon Dominic",
+        "flavorText": "\"The difference between a hellion and a volcano is that volcanoes don't get hungry.\"\n—Sachir, Akoum Expeditionary House",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/5929c89b-8c61-47f5-a8ec-b64bf41e9d5b.jpg?1783929354"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Resolute Strike
 {
     "name": "Resolute Strike",
@@ -8106,6 +8724,145 @@
     "layout": "MODAL_DFC"
 }
 
+// Rockslide Sorcerer
+{
+    "name": "Rockslide Sorcerer",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Human Wizard Sorcerer",
+    "oracleText": "Whenever you cast an instant, sorcery, or Wizard spell, this creature deals 1 damage to any target.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rockslide Sorcerer:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    },
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Wizard"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever you cast an instant, sorcery, or Wizard spell, this creature deals 1 damage to any target."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "rarity": "UNCOMMON",
+        "artist": "Daarken",
+        "flavorText": "\"You can cower from the crushing shards or embrace the danger of Akoum. I've made my choice.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/1/e105c546-ce4f-49c7-97ba-ea5fbe70df82.jpg?1783929354",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "An ability that triggers when a player casts a spell resolves before the spell that caused it to trigger, but after targets have been chosen for that spell (if it has any targets). The ability resolves even if that spell is countered."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "A Wizard spell is one with the creature type Wizard. Spells that are Wizard-themed (such as Relic Amulet) aren't Wizard spells."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Roil Eruption
+{
+    "name": "Roil Eruption",
+    "manaCost": "{1}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Kicker {5} (You may pay an additional {5} as you cast this spell.)\nRoil Eruption deals 3 damage to any target. If this spell was kicked, it deals 5 damage instead.",
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{5}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": "WasKicked"
+            },
+            "then": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 5
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            },
+            "otherwise": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 3
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "155",
+        "artist": "Campbell White",
+        "flavorText": "\"Our feeble villages and tiny encampments stand only at the whim of the Roil.\"\n—*The Invokers' Tales*",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/86572747-8faa-4242-b059-07d11e6be1cd.jpg?1783929355"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Roiling Regrowth
 {
     "name": "Roiling Regrowth",
@@ -8172,6 +8929,87 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Roiling Vortex
+{
+    "name": "Roiling Vortex",
+    "manaCost": "{1}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of each player's upkeep, this enchantment deals 1 damage to them.\nWhenever a player casts a spell, if no mana was spent to cast that spell, this enchantment deals 5 damage to that player.\n{R}: Your opponents can't gain life this turn.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Roiling Vortex:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            },
+            {
+                "id": "Roiling Vortex:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "interveningIf": "TriggeringSpellCastWithoutPayingMana"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Roiling Vortex:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{R}"
+                    }
+                },
+                "effect": {
+                    "type": "LockLifeGain",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    },
+                    "duration": "EndOfTurn"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "156",
+        "rarity": "RARE",
+        "artist": "Campbell White",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/b/0b057eb7-8439-4d26-89df-c345ab2773e1.jpg?1783929353"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -9039,6 +9877,118 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Shatterskull Charger
+{
+    "name": "Shatterskull Charger",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Creature — Giant Warrior",
+    "oracleText": "Kicker {2} (You may pay an additional {2} as you cast this spell.)\nTrample, haste\nIf this creature was kicked, it enters with a +1/+1 counter on it.\nAt the beginning of your end step, if this creature doesn't have a +1/+1 counter on it, return it to its owner's hand.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE",
+        "HASTE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{2}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shatterskull Charger:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand"
+                },
+                "interveningIf": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "EntityMatches",
+                        "entity": "Self",
+                        "filter": {
+                            "statePredicates": [
+                                {
+                                    "type": "HasCounter",
+                                    "counterType": "PLUS_ONE_PLUS_ONE"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "descriptionOverride": "At the beginning of your end step, if this creature doesn't have a +1/+1 counter on it, return it to its owner's hand."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true,
+                "condition": "WasKicked"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "rarity": "RARE",
+        "artist": "Lius Lasahido",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/c/6c6d6bc3-2162-4c2b-a5de-25103e706e37.jpg?1783929353"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Shatterskull Minotaur
+{
+    "name": "Shatterskull Minotaur",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Creature — Minotaur Warrior",
+    "oracleText": "This spell costs {1} less to cast for each creature in your party. (Your party consists of up to one each of Cleric, Rogue, Warrior, and Wizard.)\nHaste",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "Dynamic",
+                        "amount": "PartySize"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "160",
+        "rarity": "UNCOMMON",
+        "artist": "Aleksi Briclot",
+        "flavorText": "\"We just pay him and point him at problems.\"\n—Aro, Sea Gate adventurer",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9d311f5f-ad68-48d4-aa5d-66916034ddb9.jpg?1783929352"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
