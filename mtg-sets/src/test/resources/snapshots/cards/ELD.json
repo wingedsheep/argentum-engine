@@ -3717,6 +3717,77 @@
     ]
 }
 
+// Stormfist Crusader
+{
+    "name": "Stormfist Crusader",
+    "manaCost": "{B}{R}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Menace\nAt the beginning of your upkeep, each player draws a card and loses 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Stormfist Crusader:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "Each"
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "Each"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "203",
+        "rarity": "RARE",
+        "artist": "Chris Rallis",
+        "flavorText": "\"As she reached the pinnacle, lightning flashed and her eyes blazed with newfound power.\"\n—*Legend of the Gilded Knights*",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/27425f2e-e0b2-489d-877d-8257d2026bfd.jpg?1783932593",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "In a Two-Headed Giant game, Stormfist Crusader's triggered ability causes each team to lose 1 life twice after each player on that team has drawn a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Syr Alin, the Lion's Claw
 {
     "name": "Syr Alin, the Lion's Claw",

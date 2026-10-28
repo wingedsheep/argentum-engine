@@ -4013,6 +4013,78 @@
     }
 }
 
+// Spiteful Visions
+{
+    "name": "Spiteful Visions",
+    "manaCost": "{2}{B/R}{B/R}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of each player's draw step, that player draws an additional card.\nWhenever a player draws a card, this enchantment deals 1 damage to that player.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Spiteful Visions:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "DRAW",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            },
+            {
+                "id": "Spiteful Visions:2",
+                "trigger": {
+                    "type": "DrawEvent",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "198",
+        "rarity": "RARE",
+        "artist": "Brandon Kitkouski",
+        "flavorText": "Knowledge brings the sting of disillusionment, but the pain teaches perspective.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/19039ac4-1aaa-4aca-ba09-f7fc400b9ada.jpg?1783942725",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "The triggered ability is put onto the stack after you have already drawn your card for the turn."
+            },
+            {
+                "date": "2008-05-01",
+                "text": "Spiteful Visions's second ability triggers any time any player draws a card, not just when a player draws a card as a result of its first ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Sunken Ruins
 {
     "name": "Sunken Ruins",

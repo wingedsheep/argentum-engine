@@ -374,6 +374,79 @@
     ]
 }
 
+// Nekusar, the Mindrazer
+{
+    "name": "Nekusar, the Mindrazer",
+    "manaCost": "{2}{U}{B}{R}",
+    "typeLine": "Legendary Creature — Zombie Wizard",
+    "oracleText": "At the beginning of each player's draw step, that player draws an additional card.\nWhenever an opponent draws a card, Nekusar deals 1 damage to that player.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nekusar, the Mindrazer:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "DRAW",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            },
+            {
+                "id": "Nekusar, the Mindrazer:2",
+                "trigger": {
+                    "type": "DrawEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "201",
+        "rarity": "MYTHIC",
+        "artist": "Mark Winters",
+        "flavorText": "His enemies wondered if the lich king's brutal death and unnatural rebirth had been his plan all along.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/f/3f7f2417-12de-4e57-9714-d878880a1208.jpg?1783939648",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "If a spell or ability causes you to put cards into your hand without specifically using the word \"draw,\" it doesn't count as drawing cards and it doesn't cause Nekusar's second ability to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Ophiomancer
 {
     "name": "Ophiomancer",

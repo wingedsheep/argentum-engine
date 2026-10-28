@@ -441,6 +441,47 @@
     ]
 }
 
+// Megrim
+{
+    "name": "Megrim",
+    "manaCost": "{2}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever an opponent discards a card, this enchantment deals 2 damage to that player.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Megrim:1",
+                "trigger": {
+                    "type": "DiscardEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "UNCOMMON",
+        "artist": "Donato Giancola",
+        "flavorText": "\"You can run from your pain,\" explained Gerrard to Crovax, \"but take it from experience: you will tire before it does.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4eacd05b-078a-468c-b137-a802346d348a.jpg?1783946561"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Mox Diamond
 {
     "name": "Mox Diamond",

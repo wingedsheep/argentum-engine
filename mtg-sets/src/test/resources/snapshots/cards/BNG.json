@@ -127,6 +127,51 @@
     ]
 }
 
+// Fate Unraveler
+{
+    "name": "Fate Unraveler",
+    "manaCost": "{3}{B}",
+    "typeLine": "Enchantment Creature — Hag",
+    "oracleText": "Whenever an opponent draws a card, this creature deals 1 damage to that player.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fate Unraveler:1",
+                "trigger": {
+                    "type": "DrawEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "rarity": "RARE",
+        "artist": "David Palumbo",
+        "flavorText": "\"Never forget that the life you've built can be undone by a single loose thread.\"\n—Perisophia the philosopher",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f15cd233-e27b-4cfd-aa4e-18040d1de22f.jpg?1783939557"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Great Hart
 {
     "name": "Great Hart",

@@ -724,3 +724,98 @@
         "imageUri": "https://cards.scryfall.io/normal/front/e/7/e7971306-700e-4677-bf52-83e4f9ac04c1.jpg?1783931206"
     }
 }
+
+// Xyris, the Writhing Storm
+{
+    "name": "Xyris, the Writhing Storm",
+    "manaCost": "{2}{G}{U}{R}",
+    "typeLine": "Legendary Creature — Snake Leviathan",
+    "oracleText": "Flying\nWhenever an opponent draws a card except the first one they draw in each of their draw steps, create a 1/1 green Snake creature token.\nWhenever Xyris deals combat damage to a player, you and that player each draw that many cards.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Xyris, the Writhing Storm:1",
+                "trigger": {
+                    "type": "DrawEvent",
+                    "player": "EachOpponent",
+                    "firstInDrawStep": "EXCLUDED"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Snake"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/0/e/0e0f26b2-eaeb-4ea3-8305-1d65d4402d1a.jpg?1783931098"
+                }
+            },
+            {
+                "id": "Xyris, the Writhing Storm:2",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "ContextProperty",
+                                "key": "TRIGGER_DAMAGE_AMOUNT"
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "ContextProperty",
+                                "key": "TRIGGER_DAMAGE_AMOUNT"
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "TriggeringPlayer"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "rarity": "MYTHIC",
+        "artist": "Filip Burburan",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/447db519-7825-4330-99e7-a2429e1f6b2e.jpg?1783931227",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "If a spell or ability causes an opponent to put cards into their hand without specifically using the word \"draw,\" it's not a card drawn."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If the amount of damage Xyris deals is greater than the number of cards in your library and the number of cards in that player's library, you both lose the game at the same time. It doesn't matter if one of you had more cards in library than the other. If there are no other players left in the game, the game is a draw."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE",
+        "RED"
+    ]
+}

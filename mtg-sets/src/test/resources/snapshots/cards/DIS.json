@@ -1003,3 +1003,36 @@
         "BLUE"
     ]
 }
+
+// Vision Skeins
+{
+    "name": "Vision Skeins",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Each player draws two cards.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Players",
+                "players": "ActivePlayerFirst"
+            },
+            "body": {
+                "type": "DrawCards",
+                "count": {
+                    "type": "Fixed",
+                    "amount": 2
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "artist": "Aleksi Briclot",
+        "flavorText": "\"I could see in the other mage's eyes that he'd thought of it too. Then it became a race to exploit the knowledge first.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/e/8e632566-1f58-4439-983a-a25c06b7196c.jpg?1783943433"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}

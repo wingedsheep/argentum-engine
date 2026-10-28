@@ -1460,6 +1460,67 @@
     ]
 }
 
+// Kederekt Parasite
+{
+    "name": "Kederekt Parasite",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Horror",
+    "oracleText": "Whenever an opponent draws a card, if you control a red permanent, you may have this creature deal 1 damage to that player.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kederekt Parasite:1",
+                "trigger": {
+                    "type": "DrawEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "TriggeringPlayer"
+                        }
+                    }
+                },
+                "interveningIf": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent red"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "rarity": "RARE",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "When the smell of passing thoughts piques its hunger, its maw becomes primed with acid and a taste for brains.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/878c7d8c-4df0-43ac-8197-d89c8be5e70d.jpg?1783942482",
+        "rulings": [
+            {
+                "date": "2009-02-01",
+                "text": "The \"intervening 'if' clause\" means that (1) the ability won't trigger at all unless you control a permanent of the specified color, and (2) the ability will do nothing unless you control a permanent of the specified color at the time it resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Knight of the Reliquary
 {
     "name": "Knight of the Reliquary",

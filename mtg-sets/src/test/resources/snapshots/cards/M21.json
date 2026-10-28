@@ -1639,6 +1639,90 @@
     ]
 }
 
+// Peer into the Abyss
+{
+    "name": "Peer into the Abyss",
+    "manaCost": "{4}{B}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player draws cards equal to half the number of cards in their library and loses half their life. Round up each time.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Divide",
+                        "numerator": {
+                            "type": "AggregateZone",
+                            "player": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "zone": "Library"
+                        },
+                        "denominator": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Divide",
+                        "numerator": {
+                            "type": "LifeTotal",
+                            "player": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        "denominator": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "rarity": "RARE",
+        "artist": "Izzy",
+        "flavorText": "\"Oh, don't be so dramatic. When your eyes bleed, and your brain leaks out your ears, then we'll talk about lost sanity.\"\n—Braids, dementia summoner",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aac00055-640e-4749-8d23-d242e6d0b23a.jpg?1783930701",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "The life lost is rounded up, not the remaining life total. For example, if the target player has 7 life, they lose 4 life and end up with 3. Similarly, the number of cards drawn is rounded up, not the number of cards remaining in the library."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "To draw the cards, first the player determines how many cards to draw, then draws them. This event may be modified so that a different number of cards are actually drawn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Pridemalkin
 {
     "name": "Pridemalkin",
