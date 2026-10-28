@@ -488,6 +488,64 @@
     ]
 }
 
+// Goldlust Triad
+{
+    "name": "Goldlust Triad",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nMyriad (Whenever this creature attacks, for each opponent other than defending player, you may create a token copy that's tapped and attacking that player or a planeswalker they control. Exile the tokens at end of combat.)\nWhenever this creature deals combat damage to a player, create a Treasure token.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "MYRIAD"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Goldlust Triad:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "rarity": "RARE",
+        "artist": "Arif Wijaya",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/2876d57a-a17e-4892-9992-321a32562e13.jpg?1783907174",
+        "rulings": [
+            {
+                "date": "2025-04-04",
+                "text": "If the defending player is your only opponent, no tokens are put onto the battlefield."
+            },
+            {
+                "date": "2025-04-04",
+                "text": "You choose whether each token is attacking the player or a planeswalker they control as the token is created. If it's attacking a planeswalker, you choose which one. You can't have any of the tokens attack a battle."
+            },
+            {
+                "date": "2025-04-04",
+                "text": "Although the tokens enter attacking, they were never declared as attackers. Abilities that trigger whenever a creature attacks won't trigger, including the myriad ability of the tokens. If there are any costs to have a creature attack, those costs won't apply to the tokens."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Infantry Shield
 {
     "name": "Infantry Shield",
@@ -579,6 +637,89 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Ironwill Forger
+{
+    "name": "Ironwill Forger",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Orc Artificer",
+    "oracleText": "Lieutenant — At the beginning of combat on your turn, if you control your commander, target nonlegendary creature you control gains myriad until end of turn. (Whenever it attacks, for each opponent other than defending player, you may create a token copy that's tapped and attacking that player or a planeswalker they control. Exile the tokens at end of combat.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ironwill Forger:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "MYRIAD",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                "IsNonlegendary"
+                            ],
+                            "controllerPredicate": "ControlledByYou"
+                        }
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsPermanent"
+                        ],
+                        "statePredicates": [
+                            "IsCommander"
+                        ],
+                        "controllerPredicate": "OwnedByYou"
+                    }
+                },
+                "descriptionOverride": "Lieutenant — At the beginning of combat on your turn, if you control your commander, target nonlegendary creature you control gains myriad until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "rarity": "RARE",
+        "artist": "Konstantin Porubov",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/53398f76-7c8a-4009-8f28-9ce586e2c7e4.jpg?1783907184",
+        "rulings": [
+            {
+                "date": "2025-04-04",
+                "text": "If the defending player is your only opponent, no tokens are put onto the battlefield."
+            },
+            {
+                "date": "2025-04-04",
+                "text": "You choose whether each token is attacking the player or a planeswalker they control as the token is created. If it's attacking a planeswalker, you choose which one. You can't have any of the tokens attack a battle."
+            },
+            {
+                "date": "2025-04-04",
+                "text": "Each token copies exactly what was printed on the original creature and nothing else. It doesn't copy whether that creature is tapped or untapped, whether it has any counters on it or Auras and Equipment attached to it, or any non-copy effects that have changed its power, toughness, types, color, and so on."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 

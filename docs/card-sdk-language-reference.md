@@ -13996,12 +13996,14 @@ Blighted Agent, Ichor Rats, Plague Stinger, Skithiryx.
   "Myriad, myriad" (Scurry of Squirrels). The engine supplies the CR 702.116a trigger from
   [`Myriad`](../mtg-sdk/src/main/kotlin/com/wingedsheep/sdk/scripting/Myriad.kt) — pure composition:
   `Triggers.self.attacks()` → `ForEachPlayer(EachOpponent, If(Not(PlayerIs(You, DefendingPlayer)),
-  May(CreateTokenCopyOfTarget(Self, tapped, attacking, attackedPlayer = You, controller = ControllerOfSource,
-  exileAtStep = END_COMBAT), decisionMaker = ControllerOfSource)))`. Gated on the projected keyword (lost
-  with all abilities); one trigger per printed instance (CR 702.116b), exactly one for a static grant.
-  The copies enter attacking, so they never "attacked" and don't re-trigger it. The engine picks the
-  opponent rather than offering one of their planeswalkers — the CR 508.4 simplification every "enters
-  attacking" effect here makes. In a two-player game it does nothing.
+  May(CreateTokenCopyOfTarget(Self, tapped, attacking, attackedPlayer = You, attackDefender =
+  CONTROLLER_CHOOSES, controller = ControllerOfSource, exileAtStep = END_COMBAT), decisionMaker =
+  ControllerOfSource)))`. Gated on the projected keyword (lost with all abilities); one trigger per printed
+  instance (CR 702.116b), exactly one for a static grant — equipment, auras and "gains myriad until end of
+  turn" (Blade of Selves, Ironwill Forger) work through it. The copies enter attacking, so they never
+  "attacked" and don't re-trigger it. Each copy attacks "that player or a planeswalker they control": the
+  copy's controller picks, asked only when that opponent controls a planeswalker. In a two-player game it
+  does nothing.
 - `Rampage(n)` — **engine-live**, the same shape as `Bushido(n)`. Declare it with `card { rampage(n) }`
   (just this keyword ability); the engine derives CR 702.23a's "whenever this creature becomes blocked,
   it gets +N/+N until end of turn for each creature blocking it beyond the first" from

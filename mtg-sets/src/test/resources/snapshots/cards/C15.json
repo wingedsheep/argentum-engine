@@ -1,3 +1,74 @@
+// Blade of Selves
+{
+    "name": "Blade of Selves",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature has myriad. (Whenever it attacks, for each opponent other than defending player, you may create a token copy that's tapped and attacking that player or a planeswalker they control. Exile the tokens at end of combat.)\nEquip {4}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Blade of Selves:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "MYRIAD"
+            }
+        ]
+    },
+    "equipCost": "{4}",
+    "metadata": {
+        "collectorNumber": "51",
+        "rarity": "RARE",
+        "artist": "Alan Pollack",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6e8735b5-64ef-4782-8d8d-4477b409e52d.jpg?1783938105",
+        "rulings": [
+            {
+                "date": "2015-11-04",
+                "text": "If the defending player is your only opponent, no tokens are put onto the battlefield."
+            },
+            {
+                "date": "2015-11-04",
+                "text": "You choose whether each token is attacking the player or a planeswalker they control as the token is created."
+            },
+            {
+                "date": "2015-11-04",
+                "text": "If the tokens aren't creatures (perhaps because the equipped creature was an animated land), they'll enter the battlefield but they won't be attacking. You'll still exile those tokens at end of combat."
+            },
+            {
+                "date": "2015-11-04",
+                "text": "Each token copies exactly what was printed on the original creature and nothing else. It doesn't copy whether that creature is tapped or untapped, whether it has any counters on it or Auras and Equipment attached to it, or any non-copy effects that have changed its power, toughness, types, color, and so on."
+            }
+        ]
+    }
+}
+
 // Command Beacon
 {
     "name": "Command Beacon",
