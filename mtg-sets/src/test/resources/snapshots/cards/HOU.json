@@ -531,6 +531,69 @@
     ]
 }
 
+// Mirage Mirror
+{
+    "name": "Mirage Mirror",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{2}: This artifact becomes a copy of target artifact, creature, enchantment, or land until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Mirage Mirror:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "EachPermanentBecomesCopyOfTarget",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn",
+                    "affected": "Self"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact|creature|enchantment|land"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{2}: This artifact becomes a copy of target artifact, creature, enchantment, or land until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "165",
+        "rarity": "RARE",
+        "artist": "Craig J Spearing",
+        "flavorText": "Most mirrors show your reflection. Others show your potential.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/29148d7e-b398-4e19-a29e-d9a660ad5016.jpg?1783936001",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "Once Mirage Mirror's ability resolves, it no longer has that ability."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Mirage Mirror copies the printed values of the target permanent, plus any copy effects that have been applied to it. It won't copy counters on that permanent or effects that have changed its power, toughness, types, color, or so on. Notably, it won't copy effects that made the target permanent become a creature."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If you activate Mirage Mirror's ability multiple times in a turn in response to itself, then each time one of those abilities resolves, it will overwrite whatever Mirage Mirror is copying. Mirage Mirror will wind up as a copy of the permanent targeted by the last ability to resolve. When the turn ends, all instances of the ability will wear off at the same time."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Overcome
 {
     "name": "Overcome",
@@ -872,6 +935,148 @@
         ]
     },
     "colorIdentityOverride": []
+}
+
+// The Locust God
+{
+    "name": "The Locust God",
+    "manaCost": "{4}{U}{R}",
+    "typeLine": "Legendary Creature — God",
+    "oracleText": "Flying\nWhenever you draw a card, create a 1/1 blue and red Insect creature token with flying and haste.\n{2}{U}{R}: Draw a card, then discard a card.\nWhen The Locust God dies, return it to its owner's hand at the beginning of the next end step.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "The Locust God:1",
+                "trigger": "DrawEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLUE",
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Insect"
+                    ],
+                    "keywords": [
+                        "FLYING",
+                        "HASTE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/a/e/ae56d9e8-de05-456b-af32-b5992992ee15.jpg?1783936064"
+                }
+            },
+            {
+                "id": "The Locust God:3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "step": "END",
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": "TriggeringEntity",
+                        "destination": "Hand",
+                        "fromZone": "Graveyard"
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "The Locust God:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{U}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "rarity": "MYTHIC",
+        "artist": "Lius Lasahido",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4e0c1d0a-2651-4961-8b70-ff78093732ce.jpg?1783936012",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "If a spell or ability causes you to put cards into your hand without specifically using the word \"draw,\" The Locust God's first triggered ability won't trigger."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If this creature dies but leaves your graveyard before the next end step, it will remain in its new zone."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "The \"next end step\" refers to the next end step that occurs, not the end step of the next turn. If this creature dies before a turn's end step (for example, during combat), it will be returned to its owner's hand at the beginning of that turn's end step."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
 }
 
 // The Scarab God

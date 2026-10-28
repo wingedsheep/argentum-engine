@@ -2395,6 +2395,52 @@
     ]
 }
 
+// Mirrormade
+{
+    "name": "Mirrormade",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "You may have this enchantment enter as a copy of any artifact or enchantment on the battlefield.",
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersAsCopy",
+                "copyFilter": {
+                    "cardPredicates": [
+                        {
+                            "type": "Or",
+                            "predicates": [
+                                "IsArtifact",
+                                "IsEnchantment"
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "rarity": "RARE",
+        "artist": "Volkan Baǵa",
+        "flavorText": "\"Share your darkest secret and the Mirror will reveal your soul's essence.\"\n—Ceri, royal mirrorkeeper",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a10c1407-d397-4caa-b7b7-e7d91ffd4ee9.jpg?1783932654",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "If the chosen permanent is copying something else (for example, if the chosen permanent is another Mirrormade), then Mirrormade enters the battlefield as whatever the chosen permanent copied."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If Mirrormade somehow enters the battlefield at the same time as another artifact or enchantment, it can't become a copy of that permanent. You may choose only a permanent that's already on the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Oko, Thief of Crowns
 {
     "name": "Oko, Thief of Crowns",

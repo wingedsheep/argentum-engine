@@ -400,3 +400,99 @@
         "BLUE"
     ]
 }
+
+// Thrasios, Triton Hero
+{
+    "name": "Thrasios, Triton Hero",
+    "manaCost": "{G}{U}",
+    "typeLine": "Legendary Creature — Merfolk Wizard",
+    "oracleText": "{4}: Scry 1, then reveal the top card of your library. If it's a land card, put it onto the battlefield tapped. Otherwise, draw a card.\nPartner (You can have two commanders if both have partner.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywordAbilities": [
+        "Partner"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Thrasios, Triton Hero:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Scry",
+                            "count": 1
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "gathered1",
+                            "fromZone": "Library"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "gathered1",
+                            "ifNotEmpty": {
+                                "type": "MoveCollection",
+                                "from": "gathered1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield",
+                                    "placement": "Tapped"
+                                }
+                            },
+                            "ifEmpty": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "land"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "RARE",
+        "artist": "Josu Hernaiz",
+        "flavorText": "Beneath crashing waves lies an ocean of secrets waiting to be explored.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/21e27b91-c7f1-4709-aa0d-8b5d81b22a0a.jpg?1783937081",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "The nonland card you reveal will be the card you draw."
+            },
+            {
+                "date": "2016-11-08",
+                "text": "No player may take another action while you're resolving the activated ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}

@@ -1,3 +1,61 @@
+// Freed from the Real
+{
+    "name": "Freed from the Real",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\n{U}: Tap enchanted creature.\n{U}: Untap enchanted creature.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Freed from the Real:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{U}"
+                    }
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "EnchantedCreature"
+                },
+                "descriptionOverride": "{U}: Tap enchanted creature."
+            },
+            {
+                "id": "Freed from the Real:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{U}"
+                    }
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "EnchantedCreature",
+                    "tap": false
+                },
+                "descriptionOverride": "{U}: Untap enchanted creature."
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "artist": "Scott M. Fischer",
+        "flavorText": "When a strong mind moves, form and energy shift to heed it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/9/e9ecee02-12c0-4aed-a679-41bce95e0cda.jpg?1783944164"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Hidetsugu's Second Rite
 {
     "name": "Hidetsugu's Second Rite",
@@ -53,6 +111,58 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Kami of the Crescent Moon
+{
+    "name": "Kami of the Crescent Moon",
+    "manaCost": "{U}{U}",
+    "typeLine": "Legendary Creature — Spirit",
+    "oracleText": "At the beginning of each player's draw step, that player draws an additional card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kami of the Crescent Moon:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "DRAW",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "rarity": "RARE",
+        "artist": "Darrell Riche",
+        "flavorText": "\"He's a lot like me, that masterless little kami . . . unimpressed by grandeur and never at a loss for a trick.\"\n—Toshiro Umezawa",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f01ee008-76dd-4d4d-8273-ad5b28c8a2c7.jpg?1783944163",
+        "rulings": [
+            {
+                "date": "2005-06-01",
+                "text": "The additional draw triggers just after the normal draw for the turn happens."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

@@ -894,6 +894,55 @@
     ]
 }
 
+// Tidespout Tyrant
+{
+    "name": "Tidespout Tyrant",
+    "manaCost": "{5}{U}{U}{U}",
+    "typeLine": "Creature — Djinn",
+    "oracleText": "Flying\nWhenever you cast a spell, return target permanent to its owner's hand.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tidespout Tyrant:1",
+                "trigger": "SpellCastEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "rarity": "RARE",
+        "artist": "Dany Orizio",
+        "flavorText": "He unmakes the world in his own image.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/44865244-2b9f-4734-a4da-49613b23ee4d.jpg?1783943434"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Trygon Predator
 {
     "name": "Trygon Predator",

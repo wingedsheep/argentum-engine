@@ -104,6 +104,44 @@
     ]
 }
 
+// Elvish Spirit Guide
+{
+    "name": "Elvish Spirit Guide",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Elf Spirit",
+    "oracleText": "Exile this card from your hand: Add {G}.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Elvish Spirit Guide:1",
+                "cost": "CostExileSelf",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "activateFromZone": "Hand",
+                "descriptionOverride": "Exile this card from your hand: Add {G}."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "89",
+        "rarity": "UNCOMMON",
+        "artist": "Julie Baroh",
+        "flavorText": "\"We are never without guidance, if we but seek it.\"\n—Taaveti of Kelsinko, Elvish Hunter",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5b94f37f-ebdf-4b79-a615-58331d27cf4e.jpg?1783947172"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Force of Will
 {
     "name": "Force of Will",
