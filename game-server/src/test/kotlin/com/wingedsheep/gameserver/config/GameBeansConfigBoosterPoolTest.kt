@@ -243,6 +243,44 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
         (dfcRares.toDouble() / packs) shouldBe ((1.0 / 6) plusOrMinus 0.03)
     }
 
+    test("Zendikar Rising draft pack opens exactly one modal double-faced card beside 10 commons and a rare") {
+        // Draft Booster (MTGJSON `booster.draft`): 10 commons, 3 uncommons, 1 rare or mythic and a basic land
+        // (supplied at deck building), one of the uncommons or the rare being a modal double-faced card — the
+        // double-faced card is the rare in 81 packs of 444. The foil replacing a common is not modelled.
+        val znr = boosterGenerator.availableSets["ZNR"].shouldNotBeNull()
+        znr.fullyImplemented shouldBe true
+        znr.boosterStrategy.shouldBeInstanceOf<DedicatedSlotBooster>()
+        val eligible = znr.cards.filter { it.metadata.inBooster && !it.typeLine.isBasicLand }
+        // Scryfall `set:znr is:booster -t:basic`.
+        eligible.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.COMMON to 101, Rarity.UNCOMMON to 80, Rarity.RARE to 64, Rarity.MYTHIC to 20,
+        )
+        // Scryfall `set:znr is:booster is:dfc`: 20 uncommons, 11 rares, 5 mythics.
+        eligible.filter { it.isDoubleFaced }.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.UNCOMMON to 20, Rarity.RARE to 11, Rarity.MYTHIC to 5,
+        )
+        val eligibleNames = eligible.mapTo(hashSetOf()) { it.name }
+        var dfcRares = 0
+        var mythics = 0
+        val packs = 2000
+        repeat(packs) {
+            val pack = boosterGenerator.generateBooster("ZNR")
+            pack.size shouldBe 14
+            pack.map { it.name }.toSet().size shouldBe 14
+            withClue("pack ${pack.map { it.name }} holds an off-sheet card") {
+                pack.all { it.name in eligibleNames } shouldBe true
+            }
+            pack.count { it.isDoubleFaced } shouldBe 1
+            pack.count { it.metadata.rarity == Rarity.COMMON } shouldBe 10
+            pack.count { it.metadata.rarity == Rarity.UNCOMMON } shouldBe 3
+            val rare = pack.single { it.metadata.rarity == Rarity.RARE || it.metadata.rarity == Rarity.MYTHIC }
+            if (rare.isDoubleFaced) dfcRares++
+            if (rare.metadata.rarity == Rarity.MYTHIC) mythics++
+        }
+        (dfcRares.toDouble() / packs) shouldBe ((81.0 / 444) plusOrMinus 0.03)
+        (mythics.toDouble() / packs) shouldBe (((15.0 + 45.0) / 444) plusOrMinus 0.03)
+    }
+
     test("March of the Machine: The Aftermath opens a 5-card Epilogue Booster from its 50-card pool") {
         // 2 uncommons, a rare/mythic and two any-rarity wildcards (foil + Booster Fun) that are each a
         // rare or mythic about 1 time in 6; the ad card/token slot is not modelled, so 5 playable cards.
@@ -461,7 +499,7 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
             "POR" to 13, "P02" to 13, "S99" to 13, "VOW" to 14, "KHM" to 15, "LCI" to 15, "MOM" to 14,
             "MKM" to 13, "OTJ" to 13, "MH3" to 13, "BLB" to 13, "DSK" to 14, "FDN" to 14, "INR" to 13,
             "DFT" to 14, "TDM" to 14, "FIN" to 14, "EOE" to 13, "SPM" to 14, "TLA" to 14, "ECL" to 13,
-            "TMT" to 14, "SOS" to 13, "MSH" to 14, "HOB" to 14,
+            "TMT" to 14, "SOS" to 13, "MSH" to 14, "HOB" to 14, "ZNR" to 14,
         )
         for ((code, size) in expected) {
             boosterGenerator.availableSets[code].shouldNotBeNull().fullyImplemented shouldBe true

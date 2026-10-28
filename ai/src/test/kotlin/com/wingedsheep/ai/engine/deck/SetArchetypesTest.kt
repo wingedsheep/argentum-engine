@@ -244,6 +244,30 @@ class SetArchetypesTest : StringSpec({
         )
         synergies.archetypes.all { it.creatureTypes.isEmpty() } shouldBe true
     }
+    "Zendikar Rising exposes its ten signpost color-pair archetypes" {
+        val synergies = requireNotNull(SetArchetypes.getForSet("znr"))
+
+        synergies.setName shouldBe "Zendikar Rising"
+        synergies.archetypes.associate { it.name to it.colors.toSet() } shouldBe mapOf(
+            "Party Up" to setOf(Color.WHITE, Color.BLUE),
+            "Rogue Mill" to setOf(Color.BLUE, Color.BLACK),
+            "Party Aggro" to setOf(Color.BLACK, Color.RED),
+            "Landfall Aggro" to setOf(Color.RED, Color.GREEN),
+            "Lands Ramp" to setOf(Color.GREEN, Color.WHITE),
+            "Clerics Life Gain" to setOf(Color.WHITE, Color.BLACK),
+            "Wizards Spells" to setOf(Color.BLUE, Color.RED),
+            "Counters & Kicker" to setOf(Color.BLACK, Color.GREEN),
+            "Warriors Aggro" to setOf(Color.RED, Color.WHITE),
+            "Kicker Ramp" to setOf(Color.GREEN, Color.BLUE),
+        )
+        synergies.archetypes.map { it.colors.toSet() }.toSet() shouldBe ALL_COLOR_PAIRS
+        synergies.archetypes.filter { it.creatureTypes.isNotEmpty() }.associate { it.name to it.creatureTypes } shouldBe mapOf(
+            "Rogue Mill" to listOf("Rogue"),
+            "Clerics Life Gain" to listOf("Cleric"),
+            "Wizards Spells" to listOf("Wizard"),
+            "Warriors Aggro" to listOf("Warrior"),
+        )
+    }
     "Kaldheim exposes its ten signpost color-pair archetypes" {
         val synergies = requireNotNull(SetArchetypes.getForSet("khm"))
 

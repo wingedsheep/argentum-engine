@@ -30,6 +30,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-znr',
+    date: '2026-10-28',
+    kind: 'set',
+    setCode: 'ZNR',
+    title: 'Zendikar Rising is complete',
+    body:
+      "Return to Zendikar's adventure world: gather a party of Clerics, Rogues, Warriors and Wizards to power party payoffs, kick spells for bigger effects, and trigger landfall with every land drop. Every pack opens a modal double-faced card that is a spell or a land as you need it, so decks rarely flood or screw while they race, mill or ramp.",
+    tryIf: 'landfall, kicker and building a party of adventurers',
+  },
+  {
     id: 'set-khm',
     date: '2026-10-27',
     kind: 'set',
