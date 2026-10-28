@@ -661,7 +661,7 @@ class StaticAbilityHandler(
     /**
      * Convert SetLandTypesForGroup to two continuous effects, realizing CR 305.7 for a whole
      * group of lands (Blood Moon / Magus of the Moon / Zhao's "nonbasic lands are Mountains").
-     * - Layer 4 (TYPE): SetBasicLandTypes replaces the old basic land subtypes with the new ones.
+     * - Layer 4 (TYPE): SetBasicLandTypes replaces every old land type (CR 205.3i) with the new ones.
      * - Layer 6 (ABILITY): RemoveAllAbilities strips the lands' printed abilities. The new type's
      *   intrinsic mana ability (Mountain → "{T}: Add {R}") is derived from the projected subtypes
      *   by IntrinsicManaAbilities and survives the ability suppression, so the lands still tap for

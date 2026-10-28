@@ -531,7 +531,7 @@ data class GrantAdditionalTypesToGroup(
  *
  * This lowers to two continuous effects (see `StaticAbilityHandler.convertSetLandTypesForGroup`):
  * - Layer 4 (TYPE): [com.wingedsheep.engine.mechanics.layers.Modification.SetBasicLandTypes] —
- *   removes the old basic land subtypes and adds [landTypes] (CR 305.7).
+ *   removes every old land type (CR 205.3i) and adds [landTypes] (CR 305.7).
  * - Layer 6 (ABILITY): [com.wingedsheep.engine.mechanics.layers.Modification.RemoveAllAbilities] —
  *   removes the lands' printed abilities. The new basic land type's intrinsic mana ability
  *   (e.g. "{T}: Add {R}" for Mountain) is *not* removed: it is derived from the projected
@@ -540,7 +540,7 @@ data class GrantAdditionalTypesToGroup(
  * @property filter Which lands are affected (e.g. all nonbasic lands — [GroupFilter] over
  *   `GameObjectFilter.NonbasicLand`, both players' lands).
  * An empty [landTypes] is "loses all land types and abilities" — every land type is removed and
- * none is added (Lithoform Blight, with `filter = GroupFilter.attachedCreature()` for the
+ * none is added (Lithoform Blight, with an `AttachedTo`-scoped land filter for the
  * enchanted land). Non-land subtypes and all card types / supertypes are kept.
  *
  * @property landTypes The basic land type(s) to set (e.g. {"Mountain"}), replacing every land type

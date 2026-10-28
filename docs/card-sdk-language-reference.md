@@ -10282,7 +10282,7 @@ staticAbility {
   (`filter = GroupFilter(GameObjectFilter.NonbasicLand)`, `landTypes = setOf("Mountain")`); Zhao,
   the Moon Slayer gates the same on `Conditions.SourceCounterCountAtLeast(CounterType.CONQUEROR, 1)`.
   An **empty** `landTypes` is "loses all land types and abilities": pair it with
-  `filter = GroupFilter.attachedCreature()` and `GrantActivatedAbility` for the replacement mana
+  `filter = GroupFilter(GameObjectFilter.Land, scope = Scope.AttachedTo)` and `GrantActivatedAbility` for the replacement mana
   abilities (granted abilities survive the wipe). (Lithoform Blight)
 - `SetEnchantedLandTypeFromChosen` — "Enchanted land is the chosen type" — same, but reads the
   type from the source's `ChosenLandTypeComponent` (paired with
