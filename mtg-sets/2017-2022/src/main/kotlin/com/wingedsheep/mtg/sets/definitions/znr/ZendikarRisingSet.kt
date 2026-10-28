@@ -15,7 +15,6 @@ object ZendikarRisingSet : MtgSet {
     override val code = "ZNR"
     override val displayName = "Zendikar Rising"
     override val releaseDate = "2020-09-25"
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
