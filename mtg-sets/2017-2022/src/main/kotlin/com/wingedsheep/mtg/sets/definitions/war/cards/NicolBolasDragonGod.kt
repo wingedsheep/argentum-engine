@@ -52,6 +52,7 @@ val NicolBolasDragonGod = card("Nicol Bolas, Dragon-God") {
 
     // +1: You draw a card. Each opponent exiles a card from their hand or a permanent they control.
     loyaltyAbility(+1) {
+        description = "You draw a card. Each opponent exiles a card from their hand or a permanent they control."
         effect = Effects.DrawCards(1) then Effects.Pipeline {
             val (chosen) = forEachPlayerCollecting(Player.EachOpponent) {
                 val pool = gather(CardSource.FromMultipleZones(listOf(Zone.HAND, Zone.BATTLEFIELD), Player.You))
@@ -76,6 +77,7 @@ val NicolBolasDragonGod = card("Nicol Bolas, Dragon-God") {
 
     // −8: Each opponent who doesn't control a legendary creature or planeswalker loses the game.
     loyaltyAbility(-8) {
+        description = "Each opponent who doesn't control a legendary creature or planeswalker loses the game."
         effect = Effects.ForEachPlayer(
             Player.EachOpponent,
             Effects.If(

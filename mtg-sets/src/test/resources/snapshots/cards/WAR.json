@@ -4651,7 +4651,8 @@
                     ]
                 },
                 "timing": "SorcerySpeed",
-                "isPlaneswalkerAbility": true
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You draw a card. Each opponent exiles a card from their hand or a permanent they control."
             },
             {
                 "id": "Nicol Bolas, Dragon-God:2",
@@ -4716,7 +4717,8 @@
                     }
                 },
                 "timing": "SorcerySpeed",
-                "isPlaneswalkerAbility": true
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Each opponent who doesn't control a legendary creature or planeswalker loses the game."
             }
         ],
         "staticAbilities": [
