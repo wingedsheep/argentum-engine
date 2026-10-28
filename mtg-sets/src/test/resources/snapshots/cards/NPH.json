@@ -547,6 +547,60 @@
     ]
 }
 
+// Jin-Gitaxias, Core Augur
+{
+    "name": "Jin-Gitaxias, Core Augur",
+    "manaCost": "{8}{U}{U}",
+    "typeLine": "Legendary Creature — Phyrexian Praetor",
+    "oracleText": "Flash\nAt the beginning of your end step, draw seven cards.\nEach opponent's maximum hand size is reduced by seven.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Jin-Gitaxias, Core Augur:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 7
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyMaximumHandSize",
+                "player": "EachOpponent",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": -7
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "rarity": "MYTHIC",
+        "artist": "Eric Deschamps",
+        "flavorText": "\"It is not a goal, but a process—the process of creating the perfect Phyrexia.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/d/bd46fc9f-5b92-44d7-8940-2f39b0962b8f.jpg?1783941319"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Karn Liberated
 {
     "name": "Karn Liberated",

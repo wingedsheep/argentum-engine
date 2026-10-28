@@ -1469,10 +1469,8 @@ data object NoMaximumHandSize : ProjectedStaticAbility {
  * effect: the cleanup step ([com.wingedsheep.engine.core.CleanupPhaseManager]) scans the
  * battlefield for this ability and, for each one whose [player] scope (resolved relative to
  * the source's controller) includes the discarding player, evaluates [amount] and discards
- * down to it. When several set-maximum abilities apply to the same player, the engine uses
- * the most restrictive (smallest) value — a deterministic stand-in for timestamp ordering,
- * since maximum hand size is a player value with no Rule 613 layer. A [NoMaximumHandSize]
- * controlled by that player still wins outright (no discard at all).
+ * down to it. It, [NoMaximumHandSize] and [ModifyMaximumHandSize] apply in CR 613.11
+ * timestamp order (each static dated by its permanent's battlefield-entry timestamp).
  *
  * Gate it behind a [ConditionalStaticAbility] for "as long as …" forms — the cleanup read
  * unwraps the conditional and evaluates its [Condition] against the source's controller.
@@ -1505,6 +1503,44 @@ data class SetMaximumHandSize(
 ) : StaticAbility {
     override val description: String =
         "${player.possessive.replaceFirstChar { it.uppercase() }} maximum hand size is ${amount.description}"
+
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newAmount = amount.applyTextReplacement(replacer)
+        return if (newAmount !== amount) copy(amount = newAmount) else this
+    }
+}
+
+/**
+ * Raise or lower the maximum hand size of a scoped set of players by a dynamic amount while the
+ * holder is on the battlefield and has the ability — "Each opponent's maximum hand size is
+ * reduced by seven" (Jin-Gitaxias, Core Augur). [amount] is signed: negative reduces, positive
+ * increases.
+ *
+ * Read at cleanup by `com.wingedsheep.engine.core.MaximumHandSize` off each permanent's
+ * *projected* static abilities, with [player] resolved relative to the holder's controller. It
+ * joins [SetMaximumHandSize] and [NoMaximumHandSize] in CR 613.11 timestamp order: a later set
+ * overrides an earlier reduction, and a player with no maximum hand size has nothing to modify.
+ * The result is clamped to ≥ 0 after every effect has applied.
+ *
+ * @property player Whose maximum hand size changes, relative to the holder's controller.
+ * @property amount The signed change (negative reduces).
+ */
+@SerialName("ModifyMaximumHandSize")
+@Serializable
+data class ModifyMaximumHandSize(
+    val player: Player = Player.You,
+    val amount: DynamicAmount
+) : ProjectedStaticAbility {
+    override val description: String
+        get() {
+            val whose = player.possessive.replaceFirstChar { it.uppercase() }
+            val fixed = amount as? DynamicAmount.Fixed
+            return when {
+                fixed != null && fixed.amount < 0 -> "$whose maximum hand size is reduced by ${-fixed.amount}"
+                fixed != null -> "$whose maximum hand size is increased by ${fixed.amount}"
+                else -> "$whose maximum hand size is changed by ${amount.description}"
+            }
+        }
 
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newAmount = amount.applyTextReplacement(replacer)

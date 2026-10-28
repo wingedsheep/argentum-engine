@@ -11950,14 +11950,23 @@ staticAbility {
   `GrantHexproofToController` / `GrantShroudToController`.
 - `SetMaximumHandSize(player, amount)` — sets the maximum hand size of a `player` scope (`You` /
   `EachOpponent` / `Each`, resolved relative to the source's controller) to a `DynamicAmount`, read at
-  cleanup (Twenty-Toed Toad: `SetMaximumHandSize(Player.You, DynamicAmounts.fixed(20))`). It, `NoMaximumHandSize` and
-  the rest-of-game `RemoveMaximumHandSize` apply in **timestamp order** (CR 613.11; a static takes its
+  cleanup (Twenty-Toed Toad: `SetMaximumHandSize(Player.You, DynamicAmounts.fixed(20))`). It, `NoMaximumHandSize`,
+  `ModifyMaximumHandSize` and the rest-of-game `RemoveMaximumHandSize` apply in **timestamp order** (CR 613.11; a static takes its
   permanent's battlefield-entry timestamp, or for a granted `NoMaximumHandSize` the later of the holder's and
   the granter's, CR 613.7a) and the latest wins — Spellbook then Toad is twenty, Toad
   then Spellbook is no maximum. Gate it behind a `ConditionalStaticAbility` for an "as
   long as …" form — the cleanup read unwraps the conditional and evaluates its condition against the
   source's controller. (Winter, Misanthropic Guide — `ConditionalStaticAbility(SetMaximumHandSize(
   EachOpponent, Subtract(Fixed(7), AggregateZone(You, GRAVEYARD, Any, DISTINCT_TYPES))), Delirium())`.)
+- `ModifyMaximumHandSize(player, amount)` — raises or lowers a `player` scope's maximum hand size by a
+  signed `DynamicAmount` (negative reduces) while the holder has the ability (Jin-Gitaxias, Core Augur:
+  `ModifyMaximumHandSize(Player.EachOpponent, DynamicAmounts.fixed(-7))`). A `ProjectedStaticAbility`:
+  `MaximumHandSize` reads it off projection like `NoMaximumHandSize`, the scope resolved relative to the
+  holder's controller, so a granted one counts and losing all abilities ends it. It joins
+  `SetMaximumHandSize` / `NoMaximumHandSize` / `RemoveMaximumHandSize` in **timestamp order** (CR 613.11):
+  it adjusts whatever limit stands at its timestamp, a later set overrides it, and a player with no maximum
+  hand size has nothing to modify. The result is clamped to ≥ 0. For the one-shot "reduced by N for the rest
+  of the game" use the effect `Effects.ReduceMaximumHandSize` (§4).
 - `DampLandManaProduction` — a land tapped for 2+ mana produces `{C}` instead. (Damping Sphere)
 - `WinCoinFlips(firstFlipEachTurn = false)` — a coin-flip result replacement (CR 705.3): the
   controller's coin flips come up heads / are won. `firstFlipEachTurn = true` restricts it to the
