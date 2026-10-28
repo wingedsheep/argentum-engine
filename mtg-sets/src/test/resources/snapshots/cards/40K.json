@@ -267,3 +267,99 @@
         "RED"
     ]
 }
+
+// Ghyrson Starn, Kelermorph
+{
+    "name": "Ghyrson Starn, Kelermorph",
+    "manaCost": "{1}{U}{R}",
+    "typeLine": "Legendary Creature — Tyranid Human",
+    "oracleText": "Ward {2} (Whenever this creature becomes the target of a spell or ability an opponent controls, counter it unless that player pays {2}.)\nThree Autostubs — Whenever another source you control deals exactly 1 damage to a permanent or player, Ghyrson Starn deals 2 damage to that permanent or player.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{2}"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ghyrson Starn, Kelermorph:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientAnyOf",
+                        "options": [
+                            {
+                                "type": "RecipientObject",
+                                "filter": "permanent"
+                            },
+                            {
+                                "type": "RecipientPlayer",
+                                "player": "Any"
+                            }
+                        ]
+                    },
+                    "sourceFilter": "ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "DamageRecipient"
+                },
+                "triggerRestriction": {
+                    "type": "All",
+                    "conditions": [
+                        {
+                            "type": "EntityMatches",
+                            "entity": "TriggeringEntity",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "StateNot",
+                                        "predicate": "IsSource"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "ContextProperty",
+                                "key": "TRIGGER_DAMAGE_AMOUNT"
+                            },
+                            "operator": "EQ",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "rarity": "RARE",
+        "artist": "Aaron J. Riley",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/a/fa7349d9-c82f-4cf8-a852-92168d1f4966.jpg?1783920850"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}

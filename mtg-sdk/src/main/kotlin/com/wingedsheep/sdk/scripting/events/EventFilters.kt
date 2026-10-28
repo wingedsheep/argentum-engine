@@ -128,6 +128,15 @@ sealed interface Recipient {
         /** "An opponent or battle" — Bloodfeather Phoenix's "deals damage to an opponent or battle". */
         val OpponentOrBattle: Recipient = AnyOf(listOf(Opponent, Object(GameObjectFilter.Battle)))
 
+        /**
+         * "A permanent or player" — Ghyrson Starn, Kelermorph's "deals exactly 1 damage to a permanent
+         * or player". It reaches every damage recipient [Any] does, but it is a *recipient-restricted*
+         * form: simultaneous combat damage one source deals to several recipients stays one trigger per
+         * recipient instead of folding into one trigger carrying the total, as the unrestricted [Any]
+         * does ("whenever this deals damage"). Keep it distinct from [Any].
+         */
+        val PermanentOrPlayer: Recipient = AnyOf(listOf(AnyPermanent, AnyPlayer))
+
         /** "A creature or player" — Ertha Jo, Frontier Mentor's "an ability that targets a creature or player". */
         val CreatureOrPlayer: Recipient = AnyOf(listOf(Object(GameObjectFilter.Creature), AnyPlayer))
 

@@ -7428,6 +7428,17 @@ Named constants keep card code readable: `Any` (default — any player or object
 Beatstick), `OpponentOrBattle` ("deals damage to an opponent or battle" — Bloodfeather Phoenix), `CreatureOrPlayer`, `OpponentOrPermanentTheyControl`. Anything else is
 spelled with the constructors: `Recipient.Object(GameObjectFilter.Creature.withSubtype("Vampire"))`.
 
+`PermanentOrPlayer` ("a permanent or player") reaches every damage recipient `Any` does but is a
+*recipient-restricted* form, so it does not take the simultaneous-damage fold: one source dealing combat
+damage to a blocker and (trampling over) the player triggers once per recipient, each with its own
+`TRIGGER_DAMAGE_AMOUNT`, where an unrestricted `Any` trigger fires once with the total. Use it whenever the
+effect names "that permanent or player" or gates on the per-recipient amount. Ghyrson Starn, Kelermorph —
+"whenever another source you control deals exactly 1 damage to a permanent or player, Ghyrson Starn deals 2
+damage to that permanent or player" — is `Triggers.a(Any.youControl()).dealsDamage(Recipient.PermanentOrPlayer)`
++ `triggerRestriction = Conditions.All(EntityMatches(TriggeringEntity, Any.notSourceItself()),
+CompareAmounts(triggerDamageAmount(), EQ, fixed(1)))` + `Effects.DealDamage(2, EffectTarget.DamageRecipient)`
+("another source" is Talon of Pain's restriction, since the observer's `TriggeringEntity` is the damage source).
+
 Zone-change trigger filters also honor `sourceItself()` and its negation against the observing
 source identity, including branches of a heterogeneous filter union. This permits a single
 ANY-bound trigger for “this permanent or another matching permanent enters” without treating
