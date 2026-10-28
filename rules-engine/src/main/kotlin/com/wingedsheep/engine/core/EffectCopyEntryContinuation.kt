@@ -65,3 +65,29 @@ data class EffectEntryChoiceContinuation(
     val entityId: EntityId,
     val question: EntersWithChoiceOnBattlefieldContinuation,
 ) : AnswerContinuation
+
+/**
+ * Pauses an effect that puts [entityId] onto the battlefield to ask its controller whether to pay
+ * its [com.wingedsheep.sdk.scripting.EntersOnlyIfPaid] [cost]. The resumer pays (or not), records
+ * the answer on [context] and replays [effect]; an unpaid entrant goes to its owner's graveyard.
+ */
+@Serializable
+data class EffectEntryPaymentContinuation(
+    val effect: Effect,
+    val context: EffectContext,
+    val entityId: EntityId,
+    val payerId: EntityId,
+    val cost: com.wingedsheep.sdk.scripting.costs.PayCost,
+) : AnswerContinuation
+
+/**
+ * Pauses a resolving permanent spell to ask whether to pay its
+ * [com.wingedsheep.sdk.scripting.EntersOnlyIfPaid] [cost]. Paid, the rest of its entry runs;
+ * declined, the card goes from the stack to its owner's graveyard and never enters.
+ */
+@Serializable
+data class EntersOnlyIfPaidSpellContinuation(
+    val spellId: EntityId,
+    val payerId: EntityId,
+    val cost: com.wingedsheep.sdk.scripting.costs.PayCost,
+) : AnswerContinuation

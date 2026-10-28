@@ -57,7 +57,7 @@ class StackResolver(
     private val permanentEntry = PermanentEntry(cardRegistry, staticAbilityHandler, conditionEvaluator = predicateEvaluator.conditions)
     private val nonPermanentSpellResolver = NonPermanentSpellResolver(zones, cardRegistry, effects, predicateEvaluator, spliceTargetValidator)
     private val permanentSpellResolver = PermanentSpellResolver(
-        cardRegistry, effects, predicateEvaluator, permanentEntry, entersWithChoicePrompt
+        cardRegistry, effects, predicateEvaluator, permanentEntry, zones, entersWithChoicePrompt
     )
     private val spellResolver = SpellResolver(
         zones = zones,
@@ -314,6 +314,10 @@ class StackResolver(
      */
     internal fun resolvePermanentSpellAfterEntryCopy(state: GameState, spellId: EntityId): ExecutionResult =
         permanentSpellResolver.resolveAfterEntryCopy(state, spellId)
+
+    /** See [PermanentSpellResolver.resolveAfterEntryPayment]. */
+    internal fun resolvePermanentSpellAfterEntryPayment(state: GameState, spellId: EntityId, paid: Boolean): ExecutionResult =
+        permanentSpellResolver.resolveAfterEntryPayment(state, spellId, paid)
 
     internal fun resolvePermanentSpellWithGrantedCopy(
         state: GameState,

@@ -34,6 +34,11 @@ data class EntryChoiceAnswers(
     val values: Map<ChoiceSlot, ChoiceValue> = emptyMap(),
     val riotInstances: Int? = null,
     val riotModes: List<String> = emptyList(),
+    /**
+     * The [com.wingedsheep.sdk.scripting.EntersOnlyIfPaid] answer: `true` paid, `false` declined or
+     * unable to pay, `null` not asked yet ([EffectEntryPayments]).
+     */
+    val paidToEnter: Boolean? = null,
 )
 
 /**

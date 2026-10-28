@@ -1555,6 +1555,7 @@ class StaticAbilityHandler(
             is com.wingedsheep.sdk.scripting.EntersWithRevealCounters,
             is com.wingedsheep.sdk.scripting.EntersWithExileCounters,
             is com.wingedsheep.sdk.scripting.OnEnterRun,
+            is com.wingedsheep.sdk.scripting.EntersOnlyIfPaid,
             // Transform-time: read off the new face by flipDfcInPlace as it turns over (CR 712.20).
             is com.wingedsheep.sdk.scripting.AttachToPlayerAsTransforms,
             is com.wingedsheep.sdk.scripting.BecomesCopyAsTransforms -> false

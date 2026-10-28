@@ -358,6 +358,8 @@ val engineSerializersModule = SerializersModule {
         subclass(EffectCopyEntryContinuation::class)
         subclass(GrantedEntryCopyOrderContinuation::class)
         subclass(EffectEntryChoiceContinuation::class)
+        subclass(EffectEntryPaymentContinuation::class)
+        subclass(EntersOnlyIfPaidSpellContinuation::class)
         subclass(EffectDiscardDestinationContinuation::class)
         subclass(EffectDiscardOrderContinuation::class)
         subclass(EffectCopyAuraEntryContinuation::class)

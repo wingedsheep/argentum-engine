@@ -441,6 +441,50 @@
     ]
 }
 
+// Mox Diamond
+{
+    "name": "Mox Diamond",
+    "manaCost": "{0}",
+    "typeLine": "Artifact",
+    "oracleText": "If this artifact would enter, you may discard a land card instead. If you do, put this artifact onto the battlefield. If you don't, put it into its owner's graveyard.\n{T}: Add one mana of any color.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Mox Diamond:1",
+                "cost": "CostTap",
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersOnlyIfPaid",
+                "cost": {
+                    "type": "PayAtom",
+                    "atom": {
+                        "type": "AtomDiscard",
+                        "filter": "land"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "rarity": "RARE",
+        "artist": "Dan Frazier",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/28028830-83ed-45e2-b495-3b9ad9d3e988.jpg?1783946538",
+        "rulings": [
+            {
+                "date": "2008-05-01",
+                "text": "If you don't discard a land card, Mox Diamond never enters. It won't trigger abilities that look for something entering, and you won't get the opportunity to tap it for mana."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Mulch
 {
     "name": "Mulch",

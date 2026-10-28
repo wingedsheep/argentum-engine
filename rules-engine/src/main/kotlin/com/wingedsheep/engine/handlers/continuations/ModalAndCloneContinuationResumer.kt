@@ -37,6 +37,8 @@ class ModalAndCloneContinuationResumer(
         resumer(EffectCopyEntryContinuation::class, ::resumeEffectCopyEntry),
         resumer(GrantedEntryCopyOrderContinuation::class, ::resumeGrantedEntryCopyOrder),
         resumer(EffectEntryChoiceContinuation::class, ::resumeEffectEntryChoice),
+        resumer(EffectEntryPaymentContinuation::class, ::resumeEffectEntryPayment),
+        resumer(EntersOnlyIfPaidSpellContinuation::class, ::resumeEntersOnlyIfPaidSpell),
         resumer(EffectDiscardDestinationContinuation::class, ::resumeEffectDiscardDestination),
         resumer(EffectDiscardOrderContinuation::class, ::resumeEffectDiscardOrder),
         resumer(EffectCopyAuraEntryContinuation::class, ::resumeEffectCopyAuraEntry),
@@ -187,6 +189,51 @@ class ModalAndCloneContinuationResumer(
         val result = services.effectExecutorRegistry.execute(state, continuation.effect, context)
         if (result.outcome !is Outcome.Done) return result.toExecutionResult()
         return checkForMore(result.stateWithOutputsHandedOn(), result.events)
+    }
+
+    /**
+     * Pay (or don't) an effect entrant's EntersOnlyIfPaid cost, record the answer and replay the
+     * move: paid, the card enters; unpaid, the zone transition sends it to the graveyard.
+     */
+    private fun resumeEffectEntryPayment(
+        state: GameState,
+        continuation: EffectEntryPaymentContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore,
+    ): ExecutionResult {
+        val settled = com.wingedsheep.engine.handlers.effects.EntryPayment.settle(
+            state, response, continuation.payerId, continuation.entityId, continuation.cost, services.costPaymentService
+        ) ?: return ExecutionResult.error(state, "Unexpected response for an enter-only-if-paid cost")
+        val context = com.wingedsheep.engine.handlers.effects.EffectEntryPayments.recorded(
+            continuation.context, continuation.entityId, settled.paid)
+        val result = services.effectExecutorRegistry.execute(settled.state, continuation.effect, context)
+        if (result.outcome !is Outcome.Done) {
+            return result.toExecutionResult().let { it.copy(events = settled.events + it.events) }
+        }
+        return checkForMore(result.stateWithOutputsHandedOn(), settled.events + result.events)
+    }
+
+    /**
+     * Pay (or don't) a resolving permanent spell's EntersOnlyIfPaid cost. Paid, the rest of its
+     * entry runs — and, like every resumer that finishes a permanent spell's entry, reports it
+     * resolved. Unpaid, it goes from the stack to its owner's graveyard without entering.
+     */
+    private fun resumeEntersOnlyIfPaidSpell(
+        state: GameState,
+        continuation: EntersOnlyIfPaidSpellContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore,
+    ): ExecutionResult {
+        val settled = com.wingedsheep.engine.handlers.effects.EntryPayment.settle(
+            state, response, continuation.payerId, continuation.spellId, continuation.cost, services.costPaymentService
+        ) ?: return ExecutionResult.error(state, "Unexpected response for an enter-only-if-paid cost")
+        val name = state.getEntity(continuation.spellId)?.get<CardComponent>()?.name ?: "Unknown"
+        val entry = services.stackResolver.resolvePermanentSpellAfterEntryPayment(
+            settled.state, continuation.spellId, paid = settled.paid
+        )
+        if (entry.outcome is Outcome.Paused) return ExecutionResult.propagatePause(entry.state, settled.events + entry.events)
+        if (entry.outcome !is Outcome.Done) return entry
+        return checkForMore(entry.state, settled.events + entry.events + ResolvedEvent(continuation.spellId, name))
     }
 
     private fun resumeEffectDiscardDestination(

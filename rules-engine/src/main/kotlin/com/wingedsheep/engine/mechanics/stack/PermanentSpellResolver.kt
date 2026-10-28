@@ -27,6 +27,7 @@ internal class PermanentSpellResolver(
     private val effects: EffectExecutorRegistry,
     private val predicateEvaluator: PredicateEvaluator,
     private val permanentEntry: PermanentEntry,
+    private val zones: com.wingedsheep.engine.handlers.effects.ZoneTransitionService,
     private val entersWithChoicePrompt: EntersWithChoicePrompt
 ) {
     private val amountEvaluator = predicateEvaluator.amounts
@@ -43,12 +44,29 @@ internal class PermanentSpellResolver(
         state: GameState,
         spellId: EntityId,
         spellComponent: SpellOnStackComponent,
-        cardComponent: CardComponent?
+        cardComponent: CardComponent?,
+        entryPaid: Boolean = false,
     ): ExecutionResult {
         val controllerId = spellComponent.casterId
         val ownerId = cardComponent?.ownerId ?: controllerId
 
         val cardDef = cardComponent?.cardDefinitionId?.let { cardRegistry.getCard(it) }
+        // "If this would enter, you may [pay] instead. If you don't, put it into its owner's
+        // graveyard" (EntersOnlyIfPaid) — asked first: it decides whether the permanent enters at
+        // all, so nothing else about its entry is asked of a card that won't. Unaffordable, it goes
+        // straight to the graveyard.
+        val entryCost = com.wingedsheep.engine.handlers.effects.EntryPayment.costOf(cardDef)
+        if (entryCost != null && !entryPaid && cardComponent != null && !spellComponent.castFaceDown) {
+            if (!com.wingedsheep.engine.handlers.effects.EntryPayment.canPay(
+                    state, controllerId, entryCost, spellId, cardRegistry, predicateEvaluator)
+            ) {
+                return putIntoGraveyardInsteadOfEntering(state, spellId, ownerId)
+            }
+            return com.wingedsheep.engine.handlers.effects.EntryPayment.ask(
+                state, controllerId, spellId, cardComponent.name, entryCost, predicateEvaluator,
+                EntersOnlyIfPaidSpellContinuation(spellId, controllerId, entryCost),
+            )
+        }
         // A granted "they enter as copies of the chosen creature" (Mystic Reflection) is a copy
         // effect too: install it and skip the spell's own copy choice — in either order the
         // permanent would end up a copy of the bound object. Grants copying different objects are
@@ -72,6 +90,69 @@ internal class PermanentSpellResolver(
                 ?.let { return it }
         }
         return resolveRemainingEntry(state, spellId, spellComponent, cardComponent)
+    }
+
+    /**
+     * Finish resolving a permanent spell once its EntersOnlyIfPaid question is answered: [paid], the
+     * rest of its entry runs; otherwise it goes to its owner's graveyard and never enters.
+     */
+    fun resolveAfterEntryPayment(state: GameState, spellId: EntityId, paid: Boolean): ExecutionResult {
+        val container = state.getEntity(spellId)
+            ?: return ExecutionResult.error(state, "Spell entity not found: $spellId")
+        val spellComponent = container.get<SpellOnStackComponent>()
+            ?: return ExecutionResult.error(state, "Spell has no SpellOnStackComponent")
+        val cardComponent = container.get<CardComponent>()
+        if (!paid) {
+            return putIntoGraveyardInsteadOfEntering(state, spellId, cardComponent?.ownerId ?: spellComponent.casterId)
+        }
+        return resolvePermanentSpell(state, spellId, spellComponent, cardComponent, entryPaid = true)
+    }
+
+    /**
+     * The unpaid half of EntersOnlyIfPaid: the resolving card goes from the stack to its owner's
+     * graveyard instead of entering. It resolved — it was not countered — and a graveyard
+     * replacement (Rest in Peace) or a stack-exit rider (flashback) still decides where it lands.
+     */
+    private fun putIntoGraveyardInsteadOfEntering(state: GameState, spellId: EntityId, ownerId: EntityId): ExecutionResult {
+        val container = state.getEntity(spellId)
+            ?: return ExecutionResult.error(state, "Spell entity not found: $spellId")
+        val redirect = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
+            .checkZoneChangeRedirect(state, spellId, Zone.STACK, Zone.GRAVEYARD, predicateEvaluator = predicateEvaluator)
+        val destZone = StackExitRider.overrideZone(container) ?: redirect.destinationZone
+        // The resolving spell has already been taken off the stack (SpellResolver does that before
+        // a permanent spell's entry), so it only needs its stack-only components stripped and a
+        // place in its new zone — what [StackExitRider.moveOffStack] does for a spell still there.
+        val name = container.get<CardComponent>()?.name ?: "Unknown"
+        val offStack = if (spellId in state.stack) state.removeFromStack(spellId) else state
+        var newState = com.wingedsheep.engine.mechanics.CastCharacteristics.end(offStack, spellId)
+        newState = newState.updateEntity(spellId) { c ->
+            c.without<SpellOnStackComponent>()
+                .without<com.wingedsheep.engine.state.components.identity.TextReplacementComponent>()
+                .without<TargetsComponent>()
+                .without<com.wingedsheep.engine.state.components.identity.AfterResolveDestinationComponent>()
+        }
+        newState = newState.addToZone(ZoneKey(ownerId, destZone), spellId)
+        val event = ZoneChangeEvent(
+            spellId, name, Zone.STACK, destZone, ownerId,
+            oldObject = state.objectRef(spellId), newObject = newState.objectRef(spellId)
+        )
+        if (destZone == Zone.GRAVEYARD) {
+            newState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+                .recordSpellGraveyardArrival(newState, spellId, ownerId)
+        }
+        if (destZone == Zone.EXILE && redirect.linkSourceId != null) {
+            newState = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
+                .linkExiledToSource(newState, spellId, redirect.linkSourceId)
+        }
+        val (afterRider, riderEvents) = redirect.additionalEffect
+            ?.takeIf { destZone == redirect.destinationZone }
+            ?.let { extra ->
+                com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.applyReplacementAdditionalEffect(
+                    zones, newState, extra, redirect.effectControllerId, spellId,
+                    sourceId = redirect.effectSourceId, riderTiming = redirect.riderTiming
+                )
+            } ?: (newState to emptyList())
+        return ExecutionResult.success(afterRider, listOf(event) + riderEvents)
     }
 
     /**
