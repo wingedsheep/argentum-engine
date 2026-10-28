@@ -1923,12 +1923,8 @@ class TriggerMatcher(
      * classify a departed permanent's abilities by these, so a disjunction that names a dies / leaves
      * atom is seen exactly like the bare atom would be.
      */
-    fun battlefieldExitAtoms(trigger: EventPattern): List<EventPattern.ZoneChangeEvent> = when (trigger) {
-        is EventPattern.ZoneChangeEvent ->
-            if (trigger.from == Zone.BATTLEFIELD) listOf(trigger) else emptyList()
-        is EventPattern.AnyOf -> trigger.events.flatMap(::battlefieldExitAtoms)
-        else -> emptyList()
-    }
+    fun battlefieldExitAtoms(trigger: EventPattern): List<EventPattern.ZoneChangeEvent> =
+        com.wingedsheep.engine.event.battlefieldExitAtoms(trigger)
 
     /**
      * Check if a trigger is a death trigger (ZoneChangeEvent from battlefield to graveyard), or a
@@ -3218,4 +3214,15 @@ class TriggerMatcher(
             if (equipment) typeLine?.isEquipment == true else typeLine?.isAura == true
         }
     }
+}
+
+/**
+ * The leaves-the-battlefield atoms of [trigger] — a zone change from the battlefield, or such an
+ * atom inside a disjunction. Empty for every other trigger.
+ */
+internal fun battlefieldExitAtoms(trigger: EventPattern): List<EventPattern.ZoneChangeEvent> = when (trigger) {
+    is EventPattern.ZoneChangeEvent ->
+        if (trigger.from == Zone.BATTLEFIELD) listOf(trigger) else emptyList()
+    is EventPattern.AnyOf -> trigger.events.flatMap(::battlefieldExitAtoms)
+    else -> emptyList()
 }

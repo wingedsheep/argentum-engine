@@ -10282,6 +10282,126 @@
     ]
 }
 
+// Relic Vial
+{
+    "name": "Relic Vial",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{2}, {T}, Sacrifice a creature: Draw a card.\nAs long as you control a Cleric, this artifact has \"Whenever a creature you control dies, each opponent loses 1 life and you gain 1 life.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Relic Vial:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "{2}, {T}, Sacrifice a creature: Draw a card."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantTriggeredAbility",
+                    "ability": {
+                        "id": "Relic Vial:2",
+                        "trigger": {
+                            "type": "ZoneChangeEvent",
+                            "filter": "creature ctrl:you",
+                            "from": "Battlefield",
+                            "to": "Graveyard"
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "LoseLife",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "target": {
+                                        "type": "PlayerRef",
+                                        "player": "EachOpponent"
+                                    }
+                                },
+                                {
+                                    "type": "GainLife",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                }
+                            ]
+                        },
+                        "descriptionOverride": "Whenever a creature you control dies, each opponent loses 1 life and you gain 1 life."
+                    },
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent Cleric"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "250",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Felix",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4b9ae607-e0bc-4415-ad58-65944848bbe9.jpg?1783929311",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "Once Relic Vial's ability has triggered, that ability resolves even if you no longer control a Cleric."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If you sacrifice the only Cleric you control to activate Relic Vial's first ability, the triggered ability it gives itself triggers."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If Relic Vial leaves the battlefield at the same time as each Cleric you control, the triggered ability triggers for any creatures you control that die at the same time (possibly including those Clerics)."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "In a Two-Headed Giant game, Relic Vial's ability causes the opposing team to lose 2 life and you to gain 1 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Resolute Strike
 {
     "name": "Resolute Strike",

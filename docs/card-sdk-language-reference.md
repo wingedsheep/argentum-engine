@@ -14243,6 +14243,11 @@ Blighted Agent, Ichor Rats, Plague Stinger, Skithiryx.
   objects leave as one event, the freeze is taken before the whole batch moves — a state-based-action pass, a
   `MoveCollection` batch (`Effects.DestroyAll`), `ZoneTransitionService.moveToZoneBatch`, and a `ForEachInGroup`
   loop (via `EffectContext.lookBackGrants`) — so the Whelp still draws when the transformed permanent dies beside it.
+  The look-back holds for a source that **stays** on the battlefield too — "as long as you control a Cleric, this
+  artifact has 'Whenever a creature you control dies, …'" (Relic Vial): the same snapshot freezes every battlefield
+  permanent's conditional self-granted leaves-the-battlefield abilities (`LookBackGrants.observerSelfGrantIds`), and
+  a departure event reads those instead of the live grants. Sacrificing the only Cleric still triggers the Vial; a
+  grant whose condition only the death itself makes true (a creature card now in your graveyard) doesn't.
 - `Increment` — "Whenever you cast a spell, if the amount of mana you spent is greater than this creature's power
   or toughness, put a +1/+1 counter on this creature." (Secrets of Strixhaven). Display-only; wire the behavior with
   the `card { increment() }` builder helper, which adds the `KeywordAbility.Increment` display marker (surfacing

@@ -1453,6 +1453,36 @@ class TriggerDetector(
         }
     }
 
+    /**
+     * CR 603.10a for a source that stays on the battlefield: whether it has a conditional
+     * self-granted leaves-the-battlefield ability ("as long as you control a Cleric, this has
+     * 'whenever a creature you control dies, …'") is decided by the game state immediately before
+     * the departure, frozen onto its snapshot ([ConditionalSelfGrants.observers]). Swaps each
+     * observer's live grants for the frozen ones, and adds the observers whose grant the departure
+     * itself switched off — they hold no live ability in this event's category, so the index missed them.
+     */
+    private fun withObserverLookBack(
+        state: GameState,
+        live: List<TriggerIndex.IndexedEntity>,
+        observers: Map<EntityId, List<com.wingedsheep.sdk.scripting.AbilityId>>,
+    ): List<TriggerIndex.IndexedEntity> {
+        val result = live.mapTo(ArrayList(live.size + observers.size)) { entry ->
+            val frozen = observers[entry.entityId] ?: return@mapTo entry
+            entry.copy(abilities = ConditionalSelfGrants.lookBack(
+                entry.abilities, entry.cardComponent.cardDefinitionId, frozen, cardRegistry
+            ))
+        }
+        val battlefield = state.getBattlefield()
+        for ((observerId, frozen) in observers) {
+            if (frozen.isEmpty() || live.any { it.entityId == observerId } || observerId !in battlefield) continue
+            val cardComponent = state.getEntity(observerId)?.get<CardComponent>() ?: continue
+            val controllerId = state.projectedState.getController(observerId) ?: continue
+            val abilities = ConditionalSelfGrants.byIds(cardComponent.cardDefinitionId, frozen, cardRegistry)
+            if (abilities.isNotEmpty()) result += TriggerIndex.IndexedEntity(observerId, cardComponent, controllerId, abilities)
+        }
+        return result
+    }
+
     private fun detectTriggersForEvent(
         state: GameState,
         event: EngineGameEvent,
@@ -1463,7 +1493,12 @@ class TriggerDetector(
         val projected = state.projectedState
 
         // Check only battlefield permanents with triggers relevant to this event type
-        for (entry in index.getEntitiesForEvent(event)) {
+        val observerLookBack = (event as? ZoneChangeEvent)?.takeIf { it.isBattlefieldDeparture }
+            ?.lastKnown?.lookBackGrants?.observerSelfGrantIds
+        val entries = index.getEntitiesForEvent(event).let { live ->
+            if (observerLookBack.isNullOrEmpty()) live else withObserverLookBack(state, live, observerLookBack)
+        }
+        for (entry in entries) {
             val entityId = entry.entityId
             val cardComponent = entry.cardComponent
             val controllerId = entry.controllerId
