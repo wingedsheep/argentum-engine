@@ -21,8 +21,8 @@ import com.wingedsheep.sdk.scripting.references.Player
  * Ancestral Vision's no-mana-cost suspend shape (unpayable cost, CR 118.6, so it can only be
  * suspended or cast free; white is a printed color indicator). The return is Open the Vaults'
  * gather → move over your own graveyard: every enchantment card moves at once, and the move
- * leaves each Aura's host to its controller's choice as it enters (CR 303.4a), keeping an Aura
- * with nothing it could enchant in the graveyard (CR 303.4i).
+ * leaves each Aura's host to its controller's choice as it enters (CR 303.4f), keeping an Aura
+ * with nothing it could enchant in the graveyard (CR 303.4g).
  */
 val ResurgentBelief = card("Resurgent Belief") {
     manaCost = ""

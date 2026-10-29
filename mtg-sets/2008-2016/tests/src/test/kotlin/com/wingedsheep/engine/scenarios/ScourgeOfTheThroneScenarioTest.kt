@@ -52,11 +52,12 @@ class ScourgeOfTheThroneScenarioTest : ScenarioTestBase() {
     init {
         context("Scourge of the Throne") {
 
-            test("attacking the player tied for most life: counter, untap attackers, one extra combat") {
+            test("attacking the player with the most life: counter, untap attackers, one extra combat") {
                 val game = scenario()
                     .withPlayers("Alice", "Bob")
                     .withCardOnBattlefield(1, "Scourge of the Throne")
                     .withCardOnBattlefield(1, "Grizzly Bears")
+                    .withLifeTotal(1, 5)
                     .withCardInLibrary(1, "Mountain")
                     .withCardInLibrary(2, "Mountain")
                     .withActivePlayer(1)
@@ -87,8 +88,8 @@ class ScourgeOfTheThroneScenarioTest : ScenarioTestBase() {
                 game.declareAttackers(mapOf("Scourge of the Throne" to 2)).error shouldBe null
                 game.resolveAll()
 
-                withClue("Bob (now lower than Alice) is no longer at most life, so no second dethrone counter") {
-                    counters(game, scourge) shouldBe 1
+                withClue("Bob still has the most life, so dethrone puts a second counter on it") {
+                    counters(game, scourge) shouldBe 2
                 }
                 withClue("the second attack isn't the first this turn — it stays tapped, no new phase") {
                     game.state.getEntity(scourge)!!.has<TappedComponent>() shouldBe true

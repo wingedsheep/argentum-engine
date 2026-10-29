@@ -25,7 +25,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *
  * The cost reduction is Dragonlord's Servant's static. The attack trigger's "if" is an intervening
  * clause, checked when it triggers and again as it resolves. "Becomes a Dragon" (no "in addition to
- * its other types") replaces its creature types (CR 205.1b) — [Effects.SetCreatureSubtypes] in
+ * its other types") replaces its creature types (CR 205.1a) — [Effects.SetCreatureSubtypes] in
  * layer 4 — and the 5/5 is a base P/T set in layer 7b, so counters and pumps still apply on top.
  */
 val NogiDracoZealot = card("Nogi, Draco-Zealot") {
