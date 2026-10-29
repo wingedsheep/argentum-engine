@@ -3016,6 +3016,124 @@
     ]
 }
 
+// Naya Charm
+{
+    "name": "Naya Charm",
+    "manaCost": "{R}{G}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Naya Charm deals 3 damage to target creature.\n• Return target card from a graveyard to its owner's hand.\n• Tap all creatures target player controls.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Naya Charm deals 3 damage to target creature"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "destination": "Hand"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {},
+                                "zone": "Graveyard"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Return target card from a graveyard to its owner's hand"
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "controllerPredicate": {
+                                        "type": "ControlledByReferencedPlayer",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t2"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "body": {
+                            "type": "TapUntap",
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "t2"
+                        }
+                    ],
+                    "description": "Tap all creatures target player controls"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "180",
+        "rarity": "UNCOMMON",
+        "artist": "Jesper Ejsing",
+        "flavorText": "Deep in nature's core lies a potential unsullied by greed or civilization.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/47748c3a-c60a-4f2e-9eb8-2675c067bb9c.jpg?1783942543",
+        "rulings": [
+            {
+                "date": "2008-10-01",
+                "text": "You can choose a mode only if you can choose legal targets for that mode. If you can't choose legal targets for any of the modes, you can't cast the spell."
+            },
+            {
+                "date": "2008-10-01",
+                "text": "While the spell is on the stack, treat it as though its only text is the chosen mode. The other two modes are treated as though they don't exist. You don't choose targets for those modes."
+            },
+            {
+                "date": "2008-10-01",
+                "text": "If this spell is copied, the copy will have the same mode as the original."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Obelisk of Bant
 {
     "name": "Obelisk of Bant",

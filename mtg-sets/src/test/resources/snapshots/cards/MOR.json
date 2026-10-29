@@ -108,6 +108,80 @@
     ]
 }
 
+// Bramblewood Paragon
+{
+    "name": "Bramblewood Paragon",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Elf Warrior",
+    "oracleText": "Each other Warrior creature you control enters with an additional +1/+1 counter on it.\nEach creature you control with a +1/+1 counter on it has trample.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "otherOnly": true,
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature Warrior ctrl:you",
+                    "to": "Battlefield"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "115",
+        "rarity": "UNCOMMON",
+        "artist": "Jim Murray",
+        "flavorText": "Those who seek to escape her blades succeed only in dying on their stomachs.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/3910f5b2-17da-41e4-bf40-1c40b513fa12.jpg?1783942781",
+        "rulings": [
+            {
+                "date": "2008-04-01",
+                "text": "If a Warrior would normally enter with a certain number of +1/+1 counters on it, it enters with that many +1/+1 counters plus one on it instead. If a Warrior would normally enter with no +1/+1 counters on it, it enters with one +1/+1 counter on it instead."
+            },
+            {
+                "date": "2008-04-01",
+                "text": "The creature gets the counter if it would enter under your control. It doesn't matter who owns the creature or what zone it enters from (such as your opponent's graveyard, for example)."
+            },
+            {
+                "date": "2008-04-01",
+                "text": "The effects from more than one Bramblewood Paragon are cumulative. That is, if you have more than one Bramblewood Paragon on the battlefield, Warrior creatures you control enter with that many additional +1/+1 counters on them."
+            },
+            {
+                "date": "2008-04-01",
+                "text": "If Bramblewood Paragon enters at the same time as another Warrior (due to Living End, for example), that creature doesn't get a +1/+1 counter."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Disperse
 {
     "name": "Disperse",
@@ -1049,5 +1123,127 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Wolf-Skull Shaman
+{
+    "name": "Wolf-Skull Shaman",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Elf Shaman",
+    "oracleText": "Kinship — At the beginning of your upkeep, you may look at the top card of your library. If it shares a creature type with this creature, you may reveal it. If you do, create a 2/2 green Wolf creature token.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wolf-Skull Shaman:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Look at the top card of your library?"
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "SharesCreatureTypeWith",
+                                            "entity": "Self"
+                                        }
+                                    ]
+                                },
+                                "storeSelected": "selected1",
+                                "storeRemainder": "remainder1",
+                                "prompt": "Reveal it to create a 2/2 green Wolf creature token?",
+                                "selectedLabel": "Reveal",
+                                "remainderLabel": "Keep it hidden",
+                                "showAllCards": true
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "selected1",
+                                "ifNotEmpty": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "RevealCollection",
+                                            "from": "selected1"
+                                        },
+                                        {
+                                            "type": "CreateToken",
+                                            "power": 2,
+                                            "toughness": 2,
+                                            "colors": [
+                                                "GREEN"
+                                            ],
+                                            "creatureTypes": [
+                                                "Wolf"
+                                            ],
+                                            "imageUri": "https://cards.scryfall.io/normal/front/0/2/02a80dc2-0811-4df0-95f1-dd80ce9e24de.jpg?1783942837"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Kinship — At the beginning of your upkeep, you may look at the top card of your library. If it shares a creature type with this creature, you may reveal it. If you do, create a 2/2 green Wolf creature token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "140",
+        "rarity": "UNCOMMON",
+        "artist": "Jim Murray",
+        "flavorText": "A chorus of howls answers his call.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/804ef999-0d44-420e-ad0c-a6dcf8e9c392.jpg?1783942775",
+        "rulings": [
+            {
+                "date": "2008-04-01",
+                "text": "You don't have to reveal the top card of your library, even if it shares a creature type with the creature that has the kinship ability."
+            },
+            {
+                "date": "2008-04-01",
+                "text": "After the kinship ability finishes resolving, the card you looked at remains on top of your library."
+            },
+            {
+                "date": "2008-04-01",
+                "text": "If you have multiple creatures with kinship abilities, each triggers and resolves separately. You'll look at the same card for each one, unless you have some method of shuffling your library or moving that card to a different zone."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }

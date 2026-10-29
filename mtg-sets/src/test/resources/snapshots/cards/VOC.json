@@ -75,6 +75,78 @@
     ]
 }
 
+// Hollowhenge Overlord
+{
+    "name": "Hollowhenge Overlord",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Creature — Wolf",
+    "oracleText": "Flash\nAt the beginning of your upkeep, for each creature you control that's a Wolf or a Werewolf, create a 2/2 green Wolf creature token.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hollowhenge Overlord:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "HasAnyOfSubtypes",
+                                    "subtypes": [
+                                        "Wolf",
+                                        "Werewolf"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Wolf"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/d/5/d5f1e139-3054-4273-8a4d-faaaa9c383a8.jpg?1783924694"
+                },
+                "descriptionOverride": "At the beginning of your upkeep, for each creature you control that's a Wolf or a Werewolf, create a 2/2 green Wolf creature token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "rarity": "RARE",
+        "artist": "Milivoj Ćeran",
+        "flavorText": "The ruins of the town were a notable upgrade from the wolves' forest den.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/dac9c33c-bff1-491a-b369-ad92395283a5.jpg?1783924994",
+        "rulings": [
+            {
+                "date": "2021-11-19",
+                "text": "If you control a creature that is both a Wolf and a Werewolf, it's only counted once for Hollowhenge Overlord's triggered ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Olivia's Wrath
 {
     "name": "Olivia's Wrath",

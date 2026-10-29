@@ -31,6 +31,53 @@
     "colorIdentityOverride": []
 }
 
+// Arbor Elf
+{
+    "name": "Arbor Elf",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Elf Druid",
+    "oracleText": "{T}: Untap target Forest.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Arbor Elf:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "land Forest"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}: Untap target Forest."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "95",
+        "artist": "rk post",
+        "flavorText": "The Mul Daya elves reject their Tajuru kin, calling them arrogant tree-binders who think the roots serve the canopy.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6d32a4ed-6b43-4473-91ec-08cd5414f2f0.jpg?1783942047"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Avenger of Zendikar
 {
     "name": "Avenger of Zendikar",

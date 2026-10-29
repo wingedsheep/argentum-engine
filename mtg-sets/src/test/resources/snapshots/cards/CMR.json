@@ -291,6 +291,67 @@
     ]
 }
 
+// Anara, Wolvid Familiar
+{
+    "name": "Anara, Wolvid Familiar",
+    "manaCost": "{3}{G}",
+    "typeLine": "Legendary Creature — Wolf Beast",
+    "oracleText": "During your turn, commanders you control have indestructible. (Effects that say \"destroy\" don't destroy them. A creature with indestructible can't be destroyed by damage.)\nPartner (You can have two commanders if both have partner.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywordAbilities": [
+        "Partner"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsPermanent"
+                            ],
+                            "statePredicates": [
+                                "IsCommander"
+                            ],
+                            "controllerPredicate": "ControlledByYou"
+                        }
+                    }
+                },
+                "condition": "IsYourTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "214",
+        "rarity": "UNCOMMON",
+        "artist": "Jesper Ejsing",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/a/9a67cfaa-990c-4dcb-97a9-9c5d7316cabe.jpg?1783928801",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "If Anara is your commander, its first ability affects itself during your turn."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "Anara's first ability affects commanders you control even if you don't own them. It doesn't affect your commander if another player controls it."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "Because damage remains marked on a creature until the damage is removed as the turn ends, nonlethal damage dealt to a commander you control may become lethal if Anara leaves the battlefield during that turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Annoyed Altisaur
 {
     "name": "Annoyed Altisaur",

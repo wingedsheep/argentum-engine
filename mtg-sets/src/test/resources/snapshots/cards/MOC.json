@@ -81,3 +81,60 @@
         ]
     }
 }
+
+// Shalai and Hallar
+{
+    "name": "Shalai and Hallar",
+    "manaCost": "{1}{R}{G}{W}",
+    "typeLine": "Legendary Creature — Angel Elf",
+    "oracleText": "Flying, vigilance\nWhenever one or more +1/+1 counters are put on a creature you control, Shalai and Hallar deals that much damage to target opponent.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shalai and Hallar:1",
+                "trigger": {
+                    "type": "CountersPlacedEvent",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "filter": "creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_COUNTERS_PLACED_AMOUNT"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever one or more +1/+1 counters are put on a creature you control, Shalai and Hallar deals that much damage to target opponent."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "rarity": "MYTHIC",
+        "artist": "Mila Pesic",
+        "flavorText": "Between the angel's blade and the elf's bow, few Phyrexians made it as far as Llanowar's canopy.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/80804f25-efc3-44a2-bbae-9a97fec98009.jpg?1783917291"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN",
+        "WHITE"
+    ]
+}

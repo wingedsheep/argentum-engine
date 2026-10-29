@@ -6729,6 +6729,115 @@
     ]
 }
 
+// Tolsimir, Friend to Wolves
+{
+    "name": "Tolsimir, Friend to Wolves",
+    "manaCost": "{2}{G}{G}{W}",
+    "typeLine": "Legendary Creature — Elf Scout",
+    "oracleText": "When Tolsimir enters, create Voja, Friend to Elves, a legendary 3/3 green and white Wolf creature token.\nWhenever a Wolf you control enters, you gain 3 life and that creature fights up to one target creature you don't control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tolsimir, Friend to Wolves:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [
+                        "GREEN",
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Wolf"
+                    ],
+                    "name": "Voja, Friend to Elves",
+                    "imageUri": "https://cards.scryfall.io/normal/front/3/9/39475e91-1e71-4546-ae4a-47ea66e47536.jpg?1783933348",
+                    "legendary": true
+                },
+                "descriptionOverride": "When Tolsimir enters, create Voja, Friend to Elves, a legendary 3/3 green and white Wolf creature token."
+            },
+            {
+                "id": "Tolsimir, Friend to Wolves:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature Wolf ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        },
+                        {
+                            "type": "Fight",
+                            "target1": "TriggeringEntity",
+                            "target2": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "controllerPredicate": {
+                                "type": "ControllerNot",
+                                "predicate": "ControlledByYou"
+                            }
+                        }
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever a Wolf you control enters, you gain 3 life and that creature fights up to one target creature you don't control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "224",
+        "rarity": "RARE",
+        "artist": "Ryan Pancoast",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7fce047-49f1-40ae-8410-6501cb0f8201.jpg?1783933384",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "If Tolsimir is still on the battlefield when its enters-the-battlefield trigger resolves, its last ability will trigger as Voja is created."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "You may put Tolsimir's last ability onto the stack without choosing any target. You'll just gain 3 life. However, if you do choose a target and the target permanent is an illegal target by the time Tolsimir's last ability tries to resolve, the ability doesn't resolve. You don't gain 3 life and no creature deals or is dealt damage."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If the Wolf that entered the battlefield is no longer on the battlefield as Tolsimir's last ability resolves, no creature deals or is dealt damage, but you do gain 3 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Trusted Pegasus
 {
     "name": "Trusted Pegasus",

@@ -1,3 +1,100 @@
+// Aragorn, King of Gondor
+{
+    "name": "Aragorn, King of Gondor",
+    "manaCost": "{1}{U}{R}{W}",
+    "typeLine": "Legendary Creature — Human Noble",
+    "oracleText": "Vigilance, lifelink\nWhen Aragorn enters, you become the monarch.\nWhenever Aragorn attacks, up to one target creature can't block this turn. If you're the monarch, creatures can't block this turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE",
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aragorn, King of Gondor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "TakeDesignation",
+                    "designation": "MONARCH"
+                }
+            },
+            {
+                "id": "Aragorn, King of Gondor:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CantBlockTargetCreatures",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "PlayerHasDesignation",
+                                    "designation": "MONARCH"
+                                }
+                            },
+                            "then": {
+                                "type": "CantBlockGroup",
+                                "filter": {
+                                    "baseFilter": "creature"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "rarity": "MYTHIC",
+        "artist": "Yongjae Choi",
+        "flavorText": "\"In this place will I abide, and my heirs, unto the ending of the world.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1c7ac04c-8510-468b-aa6f-f249bde9ff87.jpg?1783916037",
+        "rulings": [
+            {
+                "date": "2023-06-16",
+                "text": "When Aragorn, King of Gondor's last ability triggers, you can choose not to target a creature, probably because you're the monarch and just want creatures to be unable to block this turn. However, if you do choose a target, and that target is illegal at the time the ability tries to resolve, the ability won't resolve and none of its effects will happen. Creatures will still be able to block this turn, even if you're the monarch."
+            },
+            {
+                "date": "2023-06-16",
+                "text": "The game starts with no monarch. Once an effect makes one player the monarch, the game will have exactly one monarch from that point forward. As a player becomes the monarch, the current monarch (if any) ceases being the monarch."
+            },
+            {
+                "date": "2023-06-16",
+                "text": "There are two inherent triggered abilities associated with being the monarch. These triggered abilities have no source and are controlled by the player who was the monarch at the time the abilities triggered. The full texts of these abilities are \"At the beginning of the monarch's end step, that player draws a card\" and \"Whenever a creature deals combat damage to the monarch, its controller becomes the monarch.\""
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Corsairs of Umbar
 {
     "name": "Corsairs of Umbar",
@@ -193,6 +290,115 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Galadriel, Light of Valinor
+{
+    "name": "Galadriel, Light of Valinor",
+    "manaCost": "{2}{G}{W}{U}",
+    "typeLine": "Legendary Creature — Elf Noble",
+    "oracleText": "Alliance — Whenever another creature you control enters, choose one that hasn't been chosen this turn —\n• Add {G}{G}{G}.\n• Put a +1/+1 counter on each creature you control.\n• Scry 2, then draw a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Galadriel, Light of Valinor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "AddMana",
+                                "color": "GREEN",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "description": "Add {G}{G}{G}"
+                        },
+                        {
+                            "effect": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "AddCounters",
+                                    "counterType": "PLUS_ONE_PLUS_ONE",
+                                    "count": 1,
+                                    "target": "IterationEntity"
+                                }
+                            },
+                            "description": "Put a +1/+1 counter on each creature you control"
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "Scry",
+                                        "count": 2
+                                    },
+                                    {
+                                        "type": "DrawCards",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    }
+                                ]
+                            },
+                            "description": "Scry 2, then draw a card"
+                        }
+                    ],
+                    "excludeModesChosenThisTurn": true,
+                    "countsAsModalSpell": false
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "498",
+        "rarity": "MYTHIC",
+        "artist": "Alexander Mokhov",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/4/f485596f-3a23-4714-ad7e-4c493ab1b530.jpg?1783914199",
+        "rulings": [
+            {
+                "date": "2023-11-03",
+                "text": "If multiple creatures enter the battlefield simultaneously, you must still choose different modes for each instance of the triggered ability that's put onto the stack. If more than three creatures enter the battlefield simultaneously, that choice is made only for the first three."
+            },
+            {
+                "date": "2023-11-03",
+                "text": "The phrase \"that hasn't been chosen this turn\" refers only to that specific Galadriel, Light of Valinor. If Galadriel leaves the battlefield and then returns to the battlefield later in the turn, it will be a new object with no memory of the modes chosen when it was previously on the battlefield."
+            },
+            {
+                "date": "2023-11-03",
+                "text": "If all three modes have been chosen this turn, Galadriel, Light of Valinor's triggered ability is removed from the stack with no effect."
+            },
+            {
+                "date": "2023-11-03",
+                "text": "It doesn't matter who has chosen any particular mode. For example, say you control Galadriel, Light of Valinor and have chosen the first two modes this turn. If an opponent gains control of Galadriel, that player can choose only the third mode this turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE",
+        "BLUE"
     ]
 }
 
@@ -1187,6 +1393,64 @@
     "colorIdentityOverride": [
         "BLUE",
         "RED"
+    ]
+}
+
+// Taunt from the Rampart
+{
+    "name": "Taunt from the Rampart",
+    "manaCost": "{3}{R}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Goad all creatures your opponents control. Until your next turn, those creatures can't block. (Until your next turn, those creatures attack each combat if able and attack a player other than you if able.)",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                }
+            },
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "Goad",
+                        "target": "IterationEntity"
+                    },
+                    {
+                        "type": "CantBlockTargetCreatures",
+                        "target": "IterationEntity",
+                        "duration": "UntilYourNextTurn"
+                    }
+                ]
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "RARE",
+        "artist": "Lorenzo Mastroianni",
+        "flavorText": "\"Is it not said that no foe has ever taken the Hornburg, if men defended it?\"\n—Aragorn",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd1eaa0e-060d-40f1-84c5-f7e8df2f824c.jpg?1783916016",
+        "rulings": [
+            {
+                "date": "2023-06-16",
+                "text": "Being goaded isn't an ability the creature has. Once it's been goaded, it must attack as detailed above even if it loses all abilities."
+            },
+            {
+                "date": "2023-06-16",
+                "text": "Attacking with a goaded creature doesn't cause it to stop being goaded. If there is an additional combat phase that turn, or if another player gains control of it before it stops being goaded, it must attack again if able."
+            },
+            {
+                "date": "2023-06-16",
+                "text": "If a creature you control has been goaded by multiple opponents, it must attack one of your opponents that hasn't goaded it, as that fulfills the maximum number of goad requirements. If a creature you control has been goaded by each of your opponents, you choose which opponent it attacks."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
     ]
 }
 
