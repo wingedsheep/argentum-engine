@@ -28,6 +28,7 @@ import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.CastFromTopOfLibraryUsesThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.GraveyardPlayPermissionUsedComponent
+import com.wingedsheep.engine.state.components.battlefield.LoyaltyAllowance
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -1393,25 +1394,32 @@ class CastPermissionUtils(
     fun hasLandPlayLeft(state: GameState, playerId: EntityId): Boolean =
         LandDropUtils.hasLandPlayLeft(state, playerId, cardRegistry, conditionEvaluator)
 
-    /** Shared by action validation and enumeration; permissions set a maximum, not a bonus. */
-    fun getMaxLoyaltyActivations(state: GameState, playerId: EntityId, walkerId: EntityId): Int {
+    /**
+     * Shared by action validation and enumeration. "N times rather than once" permissions set a
+     * maximum (the largest wins); additional-activation grants (The Chain Veil) add up on top.
+     */
+    fun getLoyaltyAllowance(state: GameState, playerId: EntityId, walkerId: EntityId): LoyaltyAllowance {
         val projected = state.projectedState
-        if (projected.getController(walkerId) != playerId) return 1
+        if (projected.getController(walkerId) != playerId) return LoyaltyAllowance()
         var maximum = 1
+        var additional = 0
         forEachStaticLoyaltyPermission(state, walkerId) { permission ->
             if (permission.times > maximum) maximum = permission.times
         }
-        // Resolved player-wide permissions (Urza Assembles the Titans) — held by the player, not a
-        // permanent, so they outlive the spell or Saga that granted them.
+        // Resolved player-wide permissions (Urza Assembles the Titans, The Chain Veil) — held by
+        // the player, not a permanent, so they outlive the spell or ability that granted them.
         state.getEntity(playerId)
             ?.get<com.wingedsheep.engine.state.components.player.LoyaltyActivationPermissionsComponent>()
             ?.grants?.forEach { grant ->
-                if (grant.times > maximum && predicateEvaluator.matches(state, projected, walkerId, grant.filter,
-                        PredicateContext(controllerId = playerId, sourceId = walkerId))) {
-                    maximum = grant.times
+                if ((grant.times > maximum || grant.additionalActivations > 0) &&
+                    predicateEvaluator.matches(state, projected, walkerId, grant.filter,
+                        PredicateContext(controllerId = playerId, sourceId = walkerId))
+                ) {
+                    if (grant.times > maximum) maximum = grant.times
+                    additional += grant.additionalActivations
                 }
             }
-        return maximum
+        return LoyaltyAllowance(maximum, additional)
     }
 
     /**

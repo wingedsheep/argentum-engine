@@ -157,8 +157,8 @@ class ActivatedAbilityEnumerator(
                     ) continue
                     val tracker = container.get<AbilityActivatedThisTurnComponent>()
                     if (tracker != null && tracker.loyaltyActivationCount > 0) {
-                        val maxActivations = context.castPermissionUtils.getMaxLoyaltyActivations(state, playerId, entityId)
-                        if (tracker.hasReachedLoyaltyLimit(maxActivations)) continue
+                        val allowance = context.castPermissionUtils.getLoyaltyAllowance(state, playerId, entityId)
+                        if (tracker.hasReachedLoyaltyLimit(allowance)) continue
                     }
                     // Check loyalty cost payability for negative costs
                     val loyaltyCost = ability.cost as? AbilityCost.Loyalty

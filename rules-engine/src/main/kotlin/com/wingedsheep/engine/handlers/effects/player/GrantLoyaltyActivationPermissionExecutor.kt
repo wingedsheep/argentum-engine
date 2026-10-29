@@ -13,7 +13,8 @@ import kotlin.reflect.KClass
 
 /**
  * Records a loyalty-activation permission on the target player — instant-speed timing (Jace's
- * Machinations), extra activations per turn (Urza Assembles the Titans), or both.
+ * Machinations), a higher per-turn maximum (Urza Assembles the Titans), additional activations
+ * (The Chain Veil), or a mix.
  *
  * Appends the grant to the player's [LoyaltyActivationPermissionsComponent]; a second grant the
  * same turn stacks and all of them expire together. Permissive
@@ -54,6 +55,7 @@ class GrantLoyaltyActivationPermissionExecutor : EffectExecutor<GrantLoyaltyActi
                             filter = effect.planeswalkerFilter,
                             instantSpeed = effect.instantSpeed,
                             times = effect.times,
+                            additionalActivations = effect.additionalActivations,
                         ),
                         removeOn = removeOn,
                     )

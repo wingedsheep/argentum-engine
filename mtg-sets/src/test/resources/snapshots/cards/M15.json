@@ -2967,6 +2967,99 @@
     ]
 }
 
+// The Chain Veil
+{
+    "name": "The Chain Veil",
+    "manaCost": "{4}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "At the beginning of your end step, if you didn't activate a loyalty ability of a planeswalker this turn, you lose 2 life.\n{4}, {T}: For each planeswalker you control, you may activate one of its loyalty abilities once this turn as though none of its loyalty abilities have been activated this turn.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "The Chain Veil:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Controller"
+                },
+                "interveningIf": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "TurnTracking",
+                            "player": "You",
+                            "tracker": "LOYALTY_ABILITIES_ACTIVATED"
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "The Chain Veil:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "GrantLoyaltyActivationPermission",
+                    "planeswalkerFilter": {
+                        "cardPredicates": [
+                            "IsPlaneswalker"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "additionalActivations": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "215",
+        "rarity": "MYTHIC",
+        "artist": "Volkan Baǵa",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/0415cc0e-979e-42cc-a56d-88d13153a7de.jpg?1783939159",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "For the first ability, it doesn't matter whether the planeswalker is still on the battlefield as your end step begins. If you activated one of its loyalty abilities that turn, The Chain Veil's triggered ability won't trigger."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Because the last ability modifies the rules of the game, it affects not only planeswalkers you control when it resolves, but also planeswalkers that come under your control later in the turn."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Each additional time The Chain Veil's last ability resolves will allow you to activate a loyalty ability of each planeswalker you control an additional time."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Triplicate Spirits
 {
     "name": "Triplicate Spirits",

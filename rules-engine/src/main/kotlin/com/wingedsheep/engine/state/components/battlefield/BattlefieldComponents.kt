@@ -806,15 +806,24 @@ data class AbilityActivatedThisTurnComponent(
 
     /**
      * The effective per-turn loyalty allowance: the larger of the controller-wide maximum
-     * [playerMax] (Oath of Teferi) and this permanent's own [loyaltyActivationLimit]. The two
-     * don't stack — each says "twice rather than only once".
+     * (Oath of Teferi) and this permanent's own [loyaltyActivationLimit] — the two don't stack,
+     * each says "twice rather than only once" — plus the allowance's additive extra activations
+     * (The Chain Veil), which do.
      */
-    fun effectiveLoyaltyLimit(playerMax: Int): Int = maxOf(playerMax, loyaltyActivationLimit)
+    fun effectiveLoyaltyLimit(allowance: LoyaltyAllowance): Int =
+        maxOf(allowance.maximum, loyaltyActivationLimit) + allowance.additional
 
-    /** @return true if the loyalty activation limit has been reached for the given player max. */
-    fun hasReachedLoyaltyLimit(playerMax: Int): Boolean =
-        loyaltyActivationCount >= effectiveLoyaltyLimit(playerMax)
+    /** @return true if the loyalty activation limit has been reached under [allowance]. */
+    fun hasReachedLoyaltyLimit(allowance: LoyaltyAllowance): Boolean =
+        loyaltyActivationCount >= effectiveLoyaltyLimit(allowance)
 }
+
+/**
+ * The loyalty activations a controller's permissions allow one planeswalker this turn (CR 606.3):
+ * [maximum] is the largest "N times rather than only once" allowance (never summed), [additional]
+ * the sum of "one more time" grants (The Chain Veil) added on top of it.
+ */
+data class LoyaltyAllowance(val maximum: Int = 1, val additional: Int = 0)
 
 /**
  * Tracks which activated abilities have been activated ever (not cleared at end of turn).

@@ -3755,7 +3755,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
 - `CantActivateLoyaltyAbilitiesEffect(target, duration)` — target can't activate planeswalkers' loyalty abilities.
   Facade: `Effects.CantActivateLoyaltyAbilities(target, duration)`. Sibling of `CantCastSpells`; compose the two for
   cards that forbid both (e.g. Revel in Silence).
-- `GrantLoyaltyActivationPermissionEffect(target, planeswalkerFilter, instantSpeed, times, duration)` — the
+- `GrantLoyaltyActivationPermissionEffect(target, planeswalkerFilter, instantSpeed, times, duration, additionalActivations)` — the
   permissive mirror: target may activate loyalty abilities of planeswalkers matching `planeswalkerFilter` more freely
   for `duration` (default `EndOfTurn`). Each axis relaxes one half of CR 606.3; the grant must relax at least one.
   A resolution-time one-shot that records the grant on the player (`LoyaltyActivationPermissionsComponent`, removed
@@ -3770,6 +3770,12 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
     "you may activate the loyalty abilities of planeswalkers you control twice this turn rather than only once".
     Lifts only the count half; sorcery timing still applies. Like the static `LoyaltyActivationPermission`, allowances
     take the largest, never a sum. **Urza Assembles the Titans** III: `Effects.ExtraLoyaltyActivations()`.
+  - `Effects.AdditionalLoyaltyActivations(count = 1, planeswalkerFilter = Planeswalker.youControl(), duration, target)` —
+    `additionalActivations = count`: "for each planeswalker you control, you may activate one of its loyalty abilities
+    once this turn as though none of its loyalty abilities have been activated this turn". Unlike `times`, these
+    **add**: summed across grants and on top of the largest maximum (Oath of Teferi, a per-permanent
+    `AllowLoyaltyActivationsThisTurn`), so two resolutions mean three activations. Covers planeswalkers that come under
+    your control later in the turn. **The Chain Veil**: `Effects.AdditionalLoyaltyActivations()`.
 - `LoyaltyActivationPermission(filter = GameObjectFilter.Planeswalker.youControl(), instantSpeed = false, times = 1)` —
   the static counterpart of `GrantLoyaltyActivationPermissionEffect`: a permission for matching permanents that lasts
   only while its source's ability applies. It must relax at least one half of CR 606.3.

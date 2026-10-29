@@ -1422,13 +1422,15 @@ data class LoyaltyAbilitiesActivatedThisTurnComponent(
 /**
  * One "you may activate loyalty abilities of [filter] more freely" permission: [instantSpeed] lifts
  * the sorcery-timing half of CR 606.3 (Jace's Machinations), [times] raises the once-per-turn half
- * (Urza Assembles the Titans; 1 leaves it alone).
+ * (Urza Assembles the Titans; 1 leaves it alone), and [additionalActivations] adds to it (The Chain
+ * Veil; summed across grants).
  */
 @Serializable
 data class LoyaltyActivationPermission(
     val filter: GameObjectFilter,
     val instantSpeed: Boolean = false,
     val times: Int = 1,
+    val additionalActivations: Int = 0,
 )
 
 /**

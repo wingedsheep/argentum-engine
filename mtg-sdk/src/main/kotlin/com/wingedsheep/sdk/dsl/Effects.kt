@@ -6491,6 +6491,27 @@ object Effects {
     )
 
     /**
+     * "For each planeswalker you control, you may activate one of its loyalty abilities once this
+     * turn as though none of its loyalty abilities have been activated this turn" (The Chain Veil)
+     * — [count] more loyalty activations this turn for each planeswalker matching
+     * [planeswalkerFilter], including ones that come under your control later. Unlike
+     * [ExtraLoyaltyActivations] these add up: each grant is [count] more, on top of the largest
+     * "twice rather than once" allowance.
+     */
+    fun AdditionalLoyaltyActivations(
+        count: Int = 1,
+        planeswalkerFilter: com.wingedsheep.sdk.scripting.GameObjectFilter =
+            com.wingedsheep.sdk.scripting.GameObjectFilter.Planeswalker.youControl(),
+        duration: Duration = Duration.EndOfTurn,
+        target: EffectTarget = EffectTarget.Controller,
+    ): Effect = com.wingedsheep.sdk.scripting.effects.GrantLoyaltyActivationPermissionEffect(
+        target = target,
+        planeswalkerFilter = planeswalkerFilter,
+        duration = duration,
+        additionalActivations = count,
+    )
+
+    /**
      * "[You] may tap [permanentFilter]s you don't control for mana" for [duration]; the mana carries
      * [restriction] (Piracy: `restriction = ManaRestriction.SpellsOnly`). Lifts CR 602.2's
      * controller-only rule for {T} mana abilities alone (CR 106.12); the mana goes to the activator.

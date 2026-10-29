@@ -882,6 +882,11 @@ data class CantActivateLoyaltyAbilitiesEffect(
  *   `planeswalkerFilter = Planeswalker.youControl()`, `times = 2`. Like the static
  *   [com.wingedsheep.sdk.scripting.LoyaltyActivationPermission], allowances take the largest, never a
  *   sum.
+ * - [additionalActivations] adds to the count half instead of raising it. The Chain Veil: "For each
+ *   planeswalker you control, you may activate one of its loyalty abilities once this turn as
+ *   though none of its loyalty abilities have been activated this turn." — `additionalActivations
+ *   = 1`. Unlike [times], these sum: across grants, and on top of the largest maximum (each Chain
+ *   Veil resolution is one more activation).
  *
  * A resolution-time one-shot that records the grant on the player, so it outlives the spell or
  * ability that made it. [planeswalkerFilter] is matched against the ability's source on projected
@@ -897,12 +902,16 @@ data class GrantLoyaltyActivationPermissionEffect(
     val planeswalkerFilter: GameObjectFilter = GameObjectFilter.Planeswalker,
     val instantSpeed: Boolean = false,
     val times: Int = 1,
-    val duration: Duration = Duration.EndOfTurn
+    val duration: Duration = Duration.EndOfTurn,
+    val additionalActivations: Int = 0
 ) : Effect {
     init {
         require(times >= 1) { "GrantLoyaltyActivationPermissionEffect.times must be at least 1, was $times" }
-        require(instantSpeed || times >= 2) {
-            "GrantLoyaltyActivationPermissionEffect must lift timing or allow at least two activations"
+        require(additionalActivations >= 0) {
+            "GrantLoyaltyActivationPermissionEffect.additionalActivations must not be negative, was $additionalActivations"
+        }
+        require(instantSpeed || times >= 2 || additionalActivations >= 1) {
+            "GrantLoyaltyActivationPermissionEffect must lift timing or allow more activations"
         }
     }
 
@@ -920,6 +929,9 @@ data class GrantLoyaltyActivationPermissionEffect(
         if (times >= 2) append(if (times == 2) " twice" else " $times times")
         if (instantSpeed) append(" on any player's turn any time you could cast an instant")
         if (times >= 2) append(" rather than only once")
+        if (additionalActivations >= 1) {
+            append(if (additionalActivations == 1) " one additional time" else " $additionalActivations additional times")
+        }
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
