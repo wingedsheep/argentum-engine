@@ -15442,8 +15442,10 @@ answer it and would silently return `false`.
   `filter`; the opponent-side mirror of `YouControl(filter, …)` and the general form of
   `OpponentControlsCreature`. Existential across opponents, so it holds when *any single* opponent
   has a match (Syr Ginger, the Meal Ender's "as long as an opponent controls a planeswalker").
-- `OpponentControlsMoreCreatures` — an opponent outpaces you.
-- `OpponentControlsMoreLands` — an opponent has more lands.
+- `OpponentControlsMoreCreatures` — some single opponent controls more creatures than you (the
+  greatest count among opponents, never their combined total; Garruk, Unleashed's −2).
+- `OpponentControlsMoreLands` — some single opponent controls more lands than you (same per-opponent
+  reading).
 - `OpponentHasMoreCardsInHand` — an opponent has more cards in hand than you (compares opponents' hand size to yours). Used by Beza, the Bounding Spring and Joined Researchers.
 - `DefendingPlayerControlsLandType(type)` — the defending player controls a land of a type (CantAttackUnless template; defender-relative, not any-opponent).
 - `CompareAmounts(left, operator, right)` — generic numeric comparison of two `DynamicAmount`s with a

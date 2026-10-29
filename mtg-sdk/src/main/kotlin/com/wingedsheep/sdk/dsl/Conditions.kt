@@ -197,21 +197,29 @@ object Conditions {
         )
 
     /**
-     * If an opponent controls more lands than you.
+     * If an opponent controls more lands than you — any single opponent, not their combined
+     * total, so it reads the greatest count among opponents.
      */
     val OpponentControlsMoreLands: ConditionInterface =
         Compare(
-            DynamicAmount.AggregateBattlefield(Player.EachOpponent, GameObjectFilter.Land),
+            DynamicAmount.GreatestAmongPlayers(
+                Player.EachOpponent,
+                DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Land)
+            ),
             ComparisonOperator.GT,
             DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Land)
         )
 
     /**
-     * If an opponent controls more creatures than you.
+     * If an opponent controls more creatures than you — any single opponent, not their combined
+     * total, so it reads the greatest count among opponents.
      */
     val OpponentControlsMoreCreatures: ConditionInterface =
         Compare(
-            DynamicAmount.AggregateBattlefield(Player.EachOpponent, GameObjectFilter.Creature),
+            DynamicAmount.GreatestAmongPlayers(
+                Player.EachOpponent,
+                DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Creature)
+            ),
             ComparisonOperator.GT,
             DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Creature)
         )

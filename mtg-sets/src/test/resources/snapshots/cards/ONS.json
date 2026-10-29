@@ -17225,9 +17225,13 @@
                         "condition": {
                             "type": "Compare",
                             "left": {
-                                "type": "AggregateBattlefield",
-                                "player": "EachOpponent",
-                                "filter": "land"
+                                "type": "GreatestAmongPlayers",
+                                "players": "EachOpponent",
+                                "inner": {
+                                    "type": "AggregateBattlefield",
+                                    "player": "You",
+                                    "filter": "land"
+                                }
                             },
                             "operator": "GT",
                             "right": {

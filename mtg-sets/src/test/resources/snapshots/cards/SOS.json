@@ -4305,9 +4305,13 @@
                                 "condition": {
                                     "type": "Compare",
                                     "left": {
-                                        "type": "AggregateBattlefield",
-                                        "player": "EachOpponent",
-                                        "filter": "creature"
+                                        "type": "GreatestAmongPlayers",
+                                        "players": "EachOpponent",
+                                        "inner": {
+                                            "type": "AggregateBattlefield",
+                                            "player": "You",
+                                            "filter": "creature"
+                                        }
                                     },
                                     "operator": "GT",
                                     "right": {
