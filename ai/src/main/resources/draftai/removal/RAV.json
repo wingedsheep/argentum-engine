@@ -1,0 +1,203 @@
+{
+  "Brainspoil": [
+    "removal",
+    "creature-removal"
+  ],
+  "Brightflame": [
+    "removal",
+    "creature-removal"
+  ],
+  "Char": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Cleansing Beam": [
+    "removal",
+    "creature-removal"
+  ],
+  "Clinging Darkness": [
+    "removal",
+    "creature-removal"
+  ],
+  "Clutch of the Undercity": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Darkblast": [
+    "removal",
+    "creature-removal"
+  ],
+  "Devouring Light": [
+    "removal",
+    "creature-removal"
+  ],
+  "Disembowel": [
+    "removal",
+    "creature-removal"
+  ],
+  "Divebomber Griffin": [
+    "removal",
+    "creature-removal"
+  ],
+  "Dogpile": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Dream Leash": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Drooling Groodion": [
+    "removal",
+    "creature-removal"
+  ],
+  "Elvish Skysweeper": [
+    "removal",
+    "creature-removal"
+  ],
+  "Faith's Fetters": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "planeswalker-removal"
+  ],
+  "Fiery Conclusion": [
+    "removal",
+    "creature-removal"
+  ],
+  "Galvanic Arc": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Gaze of the Gorgon": [
+    "removal",
+    "creature-removal"
+  ],
+  "Hammerfist Giant": [
+    "removal",
+    "creature-removal"
+  ],
+  "Hex": [
+    "removal",
+    "creature-removal"
+  ],
+  "Hour of Reckoning": [
+    "removal",
+    "creature-removal"
+  ],
+  "Keening Banshee": [
+    "removal",
+    "creature-removal"
+  ],
+  "Last Gasp": [
+    "removal",
+    "creature-removal"
+  ],
+  "Leave No Trace": [
+    "removal",
+    "enchantment-removal"
+  ],
+  "Lightning Helix": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Mark of Eviction": [
+    "removal",
+    "creature-removal"
+  ],
+  "Necroplasm": [
+    "removal",
+    "creature-removal"
+  ],
+  "Peel from Reality": [
+    "removal",
+    "creature-removal"
+  ],
+  "Putrefy": [
+    "removal",
+    "creature-removal",
+    "artifact-removal"
+  ],
+  "Rain of Embers": [
+    "removal",
+    "creature-removal"
+  ],
+  "Ribbons of Night": [
+    "removal",
+    "creature-removal"
+  ],
+  "Savra, Queen of the Golgari": [
+    "removal",
+    "creature-removal"
+  ],
+  "Seed Spark": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Sisters of Stone Death": [
+    "removal",
+    "creature-removal"
+  ],
+  "Smash": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Sparkmage Apprentice": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Stasis Cell": [
+    "removal",
+    "creature-removal"
+  ],
+  "Stinkweed Imp": [
+    "removal",
+    "creature-removal"
+  ],
+  "Sundering Vitae": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Trophy Hunter": [
+    "removal",
+    "creature-removal"
+  ],
+  "Twisted Justice": [
+    "removal",
+    "creature-removal"
+  ],
+  "Vedalken Dismisser": [
+    "removal",
+    "creature-removal"
+  ],
+  "Viashino Fangtail": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "War-Torch Goblin": [
+    "removal",
+    "creature-removal"
+  ],
+  "Woebringer Demon": [
+    "removal",
+    "creature-removal"
+  ],
+  "Wojek Embermage": [
+    "removal",
+    "creature-removal"
+  ]
+}

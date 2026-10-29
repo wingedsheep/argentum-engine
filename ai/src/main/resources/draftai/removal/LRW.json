@@ -1,0 +1,177 @@
+{
+  "Aethersnipe": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Austere Command": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Brigid, Hero of Kinsbaile": [
+    "removal",
+    "creature-removal"
+  ],
+  "Chandra Nalaar": [
+    "removal",
+    "creature-removal"
+  ],
+  "Cloudthresher": [
+    "removal",
+    "creature-removal"
+  ],
+  "Consuming Bonfire": [
+    "removal",
+    "creature-removal"
+  ],
+  "Crib Swap": [
+    "removal",
+    "creature-removal"
+  ],
+  "Crush Underfoot": [
+    "removal",
+    "creature-removal"
+  ],
+  "Dreamspoiler Witches": [
+    "removal",
+    "creature-removal"
+  ],
+  "Eyeblight's Ending": [
+    "removal",
+    "creature-removal"
+  ],
+  "Flamekin Spitfire": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Fodder Launch": [
+    "removal",
+    "creature-removal"
+  ],
+  "Glimmerdust Nap": [
+    "removal",
+    "creature-removal"
+  ],
+  "Harpoon Sniper": [
+    "removal",
+    "creature-removal"
+  ],
+  "Hornet Harasser": [
+    "removal",
+    "creature-removal"
+  ],
+  "Hunter of Eyeblights": [
+    "removal",
+    "creature-removal"
+  ],
+  "Hurly-Burly": [
+    "removal",
+    "creature-removal"
+  ],
+  "Incendiary Command": [
+    "removal",
+    "creature-removal"
+  ],
+  "Ingot Chewer": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Lash Out": [
+    "removal",
+    "creature-removal"
+  ],
+  "Lignify": [
+    "removal",
+    "creature-removal"
+  ],
+  "Lys Alana Scarblade": [
+    "removal",
+    "creature-removal"
+  ],
+  "Moonglove Extract": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Mudbutton Torchrunner": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Nameless Inversion": [
+    "removal",
+    "creature-removal"
+  ],
+  "Neck Snap": [
+    "removal",
+    "creature-removal"
+  ],
+  "Oblivion Ring": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Peppersmoke": [
+    "removal",
+    "creature-removal"
+  ],
+  "Profane Command": [
+    "removal",
+    "creature-removal"
+  ],
+  "Rootgrapple": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Shriekmaw": [
+    "removal",
+    "creature-removal"
+  ],
+  "Sower of Temptation": [
+    "removal",
+    "creature-removal"
+  ],
+  "Spring Cleaning": [
+    "removal",
+    "enchantment-removal"
+  ],
+  "Tar Pitcher": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Tarfire": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Thorntooth Witch": [
+    "removal",
+    "creature-removal"
+  ],
+  "Thundercloud Shaman": [
+    "removal",
+    "creature-removal"
+  ],
+  "Weed Strangle": [
+    "removal",
+    "creature-removal"
+  ],
+  "Whirlpool Whelm": [
+    "removal",
+    "creature-removal"
+  ],
+  "Wispmare": [
+    "removal",
+    "enchantment-removal"
+  ]
+}
