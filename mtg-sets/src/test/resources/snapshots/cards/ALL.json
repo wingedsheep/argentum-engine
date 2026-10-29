@@ -228,8 +228,14 @@
                                 "storeAs": "gathered1"
                             },
                             {
-                                "type": "RevealCollection",
-                                "from": "gathered1"
+                                "type": "MoveCollection",
+                                "from": "gathered1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Library",
+                                    "placement": "Top"
+                                },
+                                "order": "ControllerChooses"
                             },
                             {
                                 "type": "Gated",

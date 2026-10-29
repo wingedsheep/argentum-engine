@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.CardsRevealedEvent
+import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.ReorderLibraryDecision
 import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.support.GameTestDriver
@@ -25,7 +27,7 @@ class LimDulsVaultScenarioTest : FunSpec({
 
     val names = listOf("Grizzly Bears", "Llanowar Elves", "Lightning Bolt", "Counterspell", "Test Enchantment")
 
-    class Game(val d: GameTestDriver, val you: EntityId, val stacked: List<EntityId>)
+    class Game(val d: GameTestDriver, val you: EntityId, val stacked: List<EntityId>, val events: MutableList<GameEvent>)
 
     /** Five distinct cards on top of an Island library; Lim-Dûl's Vault cast and resolving. */
     fun castVault(): Game {
@@ -39,8 +41,19 @@ class LimDulsVaultScenarioTest : FunSpec({
         d.giveMana(you, Color.BLUE, 1)
         d.giveMana(you, Color.BLACK, 1)
         d.castSpell(you, vault).error shouldBe null
-        d.bothPass()
-        return Game(d, you, stacked)
+        val events = d.bothPass().events.toMutableList()
+        return Game(d, you, stacked, events)
+    }
+
+    /** Answer the private look at the top five, which comes first on every pass. */
+    fun Game.look(expected: List<EntityId>) {
+        val look = d.pendingDecision.shouldBeInstanceOf<ReorderLibraryDecision>()
+        look.cards shouldContainExactlyInAnyOrder expected
+        events += d.submitOrderedResponse(you, look.cards).events
+    }
+
+    fun Game.nothingRevealed() = withClue("a look is private: nothing is revealed to the table") {
+        events.filterIsInstance<CardsRevealedEvent>() shouldBe emptyList()
     }
 
     test("keep the first five: no life paid, they go back on top in the chosen order") {
@@ -48,16 +61,18 @@ class LimDulsVaultScenarioTest : FunSpec({
         val d = g.d
         val librarySize = d.state.getLibrary(g.you).size
 
-        d.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
-        d.submitYesNo(g.you, false).error shouldBe null
+        g.look(g.stacked)
+        g.events += d.submitYesNo(g.you, false).events
 
-        d.pendingDecision.shouldBeInstanceOf<ReorderLibraryDecision>()
+        val closing = d.pendingDecision.shouldBeInstanceOf<ReorderLibraryDecision>()
+        closing.cards shouldContainExactlyInAnyOrder g.stacked
         val chosenOrder = g.stacked.reversed()
-        d.submitOrderedResponse(g.you, chosenOrder).error shouldBe null
+        g.events += d.submitOrderedResponse(g.you, chosenOrder).events
 
         d.getLifeTotal(g.you) shouldBe 20
         d.state.getLibrary(g.you).size shouldBe librarySize
         d.state.getLibrary(g.you).take(5) shouldBe chosenOrder
+        g.nothingRevealed()
     }
 
     test("pay 1 life: the five go to the bottom, and the next five are the ones kept on top") {
@@ -66,24 +81,28 @@ class LimDulsVaultScenarioTest : FunSpec({
         val library = d.state.getLibrary(g.you)
         val nextFive = library.drop(5).take(5)
 
-        d.submitYesNo(g.you, true).error shouldBe null
+        g.look(g.stacked)
+        g.events += d.submitYesNo(g.you, true).events
         d.getLifeTotal(g.you) shouldBe 19
         val bottomOrder = d.pendingDecision.shouldBeInstanceOf<ReorderLibraryDecision>()
         bottomOrder.cards shouldContainExactlyInAnyOrder g.stacked
-        d.submitOrderedResponse(g.you, g.stacked).error shouldBe null
+        g.events += d.submitOrderedResponse(g.you, g.stacked).events
+        d.state.getLibrary(g.you).takeLast(5) shouldBe g.stacked
 
         withClue("the second look offers the payment again") {
+            g.look(nextFive)
             d.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
         }
-        d.submitYesNo(g.you, false).error shouldBe null
+        g.events += d.submitYesNo(g.you, false).events
 
         val topOrder = d.pendingDecision.shouldBeInstanceOf<ReorderLibraryDecision>()
         topOrder.cards shouldContainExactlyInAnyOrder nextFive
-        d.submitOrderedResponse(g.you, nextFive).error shouldBe null
+        g.events += d.submitOrderedResponse(g.you, nextFive).events
 
         d.getLifeTotal(g.you) shouldBe 19
         d.state.getLibrary(g.you).size shouldBe library.size
         d.state.getLibrary(g.you).take(5) shouldBe nextFive
         d.stackSize shouldBe 0
+        g.nothingRevealed()
     }
 })

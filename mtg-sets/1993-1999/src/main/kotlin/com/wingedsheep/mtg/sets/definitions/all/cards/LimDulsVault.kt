@@ -19,7 +19,8 @@ import com.wingedsheep.sdk.scripting.effects.ZonePlacement
  * put those cards on the bottom of your library in any order, then look at the top five cards of
  * your library. Then shuffle and put the last cards you looked at this way on top in any order.
  *
- * Each pass of the do-while loop looks at the top five and offers the 1-life payment; paying puts
+ * Each pass of the do-while loop privately looks at the top five (the look-and-reorder prompt, so
+ * nothing is revealed to the opponents) and offers the 1-life payment; paying puts
  * them on the bottom and repeats (Cultivator Colossus's "if you do, repeat this process" shape).
  * `MayPay` only asks while the life is payable (CR 119.4). Declining ends the loop with the last
  * five still on top, so the closing step gathers them, shuffles, and puts them back on top in any
@@ -38,7 +39,8 @@ val LimDulsVault = card("Lim-Dûl's Vault") {
         effect = Effects.Pipeline {
             repeatProcess {
                 val looked = gather(CardSource.TopOfLibrary(5))
-                reveal(looked, revealToSelf = true)
+                // A private look (lookAtTopAndReorder's idiom); the order is moot if you then pay.
+                toLibraryTop(looked)
                 var bottomed: CollectionSlot? = null
                 run(Effects.MayPay(
                     cost = Effects.PayLife(1),
