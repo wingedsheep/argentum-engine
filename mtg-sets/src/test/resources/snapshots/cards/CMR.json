@@ -2036,6 +2036,61 @@
     ]
 }
 
+// Nightshade Harvester
+{
+    "name": "Nightshade Harvester",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Elf Shaman",
+    "oracleText": "Whenever a land an opponent controls enters, that player loses 1 life. Put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nightshade Harvester:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:opponent",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "ControllerOfTriggeringEntity"
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever a land an opponent controls enters, that player loses 1 life. Put a +1/+1 counter on this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "rarity": "RARE",
+        "artist": "PINDURSKI",
+        "flavorText": "\"Anywhere the moonlight touches—that's my garden.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/2/8297ab13-d6f3-487b-86ec-6eb299eb0614.jpg?1783928832"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Opposition Agent
 {
     "name": "Opposition Agent",

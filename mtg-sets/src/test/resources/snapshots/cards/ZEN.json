@@ -521,6 +521,60 @@
     "colorIdentityOverride": []
 }
 
+// Blood Seeker
+{
+    "name": "Blood Seeker",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Vampire Shaman",
+    "oracleText": "Whenever a creature an opponent controls enters, you may have that player lose 1 life.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Blood Seeker:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:opponent",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "ControllerOfTriggeringEntity"
+                    },
+                    "descriptionOverride": "Whenever a creature an opponent controls enters, you may have that player lose 1 life."
+                },
+                "descriptionOverride": "Whenever a creature an opponent controls enters, you may have that player lose 1 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "artist": "Greg Staples",
+        "flavorText": "A drop now is all he needs to find you later.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d1abc9e8-9ecf-4665-9ea5-ee18ab83c148.jpg?1783942157",
+        "rulings": [
+            {
+                "date": "2011-09-22",
+                "text": "Life loss is not the same as damage. Blood Seeker's ability will not cause creatures with bloodthirst to enter with +1/+1 counters."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Bloodchief Ascension
 {
     "name": "Bloodchief Ascension",

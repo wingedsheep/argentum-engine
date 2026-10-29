@@ -286,6 +286,102 @@
     ]
 }
 
+// Brash Taunter
+{
+    "name": "Brash Taunter",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Goblin",
+    "oracleText": "Indestructible\nWhenever this creature is dealt damage, it deals that much damage to target opponent.\n{2}{R}, {T}: This creature fights another target creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "INDESTRUCTIBLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Brash Taunter:1",
+                "trigger": "DamageReceivedEvent",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this creature is dealt damage, it deals that much damage to target opponent."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Brash Taunter:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{R}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Fight",
+                    "target1": "Self",
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "excludeSelf": true
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "descriptionOverride": "{2}{R}, {T}: This creature fights another target creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"You hit like a kobold!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/ebb5e613-a803-42f3-840a-7089ac6b7e3d.jpg?1783930695",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "A creature can be dealt an amount of damage greater than its toughness. For example, if Brash Taunter is dealt 3 damage, its middle ability deals 3 damage, not 1, to the target opponent."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If the target creature is an illegal target when Brash Taunter's last ability tries to resolve, the ability doesn't resolve. If Brash Taunter is no longer on the battlefield, the target creature won't deal or be dealt damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Chandra's Incinerator
 {
     "name": "Chandra's Incinerator",

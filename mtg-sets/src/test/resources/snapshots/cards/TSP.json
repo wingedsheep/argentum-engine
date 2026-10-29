@@ -2695,6 +2695,71 @@
     ]
 }
 
+// Kaervek the Merciless
+{
+    "name": "Kaervek the Merciless",
+    "manaCost": "{5}{B}{R}",
+    "typeLine": "Legendary Creature — Human Shaman",
+    "oracleText": "Whenever an opponent casts a spell, Kaervek deals damage equal to that spell's mana value to any target.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kaervek the Merciless:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGERING_SPELL_MANA_VALUE"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever an opponent casts a spell, Kaervek deals damage equal to that spell's mana value to any target."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "242",
+        "rarity": "RARE",
+        "artist": "rk post",
+        "flavorText": "\"Rats and jackals feast in his swath, but even they will not walk with him.\"\n—Mangara",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/444fa5a5-b5b0-4555-bd69-67c1c0cbf317.jpg?1783943201",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "An ability that triggers when a player casts a spell resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "Alternative costs, additional costs, and cost reductions don't change a spell's mana value. Its mana value is still based on its mana cost."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "For spells with {X} in their mana costs, use the value chosen for X to determine the spell's mana value."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Keldon Halberdier
 {
     "name": "Keldon Halberdier",

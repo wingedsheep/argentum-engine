@@ -675,6 +675,203 @@
     "colorIdentityOverride": []
 }
 
+// Nicol Bolas, God-Pharaoh
+{
+    "name": "Nicol Bolas, God-Pharaoh",
+    "manaCost": "{4}{U}{B}{R}",
+    "typeLine": "Legendary Planeswalker — Bolas",
+    "oracleText": "+2: Target opponent exiles cards from the top of their library until they exile a nonland card. Until end of turn, you may cast that card without paying its mana cost.\n+1: Each opponent exiles two cards from their hand.\n−4: Nicol Bolas deals 7 damage to target opponent, creature an opponent controls, or planeswalker an opponent controls.\n−12: Exile each nonland permanent your opponents control.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Nicol Bolas, God-Pharaoh:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherUntilMatch",
+                            "player": "TargetOpponent",
+                            "filter": "nonland",
+                            "storeMatch": "matched0",
+                            "storeRevealed": "revealed0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "revealed0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "matched0"
+                        },
+                        {
+                            "type": "GrantPlayWithoutPayingCost",
+                            "from": "matched0"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Target opponent exiles cards from the top of their library until they exile a nonland card. Until end of turn, you may cast that card without paying its mana cost."
+            },
+            {
+                "id": "Nicol Bolas, God-Pharaoh:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                },
+                                "storeSelected": "exiled",
+                                "prompt": "Choose 2 cards to exile"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "exiled",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Each opponent exiles two cards from their hand."
+            },
+            {
+                "id": "Nicol Bolas, God-Pharaoh:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -4
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 7
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPermanentOrPlayer",
+                        "id": "t1",
+                        "permanentFilter": {
+                            "baseFilter": "creature|planeswalker ctrl:opponent"
+                        },
+                        "descriptionOverride": "target opponent, creature an opponent controls, or planeswalker an opponent controls",
+                        "opponentsOnly": true
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Nicol Bolas deals 7 damage to target opponent, creature an opponent controls, or planeswalker an opponent controls."
+            },
+            {
+                "id": "Nicol Bolas, God-Pharaoh:4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -12
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "nonland permanent ctrl:opponent"
+                        }
+                    },
+                    "body": {
+                        "type": "MoveToZone",
+                        "target": "IterationEntity",
+                        "destination": "Exile"
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Exile each nonland permanent your opponents control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "140",
+        "rarity": "MYTHIC",
+        "artist": "Raymond Swanland",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/985e92f4-3904-41df-91f7-42eedbe3ccd2.jpg?1783936012",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "The cards exiled by Nicol Bolas's first and second abilities are exiled face up."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "You may cast the nonland card exiled by Nicol Bolas's first ability that turn even if Nicol Bolas is no longer on the battlefield or under your control."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Casting the card exiled with Nicol Bolas's first ability follows the normal timing rules for casting that card."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If you don't cast the card exiled by Nicol Bolas's first ability that turn, it will remain exiled."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "While resolving Nicol Bolas's second ability, each opponent chooses which cards to exile from their hand. Any opponent with two or fewer cards exiles their entire hand."
+            }
+        ]
+    },
+    "startingLoyalty": 7,
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Overcome
 {
     "name": "Overcome",

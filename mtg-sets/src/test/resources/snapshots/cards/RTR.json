@@ -3274,6 +3274,90 @@
     ]
 }
 
+// Rakdos, Lord of Riots
+{
+    "name": "Rakdos, Lord of Riots",
+    "manaCost": "{B}{B}{R}{R}",
+    "typeLine": "Legendary Creature — Demon",
+    "oracleText": "You can't cast Rakdos unless an opponent lost life this turn.\nFlying, trample\nCreature spells you cast cost {1} less to cast for each 1 life your opponents have lost this turn.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING",
+        "TRAMPLE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "creature"
+                },
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "Dynamic",
+                        "amount": {
+                            "type": "TurnTracking",
+                            "player": "EachOpponent",
+                            "tracker": "LIFE_LOST_AMOUNT"
+                        }
+                    }
+                }
+            }
+        ],
+        "castRestrictions": [
+            {
+                "type": "CastOnlyIfCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "EachOpponent",
+                        "tracker": "LIFE_LOST"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "187",
+        "rarity": "MYTHIC",
+        "artist": "Vincent Proce",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/04f3db71-802f-488c-b40d-ac90df2d660a.jpg?1783940334",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "Rakdos can be put onto the battlefield by another spell or ability even if no opponent has lost life that turn."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "Rakdos's last ability cares about the total life lost, not necessarily what an opponent's life total is compared to what it was at the beginning of the turn. For example, if an opponent loses 5 life and then gains 10 life in a turn, creature spells you cast will cost {5} less to cast."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "Rakdos's last ability can't reduce the colored mana requirement of a creature spell you cast."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "Rakdos's last ability won't reduce the cost to cast Rakdos itself. It applies only to creature spells you cast once Rakdos is on the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Rest in Peace
 {
     "name": "Rest in Peace",

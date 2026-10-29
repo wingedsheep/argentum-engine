@@ -3394,6 +3394,80 @@
     ]
 }
 
+// Rampaging Ferocidon
+{
+    "name": "Rampaging Ferocidon",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "Menace\nPlayers can't gain life.\nWhenever another creature enters, this creature deals 1 damage to that creature's controller.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rampaging Ferocidon:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "ControllerOfTriggeringEntity"
+                },
+                "descriptionOverride": "Whenever another creature enters, this creature deals 1 damage to that creature's controller."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "PreventLifeGain",
+                "appliesTo": {
+                    "type": "LifeGainEvent",
+                    "player": "Each"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "rarity": "RARE",
+        "artist": "Jonathan Kuo",
+        "flavorText": "All raptors are aggressive, but ferocidons seem to enjoy their prey's pain.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/39d3c658-1927-4af3-9077-88c4a669c730.jpg?1783935741",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "Spells and abilities that cause players to gain life still resolve while Rampaging Ferocidon is on the battlefield. No player will gain life, but any other effects of that spell or ability will happen."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "If an effect says to set a player's life total to a number that's higher than the player's current life total while Rampaging Ferocidon is on the battlefield, the player's life total doesn't change."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Rampaging Ferocidon's last ability triggers whenever any player has a creature enter the battlefield, including you."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "If another creature enters the battlefield at the same time as Rampaging Ferocidon, its last ability triggers."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Raptor Companion
 {
     "name": "Raptor Companion",

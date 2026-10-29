@@ -933,6 +933,95 @@
     ]
 }
 
+// Chandra's Ignition
+{
+    "name": "Chandra's Ignition",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature you control deals damage equal to its power to each other creature and each opponent.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "excludeTarget": true
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "numericProperty": "Power"
+                        },
+                        "target": "IterationEntity",
+                        "damageSource": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    },
+                    "damageSource": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "rarity": "RARE",
+        "artist": "Eric Deschamps",
+        "flavorText": "In the moment before her execution, she realized what it meant to be a pyromancer, to be alive, to be Chandra.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/d/7d4c90de-49aa-43ed-a18a-f7f96268e5eb.jpg?1783938332",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "The creature is the source of the damage, not Chandra's Ignition. For example, Chandra's Ignition can have a white creature deal damage to a creature with protection from red."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Use the power of the target creature as Chandra's Ignition resolves to determine how much damage it deals to each other creature and each opponent."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Chief of the Foundry
 {
     "name": "Chief of the Foundry",
