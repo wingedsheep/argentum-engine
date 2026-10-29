@@ -1,0 +1,25 @@
+{
+  "Animist's Might": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Blot Out": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Death-Rattle Oni": [
+    "removal",
+    "creature-removal"
+  ],
+  "Tolarian Contempt": [
+    "removal",
+    "creature-removal"
+  ],
+  "Tranquil Frillback": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ]
+}

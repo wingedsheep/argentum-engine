@@ -1,0 +1,239 @@
+{
+  "Alpha Deathclaw": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Anguished Unmaking": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Atomize": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Austere Command": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Ayula, Queen Among Bears": [
+    "removal",
+    "creature-removal"
+  ],
+  "Behemoth of Vault 0": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Blasphemous Act": [
+    "removal",
+    "creature-removal"
+  ],
+  "Bottle-Cap Blast": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Break Down": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Casualties of War": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Chaos Warp": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Commander Sofia Daguerre": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Contagion Clasp": [
+    "removal",
+    "creature-removal"
+  ],
+  "Craig Boone, Novac Guard": [
+    "removal",
+    "creature-removal"
+  ],
+  "Crush Contraband": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Dispatch": [
+    "removal",
+    "creature-removal"
+  ],
+  "Entrapment Maneuver": [
+    "removal",
+    "creature-removal"
+  ],
+  "Farewell": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Find": [
+    "removal",
+    "creature-removal"
+  ],
+  "Gemrazer": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "HELIOS One": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Hour of Reckoning": [
+    "removal",
+    "creature-removal"
+  ],
+  "Ian the Reckless": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Kellogg, Dangerous Mind": [
+    "removal",
+    "creature-removal"
+  ],
+  "Legate Lanius, Caesar's Ace": [
+    "removal",
+    "creature-removal"
+  ],
+  "Lethal Scheme": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Martial Coup": [
+    "removal",
+    "creature-removal"
+  ],
+  "Megaton's Fate": [
+    "removal",
+    "creature-removal",
+    "artifact-removal"
+  ],
+  "Nuclear Fallout": [
+    "removal",
+    "creature-removal"
+  ],
+  "Path to Exile": [
+    "removal",
+    "creature-removal"
+  ],
+  "Plasma Caster": [
+    "removal",
+    "creature-removal"
+  ],
+  "Powder Ganger": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Putrefy": [
+    "removal",
+    "creature-removal",
+    "artifact-removal"
+  ],
+  "Rampaging Yao Guai": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Ruinous Ultimatum": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Single Combat": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Swords to Plowshares": [
+    "removal",
+    "creature-removal"
+  ],
+  "Synth Eradicator": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "The Nipton Lottery": [
+    "removal",
+    "creature-removal"
+  ],
+  "V.A.T.S.": [
+    "removal",
+    "creature-removal"
+  ],
+  "Valorous Stance": [
+    "removal",
+    "creature-removal"
+  ],
+  "Vandalblast": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Vault 11: Voter's Dilemma": [
+    "removal",
+    "creature-removal"
+  ],
+  "Vault 13: Dweller's Journey": [
+    "removal",
+    "creature-removal",
+    "enchantment-removal"
+  ],
+  "Vault 75: Middle School": [
+    "removal",
+    "creature-removal"
+  ],
+  "Walking Ballista": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Wasteland Raider": [
+    "removal",
+    "creature-removal"
+  ],
+  "Wear": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ]
+}

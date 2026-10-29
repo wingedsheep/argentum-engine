@@ -1,0 +1,232 @@
+{
+  "Abrade": [
+    "removal",
+    "creature-removal",
+    "artifact-removal"
+  ],
+  "Angel of the Ruins": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Beast Within": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Binding the Old Gods": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Blasphemous Act": [
+    "removal",
+    "creature-removal"
+  ],
+  "Broken Wings": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Calamity of Cinders": [
+    "removal",
+    "creature-removal"
+  ],
+  "Casualties of War": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Chaos Warp": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Chatterfang, Squirrel General": [
+    "removal",
+    "creature-removal"
+  ],
+  "Chittering Witch": [
+    "removal",
+    "creature-removal"
+  ],
+  "Decree of Pain": [
+    "removal",
+    "creature-removal"
+  ],
+  "Domri, Anarch of Bolas": [
+    "removal",
+    "creature-removal"
+  ],
+  "Dusk": [
+    "removal",
+    "creature-removal"
+  ],
+  "Elspeth, Sun's Champion": [
+    "removal",
+    "creature-removal"
+  ],
+  "Garruk, Cursed Huntsman": [
+    "removal",
+    "creature-removal"
+  ],
+  "Generous Gift": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Hanged Executioner": [
+    "removal",
+    "creature-removal"
+  ],
+  "Haywire Mite": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Inferno Titan": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Liliana of the Dark Realms": [
+    "removal",
+    "creature-removal"
+  ],
+  "Loran of the Third Path": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Maelstrom Pulse": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Martial Coup": [
+    "removal",
+    "creature-removal"
+  ],
+  "Path to Exile": [
+    "removal",
+    "creature-removal"
+  ],
+  "Plaguecrafter": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Promise of Loyalty": [
+    "removal",
+    "creature-removal"
+  ],
+  "Putrefy": [
+    "removal",
+    "creature-removal",
+    "artifact-removal"
+  ],
+  "Rapid Hybridization": [
+    "removal",
+    "creature-removal"
+  ],
+  "Realm-Cloaked Giant": [
+    "removal",
+    "creature-removal"
+  ],
+  "Rolling Hamsphere": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Rootcast Apprenticeship": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Rose Room Treasurer": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Saw in Half": [
+    "removal",
+    "creature-removal"
+  ],
+  "Shield Broker": [
+    "removal",
+    "creature-removal"
+  ],
+  "Siege-Gang Commander": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Skyclave Apparition": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Skyfisher Spider": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Spine of Ish Sah": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Starstorm": [
+    "removal",
+    "creature-removal"
+  ],
+  "Swarmyard Massacre": [
+    "removal",
+    "creature-removal"
+  ],
+  "Swords to Plowshares": [
+    "removal",
+    "creature-removal"
+  ],
+  "Tear Asunder": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Time Wipe": [
+    "removal",
+    "creature-removal"
+  ],
+  "Warstorm Surge": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Windgrace's Judgment": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ]
+}

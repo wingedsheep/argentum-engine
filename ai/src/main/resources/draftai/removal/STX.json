@@ -1,0 +1,196 @@
+{
+  "Baleful Mastery": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Bury in Books": [
+    "removal",
+    "creature-removal"
+  ],
+  "Closing Statement": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Containment Breach": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Crackle with Power": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Culling Ritual": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Deadly Brew": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Decisive Denial": [
+    "removal",
+    "creature-removal"
+  ],
+  "Detention Vortex": [
+    "removal",
+    "creature-removal"
+  ],
+  "Devastating Mastery": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Devouring Tendrils": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Draconic Intervention": [
+    "removal",
+    "creature-removal"
+  ],
+  "Expel": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Explosive Welcome": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Flunk": [
+    "removal",
+    "creature-removal"
+  ],
+  "Fracture": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Heated Debate": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Igneous Inspiration": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Introduction to Annihilation": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Lash of Malice": [
+    "removal",
+    "creature-removal"
+  ],
+  "Lorehold Command": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Mage Duel": [
+    "removal",
+    "creature-removal"
+  ],
+  "Mage Hunters' Onslaught": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Magma Opus": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Mortality Spear": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Necrotic Fumes": [
+    "removal",
+    "creature-removal"
+  ],
+  "Pigment Storm": [
+    "removal",
+    "creature-removal"
+  ],
+  "Prismari Command": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "planeswalker-removal"
+  ],
+  "Professor Onyx": [
+    "removal",
+    "creature-removal"
+  ],
+  "Reduce to Memory": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Rip Apart": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Rise of Extus": [
+    "removal",
+    "creature-removal"
+  ],
+  "Silverquill Command": [
+    "removal",
+    "creature-removal"
+  ],
+  "Start from Scratch": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "planeswalker-removal"
+  ],
+  "Tempted by the Oriq": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Umbral Juke": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Vanishing Verse": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Witherbloom Command": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ]
+}
