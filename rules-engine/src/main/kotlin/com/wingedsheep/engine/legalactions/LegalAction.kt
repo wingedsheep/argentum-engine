@@ -500,6 +500,14 @@ data class AdditionalCostData(
      */
     val sacrificeMinPowerIsX: Boolean = false,
     /**
+     * "Sacrifice X creatures" (Eliminate the Competition, `CostAtom.VariablePermanents.exactly`):
+     * the `SacrificeVariable` picker must take exactly the X announced with the cast — not
+     * [sacrificeCount]-or-more. The action carries `hasXCost` with `maxAffordableX` capped at the
+     * candidates (and at the legal targets of an "X target …" requirement); the client asks X
+     * first, then requires exactly that many picks, and skips the picker at X = 0.
+     */
+    val sacrificeCountIsX: Boolean = false,
+    /**
      * The spell's remaining mana cost after sacrificing each candidate in [validSacrificeTargets],
      * keyed by that candidate — emerge (CR 702.119), where the emerge cost is reduced by generic
      * mana equal to the sacrificed creature's mana value.

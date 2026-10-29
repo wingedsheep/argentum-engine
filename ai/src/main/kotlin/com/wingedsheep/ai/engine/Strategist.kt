@@ -1745,7 +1745,8 @@ class Strategist(
             else -> null
         }
         val cheapestFirst = CostCandidateOrder(state, payerId)
-        val primary = deterministicPayment(info, existing, cheapestFirst) ?: when (info.costType) {
+        val xValue = (gameAction as? CastSpell)?.xValue ?: 0
+        val primary = deterministicPayment(info, existing, cheapestFirst, xValue) ?: when (info.costType) {
             // Teamwork N (CR 702.194a): tap as *few* creatures as will clear the total-power
             // threshold, and among equally-few selections the *smallest* bodies — a board with a
             // 5/5 and a 1/1 paying teamwork 1 should turn the 1/1 sideways and keep the better
@@ -1782,7 +1783,7 @@ class Strategist(
             else -> return gameAction
         }
         // "Discard a card and sacrifice a creature": every further selection cost is paid too.
-        val payment = info.alsoRequired.fold(primary) { acc, extra -> deterministicPayment(extra, acc, cheapestFirst) ?: acc }
+        val payment = info.alsoRequired.fold(primary) { acc, extra -> deterministicPayment(extra, acc, cheapestFirst, xValue) ?: acc }
         return when (gameAction) {
             is CastSpell -> gameAction.copy(additionalCostPayment = payment)
             is ActivateAbility -> gameAction.copy(costPayment = payment)
@@ -1839,6 +1840,7 @@ class Strategist(
         info: com.wingedsheep.engine.legalactions.AdditionalCostData,
         existing: AdditionalCostPayment,
         cheapestFirst: CostCandidateOrder,
+        xValue: Int,
     ): AdditionalCostPayment? = when (info.costType) {
         "Blight" -> existing.copy(blightTargets = info.validBlightTargets.take(1))
         "Behold" -> existing.copy(beheldCards = info.validBeholdTargets.take(info.beholdCount))
@@ -1858,8 +1860,10 @@ class Strategist(
         )
         "ExileFromGraveyard" -> existing.copy(exiledCards = info.validExileTargets.take(info.exileMinCount))
         // "Sacrifice any number of …": only the floor, so a zero-floor cost sacrifices nothing.
+        // "Sacrifice X creatures": exactly the cast's announced X.
         "SacrificeVariable" -> existing.copy(
-            variableCostPermanents = cheapestFirst.permanents(info.validSacrificeTargets).take(info.sacrificeCount)
+            variableCostPermanents = cheapestFirst.permanents(info.validSacrificeTargets)
+                .take(if (info.sacrificeCountIsX) xValue else info.sacrificeCount)
         )
         else -> null
     }
@@ -2180,7 +2184,10 @@ class Strategist(
         val base = action.action
         val maxX = action.maxAffordableX
         val info = action.additionalCostInfo
-        val payableCost = info == null || info.costType == "DiscardCard"
+        // "Sacrifice X creatures" (Eliminate the Competition) is paid once X is bound — the
+        // cheapest X permanents, in [deterministicPayment].
+        val payableCost = info == null || info.costType == "DiscardCard" ||
+            (info.costType == "SacrificeVariable" && info.sacrificeCountIsX)
         // The Momir avatar is expanded before the generic affordability guard below, because for it
         // "not worth activating" must mean *dropped*, not "fall through to the bare action". The
         // bare action carries `xValue = 0`, and with no mana available (`maxX == 0`) that is exactly

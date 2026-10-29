@@ -144,7 +144,7 @@ internal class JevActions(
         }
     }
 
-    /** [x] is the cast's announced X, which a "remove X counters" cost (no fixed total) owes exactly. */
+    /** [x] is the cast's announced X, which a "remove X counters" or "sacrifice X creatures" cost owes exactly. */
     private fun cost(c: AdditionalCostInfo, x: Int? = null): AdditionalCostPayment {
         fun select(prompt: String, ids: List<EntityId>, min: Int, max: Int = min) =
             if (ids.isEmpty()) emptyList() else cards(prompt, ids, min, max)
@@ -177,7 +177,10 @@ internal class JevActions(
             blightTargets = select("Blight for ${c.description}", c.validBlightTargets, 1),
             blightAmount = if (c.blightVariableMaxX > 0) q.number("Choose blight X", 0, c.blightVariableMaxX) else 0,
             payXLifeAmount = if (c.payXLifeMaxX > 0) q.number("Choose life to pay", 0, c.payXLifeMaxX) else 0,
-            variableCostPermanents = if (variableSacrifice)
+            // "Sacrifice X creatures" (Eliminate the Competition) owes exactly the announced X.
+            variableCostPermanents = if (variableSacrifice && c.sacrificeCountIsX)
+                select("Sacrifice for ${c.description}", c.validSacrificeTargets, x ?: 0)
+            else if (variableSacrifice)
                 select("Sacrifice for ${c.description}", c.validSacrificeTargets, c.sacrificeCount, c.validSacrificeTargets.size)
             else if (c.costType == "TapForTotalPower")
                 cards("Tap creatures with total power at least ${c.tapForPowerRequired}", c.tapForPowerCreatures.map { it.entityId })

@@ -632,3 +632,43 @@ describe('Casualty — sacrifice picker', () => {
     expect(merged).toMatchObject({ casualtyCreature: 'courser', xValue: 2 })
   })
 })
+
+describe('Sacrifice X creatures — exact-X sacrifice picker', () => {
+  function sacrificeXAction(): LegalActionInfo {
+    return castAction({
+      description: 'Cast Eliminate the Competition',
+      hasXCost: true,
+      maxAffordableX: 3,
+      additionalCostInfo: {
+        costType: 'SacrificeVariable',
+        description: 'Sacrifice X creatures you control',
+        validSacrificeTargets: ['a', 'b', 'c'],
+        sacrificeCount: 0,
+        sacrificeCountIsX: true,
+      },
+    })
+  }
+
+  it('announces X before the sacrifice is picked', () => {
+    expect(computePhases(sacrificeXAction(), { autoTapEnabled: true })).toEqual([
+      { type: 'xSelection' },
+      { type: 'costPayment' },
+    ])
+  })
+
+  it('requires exactly the chosen X sacrifices', () => {
+    const info = sacrificeXAction()
+    let captured: Record<string, unknown> | null = null
+    const store = {
+      startTargeting: (arg: Record<string, unknown>) => { captured = arg },
+    } as unknown as Parameters<typeof enterPhase>[3]
+    enterPhase({ type: 'costPayment' }, info, { ...info.action, xValue: 2 } as never, store, undefined)
+    expect(captured).toMatchObject({
+      validTargets: ['a', 'b', 'c'],
+      minTargets: 2,
+      maxTargets: 2,
+      isSacrificeSelection: true,
+      targetDescription: 'Sacrifice 2 creatures you control',
+    })
+  })
+})

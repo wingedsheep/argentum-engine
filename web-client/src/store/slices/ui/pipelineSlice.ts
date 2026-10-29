@@ -263,6 +263,16 @@ export const createPipelineSlice: SliceCreator<PipelineSlice> = (set, get) => ({
       nextPhases = [{ type: 'costPayment' }, ...nextPhases]
     }
 
+    // Dynamic phase removal: "sacrifice X creatures" announced at X = 0 owes nothing, so its
+    // picker would only ask the player to confirm an empty selection.
+    if (
+      result.type === 'xSelection' &&
+      result.xValue === 0 &&
+      actionInfo.additionalCostInfo?.sacrificeCountIsX
+    ) {
+      nextPhases = nextPhases.filter((p) => !(p.type === 'costPayment' && (p.costIndex ?? 0) === 0))
+    }
+
     // Dynamic phase injection: a non-mana escalate cost (CR 702.120a) is owed once per mode
     // chosen beyond the first, so how much there is to pay — and whether anything is owed at
     // all — is only known once the modal panel has confirmed its picks.

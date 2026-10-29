@@ -967,13 +967,20 @@ export function enterPhase(
           flags.isTapPermanentSelection = true
           flags.targetDescription = costInfo.description
           break
-        case 'SacrificeVariable':
+        case 'SacrificeVariable': {
           validTargets = [...(costInfo.validSacrificeTargets ?? [])]
-          minTargets = costInfo.sacrificeCount ?? 0
-          maxTargets = validTargets.length
+          // "Sacrifice X creatures": exactly the X the xSelection phase put on the action.
+          const xCount =
+            costInfo.sacrificeCountIsX && action.type === 'CastSpell' && typeof action.xValue === 'number'
+              ? action.xValue
+              : null
+          minTargets = xCount ?? costInfo.sacrificeCount ?? 0
+          maxTargets = xCount ?? validTargets.length
           flags.isSacrificeSelection = true
-          flags.targetDescription = costInfo.description
+          flags.targetDescription =
+            xCount != null ? costInfo.description.replace(/\bX\b/, String(xCount)) : costInfo.description
           break
+        }
         case 'TapPermanents': {
           validTargets = [...(costInfo.validTapTargets ?? [])]
           // Station-style multi-select shortcut (CR 702.184a): each chosen creature becomes its

@@ -696,6 +696,21 @@ internal object ReturnToHandCostKind : SpellCostKind<CostAtom.ReturnToHand> {
  * Greed) is offered on the main rail through [enumerate], as the `SacrificeVariable` picker.
  */
 internal object VariablePermanentsCostKind : SpellCostKind<CostAtom.VariablePermanents> {
+    /** Whether [cost] is "sacrifice X …" — its whole count is the X announced with the cast. */
+    private fun countIsX(cost: CostAtom.VariablePermanents) = cost.exactly == DynamicAmount.XValue
+
+    /**
+     * The X ceiling the "sacrifice X creatures" costs among [costs] put on the cast's announcement
+     * (CR 601.2b — the cost defines X, there is no `{X}` in the mana cost), or null when none of
+     * them reads X: the number of permanents that could pay. Fed to
+     * [SpellCosts.additionalCostMaxX] beside "remove X counters", so the cast offer carries
+     * `hasXCost` and the client asks for X before targets.
+     */
+    fun maxX(state: GameState, payerId: EntityId, costs: List<AdditionalCost>, predicateEvaluator: PredicateEvaluator): Int? =
+        SpellCosts.flattenComposites(costs)
+            .mapNotNull { ((it as? AdditionalCost.Atom)?.atom as? CostAtom.VariablePermanents)?.takeIf(::countIsX) }
+            .minOfOrNull { VariablePermanentsCost.candidates(state, payerId, it, predicateEvaluator = predicateEvaluator).size }
+
     // Payable when the payer has enough candidates to clear both floors. No `sourceId` is passed —
     // a *spell's* additional cost has no source permanent on the battlefield to exclude (teamwork
     // sets `excludeSelf = false` anyway).
@@ -734,6 +749,7 @@ internal object VariablePermanentsCostKind : SpellCostKind<CostAtom.VariablePerm
             costType = "SacrificeVariable",
             validSacrificeTargets = candidates,
             sacrificeCount = cost.minCount,
+            sacrificeCountIsX = countIsX(cost),
         )
 
     override fun selectionSupplied(cost: CostAtom.VariablePermanents, payment: AdditionalCostPayment) =
@@ -746,6 +762,14 @@ internal object VariablePermanentsCostKind : SpellCostKind<CostAtom.VariablePerm
         val verb = VariablePermanentsCost.verb(cost.action)
         if (chosen.size != chosen.distinct().size) {
             return "The same permanent can't be chosen twice to $verb for this spell"
+        }
+        // "Sacrifice X creatures": exactly the announced X (CR 601.2b), which may be 0. An
+        // unannounced X reads as 0, the cast's usual default.
+        if (countIsX(cost)) {
+            val x = check.action.xValue ?: 0
+            if (chosen.size != x) {
+                return "You must $verb exactly $x ${cost.filter.description}(s) to cast this spell (X = $x)"
+            }
         }
         if (chosen.size < cost.minCount) {
             return "You must $verb at least ${cost.minCount} ${cost.filter.description}(s) to cast this spell"

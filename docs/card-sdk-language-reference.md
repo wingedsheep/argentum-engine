@@ -741,6 +741,10 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
     the X-bounded target something to choose, and payment rejects more than `maxCount`. A spell's
     additional cost enforces the cap at validation; the spell-side picker doesn't show it yet, since
     no printed spell has a capped variable cost.
+  - **`exactly`** — the whole count fixed to the announced X (`DynamicAmount.XValue`, the only value
+    accepted; `null` = the free count above). A spell-cost axis: "sacrifice X creatures"
+    (`Costs.additional.SacrificeX`, Eliminate the Competition), where X is announced with the spell
+    because nothing in the mana cost carries it. Leaves `minCount`/`maxCount`/`minMeasure` open.
 
   This atom is also a **spell additional cost**, not only an activated-ability cost: teamwork
   (CR 702.194a) rides it through `AdditionalCost.Atom`, paying from
@@ -1122,6 +1126,17 @@ cast action advertises the first selection cost as `additionalCostInfo` and the 
   sacrificed permanent is snapshotted, so "for each Spirit sacrificed this way" is
   `DynamicAmounts.permanentsSacrificedThisWay()`. For "… this spell costs {2} less for each" use
   `SacrificeAnyNumberForCostReduction` instead.
+- `Costs.additional.SacrificeX(filter = GameObjectFilter.Creature)` — "as an additional cost to cast
+  this spell, sacrifice X creatures" (Eliminate the Competition). The same atom with
+  `exactly = DynamicAmount.XValue`: there is no `{X}` in the mana cost, the cost *defines* X, so the
+  caster announces X with the spell (CR 601.2b) — before targets, so "Destroy X target creatures" is
+  `targets(TargetFilter.Creature, exactly = DynamicAmounts.xValue())` — and the payment (601.2h) must
+  sacrifice exactly X, which may be 0. The spell reads it as `DynamicAmounts.xValue()`. The cast offer
+  carries `hasXCost` with `maxAffordableX` = the creatures that could be sacrificed (and the usual
+  exact-target cap), and the `SacrificeVariable` picker sets `sacrificeCountIsX`: the client asks X,
+  then requires exactly X picks (skipping the picker at X = 0). Not `SacrificePermanents` — "you may
+  sacrifice any number" announces nothing, so its count can't size targets. `exactly` is the whole
+  count: it leaves `minCount`/`maxCount`/`minMeasure` open and accepts only the announced X.
 - `Costs.additional.SacrificeAnyNumberForCostReduction(filter, reductionPerUnit)`,
   `TapAnyNumberForCostReduction(filter, reductionPerUnit)`,
   `ExileAnyNumberFromHandForCostReduction(filter, reductionPerUnit)` — "as an additional cost to cast

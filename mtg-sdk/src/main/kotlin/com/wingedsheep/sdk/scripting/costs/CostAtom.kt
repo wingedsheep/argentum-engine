@@ -243,6 +243,18 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
      * @property xMeasure how the chosen set is measured.
      * @property minMeasure minimum total the chosen set's [xMeasure] must reach (0 = no floor).
      * @property maxCount maximum number to choose, or `null` for no cap.
+     * @property exactly the whole count, fixed to an amount announced *before* the cost is paid —
+     *   "as an additional cost to cast this spell, sacrifice X creatures" (Eliminate the
+     *   Competition) is `exactly = DynamicAmount.XValue`. The caster announces X with the spell
+     *   (CR 601.2b) — there is no `{X}` in the mana cost, the cost itself defines it — so X is known
+     *   when targets are chosen (601.2c: "Destroy X target creatures" needs exactly X) and the
+     *   payment at 601.2h must then choose exactly X permanents, no more and no fewer. X may be 0.
+     *   Distinct from the free count of "you may sacrifice any number of …" (Devouring Greed),
+     *   where nothing is announced and the number chosen is only read back as "sacrificed this
+     *   way". Like a target's `exactly` it stands alone: it is the whole count, so [minCount],
+     *   [maxCount] and [minMeasure] stay at their open defaults. Only [DynamicAmount.XValue] is
+     *   accepted — a fixed number of permanents is the fixed-count [Sacrifice] atom. On an
+     *   activated ability the chosen count already *is* the X, so this axis is a spell-cost one.
      */
     @SerialName("AtomVariablePermanents")
     @Serializable
@@ -253,10 +265,15 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
         val action: PermanentCostAction = PermanentCostAction.EXILE,
         val xMeasure: VariableCostMeasure = VariableCostMeasure.TOTAL_MANA_VALUE,
         val minMeasure: Int = 0,
-        val maxCount: Int? = null
+        val maxCount: Int? = null,
+        val exactly: DynamicAmount? = null
     ) : CostAtom {
         init {
             require(maxCount == null || maxCount >= maxOf(minCount, 1)) { "maxCount must be at least minCount and 1" }
+            require(exactly == null || exactly == DynamicAmount.XValue) { "exactly supports only the announced X" }
+            require(exactly == null || (minCount <= 0 && maxCount == null && minMeasure == 0)) {
+                "exactly is the whole count: leave minCount, maxCount and minMeasure open"
+            }
         }
 
         // Variable count — the floor the payer must at least select. The picker's max is the number
@@ -281,6 +298,7 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
                 return@buildString
             }
             append(when {
+                exactly != null -> "X "
                 maxCount != null && maxCount == minCount -> "$minCount "
                 maxCount != null && minCount <= 0 -> "up to $maxCount "
                 maxCount != null -> "$minCount to $maxCount "

@@ -1705,6 +1705,74 @@
     ]
 }
 
+// Eliminate the Competition
+{
+    "name": "Eliminate the Competition",
+    "manaCost": "{4}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "As an additional cost to cast this spell, sacrifice X creatures.\nDestroy X target creatures.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                },
+                "destination": "Graveyard",
+                "byDestruction": true
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0",
+                "dynamicMaxCount": "XValue",
+                "dynamicMinCount": "XValue"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomVariablePermanents",
+                    "filter": "creature",
+                    "minCount": 0,
+                    "excludeSelf": false,
+                    "action": "SACRIFICE",
+                    "xMeasure": "COUNT",
+                    "exactly": "XValue"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "rarity": "RARE",
+        "artist": "Joseph Meehan",
+        "flavorText": "Open hostilities are strictly forbidden at the Inventors' Fair, but \"accidents\" still happen.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3bf09460-2e54-4434-ab03-95eef77265dc.jpg?1783937209",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "Once you announce that you're casting Eliminate the Competition, players can't try to remove creatures you'd like to sacrifice."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If you somehow cast Eliminate the Competition without paying its mana cost, you'll still choose a value for X and sacrifice X creatures."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Embraal Bruiser
 {
     "name": "Embraal Bruiser",

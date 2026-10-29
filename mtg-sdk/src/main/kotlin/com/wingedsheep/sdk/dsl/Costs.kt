@@ -743,6 +743,28 @@ object Costs {
         )
 
         /**
+         * Sacrifice **X** permanents matching [filter], where X is announced with the spell — "as
+         * an additional cost to cast this spell, sacrifice X creatures" (Eliminate the
+         * Competition). There is no `{X}` in the mana cost: the cost defines X (CR 601.2b), so the
+         * caster announces it before choosing targets ("Destroy X target creatures" is
+         * `targets(…, exactly = DynamicAmounts.xValue())`) and then sacrifices exactly that many.
+         * X may be 0. The spell reads X as `DynamicAmounts.xValue()`.
+         *
+         * Not [SacrificePermanents]: "you may sacrifice any number of …" (Devouring Greed) announces
+         * nothing, so its count can't size targets.
+         */
+        fun SacrificeX(filter: GameObjectFilter = GameObjectFilter.Creature): AdditionalCost = AdditionalCost.Atom(
+            CostAtom.VariablePermanents(
+                filter = filter,
+                minCount = 0,
+                excludeSelf = false,
+                action = PermanentCostAction.SACRIFICE,
+                xMeasure = VariableCostMeasure.COUNT,
+                exactly = DynamicAmount.XValue
+            )
+        )
+
+        /**
          * Tap any number of permanents matching [filter] you control whose **total projected
          * power** is [totalPower] or more — the "tap creatures for total power N" selection crew
          * and saddle already use, re-exposed as a spell's additional cost (Teamwork N,
