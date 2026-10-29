@@ -1098,7 +1098,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
         is CostAtom.PutCountersOnSelf -> {
             // Counters put on as a cost are an ordinary counter placement (CR 122.6), so they run
             // through the same chokepoint as the AddCounters effect: the "can't have counters put
-            // on it" gate (CR 614.1 / Solemnity), the placement replacements (Hardened Scales,
+            // on it" gate (CR 614.17 / Solemnity), the placement replacements (Hardened Scales,
             // Corpsejack Menace — not Doubling Season, whose "if an effect would put" excludes a
             // cost), and the first-placement-this-turn marker. A permanent that can't receive
             // counters can't pay it at all (CR 614.17b) — canPayAtom keeps the activation from

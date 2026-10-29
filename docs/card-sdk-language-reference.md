@@ -953,8 +953,8 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   the counter lands before the ability resolves, and stays even if the ability is countered), and
   routed through the normal counter-placement chokepoint, so placement replacements apply (Hardened
   Scales — not Doubling Season, whose "if an effect would put" excludes a cost). Activated-ability
-  scoped: there is no
-  additional-cost or `PayCost` form, since a spell on the stack has no permanent to accrue them on.
+  scoped: there is no additional-cost or `PayCost` form, since a spell on the stack has no permanent
+  to accrue them on.
 - `Costs.TapGrantingPermanent` — tap the permanent whose static ability *granted* this activated
   ability, the third member of the granter-cost family alongside `Costs.ExileGrantingPermanent` and
   `Costs.SacrificeGrantingPermanent`. Use for an Equipment/Aura whose granted ability names the
