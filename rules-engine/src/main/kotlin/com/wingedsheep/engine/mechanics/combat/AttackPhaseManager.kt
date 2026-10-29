@@ -133,9 +133,9 @@ internal class AttackPhaseManager(
             val name = state.getEntity(violator)?.get<CardComponent>()?.name ?: "Creature"
             return ExecutionResult.error(state, "$name can only attack alone")
         }
-        val excused = if (loneOnly.isEmpty()) emptySet() else LoneAttackers.excusedRequirements(
+        val excused = (if (loneOnly.isEmpty()) emptySet() else LoneAttackers.excusedRequirements(
             attackers.keys, requiredAttackers(state, attackingPlayer), loneOnly
-        )
+        )) + attackersOnlyAtACost(state, attackingPlayer, getValidAttackers(state, attackingPlayer) - attackers.keys)
 
         // Check attacker-count caps — global (Dueling Grounds — "No more than one creature can
         // attack each combat") and per-defender (Tomik, Orzhov Lawmage). Both apply to the whole
@@ -1399,7 +1399,39 @@ internal class AttackPhaseManager(
         // 5. A requirement naming the player to attack (Public Enemy), where it binds
         boundAttackDefenders(state, attackingPlayer, goadRules = goadRules).keys.forEach { require(it) }
 
+        mandatory.keys.removeAll(attackersOnlyAtACost(state, attackingPlayer, mandatory.keys.toList()))
         return mandatory
+    }
+
+    /**
+     * The members of [candidates] that could attack only by paying for it: every defender they may
+     * legally attack charges an attack tax, or attacking at all demands a sacrifice. CR 508.1d — a
+     * player isn't required to pay a cost to obey an attack requirement — so an "attacks each
+     * combat if able" creature facing Ghostly Prison, or Summon: Yojimbo's floating tax, may stay
+     * home unless it has some untaxed defender to attack. A creature with no legal defender at all
+     * is not listed: it simply can't attack, which every requirement already accounts for.
+     */
+    private fun attackersOnlyAtACost(
+        state: GameState,
+        attackingPlayer: EntityId,
+        candidates: List<EntityId>,
+    ): Set<EntityId> {
+        if (candidates.isEmpty()) return emptySet()
+        val projected = state.projectedState
+        val opponents = CombatDefenders.legalDefendingPlayers(state, attackingPlayer)
+        val defenders = opponents.toList() + state.getBattlefield().filter { entityId ->
+            when {
+                projected.isBattle(entityId) -> Battles.canBeAttackedBy(state, entityId, attackingPlayer, opponents)
+                projected.isPlaneswalker(entityId) -> projected.getController(entityId) in opponents
+                else -> false
+            }
+        }
+        return candidates.filterTo(mutableSetOf()) { attackerId ->
+            if (AttackSacrificeCosts.requirementFor(state, attackerId, cardRegistry) != null) return@filterTo true
+            val ctx = AttackCheckContext(state, projected, attackerId, attackingPlayer, cardRegistry)
+            val legal = defenders.filter { defenderId -> attackDefenderRules.all { it.check(ctx, defenderId) == null } }
+            legal.isNotEmpty() && legal.none { calculateTotalAttackTax(state, mapOf(attackerId to it), projected) == 0 }
+        }
     }
 
     // =========================================================================

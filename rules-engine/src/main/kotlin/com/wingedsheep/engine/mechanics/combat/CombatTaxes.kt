@@ -2,6 +2,7 @@ package com.wingedsheep.engine.mechanics.combat
 
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.mechanics.durations.GrantDurationGate
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.registry.CardRegistry
@@ -65,6 +66,20 @@ object CombatTaxes {
             }
         }
 
+        // One tax ability held on behalf of [you], the player it protects, with [holder] as its source.
+        fun taxFrom(ability: AttackTax, holder: EntityId, you: EntityId): Int {
+            val attackerCount = (attackersAtPlayer[you] ?: 0) +
+                if (ability.coversPlaneswalkers) attackersAtPlaneswalkers[you] ?: 0 else 0
+            if (attackerCount == 0) return 0
+            val ctx = EffectContext(sourceId = holder, controllerId = you)
+            // Gate on the source's state (e.g. Archangel of Tithes — only while untapped).
+            val condition = ability.condition
+            if (condition != null && !predicateEvaluator.conditions.evaluate(state, condition, ctx)) return 0
+            val taxPerAttacker =
+                maxOf(0, predicateEvaluator.amounts.evaluate(state, ability.amountPerAttacker, ctx, projected))
+            return taxPerAttacker * attackerCount
+        }
+
         var totalGenericTax = 0
         for (defenderId in attackersAtPlayer.keys + attackersAtPlaneswalkers.keys) {
             val defenderPermanents = projected.getBattlefieldControlledBy(defenderId)
@@ -73,20 +88,27 @@ object CombatTaxes {
                 val cardDef = container.faceUpCardDefinition(cardRegistry) ?: continue
                 for (ability in cardDef.staticAbilities) {
                     if (ability !is AttackTax) continue
-                    val attackerCount = (attackersAtPlayer[defenderId] ?: 0) +
-                        if (ability.coversPlaneswalkers) attackersAtPlaneswalkers[defenderId] ?: 0 else 0
-                    if (attackerCount == 0) continue
-                    val ctx = EffectContext(sourceId = entityId, controllerId = defenderId)
-                    // Gate on the source's state (e.g. Archangel of Tithes — only while untapped).
-                    val condition = ability.condition
-                    if (condition != null && !predicateEvaluator.conditions.evaluate(state, condition, ctx)) {
-                        continue
-                    }
-                    val taxPerAttacker =
-                        maxOf(0, predicateEvaluator.amounts.evaluate(state, ability.amountPerAttacker, ctx, projected))
-                    totalGenericTax += taxPerAttacker * attackerCount
+                    totalGenericTax += taxFrom(ability, entityId, defenderId)
                 }
             }
+        }
+
+        // Granted taxes. A resolved effect can make the tax a rule about a *player* rather than
+        // about a permanent — Summon: Yojimbo's "until your next turn, creatures can't attack you
+        // unless their controller pays {2} for each of those creatures" — so a grant held by the
+        // defending player taxes exactly like a printed one on a permanent they control, and keeps
+        // taxing after the Saga that granted it is gone. A grant held by a permanent taxes for that
+        // permanent's controller while it stays on the battlefield.
+        for (grant in state.grantedStaticAbilities) {
+            val ability = grant.ability as? AttackTax ?: continue
+            val holder = grant.entityId
+            val you = when {
+                state.turnOrder.contains(holder) -> holder
+                holder in state.getBattlefield() -> projected.getController(holder) ?: continue
+                else -> continue
+            }
+            if (!GrantDurationGate.holds(state, holder, grant.sourceId, grant.duration)) continue
+            totalGenericTax += taxFrom(ability, holder, you)
         }
 
         return totalGenericTax + perCreatureTax(state, attackers.keys, projected) +

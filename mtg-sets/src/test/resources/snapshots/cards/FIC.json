@@ -2130,6 +2130,133 @@
     ]
 }
 
+// Summon: Yojimbo
+{
+    "name": "Summon: Yojimbo",
+    "manaCost": "{3}{W}",
+    "typeLine": "Enchantment Creature — Saga Samurai",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after IV.)\nI — Exile target artifact, enchantment, or tapped creature an opponent controls.\nII, III — Until your next turn, creatures can't attack you unless their controller pays {2} for each of those creatures.\nIV — Create X Treasure tokens, where X is the number of opponents who control a creature with power 4 or greater.\nVigilance",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "anyOf": [
+                                {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "Or",
+                                            "predicates": [
+                                                "IsArtifact",
+                                                "IsEnchantment"
+                                            ]
+                                        }
+                                    ],
+                                    "controllerPredicate": "ControlledByOpponent"
+                                },
+                                {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        "IsTapped"
+                                    ],
+                                    "controllerPredicate": "ControlledByOpponent"
+                                }
+                            ]
+                        }
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "GrantStaticAbility",
+                    "ability": {
+                        "type": "AttackTax",
+                        "amountPerAttacker": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "target": "Controller",
+                    "duration": "UntilYourNextTurn"
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "GrantStaticAbility",
+                    "ability": {
+                        "type": "AttackTax",
+                        "amountPerAttacker": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "target": "Controller",
+                    "duration": "UntilYourNextTurn"
+                }
+            },
+            {
+                "chapter": 4,
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure",
+                    "dynamicCount": {
+                        "type": "CountPlayersWith",
+                        "scope": "EachOpponent",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "creature pow>=4"
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "rarity": "RARE",
+        "artist": "Benjamin Ee",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cdbc2d28-ea35-47c6-af7e-07924e9d5794.jpg?1783906365",
+        "rulings": [
+            {
+                "date": "2025-06-06",
+                "text": "On turns where the effect of Summon: Yojimbo's second or third chapter ability is applying, your opponents can choose not to attack with a creature that must attack if able as long as there is no other player, planeswalker, or battle for that creature to attack that wouldn't require a cost."
+            },
+            {
+                "date": "2025-06-06",
+                "text": "The value of X is determined only once, as Summon: Yojimbo's fourth chapter ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Tataru Taru
 {
     "name": "Tataru Taru",

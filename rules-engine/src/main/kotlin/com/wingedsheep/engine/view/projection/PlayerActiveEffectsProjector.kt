@@ -25,6 +25,7 @@ import com.wingedsheep.engine.view.ClientPlayerEffect
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.AttackTax
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry
@@ -71,6 +72,7 @@ internal class PlayerActiveEffectsProjector(
             targetingAndCastingGrants(state, playerId, container) +
             designations(state, playerId, container, audience) +
             attackRequirements(container) +
+            attackTaxGrants(state, playerId) +
             blockRestrictions(container) +
             pendingSpellRiders(state, playerId) +
             emblemsAndDelayedTriggers(state, playerId, container, audience)
@@ -681,6 +683,29 @@ internal class PlayerActiveEffectsProjector(
             )
         )
     }
+
+    /**
+     * Attack taxes a resolved effect handed to this player (Summon: Yojimbo's "until your next turn,
+     * creatures can't attack you unless their controller pays {2} for each of those creatures").
+     * A printed tax shows on its permanent; a player-held one has no card to show on, so without
+     * this badge the attacker would only meet it at the payment prompt.
+     */
+    private fun attackTaxGrants(state: GameState, playerId: EntityId): List<ClientPlayerEffect> =
+        state.grantedStaticAbilities.mapIndexedNotNull { index, grant ->
+            val tax = grant.ability as? AttackTax ?: return@mapIndexedNotNull null
+            if (grant.entityId != playerId) return@mapIndexedNotNull null
+            val description = if (grant.duration is Duration.Permanent) {
+                tax.description.replaceFirstChar { it.uppercase() }
+            } else {
+                "${grant.duration.description.replaceFirstChar { it.uppercase() }}, ${tax.description}"
+            }
+            ClientPlayerEffect(
+                effectId = "attack_tax_$index",
+                name = "Attack Tax",
+                description = description,
+                icon = "lock"
+            )
+        }
 
     /** A per-combat cap on how many creatures this player may block with (Mirri, Weatherlight Duelist). */
     private fun blockRestrictions(container: ComponentContainer): List<ClientPlayerEffect> {
