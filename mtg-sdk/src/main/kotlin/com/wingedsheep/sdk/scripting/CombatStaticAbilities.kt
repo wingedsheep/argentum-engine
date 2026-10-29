@@ -846,8 +846,6 @@ data object CantBeAttackedWhileAttached : StaticAbility {
  *   attack you each combat" — is `AttackerCountLimit(1, defendingPlayers = Player.You)` behind a
  *   [ConditionalStaticAbility] on `Conditions.SourceIsTapped`.
  */
-private val ATTACKER_CAP_PLAYERS: Set<Player> = setOf(Player.You, Player.EachOpponent, Player.Each)
-
 @SerialName("AttackerCountLimit")
 @Serializable
 data class AttackerCountLimit(
@@ -883,7 +881,15 @@ data class AttackerCountLimit(
         Player.Each -> "each player"
         else -> player.description
     }
+
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newDefenders = defenders?.applyTextReplacement(replacer)
+        return if (newDefenders !== defenders) copy(defenders = newDefenders) else this
+    }
 }
+
+/** The players [AttackerCountLimit.defendingPlayers] can name, relative to the cap's controller. */
+private val ATTACKER_CAP_PLAYERS: Set<Player> = setOf(Player.You, Player.EachOpponent, Player.Each)
 
 /**
  * Global cap on how many creatures may block in a single combat (Dueling Grounds —

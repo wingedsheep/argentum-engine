@@ -314,17 +314,23 @@ class CombatAdvisor(
         if (seed.lethal) {
             return DeclareAttackers(
                 playerId,
-                CombatSeed.legalize(
-                    state, legalAction,
-                    AttackRequirementRepair.repair(
-                        state, cardRegistry, playerId, seed.attackers, validAttackers, mandatory.toSet(), canAttack,
+                legalizeAttackerPlan(
+                    state, playerId,
+                    CombatSeed.legalize(
+                        state, legalAction,
+                        AttackRequirementRepair.repair(
+                            state, cardRegistry, playerId, seed.attackers, validAttackers, mandatory.toSet(), canAttack,
+                        ),
+                        opponentId,
                     ),
-                    opponentId,
+                    mandatory.toSet(),
                 ),
             )
         }
 
-        val seedMap = seed.attackers.toMutableMap()
+        // An attacker cap on the defenders (a tapped Mirri, Dueling Grounds) can make the seed
+        // itself illegal, and local search gives up on an illegal starting plan — trim it first.
+        val seedMap = legalizeAttackerPlan(state, playerId, seed.attackers, mandatory.toSet()).toMutableMap()
 
         // ── Local search: try add/remove mutations via simulation ──
         // Only run if we're at DECLARE_ATTACKERS (simulation needs to submit DeclareAttackers).
@@ -361,18 +367,49 @@ class CombatAdvisor(
         // whole declaration is rejected and the seat attacks with nothing.
         return DeclareAttackers(
             playerId,
-            CombatSeed.legalize(
-                state, legalAction,
-                AttackRequirementRepair.repair(
-                    state, cardRegistry, playerId,
-                    CombatTaxBudget.affordableAttack(
-                        state, projected, playerId, cardRegistry, seedMap, mandatory.toSet()
+            legalizeAttackerPlan(
+                state, playerId,
+                CombatSeed.legalize(
+                    state, legalAction,
+                    AttackRequirementRepair.repair(
+                        state, cardRegistry, playerId,
+                        CombatTaxBudget.affordableAttack(
+                            state, projected, playerId, cardRegistry, seedMap, mandatory.toSet()
+                        ),
+                        validAttackers, mandatory.toSet(), canAttack,
                     ),
-                    validAttackers, mandatory.toSet(), canAttack,
+                    opponentId,
                 ),
-                opponentId,
+                mandatory.toSet(),
             ),
         )
+    }
+
+    /**
+     * Whole-declaration restrictions the per-attacker target lists can't show — "no more than one
+     * creature can attack you each combat" (a tapped Mirri, Weatherlight Duelist), Dueling
+     * Grounds — reject the entire declaration, and a rejected declaration means the seat attacks
+     * with nothing. Validate the plan through the authoritative engine and drop the least
+     * valuable optional attacker until it is legal; mandatory attackers stay. The attacker-side
+     * twin of [legalizeBlockerPlan]. Only at the declare-attackers step, where the engine can
+     * judge a declaration.
+     */
+    private fun legalizeAttackerPlan(
+        state: GameState,
+        playerId: EntityId,
+        proposed: Map<EntityId, EntityId>,
+        mandatoryAttackerIds: Set<EntityId>,
+    ): Map<EntityId, EntityId> {
+        if (state.step != Step.DECLARE_ATTACKERS || proposed.isEmpty()) return proposed
+        val candidate = proposed.toMutableMap()
+        while (simulator.simulate(state, DeclareAttackers(playerId, candidate)) is SimulationResult.Illegal) {
+            val removable = candidate.keys
+                .filterNot { it in mandatoryAttackerIds }
+                .minByOrNull { CombatMath.creatureValue(state, state.projectedState, it) }
+                ?: return candidate
+            candidate.remove(removable)
+        }
+        return candidate
     }
 
     /**

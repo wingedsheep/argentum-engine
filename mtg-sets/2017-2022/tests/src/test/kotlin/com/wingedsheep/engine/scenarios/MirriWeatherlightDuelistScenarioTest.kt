@@ -3,7 +3,11 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.DeclareAttackers
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.player.BlockerCountLimitThisCombatComponent
+import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.ScenarioTestBase
+import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.c17.cards.MirriWeatherlightDuelist
+import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
@@ -77,6 +81,24 @@ class MirriWeatherlightDuelistScenarioTest : ScenarioTestBase() {
                 val ajani = game.findPermanent("Ajani Resolute")!!
                 withClue("both at the planeswalker") {
                     game.attack("Grizzly Bears" to ajani, "Savannah Lions" to ajani).error shouldBe null
+                }
+            }
+
+            test("in a three-player game the cap protects only Mirri's controller") {
+                val driver = GameTestDriver()
+                driver.registerCards(TestCards.all + MirriWeatherlightDuelist)
+                val (p1, p2, p3) = driver.initMultiplayer(List(3) { Deck.of("Mountain" to 40) })
+                driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+                val bears = List(2) { driver.putCreatureOnBattlefield(p1, "Grizzly Bears") }
+                bears.forEach(driver::removeSummoningSickness)
+                driver.tapPermanent(driver.putCreatureOnBattlefield(p2, "Mirri, Weatherlight Duelist"))
+                driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+
+                withClue("two creatures can't attack Mirri's controller") {
+                    driver.declareAttackers(p1, bears.associateWith { p2 }).error shouldNotBe null
+                }
+                withClue("the other opponent isn't protected") {
+                    driver.declareAttackers(p1, bears.associateWith { p3 }).error shouldBe null
                 }
             }
 

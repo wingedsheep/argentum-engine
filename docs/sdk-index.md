@@ -1817,7 +1817,7 @@ Families:
 - `AssignDamageEqualToToughness(filter: GroupFilter, onlyWhenToughnessGreaterThanPower: Boolean)` — Creature assigns combat damage equal to its toughness rather than its power.
 - `AssignUnblockedCombatDamageToDefendingCreature(filter: GroupFilter)` — If this creature is unblocked, its controller may have it assign all its combat damage to one creature the defending player controls instead of to the player, planeswalker or battle it is attacking.
 - `AttackTax(amountPerAttacker: DynamicAmount, condition: Condition?, coversPlaneswalkers: Boolean)` — Creatures can't attack you unless their controller pays generic mana for each attacking creature.
-- `AttackerCountLimit(maxAttackers: Int, defenders: GroupFilter?, defendingPlayers: Player?)`
+- `AttackerCountLimit(maxAttackers: Int, defenders: GroupFilter?, defendingPlayers: Player?)` — Cap on how many creatures may attack in a single combat.
 - `BlockTax(amountPerBlocker: DynamicAmount, condition: Condition?)` — Creatures can't block unless their controller pays generic mana for each blocking creature.
 - `BlockerCountLimit(maxBlockers: Int)` — Global cap on how many creatures may block in a single combat (Dueling Grounds — "No more than one creature can block each combat").
 - `CanAttackAsThoughHasty(filter: GroupFilter)` — Creatures matching filter can attack as though they had haste.
