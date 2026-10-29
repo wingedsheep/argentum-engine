@@ -53,6 +53,8 @@ import com.wingedsheep.engine.state.components.player.InAdditionalBeginningPhase
 import com.wingedsheep.engine.state.components.player.InsertedPhasesResumeComponent
 import com.wingedsheep.engine.state.components.player.CombatPhaseEndedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.AdditionalEndStepsComponent
+import com.wingedsheep.engine.state.components.player.AdditionalUpkeepStepsAfterStepComponent
+import com.wingedsheep.engine.state.components.player.UpkeepStepEndedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.InAdditionalEndStepComponent
 import com.wingedsheep.engine.state.components.player.CantActivateLoyaltyAbilitiesComponent
 import com.wingedsheep.engine.state.components.player.CantCastSpellsComponent
@@ -840,6 +842,14 @@ class CleanupPhaseManager(
                 }
                 if (result.has<InAdditionalEndStepComponent>()) {
                     result = result.without<InAdditionalEndStepComponent>()
+                }
+                // Turn-scoped upkeep bookkeeping: the next turn's first upkeep is "first" again
+                // (IsFirstUpkeepStepOfTurn), and an after-this-step count can't outlive its turn.
+                if (result.has<UpkeepStepEndedThisTurnComponent>()) {
+                    result = result.without<UpkeepStepEndedThisTurnComponent>()
+                }
+                if (result.has<AdditionalUpkeepStepsAfterStepComponent>()) {
+                    result = result.without<AdditionalUpkeepStepsAfterStepComponent>()
                 }
                 // "Skips each instance of the chosen step or phase this turn" (Fatespinner) is
                 // turn-scoped, so the marker is dropped here rather than being consumed by the

@@ -2507,6 +2507,14 @@ object Conditions {
         com.wingedsheep.sdk.scripting.conditions.IsFirstEndStepOfTurn
 
     /**
+     * If it's the first upkeep step of the turn (no upkeep step has ended yet this turn) — "at the
+     * beginning of [a player's] first upkeep each turn" as an `interveningIf`, and the loop guard for
+     * [Effects.AddAdditionalUpkeepSteps] with `afterThisStep` (Paradox Haze).
+     */
+    val IsFirstUpkeepStepOfTurn: ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.IsFirstUpkeepStepOfTurn
+
+    /**
      * If it's the first combat phase of the turn (not an extra combat phase inserted by
      * [Effects.AddCombatPhase]). The intervening-if / loop guard for "after this phase, there is an
      * additional combat phase" riders — see Balthier and Fran, Genji Glove, Raph & Leo.

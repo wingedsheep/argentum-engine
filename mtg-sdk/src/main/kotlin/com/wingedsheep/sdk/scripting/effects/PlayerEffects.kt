@@ -309,17 +309,26 @@ data object AddBeginningPhaseEffect : Effect {
  * (CR 500.8: most recently created phase occurs first), so any extra combat happens before the
  * extra upkeeps. "At the beginning of [your] upkeep" abilities trigger in each (CR 503.1a).
  *
- * Always added to the controller of the effect (CR 500.10a — "you get" steps are never added to
- * another player's turn).
+ * With [afterThisStep] the steps are instead added directly after the current upkeep step
+ * (Paradox Haze: "that player gets an additional upkeep step after this step"). Per CR 500.9 that
+ * inserts a bare upkeep step into the same beginning phase — no new phase — and the turn then goes
+ * on to its draw step. Guard a rider that re-triggers in it with
+ * [com.wingedsheep.sdk.scripting.conditions.IsFirstUpkeepStepOfTurn].
+ *
+ * Always added to the active player's turn: the effects that use this resolve on the turn of the
+ * player who gets the steps (CR 500.10a — "you get" steps are never added to another player's turn).
  *
  * @param amount The number of additional upkeep steps to add (e.g. the combat damage dealt).
+ * @param afterThisStep Insert the steps after the current (upkeep) step rather than after this phase.
  */
 @SerialName("AddAdditionalUpkeepSteps")
 @Serializable
 data class AddAdditionalUpkeepStepsEffect(
-    val amount: DynamicAmount
+    val amount: DynamicAmount,
+    val afterThisStep: Boolean = false
 ) : Effect {
-    override val description: String = "You get ${amount.description} additional upkeep step(s) after this phase"
+    override val description: String =
+        "You get ${amount.description} additional upkeep step(s) after this ${if (afterThisStep) "step" else "phase"}"
 }
 
 /**

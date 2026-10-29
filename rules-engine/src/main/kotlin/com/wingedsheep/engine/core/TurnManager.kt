@@ -23,8 +23,10 @@ import com.wingedsheep.engine.state.components.player.PlayerEffectRemoval
 import com.wingedsheep.engine.state.components.player.AdditionalPhasesComponent
 import com.wingedsheep.engine.state.components.player.ExtraPhaseKind
 import com.wingedsheep.engine.state.components.player.InAdditionalCombatPhaseComponent
+import com.wingedsheep.engine.state.components.player.AdditionalUpkeepStepsAfterStepComponent
 import com.wingedsheep.engine.state.components.player.AdditionalUpkeepStepsComponent
 import com.wingedsheep.engine.state.components.player.InAdditionalUpkeepStepComponent
+import com.wingedsheep.engine.state.components.player.UpkeepStepEndedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.InAdditionalBeginningPhaseComponent
 import com.wingedsheep.engine.state.components.player.InsertedPhasesResumeComponent
 import com.wingedsheep.engine.state.components.player.CombatPhaseEndedThisTurnComponent
@@ -598,6 +600,30 @@ class TurnManager(
         if (currentStep == Step.UPKEEP) {
             state = cleanupPhaseManager.expireEndOfYourNextUpkeepEffects(state, activePlayer)
             state = ControlHistory.endUpkeep(state, state.sharedTurnTeam(activePlayer))
+            if (state.getEntity(activePlayer)?.has<UpkeepStepEndedThisTurnComponent>() != true) {
+                state = state.updateEntity(activePlayer) { it.with(UpkeepStepEndedThisTurnComponent) }
+            }
+        }
+
+        // Drain any additional upkeep steps added "after this step" (Paradox Haze). Per CR 500.9 each
+        // is a bare upkeep step inserted directly after this one in the same beginning phase, so we
+        // re-enter a fresh upkeep step instead of moving on — upkeep triggers fire again, and once the
+        // count is exhausted the turn proceeds as it would have from the first (to the draw step, or
+        // back to the postcombat main phase from an Obeka upkeep, whose marker is left in place).
+        if (currentStep == Step.UPKEEP) {
+            val afterStep = state.getEntity(activePlayer)?.get<AdditionalUpkeepStepsAfterStepComponent>()
+            if (afterStep != null && afterStep.count > 0) {
+                var redirectedState = state.updateEntity(activePlayer) { container ->
+                    if (afterStep.count <= 1) container.without<AdditionalUpkeepStepsAfterStepComponent>()
+                    else container.with(AdditionalUpkeepStepsAfterStepComponent(afterStep.count - 1))
+                }.copy(step = Step.UPKEEP, phase = Phase.BEGINNING, priorityPassedBy = emptySet())
+                // Same entry bookkeeping as the natural upkeep step (see Step.UPKEEP below).
+                redirectedState = ControlHistory.beginUpkeep(redirectedState, redirectedState.sharedTurnTeam(activePlayer))
+                redirectedState = cleanupPhaseManager.expireUntilYourNextUpkeepEffects(redirectedState, activePlayer)
+                    .withPriority(activePlayer)
+                // Same phase, so only the step-changed event — that re-fires the upkeep triggers.
+                return ExecutionResult.success(redirectedState, listOf(StepChangedEvent(Step.UPKEEP)))
+            }
         }
 
         // Leaving an inserted additional upkeep step (Obeka, Splitter of Seconds). Per CR 500.10

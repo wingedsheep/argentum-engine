@@ -6758,15 +6758,18 @@ object Effects {
      * Give the controller [amount] additional upkeep steps after the current phase
      * (Obeka, Splitter of Seconds). Each is a beginning phase containing only an upkeep step
      * (untap and draw skipped, CR 500.10); they occur after any additional combat phases (CR 500.8).
+     * With [afterThisStep], the upkeep steps are inserted directly after the current upkeep step
+     * instead (Paradox Haze, CR 500.9) — guard with [Conditions.IsFirstUpkeepStepOfTurn] to avoid looping.
      */
-    fun AddAdditionalUpkeepSteps(amount: DynamicAmount): Effect =
-        com.wingedsheep.sdk.scripting.effects.AddAdditionalUpkeepStepsEffect(amount)
+    fun AddAdditionalUpkeepSteps(amount: DynamicAmount, afterThisStep: Boolean = false): Effect =
+        com.wingedsheep.sdk.scripting.effects.AddAdditionalUpkeepStepsEffect(amount, afterThisStep)
 
     /**
-     * Give the controller a fixed number of additional upkeep steps after the current phase.
+     * Give the controller a fixed number of additional upkeep steps after the current phase (or,
+     * with [afterThisStep], after the current upkeep step).
      */
-    fun AddAdditionalUpkeepSteps(amount: Int): Effect =
-        com.wingedsheep.sdk.scripting.effects.AddAdditionalUpkeepStepsEffect(DynamicAmount.Fixed(amount))
+    fun AddAdditionalUpkeepSteps(amount: Int, afterThisStep: Boolean = false): Effect =
+        com.wingedsheep.sdk.scripting.effects.AddAdditionalUpkeepStepsEffect(DynamicAmount.Fixed(amount), afterThisStep)
 
     /**
      * Insert [amount] additional end step(s) directly after the current end step (Y'shtola Rhul:

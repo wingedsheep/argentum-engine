@@ -252,6 +252,7 @@ Exists — Condition
 IsDay — Condition
 IsFirstCombatPhaseOfTurn — Condition
 IsFirstEndStepOfTurn — Condition
+IsFirstUpkeepStepOfTurn — Condition
 IsFirstSpellPaidWithTreasureManaCastThisTurn — Condition
 IsInPhase — Condition
 IsInStep — Condition

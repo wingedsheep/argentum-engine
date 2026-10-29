@@ -5,6 +5,7 @@ import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.player.AdditionalUpkeepStepsAfterStepComponent
 import com.wingedsheep.engine.state.components.player.AdditionalUpkeepStepsComponent
 import com.wingedsheep.sdk.scripting.effects.AddAdditionalUpkeepStepsEffect
 import kotlin.reflect.KClass
@@ -18,6 +19,10 @@ import kotlin.reflect.KClass
  * resolved amount onto an [AdditionalUpkeepStepsComponent] on the active player; the TurnManager
  * drains it after the postcombat main phase, redirecting into a fresh beginning phase whose only
  * step is the upkeep step (untap and draw skipped, CR 500.10).
+ *
+ * With `afterThisStep` (Paradox Haze) the amount accumulates onto an
+ * [AdditionalUpkeepStepsAfterStepComponent] instead, which the TurnManager drains when the current
+ * upkeep step ends, re-entering a bare upkeep step in the same beginning phase (CR 500.9).
  */
 class AddAdditionalUpkeepStepsExecutor(
     private val amountEvaluator: DynamicAmountEvaluator
@@ -39,11 +44,14 @@ class AddAdditionalUpkeepStepsExecutor(
             return EffectResult.success(state)
         }
 
-        val existing = state.getEntity(activePlayer)?.get<AdditionalUpkeepStepsComponent>()
-        val newCount = (existing?.count ?: 0) + amount
-
         val newState = state.updateEntity(activePlayer) { container ->
-            container.with(AdditionalUpkeepStepsComponent(count = newCount))
+            if (effect.afterThisStep) {
+                val existing = container.get<AdditionalUpkeepStepsAfterStepComponent>()?.count ?: 0
+                container.with(AdditionalUpkeepStepsAfterStepComponent(count = existing + amount))
+            } else {
+                val existing = container.get<AdditionalUpkeepStepsComponent>()?.count ?: 0
+                container.with(AdditionalUpkeepStepsComponent(count = existing + amount))
+            }
         }
 
         return EffectResult.success(newState)

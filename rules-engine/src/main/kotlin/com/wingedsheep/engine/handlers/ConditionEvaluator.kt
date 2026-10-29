@@ -43,6 +43,7 @@ import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.identity.RingBearerComponent
 import com.wingedsheep.engine.state.components.player.CombatPhaseEndedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.InAdditionalEndStepComponent
+import com.wingedsheep.engine.state.components.player.UpkeepStepEndedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.PlayerTurnsTakenComponent
 import com.wingedsheep.engine.state.components.player.CombatDamageReceivedThisTurnComponent
@@ -90,6 +91,7 @@ import com.wingedsheep.sdk.scripting.conditions.IsInPhase
 import com.wingedsheep.sdk.scripting.conditions.IsInStep
 import com.wingedsheep.sdk.scripting.conditions.IsFirstCombatPhaseOfTurn
 import com.wingedsheep.sdk.scripting.conditions.IsFirstEndStepOfTurn
+import com.wingedsheep.sdk.scripting.conditions.IsFirstUpkeepStepOfTurn
 import com.wingedsheep.sdk.scripting.conditions.IsNotYourTurn
 import com.wingedsheep.sdk.scripting.conditions.IsOpponentsTurn
 import com.wingedsheep.sdk.scripting.conditions.IsPlayersTurn
@@ -310,6 +312,7 @@ class ConditionEvaluator(
             com.wingedsheep.sdk.scripting.conditions.AfterCombatThisTurn,
             IsFirstCombatPhaseOfTurn,
             IsFirstEndStepOfTurn,
+            IsFirstUpkeepStepOfTurn,
             IsFirstSpellPaidWithTreasureManaCastThisTurn,
             is IsInPhase,
             is IsInStep,
@@ -472,6 +475,15 @@ class ConditionEvaluator(
                 state.step == Step.END &&
                     state.activePlayerId?.let {
                         state.getEntity(it)?.has<InAdditionalEndStepComponent>()
+                    } != true
+            }
+
+            // True in an upkeep step while no upkeep step has ended yet this turn — the natural one, not
+            // an extra one added after it (Paradox Haze) or after a later phase (Obeka). Board-derived.
+            is IsFirstUpkeepStepOfTurn -> {
+                state.step == Step.UPKEEP &&
+                    state.activePlayerId?.let {
+                        state.getEntity(it)?.has<UpkeepStepEndedThisTurnComponent>()
                     } != true
             }
 

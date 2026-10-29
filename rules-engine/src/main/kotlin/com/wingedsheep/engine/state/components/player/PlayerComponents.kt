@@ -674,6 +674,30 @@ data class AdditionalUpkeepStepsComponent(
 data object InAdditionalUpkeepStepComponent : Component
 
 /**
+ * Component tracking additional upkeep steps to be inserted directly after the current upkeep step
+ * (Paradox Haze: "an additional upkeep step after this step"). Per CR 500.9 each is a bare upkeep
+ * step in the same beginning phase — no new phase — so the TurnManager drains this when advancing
+ * out of an upkeep step, re-entering a fresh upkeep step instead of moving on, decrementing the
+ * count each time. Always added to the active player's own turn.
+ *
+ * @param count Number of additional upkeep steps remaining to insert
+ */
+@Serializable
+data class AdditionalUpkeepStepsAfterStepComponent(
+    val count: Int = 1
+) : Component
+
+/**
+ * Marker placed on the active player when an upkeep step of their turn ends. It distinguishes every
+ * later upkeep step of the turn — added after the step (Paradox Haze) or after a later phase
+ * (Obeka) — from the first, which is what
+ * [com.wingedsheep.sdk.scripting.conditions.IsFirstUpkeepStepOfTurn] reads. Cleared at end-of-turn
+ * cleanup.
+ */
+@Serializable
+data object UpkeepStepEndedThisTurnComponent : Component
+
+/**
  * Informational marker placed on the active player while the game is inside an *inserted* beginning
  * phase ([ExtraPhaseKind.BEGINNING]). Nothing decides on it: the TurnManager's drain-and-resume
  * already keeps the inserted draw step from falling through into a precombat main phase. Cleared

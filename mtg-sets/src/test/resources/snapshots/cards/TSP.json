@@ -3400,6 +3400,48 @@
     ]
 }
 
+// Paradox Haze
+{
+    "name": "Paradox Haze",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant player\nAt the beginning of enchanted player's first upkeep each turn, that player gets an additional upkeep step after this step.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Paradox Haze:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "EnchantedPlayer"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddAdditionalUpkeepSteps",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "afterThisStep": true
+                },
+                "interveningIf": "IsFirstUpkeepStepOfTurn",
+                "descriptionOverride": "At the beginning of enchanted player's first upkeep each turn, that player gets an additional upkeep step after this step."
+            }
+        ],
+        "auraTarget": "TargetPlayer"
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "UNCOMMON",
+        "artist": "Greg Staples",
+        "flavorText": "\"Keep your pace steady through the haze, lest you step on the heels of your future self or trip the self a moment behind you.\"\n—Teferi",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a7c74def-83e5-4420-989d-2304bf4743ae.jpg?1783943242"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Penumbra Spider
 {
     "name": "Penumbra Spider",

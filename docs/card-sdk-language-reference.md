@@ -4308,6 +4308,14 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   (after the additional-combat-phase check), each remaining count redirecting into a fresh upkeep
   step in the beginning phase. Read "that many" from the triggering combat damage with
   `DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_DAMAGE_AMOUNT)`.
+  `Effects.AddAdditionalUpkeepSteps(amount, afterThisStep = true)` instead inserts the upkeep
+  steps directly after the current upkeep step (Paradox Haze: "that player gets an additional upkeep
+  step after this step"). Per CR 500.9 that is a bare upkeep step in the same beginning phase — no
+  untap or draw step between them, and the turn goes on to its draw step afterwards (or back to the
+  postcombat main phase from an Obeka upkeep). Accumulates an `AdditionalUpkeepStepsAfterStepComponent`
+  count on the active player, drained by `TurnManager.advanceStep` when leaving the upkeep step;
+  upkeep triggers fire again in each. Gate a rider that re-triggers in it on
+  `Conditions.IsFirstUpkeepStepOfTurn`.
 - `Effects.AddAdditionalEndSteps(amount)` (`amount: DynamicAmount` or `Int`, default `1`) — insert
   `amount` additional end step(s) directly after the current end step (Y'shtola Rhul: "there is an
   additional end step after this step"). Per CR 500.9 a step is inserted directly after the
@@ -15967,6 +15975,12 @@ that works in both resolution and static-ability (projection) contexts.
   turn and the game isn't in a combat phase now (the end of combat step is still combat; a main
   phase between two combats counts; a turn whose combat was skipped never qualifies). Glyph of
   Reincarnation's timing line: `castOnlyIf(Conditions.AfterCombat)`.
+- `IsFirstUpkeepStepOfTurn` — the game is in an upkeep step and no upkeep step has ended yet this
+  turn, so an extra upkeep added after this step (`AddAdditionalUpkeepSteps(.., afterThisStep = true)`)
+  or after a later phase (Obeka) is not the first. Board-derived (reads `state.step` + the active
+  player's "an upkeep step ended this turn" marker, cleared at cleanup). "At the beginning of enchanted
+  player's first upkeep each turn" is `Triggers.player(Player.EnchantedPlayer).beginningOf(Step.UPKEEP)`
+  with `interveningIf = Conditions.IsFirstUpkeepStepOfTurn` (Paradox Haze).
 - `IsFirstCombatPhaseOfTurn` — the combat analog of `IsFirstEndStepOfTurn`: it's the turn's first
   combat phase, i.e. no combat phase has ended yet this turn — an extra combat inserted *before* the
   natural one (Grim Reaper's Sprint cast precombat) is the first, and the natural one after it is not.

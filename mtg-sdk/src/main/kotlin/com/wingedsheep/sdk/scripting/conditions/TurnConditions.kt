@@ -138,6 +138,25 @@ data object IsFirstEndStepOfTurn : Condition {
     override val description: String = "if it's the first end step of the turn"
 }
 
+/**
+ * Condition: "If it's the first upkeep step of the turn."
+ *
+ * True while the game is in an upkeep step and no upkeep step has ended yet this turn — so an extra
+ * upkeep step added after this step ([com.wingedsheep.sdk.scripting.effects.AddAdditionalUpkeepStepsEffect]
+ * with `afterThisStep`) or after a later phase (Obeka) is not the first. The trigger qualifier for
+ * "at the beginning of [a player's] first upkeep each turn" (Paradox Haze, as an `interveningIf`),
+ * which keeps the extra upkeep step it adds from adding another. The upkeep analog of
+ * [IsFirstEndStepOfTurn].
+ *
+ * Board-derived (reads `state.step` and the active player's "an upkeep step ended this turn"
+ * marker), so it evaluates identically at resolution and under projection.
+ */
+@SerialName("IsFirstUpkeepStepOfTurn")
+@Serializable
+data object IsFirstUpkeepStepOfTurn : Condition {
+    override val description: String = "if it's the first upkeep step of the turn"
+}
+
 // =============================================================================
 // Combat Conditions
 // =============================================================================
