@@ -4988,6 +4988,67 @@
     ]
 }
 
+// Turn to Slag
+{
+    "name": "Turn to Slag",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Turn to Slag deals 5 damage to target creature. Destroy all Equipment attached to that creature.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DestroyAllEquipmentOnTarget",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "artist": "Zoltan Boros & Gabor Szikszai",
+        "flavorText": "\"If it wasn't a blackened, stinking, melted abomination before, it certainly is now.\"\n—Koth of the Hammer",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/66fd5b49-b4f2-40da-94d5-6d6fc69506f6.jpg?1783941721",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Turn to Slag can target a creature that has no Equipment attached to it."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If the target creature is an illegal target by the time Turn to Slag tries to resolve, the spell won't resolve. You won't destroy any Equipment."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Viridian Revel
 {
     "name": "Viridian Revel",

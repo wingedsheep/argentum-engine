@@ -10629,6 +10629,239 @@
     ]
 }
 
+// Sublime Epiphany
+{
+    "name": "Sublime Epiphany",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one or more —\n• Counter target spell.\n• Counter target activated or triggered ability.\n• Return target nonland permanent to its owner's hand.\n• Create a token that's a copy of target creature you control.\n• Target player draws a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": "Counter",
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {},
+                                "zone": "Stack"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Counter target spell"
+                },
+                {
+                    "effect": {
+                        "type": "Counter",
+                        "target": "CounterTarget.Ability"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsActivatedOrTriggeredAbility"
+                                    ]
+                                },
+                                "zone": "Stack"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Counter target activated or triggered ability"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t2"
+                        },
+                        "destination": "Hand"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "nonland permanent"
+                            },
+                            "id": "t2"
+                        }
+                    ],
+                    "description": "Return target nonland permanent to its owner's hand"
+                },
+                {
+                    "effect": {
+                        "type": "CreateTokenCopyOfTarget",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t3"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "id": "t3"
+                        }
+                    ],
+                    "description": "Create a token that's a copy of target creature you control"
+                },
+                {
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t4"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "t4"
+                        }
+                    ],
+                    "description": "Target player draws a card"
+                }
+            ],
+            "chooseCount": 5,
+            "minChooseCount": 1
+        }
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "rarity": "RARE",
+        "artist": "Lindsey Look",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/d/ad1bcb44-a562-4f66-b862-6d0ef3546ab4.jpg?1783930718",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Sublime Epiphany's second mode can't counter an activated or triggered mana ability."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "The token copies exactly what is printed on the creature and nothing else (unless that creature is a token or is copying something else). It doesn't copy whether that creature is tapped or untapped, whether it has any counters on it or Auras and/or Equipment attached to it, or any non-copy effects that changed its power, toughness, types, color, and so on."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If any of the targets become illegal, the remaining targets are affected as appropriate."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "You can't choose any one mode more than once."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If you choose more than one mode, you perform the modes in the order specified. For example, if you choose to counter target spell, return target nonland permanent to its owner's hand, and have target player draw a card, that permanent will be on the battlefield while that spell is countered (and may modify, affect, or trigger on that event) but will not be on the battlefield while that player draws a card."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If you choose the third and fourth modes and target the same creature you control both times, you'll return it and then create a token that's a copy of it, using its copiable values as it last appeared on the battlefield. This is because the legality of targets is checked only as the spell begins to resolve, before any actions are performed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Swift Response
+{
+    "name": "Swift Response",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target tapped creature.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature tapped"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "artist": "Deruchenko Alexander",
+        "flavorText": "\"There's nothing quite as satisfying as delivering a good kick to the face.\"\n—Adrasteia, Akroan captain",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a90c1ad0-83bd-471c-8d4c-e65bc2abaa18.jpg?1783930732"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Teferi's Ageless Insight
+{
+    "name": "Teferi's Ageless Insight",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Legendary Enchantment",
+    "oracleText": "If you would draw a card except the first one you draw in each of your draw steps, draw two cards instead.",
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "ReplaceDrawWith",
+                "replacementEffect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "appliesTo": {
+                    "type": "DrawEvent",
+                    "firstInDrawStep": "EXCLUDED"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "rarity": "RARE",
+        "artist": "Kieran Yanner",
+        "flavorText": "\"Fine, you know more than me. But do you have to be such a show-off about it?\"\n—Chandra Nalaar, to Teferi",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c38d1722-96b0-4756-9da9-fe18b1c80649.jpg?1783930719",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "If a spell or ability causes you to put a card into your hand without specifically using the word \"draw,\" it's not a card drawn."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If two or more replacement effects would apply to a card-drawing event, the player drawing the card chooses the order in which to apply them."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Because Teferi's Ageless Insight is legendary, it's unlikely that one player will control two. However, if that happens, each card that player would draw after the first will result in four cards being drawn. If they control three, they draw eight cards, and so on."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Teferi's Protege
 {
     "name": "Teferi's Protege",
@@ -10715,6 +10948,130 @@
             {
                 "date": "2020-06-23",
                 "text": "You draw a card and discard a card all while the ability is resolving. Nothing can happen between the two, and no player may choose to take actions."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Teferi's Tutelage
+{
+    "name": "Teferi's Tutelage",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, draw a card, then discard a card.\nWhenever you draw a card, target opponent mills two cards. (They put the top two cards of their library into their graveyard.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Teferi's Tutelage:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Teferi's Tutelage:2",
+                "trigger": "DrawEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "rarity": "UNCOMMON",
+        "artist": "Ilse Gort",
+        "flavorText": "\"Tarassel's sixth law of temporal recursion is easy to understand as long as you know the first seven.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c26450d4-125f-423d-b074-3c959460c242.jpg?1783930718",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "You draw a card and discard a card all while the first ability is resolving. Nothing can happen between the two, and no player may choose to take actions. This means that the second ability is put onto the stack after you've finished resolving the first ability."
             }
         ]
     },
@@ -10989,6 +11346,187 @@
     ]
 }
 
+// Thieves' Guild Enforcer
+{
+    "name": "Thieves' Guild Enforcer",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "Flash\nWhenever this creature or another Rogue you control enters, each opponent mills two cards.\nAs long as an opponent has eight or more cards in their graveyard, this creature gets +2/+1 and has deathtouch.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thieves' Guild Enforcer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Rogue ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "player": "EachOpponent",
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "EachOpponent"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "CompositeStaticAbility",
+                    "abilities": [
+                        {
+                            "type": "ModifyStats",
+                            "powerBonus": 2,
+                            "toughnessBonus": 1,
+                            "filter": {
+                                "baseFilter": "permanent",
+                                "scope": "Self"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DEATHTOUCH",
+                            "filter": {
+                                "baseFilter": "permanent",
+                                "scope": "Self"
+                            }
+                        }
+                    ]
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "GreatestAmongPlayers",
+                        "players": "EachOpponent",
+                        "inner": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Graveyard"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 8
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "125",
+        "rarity": "RARE",
+        "artist": "Evyn Fong",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/df99f770-2c39-4025-a8a2-a5890f61eb53.jpg?1783930698",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Thieves' Guild Enforcer gets +2/+1 just once, no matter how many opponents have eight or more cards in their graveyard and no matter how many cards they have past the eighth."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If Thieves' Guild Enforcer gains deathtouch only after dealing damage (most likely because another creature was dealt lethal damage at the same time that Thieves' Guild Enforcer dealt damage), the damage it dealt won't be from a source with deathtouch."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Tide Skimmer
+{
+    "name": "Tide Skimmer",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Drake",
+    "oracleText": "Flying\nWhenever you attack with two or more creatures with flying, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tide Skimmer:1",
+                "trigger": {
+                    "type": "YouAttackEvent",
+                    "minAttackers": 2,
+                    "attackerFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasKeyword",
+                                "keyword": "FLYING"
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "79",
+        "rarity": "UNCOMMON",
+        "artist": "Joseph Meehan",
+        "flavorText": "Fishing boats often follow hunting drakes to find the largest schools of fish.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/dee1d595-a998-4652-931f-a1a72446f3a6.jpg?1783930717",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Tide Skimmer's ability triggers just once, no matter how many creatures with flying attack beyond the second."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "You draw a card even if some or all of the attacking creatures lose flying or leave combat before Tide Skimmer's ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Tolarian Kraken
 {
     "name": "Tolarian Kraken",
@@ -11119,6 +11657,400 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Track Down
+{
+    "name": "Track Down",
+    "manaCost": "{1}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Scry 3, then reveal the top card of your library. If it's a creature or land card, draw a card. (To scry 3, look at the top three cards of your library, then put any number of them on the bottom and the rest on top in any order.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Scry",
+                    "count": 3
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeAs": "gathered1",
+                    "revealed": true
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "CollectionContainsMatch",
+                            "collection": "gathered1",
+                            "filter": "creature|land"
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "211",
+        "artist": "Scott Murphy",
+        "flavorText": "Scents fade and footprints wash away, but some trails can never be erased.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b41b6c8a-bd76-4b69-ae72-4c8acac379b4.jpg?1783930664",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "The card you reveal will be the card you draw, if applicable."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If you don't draw the card you reveal, it remains on top of your library."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Traitorous Greed
+{
+    "name": "Traitorous Greed",
+    "manaCost": "{3}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Gain control of target creature until end of turn. Untap that creature. It gains haste until end of turn. Add two mana of any one color. (The creature can attack and {T} this turn.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "AddManaOfChoice",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "166",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"Remind me again, what's the going rate for betrayal these days?\"\n—Captain Rhenmir",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/ab7052f1-9736-47b6-9da3-8c5ca925ab54.jpg?1783930683",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Traitorous Greed can target any creature, even one that's untapped or one you already control."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Gaining control of a creature doesn't cause you to gain control of any Auras or Equipment attached to it."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If the target creature is an illegal target by the time Traitorous Greed tries to resolve, the spell won't resolve. You won't add two mana."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Transmogrify
+{
+    "name": "Transmogrify",
+    "manaCost": "{3}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exile target creature. That creature's controller reveals cards from the top of their library until they reveal a creature card. That player puts that card onto the battlefield, then shuffles the rest into their library.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                {
+                    "type": "GatherUntilMatch",
+                    "player": {
+                        "type": "ControllerOf",
+                        "targetDescription": "target creature"
+                    },
+                    "filter": "creature",
+                    "storeMatch": "matched1",
+                    "storeRevealed": "revealed1"
+                },
+                {
+                    "type": "RevealCollection",
+                    "from": "revealed1",
+                    "fromZone": "Library",
+                    "toZone": "Battlefield"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "matched1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "player": {
+                            "type": "ControllerOf",
+                            "targetDescription": "target creature"
+                        }
+                    }
+                },
+                {
+                    "type": "ShuffleLibrary",
+                    "target": "TargetController"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "167",
+        "rarity": "RARE",
+        "artist": "Craig J Spearing",
+        "flavorText": "\"I'd like to introduce you to the new and improved me.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f2fa5133-c238-47e8-befd-3729a3e4303a.jpg?1783930682",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "If the target creature is an illegal target by the time Transmogrify tries to resolve, the spell won't resolve. No player reveals cards or shuffles their library."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If the player reveals their entire library without revealing a creature card, that player just shuffles their library."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Trufflesnout
+{
+    "name": "Trufflesnout",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Boar",
+    "oracleText": "When this creature enters, choose one —\n• Put a +1/+1 counter on this creature.\n• You gain 4 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Trufflesnout:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": "Self"
+                            },
+                            "description": "Put a +1/+1 counter on this creature"
+                        },
+                        {
+                            "effect": {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            },
+                            "description": "You gain 4 life"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "212",
+        "artist": "Jason Kang",
+        "flavorText": "Its exploits are the stuff of legends among local chefs and fuel for nightmares among the forest thallids.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8bba47c1-a874-456e-bea3-e99e2d61cfba.jpg?1783930665"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Twinblade Assassins
+{
+    "name": "Twinblade Assassins",
+    "manaCost": "{3}{B}{G}",
+    "typeLine": "Creature — Elf Assassin",
+    "oracleText": "At the beginning of your end step, if a creature died this turn, draw a card.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Twinblade Assassins:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "interveningIf": "CreatureDiedThisTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "226",
+        "rarity": "UNCOMMON",
+        "artist": "Campbell White",
+        "flavorText": "Rumors swirl of a pair of deadly Golgari assassins known only as the Left and Right Hands of the Ochran.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5d387b19-a0a7-45c0-b1e9-71ca55fb4adc.jpg?1783930659",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "If a creature didn't die before your end step begins, the ability of Twinblade Assassins doesn't trigger at all. The creature may have died before Twinblade Assassins entered the battlefield, however."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "The triggered ability triggers just once, no matter how many creatures died this turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
+// Unleash Fury
+{
+    "name": "Unleash Fury",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Double the power of target creature until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ModifyStats",
+            "powerModifier": {
+                "type": "EntityProperty",
+                "entity": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "numericProperty": "Power"
+            },
+            "toughnessModifier": {
+                "type": "Fixed",
+                "amount": 0
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "170",
+        "rarity": "UNCOMMON",
+        "artist": "Izzy",
+        "flavorText": "Might doesn't make right, but it does win the fight.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e854e6a3-8684-43fa-9560-ef4c3b62c935.jpg?1783930681",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "If an effect instructs you to \"double\" a creature's power, that creature gets +X/+0, where X is its power as that effect begins to apply. If its power is negative, instead it gets -X/-0 where X is how far below 0 its power is. The value of X won't change if another effect alters the creature's power later in the turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
