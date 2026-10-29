@@ -150,7 +150,7 @@ class TriggerMatcher(
             is EventPattern.CardRevealedFromDrawEvent -> {
                 if (event !is CardRevealedFromDrawEvent) return false
                 if (event.playerId != controllerId) return false
-                // "Whenever you reveal … this way" is linked to its source's own reveal (CR 607.2).
+                // "Whenever you reveal … this way" is linked to its source's own reveal (CR 607.1).
                 if (sourceId !in event.revealedBy) return false
                 val filter = trigger.cardFilter ?: return true
                 predicateEvaluator.matches(

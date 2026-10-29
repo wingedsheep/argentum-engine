@@ -20,7 +20,7 @@ import io.kotest.matchers.shouldBe
  * deals 3 damage to any target."
  *
  * `RevealFirstDrawEachTurn(yourTurnsOnly = true)`: the reveal applies only on its controller's
- * turns, and the two triggers fire only off Keranos's own reveal (CR 607.2), so Primitive Etchings
+ * turns, and the two triggers fire only off Keranos's own reveal (CR 607.1), so Primitive Etchings
  * revealing a draw on an opponent's turn doesn't fire them.
  */
 class KeranosGodOfStormsScenarioTest : FunSpec({

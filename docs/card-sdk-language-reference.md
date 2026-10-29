@@ -8875,7 +8875,7 @@ in the repo today):
 - `Triggers.you.revealsFirstDraw(card?)` — "whenever you reveal a [card] card this way", paired with the
   `RevealFirstDrawEachTurn(yourTurnsOnly = false)` static ("Reveal the first card you draw each turn";
   `yourTurnsOnly = true` is "…on each of your turns", Keranos, God of Storms). The trigger is linked to
-  its own source's reveal (CR 607.2): it fires only when that permanent's reveal applied to the draw, so
+  its own source's reveal (CR 607.1): it fires only when that permanent's reveal applied to the draw, so
   Primitive Etchings revealing on an opponent's turn doesn't fire Keranos's triggers. `card` is a full
   `GameObjectFilter` on the revealed card (`Creature` for Primitive Etchings, `Land` / `Nonland` for Keranos).
 - `Triggers.oneOrMore(filter).putIntoYourGraveyard()` — when matching cards enter your yard.

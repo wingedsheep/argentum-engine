@@ -166,7 +166,7 @@ class DrawCardPrimitive(
         drawnCardId: EntityId
     ): CardRevealedFromDrawEvent? {
         val projected = state.projectedState
-        val isTheirTurn = state.activePlayerId == playerId
+        val isTheirTurn = state.isActiveTurnFor(playerId)
         val revealedBy = projected.getBattlefieldControlledBy(playerId).filter { permanentId ->
             val cardDef = state.getEntity(permanentId)?.faceUpCardDefinition(cardRegistry) ?: return@filter false
             cardDef.script.staticAbilities.any {

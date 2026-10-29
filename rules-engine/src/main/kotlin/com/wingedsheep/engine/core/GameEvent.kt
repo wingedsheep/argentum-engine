@@ -1860,7 +1860,7 @@ data class CardsDrawnEvent(
  * and the controller draws their first card of a turn.
  *
  * [revealedBy] lists the permanents whose reveal applied to this draw; a "whenever you reveal
- * … this way" trigger only fires for its own source (CR 607.2).
+ * … this way" trigger only fires for its own source (CR 607.1).
  */
 @Serializable
 @SerialName("CardRevealedFromDrawEvent")
@@ -1869,7 +1869,7 @@ data class CardRevealedFromDrawEvent(
     val cardEntityId: EntityId,
     val cardName: String,
     val isCreature: Boolean,
-    val revealedBy: List<EntityId>
+    val revealedBy: List<EntityId> = emptyList()
 ) : GameEvent
 
 /**
