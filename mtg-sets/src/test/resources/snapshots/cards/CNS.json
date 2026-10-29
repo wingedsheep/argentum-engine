@@ -42,6 +42,109 @@
     ]
 }
 
+// Scourge of the Throne
+{
+    "name": "Scourge of the Throne",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nDethrone (Whenever this creature attacks the player with the most life or tied for most life, put a +1/+1 counter on it.)\nWhenever this creature attacks for the first time each turn, if it's attacking the player with the most life or tied for most life, untap all attacking creatures. After this phase, there is an additional combat phase.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Scourge of the Throne:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        "AttacksDefenderIsPlayer"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "triggerRestriction": {
+                    "type": "PlayerHasMost",
+                    "player": "DefendingPlayer",
+                    "amount": {
+                        "type": "LifeTotal",
+                        "player": "You"
+                    }
+                }
+            },
+            {
+                "id": "Scourge of the Throne:2",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        "AttacksFirstTimeEachTurn",
+                        "AttacksDefenderIsPlayer"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature attacking"
+                                }
+                            },
+                            "body": {
+                                "type": "TapUntap",
+                                "target": "IterationEntity",
+                                "tap": false
+                            }
+                        },
+                        "AddCombatPhase"
+                    ]
+                },
+                "interveningIf": {
+                    "type": "PlayerHasMost",
+                    "player": "DefendingPlayer",
+                    "amount": {
+                        "type": "LifeTotal",
+                        "player": "You"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "rarity": "MYTHIC",
+        "artist": "Michael Komarck",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a01f829b-22aa-4988-9698-5e1ebceb1dd8.jpg?1783939374",
+        "rulings": [
+            {
+                "date": "2014-05-29",
+                "text": "Scourge of the Throne's ability has an intervening \"if\" clause. It must be attacking the player with the most life or tied with the most life both when it's declared as an attacker and as it starts to resolve for it to have any effect. If, at either time, the player isn't the one with the most life or tied for the most life, the ability will have no effect. Notably, this is different than how dethrone works. (Dethrone checks only once to see if the ability triggers.)"
+            },
+            {
+                "date": "2014-05-29",
+                "text": "Once dethrone triggers, it doesn't matter what happens to the players' life totals before the ability resolves. You'll put a +1/+1 counter on the creature even if the defending player doesn't have the most life as the ability resolves."
+            },
+            {
+                "date": "2023-07-28",
+                "text": "Dethrone doesn't trigger if the creature attacks a planeswalker, even if its controller has the most life. The same is true if the creature attacks a battle, even if its protector has the most life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Selvala, Explorer Returned
 {
     "name": "Selvala, Explorer Returned",

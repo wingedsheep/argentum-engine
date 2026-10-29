@@ -2693,6 +2693,52 @@
     ]
 }
 
+// Rug of Smothering
+{
+    "name": "Rug of Smothering",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "Flying\nWhenever a player casts a spell, they lose 1 life for each spell they've cast this turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rug of Smothering:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "SpellsCastThisTurn",
+                        "player": "TriggeringPlayer"
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "336",
+        "rarity": "UNCOMMON",
+        "artist": "Ioannis Fiore",
+        "flavorText": "\"No, not an accessory to murder—I'm looking for an accessory *for* murder.\"\n—Nadja, Flaming Fist investigator",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a73d1cb0-d0dc-4f2a-9cf2-954d5889dd08.jpg?1783922664"
+    },
+    "colorIdentityOverride": []
+}
+
 // Scaled Nurturer
 {
     "name": "Scaled Nurturer",

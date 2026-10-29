@@ -4075,6 +4075,71 @@
     ]
 }
 
+// Resurgent Belief
+{
+    "name": "Resurgent Belief",
+    "manaCost": "",
+    "typeLine": "Sorcery",
+    "oracleText": "Suspend 2—{1}{W} (Rather than cast this card from your hand, pay {1}{W} and exile it with two time counters on it. At the beginning of your upkeep, remove a time counter. When the last is removed, you may cast it without paying its mana cost.)\nReturn all enchantment cards from your graveyard to the battlefield. (Auras with nothing to enchant remain in your graveyard.)",
+    "keywords": [
+        "SUSPEND"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Suspend",
+            "cost": "{1}{W}",
+            "timeCounters": 2
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard",
+                        "filter": "enchantment"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "RARE",
+        "artist": "Cliff Childs",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/01880c6f-be00-48b5-913f-ec6c80ced184.jpg?1783926887",
+        "rulings": [
+            {
+                "date": "2021-06-18",
+                "text": "All of the enchantment cards in your graveyard that can return to the battlefield will. You can't choose to leave some in the graveyard. If you're returning an Aura that can only be attached to a creature, but your opponent is the only player who controls a creature, you must choose to attach it to that creature."
+            },
+            {
+                "date": "2021-06-18",
+                "text": "If an effect puts an Aura onto the battlefield under your control, you choose what it enters attached to. It must be something that it could legally enchant, but not necessarily something it could target if it were on the stack. For example, you could attach an Aura with enchant creature to an opponent's creature with hexproof, but not to a creature with protection from enchantments."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ],
+    "colorIndicator": [
+        "WHITE"
+    ],
+    "hasNoManaCost": true
+}
+
 // Rift Sower
 {
     "name": "Rift Sower",

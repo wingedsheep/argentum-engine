@@ -404,6 +404,64 @@
     ]
 }
 
+// Deceptive Frostkite
+{
+    "name": "Deceptive Frostkite",
+    "manaCost": "{U}{U}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nYou may have this creature enter as a copy of a creature you control with power 4 or greater, except it's a Dragon in addition to its other types and it has flying.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersAsCopy",
+                "copyFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "PowerAtLeast",
+                            "min": 4
+                        }
+                    ],
+                    "controllerPredicate": "ControlledByYou"
+                },
+                "additionalSubtypes": [
+                    "Dragon"
+                ],
+                "additionalKeywords": [
+                    "FLYING"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "rarity": "RARE",
+        "artist": "Josu Solano",
+        "flavorText": "\"That's not a dragon. Can't be. It's too small, isn't it?\"\n—Askar, Temur scout, last words",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/f/1f87120f-d2a7-4c06-aadd-3ed5729d7abf.jpg?1783907182",
+        "rulings": [
+            {
+                "date": "2025-04-04",
+                "text": "You can choose not to have Deceptive Frostkite enter as a copy of another creature. If you do, it will just be a 1/1 Dragon with flying."
+            },
+            {
+                "date": "2025-04-04",
+                "text": "Any enters abilities of the copied creature will trigger when Deceptive Frostkite enters. Any \"as [this creature] enters\" or \"[this creature] enters with\" abilities of the copied permanent will also work."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Floral Evoker
 {
     "name": "Floral Evoker",
@@ -543,6 +601,76 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Hammerhead Tyrant
+{
+    "name": "Hammerhead Tyrant",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nWhenever you cast a spell, return up to one target nonland permanent an opponent controls with mana value less than or equal to that spell's mana value to its owner's hand.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hammerhead Tyrant:1",
+                "trigger": "SpellCastEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsNonland",
+                                "IsPermanent",
+                                {
+                                    "type": "ManaValueAtMostEntity",
+                                    "reference": "TriggeringEntity"
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByOpponent"
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "RARE",
+        "artist": "Xavier Ribeiro",
+        "flavorText": "Without subjects, but a tyrant nonetheless.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/87d4d694-c80e-435a-ba1b-f2f1949f91fc.jpg?1783907181",
+        "rulings": [
+            {
+                "date": "2025-04-04",
+                "text": "If a spell has {X} in its mana cost, use the value of X chosen as it was cast to determine that spell's mana value."
+            },
+            {
+                "date": "2025-04-04",
+                "text": "If a permanent has {X} in its mana cost, X is 0 for the purpose of determining its mana value."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -970,6 +1098,93 @@
         "RED",
         "WHITE",
         "BLACK"
+    ]
+}
+
+// Nogi, Draco-Zealot
+{
+    "name": "Nogi, Draco-Zealot",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Legendary Creature — Kobold Shaman",
+    "oracleText": "Dragon spells you cast cost {1} less to cast.\nWhenever Nogi attacks, if you control three or more Dragons, until end of turn, Nogi becomes a Dragon with base power and toughness 5/5 and gains flying.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nogi, Draco-Zealot:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "SetCreatureSubtypes",
+                            "subtypes": [
+                                "Dragon"
+                            ],
+                            "duration": "EndOfTurn"
+                        },
+                        {
+                            "type": "SetBaseStats",
+                            "target": "Self",
+                            "power": {
+                                "type": "Fixed",
+                                "amount": 5
+                            },
+                            "toughness": {
+                                "type": "Fixed",
+                                "amount": 5
+                            },
+                            "duration": "EndOfTurn"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "FLYING",
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "permanent Dragon"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "descriptionOverride": "Whenever Nogi attacks, if you control three or more Dragons, until end of turn, Nogi becomes a Dragon with base power and toughness 5/5 and gains flying."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "Dragon"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "226",
+        "rarity": "MYTHIC",
+        "artist": "Dmitry Burmak",
+        "flavorText": "\"Glory to the Burning Ones! May their mighty fangs devour all foes!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/86e576f2-8f9f-4bbf-85c4-b99ecb665412.jpg?1783907063"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -1989,6 +2204,126 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Will of the Temur
+{
+    "name": "Will of the Temur",
+    "manaCost": "{5}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one. If you control a commander as you cast this spell, you may choose both instead.\n• Create a token that's a copy of target permanent, except it's a 4/4 Dragon creature with flying in addition to its other types.\n• Target player draws cards equal to the greatest mana value among permanents you control.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "CreateTokenCopyOfTarget",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "overridePower": 4,
+                        "overrideToughness": 4,
+                        "addedKeywords": [
+                            "FLYING"
+                        ],
+                        "addedSubtypes": [
+                            "Dragon"
+                        ],
+                        "addCardTypes": [
+                            "CREATURE"
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "permanent"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Create a token that's a copy of target permanent, except it's a 4/4 Dragon creature with flying in addition to its other types"
+                },
+                {
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "aggregation": "MAX",
+                            "property": "MANA_VALUE"
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Target player draws cards equal to the greatest mana value among permanents you control"
+                }
+            ],
+            "chooseCount": 2,
+            "minChooseCount": 1,
+            "dynamicChooseCount": {
+                "type": "Conditional",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsPermanent"
+                        ],
+                        "statePredicates": [
+                            "IsCommander"
+                        ]
+                    }
+                },
+                "ifTrue": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "ifFalse": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "rarity": "RARE",
+        "artist": "Irina Nordsol",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d236aa15-f60c-4368-b796-4d41e0bc3358.jpg?1783907179",
+        "rulings": [
+            {
+                "date": "2025-04-04",
+                "text": "The token created by Will of the Temur's first mode copies exactly what was printed on the original permanent and nothing else, with the listed exceptions (unless that permanent is copying something else or is a token). It doesn't copy whether that permanent is tapped or untapped, whether it has any counters on it or Auras and Equipment attached to it, or any non-copy effects that have changed its power, toughness, types, color, or so on."
+            },
+            {
+                "date": "2025-04-04",
+                "text": "If a permanent has {X} in its mana cost, X is 0 for the purpose of determining its mana value."
+            },
+            {
+                "date": "2025-04-04",
+                "text": "The commander you control doesn't have to be your commander."
+            },
+            {
+                "date": "2025-04-04",
+                "text": "Whether or not you control a commander is determined only once, as you choose the modes for this spell. If you somehow lose control of that commander before you finish casting the spell (perhaps because you sacrifice it to activate a mana ability), it won't change the number of modes chosen."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

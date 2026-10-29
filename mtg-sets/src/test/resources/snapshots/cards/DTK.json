@@ -1221,6 +1221,70 @@
     "colorIdentityOverride": []
 }
 
+// Dragonlord Atarka
+{
+    "name": "Dragonlord Atarka",
+    "manaCost": "{5}{R}{G}",
+    "typeLine": "Legendary Creature — Elder Dragon",
+    "oracleText": "Flying, trample\nWhen Dragonlord Atarka enters, it deals 5 damage divided as you choose among any number of target creatures and/or planeswalkers your opponents control.",
+    "creatureStats": {
+        "power": 8,
+        "toughness": 8
+    },
+    "keywords": [
+        "FLYING",
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dragonlord Atarka:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DividedDamage",
+                    "totalDamage": 5,
+                    "minTargets": 0,
+                    "maxTargets": 5
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 5,
+                    "minCount": 0,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature|planeswalker ctrl:opponent"
+                    },
+                    "id": "target creatures and/or planeswalkers your opponents control"
+                },
+                "descriptionOverride": "When Dragonlord Atarka enters, it deals 5 damage divided as you choose among any number of target creatures and/or planeswalkers your opponents control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "216",
+        "rarity": "MYTHIC",
+        "artist": "Karl Kopinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/ce0c3b45-cf1d-4d85-9fe3-fb26b4b15dfd.jpg?1783938573",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "You choose how many targets the ability has and how the damage is divided as you put the ability on the stack. Each target must receive at least 1 damage."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If some of the targets are illegal targets as the ability tries to resolve, the original division of damage still applies but no damage is dealt to the illegal targets. If all targets are illegal, the ability doesn't resolve."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Dragonlord Dromoka
 {
     "name": "Dragonlord Dromoka",
