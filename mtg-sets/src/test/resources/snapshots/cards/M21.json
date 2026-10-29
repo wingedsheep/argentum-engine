@@ -4055,6 +4055,205 @@
     ]
 }
 
+// Garruk, Unleashed
+{
+    "name": "Garruk, Unleashed",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Legendary Planeswalker — Garruk",
+    "oracleText": "+1: Up to one target creature gets +3/+3 and gains trample until end of turn.\n−2: Create a 3/3 green Beast creature token. Then if an opponent controls more creatures than you, put a loyalty counter on Garruk.\n−7: You get an emblem with \"At the beginning of your end step, you may search your library for a creature card, put it onto the battlefield, then shuffle.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Garruk, Unleashed:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "TRAMPLE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Garruk, Unleashed:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 3,
+                            "toughness": 3,
+                            "colors": [
+                                "GREEN"
+                            ],
+                            "creatureTypes": [
+                                "Beast"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/8/8/882247ba-99d2-46db-8314-f800f3366b7f.jpg?1783930590"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "EachOpponent",
+                                        "filter": "creature"
+                                    },
+                                    "operator": "GT",
+                                    "right": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": "creature"
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "AddCounters",
+                                "counterType": "LOYALTY",
+                                "count": 1,
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Garruk, Unleashed:4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "CreateGlobalTriggeredAbility",
+                    "ability": {
+                        "id": "Garruk, Unleashed:3",
+                        "trigger": {
+                            "type": "StepEvent",
+                            "step": "END"
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Library",
+                                            "filter": "creature"
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library for a creature card to put onto the battlefield",
+                                        "selectedLabel": "Put onto the battlefield"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Battlefield"
+                                        }
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        }
+                    },
+                    "descriptionOverride": "At the beginning of your end step, you may search your library for a creature card, put it onto the battlefield, then shuffle."
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "183",
+        "rarity": "MYTHIC",
+        "artist": "Lie Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/af2fdbec-bca2-4af5-9c2a-28b0b35b18a3.jpg?1783930676",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Garruk's second ability gives him only one loyalty counter, no matter how many opponents control how many more creatures than you do."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If Garruk has only two loyalty counters, activating his second loyalty ability results in him dying before it resolves. He won't be there to get a loyalty counter."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If the creature you put onto the battlefield with Garruk's emblem's ability during your end step has an ability that triggers at the beginning of your end step, it won't trigger during that end step."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Ghostly Pilferer
 {
     "name": "Ghostly Pilferer",
@@ -4153,6 +4352,384 @@
     ]
 }
 
+// Gloom Sower
+{
+    "name": "Gloom Sower",
+    "manaCost": "{5}{B}{B}",
+    "typeLine": "Creature — Horror",
+    "oracleText": "Whenever this creature becomes blocked by a creature, that creature's controller loses 2 life and you gain 2 life.",
+    "creatureStats": {
+        "power": 8,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gloom Sower:1",
+                "trigger": {
+                    "type": "BecomesBlockedEvent",
+                    "filter": "creature"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": "ControllerOfTriggeringEntity"
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature becomes blocked by a creature, that creature's controller loses 2 life and you gain 2 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "100",
+        "artist": "Chris Cold",
+        "flavorText": "\"First, the darkness fell. Terror came next. After that, only despair remained.\"\n—The Tragedy of Morein",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a1b4f7ec-ea2e-4d90-98cd-0c92bd9f64c1.jpg?1783930706",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "If the creature that blocked Gloom Sower leaves the battlefield before Gloom Sower's triggered ability resolves, the player who controlled it before it left is the player who loses 2 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Gnarled Sage
+{
+    "name": "Gnarled Sage",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Treefolk Druid",
+    "oracleText": "Reach (This creature can block creatures with flying.)\nAs long as you've drawn two or more cards this turn, this creature gets +0/+2 and has vigilance. (Attacking doesn't cause it to tap.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 0,
+                    "toughnessBonus": 2,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "PlayerDrewCardsThisTurn",
+                    "atLeast": 2
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "VIGILANCE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "PlayerDrewCardsThisTurn",
+                    "atLeast": 2
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "187",
+        "artist": "Raoul Vitale",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f22116a-8b6a-4bbe-999f-7329e1e2b2d9.jpg?1783930675",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "If a spell or ability causes you to put a card into your hand without specifically using the word \"draw,\" it's not a card drawn."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Gnarled Sage gets +0/+2 just once, no matter how many cards you've drawn past the second."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If Gnarled Sage gains vigilance after it has attacked, it won't become untapped."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Goblin Wizardry
+{
+    "name": "Goblin Wizardry",
+    "manaCost": "{3}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Create two 1/1 red Goblin Wizard creature tokens with prowess. (Whenever you cast a noncreature spell, they get +1/+1 until end of turn.)",
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "count": {
+                "type": "Fixed",
+                "amount": 2
+            },
+            "power": 1,
+            "toughness": 1,
+            "colors": [
+                "RED"
+            ],
+            "creatureTypes": [
+                "Goblin",
+                "Wizard"
+            ],
+            "keywords": [
+                "PROWESS"
+            ],
+            "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd7094d6-6e23-47f2-a9da-4dd680294ac8.jpg?1783930592"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "artist": "Izzy",
+        "flavorText": "\"Quiet in the library\" soon gave way to larger concerns.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d7ac8bdd-851f-449d-a108-70578eabf254.jpg?1783930689",
+        "rulings": [
+            {
+                "date": "2022-06-10",
+                "text": "The tokens are named \"Goblin Wizard Token\" and have the creature types \"Goblin\" and \"Wizard.\""
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Goremand
+{
+    "name": "Goremand",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Creature — Demon",
+    "oracleText": "As an additional cost to cast this spell, sacrifice a creature.\nFlying\nTrample (This creature can deal excess combat damage to the player or planeswalker it's attacking.)\nWhen this creature enters, each opponent sacrifices a creature.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING",
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Goremand:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": "creature",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "descriptionOverride": "When this creature enters, each opponent sacrifices a creature."
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c9cd537c-e40e-438f-a751-e0ad8f6e6283.jpg?1783930707",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "As Goremand's triggered ability resolves, first the next opponent in turn order (or, if it's an opponent's turn, the opponent whose turn it is) chooses a creature they control, then each other opponent in turn order does the same knowing the choices made before them. Then all the chosen creatures are sacrificed at the same time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Griffin Aerie
+{
+    "name": "Griffin Aerie",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your end step, if you gained 3 or more life this turn, create a 2/2 white Griffin creature token with flying.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Griffin Aerie:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Griffin"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/e/b/ebbaae25-d0cd-416a-a44a-5b258fd1d9fd.jpg?1783930593"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "LIFE_GAINED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "descriptionOverride": "At the beginning of your end step, if you gained 3 or more life this turn, create a 2/2 white Griffin creature token with flying."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "rarity": "UNCOMMON",
+        "artist": "Milivoj Ćeran",
+        "flavorText": "When griffins started nesting atop the northern tower, the castellan worried they'd be a nuisance. Instead, they took the entire castle under their protection.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6ea1ee60-5644-4f78-913d-32c36065957f.jpg?1783930740",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "You create just one Griffin token, no matter how much life you've gained past 3 life."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Griffin Aerie's ability looks at how much life you've gained in the turn, even if it wasn't on the battlefield when you gained life. It doesn't care if you also lost life, even if you lost more life than you gained."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If you haven't gained 3 life by the time your end step begins, Griffin Aerie's ability won't trigger at all."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Havoc Jester
+{
+    "name": "Havoc Jester",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Devil",
+    "oracleText": "Whenever you sacrifice a permanent, this creature deals 1 damage to any target.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Havoc Jester:1",
+                "trigger": {
+                    "type": "PermanentsSacrificedEvent",
+                    "filter": "permanent",
+                    "perPermanent": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever you sacrifice a permanent, this creature deals 1 damage to any target."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "149",
+        "rarity": "UNCOMMON",
+        "artist": "Jason A. Engle",
+        "flavorText": "To the Rakdos, screams of delight and screams of terror are one and the same.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/8/386e5cb2-39c8-453d-a642-c5d9f8495601.jpg?1783930689",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Havoc Jester's ability is a triggered ability, not an activated ability. It doesn't allow you to sacrifice a permanent whenever you want; rather, you need some other way of sacrificing permanents."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If you sacrifice a permanent as part of casting a spell or activating an ability, Havoc Jester's ability will resolve before that spell or ability."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Havoc Jester's ability triggers when you sacrifice it. If you sacrifice other permanents at the same time, it triggers for them as well."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "A legendary permanent that is put into a graveyard because of the \"legend rule\" isn't sacrificed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Heartfire Immolator
 {
     "name": "Heartfire Immolator",
@@ -4242,6 +4819,249 @@
     ]
 }
 
+// Hellkite Punisher
+{
+    "name": "Hellkite Punisher",
+    "manaCost": "{5}{R}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\n{R}: This creature gets +1/+0 until end of turn.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Hellkite Punisher:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{R}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "This creature gets +1/+0 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "151",
+        "rarity": "UNCOMMON",
+        "artist": "Andrey Kuzinskiy",
+        "flavorText": "\"We'll pay no more tribute to that tyrannical lizard. A new age starts today!\"\n—Mayor Kadrim, now deceased",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7bf663d3-850b-4a24-8e4b-08311adf4ed0.jpg?1783930688"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Historian of Zhalfir
+{
+    "name": "Historian of Zhalfir",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Whenever this creature attacks, if you control a Teferi planeswalker, draw a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Historian of Zhalfir:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "interveningIf": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "planeswalker Teferi"
+                },
+                "descriptionOverride": "Whenever this creature attacks, if you control a Teferi planeswalker, draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "325",
+        "rarity": "UNCOMMON",
+        "artist": "Denman Rooke",
+        "flavorText": "\"Come and listen. I'll tell you the story of a nation lost to time, and of the man who caused it.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/e/ae981da0-f32c-49d5-bcb0-2b9255a4e1fe.jpg?1783930621"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Hobblefiend
+{
+    "name": "Hobblefiend",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Devil",
+    "oracleText": "Trample (This creature can deal excess combat damage to the player or planeswalker it's attacking.)\n{1}, Sacrifice another creature: Put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Hobblefiend:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "{1}, Sacrifice another creature: Put a +1/+1 counter on this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "artist": "Nicholas Gregory",
+        "flavorText": "Bedbugs aren't the only things you need to worry about biting you at night.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4bfffc18-b36a-4dd5-909e-60ea9f8eb60b.jpg?1783930687"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Hooded Blightfang
+{
+    "name": "Hooded Blightfang",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Snake",
+    "oracleText": "Deathtouch\nWhenever a creature you control with deathtouch attacks, each opponent loses 1 life and you gain 1 life.\nWhenever a creature you control with deathtouch deals damage to a planeswalker, destroy that planeswalker.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hooded Blightfang:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": "creature kw:deathtouch ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever a creature you control with deathtouch attacks, each opponent loses 1 life and you gain 1 life."
+            },
+            {
+                "id": "Hooded Blightfang:2",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": "planeswalker"
+                    },
+                    "sourceFilter": "creature kw:deathtouch ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "DamageRecipient",
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "descriptionOverride": "Whenever a creature you control with deathtouch deals damage to a planeswalker, destroy that planeswalker."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "rarity": "RARE",
+        "artist": "Uriah Voth",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/ac38a51f-9a3b-451c-b72d-6d4e0b296fbd.jpg?1783930706",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Hooded Blightfang's triggered abilities trigger when it attacks and when it deals damage to a planeswalker, as long as it still has deathtouch."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "In a Two-Headed Giant game, Hooded Blightfang's middle ability causes the opposing team to lose 2 life and you to gain 1 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Hunter's Edge
 {
     "name": "Hunter's Edge",
@@ -4316,6 +5136,192 @@
             {
                 "date": "2020-06-23",
                 "text": "If the creature you don't control is an illegal target as Hunter's Edge tries to resolve but the creature you control is a legal target, you just put a +1/+1 counter on the creature you control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Igneous Cur
+{
+    "name": "Igneous Cur",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Elemental Dog",
+    "oracleText": "{1}{R}: This creature gets +2/+0 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Igneous Cur:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "{1}{R}: This creature gets +2/+0 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "artist": "Igor Kieryluk",
+        "flavorText": "Some dogs just aren't meant to be indoor pets.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d2bfec5d-3182-415a-afe8-0b5511cfd656.jpg?1783930688"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Indulging Patrician
+{
+    "name": "Indulging Patrician",
+    "manaCost": "{1}{W}{B}",
+    "typeLine": "Creature — Vampire Noble",
+    "oracleText": "Flying\nLifelink (Damage dealt by this creature also causes you to gain that much life.)\nAt the beginning of your end step, if you gained 3 or more life this turn, each opponent loses 3 life.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Indulging Patrician:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "LIFE_GAINED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "descriptionOverride": "At the beginning of your end step, if you gained 3 or more life this turn, each opponent loses 3 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "219",
+        "rarity": "UNCOMMON",
+        "artist": "Miranda Meeks",
+        "flavorText": "\"Just a nibble for now. I wouldn't want to ruin my appetite.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/642e0c48-1f77-41e0-abbe-f570b757cd66.jpg?1783930663",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Each opponent loses just 3 life, no matter how much life you've gained past 3 life."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Indulging Patrician's last ability looks at how much life you've gained in the turn, even if it wasn't on the battlefield when you gained life. It doesn't care if you also lost life, even if you lost more life than you gained."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If you haven't gained 3 life by the time your end step begins, Indulging Patrician's last ability won't trigger at all."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "In a Two-Headed Giant game, Indulging Patrician's last ability causes the opposing team to lose 6 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
+// Invigorating Surge
+{
+    "name": "Invigorating Surge",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Put a +1/+1 counter on target creature you control, then double the number of +1/+1 counters on that creature.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DoubleCounters",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "190",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Vargas",
+        "flavorText": "For hydras, most problems can be solved with the addition of a few extra heads.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/531e1fc0-a3aa-4b57-87b2-79a31af5c922.jpg?1783930672",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "To double the number of +1/+1 counters on a creature, put a number of +1/+1 counters on it equal to the number it already has. Other cards that interact with putting counters on it will interact with this effect accordingly."
             }
         ]
     },
@@ -4418,6 +5424,51 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Kaervek, the Spiteful
+{
+    "name": "Kaervek, the Spiteful",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Legendary Creature — Human Warlock",
+    "oracleText": "Other creatures get -1/-1.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": -1,
+                "toughnessBonus": -1,
+                "filter": {
+                    "baseFilter": "creature",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "flavorText": "\"Defy me and I will burn the flesh from your bones. Betray me and I will steal the breath from your lungs.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b0fd1009-cd3d-4b53-b9f1-dbc47e8708ab.jpg?1783930706",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Because damage remains marked on a creature until the damage is removed as the turn ends, nonlethal damage dealt to creatures may become lethal if Kaervek enters the battlefield during that turn."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If you control more than one Kaervek, each will give each other creature -1/-1. If these effects cause a creature's toughness to become less than or equal to 0 or the amount of damage marked on it, those creatures die at the same time that the \"legend rule\" remove your excess Kaerveks."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
