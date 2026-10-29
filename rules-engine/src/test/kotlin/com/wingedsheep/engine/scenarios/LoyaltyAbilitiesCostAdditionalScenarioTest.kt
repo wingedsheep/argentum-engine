@@ -151,6 +151,17 @@ class LoyaltyAbilitiesCostAdditionalScenarioTest : ScenarioTestBase() {
             game.loyalty("Test Walker") shouldBe 8
         }
 
+        test("the client's ability menu shows the surcharged costs") {
+            val game = board()
+            val view = com.wingedsheep.engine.view.ClientStateTransformer(
+                cardRegistry = cardRegistry,
+                predicateEvaluator = com.wingedsheep.engine.handlers.PredicateEvaluator(cardRegistry = null),
+            ).transform(game.state, viewingPlayerId = game.player1Id)
+            val menu = view.cards[game.findPermanent("Test Walker")!!]!!.planeswalkerAbilities!!
+            menu.map { it.loyaltyChange } shouldBe listOf(2, 1, -2, 0)
+            menu.map { it.loyaltyX } shouldBe listOf(false, false, false, true)
+        }
+
         test("an opponent's surcharge doesn't reach your activations") {
             val game = board(lions = 0, opponentLions = 1)
             game.activate("Test Walker", AbilityCost.Loyalty(1))

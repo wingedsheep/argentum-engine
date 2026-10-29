@@ -148,6 +148,11 @@ internal class CardFacesProjector(
         val oracleDescriptions = parseOracleLoyaltyLines(cardDef.oracleText)
             .mapValues { (_, lines) -> ArrayDeque(lines) }
         val grantedIds = granted.map { it.id }.toSet()
+        // What the controller would actually pay — Carth the Lion's [+1] surcharge turns a [+2] into
+        // [+3] — the same cost the legal actions and the payment use. A [−X] keeps its "−X" badge;
+        // its X picker carries the raised bound.
+        val surcharge = state.projectedState.getController(entityId)
+            ?.let { grantedAbilityUtils.loyaltyCostSurcharge(state, it) } ?: 0
         return abilities.mapNotNull { ability ->
             val loyaltyX = ability.cost == AbilityCost.LoyaltyX
             val loyalty = (ability.cost as? AbilityCost.Loyalty)?.change
@@ -159,7 +164,7 @@ internal class CardFacesProjector(
                 ?: StackTextRenderer.effectDisplayText(ability.effect, "this planeswalker")
             ClientPlaneswalkerAbility(
                 abilityId = ability.id.value,
-                loyaltyChange = loyalty,
+                loyaltyChange = if (loyaltyX) loyalty else loyalty + surcharge,
                 loyaltyX = loyaltyX,
                 description = description
             )
