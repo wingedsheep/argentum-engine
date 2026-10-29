@@ -1,0 +1,181 @@
+{
+  "Bloodchief's Thirst": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Broken Wings": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Bubble Snare": [
+    "removal",
+    "creature-removal"
+  ],
+  "Cinderclasm": [
+    "removal",
+    "creature-removal"
+  ],
+  "Deadly Alliance": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Demon's Disciple": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Drana's Silencer": [
+    "removal",
+    "creature-removal"
+  ],
+  "Feed the Swarm": [
+    "removal",
+    "creature-removal",
+    "enchantment-removal"
+  ],
+  "Hagra Mauling // Hagra Broodpit": [
+    "removal",
+    "creature-removal"
+  ],
+  "Inscription of Insight": [
+    "removal",
+    "creature-removal"
+  ],
+  "Inscription of Ruin": [
+    "removal",
+    "creature-removal"
+  ],
+  "Into the Roil": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Journey to Oblivion": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Kabira Takedown // Kabira Plateau": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Kazuul's Fury // Kazuul's Cliffs": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Khalni Ambush // Khalni Territory": [
+    "removal",
+    "creature-removal"
+  ],
+  "Lullmage's Domination": [
+    "removal",
+    "creature-removal"
+  ],
+  "Molten Blast": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal",
+    "artifact-removal"
+  ],
+  "Nahiri's Binding": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Ondu Inversion // Ondu Skyruins": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Practiced Tactics": [
+    "removal",
+    "creature-removal"
+  ],
+  "Rabid Bite": [
+    "removal",
+    "creature-removal"
+  ],
+  "Relic Amulet": [
+    "removal",
+    "creature-removal"
+  ],
+  "Rockslide Sorcerer": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Roil Eruption": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Shadows' Verdict": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Shatterskull Smashing // Shatterskull, the Hammer Pass": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Sizzling Barrage": [
+    "removal",
+    "creature-removal"
+  ],
+  "Skyclave Apparition": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Smite the Monstrous": [
+    "removal",
+    "creature-removal"
+  ],
+  "Soul Shatter": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Spikefield Hazard // Spikefield Cave": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Subtle Strike": [
+    "removal",
+    "creature-removal"
+  ],
+  "Synchronized Spellcraft": [
+    "removal",
+    "creature-removal"
+  ],
+  "Thundering Rebuke": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Thundering Sparkmage": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Vanquish the Weak": [
+    "removal",
+    "creature-removal"
+  ]
+}

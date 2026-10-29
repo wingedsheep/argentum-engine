@@ -112,9 +112,12 @@ class DraftsimDataTest : FunSpec({
     // Every table covers a whole set's booster pool, so our implemented subset should land almost
     // entirely in it. A low rate would mean the normalization is misaligned. The first three are
     // vendored Draftsim tables; the rest are the first-party tables written for the pre-Draftsim
-    // sets (see `DraftsimData`'s class doc), where the join is against names we authored ourselves
+    // sets and the rest the bundle never covered (see `DraftsimData`'s class doc), where the join is against names we authored ourselves
     // and so should be near-total.
-    listOf("LTR", "MSH", "HOB", "ATQ", "SCG", "LGN", "POR", "DOM", "MRD", "ONS", "INV").forEach { code ->
+    listOf("LTR", "MSH", "HOB", "ATQ", "SCG", "LGN", "POR", "DOM", "MRD", "ONS", "INV",
+        "FRA", "KHM", "ZNR", "LRW", "RAV", "CHK", "J22", "LEA", "LEB", "LEG", "ARN", "DRK", "FEM", "PTK",
+        "P02", "S99",
+    ).forEach { code ->
         test("most $code cards in our registry resolve a Draftsim rating (name join works)") {
             val set = MtgSetCatalog.all.first { it.code == code }
             val ratings = DraftsimData.tablesFor(listOf(code)).ratings

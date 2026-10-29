@@ -1,0 +1,190 @@
+{
+  "Arni Slays the Troll": [
+    "removal",
+    "creature-removal"
+  ],
+  "Basalt Ravager": [
+    "removal",
+    "creature-removal"
+  ],
+  "Battle of Frost and Fire": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Bind the Monster": [
+    "removal",
+    "creature-removal"
+  ],
+  "Binding the Old Gods": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Blizzard Brawl": [
+    "removal",
+    "creature-removal"
+  ],
+  "Blood on the Snow": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Bound in Gold": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "planeswalker-removal"
+  ],
+  "Broken Wings": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Cinderheart Giant": [
+    "removal",
+    "creature-removal"
+  ],
+  "Crippling Fear": [
+    "removal",
+    "creature-removal"
+  ],
+  "Crush the Weak": [
+    "removal",
+    "creature-removal"
+  ],
+  "Demon Bolt": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Depart the Realm": [
+    "removal",
+    "creature-removal"
+  ],
+  "Divine Gambit": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Doomskar": [
+    "removal",
+    "creature-removal"
+  ],
+  "Eradicator Valkyrie": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Fall of the Impostor": [
+    "removal",
+    "creature-removal"
+  ],
+  "Feed the Serpent": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Firja's Retribution": [
+    "removal",
+    "creature-removal"
+  ],
+  "Frost Bite": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Invoke the Divine": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Iron Verdict": [
+    "removal",
+    "creature-removal"
+  ],
+  "Jarl of the Forsaken": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Kardur's Vicious Return": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Kaya the Inexorable": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Masked Vandal": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Poison the Cup": [
+    "removal",
+    "creature-removal"
+  ],
+  "Priest of the Haunted Edge": [
+    "removal",
+    "creature-removal"
+  ],
+  "Provoke the Trolls": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Ravenform": [
+    "removal",
+    "creature-removal",
+    "artifact-removal"
+  ],
+  "Run Ashore": [
+    "removal",
+    "creature-removal"
+  ],
+  "Sigrid, God-Favored": [
+    "removal",
+    "creature-removal"
+  ],
+  "Smashing Success": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Squash": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Struggle for Skemfar": [
+    "removal",
+    "creature-removal"
+  ],
+  "Tergrid's Shadow": [
+    "removal",
+    "creature-removal"
+  ],
+  "Tundra Fumarole": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Valki, God of Lies // Tibalt, Cosmic Impostor": [
+    "removal",
+    "creature-removal"
+  ],
+  "Weigh Down": [
+    "removal",
+    "creature-removal"
+  ],
+  "Withercrown": [
+    "removal",
+    "creature-removal"
+  ]
+}

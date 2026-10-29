@@ -87,9 +87,9 @@ object LimitedCardRater {
     }
 
     /**
-     * The Draftsim-scale pick ratings, already on this rater's 0–5 scale and covering ~56 sets
+     * The Draftsim-scale pick ratings, already on this rater's 0–5 scale and covering ~72 sets
      * — `DraftsimData`'s tables, merged across every set it ships. Most are vendored from the
-     * Draftsim bundle; the pre-2004 sets and original Dominaria are first-party tables written on
+     * Draftsim bundle; the sets the bundle never covered are first-party tables written on
      * the same scale (see `DraftsimData`'s class doc).
      *
      * The two rating stores are *not* duplicates, which is why this consolidates by **chaining**

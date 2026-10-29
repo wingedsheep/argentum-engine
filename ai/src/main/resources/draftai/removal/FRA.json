@@ -1,0 +1,267 @@
+{
+  "Ajani Unrelenting": [
+    "removal",
+    "creature-removal"
+  ],
+  "Ajani's Anguish": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Archive Arbiter": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Awaken the Inferno": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Break Under Pressure": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Budding Insurgent": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Chandra, Torch of Defiance": [
+    "removal",
+    "creature-removal"
+  ],
+  "Clash of Elements": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Compel Brutality": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Craftwork Crusher": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Diviner of Victory": [
+    "removal",
+    "creature-removal"
+  ],
+  "Essence Burn": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Extended Absence": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Flourishing Grapple": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Fulminous Forte": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Garruk, Veiled Butcher": [
+    "removal",
+    "creature-removal"
+  ],
+  "Gideon's Memorial": [
+    "removal",
+    "creature-removal"
+  ],
+  "Hapatra, the Desert Fang": [
+    "removal",
+    "creature-removal"
+  ],
+  "Infinite Coursework": [
+    "removal",
+    "creature-removal"
+  ],
+  "Kindred Judgment": [
+    "removal",
+    "creature-removal"
+  ],
+  "Konstrari Charm": [
+    "removal",
+    "creature-removal"
+  ],
+  "Last Gasp": [
+    "removal",
+    "creature-removal"
+  ],
+  "Lich's Relic": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Living Library": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Memory Trap": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Mind Meanderer": [
+    "removal",
+    "creature-removal"
+  ],
+  "Multiply by Zero": [
+    "removal",
+    "creature-removal"
+  ],
+  "No Admittance": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Overwrite the Multiverse": [
+    "removal",
+    "creature-removal"
+  ],
+  "Plan for All Outcomes": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Prophesied End": [
+    "removal",
+    "creature-removal"
+  ],
+  "Refute Destiny": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Rise of the Deathbringer": [
+    "removal",
+    "creature-removal"
+  ],
+  "Silence the Echo": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Solitary Cell": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Stingerquill Charm": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Sureshot Sower": [
+    "removal",
+    "creature-removal"
+  ],
+  "Surgical Precision": [
+    "removal",
+    "creature-removal"
+  ],
+  "Terminal Criticism": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Tether Technician": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "The Echoverse Fulcrum": [
+    "removal",
+    "creature-removal"
+  ],
+  "Theorix Charm": [
+    "removal",
+    "creature-removal"
+  ],
+  "Twisted Fates": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Unsummon": [
+    "removal",
+    "creature-removal"
+  ],
+  "Vigorbloom Charm": [
+    "removal",
+    "creature-removal"
+  ],
+  "Vindictive Triumph": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Violent Echoes": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Vraska's Final Mercy": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Vraska, the Cutting Glare": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Warrior's Blades": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Way of the Warlord": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Winter, Tormented Loner": [
+    "removal",
+    "creature-removal"
+  ],
+  "Wrath of the Bloodmane": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Yoshimaru, Scrappy Stray": [
+    "removal",
+    "creature-removal"
+  ],
+  "Your Fate Ends Here": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ]
+}

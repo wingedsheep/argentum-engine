@@ -18,10 +18,12 @@
   "EOE",
   "FDN",
   "FIN",
+  "FRA",
   "HBG",
   "HOB",
   "INR",
   "INV",
+  "KHM",
   "KTK",
   "LCI",
   "LGN",
@@ -54,5 +56,6 @@
   "TMT",
   "UNF",
   "VOW",
-  "WOE"
+  "WOE",
+  "ZNR"
 ]
