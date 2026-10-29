@@ -11,9 +11,11 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.CastSpellTypesFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
+import com.wingedsheep.sdk.scripting.PlayFromTopWithAlternativeCost
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -48,12 +50,27 @@ class TopOfLibraryCastKeywordRiderTest : FunSpec({
         toughness = 1,
         script = CardScript(staticAbilities = listOf(PlayFromTopOfLibrary)),
     )
+    val citadel = CardDefinition.creature(
+        name = "Test Citadel",
+        manaCost = ManaCost.parse("{1}"),
+        subtypes = emptySet(),
+        power = 1,
+        toughness = 1,
+        script = CardScript(
+            staticAbilities = listOf(
+                PlayFromTopWithAlternativeCost(
+                    withoutPayingManaCost = true,
+                    additionalCost = AdditionalCost.PayLifeEqualToManaValueOfSpell,
+                )
+            )
+        ),
+    )
     val big = CardDefinition.creature("Test Big", ManaCost.parse("{1}"), emptySet(), 4, 4)
     val small = CardDefinition.creature("Test Small", ManaCost.parse("{1}"), emptySet(), 2, 2)
 
     fun setup(): Pair<GameTestDriver, EntityId> {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(hasteGranter, futureSight, big, small))
+        driver.registerCards(TestCards.all + listOf(hasteGranter, futureSight, citadel, big, small))
         driver.initMirrorMatch(deck = Deck.of("Island" to 40), skipMulligans = true)
         val you = driver.activePlayer!!
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
@@ -80,6 +97,23 @@ class TopOfLibraryCastKeywordRiderTest : FunSpec({
     test("a spell cast off the top only through another permission gains nothing") {
         val (driver, you) = setup()
         val top = castFromTop(driver, you, "Test Small")
+        driver.state.projectedState.hasKeyword(top, Keyword.HASTE) shouldBe false
+    }
+
+    test("a cast the engine routes through a payment-changing grant gains nothing") {
+        val driver = GameTestDriver()
+        driver.registerCards(TestCards.all + listOf(hasteGranter, citadel, big))
+        driver.initMirrorMatch(deck = Deck.of("Island" to 40), skipMulligans = true)
+        val you = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        driver.putCreatureOnBattlefield(you, "Test Haste Granter")
+        driver.putCreatureOnBattlefield(you, "Test Citadel")
+        val lifeBefore = driver.getLifeTotal(you)
+        val top = driver.putCardOnTopOfLibrary(you, "Test Big")
+        driver.submit(CastSpell(you, top, paymentStrategy = PaymentStrategy.FromPool)).error shouldBe null
+        driver.bothPass()
+        driver.state.getBattlefield(you).contains(top) shouldBe true
+        driver.getLifeTotal(you) shouldBe lifeBefore - 1
         driver.state.projectedState.hasKeyword(top, Keyword.HASTE) shouldBe false
     }
 })

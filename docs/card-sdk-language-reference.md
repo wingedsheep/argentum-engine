@@ -13138,7 +13138,10 @@ concerns — the `ClientStateTransformer` reveals the top card for `PlayFromTopO
   GameObjectFilter.Creature.powerAtLeast(4), castThisWayKeyword = Keyword.HASTE)`. It is frozen onto the
   spell as it is cast (the `GrantKeywordToSpell` entry path), so it holds if the granter leaves first;
   when another permission also covers the card the rider still applies (the caster would choose it),
-  but a card only another permission covers gets nothing.
+  but a card only another permission covers gets nothing, and so does a cast the engine routes through
+  a card-specific MayPlay or a payment-changing `PlayFromTopWithAlternativeCost` (Bolas's Citadel,
+  Gwenom). Only unlimited, cost-free permissions may carry it (`maxCastsPerTurn`/`additionalCost`
+  with a rider is rejected).
 - `LookAtTopOfLibrary(libraryOwner = EffectTarget.Controller)` — *private*: the holder may look at the
   top card of a library any time (revealed only to them). Default is their own (Lens of Clarity,
   Vizier of the Menagerie); a granted copy can name another player's library, pinned at grant

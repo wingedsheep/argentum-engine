@@ -664,6 +664,14 @@ data class CastSpellTypesFromTopOfLibrary(
     val castThisWayKeyword: Keyword? = null,
     val castThisWayKeywordDuration: Duration = Duration.EndOfTurn,
 ) : StaticAbility {
+    init {
+        // The engine grants the rider whenever this permission covers the cast and no other route
+        // (a card-specific MayPlay, a payment-changing play-from-top grant) takes it over; a limit
+        // or extra cost would need the rider tied to the use that is actually charged.
+        require(castThisWayKeyword == null || (maxCastsPerTurn == null && additionalCost == null)) {
+            "castThisWayKeyword is only supported on unlimited, cost-free top-of-library permissions"
+        }
+    }
     override val description: String = buildString {
         if (maxCastsPerTurn == 1) {
             append("Once each turn, you may cast a ${filter.description} spell from the top of your library")
