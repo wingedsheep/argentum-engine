@@ -933,6 +933,8 @@ internal data class MutableProjectedValues(
     var baseToughness: Int? = null,
     var name: String? = null,
     val keywords: MutableSet<String> = mutableSetOf(),
+    /** See [com.wingedsheep.engine.mechanics.layers.ProjectedValues.grantedKeywordInstances]. */
+    val grantedKeywordInstances: MutableMap<String, Int> = mutableMapOf(),
     val staticAbilities: MutableList<com.wingedsheep.sdk.scripting.StaticAbility> = mutableListOf(),
     /** Parallel to [staticAbilities]: the source of the effect that gave each entry. */
     val staticAbilitySourceIds: MutableList<EntityId> = mutableListOf(),

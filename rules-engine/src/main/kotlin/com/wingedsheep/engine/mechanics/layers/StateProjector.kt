@@ -578,6 +578,7 @@ class StateProjector {
                 baseToughness = v.baseToughness,
                 name = v.name,
                 keywords = v.keywords,
+                grantedKeywordInstances = v.grantedKeywordInstances,
                 staticAbilities = v.staticAbilities.toList(),
                 staticAbilitySourceIds = v.staticAbilitySourceIds.toList(),
                 enchantmentRestrictions = v.enchantmentRestrictions.toList(),

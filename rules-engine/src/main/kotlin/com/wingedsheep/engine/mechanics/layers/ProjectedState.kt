@@ -60,6 +60,15 @@ data class ProjectedValues(
     val baseToughness: Int? = null,
     val name: String? = null,
     val keywords: Set<String> = emptySet(),
+    /**
+     * How many continuous effects granted each non-summed keyword string in [keywords] — bare
+     * keywords, `CREW_<n>`, `RENOWN_<n>` — since the last "loses all abilities" or removal of that
+     * keyword. [keywords] is a set, so two "attacking creatures you control have renown 1" grants
+     * leave one `RENOWN_1`; this keeps the second instance, which CR 702.112c makes a second
+     * trigger. Printed keywords are not counted. Read it through [ProjectedState.grantedKeywordInstances],
+     * which gates on the keyword still being in [keywords].
+     */
+    val grantedKeywordInstances: Map<String, Int> = emptyMap(),
     /** Point-of-use abilities lowered through GrantStaticAbility, with duplicate instances retained. */
     val staticAbilities: List<com.wingedsheep.sdk.scripting.StaticAbility> = emptyList(),
     /**
@@ -295,6 +304,18 @@ class ProjectedState(
     fun hasKeyword(entityId: EntityId, keyword: String): Boolean =
         getKeywords(entityId).contains(keyword)
 
+    /**
+     * The number of instances of the granted keyword string [keyword] the object has — one per
+     * continuous effect that granted it (see [ProjectedValues.grantedKeywordInstances]), zero when
+     * the projected keywords don't hold it. A string present without a tally (put there by a path
+     * other than a keyword grant) counts once.
+     */
+    fun grantedKeywordInstances(entityId: EntityId, keyword: String): Int {
+        val values = projectedValues[entityId] ?: return 0
+        if (keyword !in values.keywords) return 0
+        return maxOf(1, values.grantedKeywordInstances[keyword] ?: 0)
+    }
+
     fun hasKeyword(entityId: EntityId, keyword: Keyword): Boolean =
         getKeywords(entityId).containsKeyword(keyword)
 
@@ -459,6 +480,7 @@ internal fun buildIntermediateProjectedState(
             basePower = v.basePower,
             baseToughness = v.baseToughness,
             keywords = v.keywords.toSet(),
+            grantedKeywordInstances = v.grantedKeywordInstances.toMap(),
             staticAbilities = v.staticAbilities.toList(),
             staticAbilitySourceIds = v.staticAbilitySourceIds.toList(),
             enchantmentRestrictions = v.enchantmentRestrictions.toList(),

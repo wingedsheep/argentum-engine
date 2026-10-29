@@ -263,13 +263,14 @@ internal class CardProjector(
             else projectedValues?.toughness ?: if (frame.isFaceDown) 2 else cardComponent.baseStats?.baseToughness
         val rawKeywords = projectedValues?.keywords?.mapNotNull {
             when {
-                // Granted toxic / bushido / rampage / crew float as TOXIC_<N> / BUSHIDO_<N> / RAMPAGE_<N> / CREW_<N>
-                // (Skrelv's activated ability, Sensei Golden-Tail, Rapid Fire, Astor); collapse to the bare
-                // keyword so the icon-render path picks it up.
+                // Granted toxic / bushido / rampage / crew / renown float as TOXIC_<N> / BUSHIDO_<N> /
+                // RAMPAGE_<N> / CREW_<N> / RENOWN_<N> (Skrelv's activated ability, Sensei Golden-Tail,
+                // Rapid Fire, Astor, Aragorn); collapse to the bare keyword so the icon-render path picks it up.
                 it.startsWith("TOXIC_") -> Keyword.TOXIC
                 it.startsWith("BUSHIDO_") -> Keyword.BUSHIDO
                 it.startsWith("RAMPAGE_") -> Keyword.RAMPAGE
                 it.startsWith("CREW_") -> Keyword.CREW
+                it.startsWith("RENOWN_") -> Keyword.RENOWN
                 else -> try { Keyword.valueOf(it) } catch (_: Exception) { null }
             }
         }?.toSet() ?: cardComponent.baseKeywords

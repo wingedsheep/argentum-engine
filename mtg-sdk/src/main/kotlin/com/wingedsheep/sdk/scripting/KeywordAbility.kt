@@ -1996,6 +1996,14 @@ sealed interface KeywordAbility {
          * projection keeps one `CREW_<n>` per distinct N and the crew readers take the cheapest.
          */
         fun grantedCrew(n: Int): String = "${Keyword.CREW.name}_$n"
+
+        /**
+         * The projected keyword a *granted* "renown [n]" floats — `RENOWN_<n>` — for
+         * `GrantKeyword(KeywordAbility.grantedRenown(1), attackers)` ("Attacking creatures you
+         * control have … renown 1", Aragorn, Hornburg Hero). The engine derives one renown trigger
+         * per grant instance, beside any printed renown's (CR 702.112c); see [Renown].
+         */
+        fun grantedRenown(n: Int): String = Renown.grantedKeyword(n)
         fun saddle(n: Int): KeywordAbility = Numeric(Keyword.SADDLE, n)
         fun modular(n: Int): KeywordAbility = Numeric(Keyword.MODULAR, n)
         fun fading(n: Int): KeywordAbility = Numeric(Keyword.FADING, n)

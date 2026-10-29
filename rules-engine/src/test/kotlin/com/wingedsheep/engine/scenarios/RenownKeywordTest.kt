@@ -14,6 +14,7 @@ import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.addFloatingEffects
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.RenownedComponent
+import com.wingedsheep.engine.state.components.battlefield.TimestampComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -55,6 +56,9 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  *  - **702.112c** — multiple instances trigger separately, but only the first to resolve does
  *    anything.
  *  - the projected-keyword gate — a creature that has lost all abilities has no renown trigger.
+ *  - **granted renown** (Aragorn, Hornburg Hero's "attacking creatures you control have … renown
+ *    1") — the projected `RENOWN_<n>` derives its own trigger per grant instance, beside printed
+ *    renown, and never fuses with it or with an identical grant.
  */
 class RenownKeywordTest : FunSpec({
 
@@ -119,10 +123,25 @@ class RenownKeywordTest : FunSpec({
         }
     }
 
+    /** The Aragorn, Hornburg Hero grant on its own: "Attacking creatures you control have renown 1." */
+    val herald = card("Test Renown Herald") {
+        manaCost = "{2}{W}"
+        typeLine = "Creature — Human Advisor"
+        power = 0
+        toughness = 4
+        oracleText = "Attacking creatures you control have renown 1."
+        staticAbility {
+            ability = GrantKeyword(
+                KeywordAbility.grantedRenown(1),
+                GroupFilter(com.wingedsheep.sdk.scripting.GameObjectFilter.Creature.attacking().youControl()),
+            )
+        }
+    }
+
     fun createDriver(vararg extra: com.wingedsheep.sdk.model.CardDefinition): GameTestDriver {
         val driver = GameTestDriver()
         driver.registerCards(
-            TestCards.all + listOf(renownedScout, renownedCaptain, twiceRenowned, gloryChaser, recall) + extra
+            TestCards.all + listOf(renownedScout, renownedCaptain, twiceRenowned, gloryChaser, recall, herald) + extra
         )
         driver.initMirrorMatch(deck = Deck.of("Plains" to 40))
         return driver
@@ -138,11 +157,14 @@ class RenownKeywordTest : FunSpec({
     /**
      * Pass priority through combat, auto-answering the ordering and damage-assignment decisions,
      * until the postcombat main phase. Mirrors `FlankingCombatTest.resolveThroughCombat`; renown's
-     * trigger resolves inside this window.
+     * trigger resolves inside this window. Returns the largest stack seen — in these tests every
+     * stack object is a renown trigger, so that is how many renown abilities triggered at once.
      */
-    fun resolveThroughCombat(driver: GameTestDriver) {
+    fun resolveThroughCombat(driver: GameTestDriver): Int {
         var guard = 0
+        var maxStack = 0
         while (driver.currentStep != Step.POSTCOMBAT_MAIN && guard++ < 300) {
+            maxStack = maxOf(maxStack, driver.state.stack.size)
             when (val decision = driver.state.pendingDecision) {
                 is OrderObjectsDecision ->
                     driver.submitDecision(decision.playerId, OrderedResponse(decision.id, decision.objects))
@@ -158,16 +180,54 @@ class RenownKeywordTest : FunSpec({
             }
             if (driver.state.gameOver) break
         }
+        return maxStack
     }
 
-    /** Attack the opponent unblocked with [attackers] and resolve the whole combat. */
-    fun attackUnblocked(driver: GameTestDriver, attacker: EntityId, attackers: List<EntityId>) {
+    /**
+     * Attack the opponent unblocked with [attackers] and resolve the whole combat; [duringCombat]
+     * runs once blockers are declared. Returns [resolveThroughCombat]'s largest stack.
+     */
+    fun attackUnblocked(
+        driver: GameTestDriver,
+        attacker: EntityId,
+        attackers: List<EntityId>,
+        duringCombat: () -> Unit = {},
+    ): Int {
         val defender = driver.getOpponent(attacker)
         driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
         driver.declareAttackers(attacker, attackers, defender).outcome shouldBe Outcome.Done
         driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
         driver.declareBlockers(defender, emptyMap()).outcome shouldBe Outcome.Done
-        resolveThroughCombat(driver)
+        duringCombat()
+        return resolveThroughCombat(driver)
+    }
+
+    /** Give a driver-minted permanent an explicit timestamp, so layer-6 order is pinned (CR 613.7). */
+    fun stamp(driver: GameTestDriver, perm: EntityId, timestamp: Long) {
+        driver.replaceState(driver.state.updateEntity(perm) { it.with(TimestampComponent(timestamp)) })
+    }
+
+    /** "This creature loses all abilities" as a layer-6 effect with the given [timestamp]. */
+    fun loseAllAbilities(driver: GameTestDriver, perm: EntityId, controller: EntityId, timestamp: Long) {
+        driver.replaceState(
+            driver.state.addFloatingEffects(
+                listOf(
+                    ActiveFloatingEffect(
+                        id = EntityId.generate(),
+                        effect = FloatingEffectData(
+                            layer = Layer.ABILITY,
+                            modification = SerializableModification.RemoveAllAbilities,
+                            affectedEntities = setOf(perm),
+                        ),
+                        duration = Duration.Permanent,
+                        sourceId = perm,
+                        sourceName = "loses all abilities",
+                        controllerId = controller,
+                        timestamp = timestamp,
+                    )
+                )
+            )
+        )
     }
 
     test("CR 702.112a — combat damage to a player puts N counters on and renowns the creature") {
@@ -322,5 +382,124 @@ class RenownKeywordTest : FunSpec({
 
         isRenowned(driver, chaser) shouldBe true
         driver.state.projectedState.hasKeyword(chaser, Keyword.MENACE) shouldBe true
+    }
+
+    // ---- Granted renown (Aragorn, Hornburg Hero) -------------------------------------------------
+
+    test("granted renown — an attacker with no printed renown triggers, gets 1 counter and is renowned") {
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        driver.putCreatureOnBattlefield(player, "Test Renown Herald")
+        val bears = driver.putCreatureOnBattlefield(player, "Grizzly Bears")
+        driver.removeSummoningSickness(bears)
+
+        // Not attacking yet: the grant's group filter doesn't cover it.
+        driver.state.projectedState.hasKeyword(bears, Keyword.RENOWN) shouldBe false
+
+        val triggers = attackUnblocked(driver, player, listOf(bears)) {
+            driver.state.projectedState.getKeywords(bears).contains(KeywordAbility.grantedRenown(1)) shouldBe true
+            driver.state.projectedState.hasKeyword(bears, Keyword.RENOWN) shouldBe true
+        }
+
+        triggers shouldBe 1
+        plusOneCounters(driver, bears) shouldBe 1
+        isRenowned(driver, bears) shouldBe true
+        // Combat is over, so it no longer has the granted keyword — but stays renowned.
+        driver.state.projectedState.hasKeyword(bears, Keyword.RENOWN) shouldBe false
+    }
+
+    test("CR 702.112c — printed renown 2 plus granted renown 1 are two triggers, and only the first adds counters") {
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        driver.putCreatureOnBattlefield(player, "Test Renown Herald")
+        val captain = driver.putCreatureOnBattlefield(player, "Test Renowned Captain")
+        driver.removeSummoningSickness(captain)
+
+        val triggers = attackUnblocked(driver, player, listOf(captain))
+
+        // Two separate abilities, not one fused renown 3.
+        triggers shouldBe 2
+        (plusOneCounters(driver, captain) in 1..2) shouldBe true
+        isRenowned(driver, captain) shouldBe true
+    }
+
+    test("CR 702.112c — two identical renown 1 grants are two triggers, not one") {
+        // Two Heralds each grant renown 1. The projected keyword set holds one `RENOWN_1`, so the
+        // grant tally is what keeps the second instance.
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        driver.putCreatureOnBattlefield(player, "Test Renown Herald")
+        driver.putCreatureOnBattlefield(player, "Test Renown Herald")
+        val bears = driver.putCreatureOnBattlefield(player, "Grizzly Bears")
+        driver.removeSummoningSickness(bears)
+
+        val triggers = attackUnblocked(driver, player, listOf(bears)) {
+            driver.state.projectedState.grantedKeywordInstances(bears, KeywordAbility.grantedRenown(1)) shouldBe 2
+        }
+
+        triggers shouldBe 2
+        plusOneCounters(driver, bears) shouldBe 1
+        isRenowned(driver, bears) shouldBe true
+    }
+
+    test("granted renown ends when the grant's source leaves the battlefield") {
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val herald = driver.putCreatureOnBattlefield(player, "Test Renown Herald")
+        val bears = driver.putCreatureOnBattlefield(player, "Grizzly Bears")
+        driver.removeSummoningSickness(bears)
+
+        val triggers = attackUnblocked(driver, player, listOf(bears)) {
+            driver.moveToGraveyard(herald)
+            driver.state.projectedState.hasKeyword(bears, Keyword.RENOWN) shouldBe false
+        }
+
+        triggers shouldBe 0
+        plusOneCounters(driver, bears) shouldBe 0
+        isRenowned(driver, bears) shouldBe false
+    }
+
+    test("the grant is a static ability — a Herald that loses all abilities grants no renown") {
+        // CR 611.3b: a static ability's effect exists only while its source has the ability.
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val herald = driver.putCreatureOnBattlefield(player, "Test Renown Herald")
+        stamp(driver, herald, 100)
+        val bears = driver.putCreatureOnBattlefield(player, "Grizzly Bears")
+        driver.removeSummoningSickness(bears)
+
+        val triggers = attackUnblocked(driver, player, listOf(bears)) {
+            loseAllAbilities(driver, herald, player, timestamp = 101)
+            driver.state.projectedState.hasKeyword(bears, Keyword.RENOWN) shouldBe false
+        }
+
+        triggers shouldBe 0
+        plusOneCounters(driver, bears) shouldBe 0
+        isRenowned(driver, bears) shouldBe false
+    }
+
+    test("a creature that lost its printed renown but is granted renown 1 gets only the granted trigger") {
+        // The printed half gates on the bare RENOWN keyword alone; the granted RENOWN_1 must not
+        // revive the printed renown 2 the creature lost.
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val captain = driver.putCreatureOnBattlefield(player, "Test Renowned Captain")
+        driver.removeSummoningSickness(captain)
+        loseAllAbilities(driver, captain, player, timestamp = 100)
+        // The Herald's grant is the later layer-6 effect, so it applies after the removal.
+        val herald = driver.putCreatureOnBattlefield(player, "Test Renown Herald")
+        stamp(driver, herald, 101)
+
+        val triggers = attackUnblocked(driver, player, listOf(captain))
+
+        triggers shouldBe 1
+        plusOneCounters(driver, captain) shouldBe 1
+        isRenowned(driver, captain) shouldBe true
     }
 })

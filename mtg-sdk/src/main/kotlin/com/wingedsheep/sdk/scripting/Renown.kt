@@ -42,18 +42,35 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *    [com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsRenowned], and lasts until the
  *    permanent leaves the battlefield — a copy of a renowned creature is not itself renowned.
  *
- * The keyword is one of the "read N off the printed [KeywordAbility.Numeric]" family, the same
- * shape as [Vanishing] and [Fabricate]: the engine gates the derivation on the *projected* keyword
- * — so a creature that has lost all abilities stops being renowned-eligible — but reads N from the
- * printed keyword ability, because a projected keyword set carries no parameter. A *granted*
- * renown (Aragorn, Hornburg Hero: "Attacking creatures you control have first strike and renown
- * 1") therefore derives nothing today; unblocking it means giving projection a place to carry a
- * numeric keyword's N, which is a change to the projection model rather than to this object.
+ * **Printed and granted renown derive separately.** A printed `Renown N` is one of the "read N off
+ * the printed [KeywordAbility.Numeric]" family, the same shape as [Vanishing] and [Fabricate]: the
+ * engine gates the derivation on the *projected* bare `RENOWN` keyword — so a creature that has
+ * lost all abilities stops being renown-eligible — and reads N from the printed keyword ability.
+ * A *granted* renown (Aragorn, Hornburg Hero: "Attacking creatures you control have first strike
+ * and renown 1") floats its own N as the projected keyword [grantedKeyword] — `RENOWN_<n>`, via
+ * `GrantKeyword(KeywordAbility.grantedRenown(n), …)` — so it needs no printed source. Unlike
+ * granted bushido or toxic, projection never sums renown grants: each grant is a separate
+ * instance (CR 702.112c), and projection tallies identical ones so two "have renown 1" grants
+ * still derive two triggers.
  */
 object Renown {
 
     /** Ability id prefix; the printed instance's index is appended so multiple instances differ. */
     private const val ABILITY_ID_PREFIX = "renown"
+
+    /** The projected keyword prefix a granted renown floats under; see [grantedKeyword]. */
+    private val GRANTED_PREFIX = "${Keyword.RENOWN.name}_"
+
+    /**
+     * The projected keyword string a *granted* "renown [n]" floats — `RENOWN_<n>`. Cards spell it
+     * [KeywordAbility.grantedRenown].
+     */
+    fun grantedKeyword(n: Int): String = "$GRANTED_PREFIX$n"
+
+    /** The N of a projected granted-renown keyword string, or null when [keyword] isn't one. */
+    fun grantedN(keyword: String): Int? =
+        if (keyword.startsWith(GRANTED_PREFIX)) keyword.substring(GRANTED_PREFIX.length).toIntOrNull()?.takeIf { it > 0 }
+        else null
 
     /** "it isn't renowned" — the CR 702.112a intervening-`if` gate. */
     private val isNotRenowned = NotCondition(
@@ -65,13 +82,23 @@ object Renown {
      *
      * @param n the N of that instance.
      * @param instance the zero-based index of this instance among the creature's printed renown
-     *   abilities. It only distinguishes the [AbilityId]s, so that a creature with two instances
-     *   (CR 702.112c) puts two distinct abilities on the stack rather than two copies of one id.
+     *   abilities — or, when [granted], among its granted ones. It only distinguishes the
+     *   [AbilityId]s, so that a creature with two instances (CR 702.112c) puts two distinct
+     *   abilities on the stack rather than two copies of one id.
+     * @param granted whether this instance comes from a granted `RENOWN_<n>` rather than the
+     *   printed keyword; granted ids live in their own namespace so they never collide with
+     *   printed ones.
      */
-    fun combatDamageTrigger(n: Int, instance: Int = 0): TriggeredAbility {
+    fun combatDamageTrigger(n: Int, instance: Int = 0, granted: Boolean = false): TriggeredAbility {
         val counterWord = if (n == 1) "counter" else "counters"
         return TriggeredAbility(
-            id = AbilityId(if (instance == 0) ABILITY_ID_PREFIX else "${ABILITY_ID_PREFIX}_$instance"),
+            id = AbilityId(
+                when {
+                    granted -> "${ABILITY_ID_PREFIX}_granted_$instance"
+                    instance == 0 -> ABILITY_ID_PREFIX
+                    else -> "${ABILITY_ID_PREFIX}_$instance"
+                }
+            ),
             trigger = EventPattern.DealsDamageEvent(
                 damageType = DamageType.Combat,
                 recipient = Recipient.AnyPlayer,

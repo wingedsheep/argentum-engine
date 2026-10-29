@@ -14385,9 +14385,17 @@ Blighted Agent, Ichor Rats, Plague Stinger, Skithiryx.
   the **projected** keyword (so "loses all abilities" strips it) while N is read from the printed
   `KeywordAbility.Numeric`, and each printed instance becomes its own trigger — the first to
   resolve renowns the creature and the rest find their `if` false, so renown 1 + renown 2 is never
-  a summed renown 3. A *granted* renown (Aragorn, Hornburg Hero) derives nothing today, the same
-  limitation granted vanishing has for its entry counters. Do **not** hand-write the trigger; it
-  would stack with the engine's. Pinned by `RenownKeywordTest`.
+  a summed renown 3. **Granted renown** — "Attacking creatures you control have first strike and
+  renown 1" (Aragorn, Hornburg Hero) — is `GrantKeyword(KeywordAbility.grantedRenown(1),
+  GroupFilter(GameObjectFilter.Creature.attacking().youControl()))`, the projected `RENOWN_<n>`
+  keyword carrying its own N. Like crew and unlike toxic/bushido, renown grants are **not summed**:
+  distinct Ns sit side by side, and projection tallies identical grants
+  (`ProjectedState.grantedKeywordInstances`), so two "have renown 1" sources derive two triggers.
+  Each granted instance adds its own trigger beside the printed ones, and the printed half is gated
+  on the bare `RENOWN` keyword alone — a creature that lost all abilities and was then granted
+  renown 1 has only the granted trigger. The client shows a granted `RENOWN_<n>` as the plain Renown
+  keyword. Do **not** hand-write the trigger; it would stack with the engine's. Pinned by
+  `RenownKeywordTest`.
 - `Fabricate(n)` — **engine-live.** Declare it and nothing else:
   `keywordAbility(KeywordAbility.fabricate(2))` (Weaponcraft Enthusiast). The engine supplies the
   CR 702.123 ability from

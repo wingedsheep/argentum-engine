@@ -1,3 +1,86 @@
+// Aragorn, Hornburg Hero
+{
+    "name": "Aragorn, Hornburg Hero",
+    "manaCost": "{1}{R}{G}{W}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "Attacking creatures you control have first strike and renown 1. (When a creature with renown 1 deals combat damage to a player, if it isn't renowned, put a +1/+1 counter on it and it becomes renowned.)\nWhenever a renowned creature you control deals combat damage to a player, double the number of +1/+1 counters on it.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aragorn, Hornburg Hero:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    },
+                    "sourceFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsRenowned"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DoubleCounters",
+                    "target": "TriggeringEntity"
+                },
+                "descriptionOverride": "Whenever a renowned creature you control deals combat damage to a player, double the number of +1/+1 counters on it."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "FIRST_STRIKE",
+                "filter": {
+                    "baseFilter": "creature attacking ctrl:you"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "RENOWN_1",
+                "filter": {
+                    "baseFilter": "creature attacking ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "492",
+        "rarity": "MYTHIC",
+        "artist": "Jason Rainville",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/4/14c62aa6-2660-4a18-8f69-4088e18abb40.jpg?1783914203",
+        "rulings": [
+            {
+                "date": "2023-11-03",
+                "text": "If a creature has multiple instances of renown, each triggers separately. The first one that resolves causes the creature to become renowned, which means any additional renown abilities that creature has will have no effect. The creature's controller chooses what order to put those renown abilities on the stack, so they can choose to have the ability with the higher renown number resolve first."
+            },
+            {
+                "date": "2023-11-03",
+                "text": "When a creature you control that isn't renowned deals combat damage to a player, you'll put a +1/+1 counter on it and it will become renowned. Since it wasn't renowned when it dealt combat damage, Aragorn, Hornburg Hero's last ability won't trigger, and you won't double the number of +1/+1 counters on it."
+            },
+            {
+                "date": "2023-11-03",
+                "text": "If Aragorn, Hornburg Hero leaves the battlefield after first strike damage is dealt but before regular combat damage, creatures you control that dealt first strike damage but no longer have first strike won't also deal regular combat damage (unless they have double strike for some reason)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Aragorn, King of Gondor
 {
     "name": "Aragorn, King of Gondor",

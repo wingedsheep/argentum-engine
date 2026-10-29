@@ -40,15 +40,20 @@ internal class EffectApplicator(
      * printed toxic 2 plus a granted toxic 2 — would otherwise collapse to one and lose the N the
      * readers sum (CR 702.164b's total toxic value, `KeywordValue`).
      *
-     * Crew is the exception: each `CREW_<n>` is a separate crew ability, not a share of one total
-     * (a Vehicle with crew 3 that gains crew 1 can be crewed for 1, not 4), so distinct Ns sit side
-     * by side and the crew readers take the cheapest.
+     * Crew and renown are the exceptions: each `CREW_<n>` / `RENOWN_<n>` is a separate ability,
+     * not a share of one total (a Vehicle with crew 3 that gains crew 1 can be crewed for 1, not 4;
+     * renown 1 twice is two triggers, CR 702.112c, not one renown 2), so distinct Ns sit side by
+     * side. Every grant on this non-summing path is also tallied in
+     * [MutableProjectedValues.grantedKeywordInstances], because the set alone can't tell one
+     * "has renown 1" grant from two.
      */
-    private fun addKeyword(keywords: MutableSet<String>, keyword: String) {
+    private fun addKeyword(values: MutableProjectedValues, keyword: String) {
+        val keywords = values.keywords
         val split = keyword.lastIndexOf('_')
         val n = if (split > 0) keyword.substring(split + 1).toIntOrNull() else null
-        if (n == null || keyword.startsWith(CREW_PREFIX)) {
+        if (n == null || keyword.startsWith(CREW_PREFIX) || keyword.startsWith(RENOWN_PREFIX)) {
             keywords.add(keyword)
+            values.grantedKeywordInstances.merge(keyword, 1, Int::plus)
             return
         }
         val prefix = keyword.substring(0, split + 1)
@@ -157,7 +162,7 @@ internal class EffectApplicator(
                     values.name = mod.name
                 }
                 is Modification.GrantKeyword -> {
-                    addKeyword(values.keywords, mod.keyword)
+                    addKeyword(values, mod.keyword)
                     // Changeling grants all creature types (Rule 702.73)
                     if (mod.keyword == Keyword.CHANGELING.name) {
                         values.subtypes.addAll(com.wingedsheep.sdk.core.Subtype.ALL_CREATURE_TYPES)
@@ -170,6 +175,7 @@ internal class EffectApplicator(
                 }
                 is Modification.RemoveKeyword -> {
                     values.keywords.remove(mod.keyword)
+                    values.grantedKeywordInstances.remove(mod.keyword)
                     // CR 702.22b: losing banding loses every "bands with other" ability too, and
                     // the family name itself means "loses all 'bands with other' abilities".
                     if (mod.keyword == Keyword.BANDING.name ||
@@ -485,6 +491,7 @@ internal class EffectApplicator(
                 }
                 is Modification.RemoveAllAbilities -> {
                     values.keywords.clear()
+                    values.grantedKeywordInstances.clear()
                     values.staticAbilities.clear()
                     values.staticAbilitySourceIds.clear()
                     values.manaAbilityLifeTax = 0
@@ -536,3 +543,6 @@ internal class EffectApplicator(
 
 /** Prefix of a granted crew keyword ([com.wingedsheep.sdk.scripting.KeywordAbility.grantedCrew]); see `addKeyword`. */
 private val CREW_PREFIX = "${com.wingedsheep.sdk.core.Keyword.CREW.name}_"
+
+/** Prefix of a granted renown keyword ([com.wingedsheep.sdk.scripting.KeywordAbility.grantedRenown]); see `addKeyword`. */
+private val RENOWN_PREFIX = "${com.wingedsheep.sdk.core.Keyword.RENOWN.name}_"
