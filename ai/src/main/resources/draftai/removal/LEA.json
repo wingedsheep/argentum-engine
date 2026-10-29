@@ -1,0 +1,206 @@
+{
+  "Armageddon": [
+    "removal"
+  ],
+  "Balance": [
+    "removal",
+    "creature-removal"
+  ],
+  "Berserk": [
+    "removal",
+    "creature-removal"
+  ],
+  "Blue Elemental Blast": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Chaos Orb": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Cockatrice": [
+    "removal",
+    "creature-removal"
+  ],
+  "Demonic Hordes": [
+    "removal"
+  ],
+  "Disenchant": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Disintegrate": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Drain Life": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Dwarven Demolition Team": [
+    "removal",
+    "creature-removal"
+  ],
+  "Earthbind": [
+    "removal",
+    "creature-removal"
+  ],
+  "Earthquake": [
+    "removal",
+    "creature-removal"
+  ],
+  "Fireball": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Flashfires": [
+    "removal"
+  ],
+  "Hurricane": [
+    "removal",
+    "creature-removal"
+  ],
+  "Ice Storm": [
+    "removal"
+  ],
+  "Kudzu": [
+    "removal"
+  ],
+  "Lightning Bolt": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Lure": [
+    "removal",
+    "creature-removal"
+  ],
+  "Meekstone": [
+    "removal",
+    "creature-removal"
+  ],
+  "Nettling Imp": [
+    "removal",
+    "creature-removal"
+  ],
+  "Nevinyrral's Disk": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Northern Paladin": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Orcish Artillery": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Paralyze": [
+    "removal",
+    "creature-removal"
+  ],
+  "Pestilence": [
+    "removal",
+    "creature-removal"
+  ],
+  "Pirate Ship": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Prodigal Sorcerer": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Psionic Blast": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Red Elemental Blast": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Rod of Ruin": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Royal Assassin": [
+    "removal",
+    "creature-removal"
+  ],
+  "Shatter": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Sinkhole": [
+    "removal"
+  ],
+  "Siren's Call": [
+    "removal",
+    "creature-removal"
+  ],
+  "Stone Rain": [
+    "removal"
+  ],
+  "Swords to Plowshares": [
+    "removal",
+    "creature-removal"
+  ],
+  "Terror": [
+    "removal",
+    "creature-removal"
+  ],
+  "Thicket Basilisk": [
+    "removal",
+    "creature-removal"
+  ],
+  "Tranquility": [
+    "removal",
+    "enchantment-removal"
+  ],
+  "Tsunami": [
+    "removal"
+  ],
+  "Tunnel": [
+    "removal",
+    "creature-removal"
+  ],
+  "Unsummon": [
+    "removal",
+    "creature-removal"
+  ],
+  "Volcanic Eruption": [
+    "removal",
+    "creature-removal"
+  ],
+  "Weakness": [
+    "removal",
+    "creature-removal"
+  ],
+  "Wrath of God": [
+    "removal",
+    "creature-removal"
+  ]
+}

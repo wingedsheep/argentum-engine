@@ -1,0 +1,106 @@
+{
+  "Abomination": [
+    "removal",
+    "creature-removal"
+  ],
+  "Active Volcano": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Blazing Effigy": [
+    "removal",
+    "creature-removal"
+  ],
+  "Chain Lightning": [
+    "removal",
+    "creature-removal"
+  ],
+  "Cleanse": [
+    "removal",
+    "creature-removal"
+  ],
+  "Crimson Manticore": [
+    "removal",
+    "creature-removal"
+  ],
+  "D'Avenant Archer": [
+    "removal",
+    "creature-removal"
+  ],
+  "Demonic Torment": [
+    "removal",
+    "creature-removal"
+  ],
+  "Divine Offering": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Flash Flood": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Hellfire": [
+    "removal",
+    "creature-removal"
+  ],
+  "Immolation": [
+    "removal",
+    "creature-removal"
+  ],
+  "Imprison": [
+    "removal",
+    "creature-removal"
+  ],
+  "Infernal Medusa": [
+    "removal",
+    "creature-removal"
+  ],
+  "Lady Caleria": [
+    "removal",
+    "creature-removal"
+  ],
+  "Psionic Entity": [
+    "removal",
+    "creature-removal"
+  ],
+  "Pyrotechnics": [
+    "removal",
+    "creature-removal"
+  ],
+  "Rubinia Soulsinger": [
+    "removal",
+    "creature-removal"
+  ],
+  "Spinal Villain": [
+    "removal",
+    "creature-removal"
+  ],
+  "Takklemaggot": [
+    "removal",
+    "creature-removal"
+  ],
+  "Tetsuo Umezawa": [
+    "removal",
+    "creature-removal"
+  ],
+  "The Abyss": [
+    "removal",
+    "creature-removal"
+  ],
+  "Tor Wauki": [
+    "removal",
+    "creature-removal"
+  ],
+  "Voodoo Doll": [
+    "removal",
+    "creature-removal"
+  ],
+  "Willow Satyr": [
+    "removal",
+    "creature-removal"
+  ]
+}
