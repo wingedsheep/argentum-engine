@@ -6611,6 +6611,14 @@ Author the restriction through the `Conditions.candidate*` facade (never hand-wr
 - `Conditions.candidateLifeAtMost(n)` — the targeted player has `n` or less life.
 - `Conditions.candidateCastSpellsThisTurn(filter, atLeast = 1)` — the candidate player cast `atLeast` or more spells matching `filter` this turn (`PlayerCastSpellsThisTurn(Player.Candidate, …)`). With a non-targeting `selectTarget` it backs "choose a player who cast one or more sorcery spells this turn" (Backdraft).
 - `Conditions.candidateHasMostLife()` — the candidate player has the most life or is tied for the most (`PlayerHasMost(Player.Candidate, LifeTotal(You))`). With a non-targeting `selectTarget` it backs "choose a player with the most life or tied for most life" (The Black Gate); a lone candidate is chosen without a prompt.
+- `Conditions.candidateIs(player)` — the candidate is `player` (`PlayerIs(Player.Candidate, player)`).
+  Wrapped in `Conditions.Not` it reads "another target player" relative to a bound player. A
+  triggered ability binds `Player.TriggeringPlayer` both when its targets are chosen and at the
+  CR 608.2b re-check, so The Lord of Pain's "Whenever a player casts their first spell each turn,
+  choose another target player" is `Triggers.anyPlayer.castsNth(1)` + `TargetPlayer(restriction =
+  Conditions.Not(Conditions.candidateIs(Player.TriggeringPlayer)), descriptionOverride = "another
+  target player")`. With no trigger bound (spells, activated abilities) `TriggeringPlayer` names no
+  one, so every player stays legal.
 - `Conditions.candidateWasDealtDamageBySourceThisTurn()` — this ability's **source** dealt damage (combat
   or noncombat) to the targeted player this turn; backed by `SourceDealtDamageToPlayerThisTurn(player)`,
   which reads the source's per-recipient damage memory. "Target player dealt damage by this creature this

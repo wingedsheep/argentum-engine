@@ -2195,6 +2195,16 @@ object Conditions {
         PlayerHasMostLife(Player.Candidate)
 
     /**
+     * Candidate restriction: the player being considered is [player]. Wrapped in [Not] it backs
+     * "another target player" relative to a bound player — The Lord of Pain's
+     * `Not(candidateIs(Player.TriggeringPlayer))`, "choose another target player" than the one who
+     * cast the spell. A trigger's targeting binds `Player.TriggeringPlayer` both when targets are
+     * chosen and when they're re-checked at resolution.
+     */
+    fun candidateIs(player: Player): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.PlayerIs(Player.Candidate, player)
+
+    /**
      * Candidate-target restriction: the player being targeted has [n] or less life.
      * Backs "target player with N or less life". The restriction is re-checked at resolution
      * (CR 608.2b), so a player who gains above the threshold after being targeted is removed.

@@ -106,7 +106,7 @@ internal class ResolutionTargetValidator(
             anyTargetStillMatches(state, projected, index, target, targetRequirements, predicateContext) &&
                 when (target) {
                     is ChosenTarget.Player ->
-                        isPlayerTargetLegal(state, index, target, targetRequirements, controllerId, sourceId)
+                        isPlayerTargetLegal(state, index, target, targetRequirements, controllerId, sourceId, predicateContext)
 
                     is ChosenTarget.Permanent -> isPermanentTargetLegal(
                         state, projected, index, target, targetRequirements, sourceColors, sourceSubtypes,
@@ -238,7 +238,8 @@ internal class ResolutionTargetValidator(
         target: ChosenTarget.Player,
         targetRequirements: List<TargetRequirement>,
         controllerId: EntityId,
-        sourceId: EntityId?
+        sourceId: EntityId?,
+        predicateContext: PredicateContext
     ): Boolean {
         // Player is valid if they exist and haven't lost...
         if (!state.hasEntity(target.playerId)) return false
@@ -259,7 +260,9 @@ internal class ResolutionTargetValidator(
             is TargetOpponent -> requirement.restriction
             else -> null
         }
-        return PlayerTargetRestriction.isSatisfied(state, restriction, target.playerId, controllerId, sourceId, predicateEvaluator = predicateEvaluator)
+        // A trigger's restriction may read Player.TriggeringPlayer ("another target player", The Lord of Pain).
+        return PlayerTargetRestriction.isSatisfied(state, restriction, target.playerId, controllerId, sourceId,
+            predicateContext.triggeringEntityId, predicateContext.triggeringPlayerId, predicateEvaluator = predicateEvaluator)
     }
 
     private fun isPermanentTargetLegal(

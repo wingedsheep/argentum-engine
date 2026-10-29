@@ -112,8 +112,10 @@ class TargetFinder(
         pipelineContext: PredicateContext? = null
     ): List<EntityId> {
         val candidates = when (requirement) {
-            is TargetPlayer -> findPlayerTargets(state, requirement, controllerId, sourceId, ignoreTargetingRestrictions)
-            is TargetOpponent -> findOpponentTargets(state, requirement, controllerId, sourceId, ignoreTargetingRestrictions)
+            is TargetPlayer -> findPlayerTargets(state, requirement, controllerId, sourceId, ignoreTargetingRestrictions,
+                triggeringEntityId ?: pipelineContext?.triggeringEntityId, pipelineContext?.triggeringPlayerId)
+            is TargetOpponent -> findOpponentTargets(state, requirement, controllerId, sourceId, ignoreTargetingRestrictions,
+                triggeringEntityId ?: pipelineContext?.triggeringEntityId, pipelineContext?.triggeringPlayerId)
             is AnyTarget -> {
                 val candidates = findAnyTargets(state, controllerId, sourceId, targetingSourceType)
                 if (requirement.filter == GameObjectFilter.Any) candidates else {
@@ -171,13 +173,16 @@ class TargetFinder(
         requirement: TargetPlayer,
         controllerId: EntityId,
         sourceId: EntityId?,
-        ignoreTargetingRestrictions: Boolean = false
+        ignoreTargetingRestrictions: Boolean = false,
+        triggeringEntityId: EntityId? = null,
+        triggeringPlayerId: EntityId? = null
     ): List<EntityId> {
         return state.turnOrder.filter { playerId ->
             state.hasEntity(playerId) &&
                 (ignoreTargetingRestrictions ||
                     (!playerHasShroud(state, playerId) && !playerHasHexproofAgainst(state, playerId, controllerId))) &&
-                PlayerTargetRestriction.isSatisfied(state, requirement.restriction, playerId, controllerId, sourceId, predicateEvaluator = predicateEvaluator)
+                PlayerTargetRestriction.isSatisfied(state, requirement.restriction, playerId, controllerId, sourceId,
+                    triggeringEntityId, triggeringPlayerId, predicateEvaluator = predicateEvaluator)
         }
     }
 
@@ -186,11 +191,14 @@ class TargetFinder(
         requirement: TargetOpponent,
         controllerId: EntityId,
         sourceId: EntityId?,
-        ignoreTargetingRestrictions: Boolean = false
+        ignoreTargetingRestrictions: Boolean = false,
+        triggeringEntityId: EntityId? = null,
+        triggeringPlayerId: EntityId? = null
     ): List<EntityId> {
         return state.turnOrder.filter { it != controllerId && state.hasEntity(it) &&
             (ignoreTargetingRestrictions || (!playerHasShroud(state, it) && !playerHasHexproof(state, it))) &&
-            PlayerTargetRestriction.isSatisfied(state, requirement.restriction, it, controllerId, sourceId, predicateEvaluator = predicateEvaluator) }
+            PlayerTargetRestriction.isSatisfied(state, requirement.restriction, it, controllerId, sourceId,
+                triggeringEntityId, triggeringPlayerId, predicateEvaluator = predicateEvaluator) }
     }
 
     /**

@@ -28,6 +28,9 @@ object PlayerTargetRestriction {
      * @param controllerId the player choosing the target — used to resolve `Player.You`/`Opponent`
      *   inside the restriction, so "an opponent who ..." reads relative to the chooser.
      * @param sourceId the targeting source, for source-relative restriction reads.
+     * @param triggeringEntityId / [triggeringPlayerId] the trigger's bound entity and player, when a
+     *   triggered ability is choosing — so a restriction can read [Player.TriggeringPlayer]
+     *   ("choose another target player" than the one who cast the spell, The Lord of Pain).
      */
     fun isSatisfied(
         state: GameState,
@@ -35,13 +38,17 @@ object PlayerTargetRestriction {
         candidatePlayerId: EntityId,
         controllerId: EntityId,
         sourceId: EntityId? = null,
+        triggeringEntityId: EntityId? = null,
+        triggeringPlayerId: EntityId? = null,
         predicateEvaluator: PredicateEvaluator
     ): Boolean {
         if (restriction == null) return true
         val context = EffectContext(
             sourceId = sourceId,
             controllerId = controllerId,
-            candidatePlayerId = candidatePlayerId
+            candidatePlayerId = candidatePlayerId,
+            triggeringEntityId = triggeringEntityId,
+            triggeringPlayerId = triggeringPlayerId
         )
         return predicateEvaluator.conditions.evaluate(state, restriction, context)
     }

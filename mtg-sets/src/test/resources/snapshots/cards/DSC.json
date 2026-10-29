@@ -139,6 +139,95 @@
     ]
 }
 
+// The Lord of Pain
+{
+    "name": "The Lord of Pain",
+    "manaCost": "{3}{B}{R}",
+    "typeLine": "Legendary Creature — Human Assassin",
+    "oracleText": "Menace\nYour opponents can't gain life.\nWhenever a player casts their first spell each turn, choose another target player. The Lord of Pain deals damage equal to that spell's mana value to the chosen player.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "The Lord of Pain:1",
+                "trigger": {
+                    "type": "NthSpellCastEvent",
+                    "nthSpell": 1
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGERING_SPELL_MANA_VALUE"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "t0",
+                    "restriction": {
+                        "type": "Not",
+                        "condition": {
+                            "type": "PlayerIs",
+                            "subject": "Candidate",
+                            "player": "TriggeringPlayer"
+                        }
+                    },
+                    "descriptionOverride": "another target player"
+                },
+                "descriptionOverride": "Whenever a player casts their first spell each turn, choose another target player. The Lord of Pain deals damage equal to that spell's mana value to the chosen player."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "PreventLifeGain",
+                "appliesTo": {
+                    "type": "LifeGainEvent",
+                    "player": "EachOpponent"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "rarity": "MYTHIC",
+        "artist": "Greg Staples",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/494c244e-dcdc-4169-9743-8a61f58e8763.jpg?1783909663",
+        "rulings": [
+            {
+                "date": "2024-09-20",
+                "text": "Spells and abilities that cause opponents to gain life still resolve while The Lord of Pain is on the battlefield. They won't gain life, but any other effects of that spell or ability will still happen."
+            },
+            {
+                "date": "2024-09-20",
+                "text": "If an effect says to set an opponent's life total to a number that's higher than their current life total, that player's life total won't change."
+            },
+            {
+                "date": "2024-09-20",
+                "text": "The Lord of Pain's last ability must target a player other than the one who cast the spell that caused the ability to trigger. That means that if it's just you and one other player in the game, you'll have to target yourself when that player casts their first spell each turn. (What did you expect? You summoned The Lord of Pain!)"
+            },
+            {
+                "date": "2024-09-20",
+                "text": "If a spell has {X} in its mana cost, use the value chosen for X when determining that spell's mana value."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Valgavoth, Harrower of Souls
 {
     "name": "Valgavoth, Harrower of Souls",
