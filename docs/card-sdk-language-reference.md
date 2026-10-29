@@ -12041,6 +12041,9 @@ staticAbility {
   mana becomes plain mana. Scoped to the controller of the bearing permanent, unlike Upwelling's
   all-players prevention. A player controlling two naming different colours gets the longest-standing
   one's. Ozai, the Phoenix King (`Color.RED`), Omnath, Locus of All (`Color.BLACK`).
+  `ConvertEmptyingMana(null)` is the colorless form ("that mana becomes colorless instead"): every
+  colour becomes that much colorless mana, restricted units become colorless but stay restricted.
+  (Kruphix, God of Horizons)
 - `RetainUnspentColoredMana(color)` — "You don't lose unspent [color] mana as steps and phases end."
   The durable, single-colour, controller-scoped mana-retention static (Electro, Assaulting Battery —
   red). Where `PreventManaPoolEmptying` keeps *all* colours for *everyone* and `ConvertEmptyingMana`

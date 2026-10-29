@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.scripting.effects.HijackScope
 import com.wingedsheep.sdk.scripting.effects.ManaExpiry
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import com.wingedsheep.sdk.scripting.effects.ManaSpellRider
+import com.wingedsheep.sdk.scripting.ConvertEmptyingMana
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.engine.mechanics.mana.consume
 import kotlinx.serialization.SerialName
@@ -83,6 +84,10 @@ data class ManaPoolComponent(
      */
     fun addColorless(amount: Int): ManaPoolComponent =
         copy(colorless = colorless + amount)
+
+    /** Add mana of [color], or colorless mana when [color] is null. */
+    fun addOf(color: Color?, amount: Int): ManaPoolComponent =
+        if (color == null) addColorless(amount) else add(color, amount)
 
     /**
      * Get mana of a specific color.
@@ -212,25 +217,25 @@ data class ManaPoolComponent(
      * the next mana-loss point. Ordinary mana and other-expiry restricted entries are untouched; a
      * pool with no matching entries is unchanged.
      */
-    fun convertExpired(expiry: ManaExpiry, color: Color): ManaPoolComponent {
+    fun convertExpired(expiry: ManaExpiry, color: Color?): ManaPoolComponent {
         if (restrictedMana.none { it.expiry == expiry }) return this
         val (converting, kept) = restrictedMana.partition { it.expiry == expiry }
         return copy(restrictedMana = kept).withConverted(converting, color)
     }
 
     /**
-     * Add [entries] back recoloured to [color] as ordinary (end-of-turn) mana. An entry that carries
+     * Add [entries] back recoloured to [color] (null: colorless) as ordinary (end-of-turn) mana. An entry that carries
      * a real restriction or a rider stays a restricted entry — only its colour changes; one that was
      * only stored restricted to carry an expiry (`AnySpend`, no riders — firebending) becomes plain
      * mana of [color].
      */
-    private fun withConverted(entries: List<RestrictedManaEntry>, color: Color): ManaPoolComponent {
+    private fun withConverted(entries: List<RestrictedManaEntry>, color: Color?): ManaPoolComponent {
         val (plain, restricted) = entries.partition { it.restriction == ManaRestriction.AnySpend && it.riders.isEmpty() }
         val recoloured = restricted.map { it.copy(color = color, expiry = ManaExpiry.END_OF_TURN) }
         return copy(restrictedMana = restrictedMana + recoloured,
             manaUnits = manaUnits + plain.mapNotNull { entry -> entry.source?.let {
                 com.wingedsheep.engine.mechanics.mana.ManaUnit(color, it)
-            } }).let { if (plain.isNotEmpty()) it.add(color, plain.size).markSnow(color,
+            } }).let { if (plain.isNotEmpty()) it.addOf(color, plain.size).markSnow(color,
                 plain.count { entry -> entry.source?.isSnow == true }) else it }
     }
 
@@ -280,8 +285,8 @@ data class ManaPoolComponent(
      * mana-loss action. This is the single emptying primitive for every mana-loss point, applying
      * the per-player mana-loss statics:
      *  - [convertTo] non-null ([com.wingedsheep.sdk.scripting.ConvertEmptyingMana] — Ozai, the Phoenix
-     *    King to red; Omnath, Locus of All to black): the would-be-lost mana becomes that colour
-     *    instead of emptying (CR 614.1a). Plain and colorless mana becomes that many plain mana of
+     *    King to red; Omnath, Locus of All to black; Kruphix, God of Horizons to colorless): the
+     *    would-be-lost mana becomes its [ConvertEmptyingMana.color] instead of emptying (CR 614.1a). Plain and colorless mana becomes that many plain mana of
      *    [convertTo]; a restricted entry is recoloured but keeps its restriction and riders (Omnath's
      *    ruling), so conversion never frees mana from a spending restriction.
      *  - [retain] non-empty (The Last Agni Kai, [RetainUnspentManaComponent]): mana of those colours —
@@ -297,18 +302,19 @@ data class ManaPoolComponent(
      * cleanup downgrades them via [expireTurnKeptMana] before its own emptying. Only ordinary
      * ([ManaExpiry.END_OF_TURN]) mana is subject to this action.
      */
-    fun emptyAtBoundary(convertTo: Color?, retain: Set<Color>): ManaPoolComponent {
+    fun emptyAtBoundary(convertTo: ConvertEmptyingMana?, retain: Set<Color>): ManaPoolComponent {
         val preserved = restrictedMana.filter { it.expiry != ManaExpiry.END_OF_TURN }
         val lostRestricted = restrictedMana.filter { it.expiry == ManaExpiry.END_OF_TURN }
         return when {
             convertTo != null -> {
                 // Provenance tags are markers on already-counted colour mana, not extra mana; the
                 // pool-level tags don't carry over a mana-loss boundary.
+                val color = convertTo.color
                 val lostPlain = white + blue + black + red + green + colorless
                 ManaPoolComponent(restrictedMana = preserved,
-                    manaUnits = manaUnits.map { it.copy(color = convertTo) })
-                    .withConverted(lostRestricted, convertTo)
-                    .let { if (lostPlain > 0) it.add(convertTo, lostPlain).markSnow(convertTo, snowTotal) else it }
+                    manaUnits = manaUnits.map { it.copy(color = color) })
+                    .withConverted(lostRestricted, color)
+                    .let { if (lostPlain > 0) it.addOf(color, lostPlain).markSnow(color, snowTotal) else it }
             }
             retain.isNotEmpty() -> ManaPoolComponent(
                 white = if (Color.WHITE in retain) white else 0,

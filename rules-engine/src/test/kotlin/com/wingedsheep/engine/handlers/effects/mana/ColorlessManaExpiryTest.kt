@@ -10,6 +10,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.sdk.scripting.ConvertEmptyingMana
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.*
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -125,10 +126,10 @@ class ColorlessManaExpiryTest : FunSpec({
     }
     test("loss replacement cannot convert kept mana before its retention expires") {
         val pool = produce(kept(2), ManaPoolComponent(colorless = 1))
-        val after = pool.emptyAtBoundary(Color.BLACK, emptySet())
+        val after = pool.emptyAtBoundary(ConvertEmptyingMana(Color.BLACK), emptySet())
         after.black shouldBe 1
         after.restrictedMana.size shouldBe 2
-        val cleanup = after.expireTurnKeptMana().emptyAtBoundary(Color.BLACK, emptySet())
+        val cleanup = after.expireTurnKeptMana().emptyAtBoundary(ConvertEmptyingMana(Color.BLACK), emptySet())
         cleanup.total shouldBe 3
         cleanup.restrictedMana.all { it.color == Color.BLACK && it.expiry == ManaExpiry.END_OF_TURN } shouldBe true
     }

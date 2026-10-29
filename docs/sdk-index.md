@@ -1865,7 +1865,7 @@ Families:
 - `ConditionalStaticAbility(ability: StaticAbility, condition: Condition)` — A static ability that only applies when a condition is met.
 - `ControlEnchantedPermanent` — You control enchanted permanent.
 - `ControlOpponentsLibrarySearches` — The source's controller takes over its opponents' searches of their own libraries and gets the cards found — Opposition Agent: "You control your opponents while they're searching their libraries.
-- `ConvertEmptyingMana(color: Color)` — Converts the controller's would-be-lost unspent mana into mana of color instead of emptying it: "If you would lose unspent mana, that mana becomes color instead." Ozai, the Phoenix King (red), Omna…
+- `ConvertEmptyingMana(color: Color?)` — Converts the controller's would-be-lost unspent mana into mana of color instead of emptying it: "If you would lose unspent mana, that mana becomes color instead." Ozai, the Phoenix King (red), Omna…
 - `CreaturesDamagedBySourceAreDoomed(cantBeRegenerated: Boolean, exileInsteadOfDying: Boolean)`
 - `CrewSaddleContribution(characteristic: CrewSaddleCharacteristic, modifier: Int, costs: Set<CrewSaddleCost>)` — Changes the value a creature contributes when it is tapped to crew a Vehicle or saddle a Mount.
 - `DamagePersistsThroughCleanup` — Marked damage isn't removed from this permanent during cleanup steps — an exception to the CR 514.2 turn-based action that normally removes all marked damage.

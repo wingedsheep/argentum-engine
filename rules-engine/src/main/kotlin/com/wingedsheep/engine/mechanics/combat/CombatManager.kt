@@ -235,7 +235,7 @@ class CombatManager(
                 newState = newState.updateEntity(playerId) { container ->
                     val convertTo = conversions[playerId]
                     if (convertTo != null) {
-                        container.with(pool.convertExpired(ManaExpiry.END_OF_COMBAT, convertTo))
+                        container.with(pool.convertExpired(ManaExpiry.END_OF_COMBAT, convertTo.color))
                     } else {
                         container.with(pool.clearExpired(ManaExpiry.END_OF_COMBAT))
                     }

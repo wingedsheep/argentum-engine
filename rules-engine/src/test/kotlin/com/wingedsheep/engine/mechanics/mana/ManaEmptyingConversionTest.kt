@@ -4,6 +4,7 @@ import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.scripting.ConvertEmptyingMana
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.effects.ManaExpiry
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
@@ -24,7 +25,7 @@ class ManaEmptyingConversionTest : FunSpec({
 
         test("plain coloured and colorless mana all become that many of the colour") {
             val pool = ManaPoolComponent(white = 1, red = 2, colorless = 1)
-            val after = pool.emptyAtBoundary(convertTo = Color.BLACK, retain = emptySet())
+            val after = pool.emptyAtBoundary(convertTo = ConvertEmptyingMana(Color.BLACK), retain = emptySet())
             after.black shouldBe 4
             after.total shouldBe 4
         }
@@ -33,7 +34,7 @@ class ManaEmptyingConversionTest : FunSpec({
             val pool = ManaPoolComponent()
                 .addRestricted(Color.GREEN, 1, ManaRestriction.InstantOrSorceryOnly)
                 .addRestricted(Color.RED, 1, ManaRestriction.AnySpend, riders = setOf(ManaSpellRider.TriggersWhenSpent(com.wingedsheep.sdk.scripting.GameObjectFilter.InstantOrSorcery, com.wingedsheep.sdk.scripting.effects.CopyTargetSpellEffect(com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity))))
-            val after = pool.emptyAtBoundary(convertTo = Color.BLACK, retain = emptySet())
+            val after = pool.emptyAtBoundary(convertTo = ConvertEmptyingMana(Color.BLACK), retain = emptySet())
             after.black shouldBe 0
             after.restrictedMana.map { Triple(it.color, it.restriction, it.riders) } shouldBe listOf(
                 Triple(Color.BLACK, ManaRestriction.InstantOrSorceryOnly, emptySet()),
@@ -43,7 +44,7 @@ class ManaEmptyingConversionTest : FunSpec({
 
         test("conversion wins over retention") {
             val pool = ManaPoolComponent(red = 1, blue = 1)
-            val after = pool.emptyAtBoundary(convertTo = Color.BLACK, retain = setOf(Color.RED))
+            val after = pool.emptyAtBoundary(convertTo = ConvertEmptyingMana(Color.BLACK), retain = setOf(Color.RED))
             after.black shouldBe 2
             after.red shouldBe 0
         }
@@ -51,10 +52,26 @@ class ManaEmptyingConversionTest : FunSpec({
         test("combat-duration mana is left for end of combat") {
             val pool = ManaPoolComponent(blue = 1)
                 .addRestricted(Color.RED, 2, ManaRestriction.AnySpend, expiry = ManaExpiry.END_OF_COMBAT)
-            val after = pool.emptyAtBoundary(convertTo = Color.BLACK, retain = emptySet())
+            val after = pool.emptyAtBoundary(convertTo = ConvertEmptyingMana(Color.BLACK), retain = emptySet())
             after.black shouldBe 1
             after.restrictedMana.size shouldBe 2
             after.restrictedMana.all { it.color == Color.RED && it.expiry == ManaExpiry.END_OF_COMBAT } shouldBe true
+        }
+
+        test("the colorless form turns every colour into that much colorless mana") {
+            val pool = ManaPoolComponent(white = 1, red = 2, colorless = 1)
+            val after = pool.emptyAtBoundary(convertTo = ConvertEmptyingMana(null), retain = emptySet())
+            after.colorless shouldBe 4
+            after.total shouldBe 4
+        }
+
+        test("the colorless form keeps a restricted unit's restriction, now colorless") {
+            val pool = ManaPoolComponent()
+                .addRestricted(Color.GREEN, 1, ManaRestriction.InstantOrSorceryOnly)
+            val after = pool.emptyAtBoundary(convertTo = ConvertEmptyingMana(null), retain = emptySet())
+            after.colorless shouldBe 0
+            after.restrictedMana.single().color shouldBe null
+            after.restrictedMana.single().restriction shouldBe ManaRestriction.InstantOrSorceryOnly
         }
 
         test("without a conversion the pool empties") {
@@ -75,6 +92,14 @@ class ManaEmptyingConversionTest : FunSpec({
             after.restrictedMana.single().color shouldBe Color.BLACK
             after.restrictedMana.single().restriction shouldBe ManaRestriction.CreatureSpellsOnly
             after.restrictedMana.single().expiry shouldBe ManaExpiry.END_OF_TURN
+        }
+
+        test("firebending mana becomes plain colorless mana under the colorless form") {
+            val pool = ManaPoolComponent()
+                .addRestricted(Color.RED, 2, ManaRestriction.AnySpend, expiry = ManaExpiry.END_OF_COMBAT)
+            val after = pool.convertExpired(ManaExpiry.END_OF_COMBAT, null)
+            after.colorless shouldBe 2
+            after.restrictedMana shouldBe emptyList()
         }
     }
 

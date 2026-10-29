@@ -5,6 +5,7 @@ import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.dsl.*
+import com.wingedsheep.sdk.scripting.ConvertEmptyingMana
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.values.ManaPayment
 import com.wingedsheep.engine.state.components.player.*
@@ -70,7 +71,7 @@ class ActivationManaProvenanceTest : FunSpec({
     test("retained and converted mana keeps source metadata; emptying deletes it") {
         val before = ManaPoolComponent(red = 2, manaUnits = List(2) { ManaUnit(Color.RED, tag) })
         before.emptyAtBoundary(null, setOf(Color.RED)).manaUnits shouldBe before.manaUnits
-        before.emptyAtBoundary(Color.BLUE, emptySet()).manaUnits shouldBe List(2) { ManaUnit(Color.BLUE, tag) }
+        before.emptyAtBoundary(ConvertEmptyingMana(Color.BLUE), emptySet()).manaUnits shouldBe List(2) { ManaUnit(Color.BLUE, tag) }
         before.empty().manaUnits shouldBe emptyList()
     }
     test("an X activation retains its payment across a resolution choice") {

@@ -9,9 +9,10 @@ import com.wingedsheep.sdk.scripting.RetainUnspentColoredMana
 import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
- * The colour each player's would-be-lost mana converts to, for every player who controls a
- * permanent with a [ConvertEmptyingMana] static ability ("If you would lose unspent mana, that mana
- * becomes [color] instead" — Ozai, the Phoenix King; Omnath, Locus of All).
+ * The [ConvertEmptyingMana] static that converts each player's would-be-lost mana, for every player
+ * who controls a permanent with one ("If you would lose unspent mana, that mana becomes [color]
+ * instead" — Ozai, the Phoenix King; Omnath, Locus of All; Kruphix, God of Horizons, colorless).
+ * The map holds the ability rather than its colour because a null colour means colorless.
  *
  * The static fires at *every* mana-loss point, not just one: both the step/phase-end emptying
  * ([CleanupPhaseManager.emptyManaPools]) and the end-of-combat firebending-mana discard
@@ -23,14 +24,14 @@ import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
  * is no longer lost so the other can't. The engine applies the one on the permanent that has been on
  * the battlefield longest (battlefield order) rather than asking.
  */
-fun emptyingManaConversions(state: GameState, cardRegistry: CardRegistry): Map<EntityId, Color> {
+fun emptyingManaConversions(state: GameState, cardRegistry: CardRegistry): Map<EntityId, ConvertEmptyingMana> {
     val projected = state.projectedState
-    val result = mutableMapOf<EntityId, Color>()
+    val result = mutableMapOf<EntityId, ConvertEmptyingMana>()
     for (entityId in state.getBattlefield()) {
         val cardDef = state.getEntity(entityId)?.faceUpCardDefinition(cardRegistry) ?: continue
         val conversion = cardDef.script.staticAbilities.firstNotNullOfOrNull { it as? ConvertEmptyingMana } ?: continue
         val controller = projected.getController(entityId) ?: continue
-        result.putIfAbsent(controller, conversion.color)
+        result.putIfAbsent(controller, conversion)
     }
     return result
 }

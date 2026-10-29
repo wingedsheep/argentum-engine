@@ -1388,7 +1388,8 @@ data object PreventManaPoolEmptying : StaticAbility {
 /**
  * Converts the controller's would-be-lost unspent mana into mana of [color] instead of emptying it:
  * "If you would lose unspent mana, that mana becomes [color] instead." Ozai, the Phoenix King (red),
- * Omnath, Locus of All (black).
+ * Omnath, Locus of All (black). A null [color] is colorless — the engine's usual spelling of
+ * colorless mana (Kruphix, God of Horizons: "that mana becomes colorless instead").
  *
  * The colour cousin of [PreventManaPoolEmptying]: where Upwelling *keeps* the mana as-is, this
  * *replaces* the emptying event (CR 500.5 — unspent mana empties from each player's mana pool as
@@ -1397,16 +1398,16 @@ data object PreventManaPoolEmptying : StaticAbility {
  *
  * Only the colour changes. Per Omnath's ruling, mana carrying a spending restriction or a rider keeps
  * it when it changes colour — a restricted unit stays restricted, just recoloured. Colorless mana
- * becomes [color] too.
+ * becomes [color] too; under the colorless form, coloured mana becomes that much colorless mana.
  *
  * The engine checks for this static ability at every step/phase-end mana emptying
  * (`CleanupPhaseManager.emptyManaPools`, and again for firebending mana in `CombatManager.endCombat`).
  */
 @SerialName("ConvertEmptyingMana")
 @Serializable
-data class ConvertEmptyingMana(val color: Color) : StaticAbility {
+data class ConvertEmptyingMana(val color: Color?) : StaticAbility {
     override val description: String =
-        "If you would lose unspent mana, that mana becomes ${color.name.lowercase()} instead"
+        "If you would lose unspent mana, that mana becomes ${color?.name?.lowercase() ?: "colorless"} instead"
 }
 
 /**
