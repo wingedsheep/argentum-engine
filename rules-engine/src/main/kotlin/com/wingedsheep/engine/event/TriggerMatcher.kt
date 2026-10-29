@@ -150,14 +150,13 @@ class TriggerMatcher(
             is EventPattern.CardRevealedFromDrawEvent -> {
                 if (event !is CardRevealedFromDrawEvent) return false
                 if (event.playerId != controllerId) return false
-                val filter = trigger.cardFilter
-                if (filter != null) {
-                    val requiresCreature = filter.cardPredicates.any {
-                        it is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature
-                    }
-                    if (requiresCreature && !event.isCreature) return false
-                }
-                true
+                // "Whenever you reveal … this way" is linked to its source's own reveal (CR 607.2).
+                if (sourceId !in event.revealedBy) return false
+                val filter = trigger.cardFilter ?: return true
+                predicateEvaluator.matches(
+                    state, state.projectedState, event.cardEntityId, filter,
+                    com.wingedsheep.engine.handlers.PredicateContext(controllerId = controllerId, sourceId = sourceId)
+                )
             }
             is EventPattern.AttackEvent -> {
                 event is AttackersDeclaredEvent &&

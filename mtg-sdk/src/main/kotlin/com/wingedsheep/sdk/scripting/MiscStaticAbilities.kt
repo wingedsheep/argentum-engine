@@ -1590,13 +1590,21 @@ data class ModifyMaximumHandSize(
  *
  * The engine checks for this static ability during draws. When the controller
  * draws their first card of a turn and this ability is active, the drawn card
- * is revealed (a CardRevealedFromDrawEvent is emitted). Other triggered abilities
- * can then trigger off that reveal event.
+ * is revealed (a CardRevealedFromDrawEvent is emitted, naming every source whose
+ * reveal applied). A `revealsFirstDraw` trigger is linked to its own source's reveal
+ * (CR 607.2 — "this way"), so it fires only when its source is among them.
+ *
+ * @property yourTurnsOnly "the first card you draw on each of your turns" (Keranos, God of
+ *   Storms): the reveal applies only while the controller is the active player.
  */
 @SerialName("RevealFirstDrawEachTurn")
 @Serializable
-data object RevealFirstDrawEachTurn : StaticAbility {
-    override val description: String = "Reveal the first card you draw each turn"
+data class RevealFirstDrawEachTurn(
+    val yourTurnsOnly: Boolean = false
+) : StaticAbility {
+    override val description: String =
+        if (yourTurnsOnly) "Reveal the first card you draw on each of your turns"
+        else "Reveal the first card you draw each turn"
 }
 
 /**

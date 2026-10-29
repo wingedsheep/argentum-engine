@@ -156,7 +156,8 @@ class DrawCardPrimitive(
 
     /**
      * If [playerId] controls a permanent with [RevealFirstDrawEachTurn], emit a
-     * [CardRevealedFromDrawEvent] for [drawnCardId]. Only called on the first
+     * [CardRevealedFromDrawEvent] for [drawnCardId] naming every such permanent whose reveal
+     * applies (a `yourTurnsOnly` one only on [playerId]'s turn). Only called on the first
      * draw of the turn.
      */
     private fun checkRevealFirstDraw(
@@ -165,18 +166,22 @@ class DrawCardPrimitive(
         drawnCardId: EntityId
     ): CardRevealedFromDrawEvent? {
         val projected = state.projectedState
-        val hasRevealAbility = projected.getBattlefieldControlledBy(playerId).any { permanentId ->
-            val cardDef = state.getEntity(permanentId)?.faceUpCardDefinition(cardRegistry) ?: return@any false
-            cardDef.script.staticAbilities.any { it is RevealFirstDrawEachTurn }
+        val isTheirTurn = state.activePlayerId == playerId
+        val revealedBy = projected.getBattlefieldControlledBy(playerId).filter { permanentId ->
+            val cardDef = state.getEntity(permanentId)?.faceUpCardDefinition(cardRegistry) ?: return@filter false
+            cardDef.script.staticAbilities.any {
+                it is RevealFirstDrawEachTurn && (!it.yourTurnsOnly || isTheirTurn)
+            }
         }
-        if (!hasRevealAbility) return null
+        if (revealedBy.isEmpty()) return null
 
         val drawnCard = state.getEntity(drawnCardId)?.get<CardComponent>() ?: return null
         return CardRevealedFromDrawEvent(
             playerId = playerId,
             cardEntityId = drawnCardId,
             cardName = drawnCard.name,
-            isCreature = drawnCard.typeLine.isCreature
+            isCreature = drawnCard.typeLine.isCreature,
+            revealedBy = revealedBy
         )
     }
 }

@@ -8872,8 +8872,12 @@ in the repo today):
   threshold triggers it once, not N times. Putting cards into hand without "draw" (CR 121.5)
   does not advance the count. Used by Knights of Dol Amroth, Prince Imrahil the Fair,
   Stalwarts of Osgiliath ("Whenever you draw your second card each turn, …").
-- `Triggers.you.revealsFirstDraw(GameObjectFilter.Creature)` — Hatching Plans-style top-card reveal.
-- `Triggers.you.revealsFirstDraw()` — generic reveal-from-draw trigger.
+- `Triggers.you.revealsFirstDraw(card?)` — "whenever you reveal a [card] card this way", paired with the
+  `RevealFirstDrawEachTurn(yourTurnsOnly = false)` static ("Reveal the first card you draw each turn";
+  `yourTurnsOnly = true` is "…on each of your turns", Keranos, God of Storms). The trigger is linked to
+  its own source's reveal (CR 607.2): it fires only when that permanent's reveal applied to the draw, so
+  Primitive Etchings revealing on an opponent's turn doesn't fire Keranos's triggers. `card` is a full
+  `GameObjectFilter` on the revealed card (`Creature` for Primitive Etchings, `Land` / `Nonland` for Keranos).
 - `Triggers.oneOrMore(filter).putIntoYourGraveyard()` — when matching cards enter your yard.
 - `Triggers.oneOrMore(GameObjectFilter.Permanent).putIntoYourGraveyard()` — only permanent cards.
 - `Triggers.oneOrMore(GameObjectFilter.Creature).putIntoGraveyards()` — "… are put into **graveyards** from anywhere":

@@ -21,7 +21,7 @@ val PrimitiveEtchings = card("Primitive Etchings") {
     oracleText = "Reveal the first card you draw each turn. Whenever you reveal a creature card this way, draw a card."
 
     staticAbility {
-        ability = RevealFirstDrawEachTurn
+        ability = RevealFirstDrawEachTurn()
     }
 
     triggeredAbility {
