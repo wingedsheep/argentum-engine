@@ -1,0 +1,39 @@
+{
+  "Breya, Etherium Shaper": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Entrapment Maneuver": [
+    "removal",
+    "creature-removal"
+  ],
+  "Gempalm Incinerator": [
+    "removal",
+    "creature-removal"
+  ],
+  "Kindred Dominance": [
+    "removal",
+    "creature-removal"
+  ],
+  "Patron of the Vein": [
+    "removal",
+    "creature-removal"
+  ],
+  "Qasali Slingers": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Stream of Acid": [
+    "removal",
+    "creature-removal"
+  ],
+  "Windgrace's Judgment": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ]
+}

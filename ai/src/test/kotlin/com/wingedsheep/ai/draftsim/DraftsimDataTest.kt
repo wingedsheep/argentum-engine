@@ -116,7 +116,7 @@ class DraftsimDataTest : FunSpec({
     // and so should be near-total.
     listOf("LTR", "MSH", "HOB", "ATQ", "SCG", "LGN", "POR", "DOM", "MRD", "ONS", "INV",
         "FRA", "KHM", "ZNR", "LRW", "RAV", "CHK", "J22", "LEA", "LEB", "LEG", "ARN", "DRK", "FEM", "PTK",
-        "P02", "S99",
+        "P02", "S99", "PIP", "BLC", "STX", "NCC", "C15", "CMD", "C17", "PZ2", "DDQ", "NEC", "MAT",
     ).forEach { code ->
         test("most $code cards in our registry resolve a Draftsim rating (name join works)") {
             val set = MtgSetCatalog.all.first { it.code == code }

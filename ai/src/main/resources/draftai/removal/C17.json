@@ -1,0 +1,143 @@
+{
+  "Butcher of Malakir": [
+    "removal",
+    "creature-removal"
+  ],
+  "Captivating Vampire": [
+    "removal",
+    "creature-removal"
+  ],
+  "Chaos Warp": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Crackling Doom": [
+    "removal",
+    "creature-removal"
+  ],
+  "Crosis's Charm": [
+    "removal",
+    "creature-removal",
+    "artifact-removal"
+  ],
+  "Crux of Fate": [
+    "removal",
+    "creature-removal"
+  ],
+  "Deathbringer Regent": [
+    "removal",
+    "creature-removal"
+  ],
+  "Decree of Pain": [
+    "removal",
+    "creature-removal"
+  ],
+  "Dragon Tempest": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Earthquake": [
+    "removal",
+    "creature-removal"
+  ],
+  "Fell the Mighty": [
+    "removal",
+    "creature-removal"
+  ],
+  "Frontier Siege": [
+    "removal",
+    "creature-removal"
+  ],
+  "Go for the Throat": [
+    "removal",
+    "creature-removal"
+  ],
+  "Kindred Dominance": [
+    "removal",
+    "creature-removal"
+  ],
+  "Mortify": [
+    "removal",
+    "creature-removal",
+    "enchantment-removal"
+  ],
+  "Nevinyrral's Disk": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "New Blood": [
+    "removal",
+    "creature-removal"
+  ],
+  "Patron of the Vein": [
+    "removal",
+    "creature-removal"
+  ],
+  "Qasali Slingers": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Rain of Thorns": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Rakdos Charm": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Reality Shift": [
+    "removal",
+    "creature-removal"
+  ],
+  "Rout": [
+    "removal",
+    "creature-removal"
+  ],
+  "Ryusei, the Falling Star": [
+    "removal",
+    "creature-removal"
+  ],
+  "Scourge of Valkas": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Silumgar, the Drifting Death": [
+    "removal",
+    "creature-removal"
+  ],
+  "Steel Hellkite": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Swords to Plowshares": [
+    "removal",
+    "creature-removal"
+  ],
+  "Terminate": [
+    "removal",
+    "creature-removal"
+  ],
+  "Unstable Obelisk": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Wing Shards": [
+    "removal",
+    "creature-removal"
+  ]
+}

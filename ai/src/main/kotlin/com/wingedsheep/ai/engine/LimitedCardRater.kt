@@ -87,7 +87,7 @@ object LimitedCardRater {
     }
 
     /**
-     * The Draftsim-scale pick ratings, already on this rater's 0–5 scale and covering ~72 sets
+     * The Draftsim-scale pick ratings, already on this rater's 0–5 scale and covering ~83 sets
      * — `DraftsimData`'s tables, merged across every set it ships. Most are vendored from the
      * Draftsim bundle; the sets the bundle never covered are first-party tables written on
      * the same scale (see `DraftsimData`'s class doc).

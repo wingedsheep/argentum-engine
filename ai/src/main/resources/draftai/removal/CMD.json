@@ -1,0 +1,130 @@
+{
+  "Akroma's Vengeance": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Angel of Despair": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Aura Shards": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Austere Command": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Breath of Darigaaz": [
+    "removal",
+    "creature-removal"
+  ],
+  "Butcher of Malakir": [
+    "removal",
+    "creature-removal"
+  ],
+  "Cleansing Beam": [
+    "removal",
+    "creature-removal"
+  ],
+  "Doom Blade": [
+    "removal",
+    "creature-removal"
+  ],
+  "Earthquake": [
+    "removal",
+    "creature-removal"
+  ],
+  "Electrolyze": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Flametongue Kavu": [
+    "removal",
+    "creature-removal"
+  ],
+  "Fleshbag Marauder": [
+    "removal",
+    "creature-removal"
+  ],
+  "Grave Pact": [
+    "removal",
+    "creature-removal"
+  ],
+  "Hex": [
+    "removal",
+    "creature-removal"
+  ],
+  "Lash Out": [
+    "removal",
+    "creature-removal"
+  ],
+  "Mortify": [
+    "removal",
+    "creature-removal",
+    "enchantment-removal"
+  ],
+  "Oblation": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Oblivion Ring": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Oblivion Stone": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Oros, the Avenger": [
+    "removal",
+    "creature-removal"
+  ],
+  "Path to Exile": [
+    "removal",
+    "creature-removal"
+  ],
+  "Prophetic Bolt": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Reiver Demon": [
+    "removal",
+    "creature-removal"
+  ],
+  "Savage Twister": [
+    "removal",
+    "creature-removal"
+  ],
+  "Shriekmaw": [
+    "removal",
+    "creature-removal"
+  ],
+  "Spitebellows": [
+    "removal",
+    "creature-removal"
+  ],
+  "Terminate": [
+    "removal",
+    "creature-removal"
+  ]
+}

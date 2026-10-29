@@ -1,0 +1,34 @@
+{
+  "Beast Within": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Decimate": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Dispatch": [
+    "removal",
+    "creature-removal"
+  ],
+  "Generous Gift": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Reality Shift": [
+    "removal",
+    "creature-removal"
+  ],
+  "Starstorm": [
+    "removal",
+    "creature-removal"
+  ]
+}

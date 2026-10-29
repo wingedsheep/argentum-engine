@@ -1,0 +1,153 @@
+{
+  "Angel of Serenity": [
+    "removal",
+    "creature-removal"
+  ],
+  "Bane of Progress": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Banishing Light": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Barter in Blood": [
+    "removal",
+    "creature-removal"
+  ],
+  "Blatant Thievery": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Breath of Darigaaz": [
+    "removal",
+    "creature-removal"
+  ],
+  "Butcher of Malakir": [
+    "removal",
+    "creature-removal"
+  ],
+  "Cage of Hands": [
+    "removal",
+    "creature-removal"
+  ],
+  "Cloudthresher": [
+    "removal",
+    "creature-removal"
+  ],
+  "Crib Swap": [
+    "removal",
+    "creature-removal"
+  ],
+  "Death Grasp": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Desert Twister": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Earthquake": [
+    "removal",
+    "creature-removal"
+  ],
+  "Faith's Fetters": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Golgari Charm": [
+    "removal",
+    "creature-removal",
+    "enchantment-removal"
+  ],
+  "Hammerfist Giant": [
+    "removal",
+    "creature-removal"
+  ],
+  "Inferno Titan": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Phyrexian Plaguelord": [
+    "removal",
+    "creature-removal"
+  ],
+  "Prophetic Bolt": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Putrefy": [
+    "removal",
+    "creature-removal",
+    "artifact-removal"
+  ],
+  "Rapid Hybridization": [
+    "removal",
+    "creature-removal"
+  ],
+  "Seal of Cleansing": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Seal of Doom": [
+    "removal",
+    "creature-removal"
+  ],
+  "Sever the Bloodline": [
+    "removal",
+    "creature-removal"
+  ],
+  "Shriekmaw": [
+    "removal",
+    "creature-removal"
+  ],
+  "Stingerfling Spider": [
+    "removal",
+    "creature-removal"
+  ],
+  "Thundercloud Shaman": [
+    "removal",
+    "creature-removal"
+  ],
+  "Trygon Predator": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Urza's Rage": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Vandalblast": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Viridian Zealot": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Warstorm Surge": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ]
+}

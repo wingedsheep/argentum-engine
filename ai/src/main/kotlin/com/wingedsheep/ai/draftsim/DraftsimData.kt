@@ -52,9 +52,12 @@ data class DraftsimSetTables(
  * `LGN`, `POR`, `DOM`, `MRD`, `ONS` and `INV` are **first-party**, hand-curated on the same 0–5
  * scale. So are `FRA`, `KHM`, `ZNR`, `LRW`, `RAV`, `CHK`, `J22`, `LEA`, `LEB`, `LEG`, `ARN`, `DRK`,
  * `FEM`, `PTK`, `P02` and `S99`, which the vendored bundle doesn't ship (`LEA`/`LEB` are almost
- * entirely carried from `30A`). In every first-party table a card already rated in some other set's
- * table carries that value, and the rest were rated for their own limited environment against the
- * vendored sets' distributions (median ≈2.2–2.6, bombs ≥3.9, unplayables ≈0.7–1.0), because the
+ * entirely carried from `30A`), and `STX`, `MAT` and the Commander, duel-deck and treasure-chest
+ * products `PIP`, `BLC`, `NCC`, `NEC`, `C15`, `C17`, `CMD`, `DDQ` and `PZ2`. Those last nine
+ * aren't drafted; they rate only the cards our registry implements, on the same limited scale, so
+ * the constructed and Commander deck generators get a card-quality prior. In every first-party
+ * table a card already rated in some other set's table carries that value, and the rest were rated
+ * for their own limited environment against the vendored sets' distributions (median ≈2.2–2.6, bombs ≥3.9, unplayables ≈0.7–1.0), because the
  * scorer's cutoffs (`QJ = 2`, `BOMB = 3.9`) are absolute rather than per-set. `BIG` is an extension
  * set whose 30 cards are copied from `OTJ.json`, where the bundle already rated them. Their format
  * is identical and nothing reads the difference; the distinction matters only when judging how much

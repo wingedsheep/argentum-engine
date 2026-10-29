@@ -1,0 +1,149 @@
+{
+  "Austere Command": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Bant Charm": [
+    "removal",
+    "creature-removal",
+    "artifact-removal"
+  ],
+  "Beast Within": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Bedevil": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "planeswalker-removal"
+  ],
+  "Blasphemous Act": [
+    "removal",
+    "creature-removal"
+  ],
+  "Chaos Warp": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Damning Verdict": [
+    "removal",
+    "creature-removal"
+  ],
+  "Deathbringer Regent": [
+    "removal",
+    "creature-removal"
+  ],
+  "Dusk": [
+    "removal",
+    "creature-removal"
+  ],
+  "Feed the Swarm": [
+    "removal",
+    "creature-removal",
+    "enchantment-removal"
+  ],
+  "Fell the Mighty": [
+    "removal",
+    "creature-removal"
+  ],
+  "Generous Gift": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Hex": [
+    "removal",
+    "creature-removal"
+  ],
+  "Indrik Stomphowler": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Inferno Titan": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Lethal Scheme": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Martial Coup": [
+    "removal",
+    "creature-removal"
+  ],
+  "Oblivion Stone": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Path to Exile": [
+    "removal",
+    "creature-removal"
+  ],
+  "Profane Command": [
+    "removal",
+    "creature-removal"
+  ],
+  "Rose Room Treasurer": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Sever the Bloodline": [
+    "removal",
+    "creature-removal"
+  ],
+  "Shield Broker": [
+    "removal",
+    "creature-removal"
+  ],
+  "Swords to Plowshares": [
+    "removal",
+    "creature-removal"
+  ],
+  "Terminate": [
+    "removal",
+    "creature-removal"
+  ],
+  "Utter End": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Warstorm Surge": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Windgrace's Judgment": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Woodfall Primus": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ]
+}
