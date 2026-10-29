@@ -464,7 +464,7 @@ class RenownKeywordTest : FunSpec({
     }
 
     test("the grant is a static ability — a Herald that loses all abilities grants no renown") {
-        // CR 611.3b: a static ability's effect exists only while its source has the ability.
+        // CR 604.2: a static ability's effect exists only while its source has the ability.
         val driver = createDriver()
         val player = driver.activePlayer!!
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)

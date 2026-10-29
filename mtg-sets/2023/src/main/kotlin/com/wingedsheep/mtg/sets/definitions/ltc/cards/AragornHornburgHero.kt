@@ -66,6 +66,7 @@ val AragornHornburgHero = card("Aragorn, Hornburg Hero") {
         imageUri = "https://cards.scryfall.io/normal/front/1/4/14c62aa6-2660-4a18-8f69-4088e18abb40.jpg?1783914203"
         ruling("2023-11-03", "If a creature has multiple instances of renown, each triggers separately. The first one that resolves causes the creature to become renowned, which means any additional renown abilities that creature has will have no effect. The creature's controller chooses what order to put those renown abilities on the stack, so they can choose to have the ability with the higher renown number resolve first.")
         ruling("2023-11-03", "When a creature you control that isn't renowned deals combat damage to a player, you'll put a +1/+1 counter on it and it will become renowned. Since it wasn't renowned when it dealt combat damage, Aragorn, Hornburg Hero's last ability won't trigger, and you won't double the number of +1/+1 counters on it.")
+        ruling("2023-11-03", "Renown won't trigger when a creature deals damage to a planeswalker, a battle, or another creature. It also won't trigger when a creature deals noncombat damage to a player.")
         ruling("2023-11-03", "If Aragorn, Hornburg Hero leaves the battlefield after first strike damage is dealt but before regular combat damage, creatures you control that dealt first strike damage but no longer have first strike won't also deal regular combat damage (unless they have double strike for some reason).")
     }
 }

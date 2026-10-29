@@ -43,9 +43,9 @@ internal class EffectApplicator(
      * Crew and renown are the exceptions: each `CREW_<n>` / `RENOWN_<n>` is a separate ability,
      * not a share of one total (a Vehicle with crew 3 that gains crew 1 can be crewed for 1, not 4;
      * renown 1 twice is two triggers, CR 702.112c, not one renown 2), so distinct Ns sit side by
-     * side. Every grant on this non-summing path is also tallied in
-     * [MutableProjectedValues.grantedKeywordInstances], because the set alone can't tell one
-     * "has renown 1" grant from two.
+     * side. Renown grants are also tallied in [MutableProjectedValues.grantedKeywordInstances],
+     * because the set alone can't tell one "has renown 1" grant from two — and unlike crew, the
+     * number of renown instances matters.
      */
     private fun addKeyword(values: MutableProjectedValues, keyword: String) {
         val keywords = values.keywords
@@ -53,7 +53,7 @@ internal class EffectApplicator(
         val n = if (split > 0) keyword.substring(split + 1).toIntOrNull() else null
         if (n == null || keyword.startsWith(CREW_PREFIX) || keyword.startsWith(RENOWN_PREFIX)) {
             keywords.add(keyword)
-            values.grantedKeywordInstances.merge(keyword, 1, Int::plus)
+            if (keyword.startsWith(RENOWN_PREFIX)) values.grantedKeywordInstances.merge(keyword, 1, Int::plus)
             return
         }
         val prefix = keyword.substring(0, split + 1)

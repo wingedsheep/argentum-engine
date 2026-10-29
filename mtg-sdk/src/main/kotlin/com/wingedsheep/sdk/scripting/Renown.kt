@@ -78,7 +78,7 @@ object Renown {
     )
 
     /**
-     * CR 702.112a — the renown trigger for a single printed `Renown [n]`.
+     * CR 702.112a — the renown trigger for a single printed or granted `Renown [n]`.
      *
      * @param n the N of that instance.
      * @param instance the zero-based index of this instance among the creature's printed renown

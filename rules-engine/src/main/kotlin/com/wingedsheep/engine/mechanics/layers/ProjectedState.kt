@@ -61,8 +61,7 @@ data class ProjectedValues(
     val name: String? = null,
     val keywords: Set<String> = emptySet(),
     /**
-     * How many continuous effects granted each non-summed keyword string in [keywords] — bare
-     * keywords, `CREW_<n>`, `RENOWN_<n>` — since the last "loses all abilities" or removal of that
+     * How many continuous effects granted each `RENOWN_<n>` string in [keywords] since the last "loses all abilities" or removal of that
      * keyword. [keywords] is a set, so two "attacking creatures you control have renown 1" grants
      * leave one `RENOWN_1`; this keeps the second instance, which CR 702.112c makes a second
      * trigger. Printed keywords are not counted. Read it through [ProjectedState.grantedKeywordInstances],

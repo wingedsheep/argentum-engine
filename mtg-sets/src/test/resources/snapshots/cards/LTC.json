@@ -70,6 +70,10 @@
             },
             {
                 "date": "2023-11-03",
+                "text": "Renown won't trigger when a creature deals damage to a planeswalker, a battle, or another creature. It also won't trigger when a creature deals noncombat damage to a player."
+            },
+            {
+                "date": "2023-11-03",
                 "text": "If Aragorn, Hornburg Hero leaves the battlefield after first strike damage is dealt but before regular combat damage, creatures you control that dealt first strike damage but no longer have first strike won't also deal regular combat damage (unless they have double strike for some reason)."
             }
         ]
