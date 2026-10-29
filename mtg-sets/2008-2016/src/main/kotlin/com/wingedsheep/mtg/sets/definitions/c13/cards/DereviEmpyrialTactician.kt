@@ -29,7 +29,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * trigger goes on the stack, tap-or-untap chosen on resolution, under a "may".
  *
  * The last ability functions only from the command zone (`activateFromZone = Zone.COMMAND`,
- * enumerated by `CommandZoneAbilityEnumerator`). It is an ability, not a cast: no commander tax, and
+ * enumerated by `ZoneActivatedAbilityEnumerator(Zone.COMMAND)`). It is an ability, not a cast: no commander tax, and
  * it can't be countered as a spell. The move carries `fromZone = COMMAND` so a Derevi that left the
  * command zone in response (e.g. was cast) isn't put onto the battlefield from elsewhere.
  */

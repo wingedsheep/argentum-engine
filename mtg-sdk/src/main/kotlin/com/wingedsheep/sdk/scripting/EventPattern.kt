@@ -2961,8 +2961,8 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      *
      * [keyword] narrows to activations of one keyword ability — the activated ability's own
      * `ActivatedAbility.keyword` marker. "Whenever you activate a ninjutsu ability" (Satoru
-     * Umezawa) is `keyword = Keyword.NINJUTSU`; it counts a ninjutsu ability activated from hand,
-     * printed or granted, and nothing else. Null (the default) imposes nothing.
+     * Umezawa) is `keyword = Keyword.NINJUTSU`; it counts a ninjutsu ability activated from hand or (commander
+     * ninjutsu) the command zone, printed or granted, and nothing else. Null (the default) imposes nothing.
      */
     @SerialName("AbilityActivatedEvent")
     @Serializable

@@ -19,7 +19,7 @@ import com.wingedsheep.sdk.scripting.TimingRule
  * Lives only in the command zone — never cast, never a permanent (hence the [CardType.VANGUARD]
  * type and no mana cost). [com.wingedsheep.engine.core.GameInitializer] places one copy in each
  * player's command zone when the game's [com.wingedsheep.sdk.core.Format.MomirBasic] is active, and
- * `CommandZoneAbilityEnumerator` surfaces this ability from there.
+ * `ZoneActivatedAbilityEnumerator(Zone.COMMAND)` surfaces this ability from there.
  *
  * The random copy is drawn from the format's eligible-creature pool; see
  * [com.wingedsheep.sdk.scripting.effects.CreateRandomCreatureTokenWithManaValueEffect].
