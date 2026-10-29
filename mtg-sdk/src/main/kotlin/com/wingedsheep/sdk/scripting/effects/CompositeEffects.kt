@@ -276,10 +276,9 @@ data class ModalEffect(
 ) : Effect {
     init {
         require(!chooseAtRandom || (chooseCount == 1 && minChooseCount == 1 && dynamicChooseCount == null)) {
-            "chooseAtRandom draws exactly one mode; chooseCount must be 1"
+            "chooseAtRandom draws exactly one mode: chooseCount and minChooseCount must be 1, with no dynamicChooseCount"
         }
     }
-
 
     override val description: String = buildString {
         append(if (mayChooseNone) "You may choose " else "Choose ")
