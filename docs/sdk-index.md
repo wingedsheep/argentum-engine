@@ -742,6 +742,7 @@ Families:
 - `BecomeSaddledEffect(target: EffectTarget)` — Target permanent becomes saddled until end of turn (CR 702.171b).
 - `BecomeSolvedEffect(target: EffectTarget)` — Target permanent becomes solved (CR 719.3b) — the resolving effect of a Case's "To solve" triggered ability.
 - `BeholdEffect(filter: GameObjectFilter, ifBeheld: Effect?, otherwise: Effect?)` — "Behold a filter" as a resolution-time effect (CR: a player beholds a permanent by either choosing a matching permanent they control or revealing a matching card from their hand).
+- `BlockerCountLimitThisCombatEffect(target: EffectTarget, maxBlockers: Int)` — The target player(s) can't block with more than maxBlockers creatures this combat — "Whenever Mirri attacks, each opponent can't block with more than one creature this combat" (Mirri, Weatherlight…
 - `BudgetModalEffect(budget: Int, modes: List<BudgetMode>)` — Budget-based modal spell effect — "Choose up to N {P} worth of modes." Used by the Bloomburrow Season cycle (Season of Loss, Season of the Bold, etc.) where each mode has a different cost and the p…
 - `CanAttackDespiteDefenderThisTurnEffect(target: EffectTarget)` — Let a creature attack this turn as though it didn't have defender.
 - `CantActivateLoyaltyAbilitiesEffect(target: EffectTarget, duration: Duration)` — Target player can't activate planeswalkers' loyalty abilities for the specified duration.
@@ -1816,7 +1817,7 @@ Families:
 - `AssignDamageEqualToToughness(filter: GroupFilter, onlyWhenToughnessGreaterThanPower: Boolean)` — Creature assigns combat damage equal to its toughness rather than its power.
 - `AssignUnblockedCombatDamageToDefendingCreature(filter: GroupFilter)` — If this creature is unblocked, its controller may have it assign all its combat damage to one creature the defending player controls instead of to the player, planeswalker or battle it is attacking.
 - `AttackTax(amountPerAttacker: DynamicAmount, condition: Condition?, coversPlaneswalkers: Boolean)` — Creatures can't attack you unless their controller pays generic mana for each attacking creature.
-- `AttackerCountLimit(maxAttackers: Int, defenders: GroupFilter?)` — Cap on how many creatures may attack in a single combat.
+- `AttackerCountLimit(maxAttackers: Int, defenders: GroupFilter?, defendingPlayers: Player?)`
 - `BlockTax(amountPerBlocker: DynamicAmount, condition: Condition?)` — Creatures can't block unless their controller pays generic mana for each blocking creature.
 - `BlockerCountLimit(maxBlockers: Int)` — Global cap on how many creatures may block in a single combat (Dueling Grounds — "No more than one creature can block each combat").
 - `CanAttackAsThoughHasty(filter: GroupFilter)` — Creatures matching filter can attack as though they had haste.

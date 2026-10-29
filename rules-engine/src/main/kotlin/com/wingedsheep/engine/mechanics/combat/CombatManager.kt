@@ -196,6 +196,7 @@ class CombatManager(
                     .without<RequiresManualDamageAssignmentComponent>()
                     .without<AttackersDeclaredThisCombatComponent>()
                     .without<BlockersDeclaredThisCombatComponent>()
+                    .without<com.wingedsheep.engine.state.components.player.BlockerCountLimitThisCombatComponent>()
                     .without<AttackedThisCombatComponent>()
                     .without<BlockedThisCombatComponent>()
             }

@@ -737,6 +737,33 @@ data class CantSearchLibrariesEffect(
 }
 
 /**
+ * The [target] player(s) can't block with more than [maxBlockers] creatures this combat —
+ * "Whenever Mirri attacks, each opponent can't block with more than one creature this combat"
+ * (Mirri, Weatherlight Duelist).
+ *
+ * A one-shot that stamps each player, so the cap outlives its source: Mirri leaving the
+ * battlefield before blockers are declared doesn't lift it. It caps the blockers *that player*
+ * declares (each blocker counts once, however many attackers it blocks) and lapses as the combat
+ * phase ends. The two closest types: the [com.wingedsheep.sdk.scripting.BlockerCountLimit]
+ * static caps every player's blockers together and ends when its permanent leaves, and
+ * [CantSearchLibrariesEffect]-style player stamps carry no count.
+ *
+ * @param target The player(s) whose blocks are capped — `PlayerRef(Player.EachOpponent)` for
+ *   "each opponent".
+ * @param maxBlockers How many creatures each of them may still block with.
+ */
+@SerialName("BlockerCountLimitThisCombat")
+@Serializable
+data class BlockerCountLimitThisCombatEffect(
+    val target: EffectTarget,
+    val maxBlockers: Int
+) : Effect {
+    override val description: String =
+        "${target.description.replaceFirstChar { it.uppercase() }} can't block with more than " +
+            "${if (maxBlockers == 1) "one creature" else "$maxBlockers creatures"} this combat"
+}
+
+/**
  * Cards in a hand can't be played for the specified [duration] — the [target] is either a
  * **player** (none of the cards in their hand) or a single **card in a hand** (just that card).
  *

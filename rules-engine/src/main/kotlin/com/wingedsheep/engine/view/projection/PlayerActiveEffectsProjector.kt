@@ -71,6 +71,7 @@ internal class PlayerActiveEffectsProjector(
             targetingAndCastingGrants(state, playerId, container) +
             designations(state, playerId, container, audience) +
             attackRequirements(container) +
+            blockRestrictions(container) +
             pendingSpellRiders(state, playerId) +
             emblemsAndDelayedTriggers(state, playerId, container, audience)
     }
@@ -677,6 +678,20 @@ internal class PlayerActiveEffectsProjector(
                 name = "Taunted",
                 description = description,
                 icon = "taunt"
+            )
+        )
+    }
+
+    /** A per-combat cap on how many creatures this player may block with (Mirri, Weatherlight Duelist). */
+    private fun blockRestrictions(container: ComponentContainer): List<ClientPlayerEffect> {
+        val cap = container.get<BlockerCountLimitThisCombatComponent>()?.maxBlockers ?: return emptyList()
+        val creatures = if (cap == 1) "one creature" else "$cap creatures"
+        return listOf(
+            ClientPlayerEffect(
+                effectId = "blocker_count_limit",
+                name = "Block Limit",
+                description = "You can't block with more than $creatures this combat",
+                icon = "shield-off"
             )
         )
     }

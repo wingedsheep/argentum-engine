@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.text.TextReplacer
@@ -825,34 +826,63 @@ data object CantBeAttackedWhileAttached : StaticAbility {
  *
  * Unlike per-creature restrictions, this constrains the declared attacker *set*, so it is
  * enforced as a whole-declaration check rather than a per-attacker [AttackRestrictionRule].
+ * It is read like the other declaration-time combat statics: conditions evaluated (so a
+ * [ConditionalStaticAbility] wrapper works), face-down and ability-stripped holders ignored.
  *
- * - [defenders] `== null` — a **global** cap (Dueling Grounds — "No more than one creature can
- *   attack each combat"): while any permanent with this ability is on the battlefield, an attack
- *   declaration with more than [maxAttackers] attackers in total, regardless of controller, is
- *   illegal.
+ * - neither [defenders] nor [defendingPlayers] — a **global** cap (Dueling Grounds — "No more
+ *   than one creature can attack each combat"): while any permanent with this ability is on the
+ *   battlefield, an attack declaration with more than [maxAttackers] attackers in total,
+ *   regardless of controller, is illegal.
  * - [defenders] set — a **per-defender** cap: each battlefield permanent matching [defenders]
  *   (evaluated relative to this ability's controller, against projected state) may be attacked
  *   by at most [maxAttackers] creatures in one combat; attacks on anything else are unaffected.
  *   Tomik, Orzhov Lawmage — "Planeswalkers you control have 'No more than one creature can
  *   attack this planeswalker each combat.'" — is
  *   `AttackerCountLimit(1, defenders = GroupFilter.PlaneswalkersYouControl)`.
+ * - [defendingPlayers] set — a **per-player** cap: each player matching it (relative to this
+ *   ability's controller) may be attacked by at most [maxAttackers] creatures in one combat.
+ *   Only attacks on the player count — attacks on their planeswalkers or battles are unaffected.
+ *   Mirri, Weatherlight Duelist — "As long as Mirri is tapped, no more than one creature can
+ *   attack you each combat" — is `AttackerCountLimit(1, defendingPlayers = Player.You)` behind a
+ *   [ConditionalStaticAbility] on `Conditions.SourceIsTapped`.
  */
+private val ATTACKER_CAP_PLAYERS: Set<Player> = setOf(Player.You, Player.EachOpponent, Player.Each)
+
 @SerialName("AttackerCountLimit")
 @Serializable
 data class AttackerCountLimit(
     val maxAttackers: Int,
-    val defenders: GroupFilter? = null
+    val defenders: GroupFilter? = null,
+    val defendingPlayers: Player? = null
 ) : StaticAbility {
+    init {
+        require(defenders == null || defendingPlayers == null) {
+            "AttackerCountLimit caps either permanents (defenders) or players (defendingPlayers), not both"
+        }
+        require(defendingPlayers == null || defendingPlayers in ATTACKER_CAP_PLAYERS) {
+            "AttackerCountLimit.defendingPlayers must be You, EachOpponent or Each"
+        }
+    }
+
     override val description: String
         get() {
             val creatures = "No more than $maxAttackers creature${if (maxAttackers == 1) "" else "s"}"
-            return if (defenders == null) {
-                "$creatures can attack each combat"
-            } else {
-                "${defenders.description.replaceFirstChar { it.uppercase() }} have " +
-                    "\"$creatures can attack this permanent each combat.\""
+            return when {
+                defendingPlayers != null ->
+                    "$creatures can attack ${playerObjectPhrase(defendingPlayers)} each combat"
+                defenders != null ->
+                    "${defenders.description.replaceFirstChar { it.uppercase() }} have " +
+                        "\"$creatures can attack this permanent each combat.\""
+                else -> "$creatures can attack each combat"
             }
         }
+
+    private fun playerObjectPhrase(player: Player): String = when (player) {
+        Player.You -> "you"
+        Player.EachOpponent -> "each of your opponents"
+        Player.Each -> "each player"
+        else -> player.description
+    }
 }
 
 /**

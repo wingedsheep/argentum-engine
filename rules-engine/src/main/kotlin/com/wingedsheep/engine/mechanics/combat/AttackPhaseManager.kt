@@ -28,6 +28,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaSymbol
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AttackerCountLimit
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.CantAttackUnlessCoAttacker
 import com.wingedsheep.sdk.scripting.ExertAsItAttacks
 import com.wingedsheep.engine.state.components.battlefield.ExertedComponent
@@ -792,47 +793,61 @@ internal class AttackPhaseManager(
     }
 
     /**
-     * Validate [AttackerCountLimit] caps, both shapes:
-     *  - **global** (`defenders == null`, Dueling Grounds): the total number of declared attackers
-     *    across all players may not exceed the smallest such cap;
+     * Validate [AttackerCountLimit] caps, all three shapes:
+     *  - **global** (Dueling Grounds): the total number of declared attackers across all players
+     *    may not exceed the smallest such cap;
      *  - **per-defender** (`defenders` set, Tomik, Orzhov Lawmage): each attacked permanent that
      *    matches `defenders` — read relative to the limiting permanent's controller, against
-     *    projected state — may be attacked by at most `maxAttackers` creatures.
-     * A face-down permanent has no abilities (CR 708.2), so it imposes no cap. Returns an error
-     * message when violated.
+     *    projected state — may be attacked by at most `maxAttackers` creatures;
+     *  - **per-player** (`defendingPlayers` set, Mirri, Weatherlight Duelist): each matching
+     *    player may be attacked by at most `maxAttackers` creatures — attacks on their
+     *    planeswalkers and battles don't count.
+     * Read through [CombatStaticScan], so a conditional cap ("as long as Mirri is tapped") binds
+     * only while its condition holds, and a face-down (CR 708.2) or ability-stripped holder imposes
+     * none. Returns an error message when violated.
      */
     private fun validateAttackerCountLimits(
         state: GameState,
         projected: ProjectedState,
         attackers: Map<EntityId, EntityId>
     ): String? {
+        val limits = CombatStaticScan.collect(state, cardRegistry, predicateEvaluator) { it as? AttackerCountLimit }
+        if (limits.isEmpty()) return null
         var cap: Int? = null
         var capDescription = ""
-        val attackersPerDefender by lazy { attackers.values.groupingBy { it }.eachCount() }
-        for (permId in state.getBattlefield()) {
-            val container = state.getEntity(permId) ?: continue
-            if (container.has<FaceDownComponent>()) continue
-            val cardComponent = container.get<CardComponent>() ?: continue
-            val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId) ?: continue
-            for (ability in cardDef.staticAbilities.filterIsInstance<AttackerCountLimit>()) {
-                val defenders = ability.defenders
-                if (defenders == null) {
-                    if (cap == null || ability.maxAttackers < cap) {
-                        cap = ability.maxAttackers
-                        capDescription = ability.description
-                    }
-                    continue
-                }
-                val controllerId = projected.getController(permId) ?: continue
-                val context = PredicateContext(controllerId = controllerId, sourceId = permId)
-                for ((defenderId, count) in attackersPerDefender) {
+        val attackersPerDefender = attackers.values.groupingBy { it }.eachCount()
+        for ((permId, controllerId, ability) in limits) {
+            val creatures = "No more than ${ability.maxAttackers} creature${if (ability.maxAttackers == 1) "" else "s"}"
+            val defenders = ability.defenders
+            val defendingPlayers = ability.defendingPlayers
+            when {
+                defendingPlayers != null -> for ((defenderId, count) in attackersPerDefender) {
                     if (count <= ability.maxAttackers) continue
-                    if (defenderId !in state.getBattlefield()) continue
-                    if (defenders.excludeSelf && defenderId == permId) continue
-                    if (!predicateEvaluator.matches(state, projected, defenderId, defenders.baseFilter, context)) continue
-                    val defenderName = state.getEntity(defenderId)?.get<CardComponent>()?.name ?: "that permanent"
-                    return "No more than ${ability.maxAttackers} creature" +
-                        "${if (ability.maxAttackers == 1) "" else "s"} can attack $defenderName each combat"
+                    if (defenderId !in state.turnOrder) continue
+                    val covers = when (defendingPlayers) {
+                        is Player.Each -> true
+                        is Player.You -> defenderId == controllerId
+                        is Player.EachOpponent -> state.isOpponentOf(defenderId, controllerId)
+                        else -> false
+                    }
+                    if (!covers) continue
+                    val defenderName = state.getEntity(defenderId)?.get<PlayerComponent>()?.name ?: "that player"
+                    return "$creatures can attack $defenderName each combat"
+                }
+                defenders != null -> {
+                    val context = PredicateContext(controllerId = controllerId, sourceId = permId)
+                    for ((defenderId, count) in attackersPerDefender) {
+                        if (count <= ability.maxAttackers) continue
+                        if (defenderId !in state.getBattlefield()) continue
+                        if (defenders.excludeSelf && defenderId == permId) continue
+                        if (!predicateEvaluator.matches(state, projected, defenderId, defenders.baseFilter, context)) continue
+                        val defenderName = state.getEntity(defenderId)?.get<CardComponent>()?.name ?: "that permanent"
+                        return "$creatures can attack $defenderName each combat"
+                    }
+                }
+                else -> if (cap == null || ability.maxAttackers < cap) {
+                    cap = ability.maxAttackers
+                    capDescription = ability.description
                 }
             }
         }

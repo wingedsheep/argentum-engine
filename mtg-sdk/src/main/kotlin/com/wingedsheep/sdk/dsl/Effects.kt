@@ -84,6 +84,7 @@ import com.wingedsheep.sdk.scripting.effects.CantBeBlockedGroupEffect
 import com.wingedsheep.sdk.scripting.effects.CantActivateLoyaltyAbilitiesEffect
 import com.wingedsheep.sdk.scripting.effects.CantCastSpellsEffect
 import com.wingedsheep.sdk.scripting.effects.CantSearchLibrariesEffect
+import com.wingedsheep.sdk.scripting.effects.BlockerCountLimitThisCombatEffect
 import com.wingedsheep.sdk.scripting.effects.CantCastSpellsFromNonHandZonesEffect
 import com.wingedsheep.sdk.scripting.effects.CantPlayCardsFromHandEffect
 import com.wingedsheep.sdk.scripting.effects.PreventLandPlaysThisTurnEffect
@@ -6391,6 +6392,16 @@ object Effects {
      */
     fun CantSearchLibraries(target: EffectTarget, duration: Duration = Duration.EndOfTurn): Effect =
         CantSearchLibrariesEffect(target, duration)
+
+    /**
+     * Target player(s) can't block with more than [maxBlockers] creatures this combat — Mirri,
+     * Weatherlight Duelist's "each opponent can't block with more than one creature this combat".
+     * The cap stays even if its source leaves; see [BlockerCountLimitThisCombatEffect].
+     */
+    fun BlockerCountLimitThisCombat(
+        maxBlockers: Int,
+        target: EffectTarget = EffectTarget.PlayerRef(Player.EachOpponent)
+    ): Effect = BlockerCountLimitThisCombatEffect(target, maxBlockers)
 
     /**
      * Target player can't play cards from their hand for the duration (default: until your

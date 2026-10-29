@@ -879,6 +879,72 @@
     ]
 }
 
+// Mirri, Weatherlight Duelist
+{
+    "name": "Mirri, Weatherlight Duelist",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Legendary Creature — Cat Warrior",
+    "oracleText": "First strike\nWhenever Mirri attacks, each opponent can't block with more than one creature this combat.\nAs long as Mirri is tapped, no more than one creature can attack you each combat.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mirri, Weatherlight Duelist:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "BlockerCountLimitThisCombat",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    },
+                    "maxBlockers": 1
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "AttackerCountLimit",
+                    "maxAttackers": 1,
+                    "defendingPlayers": "You"
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": "tapped"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "rarity": "MYTHIC",
+        "artist": "Magali Villeneuve",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f7b6d78-4c18-4f96-9f0c-53a5c81aa6f9.jpg?1783935935",
+        "rulings": [
+            {
+                "date": "2023-07-28",
+                "text": "While Mirri is tapped, there's no restriction on how many creatures can attack planeswalkers you control or battles you protect."
+            },
+            {
+                "date": "2017-08-25",
+                "text": "Tapping Mirri after creatures have attacked will not remove creatures from combat."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // New Blood
 {
     "name": "New Blood",

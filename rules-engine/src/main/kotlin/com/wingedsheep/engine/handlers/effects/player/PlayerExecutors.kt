@@ -50,6 +50,7 @@ class PlayerExecutors(
         CantActivateLoyaltyAbilitiesExecutor(),
         CantCastSpellsExecutor(amounts = zones.predicateEvaluator.amounts),
         CantSearchLibrariesExecutor(),
+        BlockerCountLimitThisCombatExecutor(),
         CantCastSpellsFromNonHandZonesExecutor(),
         CantPlayCardsFromHandExecutor(),
         ChooseNumberForSourceExecutor(decisionHandler),

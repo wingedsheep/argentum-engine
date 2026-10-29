@@ -1220,6 +1220,15 @@ data class CantSearchLibrariesComponent(
 ) : Component
 
 /**
+ * The player can't block with more than [maxBlockers] creatures this combat — stamped by
+ * [com.wingedsheep.sdk.scripting.effects.BlockerCountLimitThisCombatEffect] (Mirri, Weatherlight
+ * Duelist). Stacked stamps keep the smallest cap. Read by `BlockPhaseManager` when this player
+ * declares blockers; removed by `CombatManager.endCombat` with the rest of the combat state.
+ */
+@Serializable
+data class BlockerCountLimitThisCombatComponent(val maxBlockers: Int) : Component
+
+/**
  * Component indicating that a player can't gain life. Conferred directly on the player by
  * [com.wingedsheep.sdk.scripting.effects.LockLifeGainEffect] (Screaming Nemesis), so the lock is
  * independent of any source permanent — distinct from the

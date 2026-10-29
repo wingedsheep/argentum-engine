@@ -3699,6 +3699,14 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   "search …, then shuffle" still shuffles; looking at / revealing the top of a library is not a search and is untouched.
   An optional search ("you may search … then shuffle" — a `Effects.May` whose action leads with a search gather) can't be
   chosen at all, so it is skipped without a prompt and without the shuffle. Static twin: `PlayersCantSearchLibraries`.
+- `BlockerCountLimitThisCombatEffect(target, maxBlockers)` — target player(s) can't block with more
+  than `maxBlockers` creatures this combat. Facade: `Effects.BlockerCountLimitThisCombat(maxBlockers,
+  target = PlayerRef(Player.EachOpponent))` — Mirri, Weatherlight Duelist's attack trigger. Stamps
+  `BlockerCountLimitThisCombatComponent` on each player (stacked stamps keep the smallest cap), so
+  it outlives its source; `BlockPhaseManager` rejects a declaration in which that player blocks with
+  more distinct creatures (a creature blocking several attackers counts once), and
+  `CombatManager.endCombat` clears it. The player sees a "Block Limit" badge while it lasts. The
+  global, source-bound static is `BlockerCountLimit`.
 - `CantPlayCardsFromHandEffect(target = Controller, duration = UntilYourNextTurn)` — target can't play cards (cast
   spells **or** play lands) from their **hand** zone for the duration. Hand-scoped: cards in exile/graveyard with a
   may-play permission stay playable. Facade: `Effects.CantPlayCardsFromHand(target, duration)`. Pairs with an impulse
@@ -11469,9 +11477,18 @@ in the declare-blockers step, even before the turn-based block action has comple
     controller, projected state) may be attacked by at most `maxAttackers` creatures per combat;
     attacks on players and non-matching permanents are unaffected. **Tomik, Orzhov Lawmage** —
     "Planeswalkers you control have 'No more than one creature can attack this planeswalker each
-    combat.'" = `AttackerCountLimit(1, defenders = GroupFilter.PlaneswalkersYouControl)`. A
-    face-down permanent imposes no cap of either shape. Neither shape is pre-filtered by the
-    attack enumerator — an over-cap declaration is rejected at validation.
+    combat.'" = `AttackerCountLimit(1, defenders = GroupFilter.PlaneswalkersYouControl)`.
+  - `AttackerCountLimit(maxAttackers, defendingPlayers = Player.You)` — the **per-player** axis
+    (`You`, `EachOpponent` or `Each`, relative to the limiting permanent's controller; exclusive
+    with `defenders`): each matching player may be attacked by at most `maxAttackers` creatures
+    per combat; attacks on their planeswalkers and battles don't count. **Mirri, Weatherlight
+    Duelist** — "As long as Mirri is tapped, no more than one creature can attack you each combat"
+    = `staticAbility { condition = Conditions.SourceIsTapped; ability = AttackerCountLimit(1,
+    defendingPlayers = Player.You) }`.
+  `AttackerCountLimit` is read through `CombatStaticScan` — conditions evaluated, text changes
+  applied, granted copies honoured — and a face-down or ability-stripped permanent imposes no cap
+  of any shape. No shape is pre-filtered by the attack enumerator — an over-cap declaration is
+  rejected at validation. Checked only at declaration: tapping Mirri afterwards removes nobody.
 - `AdditionalETBOrLTBTriggers(filter, mustBeYouControl = true, directions = setOf(ENTERING))` —
   the Panharmonicon family (CR 603.2d "triggers additional times"). When a permanent matching
   `filter` crosses the battlefield boundary in one of `directions`, triggered abilities of

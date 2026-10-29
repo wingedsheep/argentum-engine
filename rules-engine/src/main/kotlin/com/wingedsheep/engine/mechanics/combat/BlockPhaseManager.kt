@@ -16,6 +16,7 @@ import com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombat
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.player.BlockerCountLimitThisCombatComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.mechanics.combat.rules.BlockCheckContext
 import com.wingedsheep.engine.mechanics.combat.rules.BlockEvasionRule
@@ -939,14 +940,29 @@ internal class BlockPhaseManager(
     }
 
     /**
-     * Validate global blocker-count caps. While any permanent with [BlockerCountLimit] is on the
-     * battlefield (e.g. Dueling Grounds), the total number of distinct blocking creatures across
-     * all players may not exceed the smallest such cap. Returns an error message when violated.
+     * Validate blocker-count caps:
+     *  - **global** — while any permanent with [BlockerCountLimit] is on the battlefield (e.g.
+     *    Dueling Grounds), the total number of distinct blocking creatures across all players may
+     *    not exceed the smallest such cap;
+     *  - **per player, this combat** — a player stamped with [BlockerCountLimitThisCombatComponent]
+     *    (Mirri, Weatherlight Duelist's attack trigger) may block with at most that many of the
+     *    creatures they control; a creature blocking several attackers counts once.
+     * Returns an error message when violated.
      */
     private fun validateGlobalBlockerCount(
         state: GameState,
         blockerIds: Set<EntityId>
     ): String? {
+        if (blockerIds.isNotEmpty() && state.turnOrder.any { state.getEntity(it)?.has<BlockerCountLimitThisCombatComponent>() == true }) {
+            val projected = state.projectedState
+            for ((playerId, blocks) in blockerIds.groupBy { projected.getController(it) }) {
+                val playerCap = playerId?.let { state.getEntity(it)?.get<BlockerCountLimitThisCombatComponent>() } ?: continue
+                if (blocks.size > playerCap.maxBlockers) {
+                    return "You can't block with more than " +
+                        "${if (playerCap.maxBlockers == 1) "one creature" else "${playerCap.maxBlockers} creatures"} this combat"
+                }
+            }
+        }
         var cap: Int? = null
         var capDescription = ""
         for (permId in state.getBattlefield()) {
