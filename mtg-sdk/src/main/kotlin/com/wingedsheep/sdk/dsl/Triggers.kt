@@ -1209,6 +1209,12 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
     fun losesLife(batch: Boolean = false, exactly: Int? = null): TriggerSpec =
         spec(LifeLossEvent(player, batch = batch || exactly != null, exactAmount = exactly))
 
+    /**
+     * "pays life" (Font of Agonies) — once per life payment, never damage or a "loses N life"
+     * effect; "that many" is `DynamicAmounts.triggerLifeLost()`. See [LifePaymentEvent].
+     */
+    fun paysLife(): TriggerSpec = spec(LifePaymentEvent(player))
+
     /** "loses the game" (CR 104.3). */
     fun losesGame(): TriggerSpec = spec(PlayerLostGameEvent(player))
 

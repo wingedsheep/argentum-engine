@@ -288,6 +288,7 @@ class TriggerIndex(
                 is SdkGameEvent.PhasesInEvent -> listOf(TriggerCategory.PHASES_IN)
                 is SdkGameEvent.LifeGainEvent -> listOf(TriggerCategory.LIFE_GAIN)
                 is SdkGameEvent.LifeLossEvent -> listOf(TriggerCategory.LIFE_LOSS)
+                is SdkGameEvent.LifePaymentEvent -> listOf(TriggerCategory.LIFE_LOSS)
                 is SdkGameEvent.BecomesTargetEvent -> listOf(TriggerCategory.BECOMES_TARGET)
                 is SdkGameEvent.TurnFaceUpEvent -> listOf(TriggerCategory.TURN_FACE_UP)
                 is SdkGameEvent.MutateEvent -> listOf(TriggerCategory.MUTATED)
@@ -380,7 +381,6 @@ class TriggerIndex(
                 is SdkGameEvent.DrawCardsEvent,
                 is SdkGameEvent.ExtraTurnEvent,
                 is SdkGameEvent.CounterSpellEvent,
-                is SdkGameEvent.LifePaymentEvent,
                 is SdkGameEvent.LearnEvent,
                 is SdkGameEvent.ScryEvent,
                 is SdkGameEvent.SurveilEvent -> emptyList()

@@ -1643,6 +1643,89 @@
     ]
 }
 
+// Font of Agonies
+{
+    "name": "Font of Agonies",
+    "manaCost": "{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you pay life, put that many blood counters on this enchantment.\n{1}{B}, Remove four blood counters from this enchantment: Destroy target creature.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Font of Agonies:1",
+                "trigger": "LifePaymentEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "BLOOD",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_LIFE_LOST"
+                    },
+                    "target": "Self"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Font of Agonies:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "BLOOD",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "rarity": "RARE",
+        "artist": "Jason A. Engle",
+        "flavorText": "\"No worthwhile reward is easily gained.\"\n—Nicol Bolas",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d7c02aec-4a89-4ccc-8525-6f979c10d799.jpg?1783933694"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Footlight Fiend
 {
     "name": "Footlight Fiend",

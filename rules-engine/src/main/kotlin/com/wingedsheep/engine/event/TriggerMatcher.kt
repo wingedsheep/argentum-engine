@@ -927,9 +927,15 @@ class TriggerMatcher(
                     event.oldLife > event.newLife &&
                     matchesPlayer(state, trigger.player, event.playerId, controllerId, sourceId)
             }
-            // Replacement-effect-only: a life payment reaches triggers as the LifeChangedEvent it
-            // produces (matched by LifeLossEvent above), never as a payment event of its own.
-            is EventPattern.LifePaymentEvent -> false
+            // "Whenever you pay life" (Font of Agonies) — only the LifeChangedEvent a payment produces
+            // (CR 119.4), never damage or a "loses N life" effect. A payment Ashiok replaced
+            // with a library exile produced no such event, so it isn't a life payment and never fires.
+            is EventPattern.LifePaymentEvent -> {
+                event is LifeChangedEvent &&
+                    event.reason == com.wingedsheep.engine.core.LifeChangeReason.PAYMENT &&
+                    event.oldLife > event.newLife &&
+                    matchesPlayer(state, trigger.player, event.playerId, controllerId, sourceId)
+            }
             is EventPattern.PlayerLostGameEvent -> {
                 event is com.wingedsheep.engine.core.PlayerLostEvent &&
                     matchesPlayer(state, trigger.player, event.playerId, controllerId, sourceId)

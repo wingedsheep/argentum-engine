@@ -5,8 +5,6 @@ import com.wingedsheep.engine.state.LifePaymentPurpose
 import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.engine.core.AlternativeCostType
 import com.wingedsheep.engine.core.CastSpell
-import com.wingedsheep.engine.core.LifeChangeReason
-import com.wingedsheep.engine.core.LifeChangedEvent
 import com.wingedsheep.engine.core.ManaSpentEvent
 import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.core.tap
@@ -14,7 +12,6 @@ import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.CostHandler
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.costs.ForageCostResolver
-import com.wingedsheep.engine.handlers.effects.DamageUtils
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.handlers.effects.bend.BendEvents
 import com.wingedsheep.engine.handlers.effects.life.LifePaymentService
@@ -390,16 +387,19 @@ internal class CastCostPayer(
         }
     }
 
-    /** The life a graveyard-cast permission charges (e.g., Festival of Embers). */
+    /**
+     * The life a graveyard-cast permission charges (e.g., Festival of Embers) — a life payment, so
+     * it goes through [LifePaymentService] like every other one: Ashiok can replace it and "whenever
+     * you pay life" sees it.
+     */
     private fun payGraveyardLifeCost(ledger: SpellCostLedger) {
         val lifeCost = ledger.action.graveyardLifeCost
         if (lifeCost <= 0) return
-        val currentLife = ledger.state.lifeTotal(ledger.playerId) // CR 810.9a — team's shared total
-        val (written, newLife) = DamageUtils.writeLifeReduction(ledger.state, ledger.playerId, currentLife, currentLife - lifeCost, predicateEvaluator)
-        ledger.state = written
-        if (newLife == currentLife) return
-        ledger.events.add(LifeChangedEvent(ledger.playerId, currentLife, newLife, LifeChangeReason.LIFE_LOSS))
-        ledger.state = DamageUtils.markLifeLostThisTurn(ledger.state, ledger.playerId, lifeCost)
+        LifePaymentService.pay(zones, ledger.state, ledger.playerId, lifeCost)
+            ?.let { (afterPayment, paymentEvents) ->
+                ledger.state = afterPayment
+                ledger.events.addAll(paymentEvents)
+            }
     }
 
     /**

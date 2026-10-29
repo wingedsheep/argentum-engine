@@ -555,8 +555,12 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * payments are replaceable by effects worded "if you would pay life" (Ashiok, Wicked
      * Manipulator). Damage and unpayable costs are never this event.
      *
-     * Replacement-effect only — a payment surfaces to triggered abilities as the `LifeChangedEvent`
-     * it produces, so this pattern never matches as a trigger.
+     * As a trigger it is "whenever [player] pay(s) life" (Font of Agonies): once per payment,
+     * matched against the life-total change the payment produced (CR 119.4 — paying life is losing
+     * that much), so `DynamicAmounts.triggerLifeLost()` reads the amount paid. A [LifeLossEvent]
+     * trigger still sees payments too; only this one excludes damage and "loses N life" effects.
+     * A payment replaced by something else (Ashiok, Wicked Manipulator) is no longer a life payment
+     * and doesn't fire it.
      */
     @SerialName("LifePaymentEvent")
     @Serializable
