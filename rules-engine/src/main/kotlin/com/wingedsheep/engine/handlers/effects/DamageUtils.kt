@@ -506,7 +506,10 @@ object DamageUtils {
             lifeLossAmount = applyLifeLossFloors(newState, targetId, currentLife, lifeLossAmount, predicateEvaluator = zones.predicateEvaluator)
             val firstLoss = isFirstLifeLossThisTurn(newState, targetId)
             val (written, newLife) = writeLifeReduction(newState, targetId, currentLife, currentLife - lifeLossAmount, zones.predicateEvaluator)
-            newState = trackDamageReceivedByPlayer(written, targetId, effectiveAmount, sourceId, isCombatDamage)
+            // A loss a floor or replacement cancelled isn't a loss: it mustn't spend "first time this turn".
+            newState = trackDamageReceivedByPlayer(
+                written, targetId, effectiveAmount, sourceId, isCombatDamage, causedLifeLoss = newLife < currentLife
+            )
             events.add(LifeChangedEvent(targetId, currentLife, newLife, LifeChangeReason.DAMAGE, firstLoss))
         } else if (projected.isPlaneswalker(targetId)) {
             // It's a planeswalker - remove loyalty counters equal to damage dealt
@@ -871,17 +874,6 @@ object DamageUtils {
     }
 
     /**
-     * Mark that [playerId] lost life this turn (non-damage life loss, e.g., from LoseLife effects or payments).
-     * Sets the LifeLostThisTurnComponent (existence flag) and accumulates [amount] onto the
-     * LifeLostAmountThisTurnComponent. The amount is used by
-     * `DynamicAmount.TurnTracking(player, TurnTracker.LIFE_LOST_AMOUNT)`.
-     * Used for conditions like "if an opponent lost life this turn" (Hired Claw) and for
-     * "amount of life you lost this turn" comparisons (Rowan, Scion of War).
-     *
-     * [amount] defaults to 0 so callers that only need the boolean marker stay correct; every
-     * quantitative path passes the life actually lost.
-     */
-    /**
      * Whether [playerId] has not lost life yet this turn — i.e. the loss about to happen is the
      * turn's first. Read *before* the loss is marked ([markLifeLostThisTurn] /
      * [trackDamageReceivedByPlayer]) to stamp a losing [LifeChangedEvent.firstThisTurn], for
@@ -893,6 +885,17 @@ object DamageUtils {
         state.getEntity(playerId)
             ?.has<com.wingedsheep.engine.state.components.player.LifeLostThisTurnComponent>() != true
 
+    /**
+     * Mark that [playerId] lost life this turn (non-damage life loss, e.g., from LoseLife effects or payments).
+     * Sets the LifeLostThisTurnComponent (existence flag) and accumulates [amount] onto the
+     * LifeLostAmountThisTurnComponent. The amount is used by
+     * `DynamicAmount.TurnTracking(player, TurnTracker.LIFE_LOST_AMOUNT)`.
+     * Used for conditions like "if an opponent lost life this turn" (Hired Claw) and for
+     * "amount of life you lost this turn" comparisons (Rowan, Scion of War).
+     *
+     * [amount] defaults to 0 so callers that only need the boolean marker stay correct; every
+     * quantitative path passes the life actually lost.
+     */
     fun markLifeLostThisTurn(state: GameState, playerId: EntityId, amount: Int = 0): GameState {
         return state.updateEntity(playerId) { container ->
             val existing = container.get<com.wingedsheep.engine.state.components.player.LifeLostAmountThisTurnComponent>()

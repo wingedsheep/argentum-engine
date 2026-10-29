@@ -100,7 +100,7 @@ class ExchangeLifeAndStatExecutor(
 
             val reason = if (currentStat > currentLife) LifeChangeReason.LIFE_GAIN else LifeChangeReason.LIFE_LOSS
             events.add(LifeChangedEvent(playerId, currentLife, currentStat, reason,
-                firstThisTurn = reason == LifeChangeReason.LIFE_LOSS && DamageUtils.isFirstLifeLossThisTurn(newState, playerId)))
+                    firstThisTurn = DamageUtils.isFirstLifeLossThisTurn(newState, playerId)))
             if (currentStat > currentLife) {
                 newState = DamageUtils.markLifeGainedThisTurn(newState, playerId, currentStat - currentLife)
             }

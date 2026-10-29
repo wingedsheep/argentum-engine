@@ -1348,7 +1348,7 @@ internal class CombatDamageManager(
         }
         newState = written
         newState = DamageUtils.trackDamageReceivedByPlayer(
-            newState, targetId, effectiveAmount, sourceId, isCombatDamage = true, causedLifeLoss = !hasInfect
+            newState, targetId, effectiveAmount, sourceId, isCombatDamage = true, causedLifeLoss = !hasInfect && newLife < currentLife
         )
 
         // Track combat damage: source dealt damage + dealt combat damage to player
@@ -1620,7 +1620,7 @@ internal class CombatDamageManager(
                 else DamageUtils.writeLifeReduction(newState, targetId, currentLife, currentLife - amount, predicateEvaluator)
             newState = written
             newState = DamageUtils.trackDamageReceivedByPlayer(
-                newState, targetId, amount, sourceId, isCombatDamage = true, causedLifeLoss = !hasInfect
+                newState, targetId, amount, sourceId, isCombatDamage = true, causedLifeLoss = !hasInfect && newLife < currentLife
             )
             // Track combat damage: source dealt damage + dealt combat damage to player
             newState = DamageUtils.trackDamageDealt(newState, sourceId, amount, isCombatDamage = true)
@@ -1841,7 +1841,7 @@ internal class CombatDamageManager(
             else DamageUtils.writeLifeReduction(state, attackerController, attackerControllerLife, attackerControllerLife - originalAmount, predicateEvaluator)
         var newState = written
         newState = DamageUtils.trackDamageReceivedByPlayer(
-            newState, attackerController, originalAmount, sourceId, causedLifeLoss = !hasInfect
+            newState, attackerController, originalAmount, sourceId, causedLifeLoss = !hasInfect && newLife < attackerControllerLife
         )
         // Reflection is an additional damage event from the attacking creature, so it adds
         // its full amount to the same source's damage history.
