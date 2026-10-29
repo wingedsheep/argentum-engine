@@ -299,6 +299,23 @@ data class CardScript(
     val selfExileOnResolve: Boolean = false,
 
     /**
+     * "Exile <card name> with N time counters on it." — the number of time counters the card is
+     * exiled with when [selfExileOnResolve] sends it to exile (0 = a plain "Exile <card name>.").
+     * Every card printing the clause also has a printed suspend keyword (Arc Blade, Suspended
+     * Sentence, Inspiring Refrain, …), so per CR 702.62b ("a card is suspended if it's in the exile
+     * zone, has suspend, and has a time counter on it") the card lands **suspended**: its owner
+     * removes a counter each upkeep and may cast it free when the last is removed, after which it
+     * resolves and exiles itself again. The DSL rejects a nonzero count on a card without
+     * [com.wingedsheep.sdk.scripting.KeywordAbility.Suspend], so the engine never has to decide
+     * whether the card "is suspended".
+     *
+     * Applies only when the card's own clause put it into exile: a cast-this-way rider that sent
+     * it elsewhere, or a countered / fizzled spell (which never reaches CR 608.2n), puts no counters
+     * anywhere.
+     */
+    val selfExileTimeCounters: Int = 0,
+
+    /**
      * Whether this spell shuffles itself into its owner's library on resolution instead of going to
      * the graveyard. Used for cards that say "Shuffle <card name> into its owner's library." — the
      * Mirrodin Besieged Zenith cycle (Green Sun's Zenith and its four siblings).
@@ -452,6 +469,10 @@ data class CardScript(
         require(!(selfExileOnResolve && selfShuffleIntoLibraryOnResolve)) {
             "A CardScript sets both selfExileOnResolve and selfShuffleIntoLibraryOnResolve; a " +
                 "spell has one CR 608.2n destination, so pick the clause the card actually prints"
+        }
+        require(selfExileTimeCounters >= 0) { "selfExileTimeCounters must be non-negative" }
+        require(selfExileTimeCounters == 0 || selfExileOnResolve) {
+            "selfExileTimeCounters needs selfExileOnResolve — the counters ride on the card's own exile"
         }
     }
 

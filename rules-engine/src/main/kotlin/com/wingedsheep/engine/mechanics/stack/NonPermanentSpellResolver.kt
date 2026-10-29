@@ -5,6 +5,7 @@ import com.wingedsheep.engine.state.components.identity.TextChanges
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.effects.library.markSuspended
 import com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry
 import com.wingedsheep.engine.handlers.PipelineState
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -591,6 +592,30 @@ internal class NonPermanentSpellResolver(
             newState = newState.updateEntity(spellId) { c ->
                 c.with(com.wingedsheep.engine.state.components.battlefield.ParadigmComponent)
             }
+        }
+
+        // "Exile <name> with N time counters on it." (Arc Blade, Suspended Sentence): the card's own
+        // exile carries the counters, and since it has suspend it lands suspended (CR 702.62b) —
+        // its owner, the only player who may play it (CR 702.62a), gets the countdown. A rider
+        // that rerouted the spell owns the destination instead, so it gets no counters.
+        val exileTimeCounters = resolvedScript?.selfExileTimeCounters ?: 0
+        if (exileTimeCounters > 0 && destinationZone == Zone.EXILE && destination.exileAfterResolveComp == null) {
+            newState = newState.updateEntity(spellId) { c ->
+                val counters = c.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
+                    ?: com.wingedsheep.engine.state.components.battlefield.CountersComponent()
+                c.with(counters.withAdded(com.wingedsheep.sdk.core.CounterType.TIME, exileTimeCounters))
+            }
+            events.add(
+                CountersAddedEvent(
+                    entityId = spellId,
+                    counterType = com.wingedsheep.sdk.core.CounterType.TIME,
+                    amount = exileTimeCounters,
+                    entityName = cardComponent?.name ?: "Unknown",
+                    firstThisTurn = false,
+                    placedBy = spellComponent.casterId
+                )
+            )
+            newState = newState.markSuspended(spellId, EffectContext(sourceId = spellId, controllerId = ownerId))
         }
 
         // Rebound (CR 702.88a): arm the caster's next-upkeep free recast of the just-exiled card.

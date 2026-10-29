@@ -987,6 +987,7 @@ class CardBuilder(private val name: String) {
             classLevels = classLevelsList.toList(),
             sagaChapters = sagaChaptersList.toList(),
             selfExileOnResolve = spellBuilder?.exilesOnResolve ?: false,
+            selfExileTimeCounters = spellBuilder?.exileTimeCounters ?: 0,
             selfShuffleIntoLibraryOnResolve = spellBuilder?.shufflesIntoLibraryOnResolve ?: false,
             paradigm = spellBuilder?.isParadigm ?: false,
             returnTransformedFromGraveyardOnResolve = spellBuilder?.returnTransformedFromGraveyardMarker,
@@ -1023,6 +1024,13 @@ class CardBuilder(private val name: String) {
             if (warp != null) add(KeywordAbility.Warp(ManaCost.parse(warp!!)))
             if (dash != null) add(KeywordAbility.Dash(ManaCost.parse(dash!!)))
             if (evoke != null) add(KeywordAbility.Evoke(ManaCost.parse(evoke!!)))
+        }
+
+        // "Exile <name> with N time counters on it." lands the card suspended (CR 702.62b), which
+        // needs the card to have suspend — every card printing the clause does.
+        require((spellBuilder?.exileTimeCounters ?: 0) == 0 || finalKeywordAbilities.any { it is KeywordAbility.Suspend }) {
+            "$name uses selfExile(timeCounters) without a printed suspend keyword; a card exiled with " +
+                "time counters is only suspended if it has suspend (CR 702.62b)"
         }
 
         // Derive simple keywords from parameterized keyword abilities
@@ -1092,16 +1100,24 @@ class SpellBuilder(private val declaredTargets: TargetList = TargetList()) : Tar
     /** "X can't be greater than [xMaximum]" — checked once, as X is announced (null = no cap). */
     var xMaximum: DynamicAmount? = null
     private var selfExileOnResolve: Boolean = false
+    private var selfExileTimeCounters: Int = 0
 
     /**
      * Mark this spell to exile itself on resolution instead of going to the graveyard.
      * Used for cards that say "Exile <card name>."
+     *
+     * [timeCounters] is "Exile <card name> with N time counters on it." — the card lands in exile
+     * suspended (CR 702.62b), so it needs a printed `KeywordAbility.suspend(...)`; the card build
+     * rejects it otherwise. See [com.wingedsheep.sdk.model.CardScript.selfExileTimeCounters].
      */
-    fun selfExile() {
+    fun selfExile(timeCounters: Int = 0) {
+        require(timeCounters >= 0) { "selfExile(timeCounters) must be non-negative" }
         selfExileOnResolve = true
+        selfExileTimeCounters = timeCounters
     }
 
     internal val exilesOnResolve: Boolean get() = selfExileOnResolve
+    internal val exileTimeCounters: Int get() = selfExileTimeCounters
 
     private var selfShuffleIntoLibraryOnResolve: Boolean = false
 
@@ -2282,6 +2298,9 @@ class CardFaceBuilder(private val name: String) {
             rawSpellEffect
         }
         spellBuilder?.validateResolutionDestination(name)
+        require((spellBuilder?.exileTimeCounters ?: 0) == 0) {
+            "$name: selfExile(timeCounters) is a whole-card clause (suspend), not supported on a face"
+        }
         val script = CardScript(
             spellEffect = spellEffect,
             targetRequirements = spellBuilder?.targetRequirements ?: emptyList(),
