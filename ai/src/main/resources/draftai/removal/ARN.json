@@ -1,0 +1,48 @@
+{
+  "Abu Ja'far": [
+    "removal",
+    "creature-removal"
+  ],
+  "Aladdin": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Aladdin's Ring": [
+    "removal",
+    "creature-removal"
+  ],
+  "Cuombajj Witches": [
+    "removal",
+    "creature-removal"
+  ],
+  "Desert": [
+    "removal",
+    "creature-removal"
+  ],
+  "Desert Twister": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Drop of Honey": [
+    "removal",
+    "creature-removal"
+  ],
+  "King Suleiman": [
+    "removal",
+    "creature-removal"
+  ],
+  "Old Man of the Sea": [
+    "removal",
+    "creature-removal"
+  ],
+  "Oubliette": [
+    "removal",
+    "creature-removal"
+  ],
+  "Sandstorm": [
+    "removal",
+    "creature-removal"
+  ]
+}

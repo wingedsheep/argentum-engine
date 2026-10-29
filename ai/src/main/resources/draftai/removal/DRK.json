@@ -1,0 +1,78 @@
+{
+  "Ashes to Ashes": [
+    "removal",
+    "creature-removal"
+  ],
+  "Banshee": [
+    "removal",
+    "creature-removal"
+  ],
+  "Brainwash": [
+    "removal",
+    "creature-removal"
+  ],
+  "Brothers of Fire": [
+    "removal",
+    "creature-removal"
+  ],
+  "Dust to Dust": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Exorcist": [
+    "removal",
+    "creature-removal"
+  ],
+  "Fissure": [
+    "removal",
+    "creature-removal"
+  ],
+  "Holy Light": [
+    "removal",
+    "creature-removal"
+  ],
+  "Inferno": [
+    "removal",
+    "creature-removal"
+  ],
+  "Merfolk Assassin": [
+    "removal",
+    "creature-removal"
+  ],
+  "Preacher": [
+    "removal",
+    "creature-removal"
+  ],
+  "Scavenger Folk": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Season of the Witch": [
+    "removal",
+    "creature-removal"
+  ],
+  "Tangle Kelp": [
+    "removal",
+    "creature-removal"
+  ],
+  "Tivadar's Crusade": [
+    "removal",
+    "creature-removal"
+  ],
+  "Tracker": [
+    "removal",
+    "creature-removal"
+  ],
+  "Venom": [
+    "removal",
+    "creature-removal"
+  ],
+  "War Barge": [
+    "removal",
+    "creature-removal"
+  ],
+  "Witch Hunter": [
+    "removal",
+    "creature-removal"
+  ]
+}
