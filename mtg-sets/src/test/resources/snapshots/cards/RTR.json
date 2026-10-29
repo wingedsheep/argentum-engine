@@ -3852,6 +3852,46 @@
     ]
 }
 
+// Sphinx's Revelation
+{
+    "name": "Sphinx's Revelation",
+    "manaCost": "{X}{W}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "You gain X life and draw X cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainLife",
+                    "amount": "XValue"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": "XValue"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "200",
+        "rarity": "MYTHIC",
+        "artist": "Slawomir Maniak",
+        "flavorText": "\"Let the knowledge of absolute law inspire you to live a life of absolute order.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/404d9413-ef57-4b6e-8584-48a1dc7fe6f1.jpg?1783940331",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "If the value chosen for X is larger than the number of cards left in your library, you'll lose the game the next time state-based actions are performed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Stealer of Secrets
 {
     "name": "Stealer of Secrets",

@@ -1282,3 +1282,102 @@
         "WHITE"
     ]
 }
+
+// Witch of the Moors
+{
+    "name": "Witch of the Moors",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Human Warlock",
+    "oracleText": "Deathtouch\nAt the beginning of your end step, if you gained life this turn, each opponent sacrifices a creature of their choice and you return up to one target creature card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Witch of the Moors:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForceSacrifice",
+                            "filter": "creature",
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Hand"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "LIFE_GAINED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "At the beginning of your end step, if you gained life this turn, each opponent sacrifices a creature of their choice and you return up to one target creature card from your graveyard to your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "rarity": "RARE",
+        "artist": "Caio Monteiro",
+        "flavorText": "Many hands for many evils.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/4/f484f19a-0121-4173-a70b-6698cc5f6303.jpg?1783930504",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "The triggered ability triggers just once, no matter how much life you've gained."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "You don't have to choose a target creature card at all. If you do and the target card is an illegal target by the time the ability tries to resolve, the ability won't resolve. Your opponents won't sacrifice creatures."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If you haven't gained life by the time your end step begins, the triggered ability won't trigger at all."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "The triggered ability looks at whether you've gained life in the turn, even if Witch of the Moors wasn't on the battlefield when you gained life. It doesn't care if you also lost life, even if you lost more life than you gained."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}

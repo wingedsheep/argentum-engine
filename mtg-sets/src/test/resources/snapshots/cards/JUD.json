@@ -1813,6 +1813,56 @@
     ]
 }
 
+// Test of Endurance
+{
+    "name": "Test of Endurance",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your upkeep, if you have 50 or more life, you win the game.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Test of Endurance:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": "WinGame",
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "LifeTotal",
+                        "player": "You"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 50
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, if you have 50 or more life, you win the game."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "rarity": "RARE",
+        "artist": "Mike Ploog",
+        "flavorText": "\"If we have learned nothing else, we have learned to survive.\"\n—Mystic elder",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/f/cf16bd6b-e99c-4da3-bd03-11f63b7ee85d.jpg?1783945131",
+        "rulings": [
+            {
+                "date": "2022-12-08",
+                "text": "Test of Endurance's ability will check your life total as your upkeep begins, before any player has the opportunity to take any actions. If you don't have 50 or more life at that time, the ability won't trigger at all. If the ability does trigger, it will check again as it tries to resolve. If your life total has fallen below 50 at that point, the ability won't have any effect."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Thriss, Nantuko Primus
 {
     "name": "Thriss, Nantuko Primus",

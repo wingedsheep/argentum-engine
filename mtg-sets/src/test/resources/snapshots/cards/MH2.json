@@ -2125,6 +2125,93 @@
     ]
 }
 
+// Fractured Sanity
+{
+    "name": "Fractured Sanity",
+    "manaCost": "{U}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each opponent mills fourteen cards.\nCycling {1}{U} ({1}{U}, Discard this card: Draw a card.)\nWhen you cycle this card, each opponent mills four cards.",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{1}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 14
+                        },
+                        "player": "EachOpponent",
+                        "isMill": true
+                    },
+                    "storeAs": "milled"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "milled",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": "EachOpponent"
+                    }
+                }
+            ]
+        },
+        "triggeredAbilities": [
+            {
+                "id": "Fractured Sanity:1",
+                "trigger": "CycleEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "player": "EachOpponent",
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "EachOpponent"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When you cycle this card, each opponent mills four cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "rarity": "RARE",
+        "artist": "Drew Tucker",
+        "flavorText": "The body grows stronger under stress. The mind does not.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/413ac8fb-5156-4f90-81f5-1879e273c9e2.jpg?1783926878"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Gargadon
 {
     "name": "Gargadon",

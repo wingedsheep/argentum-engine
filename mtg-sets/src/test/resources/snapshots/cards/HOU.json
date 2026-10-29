@@ -112,6 +112,87 @@
     ]
 }
 
+// Crested Sunmare
+{
+    "name": "Crested Sunmare",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Creature — Horse",
+    "oracleText": "Other Horses you control have indestructible.\nAt the beginning of each end step, if you gained life this turn, create a 5/5 white Horse creature token.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Crested Sunmare:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 5,
+                    "toughness": 5,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Horse"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/f/3/f3dd4d92-6471-4f4b-9c70-cbd2196e8c7b.jpg?1783936066"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "LIFE_GAINED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "At the beginning of each end step, if you gained life this turn, create a 5/5 white Horse creature token."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "INDESTRUCTIBLE",
+                "filter": {
+                    "baseFilter": "permanent Horse ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "rarity": "MYTHIC",
+        "artist": "Lucas Graciano",
+        "flavorText": "\"It is evidence that some pure corner of the world must still exist.\"\n—Djeru, former Tah-crop initiate",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/3/732fa4c9-11da-4bdb-96af-aa37c74be25f.jpg?1783936066",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "Crested Sunmare's triggered ability won't trigger unless you've gained life in the turn before the end step began. It can't be satisfied by another triggered ability causing you to gain life during that end step."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Crested Sunmare's triggered ability cares only whether you gained life in the turn, even if Crested Sunmare wasn't on the battlefield when that happened. It doesn't care how much you gained, whether you also lost life, or even whether you lost more life than you gained."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Defiant Khenra
 {
     "name": "Defiant Khenra",

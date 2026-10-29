@@ -608,6 +608,81 @@
     ]
 }
 
+// Daxos, Blessed by the Sun
+{
+    "name": "Daxos, Blessed by the Sun",
+    "manaCost": "{W}{W}",
+    "typeLine": "Legendary Enchantment Creature — Demigod",
+    "oracleText": "Daxos's toughness is equal to your devotion to white. (Each {W} in the mana costs of permanents you control counts toward your devotion to white.)\nWhenever another creature you control enters or dies, you gain 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "DevotionTo",
+                "colors": [
+                    "WHITE"
+                ]
+            }
+        }
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Daxos, Blessed by the Sun:1",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "ZoneChangeEvent",
+                            "filter": "creature ctrl:you",
+                            "to": "Battlefield"
+                        },
+                        {
+                            "type": "ZoneChangeEvent",
+                            "filter": "creature ctrl:you",
+                            "from": "Battlefield",
+                            "to": "Graveyard"
+                        }
+                    ]
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Whenever another creature you control enters or dies, you gain 1 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "9",
+        "rarity": "UNCOMMON",
+        "artist": "Lius Lasahido",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0fd2adb3-a6f4-448e-af2a-15ca92b1de63.jpg?1783931602",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "Because damage remains marked on a creature until the damage is removed as the turn ends, nonlethal damage dealt to Daxos may become lethal if your devotion to white decreases during that turn."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If another creature you control enters the battlefield at the same time as Daxos, you gain 1 life for that creature. Similarly, if another creature you control dies at the same time as Daxos, you gain 1 life for that creature. However, in the unusual case that Daxos dies at the same time that another creature enters the battlefield or vice versa, you won't gain 1 life for that creature."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "The ability that defines Daxos's toughness works in all zones, not just the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Demon of Loathing
 {
     "name": "Demon of Loathing",
@@ -1512,6 +1587,85 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Heliod's Intervention
+{
+    "name": "Heliod's Intervention",
+    "manaCost": "{X}{W}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Destroy X target artifacts and/or enchantments.\n• Target player gains twice X life.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": "IterationSpace.Targets",
+                        "body": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact|enchantment"
+                            },
+                            "id": "t0",
+                            "dynamicMaxCount": "XValue",
+                            "dynamicMinCount": "XValue"
+                        }
+                    ],
+                    "description": "Destroy X target artifacts and/or enchantments"
+                },
+                {
+                    "effect": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Multiply",
+                            "amount": "XValue",
+                            "multiplier": 2
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Target player gains twice X life"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "flavorText": "\"I bring a dawn that no night can follow.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8f1c16dd-38e9-4974-b570-8678c114a549.jpg?1783931596",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "The second mode of Heliod's Intervention causes the player to gain one amount of life equal to twice X. It doesn't cause the player to gain X life then gain X life again."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 

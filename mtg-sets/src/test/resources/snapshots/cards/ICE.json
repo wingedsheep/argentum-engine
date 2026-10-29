@@ -2505,6 +2505,129 @@
     ]
 }
 
+// Necropotence
+{
+    "name": "Necropotence",
+    "manaCost": "{B}{B}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Skip your draw step.\nWhenever you discard a card, exile that card from your graveyard.\nPay 1 life: Exile the top card of your library face down. Put that card into your hand at the beginning of your next end step.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Necropotence:1",
+                "trigger": "DiscardEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "TriggeringEntity",
+                    "destination": "Exile",
+                    "fromZone": "Graveyard"
+                },
+                "descriptionOverride": "Whenever you discard a card, exile that card from your graveyard."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Necropotence:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomPayLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "faceDown": "HIDDEN"
+                        },
+                        {
+                            "type": "CreateDelayedTrigger",
+                            "step": "END",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "gathered0",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        }
+                                    }
+                                ]
+                            },
+                            "timing": "NextEndStep",
+                            "fireOnPlayer": {
+                                "type": "PlayerRef",
+                                "player": "You"
+                            },
+                            "carryCollections": [
+                                "gathered0"
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "Pay 1 life: Exile the top card of your library face down. Put that card into your hand at the beginning of your next end step."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "SkipStepOrPhase",
+                "part": "DRAW_STEP"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "rarity": "RARE",
+        "artist": "Mark Tedin",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/54d7a0c1-efb4-4a8d-ad92-a96d43835052.jpg?1783947497",
+        "rulings": [
+            {
+                "date": "2023-09-01",
+                "text": "You can't look at the cards exiled by the last ability while they're face down."
+            },
+            {
+                "date": "2017-11-17",
+                "text": "If a discarded card isn't put into your graveyard (due to an effect such as that of Obstinate Baloth) or leaves your graveyard (perhaps because another effect returned it to your hand), it won't be exiled."
+            },
+            {
+                "date": "2017-11-17",
+                "text": "If you discard a card with madness and wish to cast it, Necropotence's ability won't exile that card. If you don't wish to cast it, you choose whether it ends up exiled or in your graveyard."
+            },
+            {
+                "date": "2017-11-17",
+                "text": "Necropotence's last ability creates a delayed triggered ability that will put the exiled card into your hand. That ability still triggers even if Necropotence is removed from the battlefield before your end step."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Onyx Talisman
 {
     "name": "Onyx Talisman",

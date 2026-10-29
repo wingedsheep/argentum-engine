@@ -1440,6 +1440,75 @@
     ]
 }
 
+// Suture Priest
+{
+    "name": "Suture Priest",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Phyrexian Cleric",
+    "oracleText": "Whenever another creature you control enters, you may gain 1 life.\nWhenever a creature an opponent controls enters, you may have that player lose 1 life.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Suture Priest:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "descriptionOverride": "Whenever another creature you control enters, you may gain 1 life."
+                },
+                "descriptionOverride": "Whenever another creature you control enters, you may gain 1 life."
+            },
+            {
+                "id": "Suture Priest:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:opponent",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "ControllerOfTriggeringEntity"
+                    },
+                    "descriptionOverride": "Whenever a creature an opponent controls enters, you may have that player lose 1 life."
+                },
+                "descriptionOverride": "Whenever a creature an opponent controls enters, you may have that player lose 1 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/31432e98-86cd-42ea-ad37-eb4383dc6a81.jpg?1783941323"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Tezzeret's Gambit
 {
     "name": "Tezzeret's Gambit",
@@ -1607,5 +1676,46 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// War Report
+{
+    "name": "War Report",
+    "manaCost": "{3}{W}",
+    "typeLine": "Instant",
+    "oracleText": "You gain life equal to the number of creatures on the battlefield plus the number of artifacts on the battlefield.",
+    "script": {
+        "spellEffect": {
+            "type": "GainLife",
+            "amount": {
+                "type": "Add",
+                "left": {
+                    "type": "AggregateBattlefield",
+                    "player": "Each",
+                    "filter": "creature"
+                },
+                "right": {
+                    "type": "AggregateBattlefield",
+                    "player": "Each",
+                    "filter": "artifact"
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "artist": "Mike Bierek",
+        "flavorText": "Underling Ethu's 263rd report read simply \"Yes, my lord. Overwhelmingly, my lord.\" This marked the end of the Mirran-Phyrexian War.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6d837262-cd5d-4fc9-96dd-39ed04166883.jpg?1783941322",
+        "rulings": [
+            {
+                "date": "2011-06-01",
+                "text": "Each artifact creature on the battlefield is counted twice."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }

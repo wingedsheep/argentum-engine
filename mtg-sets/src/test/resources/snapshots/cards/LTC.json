@@ -1394,3 +1394,73 @@
         "BLACK"
     ]
 }
+
+// The Gaffer
+{
+    "name": "The Gaffer",
+    "manaCost": "{2}{W}",
+    "typeLine": "Legendary Creature — Halfling Peasant",
+    "oracleText": "At the beginning of each end step, if you gained 3 or more life this turn, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "The Gaffer:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "LIFE_GAINED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "descriptionOverride": "At the beginning of each end step, if you gained 3 or more life this turn, draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "RARE",
+        "artist": "Tomas Duchek",
+        "flavorText": "On the growing of vegetables, especially potatoes, Master Hamfast Gamgee was recognized as the leading authority by all in the neighborhood.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/863ed552-dc6d-4910-b188-3cefc3ebf0ed.jpg?1786423840",
+        "rulings": [
+            {
+                "date": "2023-06-16",
+                "text": "You draw just one card, no matter how much life you've gained past 3 life."
+            },
+            {
+                "date": "2023-06-16",
+                "text": "The Gaffer's ability looks at how much life you've gained in the turn, even if it wasn't on the battlefield when you gained life. It doesn't care if you also lost life, even if you lost more life than you gained."
+            },
+            {
+                "date": "2023-06-16",
+                "text": "If you haven't gained 3 or more life by the time an end step begins, The Gaffer's ability won't trigger at all."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}

@@ -209,6 +209,84 @@
     }
 }
 
+// Beseech the Queen
+{
+    "name": "Beseech the Queen",
+    "manaCost": "{2/B}{2/B}{2/B}",
+    "typeLine": "Sorcery",
+    "oracleText": "({2/B} can be paid with any two mana or with {B}. This card's mana value is 6.)\nSearch your library for a card with mana value less than or equal to the number of lands you control, reveal it, put it into your hand, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "ManaValueAtMostDynamic",
+                                    "amount": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": "land"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "storeAs": "searchable",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "found",
+                    "prompt": "Search your library for a card with mana value the number of lands you control or less to put into your hand",
+                    "selectedLabel": "Put into your hand"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "revealed": true
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Chan",
+        "flavorText": "Those who hear her go mad with inspiration.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/64ee0a93-0f6d-42be-bdca-1de5422d8d54.jpg?1783942757",
+        "rulings": [
+            {
+                "date": "2008-05-01",
+                "text": "A card with monocolored hybrid mana symbols in its mana cost has a mana value equal to the highest possible cost it could be cast for. Its mana value never changes. Thus, Beseech the Queen has a mana value of 6, even if you spend {B}{B}{B} to cast it."
+            },
+            {
+                "date": "2008-05-01",
+                "text": "If a cost includes more than one monocolored hybrid mana symbol, you can choose a different way to pay for each symbol. For example, you can pay for Beseech the Queen by spending {B}{B}{B}, {2}{B}{B}, {4}{B}, or {6}."
+            }
+        ]
+    }
+}
+
 // Blazethorn Scarecrow
 {
     "name": "Blazethorn Scarecrow",
@@ -533,6 +611,39 @@
         "flavorText": "\"We're going to need a bigger gate.\"\n—Bowen, Barrenton guardcaptain",
         "imageUri": "https://cards.scryfall.io/normal/front/6/3/63e25b70-fa21-4663-aabd-34b7e0b75c34.jpg?1783942723"
     }
+}
+
+// Boon Reflection
+{
+    "name": "Boon Reflection",
+    "manaCost": "{4}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "If you would gain life, you gain twice that much life instead.",
+    "script": {
+        "replacementEffects": [
+            "ModifyLifeGain"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "rarity": "RARE",
+        "artist": "Terese Nielsen & Ron Spencer",
+        "flavorText": "Kithkin healers chant the clan songs of both their parents over the broth to double its curative effect.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/a/1a27ba4d-53af-427d-9e51-be04db077fac.jpg?1783942769",
+        "rulings": [
+            {
+                "date": "2020-08-07",
+                "text": "The effects of multiple Boon Reflections are cumulative. For example, if you control two Boon Reflections, you'll gain four times the original amount of life. If you control three Boon Reflections, you'll gain eight times the original amount, and so on."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "If an effect would set your life total to a specific number that's higher than your current life total, that effect would cause you to gain life equal to the difference. Boon Reflection will then double the amount of life that effect would cause you to gain. For example, if you have 3 life and an effect says that your life total \"becomes 10,\" your life total will actually become 17."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Burn Trail
