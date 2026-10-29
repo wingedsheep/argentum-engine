@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.scripting.LoyaltyAbilitiesCostAdditional
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
  * Feature test for [LoyaltyAbilitiesCostAdditional] — Carth the Lion's "Planeswalkers' loyalty
@@ -141,6 +142,19 @@ class LoyaltyAbilitiesCostAdditionalScenarioTest : ScenarioTestBase() {
             }
             action.maxAffordableX shouldBe 3
             game.activate("Low Walker", AbilityCost.LoyaltyX, x = 3)
+            game.getLifeTotal(1) shouldBe 23
+            game.isInGraveyard(1, "Low Walker") shouldBe true
+        }
+
+        test("the X choice offers up to loyalty plus the surcharge") {
+            val game = board("Low Walker")
+            game.execute(
+                ActivateAbility(game.player1Id, game.findPermanent("Low Walker")!!, game.abilityId("Low Walker", AbilityCost.LoyaltyX))
+            ).error shouldBe null
+            val decision = game.getPendingDecision().shouldBeInstanceOf<com.wingedsheep.engine.core.ChooseNumberDecision>()
+            decision.maxValue shouldBe 3
+            game.chooseNumber(3).error shouldBe null
+            game.resolveStack()
             game.getLifeTotal(1) shouldBe 23
             game.isInGraveyard(1, "Low Walker") shouldBe true
         }

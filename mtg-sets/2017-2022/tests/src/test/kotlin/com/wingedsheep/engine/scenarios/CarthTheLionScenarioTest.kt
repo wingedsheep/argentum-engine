@@ -69,6 +69,40 @@ class CarthTheLionScenarioTest : ScenarioTestBase() {
             game.isInHand(1, "Jace Beleren") shouldBe true
         }
 
+        // "If an effect replaces the number of counters that would be placed on a planeswalker,
+        // such as that of Vorinclex, Monstrous Raider, that replacement happens only once, at the
+        // time payment is made." Garruk's [+1] costs [+2] under Carth.
+        fun TestGame.plusOneGarruk(): Int {
+            val garruk = findPermanent("Garruk Wildspeaker")!!
+            val plusOne = cardRegistry.getCard("Garruk Wildspeaker")!!.script.activatedAbilities
+                .first { it.cost == AbilityCost.Loyalty(1) }
+            val lands = findPermanents("Forest").take(2).map { com.wingedsheep.engine.state.components.stack.ChosenTarget.Permanent(it) }
+            execute(ActivateAbility(player1Id, garruk, plusOne.id, targets = lands)).error shouldBe null
+            resolveStack()
+            return state.getEntity(garruk)!!.get<CountersComponent>()!!.getCount(CounterType.LOYALTY)
+        }
+
+        fun vorinclexBoard(yours: Boolean) = scenario()
+            .withPlayers("Player", "Opponent")
+            .withActivePlayer(1)
+            .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+            .withCardOnBattlefield(1, "Carth the Lion")
+            .withCardOnBattlefield(1, "Garruk Wildspeaker")
+            .withLandsOnBattlefield(1, "Forest", 2)
+            .withCardOnBattlefield(if (yours) 1 else 2, "Vorinclex, Monstrous Raider")
+            .withCardInLibrary(1, "Forest")
+            .withCardInLibrary(2, "Forest")
+            .build()
+
+        test("an opponent's Vorinclex halves the [+2] once, as a whole") {
+            // floor(2 / 2) = 1; halving the printed +1 and the surcharge separately would put on 0.
+            vorinclexBoard(yours = false).plusOneGarruk() shouldBe 4
+        }
+
+        test("your Vorinclex doubles the [+2] once") {
+            vorinclexBoard(yours = true).plusOneGarruk() shouldBe 7
+        }
+
         test("loyalty abilities cost an additional [+1]") {
             val game = scenario()
                 .withPlayers("Player", "Opponent")

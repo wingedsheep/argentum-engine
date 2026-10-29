@@ -727,7 +727,12 @@ class CostEnumerationUtils(
          */
         sourceId: EntityId? = null,
         /** Whose cost this is — a cost-scoped life prohibition (Karn's Sylex) caps "pay X life" at 0. */
-        lifePurpose: LifePaymentPurpose = LifePaymentPurpose.ACTIVATE_ABILITY
+        lifePurpose: LifePaymentPurpose = LifePaymentPurpose.ACTIVATE_ABILITY,
+        /**
+         * The activator's loyalty-cost surcharge (Carth the Lion): a [−X] then removes only X − N
+         * counters, so X may go N past the source's loyalty.
+         */
+        loyaltySurcharge: Int = 0,
     ): Int {
         var maxX = if (manaCost != null && manaCost.hasX) {
             val availableSources = manaSolver.getAvailableManaCount(state, playerId, precomputedSources)
@@ -748,7 +753,7 @@ class CostEnumerationUtils(
         if (abilityCost == AbilityCost.LoyaltyX) {
             val loyalty = sourceId?.let { state.getEntity(it)?.get<CountersComponent>() }
                 ?.getCount(com.wingedsheep.sdk.core.CounterType.LOYALTY) ?: 0
-            maxX = minOf(maxX, loyalty)
+            maxX = minOf(maxX, loyalty + loyaltySurcharge)
         }
 
         // Cap by the graveyard cards an ExileXFromGraveyard cost could actually exile. The cap must
