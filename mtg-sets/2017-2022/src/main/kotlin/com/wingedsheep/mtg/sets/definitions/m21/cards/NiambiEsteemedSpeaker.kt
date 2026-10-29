@@ -20,8 +20,8 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * do, you gain life equal to that creature's mana value.
  * {1}{W}{U}, {T}, Discard a legendary card: Draw two cards.
  *
- * The target is chosen when the trigger goes on the stack; the "you may" is asked on resolution
- * (an illegal target fizzles the whole ability, per ruling). Serum Snare's shape freezes the mana
+ * The lone "you may" is answered at targeting (choosing no target declines); an illegal target
+ * on resolution fizzles the whole ability, per ruling. Serum Snare's shape freezes the mana
  * value with `storeNumber` *before* the bounce — a returned token ceases to exist — and the life
  * gain reads the stored number, so it happens only on the branch where the creature was returned.
  */
