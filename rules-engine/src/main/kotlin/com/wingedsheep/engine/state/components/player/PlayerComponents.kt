@@ -1969,7 +1969,7 @@ data class EnteredPermanentRecord(
     /** Whether the entering permanent was a token. */
     val isToken: Boolean = false,
     /**
-     * Whether this entry is a copy of a permanent spell resolving (CR 707.10f): it becomes a token
+     * Whether this entry is a copy of a permanent spell resolving (CR 707.10f, 608.3f): it becomes a token
      * as it enters, but that token was never *created* (Thalisse, Reverent Medium ruling), so it
      * doesn't count toward "tokens you created this turn".
      */

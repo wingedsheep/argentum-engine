@@ -17667,7 +17667,7 @@ this turn").
 - `TOKENS_CREATED` — the tokens the player created this turn: the token slice of the same entry log
   (the player who creates a token is its owner and it enters under their control, CR 111.2). A token
   gained by a control change isn't counted; one given away after creation stays counted. A copy of a
-  permanent spell that resolves into a token (CR 707.10f) wasn't *created* and isn't counted. Backs
+  permanent spell that resolves into a token (CR 707.10f, 608.3f) wasn't *created* and isn't counted. Backs
   `Conditions.CreatedTokenThisTurn` and `DynamicAmounts.tokensCreatedThisTurn(player)` — Thalisse,
   Reverent Medium's "create X 1/1 white Spirit tokens with flying, where X is the number of tokens
   you created this turn."

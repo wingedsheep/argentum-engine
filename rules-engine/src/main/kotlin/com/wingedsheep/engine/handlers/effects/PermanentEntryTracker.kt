@@ -68,7 +68,7 @@ object PermanentEntryTracker {
      * who put the permanent there when the caller knows it (a resolving permanent spell's caster);
      * otherwise it is read off the innermost resolving spell or ability, falling back to
      * [controllerId] for a move with nothing resolving (a land play). [spellCopy] marks a copy of a
-     * permanent spell resolving into a token (CR 707.10f) — a token that wasn't created.
+     * permanent spell resolving into a token (CR 707.10f, 608.3f) — a token that wasn't created.
      */
     fun record(
         state: GameState,

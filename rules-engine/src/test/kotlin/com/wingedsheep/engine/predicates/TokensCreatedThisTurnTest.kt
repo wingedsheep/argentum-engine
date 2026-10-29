@@ -36,7 +36,7 @@ import kotlinx.serialization.json.Json
  * so the tracker is the token slice of the per-player entry log: a nontoken entry doesn't count, a
  * token another player creates is theirs, and the count is turn history — the token leaving doesn't
  * undo it, and it resets at end of turn. A copy of a permanent spell becomes a token as it resolves
- * (CR 707.10f) but was never created, so it doesn't count (Thalisse, Reverent Medium ruling).
+ * (CR 707.10f, 608.3f) but was never created, so it doesn't count (Thalisse, Reverent Medium ruling).
  */
 class TokensCreatedThisTurnTest : FunSpec({
     val makeToken = CardDefinition.sorcery(
@@ -134,7 +134,7 @@ class TokensCreatedThisTurnTest : FunSpec({
         d.holds(Conditions.CreatedTokenThisTurn()) shouldBe false
     }
 
-    test("a permanent-spell copy resolving into a token wasn't created (CR 707.10f)") {
+    test("a permanent-spell copy resolving into a token wasn't created (CR 707.10f, 608.3f)") {
         val d = driver()
         val bear = d.putCardInHand(d.player1, "Test Free Bear")
         d.castSpell(d.player1, bear).error shouldBe null
