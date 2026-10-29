@@ -123,10 +123,12 @@ enum class ZoneTransitionCause { PRIMARY, REPLACEMENT_ADDITIONAL, DURATION_RETUR
 /**
  * A player's life total changed.
  *
- * [firstThisTurn] is only meaningful for [LifeChangeReason.LIFE_GAIN] events: it is `true` when this
- * is the first life-gaining event for [playerId] this turn (computed by `DamageUtils.gainLife`
- * before the per-turn life-gained marker is set). It backs "whenever you gain life for the first
- * time each turn" triggers (Leech Collector). It is always `false` for non-gain reasons.
+ * [firstThisTurn] is `true` when this is the first event of its direction for [playerId] this turn:
+ * for [LifeChangeReason.LIFE_GAIN], the first life-gaining event (stamped by `DamageUtils.gainLife`
+ * before the per-turn life-gained marker is set) — "whenever you gain life for the first time each
+ * turn" (Leech Collector); for every other reason, the first life-losing event (stamped via
+ * `DamageUtils.isFirstLifeLossThisTurn` before the per-turn life-lost marker is set) — "whenever an
+ * opponent loses life for the first time during each of their turns" (Valgavoth, Harrower of Souls).
  */
 @Serializable
 @SerialName("LifeChangedEvent")

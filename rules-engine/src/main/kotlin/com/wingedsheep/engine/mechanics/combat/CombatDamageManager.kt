@@ -1336,6 +1336,8 @@ internal class CombatDamageManager(
         if (newState.getEntity(targetId)?.get<LifeTotalComponent>() == null) return newState
         // CR 810.9 — combat damage applies to the team's shared life total.
         val currentLife = newState.lifeTotal(targetId)
+        // Read before trackDamageReceivedByPlayer marks the loss ("for the first time each turn").
+        val firstLoss = DamageUtils.isFirstLifeLossThisTurn(newState, targetId)
         // CR 702.90b — damage from a source with infect gives poison counters (below) instead of
         // causing life loss, so the life-loss replacements never see it.
         val hasInfect = DamageUtils.sourceHasInfect(newState, newState.projectedState, sourceId)
@@ -1384,7 +1386,7 @@ internal class CombatDamageManager(
             sourceName = sourceName, targetName = "Player", targetIsPlayer = true,
             sourceAttachmentIds = attachmentIdsOf(state, sourceId),
             sourceLastKnown = captureLastKnown(state, sourceId)))
-        if (!hasInfect) events.add(LifeChangedEvent(targetId, currentLife, newLife, LifeChangeReason.DAMAGE))
+        if (!hasInfect) events.add(LifeChangedEvent(targetId, currentLife, newLife, LifeChangeReason.DAMAGE, firstLoss))
 
         // Commander damage (CR 903.10a)
         newState = accumulateCommanderDamage(newState, sourceId, targetId, effectiveAmount)
@@ -1609,6 +1611,7 @@ internal class CombatDamageManager(
         if (isPlayer) {
             // CR 810.9 — applies to the team's shared total (isPlayer already guards presence).
             val currentLife = newState.lifeTotal(targetId)
+            val firstLoss = DamageUtils.isFirstLifeLossThisTurn(newState, targetId)
             // CR 702.90b — damage from a source with infect gives poison counters instead of
             // causing life loss (placed below, after the damage bookkeeping).
             val hasInfect = DamageUtils.sourceHasInfect(newState, projected, sourceId)
@@ -1653,7 +1656,7 @@ internal class CombatDamageManager(
                 sourceName = sourceName, targetName = "Player", targetIsPlayer = true,
                 sourceAttachmentIds = attachmentIdsOf(newState, sourceId),
                 sourceLastKnown = captureLastKnown(newState, sourceId)))
-            if (!hasInfect) events.add(LifeChangedEvent(targetId, currentLife, newLife, LifeChangeReason.DAMAGE))
+            if (!hasInfect) events.add(LifeChangedEvent(targetId, currentLife, newLife, LifeChangeReason.DAMAGE, firstLoss))
 
             // Commander damage (CR 903.10a)
             newState = accumulateCommanderDamage(newState, sourceId, targetId, amount)
@@ -1829,6 +1832,7 @@ internal class CombatDamageManager(
         if (state.getEntity(attackerController)?.get<LifeTotalComponent>() == null) return state
         // CR 810.9 — applies to the attacking player's team's shared total.
         val attackerControllerLife = state.lifeTotal(attackerController)
+        val firstLoss = DamageUtils.isFirstLifeLossThisTurn(state, attackerController)
         // The reflected damage is still dealt by the attacker, so its infect turns it into poison
         // for its own controller (CR 702.90b).
         val hasInfect = DamageUtils.sourceHasInfect(state, projected, sourceId)
@@ -1852,7 +1856,7 @@ internal class CombatDamageManager(
                 newState, attackerController, originalAmount, attackerController, events, predicateEvaluator
             )
         } else {
-            events.add(LifeChangedEvent(attackerController, attackerControllerLife, newLife, LifeChangeReason.DAMAGE))
+            events.add(LifeChangedEvent(attackerController, attackerControllerLife, newLife, LifeChangeReason.DAMAGE, firstLoss))
         }
 
         // Commander damage (CR 903.10a) — reflection still counts as combat damage from the commander

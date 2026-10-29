@@ -930,7 +930,8 @@ class TriggerMatcher(
                 event is LifeChangedEvent &&
                     event.reason != com.wingedsheep.engine.core.LifeChangeReason.LIFE_GAIN &&
                     event.oldLife > event.newLife &&
-                    matchesPlayer(state, trigger.player, event.playerId, controllerId, sourceId)
+                    matchesPlayer(state, trigger.player, event.playerId, controllerId, sourceId) &&
+                    (!trigger.firstTimeEachTurn || event.firstThisTurn)
             }
             // "Whenever you pay life" (Font of Agonies) — only the LifeChangedEvent a payment produces
             // (CR 119.4), never damage or a "loses N life" effect. A payment Ashiok replaced

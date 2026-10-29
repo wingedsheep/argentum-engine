@@ -520,6 +520,13 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * once if at least one of them totals exactly N. Only a batch can carry it, because the exact
      * amount is a property of the whole simultaneous loss.
      *
+     * [firstTimeEachTurn] restricts a per-event trigger to the losing player's first life-loss event
+     * this turn — the life-loss twin of [LifeGainEvent.firstTimeEachTurn]. It is turn history, not a
+     * trigger cap: a player who already lost life this turn (even before the watching permanent
+     * entered) can't trigger it again until next turn. "Whenever an opponent loses life for the
+     * first time during each of their turns" (Valgavoth, Harrower of Souls) pairs it with the
+     * `triggerRestriction = Conditions.IsPlayersTurn(Player.TriggeringPlayer)`.
+     *
      * As a replacement `appliesTo`, only [player] is read.
      */
     @SerialName("LifeLossEvent")
@@ -527,11 +534,13 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     data class LifeLossEvent(
         val player: Player = Player.You,
         val batch: Boolean = false,
-        val exactAmount: Int? = null
+        val exactAmount: Int? = null,
+        val firstTimeEachTurn: Boolean = false
     ) : EventPattern {
         init {
             require(exactAmount == null || batch) { "LifeLossEvent.exactAmount needs batch = true" }
             require(exactAmount == null || exactAmount > 0) { "LifeLossEvent.exactAmount must be positive" }
+            require(!firstTimeEachTurn || !batch) { "LifeLossEvent.firstTimeEachTurn is per-event only (batch = false)" }
         }
 
         override val description: String = run {
@@ -543,6 +552,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
             when {
                 exactAmount != null -> "$players each lose exactly $exactAmount life"
                 batch -> "$players lose life"
+                firstTimeEachTurn -> "${player.description} would lose life for the first time each turn"
                 else -> "${player.description} would lose life"
             }
         }

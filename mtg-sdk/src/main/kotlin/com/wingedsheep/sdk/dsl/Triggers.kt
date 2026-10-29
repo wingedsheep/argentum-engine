@@ -1208,10 +1208,11 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
      * "loses life" — once per life-loss event; the amount is `TRIGGER_LIFE_LOST`. [batch] is "one or
      * more [players] lose life", once per simultaneous batch; [exactly] is "one or more [players]
      * each lose exactly N life" (Ob Nixilis, Captive Kingpin), summed per player over the batch and
-     * always batched. See [LifeLossEvent].
+     * always batched. [firstTimeEachTurn] is "loses life for the first time each turn" — only the
+     * losing player's first life-loss event this turn, per-event only. See [LifeLossEvent].
      */
-    fun losesLife(batch: Boolean = false, exactly: Int? = null): TriggerSpec =
-        spec(LifeLossEvent(player, batch = batch || exactly != null, exactAmount = exactly))
+    fun losesLife(batch: Boolean = false, exactly: Int? = null, firstTimeEachTurn: Boolean = false): TriggerSpec =
+        spec(LifeLossEvent(player, batch = batch || exactly != null, exactAmount = exactly, firstTimeEachTurn = firstTimeEachTurn))
 
     /**
      * "pays life" (Font of Agonies) — once per life payment, never damage or a "loses N life"
