@@ -309,9 +309,11 @@ data class CardScript(
      * [com.wingedsheep.sdk.scripting.KeywordAbility.Suspend], so the engine never has to decide
      * whether the card "is suspended".
      *
-     * Applies only when the card's own clause put it into exile: a cast-this-way rider that sent
-     * it elsewhere, or a countered / fizzled spell (which never reaches CR 608.2n), puts no counters
-     * anywhere.
+     * The clause is the spell's own last instruction, so a spell that suspends itself is never put
+     * into a graveyard: graveyard-worded replacements — a cast-this-way rider (Quistis Trepe, Kylox's
+     * Voltstrider) or rebound — have nothing to replace. Flashback's "exile it instead" agrees with
+     * it. A countered or fizzled spell never reaches CR 608.2n and goes to the graveyard with no
+     * counters.
      */
     val selfExileTimeCounters: Int = 0,
 

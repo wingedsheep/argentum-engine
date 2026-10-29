@@ -5,17 +5,21 @@ import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.SuspendedComponent
+import com.wingedsheep.engine.state.components.identity.AfterResolveDestinationComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.state.components.stack.SpellGrantedKeywordsComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.sdk.scripting.effects.AfterResolveDestination
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -126,6 +130,42 @@ class SelfExileWithTimeCountersTest : FunSpec({
         driver.getGraveyard(player).contains(boon) shouldBe true
         timeCounters(driver, boon) shouldBe 0
         driver.state.getEntity(boon)?.has<SuspendedComponent>() shouldBe false
+    }
+
+    test("a graveyard-worded rider has nothing to replace — the card still lands suspended") {
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+        val boon = castBoon(driver, player)
+        // Kylox's Voltstrider / Quistis Trepe shape: "if that spell would be put into a graveyard,
+        // put it on the bottom of its owner's library instead".
+        driver.replaceState(
+            driver.state.updateEntity(boon) {
+                it.with(AfterResolveDestinationComponent(destination = AfterResolveDestination.BOTTOM_OF_LIBRARY))
+            }
+        )
+        driver.bothPass()
+
+        driver.getExile(player).contains(boon) shouldBe true
+        timeCounters(driver, boon) shouldBe 3
+        driver.state.getEntity(boon)?.has<SuspendedComponent>() shouldBe true
+    }
+
+    test("granted rebound has nothing to replace — suspended, with no rebound recast armed") {
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+        val boon = castBoon(driver, player)
+        val delayedBefore = driver.state.delayedTriggers.size
+        driver.replaceState(
+            driver.state.updateEntity(boon) {
+                it.with(SpellGrantedKeywordsComponent(setOf(Keyword.REBOUND.name)))
+            }
+        )
+        driver.bothPass()
+
+        driver.getExile(player).contains(boon) shouldBe true
+        timeCounters(driver, boon) shouldBe 3
+        driver.state.getEntity(boon)?.has<SuspendedComponent>() shouldBe true
+        driver.state.delayedTriggers.size shouldBe delayedBefore
     }
 
     test("the DSL rejects time counters on a card without suspend (CR 702.62b)") {

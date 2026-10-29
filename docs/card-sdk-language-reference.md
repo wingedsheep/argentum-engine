@@ -15068,8 +15068,10 @@ Blighted Agent, Ichor Rats, Plague Stinger, Skithiryx.
     (`CountersAddedEvent`) and runs the same `markSuspended` tail the special action and `GrantSuspendEffect`
     use, so — having suspend and a time counter, it is suspended (CR 702.62b) — its owner counts it down and casts
     it free, after which it exiles itself again. A countered or fizzled spell never reaches the instruction and
-    goes to the graveyard with no counters; a cast-this-way rider that reroutes the spell owns the destination and
-    adds none. The DSL rejects a nonzero count on a card without `KeywordAbility.Suspend` (every printed card
+    goes to the graveyard with no counters. Because the clause is the spell's own last instruction, the spell is
+    never put into a graveyard, so graveyard-worded replacements — a cast-this-way rider (Quistis Trepe, Kylox's
+    Voltstrider) or rebound (printed or granted; this holds for a plain `selfExile()` too) — have nothing to replace;
+    flashback's "exile it instead" agrees with it. The DSL rejects a nonzero count on a card without `KeywordAbility.Suspend` (every printed card
     with the clause has it), and on a cast face.
   - **A printed `Suspend N—[cost]`** (`KeywordAbility.Suspend(cost, timeCounters)`, built via
     `KeywordAbility.suspend("{U}", 4)`) is a **different code path from every other alternative-cost keyword**

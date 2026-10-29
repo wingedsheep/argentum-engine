@@ -30,6 +30,7 @@ import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostCom
 import com.wingedsheep.engine.state.components.stack.*
 import com.wingedsheep.engine.state.permissions.addMayPlayPermission
 import com.wingedsheep.engine.state.permissions.removeMayPlayPermissionsForCard
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
@@ -476,6 +477,8 @@ internal class NonPermanentSpellResolver(
         val omenFaceShuffle: Boolean,
         val selfShuffleIntoLibrary: Boolean,
         val reboundExile: Boolean,
+        /** Time counters the card's own "exile with N time counters" clause puts on it (0 = none). */
+        val selfSuspendCounters: Int,
     )
 
     /**
@@ -506,8 +509,12 @@ internal class NonPermanentSpellResolver(
                 state, spellId, cardDef, spellComponent.casterId, cardRegistry, predicateEvaluator
             ) != null ||
                 HarmonizeGrants.effectiveHarmonize(state, spellId, cardDef) != null)
+        // "Exile <name> with N time counters on it." is the spell's own last instruction, like
+        // cipher's: a resolving spell that suspends itself is never put into a graveyard, so a
+        // graveyard-worded rider (Quistis Trepe, Kylox's Voltstrider) has nothing to replace.
+        val selfSuspendCounters = if (selfExile) resolvedScript?.selfExileTimeCounters ?: 0 else 0
         val exileAfterResolveComp = newState.getEntity(spellId)?.get<AfterResolveDestinationComponent>()
-            ?.takeUnless { cipherExile }
+            ?.takeUnless { cipherExile || selfSuspendCounters > 0 }
         // Adventure face (CR 715.3d): when an Adventure resolves, exile it instead of putting
         // it in its owner's graveyard, and grant the caster permission to cast it as the
         // creature spell while it remains exiled.
@@ -523,7 +530,9 @@ internal class NonPermanentSpellResolver(
         val selfShuffleIntoLibrary = resolvedScript?.selfShuffleIntoLibraryOnResolve == true
         // Rebound (CR 702.88): a spell cast from hand that has rebound (printed or granted) exiles
         // on resolution instead of going to the graveyard, and arms a next-upkeep free recast.
-        val reboundExile = !cipherExile && spellComponent.castFromZone == Zone.HAND &&
+        // Rebound replaces "put it into its owner's graveyard" too, so a spell that exiles itself
+        // (plainly, or suspended with time counters) gives it nothing to replace.
+        val reboundExile = !cipherExile && !selfExile && spellComponent.castFromZone == Zone.HAND &&
             spellHasRebound(newState, spellId, cardDef)
         // Not a plain priority order, because the underlying replacements aren't totally ordered:
         // the rider loses to the printed self-shuffle clause, the self-shuffle clause loses to
@@ -561,6 +570,7 @@ internal class NonPermanentSpellResolver(
             omenFaceShuffle = omenFaceShuffle,
             selfShuffleIntoLibrary = selfShuffleIntoLibrary,
             reboundExile = reboundExile,
+            selfSuspendCounters = if (intendedDestination == Zone.EXILE && !cipherExile) selfSuspendCounters else 0,
         )
     }
 
@@ -596,19 +606,19 @@ internal class NonPermanentSpellResolver(
 
         // "Exile <name> with N time counters on it." (Arc Blade, Suspended Sentence): the card's own
         // exile carries the counters, and since it has suspend it lands suspended (CR 702.62b) —
-        // its owner, the only player who may play it (CR 702.62a), gets the countdown. A rider
-        // that rerouted the spell owns the destination instead, so it gets no counters.
-        val exileTimeCounters = resolvedScript?.selfExileTimeCounters ?: 0
-        if (exileTimeCounters > 0 && destinationZone == Zone.EXILE && destination.exileAfterResolveComp == null) {
+        // its owner, the only player who may play it (CR 702.62a), gets the countdown. Flashback's
+        // "exile it instead" agrees with the clause; a RedirectZoneChange that sent it elsewhere
+        // leaves nothing to put counters on.
+        val exileTimeCounters = destination.selfSuspendCounters
+        if (exileTimeCounters > 0 && destinationZone == Zone.EXILE) {
             newState = newState.updateEntity(spellId) { c ->
-                val counters = c.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
-                    ?: com.wingedsheep.engine.state.components.battlefield.CountersComponent()
-                c.with(counters.withAdded(com.wingedsheep.sdk.core.CounterType.TIME, exileTimeCounters))
+                val counters = c.get<CountersComponent>() ?: CountersComponent()
+                c.with(counters.withAdded(CounterType.TIME, exileTimeCounters))
             }
             events.add(
                 CountersAddedEvent(
                     entityId = spellId,
-                    counterType = com.wingedsheep.sdk.core.CounterType.TIME,
+                    counterType = CounterType.TIME,
                     amount = exileTimeCounters,
                     entityName = cardComponent?.name ?: "Unknown",
                     firstThisTurn = false,
