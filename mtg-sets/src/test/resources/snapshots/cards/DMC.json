@@ -204,6 +204,47 @@
     ]
 }
 
+// Fallaji Wayfarer
+{
+    "name": "Fallaji Wayfarer",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Human Scout",
+    "oracleText": "Fallaji Wayfarer is all colors. This ability doesn't affect its color identity. (It can be in any deck whose commander's color identity includes green.)\nMulticolored spells you cast have convoke. (Your creatures can help cast those spells. Each creature you tap while casting a multicolored spell pays for {1} or one mana of a color that creature is.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeywordToOwnSpells",
+                "keyword": "CONVOKE",
+                "spellFilter": {
+                    "cardPredicates": [
+                        "IsMulticolored"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "rarity": "RARE",
+        "artist": "Victor Adame Minguez",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bc2378b2-96e2-44ca-8434-9f06c26b183d.jpg?1783921474"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ],
+    "colorIndicator": [
+        "WHITE",
+        "BLUE",
+        "BLACK",
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Shanid, Sleepers' Scourge
 {
     "name": "Shanid, Sleepers' Scourge",

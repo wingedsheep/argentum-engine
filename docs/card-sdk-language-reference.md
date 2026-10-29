@@ -12858,8 +12858,11 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   and paid for, and `SpellOnStackComponent.castFromZone` once it is on the stack. A zone-scoped grant needs the spell's
   id, so every `GrantedKeywordResolver` read takes an optional `spellId` and a caller without one sees the grant fail
   closed. Convoke on a spell cast through a may-play permission from exile or a graveyard is offered by
-  `CastFromZoneEnumerator` (printed or granted), so the grant is reachable from the cast menu. Read by the cast
-  machinery via `GrantedKeywordResolver`:
+  `CastFromZoneEnumerator` (printed or granted), so the grant is reachable from the cast menu. `spellFilter` is
+  matched against the printed card with the spell's actual colors, so type, subtype and color predicates work —
+  including `IsMulticolored` / `IsMonocolored` ("Multicolored spells you cast have convoke", **Fallaji Wayfarer**:
+  `GrantKeywordToOwnSpells(CONVOKE, GameObjectFilter.Multicolored)`); any other predicate fails closed. Read by the
+  cast machinery via `GrantedKeywordResolver`:
   - **Cost-modifying keywords** (CONVOKE, DELVE, IMPROVISE) surface in the cast enumerator / alternative-payment handler —
     e.g. **Eirdu, Carrier of Dawn** (`GrantKeywordToOwnSpells(CONVOKE, Creature)`), **Teval, Arbiter of Virtue**
     (`DELVE`), **Ironheart, Clever Champion** (`IMPROVISE`, `GameObjectFilter.Noncreature`).

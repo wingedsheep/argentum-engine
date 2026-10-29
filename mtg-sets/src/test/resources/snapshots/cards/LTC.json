@@ -448,6 +448,66 @@
     }
 }
 
+// Forth Eorlingas!
+{
+    "name": "Forth Eorlingas!",
+    "manaCost": "{X}{R}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create X 2/2 red Human Knight creature tokens with trample and haste.\nWhenever one or more creatures you control deal combat damage to one or more players this turn, you become the monarch.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "count": "XValue",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Human",
+                        "Knight"
+                    ],
+                    "keywords": [
+                        "TRAMPLE",
+                        "HASTE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/4/9/491fc1c3-a46e-4cfd-a749-57f4c96f6aea.jpg?1783916057"
+                },
+                {
+                    "type": "CreateGlobalTriggeredAbility",
+                    "ability": {
+                        "id": "Forth Eorlingas!:1",
+                        "trigger": {
+                            "type": "OneOrMoreDealCombatDamageToPlayerEvent",
+                            "toOneOrMorePlayers": true
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "TakeDesignation",
+                            "designation": "MONARCH"
+                        }
+                    },
+                    "duration": "EndOfTurn"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "rarity": "RARE",
+        "artist": "Filipe Pagliuso",
+        "flavorText": "\"A sword-day, a red day, ere the sun rises! Ride now, ride now! Ride to Gondor!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/06c053d3-028e-4961-93a5-5b7bb5a8601c.jpg?1783916020"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Galadhrim Ambush
 {
     "name": "Galadhrim Ambush",

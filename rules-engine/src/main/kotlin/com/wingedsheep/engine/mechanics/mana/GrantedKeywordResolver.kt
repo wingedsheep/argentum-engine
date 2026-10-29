@@ -213,6 +213,8 @@ class GrantedKeywordResolver(
             is CardPredicate.HasAnyOfSubtypes -> cardDef.characteristicTypeLine.subtypes.any { predicate.subtypes.contains(it) }
             is CardPredicate.HasColor -> colors.contains(predicate.color)
             CardPredicate.IsColorless -> colors.isEmpty()
+            CardPredicate.IsMulticolored -> colors.size >= 2
+            CardPredicate.IsMonocolored -> colors.size == 1
             CardPredicate.IsDoubleFaced -> cardDef.isDoubleFaced
             // Fail closed: an unhandled predicate cannot be evaluated against a
             // CardDefinition alone, so we conservatively refuse to grant the keyword
