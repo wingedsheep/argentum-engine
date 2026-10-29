@@ -224,6 +224,47 @@
     ]
 }
 
+// Bruvac the Grandiloquent
+{
+    "name": "Bruvac the Grandiloquent",
+    "manaCost": "{2}{U}",
+    "typeLine": "Legendary Creature — Human Advisor",
+    "oracleText": "If an opponent would mill one or more cards, they mill twice that many cards instead. (To mill a card, a player puts the top card of their library into their graveyard.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "ModifyKeywordActionAmount",
+                "appliesTo": {
+                    "type": "MillEvent",
+                    "player": "EachOpponent"
+                },
+                "multiplier": 2
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "rarity": "MYTHIC",
+        "artist": "Ekaterina Burmak",
+        "flavorText": "\". . . and furthermore . . .\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5b43bdc7-e49e-4848-9101-6cad2ecab4dc.jpg?1783930509",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "If a player is instructed to put a card into their graveyard without using the word “mill,” Bruvac's ability doesn't apply."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Because Bruvac is legendary, it's unlikely that one player will control two. However, if that happens, each opponent mills four times as many cards as originally instructed. If they control three, their opponents mill eight times as many, and so on."
+            }
+        ]
+    }
+}
+
 // Chained Brute
 {
     "name": "Chained Brute",

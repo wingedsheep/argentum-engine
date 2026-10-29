@@ -41,6 +41,7 @@ class ModalAndCloneContinuationResumer(
         resumer(EntersOnlyIfPaidSpellContinuation::class, ::resumeEntersOnlyIfPaidSpell),
         resumer(EffectDiscardDestinationContinuation::class, ::resumeEffectDiscardDestination),
         resumer(EffectDiscardOrderContinuation::class, ::resumeEffectDiscardOrder),
+        resumer(KeywordActionOrderContinuation::class, ::resumeKeywordActionOrder),
         resumer(EffectCopyAuraEntryContinuation::class, ::resumeEffectCopyAuraEntry),
         resumer(EnteringAttackDefenderContinuation::class, ::resumeEnteringAttackDefender),
         resumer(CloneAuraEntryContinuation::class, ::resumeCloneAuraEntry),
@@ -258,6 +259,26 @@ class ModalAndCloneContinuationResumer(
         if (response.selectedCards.size != expected.size || response.selectedCards.toSet() != expected)
             return ExecutionResult.error(state, "Order each discarded library card once")
         val context = continuation.context.copy(discardLibraryOrder = response.selectedCards)
+        val result = services.effectExecutorRegistry.execute(state, continuation.effect, context)
+        if (result.outcome !is Outcome.Done) return result.toExecutionResult()
+        return checkForMore(result.stateWithOutputsHandedOn(), result.events)
+    }
+
+    /**
+     * The acting player picked which result their mill / scry / surveil replacements give (CR
+     * 616.1). Record it for this gather only and re-run the gather, which asks the next player whose
+     * order matters or, once everyone has answered, gathers with every chosen count.
+     */
+    private fun resumeKeywordActionOrder(
+        state: GameState, continuation: KeywordActionOrderContinuation,
+        response: DecisionResponse, checkForMore: CheckForMore,
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse || response.optionIndex !in continuation.counts.indices)
+            return ExecutionResult.error(state, "Expected a replacement-order choice")
+        val chosen = continuation.counts[response.optionIndex]
+        val context = continuation.context.copy(
+            keywordActionCounts = continuation.context.keywordActionCounts + (continuation.playerId to chosen)
+        )
         val result = services.effectExecutorRegistry.execute(state, continuation.effect, context)
         if (result.outcome !is Outcome.Done) return result.toExecutionResult()
         return checkForMore(result.stateWithOutputsHandedOn(), result.events)

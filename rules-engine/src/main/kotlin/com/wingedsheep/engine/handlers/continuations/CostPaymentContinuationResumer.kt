@@ -5,6 +5,9 @@ import com.wingedsheep.engine.core.suspendForDecision
 import com.wingedsheep.engine.core.CardsSelectedResponse
 import com.wingedsheep.engine.core.CostPaymentContinuation
 import com.wingedsheep.engine.core.CostPaymentManaSelectionContinuation
+import com.wingedsheep.engine.core.CostPaymentMillOrderContinuation
+import com.wingedsheep.engine.core.ChooseOptionDecision
+import com.wingedsheep.engine.handlers.effects.library.KeywordActionAmountModifier
 import com.wingedsheep.engine.core.DecisionContext
 import com.wingedsheep.engine.core.DecisionPhase
 import com.wingedsheep.engine.core.ManaSourcesSelectedResponse
@@ -43,7 +46,8 @@ class CostPaymentContinuationResumer(
 
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
         resumer(CostPaymentContinuation::class, ::resume),
-        resumer(CostPaymentManaSelectionContinuation::class, ::resumeManaSelection)
+        resumer(CostPaymentManaSelectionContinuation::class, ::resumeManaSelection),
+        resumer(CostPaymentMillOrderContinuation::class, ::resumeMillOrder)
     )
 
     fun resume(
@@ -130,6 +134,9 @@ class CostPaymentContinuationResumer(
         // choose, and couldn't activate a mana ability to cover a cost the solver can't auto-tap
         // (CR 605.3a — see [ManaPaymentWindow]).
         manaSourceWindow(state, continuation, cost)?.let { return it }
+        // A mill whose replacements' order changes the count gets a second step too: the payer
+        // picks the order (CR 616.1).
+        millOrderStep(state, continuation, cost)?.let { return it }
 
         val execution = paymentService.performPayment(state, continuation.payerId, cost, continuation.sourceId, emptyMap())
         // A defensive payment failure (e.g. mana solve came up short) falls through to declined.
@@ -170,6 +177,49 @@ class CostPaymentContinuationResumer(
                 availableSources = decision.availableSources
         ) },
         )
+    }
+
+    /**
+     * Asks the payer which order their mill replacements apply in when it changes how many cards a
+     * mill [cost] they just agreed to pay mills, or null when the cost isn't a mill or no order
+     * matters.
+     */
+    private fun millOrderStep(state: GameState, continuation: CostPaymentContinuation, cost: PayCost): ExecutionResult? {
+        val outcomes = paymentService.millOrderOutcomes(state, continuation.payerId, cost) ?: return null
+        val action = KeywordActionAmountModifier.Action.MILL
+        return state.suspendForDecision(
+            question = { decisionId -> ChooseOptionDecision(
+                id = decisionId,
+                playerId = continuation.payerId,
+                prompt = KeywordActionAmountModifier.prompt(action),
+                context = DecisionContext(
+                    sourceId = continuation.sourceId,
+                    sourceName = continuation.sourceName,
+                    phase = DecisionPhase.RESOLUTION
+                ),
+                options = KeywordActionAmountModifier.optionLabels(action, outcomes),
+            ) },
+            answer = CostPaymentMillOrderContinuation(continuation, outcomes.map { it.count }),
+        )
+    }
+
+    /** Pays the mill cost [millOrderStep] interrupted with the count the payer picked. */
+    private fun resumeMillOrder(
+        state: GameState,
+        continuation: CostPaymentMillOrderContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse || response.optionIndex !in continuation.counts.indices) {
+            return ExecutionResult.error(state, "Expected a mill replacement-order choice")
+        }
+        val inner = continuation.inner
+        val execution = paymentService.performPayment(
+            state, inner.payerId, inner.cost, inner.sourceId, emptyMap(),
+            millCount = continuation.counts[response.optionIndex]
+        )
+        return if (execution.success) paid(execution.state, execution.events, inner, checkForMore)
+        else declined(state, inner, checkForMore)
     }
 
     /**

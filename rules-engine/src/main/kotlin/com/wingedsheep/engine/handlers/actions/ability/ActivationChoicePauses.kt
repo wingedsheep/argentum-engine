@@ -74,6 +74,7 @@ internal class ActivationChoicePauses(
             ?: jointSacrificeChoice(state, activation)
             ?: sacrificeChoice(state, activation)
             ?: putOnLibraryChoice(state, activation)
+            ?: millOrderChoice(state, activation)
             ?: variablePermanentsChoice(state, activation)
             ?: variablePermanentsTargetChoice(state, activation)
 
@@ -558,6 +559,38 @@ internal class ActivationChoicePauses(
                 action = action,
                 candidates = candidates,
                 count = n
+            )
+        )
+    }
+
+    // -------------------------------------------------------------------
+    // Mill-cost replacement order (Millikin, Deranged Assistant). When two or more mill-amount
+    // replacements apply to the payer and their order changes how many cards the cost mills (a
+    // doubler next to a "+4"), the payer chooses it (CR 616.1) before anything is paid. Skipped when
+    // the order can't matter or the action already carries a count (resumed replay).
+    // -------------------------------------------------------------------
+    private fun millOrderChoice(state: GameState, activation: Activation): ExecutionResult? {
+        val action = activation.action
+        if (action.costPayment?.millCount != null) return null
+        val millCost = activation.effectiveCost.extractMillCost() ?: return null
+        val outcomes = com.wingedsheep.engine.handlers.effects.library.KeywordActionAmountModifier
+            .millOutcomes(state, action.playerId, millCost.count, costHandler.predicateEvaluator)
+        if (outcomes.size <= 1) return null
+        val action0 = com.wingedsheep.engine.handlers.effects.library.KeywordActionAmountModifier.Action.MILL
+        return state.suspendForDecision(
+            question = { decisionId ->
+                ChooseOptionDecision(
+                    id = decisionId,
+                    playerId = action.playerId,
+                    prompt = com.wingedsheep.engine.handlers.effects.library.KeywordActionAmountModifier.prompt(action0),
+                    context = castingContext(action, activation.sourceName),
+                    options = com.wingedsheep.engine.handlers.effects.library.KeywordActionAmountModifier
+                        .optionLabels(action0, outcomes),
+                )
+            },
+            answer = com.wingedsheep.engine.core.ActivateAbilityMillOrderContinuation(
+                action = action,
+                counts = outcomes.map { it.count },
             )
         )
     }

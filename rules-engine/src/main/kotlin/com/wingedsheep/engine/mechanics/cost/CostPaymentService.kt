@@ -375,7 +375,12 @@ class CostPaymentService(private val services: EngineServices) {
         payerId: EntityId,
         cost: PayCost,
         sourceId: EntityId,
-        selected: Map<EntityId, Int>
+        selected: Map<EntityId, Int>,
+        /**
+         * For a [CostAtom.Mill]: the count the payer chose when the order of their mill
+         * replacements changes it ([millOrderOutcomes]); ignored otherwise.
+         */
+        millCount: Int? = null
     ): CostPaymentExecution = when (cost) {
         is PayCost.OwnManaCost -> CostPaymentExecution(state, emptyList(), success = false)
         is PayCost.Choice -> CostPaymentExecution(state, emptyList(), success = false)
@@ -406,7 +411,7 @@ class CostPaymentService(private val services: EngineServices) {
                     is com.wingedsheep.engine.handlers.costs.CollectEvidenceResolver.Result.Failure ->
                         CostPaymentExecution(state, emptyList(), success = false)
                 }
-            is CostAtom.Mill -> millTop(state, payerId, atom.count)
+            is CostAtom.Mill -> millTop(state, payerId, atom.count, millCount)
             is CostAtom.ExileTopOfLibrary -> exileTop(state, payerId, atom.count)
             is CostAtom.RevealFromHand -> revealSelected(state, payerId, selected.keys.toList())
             is CostAtom.PutFromHandOnTopOfLibrary -> putSelectedOnLibrary(state, selected.keys.toList())
@@ -650,13 +655,28 @@ class CostPaymentService(private val services: EngineServices) {
     }
 
     /**
+     * The distinct counts a [cost] that mills could come to for [payerId] when the order of their
+     * mill replacements matters (CR 616.1), or null when it isn't a mill or no order matters.
+     */
+    fun millOrderOutcomes(state: GameState, payerId: EntityId, cost: PayCost): List<KeywordActionAmountModifier.AmountOutcome>? {
+        val atom = (cost as? PayCost.Atom)?.atom as? CostAtom.Mill ?: return null
+        return KeywordActionAmountModifier.millOutcomes(state, payerId, atom.count, predicateEvaluator)
+            .takeIf { it.size > 1 }
+    }
+
+    /**
      * Mill the top [count] cards as a cost payment (CR 701.17a). Mirrors `CostHandler.payAtom`'s
      * mill branch: the announced count runs through the [KeywordActionAmountModifier] replacement chokepoint
-     * (CR 616) and the library→graveyard moves go through [ZoneTransitionService] so mill triggers
+     * (CR 616.1) and the library→graveyard moves go through [ZoneTransitionService] so mill triggers
      * and animations see the canonical zone changes.
      */
-    private fun millTop(state: GameState, payerId: EntityId, count: Int): CostPaymentExecution {
-        val effectiveCount = KeywordActionAmountModifier.mill(state, payerId, count, predicateEvaluator = predicateEvaluator)
+    private fun millTop(state: GameState, payerId: EntityId, count: Int, chosenCount: Int?): CostPaymentExecution {
+        // When the replacements' order matters the payer chose a count first (the resumer's
+        // second step); without one — or with one no order produces — the payment fails closed.
+        val outcomes = KeywordActionAmountModifier.millOutcomes(state, payerId, count, predicateEvaluator)
+        val effectiveCount = outcomes.singleOrNull()?.count
+            ?: chosenCount?.takeIf { chosen -> outcomes.any { it.count == chosen } }
+            ?: return CostPaymentExecution(state, emptyList(), success = false)
         val milled = state.getZone(ZoneKey(payerId, Zone.LIBRARY)).take(effectiveCount)
         val result = services.zones.moveToZoneBatch(state, milled, Zone.GRAVEYARD)
         val (newState, milledEvent) = ZoneTransitionService.trackMill(result.state, result.events, milled)

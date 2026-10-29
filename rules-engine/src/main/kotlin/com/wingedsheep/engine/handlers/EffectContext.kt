@@ -419,6 +419,15 @@ data class EffectContext(
     /** Answers belong to this one discard instruction, including explicit declines. */
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
     val discardDestinations: Map<EntityId, com.wingedsheep.sdk.scripting.effects.CardDestination.ToZone?> = emptyMap(),
+    /**
+     * The mill / scry / surveil count each acting player chose for this one top-of-library gather,
+     * when the order of their [com.wingedsheep.sdk.scripting.ModifyKeywordActionAmount] replacements
+     * changed the result (CR 616.1). Filled one player at a time by
+     * [com.wingedsheep.engine.core.KeywordActionOrderContinuation], which re-runs only that gather —
+     * the frames beneath keep their own contexts, so a later mill in the same pipeline asks afresh.
+     */
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val keywordActionCounts: Map<EntityId, Int> = emptyMap(),
     /** Top-to-bottom library order chosen before any card in the discard batch moves. */
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
     val discardLibraryOrder: List<EntityId>? = null,

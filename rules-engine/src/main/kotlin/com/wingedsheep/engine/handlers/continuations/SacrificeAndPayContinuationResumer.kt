@@ -46,6 +46,7 @@ class SacrificeAndPayContinuationResumer(
         resumer(ExileMultiZoneContinuation::class, ::resumeExileMultiZone),
         resumer(PayOrSufferContinuation::class, ::resumePayOrSuffer),
         resumer(PayOrSufferManaSelectionContinuation::class, ::resumePayOrSufferManaSelection),
+        resumer(PayOrSufferMillOrderContinuation::class, ::resumePayOrSufferMillOrder),
         resumer(PayOrSufferChoiceContinuation::class, ::resumePayOrSufferChoice),
         resumer(AnyPlayerMayPayContinuation::class, ::resumeAnyPlayerMayPay),
         resumer(UntapChoiceContinuation::class, ::resumeUntapChoice),
@@ -586,7 +587,42 @@ class SacrificeAndPayContinuationResumer(
         }
 
         val playerId = continuation.playerId
-        val count = KeywordActionAmountModifier.mill(state, playerId, continuation.requiredCount, predicateEvaluator = services.predicateEvaluator)
+        val outcomes = KeywordActionAmountModifier.millOutcomes(state, playerId, continuation.requiredCount, services.predicateEvaluator)
+        // When the order of the payer's mill replacements changes the count, they pick it (CR 616.1).
+        if (outcomes.size > 1) {
+            val action = KeywordActionAmountModifier.Action.MILL
+            return state.suspendForDecision(
+                question = { decisionId -> ChooseOptionDecision(
+                    id = decisionId,
+                    playerId = playerId,
+                    prompt = KeywordActionAmountModifier.prompt(action),
+                    context = DecisionContext(
+                        sourceId = continuation.sourceId,
+                        sourceName = continuation.sourceName,
+                        phase = DecisionPhase.RESOLUTION
+                    ),
+                    options = KeywordActionAmountModifier.optionLabels(action, outcomes),
+                ) },
+                answer = PayOrSufferMillOrderContinuation(continuation, outcomes.map { it.count }),
+            )
+        }
+        return payOrSufferMill(state, playerId, outcomes.single().count, checkForMore)
+    }
+
+    /** Pays the pay-or-suffer mill with the count the payer picked for their replacements' order. */
+    private fun resumePayOrSufferMillOrder(
+        state: GameState,
+        continuation: PayOrSufferMillOrderContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse || response.optionIndex !in continuation.counts.indices) {
+            return ExecutionResult.error(state, "Expected a mill replacement-order choice")
+        }
+        return payOrSufferMill(state, continuation.inner.playerId, continuation.counts[response.optionIndex], checkForMore)
+    }
+
+    private fun payOrSufferMill(state: GameState, playerId: EntityId, count: Int, checkForMore: CheckForMore): ExecutionResult {
         val milled = state.getZone(ZoneKey(playerId, Zone.LIBRARY)).take(count)
         val result = services.zones.moveToZoneBatch(state, milled, Zone.GRAVEYARD)
         val (millState, milledEvent) = com.wingedsheep.engine.handlers.effects.ZoneTransitionService

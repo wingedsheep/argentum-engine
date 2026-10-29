@@ -654,7 +654,15 @@ data class AdditionalCostPayment(
      * opponent gains N life" cost. Pre-filled on each per-opponent cast the engine offers; `null`
      * is accepted only when exactly one opponent could gain the life.
      */
-    val lifeGainRecipient: EntityId? = null
+    val lifeGainRecipient: EntityId? = null,
+
+    /**
+     * How many cards a [com.wingedsheep.sdk.scripting.costs.CostAtom.Mill] cost mills, chosen by the
+     * payer when the order of the mill replacements that apply to them changes the count (a doubler
+     * next to a "+4", CR 616.1). `null` when there was no order to choose; the engine accepts only a
+     * count some order actually produces.
+     */
+    val millCount: Int? = null
 ) {
     /** Check if any costs were paid */
     val isEmpty: Boolean

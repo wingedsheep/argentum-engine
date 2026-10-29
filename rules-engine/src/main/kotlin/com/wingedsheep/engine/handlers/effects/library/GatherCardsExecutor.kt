@@ -1,6 +1,11 @@
 package com.wingedsheep.engine.handlers.effects.library
 
 import com.wingedsheep.engine.core.CardsRevealedEvent
+import com.wingedsheep.engine.core.ChooseOptionDecision
+import com.wingedsheep.engine.core.DecisionContext
+import com.wingedsheep.engine.core.DecisionPhase
+import com.wingedsheep.engine.core.KeywordActionOrderContinuation
+import com.wingedsheep.engine.core.suspendForDecision
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
@@ -70,18 +75,28 @@ class GatherCardsExecutor(
                 val count = amountEvaluator.evaluate(state, source.count, context)
                 val playerIds = resolvePlayers(source.player, context, state)
                     ?: return EffectResult.error(state, "Could not resolve player for GatherCards")
-                playerIds.flatMap { playerId ->
-                    // For a mill, scry or surveil, apply ModifyKeywordActionAmount replacement
-                    // effects to the announced count per acting player — "mill that many plus
-                    // four instead" (CR 701.17), "scry that many cards plus one instead"
-                    // (CR 701.22), "look at an additional two cards" (CR 701.25b).
-                    val effectiveCount = when {
-                        source.isMill -> KeywordActionAmountModifier.mill(state, playerId, count, predicateEvaluator)
-                        source.isScry -> KeywordActionAmountModifier.scry(state, playerId, count, predicateEvaluator)
-                        source.isSurveil -> KeywordActionAmountModifier.surveil(state, playerId, count, predicateEvaluator)
-                        else -> count
+                // For a mill, scry or surveil, apply ModifyKeywordActionAmount replacement effects
+                // to the announced count per acting player — "mill that many plus four instead",
+                // "mill twice that many instead" (CR 701.17), "scry that many cards plus one
+                // instead" (CR 701.22), "look at an additional two cards" (CR 701.25b).
+                val action = when {
+                    source.isMill -> KeywordActionAmountModifier.Action.MILL
+                    source.isScry -> KeywordActionAmountModifier.Action.SCRY
+                    source.isSurveil -> KeywordActionAmountModifier.Action.SURVEIL
+                    else -> null
+                }
+                val effectiveCounts = if (action == null) playerIds.associateWith { count } else {
+                    val outcomes = playerIds.associateWith {
+                        KeywordActionAmountModifier.outcomes(state, it, count, predicateEvaluator, action)
                     }
-                    state.getZone(ZoneKey(playerId, Zone.LIBRARY)).take(effectiveCount)
+                    askReplacementOrder(state, effect, context, action, outcomes)?.let { return it }
+                    outcomes.mapValues { (playerId, options) ->
+                        context.keywordActionCounts[playerId]?.takeIf { decided -> options.any { it.count == decided } }
+                            ?: options.single().count
+                    }
+                }
+                playerIds.flatMap { playerId ->
+                    state.getZone(ZoneKey(playerId, Zone.LIBRARY)).take(effectiveCounts.getValue(playerId))
                 }
             }
 
@@ -598,6 +613,37 @@ class GatherCardsExecutor(
      * can gather "each player's graveyard/hand/library" at once. Single-player references
      * collapse to a one-element list.
      */
+    /**
+     * When the order of a player's [action] replacements changes the count (a doubler next to a
+     * "+4") and they haven't picked one for this gather yet, ask them (CR 616.1 — the affected
+     * player chooses; several players choose in APNAP order). Returns the pause, or null when every
+     * count is settled.
+     */
+    private fun askReplacementOrder(
+        state: GameState,
+        effect: GatherCardsEffect,
+        context: EffectContext,
+        action: KeywordActionAmountModifier.Action,
+        outcomes: Map<EntityId, List<KeywordActionAmountModifier.AmountOutcome>>,
+    ): EffectResult? {
+        if (outcomes.values.all { it.size == 1 }) return null
+        val apnap = state.activePlayerId?.let { state.turnOrderStartingWith(it) } ?: state.turnOrder
+        val playerId = apnap.firstOrNull { player ->
+            val options = outcomes[player] ?: return@firstOrNull false
+            options.size > 1 && options.none { it.count == context.keywordActionCounts[player] }
+        } ?: return null
+        val options = outcomes.getValue(playerId)
+        return EffectResult.from(state.suspendForDecision(
+            question = { decisionId -> ChooseOptionDecision(
+                id = decisionId, playerId = playerId,
+                prompt = KeywordActionAmountModifier.prompt(action),
+                context = DecisionContext(sourceId = context.sourceId, phase = DecisionPhase.RESOLUTION),
+                options = KeywordActionAmountModifier.optionLabels(action, options),
+            ) },
+            answer = KeywordActionOrderContinuation(effect, context, playerId, options.map { it.count }),
+        ))
+    }
+
     private fun resolvePlayers(
         player: Player,
         context: EffectContext,

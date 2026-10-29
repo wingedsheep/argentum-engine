@@ -996,12 +996,17 @@ class CostHandler(private val zones: ZoneTransitionService) {
         }
         is CostAtom.Mill -> {
             // Same announcement semantics as the mill effect (GatherCardsExecutor): apply
-            // mill ModifyKeywordActionAmount replacements once to the announced count (CR 616), then take that
+            // mill ModifyKeywordActionAmount replacements once to the announced count (CR 616.1), then take that
             // many off the top. `take` clamps, so a replacement that enlarges the mill past the
             // library mills as many as possible — the affordability check above already guaranteed
             // the printed count is available. Emits the library→graveyard zone changes plus the
             // CardsMilledEvent mill triggers match on.
-            val effectiveCount = KeywordActionAmountModifier.mill(state, controllerId, atom.count, predicateEvaluator = predicateEvaluator)
+            // When the order of those replacements matters the payer chose a count before paying
+            // (ActivationChoicePauses); only a count some order produces is accepted.
+            val outcomes = KeywordActionAmountModifier.millOutcomes(state, controllerId, atom.count, predicateEvaluator)
+            val effectiveCount = outcomes.singleOrNull()?.count
+                ?: choices.millCount?.takeIf { chosen -> outcomes.any { it.count == chosen } }
+                ?: return CostPaymentResult.failure("Choose the order your mill replacement effects apply in")
             val milled = state.getZone(ZoneKey(controllerId, Zone.LIBRARY)).take(effectiveCount)
             val result = zones.moveToZoneBatch(state, milled, Zone.GRAVEYARD)
             val (millState, milledEvent) = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
@@ -2092,7 +2097,12 @@ data class CostPaymentChoices(
      * ability comes from a static grant (e.g., GrantActivatedAbility scoped to the attached creature).
      * Read by the executor for [AbilityCost.ExileGrantingPermanent].
      */
-    val granterId: EntityId? = null
+    val granterId: EntityId? = null,
+    /**
+     * The count a [CostAtom.Mill] cost mills when the payer chose the order of their mill
+     * replacements (CR 616.1); `null` when no order mattered. Mirrors `AdditionalCostPayment.millCount`.
+     */
+    val millCount: Int? = null
 )
 
 /**

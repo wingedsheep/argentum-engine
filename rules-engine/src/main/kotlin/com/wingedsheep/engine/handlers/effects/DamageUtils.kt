@@ -3556,16 +3556,12 @@ object DamageUtils {
                 // and the top cards are snapshotted before moving so a shrinking library isn't
                 // re-read.
                 if (effect.damagedPlayerMills && targetId in state.turnOrder) {
-                    val millCount = KeywordActionAmountModifier.mill(newState, targetId, amount, predicateEvaluator = zones.predicateEvaluator)
-                    val milledCards = newState.getLibrary(targetId).take(millCount)
-                    for (cardId in milledCards) {
-                        val result = zones.moveToZone(newState, cardId, Zone.GRAVEYARD)
-                        newState = result.state
-                        events.addAll(result.events)
-                    }
-                    val (trackedState, milledEvent) = ZoneTransitionService.trackMill(newState, events, milledCards)
-                    newState = trackedState
-                    milledEvent?.let(events::add)
+                    val (milledState, millEvents) = millAsReplacementResult(
+                        zones, newState, listOf(targetId), amount, Player.TriggeringPlayer,
+                        hostId = entityId, controllerId = sourceControllerId, subjectId = targetId
+                    )
+                    newState = milledState
+                    events.addAll(millEvents)
                 }
 
                 return EffectResult.success(newState, events)
@@ -3573,6 +3569,59 @@ object DamageUtils {
         }
 
         return null
+    }
+
+    /**
+     * "…and [millers] mill [count] cards" as the rest of a damage replacement (Szadek, The
+     * Mindskinner). Each miller's count goes through their mill-amount replacements
+     * ([KeywordActionAmountModifier]) like any other mill, and the top cards are snapshotted before
+     * moving so a shrinking library isn't re-read; all millers' cards move as one mill.
+     *
+     * Damage arithmetic can't pause for a question, so when the order of some miller's mill
+     * replacements changes their count (a doubler next to a "+4", CR 616.1) the mill is queued as a
+     * [PendingReplacementRider] instead — an ordinary mill of [count] by [millerRef] (read relative to
+     * [controllerId], with [subjectId] as the triggering player) that asks each such miller and runs
+     * before the next instruction, state-based actions and triggers, as the rest of the same
+     * replacement.
+     */
+    private fun millAsReplacementResult(
+        zones: ZoneTransitionService,
+        state: GameState,
+        millers: List<EntityId>,
+        count: Int,
+        millerRef: Player,
+        hostId: EntityId,
+        controllerId: EntityId,
+        subjectId: EntityId,
+    ): Pair<GameState, List<EngineGameEvent>> {
+        val counts = millers.associateWith {
+            KeywordActionAmountModifier.millIfUnambiguous(state, it, count, zones.predicateEvaluator)
+        }
+        if (counts.values.any { it == null }) {
+            val rider = PendingReplacementRider(
+                effect = com.wingedsheep.sdk.dsl.Patterns.Library.mill(
+                    com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed(count), EffectTarget.PlayerRef(millerRef)
+                ),
+                hostId = hostId, controllerId = controllerId, subjectId = subjectId,
+                replacementChain = state.activeReplacementChain,
+            )
+            return state.copy(pendingReplacementRiders = state.pendingReplacementRiders + rider) to emptyList()
+        }
+        var newState = state
+        val events = mutableListOf<EngineGameEvent>()
+        val milledCards = mutableListOf<EntityId>()
+        for (millerId in millers) {
+            val topCards = newState.getLibrary(millerId).take(counts.getValue(millerId)!!)
+            milledCards += topCards
+            for (cardId in topCards) {
+                val result = zones.moveToZone(newState, cardId, Zone.GRAVEYARD)
+                newState = result.state
+                events.addAll(result.events)
+            }
+        }
+        val (trackedState, milledEvent) = ZoneTransitionService.trackMill(newState, events, milledCards)
+        milledEvent?.let(events::add)
+        return trackedState to events
     }
 
     /**
@@ -3644,25 +3693,14 @@ object DamageUtils {
 
                 val millers = if (effect.miller == Player.You) listOf(sourceControllerId)
                     else state.getOpponents(sourceControllerId)
-                // Snapshot each library's top cards before moving so a shrinking library doesn't
-                // re-read shifted slots. One mill instruction for every miller (CR 603.2c: a single
-                // milled event).
-                val count = amount * effect.multiplier
-                val milledCards = mutableListOf<EntityId>()
-                val millEvents = mutableListOf<EngineGameEvent>()
-                for (millerId in millers) {
-                    val topCards = newState.getLibrary(millerId).take(count)
-                    milledCards += topCards
-                    for (cardId in topCards) {
-                        val result = zones.moveToZone(newState, cardId, Zone.GRAVEYARD)
-                        newState = result.state
-                        millEvents.addAll(result.events)
-                    }
-                }
-                val (trackedState, milledEvent) = ZoneTransitionService.trackMill(newState, millEvents, milledCards)
-                newState = trackedState
+                // One mill instruction for every miller (CR 603.2c: a single milled event), its
+                // count resized by each miller's mill replacements (Bruvac) like any other mill.
+                val (milledState, millEvents) = millAsReplacementResult(
+                    zones, newState, millers, amount * effect.multiplier, effect.miller,
+                    hostId = entityId, controllerId = sourceControllerId, subjectId = targetId
+                )
+                newState = milledState
                 events += millEvents
-                milledEvent?.let(events::add)
                 applied = true
                 if (!cantBePrevented) return MillReplacement(newState, events, damagePrevented = true)
                 break

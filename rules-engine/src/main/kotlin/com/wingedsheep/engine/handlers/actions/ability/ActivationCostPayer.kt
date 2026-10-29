@@ -235,7 +235,8 @@ internal class ActivationCostPayer(
             xValue = xValue,
             distributedCounterRemovals = action.costPayment?.distributedCounterRemovals ?: emptyList(),
             blightChoices = action.costPayment?.blightTargets ?: emptyList(),
-            granterId = activation.staticGranterId
+            granterId = activation.staticGranterId,
+            millCount = action.costPayment?.millCount
         )
 
         val snapshots = captureCostSnapshots(currentState, action, effectiveCost, firstTapSlice)

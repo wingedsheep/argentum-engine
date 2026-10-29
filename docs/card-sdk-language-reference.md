@@ -19031,9 +19031,11 @@ not update an existing copy.
   order giving 7. Several applicable announcement effects are cumulative — two doublers quadruple
   the draw. `restrictions` is also the seam a "Max speed —" gate folds into — declare the replacement
   inside `maxSpeed { replacementEffect(…) }` and the builder fills the slot.
-- `ModifyKeywordActionAmount(appliesTo, modifier, restrictions)` — resize the count a **mill, scry or
-  surveil** announces, or the number of times a **spell is copied**, by a fixed amount (the keyword-action twin of `ModifyDrawAmount`): a player who
-  would act on N cards instead acts on `N + modifier`, clamped to ≥ 0. One type across the three
+- `ModifyKeywordActionAmount(appliesTo, modifier = 0, multiplier = 1, restrictions)` — resize the count a **mill, scry or
+  surveil** announces, or the number of times a **spell is copied** (the keyword-action twin of `ModifyDrawAmount`): a player who
+  would act on N cards instead acts on `N * multiplier + modifier`, clamped to ≥ 0. `multiplier` must
+  be ≥ 1, and exactly 1 on `SpellCopiedEvent` (copy replacements stay additive, so they always
+  commute and the copy sites never need to ask for an order). One type across the three
   actions, like `ModifyKeywordAction`: `appliesTo` names the action and whose — an
   `EventPattern.KeywordActionCountEvent`: `EventPattern.MillEvent(player)` (CR 701.17, which also
   serves as the mill trigger — see **Mill** under the triggers; its `cardFilter`/`batch` don't apply here), `EventPattern.ScryEvent(player)` (CR 701.22) or
@@ -19052,7 +19054,20 @@ not update an existing copy.
   gathers are never affected. The bigger look carries through: the scry top/bottom choice and the
   surveil graveyard choice select *any number* of the looked-at cards, so the extra cards are part of
   what is scried or surveiled (CR 701.25b), and the `ScriedEvent` / `SurveiledEvent` count includes
-  them. A count of 0 is no event (CR 701.22b / 701.25c) and is never modified. Multiple instances sum.
+  them. A count of 0 is no event (CR 701.22b / 701.25c) and is never modified.
+
+  **Several instances** each apply once (CR 616.1, the acting player chooses the order). When every
+  pair commutes — any stack of "+N"s (they sum), any stack of doublers (two Bruvacs quadruple) — the
+  result is applied with no question. When the order changes the count (a doubler next to a "+4":
+  mill 2 becomes 12 or 8), the player who mills / scries / surveils gets a `ChooseOptionDecision`
+  listing each distinct result with an order that gives it ("Mill 12 (The Water Crystal, then Bruvac
+  the Grandiloquent)"); several affected players are asked in APNAP order and the gather then runs
+  once. The same question is asked at every mill site: the mill effect, an activated ability's mill
+  cost (before anything is paid), a `PayCost` / pay-or-suffer mill (after the payer agrees), and the
+  damage-to-mill replacements (`ReplaceDamageWithMill`, `ReplaceDamageWithCounters.damagedPlayerMills`),
+  which mill directly when no order matters and otherwise run the mill as a replacement rider that asks.
+  - Bruvac the Grandiloquent: "If an opponent would mill one or more cards, they mill twice that many
+    cards instead" → `ModifyKeywordActionAmount(EventPattern.MillEvent(Player.EachOpponent), multiplier = 2)`.
   - The Water Crystal: "If an opponent would mill one or more cards, they mill that many cards plus
     four instead" → `ModifyKeywordActionAmount(EventPattern.MillEvent(Player.EachOpponent), modifier = 4)`.
   - Kenessos, Priest of Thassa: "If you would scry a number of cards, scry that many cards plus one

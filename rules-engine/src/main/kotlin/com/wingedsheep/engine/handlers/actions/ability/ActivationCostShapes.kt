@@ -218,6 +218,14 @@ internal fun AbilityCost.extractPutOnLibraryCost(): CostAtom.PutFromHandOnTopOfL
     else -> null
 }
 
+internal fun AbilityCost.extractMillCost(): CostAtom.Mill? = when (this) {
+    is AbilityCost.Atom -> atom as? CostAtom.Mill
+    is AbilityCost.Composite -> costs.firstNotNullOfOrNull {
+        (it as? AbilityCost.Atom)?.atom as? CostAtom.Mill
+    }
+    else -> null
+}
+
 internal fun AbilityCost.extractSacrificeCost(): CostAtom.Sacrifice? = when (this) {
     is AbilityCost.Atom -> atom as? CostAtom.Sacrifice
     is AbilityCost.Composite -> costs.firstNotNullOfOrNull {

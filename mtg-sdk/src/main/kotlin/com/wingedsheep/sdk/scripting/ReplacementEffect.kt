@@ -1634,11 +1634,12 @@ data class ModifyDrawAmount(
 
 /**
  * Modify how many cards a player mills, scries or surveils, or how many times they copy a spell —
- * "mill that many cards plus four instead", "scry that many cards plus one instead", "look at an
- * additional two cards each time you surveil", "copy it that many times plus an additional time".
- * Additive: a [modifier] of `+N` turns the announced count C into `C + N`; negative values
- * reduce it (clamped to ≥ 0 by the caller). One type across these keyword actions rather than one
- * per action, like [ModifyKeywordAction]: [appliesTo] says which action and whose —
+ * "mill that many cards plus four instead", "they mill twice that many cards instead", "scry that
+ * many cards plus one instead", "look at an additional two cards each time you surveil", "copy it
+ * that many times plus an additional time". Affine, like [ModifyDrawAmount]: the announced count C
+ * becomes `C * multiplier + modifier`; a negative [modifier] reduces it (clamped to ≥ 0 by the
+ * caller). One type across these keyword actions rather than one per action, like
+ * [ModifyKeywordAction]: [appliesTo] says which action and whose —
  *
  *  - [EventPattern.MillEvent] — mill (CR 701.17). Applied at the mill announcement: the mill
  *    pipeline's gather and the mill cost atom.
@@ -1657,24 +1658,42 @@ data class ModifyDrawAmount(
  * Each pattern's `player` gates whose action is affected relative to the source's controller
  * (`Player.You` / `Player.EachOpponent` / `Player.Each`). Applied once per instruction, so a
  * paused-and-resumed pipeline never double-modifies; a count of 0 is no event (CR 701.22b /
- * 701.25c) and is never modified; multiple instances sum. [restrictions] are additional
+ * 701.25c) and is never modified. Multiple instances each apply once (CR 616.1): instances that
+ * commute (two "+N"s, two doublers) apply without a question; when the order changes the result (a
+ * doubler next to a "+4": 2 → 12 or 8) the acting player chooses it. [restrictions] are additional
  * [Condition]s evaluated against the acting player as controller; ALL must hold.
  *
  * Why not [ModifyDrawAmount]: a draw is not a keyword action and has its own announcement site
  * (`DrawReplacementDispatcher`), with "N or more" draw gating these actions don't have.
  *
  * Examples — The Water Crystal: `ModifyKeywordActionAmount(MillEvent(Player.EachOpponent), 4)`;
+ * Bruvac the Grandiloquent: `ModifyKeywordActionAmount(MillEvent(Player.EachOpponent), multiplier = 2)`;
  * Kenessos, Priest of Thassa: `ModifyKeywordActionAmount(ScryEvent(), 1)`; Enhanced Surveillance:
  * `ModifyKeywordActionAmount(SurveilEvent(), 2)`; Twinning Staff:
  * `ModifyKeywordActionAmount(SpellCopiedEvent(), 1)`.
+ *
+ * @param modifier Flat amount added after multiplying.
+ * @param multiplier Factor the announced count is multiplied by — `2` is "twice that many"; the
+ *        default `1` leaves it alone. At least 1, and exactly 1 for [EventPattern.SpellCopiedEvent]
+ *        (the spell-copy sites never pause to ask for a replacement order, so copy replacements stay
+ *        additive and always commute).
  */
 @SerialName("ModifyKeywordActionAmount")
 @Serializable
 data class ModifyKeywordActionAmount(
     override val appliesTo: EventPattern.KeywordActionCountEvent,
-    val modifier: Int,
+    val modifier: Int = 0,
+    val multiplier: Int = 1,
     override val restrictions: List<Condition> = emptyList()
 ) : ReplacementEffect {
+    init {
+        require(multiplier >= 1) { "ModifyKeywordActionAmount multiplier must be at least 1, was $multiplier" }
+        // Spell-copy sites can't stop to ask for a replacement order; additive copy replacements
+        // always commute, so keeping copies additive means there is never an order to choose.
+        require(multiplier == 1 || appliesTo !is EventPattern.SpellCopiedEvent) {
+            "ModifyKeywordActionAmount on SpellCopiedEvent is additive only (multiplier must be 1)"
+        }
+    }
 
     override val description: String = buildString {
         val restrictionDesc = restrictions.joinToString(" and ") { it.description.removePrefix("if ") }
@@ -1693,7 +1712,12 @@ data class ModifyKeywordActionAmount(
         }
         append(
             when (appliesTo) {
-                is EventPattern.MillEvent -> "${appliesTo.player.description} would mill one or more cards"
+                // Printed as "If an opponent would mill…" (Bruvac, The Water Crystal), not "each opponent".
+                is EventPattern.MillEvent -> when (appliesTo.player) {
+                    Player.EachOpponent -> "an opponent"
+                    Player.Each -> "a player"
+                    else -> appliesTo.player.description
+                } + " would mill one or more cards"
                 else -> appliesTo.description
             }
         )
@@ -1703,7 +1727,15 @@ data class ModifyKeywordActionAmount(
             is EventPattern.SurveilEvent -> "surveil"
             is EventPattern.SpellCopiedEvent -> "copy"
         }
-        append(", they $verb that many cards plus $modifier instead")
+        // Pick the natural English for each shape rather than spelling out the formula.
+        append(
+            when {
+                multiplier == 1 -> ", they $verb that many cards plus $modifier instead"
+                modifier != 0 -> ", they $verb that many cards times $multiplier plus $modifier instead"
+                multiplier == 2 -> ", they $verb twice that many cards instead"
+                else -> ", they $verb that many cards times $multiplier instead"
+            }
+        )
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
