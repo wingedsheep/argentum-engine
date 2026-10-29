@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.state.components.battlefield.SagaComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
@@ -7,6 +8,7 @@ import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.cmm.cards.NarciFableSinger
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
@@ -37,9 +39,29 @@ class NarciFableSingerScenarioTest : FunSpec({
         sagaChapter(2) { effect = Effects.GainLife(1) }
     }
 
+    val Trinket = card("Sacrificial Trinket") {
+        manaCost = "{0}"
+        typeLine = "Artifact"
+        oracleText = "Sacrifice this artifact: You gain 1 life."
+        activatedAbility {
+            cost = Costs.SacrificeSelf
+            effect = Effects.GainLife(1)
+        }
+    }
+
+    val Charm = card("Sacrificial Charm") {
+        manaCost = "{0}"
+        typeLine = "Enchantment"
+        oracleText = "Sacrifice this enchantment: You gain 1 life."
+        activatedAbility {
+            cost = Costs.SacrificeSelf
+            effect = Effects.GainLife(1)
+        }
+    }
+
     fun setup(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(NarciFableSinger, OneChapterSaga, TwoChapterSaga))
+        driver.registerCards(TestCards.all + listOf(NarciFableSinger, OneChapterSaga, TwoChapterSaga, Trinket, Charm))
         driver.initMirrorMatch(deck = Deck.of("Forest" to 40))
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return driver
@@ -93,6 +115,24 @@ class NarciFableSingerScenarioTest : FunSpec({
         driver.getLifeTotal(opponent) shouldBe 17
         driver.getLifeTotal(me) shouldBe 24
         driver.getHandSize(me) shouldBe handBefore + 1 // the token was still sacrificed
+    }
+
+    test("only an enchantment sacrifice draws a card") {
+        val driver = setup()
+        val me = driver.activePlayer!!
+        driver.putCreatureOnBattlefield(me, "Narci, Fable Singer")
+        val trinket = driver.putPermanentOnBattlefield(me, "Sacrificial Trinket")
+        val charm = driver.putPermanentOnBattlefield(me, "Sacrificial Charm")
+        val handBefore = driver.getHandSize(me)
+
+        driver.submit(ActivateAbility(me, trinket, Trinket.activatedAbilities.first().id))
+        driver.bothPass()
+        driver.getHandSize(me) shouldBe handBefore
+
+        driver.submit(ActivateAbility(me, charm, Charm.activatedAbilities.first().id))
+        var guard = 0
+        do { driver.bothPass() } while (guard++ < 20 && driver.state.stack.isNotEmpty())
+        driver.getHandSize(me) shouldBe handBefore + 1
     }
 
     test("a chapter that isn't the final one doesn't drain") {

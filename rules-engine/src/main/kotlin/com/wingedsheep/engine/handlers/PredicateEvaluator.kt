@@ -418,6 +418,16 @@ class PredicateEvaluator(
             CardPredicate.IsNonlegendary -> typeLine?.isLegendary?.not()
             CardPredicate.IsToken -> snapshot.wasToken
             CardPredicate.IsNontoken -> !snapshot.wasToken
+            CardPredicate.IsNoncreature -> typeLine?.isCreature?.not()
+            CardPredicate.IsNonland -> typeLine?.isLand?.not()
+            CardPredicate.IsNonartifact -> typeLine?.isArtifact?.not()
+            CardPredicate.IsNonenchantment -> typeLine?.isEnchantment?.not()
+            // Colors as projected when it left the battlefield (CR 105, 608.2h).
+            is CardPredicate.HasColor -> snapshot.colors?.contains(predicate.color.name)
+            CardPredicate.IsColored -> snapshot.colors?.isNotEmpty()
+            CardPredicate.IsColorless -> snapshot.colors?.isEmpty()
+            CardPredicate.IsMonocolored -> snapshot.colors?.let { it.size == 1 }
+            CardPredicate.IsMulticolored -> snapshot.colors?.let { it.size > 1 }
             is CardPredicate.HasSubtype ->
                 typeLine?.hasSubtype(predicate.subtype)
                     ?: snapshot.subtypes.any { it.equals(predicate.subtype.value, ignoreCase = true) }
@@ -468,7 +478,6 @@ class PredicateEvaluator(
             is CardPredicate.HasBasicLandType,
             CardPredicate.HasChosenColor,
             CardPredicate.HasChosenSubtype,
-            is CardPredicate.HasColor,
             CardPredicate.HasNoAbilities,
             CardPredicate.HasNonManaActivatedAbility,
             is CardPredicate.HasSubtypeFromVariable,
@@ -479,16 +488,8 @@ class PredicateEvaluator(
             CardPredicate.IsLoyaltyAbility,
             CardPredicate.IsActivatedOrTriggeredAbility,
             CardPredicate.IsBasicLand,
-            CardPredicate.IsColored,
-            CardPredicate.IsColorless,
             CardPredicate.IsDoubleFaced,
-            CardPredicate.IsMonocolored,
             is CardPredicate.HasExactlyColors,
-            CardPredicate.IsMulticolored,
-            CardPredicate.IsNonartifact,
-            CardPredicate.IsNoncreature,
-            CardPredicate.IsNonenchantment,
-            CardPredicate.IsNonland,
             CardPredicate.IsTriggeredAbility,
             is CardPredicate.ManaValueAtLeast,
             is CardPredicate.ManaValueAtMost,
