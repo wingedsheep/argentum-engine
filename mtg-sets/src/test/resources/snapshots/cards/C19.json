@@ -357,6 +357,95 @@
     ]
 }
 
+// Marisi, Breaker of the Coil
+{
+    "name": "Marisi, Breaker of the Coil",
+    "manaCost": "{1}{R}{G}{W}",
+    "typeLine": "Legendary Creature — Cat Warrior",
+    "oracleText": "Your opponents can't cast spells during combat.\nWhenever a creature you control deals combat damage to a player, goad each creature that player controls. (Until your next turn, those creatures attack each combat if able and attack a player other than you if able.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Marisi, Breaker of the Coil:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    },
+                    "sourceFilter": "creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:triggering-player"
+                        }
+                    },
+                    "body": {
+                        "type": "Goad",
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Whenever a creature you control deals combat damage to a player, goad each creature that player controls."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "PlayersCantCastSpells",
+                "condition": {
+                    "type": "IsInPhase",
+                    "phases": [
+                        "COMBAT"
+                    ],
+                    "yoursOnly": false
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "MYTHIC",
+        "artist": "Rudy Siswanto",
+        "flavorText": "\"Cast off the law! Awaken your rage!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c366e1c0-f62d-41ce-baec-de11dbc1c5f4.jpg?1783932798",
+        "rulings": [
+            {
+                "date": "2019-08-23",
+                "text": "If an effect allows or instructs an opponent to cast a spell during a combat phase, they can't do so. Marisi's restriction takes precedence over that permission."
+            },
+            {
+                "date": "2019-08-23",
+                "text": "Opponents can still activate abilities during combat."
+            },
+            {
+                "date": "2019-08-23",
+                "text": "Creatures that enter the battlefield after Marisi's second ability resolves won't be goaded."
+            },
+            {
+                "date": "2019-08-23",
+                "text": "The goaded creatures remain goaded even if Marisi leaves the battlefield before your next turn."
+            },
+            {
+                "date": "2023-06-30",
+                "text": "Attacking with a goaded creature doesn't cause it to stop being goaded. If there is an additional combat phase that turn, or if another player gains control of it before it stops being goaded, it must attack again if able."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Sevinne's Reclamation
 {
     "name": "Sevinne's Reclamation",

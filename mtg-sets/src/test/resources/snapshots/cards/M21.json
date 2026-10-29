@@ -1,3 +1,71 @@
+// Animal Sanctuary
+{
+    "name": "Animal Sanctuary",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{2}, {T}: Put a +1/+1 counter on target Bird, Cat, Dog, Goat, Ox, or Snake.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Animal Sanctuary:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Animal Sanctuary:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent Bird|Cat|Dog|Goat|Ox|Snake"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{2}, {T}: Put a +1/+1 counter on target Bird, Cat, Dog, Goat, Ox, or Snake."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "242",
+        "rarity": "RARE",
+        "artist": "Alayna Danner",
+        "flavorText": "\"No owners allowed.\"\n—Sanctuary sign",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/8/f8d7a2c7-666d-4fc6-bac8-ef8eb66e355d.jpg?1783930653"
+    },
+    "colorIdentityOverride": []
+}
+
 // Barrin, Tolarian Archmage
 {
     "name": "Barrin, Tolarian Archmage",
@@ -696,6 +764,100 @@
         "rarity": "MYTHIC",
         "artist": "Nicholas Gregory",
         "imageUri": "https://cards.scryfall.io/normal/front/d/5/d51269cf-a333-4a64-94cd-245798d840d2.jpg?1783930678"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Feline Sovereign
+{
+    "name": "Feline Sovereign",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Cat",
+    "oracleText": "Other Cats you control get +1/+1 and have protection from Dogs.\nWhenever one or more Cats you control deal combat damage to a player, destroy up to one target artifact or enchantment that player controls.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Feline Sovereign:1",
+                "trigger": {
+                    "type": "OneOrMoreDealCombatDamageToPlayerEvent",
+                    "sourceFilter": "creature Cat ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "Or",
+                                    "predicates": [
+                                        "IsArtifact",
+                                        "IsEnchantment"
+                                    ]
+                                }
+                            ],
+                            "controllerPredicate": {
+                                "type": "ControlledByReferencedPlayer",
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "TriggeringPlayer"
+                                }
+                            }
+                        }
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever one or more Cats you control deal combat damage to a player, destroy up to one target artifact or enchantment that player controls."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "permanent Cat ctrl:you",
+                    "excludeSelf": true
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "PROTECTION_FROM_SUBTYPE_DOG",
+                "filter": {
+                    "baseFilter": "permanent Cat ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "180",
+        "rarity": "RARE",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "Dogs beg. Cats lay claim.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/84a9485a-d356-4cbe-b257-b62008a21328.jpg?1783930677",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Because damage remains marked on a creature until the damage is removed as the turn ends, nonlethal damage dealt to a Cat you control may become lethal if Feline Sovereign leaves the battlefield during that turn."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -1733,6 +1895,72 @@
     ]
 }
 
+// Pack Leader
+{
+    "name": "Pack Leader",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Dog",
+    "oracleText": "Other Dogs you control get +1/+1.\nWhenever this creature attacks, prevent all combat damage that would be dealt this turn to Dogs you control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pack Leader:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "PreventDamageShield",
+                    "recipientGroup": {
+                        "cardPredicates": [
+                            "IsPermanent",
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Dog"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "scope": "CombatOnly"
+                },
+                "descriptionOverride": "Whenever this creature attacks, prevent all combat damage that would be dealt this turn to Dogs you control."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "permanent Dog ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "rarity": "RARE",
+        "artist": "Rudy Siswanto",
+        "flavorText": "He will be your loyal champion, and his pack your protectors. All he asks for is a full belly, a spot by the fire, and all the love in your heart.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/8/a8b94bc1-68d1-41dc-914c-a33ecb9aeb49.jpg?1783930738",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Because damage remains marked on a creature until the damage is removed as the turn ends, nonlethal damage dealt to a Dog you control may become lethal if Pack Leader leaves the battlefield during that turn."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Once Pack Leader attacks, its effect prevents damage that would be dealt to Dogs you control even if Pack Leader leaves the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Peer into the Abyss
 {
     "name": "Peer into the Abyss",
@@ -1995,6 +2223,153 @@
     ]
 }
 
+// Rin and Seri, Inseparable
+{
+    "name": "Rin and Seri, Inseparable",
+    "manaCost": "{1}{R}{G}{W}",
+    "typeLine": "Legendary Creature — Dog Cat",
+    "oracleText": "Whenever you cast a Dog spell, create a 1/1 green Cat creature token.\nWhenever you cast a Cat spell, create a 1/1 white Dog creature token.\n{R}{G}{W}, {T}: Rin and Seri deals damage to any target equal to the number of Dogs you control. You gain life equal to the number of Cats you control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rin and Seri, Inseparable:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Dog"
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Cat"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/f/b/fbdf8dc1-1b10-4fce-97b9-1f5600500cc1.jpg?1783930586"
+                },
+                "descriptionOverride": "Whenever you cast a Dog spell, create a 1/1 green Cat creature token."
+            },
+            {
+                "id": "Rin and Seri, Inseparable:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Cat"
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Dog"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/4/f/4f8107b3-8539-4b9c-8d0d-c512c940838f.jpg?1783930586"
+                },
+                "descriptionOverride": "Whenever you cast a Cat spell, create a 1/1 white Dog creature token."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Rin and Seri, Inseparable:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{R}{G}{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "permanent Dog"
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "permanent Cat"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{R}{G}{W}, {T}: Rin and Seri deals damage to any target equal to the number of Dogs you control. You gain life equal to the number of Cats you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "278",
+        "rarity": "MYTHIC",
+        "artist": "Leesha Hannigan",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d605c780-a42a-4816-8fb9-63e3114a8246.jpg?1784483577",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Rin and Seri's first two abilities don't trigger when you cast Rin and Seri."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If the chosen target is an illegal target by the time Rin and Seri's last ability tries to resolve, the ability won't resolve. You won't gain life."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "The amount of damage Rin and Seri's last ability deals is determined only as that ability resolves. If Rin and Seri is still on the battlefield, it'll count itself."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Sanguine Indulgence
 {
     "name": "Sanguine Indulgence",
@@ -2060,6 +2435,55 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Selfless Savior
+{
+    "name": "Selfless Savior",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Dog",
+    "oracleText": "Sacrifice this creature: Another target creature you control gains indestructible until end of turn. (Damage and effects that say \"destroy\" don't destroy it.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Selfless Savior:1",
+                "cost": "CostSacrificeSelf",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Sacrifice this creature: Another target creature you control gains indestructible until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "rarity": "UNCOMMON",
+        "artist": "Ralph Horsley",
+        "flavorText": "She raised him from an orphaned pup and gave him a life of love. With his last act, he thanked her.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/6911759c-7177-402c-a95a-f9f46efaf521.jpg?1783930734"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 

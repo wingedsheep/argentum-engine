@@ -169,6 +169,106 @@
     ]
 }
 
+// Fleshwrither
+{
+    "name": "Fleshwrither",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Creature — Horror",
+    "oracleText": "Transfigure {1}{B}{B} ({1}{B}{B}, Sacrifice this creature: Search your library for a creature card with the same mana value as this creature, put that card onto the battlefield, then shuffle. Transfigure only as a sorcery.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Fleshwrither:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}{B}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "ManaValueEqualsDynamic",
+                                            "amount": {
+                                                "type": "EntityProperty",
+                                                "entity": "SacrificedAsCost",
+                                                "numericProperty": "ManaValue"
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a creature card with mana value equal to the sacrificed creature's mana value to put onto the battlefield",
+                            "selectedLabel": "Put onto the battlefield"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Transfigure {1}{B}{B} — Sacrifice Fleshwrither to search for a creature card with the same mana value and put it onto the battlefield."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "rarity": "UNCOMMON",
+        "artist": "Dave Allsop",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/08e1a646-6925-4a53-a99c-8951af016a7a.jpg?1783943112",
+        "rulings": [
+            {
+                "date": "2007-05-01",
+                "text": "Transfigure is similar to Transmute, though it can be activated only if the permanent with Transfigure is on the battlefield, and it can fetch only a creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Fomori Nomad
 {
     "name": "Fomori Nomad",

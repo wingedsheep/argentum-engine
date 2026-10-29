@@ -3094,6 +3094,47 @@
     ]
 }
 
+// Necrotic Ooze
+{
+    "name": "Necrotic Ooze",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Creature — Ooze",
+    "oracleText": "As long as this creature is on the battlefield, it has all activated abilities of all creature cards in all graveyards.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "HasAllActivatedAbilitiesOfCards",
+                "donors": "AllGraveyards",
+                "cardFilter": "creature"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "rarity": "RARE",
+        "artist": "James Ryman",
+        "flavorText": "\"To death all must go, and so in death lies ultimate power.\"\n—Geth, Lord of the Vault",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/a/8af2c79f-a151-4628-90fe-c0ff7ccd9c2c.jpg?1783941730",
+        "rulings": [
+            {
+                "date": "2011-01-01",
+                "text": "Necrotic Ooze gains only activated abilities. It doesn't gain keyword abilities (unless those keyword abilities are activated), triggered abilities, or static abilities."
+            },
+            {
+                "date": "2011-01-01",
+                "text": "If an activated ability of a card in a graveyard references the card it's printed on by name, treat Necrotic Ooze's version of that ability as though it referenced Necrotic Ooze by name instead. For example, if Cudgel Troll (which says \"{G}: Regenerate Cudgel Troll\") is in a graveyard, Necrotic Ooze has the ability \"{G}: Regenerate Necrotic Ooze.\""
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Neurok Invisimancer
 {
     "name": "Neurok Invisimancer",

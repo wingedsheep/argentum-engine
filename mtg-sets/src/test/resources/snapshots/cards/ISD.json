@@ -2666,6 +2666,74 @@
     ]
 }
 
+// Gavony Township
+{
+    "name": "Gavony Township",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{2}{G}{W}, {T}: Put a +1/+1 counter on each creature you control.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Gavony Township:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Gavony Township:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{G}{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "{2}{G}{W}, {T}: Put a +1/+1 counter on each creature you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "239",
+        "rarity": "RARE",
+        "artist": "Peter Mohrbacher",
+        "flavorText": "\"The protective wards of the church have weakened, and no one can tell us why. It's time to look to our own defenses.\"\n—Gregel, militia leader",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5f73443-2fe8-424f-8e71-fc7ce1f3a3eb.jpg?1783940895"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Geist of Saint Traft
 {
     "name": "Geist of Saint Traft",

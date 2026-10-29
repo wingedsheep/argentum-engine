@@ -380,6 +380,147 @@
     ]
 }
 
+// Chainer, Dementia Master
+{
+    "name": "Chainer, Dementia Master",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Legendary Creature — Human Minion",
+    "oracleText": "All Nightmares get +1/+1.\n{B}{B}{B}, Pay 3 life: Put target creature card from a graveyard onto the battlefield under your control. That creature is black and is a Nightmare in addition to its other creature types.\nWhen Chainer leaves the battlefield, exile all Nightmares.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Chainer, Dementia Master:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "permanent Nightmare"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Chainer leaves the battlefield, exile all Nightmares."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Chainer, Dementia Master:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{B}{B}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Battlefield",
+                            "controllerOverride": "Controller"
+                        },
+                        {
+                            "type": "ChangeColor",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "colors": [
+                                "BLACK"
+                            ],
+                            "duration": "Permanent"
+                        },
+                        {
+                            "type": "AddCreatureType",
+                            "subtype": "Nightmare",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Put target creature card from a graveyard onto the battlefield under your control. That creature is black and is a Nightmare in addition to its other creature types."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature Nightmare"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "rarity": "RARE",
+        "artist": "Mark Zug",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/40342b11-1005-4ccc-bef4-9ea4c640b048.jpg?1783945158",
+        "rulings": [
+            {
+                "date": "2022-12-08",
+                "text": "The creature put onto the battlefield by Chainer's activated ability is black only, not black in addition to its other colors. It is, however, a Nightmare in addition to its other creature types. As it enters the battlefield, it is already a black Nightmare (and perhaps some other creature types); it doesn't enter and then become a black Nightmare."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Compulsion
 {
     "name": "Compulsion",
