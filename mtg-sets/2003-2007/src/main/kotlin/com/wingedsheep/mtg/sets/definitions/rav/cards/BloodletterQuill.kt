@@ -21,7 +21,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *
  * **The counter is an activation cost, not part of the effect.** [Costs.PutCounterOnSelf] is the
  * accruing cost atom (Mazemind Tome's shape) — it is paid on activation, before the ability is even
- * on the stack, and it is always payable since it takes nothing away. That ordering is what the
+ * on the stack, and it takes nothing away, so it never runs out. That ordering is what the
  * card's own ruling turns on: the counter is already there when the ability resolves, so the very
  * first activation costs a life, and an opponent (or you) may respond to the activation by removing
  * that counter with the second ability before the life is counted.

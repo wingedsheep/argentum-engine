@@ -16,8 +16,8 @@ import io.kotest.matchers.shouldNotBe
  * ([com.wingedsheep.sdk.dsl.Costs.PutCounterOnSelf]) plus the state-triggered
  * "four or more page counters → exile it, gain 4 life".
  *
- * The cost is the novel piece: unlike every other cost it *adds* something, so it is always
- * payable, and it is paid whether or not the ability resolves.
+ * The cost is the novel piece: unlike every other cost it *adds* something, so it never runs
+ * out, and it is paid whether or not the ability resolves.
  */
 class MazemindTomeScenarioTest : ScenarioTestBase() {
 

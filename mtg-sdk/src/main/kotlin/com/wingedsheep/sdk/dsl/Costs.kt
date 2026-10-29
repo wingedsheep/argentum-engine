@@ -614,7 +614,8 @@ object Costs {
     /**
      * Put [count] counters of [counterType] on this permanent as part of the activation cost —
      * "{T}, Put a page counter on this artifact: Scry 1" (Mazemind Tome). The accruing mirror of
-     * [RemoveCounterFromSelf]; always payable, since it costs the player nothing they must have.
+     * [RemoveCounterFromSelf]; payable whenever counters can be put on this permanent, since it costs
+     * the player nothing they must have (Solemnity makes it unpayable — Devoted Druid).
      */
     fun PutCounterOnSelf(counterType: CounterType, count: Int = 1): AbilityCost =
         AbilityCost.Atom(CostAtom.PutCountersOnSelf(counterType, count))

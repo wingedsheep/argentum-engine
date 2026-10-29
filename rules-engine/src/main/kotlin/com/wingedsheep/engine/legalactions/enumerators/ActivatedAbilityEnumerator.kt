@@ -415,10 +415,14 @@ class ActivatedAbilityEnumerator(
                         is CostAtom.PayLife -> {
                             if (!com.wingedsheep.engine.handlers.costs.CostAtomAmounts.canPayLife(state, playerId, com.wingedsheep.engine.handlers.costs.CostAtomAmounts.life(state, atom, playerId, predicateEvaluator, entityId), LifePaymentPurpose.ACTIVATE_ABILITY)) continue
                         }
+                        // Putting counters on the source costs nothing the player must have — only
+                        // a source that can't have counters put on it (Solemnity) can't pay it
+                        // (CR 614.17b).
+                        is CostAtom.PutCountersOnSelf -> {
+                            if (!state.projectedState.canReceiveCounters(entityId)) continue
+                        }
                         // Reveal carries no enumeration-time gate here (validated at payment time).
-                        // Putting counters on the source costs nothing the player must have, so it
-                        // never gates enumeration either.
-                        is CostAtom.RevealFromHand, is CostAtom.PutCountersOnSelf,
+                        is CostAtom.RevealFromHand,
                         // PayCost-only (Tourach's Chant); no activated ability pays it, so there is
                         // nothing to enumerate.
                         is CostAtom.PutCountersOnPermanent,
@@ -687,9 +691,15 @@ class ActivatedAbilityEnumerator(
                                             break
                                         }
                                     }
-                                    // Reveal / put-counters-on-self carry no enumeration-time gate here.
+                                    // See the top-level branch: a source that can't have counters put on it.
+                                    is CostAtom.PutCountersOnSelf -> {
+                                        if (!state.projectedState.canReceiveCounters(entityId)) {
+                                            costCanBePaid = false
+                                            break
+                                        }
+                                    }
+                                    // Reveal carries no enumeration-time gate here.
                                     is CostAtom.RevealFromHand,
-                                    is CostAtom.PutCountersOnSelf,
                                     is CostAtom.PutCountersOnPermanent,
                                     // See the top-level branch: always payable, nothing to select.
                                     is CostAtom.DiscardHand -> {}

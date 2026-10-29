@@ -20,7 +20,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * When there are four or more page counters on this artifact, exile it. If you do, you gain 4 life.
  *
  * The counter is an *accruing activation cost* ([Costs.PutCounterOnSelf]), not a resolution
- * effect — it is paid whether or not the ability resolves, and it is always payable, which is
+ * effect — it is paid whether or not the ability resolves, and it takes nothing away, which is
  * what lets the fourth activation happen at all before the state trigger exiles the Tome.
  *
  * The third ability is state-triggered (CR 603.8): there is no event to hang it on, the engine

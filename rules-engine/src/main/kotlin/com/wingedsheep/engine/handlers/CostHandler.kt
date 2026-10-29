@@ -840,9 +840,12 @@ class CostHandler(private val zones: ZoneTransitionService) {
         // rather than a free rider.
         // The granter-scoped form is gated in canPayAbilityCost, the only layer that knows the granter.
         is CostAtom.Unattach -> atom.ofGrantingPermanent || isAttached(state, sourceId)
-        // Adding counters takes nothing away, so there is never a reason it can't be paid — this
-        // is what keeps Mazemind Tome activatable on the very activation that exiles it.
-        is CostAtom.PutCountersOnSelf -> true
+        // Adding counters takes nothing away, which is what keeps Mazemind Tome activatable on the
+        // very activation that exiles it. The one way it can't be paid is a permanent that can't
+        // have counters put on it at all (Solemnity): the event can't happen, so the cost can't be
+        // chosen (CR 614.17b; Devoted Druid's 2018-12-07 ruling). A replacement that only shrinks
+        // the placement — Vizier of Remedies cutting it to zero — leaves the cost payable.
+        is CostAtom.PutCountersOnSelf -> state.projectedState.canReceiveCounters(sourceId)
         // Selected-permanent counter placement is a PayCost only (Tourach's Chant); no printed
         // activated ability pays it, so it is reported unpayable on this rail.
         is CostAtom.PutCountersOnPermanent -> false
@@ -1097,11 +1100,12 @@ class CostHandler(private val zones: ZoneTransitionService) {
             // through the same chokepoint as the AddCounters effect: the "can't have counters put
             // on it" gate (CR 614.1 / Solemnity), the placement replacements (Hardened Scales,
             // Corpsejack Menace — not Doubling Season, whose "if an effect would put" excludes a
-            // cost), and the first-placement-this-turn marker. A permanent that can't
-            // receive counters still pays the cost — nothing is owed and the activation stands.
+            // cost), and the first-placement-this-turn marker. A permanent that can't receive
+            // counters can't pay it at all (CR 614.17b) — canPayAtom keeps the activation from
+            // being offered, and this refuses one that slips past it.
             val counterType = atom.counterType
             if (!state.projectedState.canReceiveCounters(sourceId)) {
-                CostPaymentResult.success(state, manaPool)
+                CostPaymentResult.failure("Counters can't be put on this permanent")
             } else {
                 val current = state.getEntity(sourceId)?.get<CountersComponent>() ?: CountersComponent()
                 val modifiedCount = ReplacementEffectUtils.applyCounterPlacementModifiers(

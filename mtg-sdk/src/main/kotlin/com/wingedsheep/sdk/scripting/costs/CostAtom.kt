@@ -620,9 +620,12 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
      *
      * Self-scoped by design: every printed counter-adding cost puts the counters on the very
      * permanent whose ability is being activated, so there is nothing to select and nothing to
-     * choose ([selectionCount] stays 0). It is also **always payable** — unlike every other atom
-     * this one takes nothing away, which is exactly what makes the printed cards work (Mazemind
-     * Tome stays activatable right up to the counter that exiles it).
+     * choose ([selectionCount] stays 0). It takes nothing away, so it is payable even on the
+     * activation that finishes the permanent off (Mazemind Tome stays activatable right up to the
+     * counter that exiles it). The one exception is a permanent that can't have counters put on it
+     * (Solemnity): the event can't happen, so the cost can't be paid (CR 614.17b) — Devoted
+     * Druid's untap is then unactivatable. A replacement that merely shrinks the placement
+     * (Vizier of Remedies) leaves it payable.
      */
     @SerialName("AtomPutCountersOnSelf")
     @Serializable
@@ -644,8 +647,7 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
      * Fallen Empires' Chants print it as the way out of a punisher clause: Tourach's Chant deals 3
      * damage to a player "unless the player puts a -1/-1 counter on a creature they control". The
      * payer picks which of their creatures takes it, and a player controlling no matching permanent
-     * simply cannot pay — unlike [PutCountersOnSelf], which is always payable because it needs no
-     * selection.
+     * simply cannot pay — unlike [PutCountersOnSelf], which needs no selection.
      */
     @SerialName("AtomPutCountersOnPermanent")
     @Serializable

@@ -945,11 +945,15 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
 - `Costs.PutCounterOnSelf(counterType, count = 1)` — "Put a [kind] counter on this permanent" as
   part of the activation cost (Mazemind Tome: "{T}, Put a page counter on this artifact: Scry 1").
   The *accruing* mirror of `Costs.RemoveCounterFromSelf`, and the only cost that adds something
-  rather than spending it: it is **always payable**, which is exactly what lets Mazemind Tome reach
-  the fourth page counter that exiles it. Paid at activation (so the counter lands before the
-  ability resolves, and stays even if the ability is countered), and routed through the normal
-  counter-placement chokepoint — the "can't have counters put on it" gate and the placement
-  replacements (Hardened Scales, Doubling Season) all apply. Activated-ability scoped: there is no
+  rather than spending it: it is payable whenever the permanent **can** have counters put on it, which
+  is exactly what lets Mazemind Tome reach the fourth page counter that exiles it. A permanent that
+  can't have counters put on it (Solemnity, `CANT_RECEIVE_COUNTERS`) can't pay it at all — the event
+  can't happen (CR 614.17b), so the ability isn't offered (Devoted Druid's untap); a replacement that
+  only shrinks the placement to zero (Vizier of Remedies) leaves it payable. Paid at activation (so
+  the counter lands before the ability resolves, and stays even if the ability is countered), and
+  routed through the normal counter-placement chokepoint, so placement replacements apply (Hardened
+  Scales — not Doubling Season, whose "if an effect would put" excludes a cost). Activated-ability
+  scoped: there is no
   additional-cost or `PayCost` form, since a spell on the stack has no permanent to accrue them on.
 - `Costs.TapGrantingPermanent` — tap the permanent whose static ability *granted* this activated
   ability, the third member of the granter-cost family alongside `Costs.ExileGrantingPermanent` and
@@ -1422,7 +1426,7 @@ self-exclusive one is never offered the source in the first place.
 
 - `Costs.pay.PutCountersOnPermanent(counterType, count = 1, filter = Permanent)` — put counters on a
   permanent **the payer controls**; the selected-permanent sibling of `PutCountersOnSelf`. Unlike that
-  one — always payable, because it needs no selection — this is **unpayable when the payer controls no
+  one — payable without a selection — this is **unpayable when the payer controls no
   matching permanent**, which is the whole point of the punisher clause it models: Tourach's Chant (FEM)
   deals 3 damage to a player "unless the player puts a -1/-1 counter on a creature they control", and a
   player with an empty board simply takes the damage. The payer picks which of their permanents takes it.
