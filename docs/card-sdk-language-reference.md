@@ -18794,8 +18794,9 @@ The priority groups are (CR 616.1a–f):
     **entering object**, not the replacement source — so an entering-object amount like
     `DistinctColorsManaSpent` reads the new creature's own cast (and a token / reanimated creature that
     wasn't cast spent no mana → 0). Player-scoped counts (`TurnTracking(Player.You)`, Gev) still read
-    the replacement source's controller. A count that names the replacement source itself ("equal to **Arwen's**
-    toughness", Arwen, Weaver of Hope) reads it through `EffectTarget.GrantingSource`. **Set `otherOnly` on any "each *other* …" wording** — the
+    the replacement source's controller. A count that names the replacement source itself
+    ("equal to **Arwen's** toughness", Arwen, Weaver of Hope) reads it through
+    `EffectTarget.GrantingSource`. **Set `otherOnly` on any "each *other* …" wording** — the
     entering permanent's own entry path applies its printed enters-with effects regardless of
     `appliesTo` (that's how plain self-counter cards work), so without the flag a group effect also
     counters its own source as it enters. Source-relative predicates in `appliesTo` (notably

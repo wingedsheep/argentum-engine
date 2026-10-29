@@ -543,8 +543,8 @@ object EntersWithReplacements {
                         // to cast IT") read the entering creature's own cast, not the source's.
                         // controllerId stays the source's controller so player-scoped counts (Gev's
                         // TurnTracking(Player.You)) keep reading the source controller's trackers.
-                        // The replacement's own source is the count's granter, so a count that
-                        // names it ("equal to Arwen's toughness") reads EffectTarget.GrantingSource.
+                        // The replacement's source (a grant's anchor) is exposed as granterId, so a
+                        // count that names it ("equal to Arwen's toughness") reads GrantingSource.
                         val context = EffectContext(
                             sourceId = enteringEntityId,
                             controllerId = sourceControllerId,
