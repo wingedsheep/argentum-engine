@@ -5701,6 +5701,50 @@
     ]
 }
 
+// Unsubstantiate
+{
+    "name": "Unsubstantiate",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Return target spell or creature to its owner's hand.",
+    "script": {
+        "spellEffect": {
+            "type": "ReturnSpellOrPermanentToOwnersHand",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetSpellOrPermanent",
+                "id": "t0",
+                "permanentFilter": {
+                    "cardPredicates": [
+                        "IsCreature"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "79",
+        "rarity": "UNCOMMON",
+        "artist": "Victor Adame Minguez",
+        "flavorText": "\"Nicely done, Jace. You always were good at disappearing acts.\"\n—Liliana Vess",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/ba5dac3d-4b49-44c4-a7b2-0a99485252c9.jpg?1783937489",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "If a spell is returned to its owner's hand, it's removed from the stack and thus will not resolve. The spell isn't countered; it just no longer exists. This works against a spell that can't be countered."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Wailing Ghoul
 {
     "name": "Wailing Ghoul",

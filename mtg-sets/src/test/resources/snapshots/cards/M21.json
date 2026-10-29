@@ -12233,6 +12233,278 @@
     ]
 }
 
+// Volcanic Salvo
+{
+    "name": "Volcanic Salvo",
+    "manaCost": "{10}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "This spell costs {X} less to cast, where X is the total power of creatures you control.\nVolcanic Salvo deals 6 damage to each of up to two target creatures and/or planeswalkers.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 6
+                },
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature|planeswalker"
+                },
+                "id": "t0"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": "TotalPowerYouControl"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "172",
+        "rarity": "RARE",
+        "artist": "Torstein Nordstrand",
+        "flavorText": "Seeing it coming a mile away is little comfort if you can't get out of range in time.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a31b6817-9b63-4d6f-a945-459b44ad184c.jpg?1783930679",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "The cost reduction applies only to generic mana in the cost of Volcanic Salvo. It can't reduce the {R}{R} requirement."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If a creature's power is somehow less than 0, it subtracts from the total power of your other creatures. If the total power of your creatures is 0 or less, the cost remains {10}{R}{R}."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "You can't target the same creature or planeswalker twice with Volcanic Salvo to deal 12 damage to it."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "The total cost to cast Volcanic Salvo is locked in before you pay that cost. For example, if you control three 2/2 creatures, including one you can sacrifice to add {C}, the total cost is {4}{R}{R}. Then you can sacrifice the creature when you activate mana abilities just before paying the cost."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Waker of Waves
+{
+    "name": "Waker of Waves",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Creature — Whale",
+    "oracleText": "Creatures your opponents control get -1/-0.\n{1}{U}, Discard this card: Look at the top two cards of your library. Put one of them into your hand and the other into your graveyard.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Waker of Waves:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{U}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "selectedLabel": "Put in hand",
+                            "remainderLabel": "Put in graveyard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                },
+                "activateFromZone": "Hand",
+                "descriptionOverride": "{1}{U}, Discard this card: Look at the top two cards of your library. Put one of them into your hand and the other into your graveyard."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": -1,
+                "toughnessBonus": 0,
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "On the open sea, there is nowhere to hide.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/abb47990-a5a9-4a22-a8bb-d229b17132c6.jpg?1783930714",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "You can activate the last ability of Waker of Waves only if it's in your hand."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Warded Battlements
+{
+    "name": "Warded Battlements",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Wall",
+    "oracleText": "Defender (This creature can't attack.)\nAttacking creatures you control get +1/+0.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0,
+                "filter": {
+                    "baseFilter": "creature attacking ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "artist": "Titus Lunter",
+        "flavorText": "In dire times, even a place of refuge can become a weapon of war.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f234999b-54e9-40f5-a537-7d6ce169c710.jpg?1783930731"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Warden of the Woods
+{
+    "name": "Warden of the Woods",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Creature — Treefolk",
+    "oracleText": "Vigilance (Attacking doesn't cause this creature to tap.)\nWhenever this creature becomes the target of a spell or ability an opponent controls, you may draw two cards.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 7
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Warden of the Woods:1",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "byOpponent": true
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "descriptionOverride": "Whenever this creature becomes the target of a spell or ability an opponent controls, you may draw two cards."
+                },
+                "descriptionOverride": "Whenever this creature becomes the target of a spell or ability an opponent controls, you may draw two cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "213",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "Weak and strong alike seek shelter beneath its branches.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f1d81cfc-cff8-4478-92b6-efbfc5084165.jpg?1783930665",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "An ability that triggers when something becomes the target of a spell or ability resolves before the spell or ability that caused it to trigger. It resolves even if that spell or ability is countered."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Watcher of the Spheres
 {
     "name": "Watcher of the Spheres",
@@ -12303,6 +12575,30 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLUE"
+    ]
+}
+
+// Wildwood Patrol
+{
+    "name": "Wildwood Patrol",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Centaur Scout",
+    "oracleText": "Trample (This creature can deal excess combat damage to the player or planeswalker it's attacking.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "metadata": {
+        "collectorNumber": "339",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "If you're lucky, the centaurs will give a single warning to leave their territory before driving a spear into you. If you're unlucky, the spear is the warning.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cceaf927-261e-4d61-9fac-eb8abbe87593.jpg?1783930617"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
