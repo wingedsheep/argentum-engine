@@ -3915,6 +3915,8 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * The Saga must be controlled by the trigger source's controller ([player] = Player.You).
      * Saga chapter abilities are detected from lore-counter additions and put on the stack by the
      * engine; when one resolves it emits a SagaChapterResolvedEvent that this pattern matches.
+     * The Saga is the triggering entity, with last-known information from the moment its chapter
+     * began resolving — "that Saga's mana value" survives the CR 714.4 sacrifice (Narci, Fable Singer).
      *
      * Pair with `oncePerTurn = true` on the triggered ability for "This ability triggers only once
      * each turn."

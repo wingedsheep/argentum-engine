@@ -1095,6 +1095,9 @@ data class AbilityResolvedEvent(
  * @property chapterNumber Which chapter ability resolved.
  * @property finalChapterNumber The Saga's highest chapter number.
  * @property isFinalChapter Whether [chapterNumber] is the final chapter.
+ * @property sagaSnapshot The Saga as it stood on the battlefield when the chapter ability began
+ *   resolving — "that Saga's mana value" (Narci, Fable Singer) once CR 714.4 has sacrificed it,
+ *   even a token Saga that has since ceased to exist. Null if it had already left.
  */
 @Serializable
 @SerialName("SagaChapterResolvedEvent")
@@ -1103,7 +1106,8 @@ data class SagaChapterResolvedEvent(
     val controllerId: EntityId,
     val chapterNumber: Int,
     val finalChapterNumber: Int,
-    val isFinalChapter: Boolean
+    val isFinalChapter: Boolean,
+    val sagaSnapshot: com.wingedsheep.engine.state.components.stack.EntitySnapshot? = null
 ) : GameEvent
 
 /**

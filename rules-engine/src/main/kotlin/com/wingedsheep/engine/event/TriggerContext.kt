@@ -685,6 +685,13 @@ data class TriggerContext(
                     triggeringPlayerId = event.playerId,
                     dieResults = event.results,
                 )
+                // "that Saga" — the Saga whose chapter resolved, read through its battlefield
+                // snapshot once CR 714.4 has sacrificed it (Narci, Fable Singer).
+                is com.wingedsheep.engine.core.SagaChapterResolvedEvent -> TriggerContext(
+                    triggeringEntityId = event.sagaId,
+                    triggeringLastKnownSnapshot = event.sagaSnapshot,
+                    triggeringPlayerId = event.controllerId,
+                )
                 else -> TriggerContext()
             }
         }

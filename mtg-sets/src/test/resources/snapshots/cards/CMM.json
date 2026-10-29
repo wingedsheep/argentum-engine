@@ -1,1 +1,76 @@
-
+// Narci, Fable Singer
+{
+    "name": "Narci, Fable Singer",
+    "manaCost": "{1}{W}{B}{G}",
+    "typeLine": "Legendary Creature — Human Bard",
+    "oracleText": "Lifelink\nWhenever you sacrifice an enchantment, draw a card.\nWhenever the final chapter ability of a Saga you control resolves, each opponent loses X life and you gain X life, where X is that Saga's mana value.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Narci, Fable Singer:1",
+                "trigger": {
+                    "type": "PermanentsSacrificedEvent",
+                    "filter": "enchantment",
+                    "perPermanent": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            },
+            {
+                "id": "Narci, Fable Singer:2",
+                "trigger": "SagaChapterResolvedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "ManaValue"
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "ManaValue"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "710",
+        "rarity": "MYTHIC",
+        "artist": "Miranda Meeks",
+        "flavorText": "\"All stories eventually come to an end.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a98a2fa9-82d6-4cf7-adb4-65b187cd9cda.jpg?1783915490"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK",
+        "GREEN"
+    ]
+}

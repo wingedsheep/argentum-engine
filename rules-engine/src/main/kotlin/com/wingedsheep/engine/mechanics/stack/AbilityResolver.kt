@@ -121,7 +121,7 @@ internal class AbilityResolver(
                 abilityComponent.description,
                 abilityEntityId = abilityId
             ),
-            sagaChapterResolvedEvent = sagaChapterResolvedEvent(abilityComponent)
+            sagaChapterResolvedEvent = sagaChapterResolvedEvent(state, abilityComponent)
         )
     }
 
@@ -329,16 +329,24 @@ internal class AbilityResolver(
 
     /**
      * A Saga chapter ability resolving emits SagaChapterResolvedEvent so "whenever the final
-     * chapter ability of a Saga you control resolves" triggers (Tom Bombadil) can detect it.
+     * chapter ability of a Saga you control resolves" triggers (Tom Bombadil) can detect it. The
+     * Saga is snapshotted now, while it is still on the battlefield, so "that Saga's mana value"
+     * (Narci, Fable Singer) survives the CR 714.4 sacrifice that follows the final chapter.
      */
-    private fun sagaChapterResolvedEvent(abilityComponent: TriggeredAbilityOnStackComponent): SagaChapterResolvedEvent? =
+    private fun sagaChapterResolvedEvent(
+        state: GameState,
+        abilityComponent: TriggeredAbilityOnStackComponent
+    ): SagaChapterResolvedEvent? =
         abilityComponent.sagaChapterInfo?.let { info ->
             SagaChapterResolvedEvent(
                 sagaId = abilityComponent.sourceId,
                 controllerId = abilityComponent.controllerId,
                 chapterNumber = info.chapterNumber,
                 finalChapterNumber = info.finalChapterNumber,
-                isFinalChapter = info.isFinalChapter
+                isFinalChapter = info.isFinalChapter,
+                sagaSnapshot = abilityComponent.sourceId
+                    .takeIf { it in state.getBattlefield() }
+                    ?.let { com.wingedsheep.engine.state.components.stack.captureLastKnown(state, it) }
             )
         }
 }

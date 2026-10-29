@@ -9814,6 +9814,11 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
   ability triggers only once each turn."
 - `Triggers.you.sagaChapterResolves()` — same, but matches *any* chapter ability's resolution
   (`finalChapterOnly = false`).
+- Either way the Saga is the trigger's `EffectTarget.TriggeringEntity`, snapshotted as its chapter
+  ability began resolving — so "where X is that Saga's mana value" is
+  `DynamicAmounts.triggeringManaValue()` and still reads the Saga after CR 714.4 has sacrificed it
+  (a token Saga included). **Narci, Fable Singer**: `LoseLife(triggeringManaValue(), EachOpponent)
+  then GainLife(triggeringManaValue())`.
 - **Read ahead** (CR 702.155 / 714.3b) — `card { readAhead() }` (`readAhead(finalChapter = 3)`). Adds the
   `Keyword.READ_AHEAD` tag plus an `EntersWithChoice(ChoiceType.NUMBER, minValue = 1, maxValue = finalChapter)`, so
   the controller picks a chapter as the Saga enters, however it enters (CR 702.155b) — stored in
