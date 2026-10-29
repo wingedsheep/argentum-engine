@@ -759,7 +759,11 @@ class BatchTriggerSubject internal constructor(
         return spec(BlockEvent(filter = filter, batch = true))
     }
 
-    /** "deal combat damage to a player". */
+    /**
+     * "deal combat damage to a player" — once per player hit, bound as `Player.TriggeringPlayer`;
+     * the damage the matching creatures dealt that player is `DynamicAmounts.triggerDamageAmount()`
+     * ("that damage", Broodcaller Scourge).
+     */
     fun dealCombatDamageToAPlayer(): TriggerSpec {
         noOther("dealCombatDamageToAPlayer")
         return spec(OneOrMoreDealCombatDamageToPlayerEvent(sourceFilter = filter))

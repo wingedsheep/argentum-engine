@@ -257,6 +257,94 @@
     ]
 }
 
+// Broodcaller Scourge
+{
+    "name": "Broodcaller Scourge",
+    "manaCost": "{5}{G}{G}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nWhenever one or more Dragons you control deal combat damage to a player, you may put a permanent card with mana value less than or equal to that damage from your hand onto the battlefield.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 7
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Broodcaller Scourge:1",
+                "trigger": {
+                    "type": "OneOrMoreDealCombatDamageToPlayerEvent",
+                    "sourceFilter": "creature Dragon"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsPermanent",
+                                        {
+                                            "type": "ManaValueAtMostDynamic",
+                                            "amount": {
+                                                "type": "ContextProperty",
+                                                "key": "TRIGGER_DAMAGE_AMOUNT"
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "put_candidates"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "put_candidates",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "putting"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "putting",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "rarity": "RARE",
+        "artist": "Loïc Canavaggia",
+        "flavorText": "Younger dragons bow to its will, not out of respect, but out of fear.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/f/6fc0a74b-0b8a-4c70-87f2-f9f2625d5ff2.jpg?1783907167",
+        "rulings": [
+            {
+                "date": "2025-04-04",
+                "text": "If a card in your hand has {X} in its mana cost, X is 0 for the purpose of determining its mana value."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Colossal Grave-Reaver
 {
     "name": "Colossal Grave-Reaver",
@@ -1182,6 +1270,143 @@
         "artist": "Dmitry Burmak",
         "flavorText": "\"Glory to the Burning Ones! May their mighty fangs devour all foes!\"",
         "imageUri": "https://cards.scryfall.io/normal/front/8/6/86e576f2-8f9f-4bbf-85c4-b99ecb665412.jpg?1783907063"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Parapet Thrasher
+{
+    "name": "Parapet Thrasher",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nWhenever one or more Dragons you control deal combat damage to an opponent, choose one that hasn't been chosen this turn —\n• Destroy target artifact that opponent controls.\n• This creature deals 4 damage to each other opponent.\n• Exile the top card of your library. You may play it this turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Parapet Thrasher:1",
+                "trigger": {
+                    "type": "OneOrMoreDealCombatDamageToPlayerEvent",
+                    "sourceFilter": "creature Dragon",
+                    "toOpponents": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Graveyard",
+                                "byDestruction": true
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "artifact ctrl:triggering-player"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Destroy target artifact that opponent controls"
+                        },
+                        {
+                            "effect": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Players",
+                                    "players": "EachOpponent"
+                                },
+                                "body": {
+                                    "type": "Gated",
+                                    "gate": {
+                                        "type": "Gate.WhenCondition",
+                                        "condition": {
+                                            "type": "Not",
+                                            "condition": {
+                                                "type": "PlayerIs",
+                                                "player": "You"
+                                            }
+                                        }
+                                    },
+                                    "then": {
+                                        "type": "DealDamage",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 4
+                                        },
+                                        "target": "Controller"
+                                    }
+                                }
+                            },
+                            "description": "This creature deals 4 damage to each other opponent"
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "TopOfLibrary",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeAs": "impulseExiled"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "impulseExiled",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Exile"
+                                        }
+                                    },
+                                    {
+                                        "type": "GrantMayPlayFromExile",
+                                        "from": "impulseExiled"
+                                    }
+                                ]
+                            },
+                            "description": "Exile the top card of your library. You may play it this turn"
+                        }
+                    ],
+                    "excludeModesChosenThisTurn": true,
+                    "countsAsModalSpell": false
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "rarity": "RARE",
+        "artist": "Cristi Balanescu",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6d3ba135-e8d6-443a-952b-5c93edb4523c.jpg?1783907173",
+        "rulings": [
+            {
+                "date": "2025-04-04",
+                "text": "If the triggered ability triggers more than three times in a turn, no mode can be chosen for any instances of the ability after the third, and those will be removed from the stack and do nothing."
+            },
+            {
+                "date": "2025-04-04",
+                "text": "You pay all costs and follow all timing rules for cards played this way. For example, if the exiled card is a land card, you may play it only during your main phase while the stack is empty."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "RED"

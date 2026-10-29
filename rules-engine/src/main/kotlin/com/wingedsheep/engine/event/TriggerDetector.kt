@@ -3795,6 +3795,7 @@ class TriggerDetector(
             val lastKnown: EntitySnapshot? = null,
             /** The source's controller when it dealt the damage (live, or last-known). */
             val sourceControllerId: EntityId,
+            val amount: Int,
         )
         val combatDamageByController = mutableMapOf<EntityId, MutableList<CombatDamageInfo>>()
         val combatDamageByDamagedPlayer = mutableMapOf<EntityId, MutableList<CombatDamageInfo>>()
@@ -3813,7 +3814,7 @@ class TriggerDetector(
             } ?: continue
             val info = CombatDamageInfo(
                 event.sourceId, event.targetId, toBattle = !toPlayer, lastKnown = lastKnown,
-                sourceControllerId = controller
+                sourceControllerId = controller, amount = event.amount
             )
             combatDamageByController.getOrPut(controller) { mutableListOf() }.add(info)
             if (toPlayer) combatDamageByDamagedPlayer.getOrPut(event.targetId) { mutableListOf() }.add(info)
@@ -3929,7 +3930,8 @@ class TriggerDetector(
                         triggerContext = TriggerContext(
                             triggeringEntityId = matchingInfos.first().sourceId,
                             capturedEntityIds = matchingInfos.map { it.sourceId }.distinct(),
-                            damagedPlayerIds = matchingInfos.filterNot { it.toBattle }.map { it.targetPlayerId }.distinct()
+                            damagedPlayerIds = matchingInfos.filterNot { it.toBattle }.map { it.targetPlayerId }.distinct(),
+                            damageAmount = matchingInfos.sumOf { it.amount }
                         )
                     )
                 )
@@ -3945,7 +3947,9 @@ class TriggerDetector(
             // per source, so cards needing per-source dispatch use a singular trigger event.
             // The "or battle" variant also fires once per battle hit (no triggering player).
             // Either way the matching sources that hit that recipient are captured, so a
-            // payoff can act on "those creatures" (Zurgo and Ojutai).
+            // payoff can act on "those creatures" (Zurgo and Ojutai). The damage those sources
+            // dealt that recipient in this step is summed into `damageAmount` — "that damage"
+            // (Broodcaller Scourge).
             for ((recipientId, infos) in matchingInfos.groupBy { it.targetPlayerId }) {
                 triggers.add(
                     PendingTrigger(
@@ -3956,7 +3960,8 @@ class TriggerDetector(
                         triggerContext = TriggerContext(
                             triggeringEntityId = infos.first().sourceId,
                             triggeringPlayerId = recipientId.takeUnless { infos.first().toBattle },
-                            capturedEntityIds = infos.map { it.sourceId }.distinct()
+                            capturedEntityIds = infos.map { it.sourceId }.distinct(),
+                            damageAmount = infos.sumOf { it.amount }
                         )
                     )
                 )
