@@ -13,6 +13,8 @@ import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComp
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.TargetsComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
+import com.wingedsheep.engine.event.TriggerContext
+import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.CopyTargetSpellEffect
 import com.wingedsheep.sdk.scripting.effects.CopyTargetSpellOrAbilityEffect
@@ -144,7 +146,8 @@ class CopyTargetSpellOrAbilityExecutor(
                 // Legal targets are found from the *copier's* perspective (its source), matching
                 // how new targets for a copy are validated — not from the copied ability's entity.
                 val legalTargetsMap = legalTargetsFor(
-                    currentState, targetFinder, targetRequirements, controllerId, copierSourceId
+                    currentState, targetFinder, targetRequirements, controllerId, copierSourceId,
+                    container.get<TriggeredAbilityOnStackComponent>()?.triggerContext
                 )
 
                 // CR 707.10c: no legal replacement for some requirement — the copy is still made,
@@ -238,11 +241,19 @@ class CopyTargetSpellOrAbilityExecutor(
             targetFinder: TargetFinder,
             targetRequirements: List<TargetRequirement>,
             controllerId: EntityId,
-            sourceId: EntityId?
+            sourceId: EntityId?,
+            triggerContext: TriggerContext?
         ): Map<Int, List<EntityId>> {
+            // A copied trigger keeps its trigger (CR 707.10), so a restriction reading
+            // Player.TriggeringPlayer ("another target player", The Lord of Pain) sees the same player.
+            val triggerBinding = triggerContext?.let {
+                PredicateContext(controllerId = controllerId, sourceId = sourceId,
+                    triggeringEntityId = it.triggeringEntityId, triggeringPlayerId = it.triggeringPlayerId)
+            }
             val map = mutableMapOf<Int, List<EntityId>>()
             for ((index, requirement) in targetRequirements.withIndex()) {
-                map[index] = targetFinder.findLegalTargets(state, requirement, controllerId, sourceId)
+                map[index] = targetFinder.findLegalTargets(state, requirement, controllerId, sourceId,
+                    triggeringEntityId = triggerContext?.triggeringEntityId, pipelineContext = triggerBinding)
             }
             return map
         }

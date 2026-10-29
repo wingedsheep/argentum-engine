@@ -73,10 +73,18 @@ class CopyTargetTriggeredAbilityExecutor(
             DependentTargetSelection.prefixTables(state, targetRequirements,
                 PredicateContext(controllerId = context.controllerId, sourceId = context.sourceId), targetFinder)
         } else null
+        // The copy keeps the original's trigger, so "another target player" (Player.TriggeringPlayer)
+        // excludes the same player it did for the original (The Lord of Pain).
+        val trigger = state.getEntity(abilityEntityId)?.get<TriggeredAbilityOnStackComponent>()?.triggerContext
+        val triggerBinding = trigger?.let {
+            PredicateContext(controllerId = context.controllerId, sourceId = context.sourceId,
+                triggeringEntityId = it.triggeringEntityId, triggeringPlayerId = it.triggeringPlayerId)
+        }
         val legalTargetsMap = mutableMapOf<Int, List<EntityId>>()
         for ((index, requirement) in targetRequirements.withIndex()) {
             legalTargetsMap[index] = prefixTables?.get(index)?.values?.flatten()?.distinct()
-                ?: targetFinder.findLegalTargets(state, requirement, context.controllerId, context.sourceId)
+                ?: targetFinder.findLegalTargets(state, requirement, context.controllerId, context.sourceId,
+                    triggeringEntityId = trigger?.triggeringEntityId, pipelineContext = triggerBinding)
         }
 
         // If no legal targets for any requirement, skip copy (no-op).

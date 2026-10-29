@@ -65,7 +65,7 @@ class TheLordOfPainScenarioTest : ScenarioTestBase() {
             game.getLifeTotal(2) shouldBe 18
         }
 
-        test("opponents can't gain life; you still can") {
+        test("opponents can't gain life") {
             val game = scenario()
                 .withPlayers("P1", "P2")
                 .withCardOnBattlefield(1, "The Lord of Pain")
