@@ -2183,6 +2183,300 @@
     ]
 }
 
+// Summon: Magus Sisters
+{
+    "name": "Summon: Magus Sisters",
+    "manaCost": "{4}{G}",
+    "typeLine": "Enchantment Creature — Saga Faerie",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI, II, III — Choose one at random —\n• Combine Powers! — Put three +1/+1 counters on target creature.\n• Defense! — Put a shield counter on target creature. You gain 3 life.\n• Fight! — This creature fights up to one target creature an opponent controls.\nHaste",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 3,
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Combine Powers! — Put three +1/+1 counters on target creature"
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "AddCounters",
+                                        "counterType": "SHIELD",
+                                        "count": 1,
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t1"
+                                        }
+                                    },
+                                    {
+                                        "type": "GainLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 3
+                                        }
+                                    }
+                                ]
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    },
+                                    "id": "t1"
+                                }
+                            ],
+                            "description": "Defense! — Put a shield counter on target creature. You gain 3 life"
+                        },
+                        {
+                            "effect": {
+                                "type": "Fight",
+                                "target1": "Self",
+                                "target2": {
+                                    "type": "BoundVariable",
+                                    "name": "t2"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "optional": true,
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:opponent"
+                                    },
+                                    "id": "t2"
+                                }
+                            ],
+                            "description": "Fight! — This creature fights up to one target creature an opponent controls"
+                        }
+                    ],
+                    "chooseAtRandom": true
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 3,
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t3"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    },
+                                    "id": "t3"
+                                }
+                            ],
+                            "description": "Combine Powers! — Put three +1/+1 counters on target creature"
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "AddCounters",
+                                        "counterType": "SHIELD",
+                                        "count": 1,
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t4"
+                                        }
+                                    },
+                                    {
+                                        "type": "GainLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 3
+                                        }
+                                    }
+                                ]
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    },
+                                    "id": "t4"
+                                }
+                            ],
+                            "description": "Defense! — Put a shield counter on target creature. You gain 3 life"
+                        },
+                        {
+                            "effect": {
+                                "type": "Fight",
+                                "target1": "Self",
+                                "target2": {
+                                    "type": "BoundVariable",
+                                    "name": "t5"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "optional": true,
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:opponent"
+                                    },
+                                    "id": "t5"
+                                }
+                            ],
+                            "description": "Fight! — This creature fights up to one target creature an opponent controls"
+                        }
+                    ],
+                    "chooseAtRandom": true
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 3,
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t6"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    },
+                                    "id": "t6"
+                                }
+                            ],
+                            "description": "Combine Powers! — Put three +1/+1 counters on target creature"
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "AddCounters",
+                                        "counterType": "SHIELD",
+                                        "count": 1,
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t7"
+                                        }
+                                    },
+                                    {
+                                        "type": "GainLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 3
+                                        }
+                                    }
+                                ]
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    },
+                                    "id": "t7"
+                                }
+                            ],
+                            "description": "Defense! — Put a shield counter on target creature. You gain 3 life"
+                        },
+                        {
+                            "effect": {
+                                "type": "Fight",
+                                "target1": "Self",
+                                "target2": {
+                                    "type": "BoundVariable",
+                                    "name": "t8"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "optional": true,
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:opponent"
+                                    },
+                                    "id": "t8"
+                                }
+                            ],
+                            "description": "Fight! — This creature fights up to one target creature an opponent controls"
+                        }
+                    ],
+                    "chooseAtRandom": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "RARE",
+        "artist": "Rui Maruyama",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/6/76a8cae7-e6ea-45eb-be8d-0e6a29b98aa6.jpg?1783906350",
+        "rulings": [
+            {
+                "date": "2025-06-06",
+                "text": "As you put one of Summon: Magus Sisters's chapter abilities on the stack, you choose a mode at random. Players can respond to the ability knowing which mode was chosen."
+            },
+            {
+                "date": "2025-06-06",
+                "text": "In the incredibly rare case where there is no legal target for the first or second mode, those modes can't be chosen at random. Since the third mode doesn't require a target, it is always eligible to be chosen."
+            },
+            {
+                "date": "2025-06-06",
+                "text": "The random choice of mode for Summon: Magus Sisters's chapter abilities is made before targets are chosen."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Summon: Valefor
 {
     "name": "Summon: Valefor",

@@ -735,6 +735,20 @@ class TriggerProcessor(
             }
         }
 
+        // "Choose one at random" — the engine, not the controller, draws the mode from the ones that
+        // could legally be chosen, before targets (Summon: Magus Sisters' rulings). An empty pool
+        // falls through to the removed-from-stack branch below.
+        if (modal.chooseAtRandom && selectedModeIndices.isEmpty() && offerIndices.isNotEmpty()) {
+            val (pick, advanced) = state.nextRandom { nextInt(offerIndices.size) }
+            return presentTriggerModalTargetDecision(
+                advanced, ability, outerTargets, outerTargetRequirements,
+                modal.modes, listOf(offerIndices[pick]), emptyList(), currentOrdinal = 0, triggerCause,
+                recordChosenModesOnSource = modal.excludePreviouslyChosenModes,
+                recordChosenModesThisTurn = modal.excludeModesChosenThisTurn,
+                eachModeTargetsDifferent = modal.eachModeTargetsDifferent
+            )
+        }
+
         if (offerIndices.isEmpty() || selectedModeIndices.size >= chooseCount) {
             if (offerIndices.isEmpty() && selectedModeIndices.size < minChooseCount) {
                 // Every remaining mode is unselectable — no legal target, or already spent by

@@ -261,11 +261,30 @@ data class ModalEffect(
      * only one of its opponent modes. Read on the triggered-ability announcement path, like
      * [mayChooseNone].
      */
-    val eachModeTargetsDifferent: Boolean = false
+    val eachModeTargetsDifferent: Boolean = false,
+    /**
+     * "Choose one at random" (Summon: Magus Sisters, Outlaws' Merriment, Umaro, Raging Yeti): the
+     * controller doesn't pick — the engine draws the mode uniformly from the game's seeded RNG as
+     * the ability goes onto the stack, before targets are chosen, so players respond knowing it
+     * (CR 603.3c; Magus Sisters' rulings). Only modes that could legally be chosen are in the draw:
+     * a mode with no legal target is excluded, and if none can be chosen the ability is removed
+     * from the stack. Exactly one mode is drawn, so [chooseCount] must be 1. Read where a modal
+     * *triggered* ability announces its modes (`TriggerProcessor`), like [mayChooseNone]; every
+     * printed card with this wording is a triggered ability. Use [chooseOneAtRandom].
+     */
+    val chooseAtRandom: Boolean = false
 ) : Effect {
+    init {
+        require(!chooseAtRandom || (chooseCount == 1 && minChooseCount == 1 && dynamicChooseCount == null)) {
+            "chooseAtRandom draws exactly one mode; chooseCount must be 1"
+        }
+    }
+
+
     override val description: String = buildString {
         append(if (mayChooseNone) "You may choose " else "Choose ")
         when {
+            chooseAtRandom -> append("one at random")
             excludeModesChosenThisTurn -> append("one that hasn't been chosen this turn")
             excludePreviouslyChosenModes -> append("one that hasn't been chosen")
             dynamicChooseCount != null -> {
@@ -365,6 +384,14 @@ data class ModalEffect(
                 excludeModesChosenThisTurn = true,
                 countsAsModalSpell = false
             )
+
+        /**
+         * Create a "choose one at random" modal effect (Summon: Magus Sisters). The engine draws
+         * the mode from the modes that could legally be chosen as the triggered ability goes onto
+         * the stack; the controller makes no choice. See [ModalEffect.chooseAtRandom].
+         */
+        fun chooseOneAtRandom(vararg modes: Mode): ModalEffect =
+            ModalEffect(modes = modes.toList(), chooseCount = 1, chooseAtRandom = true)
 
         /**
          * Create a choose-two modal effect (Cryptic Command style).
