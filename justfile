@@ -163,6 +163,30 @@ ai-replay-logs DIR:
     scripts/gradle-locked :game-server:test --tests "*.ReplayLogExport" -Dbenchmark=true -DreplayLog=true \
         -DreplayLogDir="$(cd "{{DIR}}" && pwd)"
 
+# Refresh the vendored Draftsim pick-rating tables (ai/src/main/resources/draftai/) from Draftsim's
+# current draft-app bundle. MODE=check diffs without writing; MODE=write regenerates. BUNDLE takes a
+# saved index-*.js or HAR instead of fetching https://draftsim.com/draft/. First-party tables are
+# never written — see scripts/draftsim/README.md.
+[group: 'ai']
+draftsim-refresh MODE="check" BUNDLE="":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    work="$(mktemp -d)"
+    trap 'rm -rf "$work"' EXIT
+    bundle="{{BUNDLE}}"
+    if [ -z "$bundle" ]; then
+        js="$(curl -fsSL https://draftsim.com/draft/ | grep -oE '/draft-app/dist/assets/index-[A-Za-z0-9_-]+\.js' | head -1)"
+        [ -n "$js" ] || { echo "no index-*.js on https://draftsim.com/draft/ -- page layout changed?" >&2; exit 1; }
+        bundle="$work/$(basename "$js")"
+        curl -fsSL -o "$bundle" "https://draftsim.com$js"
+    fi
+    python3 -I scripts/draftsim/extract_from_bundle.py "$bundle" "$work/extract"
+    case "{{MODE}}" in
+        check) python3 -I scripts/draftsim/import_draftsim_sets.py "$work/extract" --check ;;
+        write) python3 -I scripts/draftsim/import_draftsim_sets.py "$work/extract" ;;
+        *) echo "MODE must be check or write" >&2; exit 2 ;;
+    esac
+
 # ECL apprentice promotion ladder. Artifacts are installed outside the repository and selected with
 # -Dargentum.ai.apprentice.dir; missing or invalid files safely use the production evaluator.
 [group: 'ai']

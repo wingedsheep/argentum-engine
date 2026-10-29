@@ -50,18 +50,24 @@ data class DraftsimSetTables(
  * **Provenance.** Most tables are vendored from the Draftsim bundle, but not all of them are:
  * Draftsim's simulator never covered the pre-2004 sets or original Dominaria, so `ATQ`, `SCG`,
  * `LGN`, `POR`, `DOM`, `MRD`, `ONS` and `INV` are **first-party**, hand-curated on the same 0–5
- * scale. So are `FRA`, `KHM`, `ZNR`, `LRW`, `RAV`, `CHK`, `J22`, `LEA`, `LEB`, `LEG`, `ARN`, `DRK`,
- * `FEM`, `PTK`, `P02` and `S99`, which the vendored bundle doesn't ship (`LEA`/`LEB` are almost
- * entirely carried from `30A`), and `STX`, `MAT` and the Commander, duel-deck and treasure-chest
- * products `PIP`, `BLC`, `NCC`, `NEC`, `C15`, `C17`, `CMD`, `DDQ` and `PZ2`. Those last nine
- * aren't drafted; they rate only the cards our registry implements, on the same limited scale, so
- * the constructed and Commander deck generators get a card-quality prior. In every first-party
- * table a card already rated in some other set's table carries that value, and the rest were rated
- * for their own limited environment against the vendored sets' distributions (median ≈2.2–2.6, bombs ≥3.9, unplayables ≈0.7–1.0), because the
- * scorer's cutoffs (`QJ = 2`, `BOMB = 3.9`) are absolute rather than per-set. `BIG` is an extension
- * set whose 30 cards are copied from `OTJ.json`, where the bundle already rated them. Their format
- * is identical and nothing reads the difference; the distinction matters only when judging how much
- * to trust a number, and when refreshing from upstream — a data refresh must not clobber them.
+ * scale. So are `KHM`, `ZNR`, `LRW`, `RAV`, `CHK`, `J22`, `LEA`, `LEB`, `LEG`, `ARN`, `DRK`, `FEM`,
+ * `PTK`, `P02` and `S99`, which the vendored bundle doesn't ship (`LEA`/`LEB` are almost entirely
+ * carried from `30A`), and `STX`, `MAT` and the Commander, duel-deck and treasure-chest products
+ * `PIP`, `BLC`, `NCC`, `NEC`, `C15`, `C17`, `CMD`, `DDQ` and `PZ2`. Those last nine aren't drafted;
+ * they rate only the cards our registry implements, on the same limited scale, so the constructed
+ * and Commander deck generators get a card-quality prior. In every first-party table a card already
+ * rated in some other set's table carries that value, and the rest were rated for their own limited
+ * environment against the vendored sets' distributions (median ≈2.2–2.6, bombs ≥3.9, unplayables
+ * ≈0.7–1.0), because the scorer's cutoffs (`QJ = 2`, `BOMB = 3.9`) are absolute rather than
+ * per-set. `BIG` is an extension set whose 30 cards are copied from `OTJ.json`, where the bundle
+ * already rated them. Their format is identical and nothing reads the difference; the distinction
+ * matters only when judging how much to trust a number, and when refreshing from upstream — a data
+ * refresh must not clobber them. When the bundle starts covering a first-party set, its vendored
+ * table replaces ours (as `FRA`'s did).
+ *
+ * The vendored tables are regenerated from Draftsim's live bundle by `just draftsim-refresh`
+ * (`scripts/draftsim/`), which never writes the first-party files above, `archetypes/FDN.json`, or
+ * the hand-maintained `removal/_overrides.json`.
  */
 object DraftsimData {
 

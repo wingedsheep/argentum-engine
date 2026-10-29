@@ -110,12 +110,12 @@ class DraftsimDataTest : FunSpec({
     // ----- the join against our real card DB -----
 
     // Every table covers a whole set's booster pool, so our implemented subset should land almost
-    // entirely in it. A low rate would mean the normalization is misaligned. The first three are
+    // entirely in it. A low rate would mean the normalization is misaligned. The first four are
     // vendored Draftsim tables; the rest are the first-party tables written for the pre-Draftsim
-    // sets and the rest the bundle never covered (see `DraftsimData`'s class doc), where the join is against names we authored ourselves
-    // and so should be near-total.
-    listOf("LTR", "MSH", "HOB", "ATQ", "SCG", "LGN", "POR", "DOM", "MRD", "ONS", "INV",
-        "FRA", "KHM", "ZNR", "LRW", "RAV", "CHK", "J22", "LEA", "LEB", "LEG", "ARN", "DRK", "FEM", "PTK",
+    // sets and the rest the bundle never covered (see `DraftsimData`'s class doc), where the join is
+    // against names we authored ourselves and so should be near-total.
+    listOf("LTR", "MSH", "HOB", "FRA", "ATQ", "SCG", "LGN", "POR", "DOM", "MRD", "ONS", "INV",
+        "KHM", "ZNR", "LRW", "RAV", "CHK", "J22", "LEA", "LEB", "LEG", "ARN", "DRK", "FEM", "PTK",
         "P02", "S99", "PIP", "BLC", "STX", "NCC", "C15", "CMD", "C17", "PZ2", "DDQ", "NEC", "MAT",
     ).forEach { code ->
         test("most $code cards in our registry resolve a Draftsim rating (name join works)") {

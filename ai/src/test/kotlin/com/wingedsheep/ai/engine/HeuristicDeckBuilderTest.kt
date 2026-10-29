@@ -100,8 +100,8 @@ class HeuristicDeckBuilderTest : FunSpec({
     //
     // Production game 2e28f192 (Reality Fracture draft): the AI's U/B deck ran 2x Yargle, Goliath
     // of Otaria (a vanilla 3/9) and 2x Yargle, Glutton of Urborg while Jace, Reality Sculptor — an
-    // on-color rare planeswalker — sat in the sideboard. FRA has no 17Lands/Draftsim table, so the
-    // heuristic rater decided: it gave a walker the generic 1.5 "other permanent" base (2.0 with
+    // on-color rare planeswalker — sat in the sideboard. FRA had no 17Lands/Draftsim table then, so
+    // the heuristic rater decided: it gave a walker the generic 1.5 "other permanent" base (2.0 with
     // rarity, under the 3/9's 2.4), and the builder counted a second copy of a legend at full value.
 
     fun legend(name: String, manaCost: String, power: Int, toughness: Int) = CardDefinition.creature(
@@ -142,7 +142,7 @@ class HeuristicDeckBuilderTest : FunSpec({
             2.4 * LEGEND_EXTRA_COPY_FACTOR
     }
 
-    test("production FRA pool: the on-color walker makes the deck and the Yargles stop doubling up") {
+    test("production FRA pool: the on-color walker makes the deck") {
         val byName = MtgSetCatalog.all.flatMap { it.cards }.associateBy { it.name }
         val maindeck = listOf(
             "Lyra, Tolarian Archangel", "Cast Away Doubt", "Terminal Criticism", "Traxos, Academy Guardian",
@@ -166,8 +166,9 @@ class HeuristicDeckBuilderTest : FunSpec({
 
         deck.values.sum() shouldBe 40
         deck shouldContainKey "Jace, Reality Sculptor"
-        deck["Yargle, Goliath of Otaria"] shouldBe 1
-        deck["Yargle, Glutton of Urborg"] shouldBe 1
+        // No Yargle-count assertion any more: FRA now has a vendored Draftsim table that rates both
+        // Yargles 1.0, so whether a second copy makes the deck depends on how thin the U/B pool is,
+        // not on the legend discount. The unit test above pins that discount on its own.
         // Still the pool's real colors: nothing white, red or green.
         val spells = deck.keys.mapNotNull { byName[it] }.filterNot { it.typeLine.isLand }
         spells.all { castableWithColors(it, setOf(Color.BLUE, Color.BLACK)) } shouldBe true

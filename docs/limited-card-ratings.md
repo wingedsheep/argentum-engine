@@ -42,10 +42,10 @@ face of a `//` name, diacritics stripped, lowercased.
 
 The tables have two provenances, documented on `DraftsimData`:
 
-- **Vendored** — extracted from Draftsim's draft-app bundle with the scripts in the external,
-  not publicly reachable `bolav/ai-rating-score` repo (`tools/extract_from_bundle.py`, then `tools/import_draftsim_sets.py`;
-  `--check` diffs instead of writing). These reflect Draftsim's own pick data and are preferred
-  whenever Draftsim covers a set.
+- **Vendored** — extracted from Draftsim's live draft-app bundle by `just draftsim-refresh`
+  (`scripts/draftsim/`; `check` diffs, `write` writes). These reflect Draftsim's own pick data and
+  are preferred whenever Draftsim covers a set: when the bundle starts covering a first-party set,
+  its vendored table replaces ours.
 - **First-party** — written here for sets Draftsim never covered. A card already rated in another
   shipped table keeps that value; every other card is rated by reading its oracle text against its
   own set's limited environment, then the whole table is checked against the calibration above. Each
@@ -105,9 +105,10 @@ set.
 
 ## Adding or refreshing ratings
 
-1. **Draftsim covers the set** — refresh the vendored tables from a current bundle with the
-   `bolav/ai-rating-score` tools. Check `--check` output and leave first-party tables, removal
-   overrides and `archetypes/FDN.json` untouched.
+1. **Draftsim covers the set** — `just draftsim-refresh check`, review the diff, then
+   `just draftsim-refresh write`. The scripts never write first-party tables, the removal overrides
+   or `archetypes/FDN.json`; if a first-party set is now covered, drop it from `DraftsimData`'s
+   first-party list.
 2. **It doesn't** — write a first-party table:
    - list the set's booster pool from the Scryfall cache (`~/.cache/scryfall/<code>.json`,
      `draft_names`), basics excluded;

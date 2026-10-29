@@ -14,6 +14,12 @@
     "enchantment-removal",
     "planeswalker-removal"
   ],
+  "Austere Command": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
   "Awaken the Inferno": [
     "removal",
     "creature-removal",
@@ -31,7 +37,8 @@
   ],
   "Chandra, Torch of Defiance": [
     "removal",
-    "creature-removal"
+    "creature-removal",
+    "planeswalker-removal"
   ],
   "Clash of Elements": [
     "removal",
@@ -50,9 +57,16 @@
     "creature-removal",
     "planeswalker-removal"
   ],
-  "Diviner of Victory": [
+  "Diviner of Victory // Unwind History": [
     "removal",
     "creature-removal"
+  ],
+  "Emrakul, the Exigent Doom": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
   ],
   "Essence Burn": [
     "removal",
@@ -63,6 +77,10 @@
     "removal",
     "creature-removal",
     "planeswalker-removal"
+  ],
+  "Fatehold Charm": [
+    "removal",
+    "creature-removal"
   ],
   "Flourishing Grapple": [
     "removal",
@@ -112,6 +130,10 @@
     "creature-removal",
     "planeswalker-removal"
   ],
+  "Mabel, Bitter Recluse": [
+    "removal",
+    "planeswalker-removal"
+  ],
   "Memory Trap": [
     "removal",
     "creature-removal",
@@ -143,6 +165,10 @@
     "enchantment-removal",
     "planeswalker-removal"
   ],
+  "Proft, Sinister Mastermind": [
+    "removal",
+    "creature-removal"
+  ],
   "Prophesied End": [
     "removal",
     "creature-removal"
@@ -173,6 +199,13 @@
     "creature-removal",
     "planeswalker-removal"
   ],
+  "Sublime Epiphany": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
   "Sureshot Sower": [
     "removal",
     "creature-removal"
@@ -194,6 +227,11 @@
   "The Echoverse Fulcrum": [
     "removal",
     "creature-removal"
+  ],
+  "The Theorist, Jace Beleren": [
+    "removal",
+    "creature-removal",
+    "artifact-removal"
   ],
   "Theorix Charm": [
     "removal",
@@ -258,10 +296,5 @@
   "Yoshimaru, Scrappy Stray": [
     "removal",
     "creature-removal"
-  ],
-  "Your Fate Ends Here": [
-    "removal",
-    "creature-removal",
-    "planeswalker-removal"
   ]
 }

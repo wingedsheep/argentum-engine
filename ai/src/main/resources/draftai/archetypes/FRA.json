@@ -1,0 +1,2421 @@
+{
+  "academic ascent": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "blossom-blessed angel": {
+    "archetypes": [
+      {
+        "archetype": "Lifegain Growth",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "seed suture": {
+    "archetypes": [
+      {
+        "archetype": "Lifegain Growth",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "campus crier": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Surveil Aggro",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "enlightened confidant": {
+    "archetypes": [
+      {
+        "archetype": "Lifegain Growth",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "generous revival": {
+    "archetypes": [
+      {
+        "archetype": "Creature Attrition",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "germinate recruits": {
+    "archetypes": [
+      {
+        "archetype": "Lifegain Growth",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "graft surgeon": {
+    "archetypes": [
+      {
+        "archetype": "Counter Aggro",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "guiding hydra": {
+    "archetypes": [
+      {
+        "archetype": "Counter Aggro",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "hexhaven battalion": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "predictive preparations": {
+    "archetypes": [
+      {
+        "archetype": "Surveil Aggro",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "repurposed enforcer": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "surgical precision": {
+    "archetypes": [
+      {
+        "archetype": "Lifegain Growth",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "unflinching hortimancer": {
+    "archetypes": [
+      {
+        "archetype": "Lifegain Growth",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "countersculpt": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "cruel calculations": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Threshold",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "cryotheory adept": {
+    "archetypes": [
+      {
+        "archetype": "Spell Prowess",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "diviner of victory": {
+    "archetypes": [
+      {
+        "archetype": "Surveil Aggro",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "unwind history": {
+    "archetypes": [
+      {
+        "archetype": "Surveil Aggro",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "jace's machinations": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "plan for all outcomes": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "protege's awakening": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "seasoned cryomancer": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Threshold",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Graveyard Threshold",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "semester foreseer": {
+    "archetypes": [
+      {
+        "archetype": "Surveil Aggro",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "peer review": {
+    "archetypes": [
+      {
+        "archetype": "Surveil Aggro",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Surveil Aggro",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "surveillance phantasm": {
+    "archetypes": [
+      {
+        "archetype": "Surveil Aggro",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Surveil Aggro",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "theorist's proxy": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "undulating witness": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "unsummon": {
+    "archetypes": [
+      {
+        "archetype": "Spell Prowess",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "variable chaser": {
+    "archetypes": [
+      {
+        "archetype": "Spell Prowess",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "arc of fortune": {
+    "archetypes": [
+      {
+        "archetype": "Spell Prowess",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "apex witchstalker": {
+    "archetypes": [
+      {
+        "archetype": "Creature Attrition",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "cast away doubt": {
+    "archetypes": [
+      {
+        "archetype": "Face Burn",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "dark matter manipulator": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Threshold",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Graveyard Threshold",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "darklight phoenix": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Threshold",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Creature Attrition",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "extended absence": {
+    "archetypes": [
+      {
+        "archetype": "Face Burn",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "overwrite the multiverse": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "rampart hunter": {
+    "archetypes": [
+      {
+        "archetype": "Deathtouch Trample",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "rewrite regrets": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "sanctum lurker": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Face Burn",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "screeching soulbreaker": {
+    "archetypes": [
+      {
+        "archetype": "Lifegain Growth",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Face Burn",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "silence the echo": {
+    "archetypes": [
+      {
+        "archetype": "Creature Attrition",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "solve for disappointment": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "theoretical necromancer": {
+    "archetypes": [
+      {
+        "archetype": "Creature Attrition",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Graveyard Threshold",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "void extrapolator": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Threshold",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Graveyard Threshold",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "omit variables": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Threshold",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Surveil Aggro",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "ajani's anguish": {
+    "archetypes": [
+      {
+        "archetype": "Face Burn",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Spell Prowess",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "awaken the inferno": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "blazing crescendo": {
+    "archetypes": [
+      {
+        "archetype": "Spell Prowess",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "chandra's emberling": {
+    "archetypes": [
+      {
+        "archetype": "Spell Prowess",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "command the stage": {
+    "archetypes": [
+      {
+        "archetype": "Spell Prowess",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Face Burn",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "craterclaw colossus": {
+    "archetypes": [
+      {
+        "archetype": "Mana Ramp",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "draconic visitor": {
+    "archetypes": [
+      {
+        "archetype": "Mana Ramp",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "fulminous forte": {
+    "archetypes": [
+      {
+        "archetype": "Spell Prowess",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "hallway heckler": {
+    "archetypes": [
+      {
+        "archetype": "Face Burn",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "vicious verse": {
+    "archetypes": [
+      {
+        "archetype": "Face Burn",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Face Burn",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "master of barbs": {
+    "archetypes": [
+      {
+        "archetype": "Face Burn",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "no admittance": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Spell Prowess",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Face Burn",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "pompous battlemage": {
+    "archetypes": [
+      {
+        "archetype": "Spell Prowess",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "improvised act": {
+    "archetypes": [
+      {
+        "archetype": "Spell Prowess",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "pyre rhymer": {
+    "archetypes": [
+      {
+        "archetype": "Spell Prowess",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [
+      "R"
+    ],
+    "splashable": false
+  },
+  "molten tide": {
+    "archetypes": [
+      {
+        "archetype": "Spell Prowess",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [
+      "R"
+    ],
+    "splashable": false
+  },
+  "stingcaster mage": {
+    "archetypes": [
+      {
+        "archetype": "Spell Prowess",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "tether technician": {
+    "archetypes": [
+      {
+        "archetype": "Face Burn",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "violent echoes": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Spell Prowess",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "wrath of the bloodmane": {
+    "archetypes": [
+      {
+        "archetype": "Spell Prowess",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "arcane amphisbaena": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "bestial incursion": {
+    "archetypes": [
+      {
+        "archetype": "Deathtouch Trample",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "carnivorous cultivator": {
+    "archetypes": [
+      {
+        "archetype": "Deathtouch Trample",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "enroot": {
+    "archetypes": [
+      {
+        "archetype": "Deathtouch Trample",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "gardenize": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "greenhouse propagator": {
+    "archetypes": [
+      {
+        "archetype": "Lifegain Growth",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "heartwood crafter": {
+    "archetypes": [
+      {
+        "archetype": "Mana Ramp",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "soul tether": {
+    "archetypes": [
+      {
+        "archetype": "Mana Ramp",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "hexhaven invigorator": {
+    "archetypes": [
+      {
+        "archetype": "Mana Ramp",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "hungering puppetbeast": {
+    "archetypes": [
+      {
+        "archetype": "Mana Ramp",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Deathtouch Trample",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "hunter's axe": {
+    "archetypes": [
+      {
+        "archetype": "Deathtouch Trample",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "inspired tethermage": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "puppet crafting": {
+    "archetypes": [
+      {
+        "archetype": "Mana Ramp",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "restore with empathy": {
+    "archetypes": [
+      {
+        "archetype": "Lifegain Growth",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "simulacrum shaper": {
+    "archetypes": [
+      {
+        "archetype": "Mana Ramp",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "something worth saving": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Threshold",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "tarmogoyf": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Threshold",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "verdant kraken": {
+    "archetypes": [
+      {
+        "archetype": "Mana Ramp",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Mana Ramp",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "vinelasher adept": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "wrecking gecko": {
+    "archetypes": [
+      {
+        "archetype": "Deathtouch Trample",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Mana Ramp",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "aerid konstrari": {
+    "archetypes": [
+      {
+        "archetype": "Mana Ramp",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Mana Ramp",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "avatar of burgeoning echoes": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Jace Empowerment",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "blessed ghoul": {
+    "archetypes": [
+      {
+        "archetype": "Creature Attrition",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Creature Attrition",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Lifegain Growth",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "bloombrute": {
+    "archetypes": [
+      {
+        "archetype": "Lifegain Growth",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Lifegain Growth",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "charge the sanctum": {
+    "archetypes": [
+      {
+        "archetype": "Spell Prowess",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Counter Aggro",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "clash of elements": {
+    "archetypes": [
+      {
+        "archetype": "Spell Prowess",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "craftwork crusher": {
+    "archetypes": [
+      {
+        "archetype": "Mana Ramp",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "denzilore fatehold": {
+    "archetypes": [
+      {
+        "archetype": "Surveil Aggro",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "desperate futurescribe": {
+    "archetypes": [
+      {
+        "archetype": "Surveil Aggro",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "emergency phytomedic": {
+    "archetypes": [
+      {
+        "archetype": "Lifegain Growth",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "entrust the spark": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "fatehold chronologist": {
+    "archetypes": [
+      {
+        "archetype": "Surveil Aggro",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "ferocity of the hunt": {
+    "archetypes": [
+      {
+        "archetype": "Deathtouch Trample",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "grim repriser": {
+    "archetypes": [
+      {
+        "archetype": "Face Burn",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "ingris stingerquill": {
+    "archetypes": [
+      {
+        "archetype": "Face Burn",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "konstrari charm": {
+    "archetypes": [
+      {
+        "archetype": "Mana Ramp",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "konstrari improviser": {
+    "archetypes": [
+      {
+        "archetype": "Mana Ramp",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "kwia vigorbloom": {
+    "archetypes": [
+      {
+        "archetype": "Lifegain Growth",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "mind meanderer": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "null summoner": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Threshold",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "paradox shaper": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Threshold",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "proctor of potential": {
+    "archetypes": [
+      {
+        "archetype": "Surveil Aggro",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Surveil Aggro",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "prudent fateseer": {
+    "archetypes": [
+      {
+        "archetype": "Surveil Aggro",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Surveil Aggro",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "recursive recruitment": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Threshold",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "solarium sentry": {
+    "archetypes": [
+      {
+        "archetype": "Lifegain Growth",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "stingerquill charm": {
+    "archetypes": [
+      {
+        "archetype": "Face Burn",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "stingerquill voxmancer": {
+    "archetypes": [
+      {
+        "archetype": "Face Burn",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "stinging vitriol": {
+    "archetypes": [
+      {
+        "archetype": "Face Burn",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "tam's resistance": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "tenured tethermage": {
+    "archetypes": [
+      {
+        "archetype": "Mana Ramp",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "theorix charm": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Threshold",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "theorix metamage": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Threshold",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Surveil Aggro",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "twinned vision": {
+    "archetypes": [
+      {
+        "archetype": "Surveil Aggro",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Graveyard Threshold",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Spell Prowess",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "uldaros theorix": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Threshold",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "vigorbloom charm": {
+    "archetypes": [
+      {
+        "archetype": "Lifegain Growth",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "vigorbloom vanguard": {
+    "archetypes": [
+      {
+        "archetype": "Lifegain Growth",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "warrior's blades": {
+    "archetypes": [
+      {
+        "archetype": "Counter Aggro",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "whiplash wordsmith": {
+    "archetypes": [
+      {
+        "archetype": "Face Burn",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Face Burn",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "woodwork prodigy": {
+    "archetypes": [
+      {
+        "archetype": "Mana Ramp",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "the echoverse fulcrum": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Threshold",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "eye of jace": {
+    "archetypes": [
+      {
+        "archetype": "Surveil Aggro",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "keeper of the quiet hour": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "medic's kitesail": {
+    "archetypes": [
+      {
+        "archetype": "Lifegain Growth",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "murmuring volume": {
+    "archetypes": [
+      {
+        "archetype": "Mana Ramp",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "dedicated commons": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "R"
+    ],
+    "splashable": false
+  },
+  "deserted beach": {
+    "archetypes": [
+      {
+        "archetype": "Surveil Aggro",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U"
+    ],
+    "splashable": false
+  },
+  "fatehold annex": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U"
+    ],
+    "splashable": false
+  },
+  "formidable commons": {
+    "archetypes": [],
+    "fixing": [
+      "B",
+      "G"
+    ],
+    "splashable": false
+  },
+  "haunted ridge": {
+    "archetypes": [
+      {
+        "archetype": "Face Burn",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "B",
+      "R"
+    ],
+    "splashable": false
+  },
+  "innovative commons": {
+    "archetypes": [
+      {
+        "archetype": "Spell Prowess",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "U",
+      "R"
+    ],
+    "splashable": false
+  },
+  "konstrari annex": {
+    "archetypes": [
+      {
+        "archetype": "Mana Ramp",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "meticulous commons": {
+    "archetypes": [
+      {
+        "archetype": "Creature Attrition",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "B"
+    ],
+    "splashable": false
+  },
+  "overgrown farmland": {
+    "archetypes": [
+      {
+        "archetype": "Lifegain Growth",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "G"
+    ],
+    "splashable": false
+  },
+  "rockfall vale": {
+    "archetypes": [
+      {
+        "archetype": "Mana Ramp",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "roiling canopy": {
+    "archetypes": [
+      {
+        "archetype": "Mana Ramp",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "room of refuge": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "shipwreck marsh": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Threshold",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "U",
+      "B"
+    ],
+    "splashable": false
+  },
+  "stingerquill annex": {
+    "archetypes": [
+      {
+        "archetype": "Face Burn",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "B",
+      "R"
+    ],
+    "splashable": false
+  },
+  "theorist's sanctum": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "U"
+    ],
+    "splashable": false
+  },
+  "theorix annex": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Threshold",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "U",
+      "B"
+    ],
+    "splashable": false
+  },
+  "transformative commons": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "U",
+      "G"
+    ],
+    "splashable": false
+  },
+  "vigorbloom annex": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "G"
+    ],
+    "splashable": false
+  },
+  "ajani resolute": {
+    "archetypes": [
+      {
+        "archetype": "Lifegain Growth",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "gideon's memorial": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "koth of the homestead": {
+    "archetypes": [
+      {
+        "archetype": "Lifegain Growth",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "liliana the faultless": {
+    "archetypes": [
+      {
+        "archetype": "Lifegain Growth",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "lyra, archangel of dawn": {
+    "archetypes": [
+      {
+        "archetype": "Lifegain Growth",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "saheeli, consul of oversight": {
+    "archetypes": [
+      {
+        "archetype": "Surveil Aggro",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "teyo, lightshield expert": {
+    "archetypes": [
+      {
+        "archetype": "Counter Aggro",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "thalia, the survivor": {
+    "archetypes": [
+      {
+        "archetype": "Lifegain Growth",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "way of the healer": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "way of the mentor": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "yoshimaru, beloved companion": {
+    "archetypes": [
+      {
+        "archetype": "Counter Aggro",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "chandra, chill of compliance": {
+    "archetypes": [
+      {
+        "archetype": "Surveil Aggro",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [
+      "U"
+    ],
+    "splashable": false
+  },
+  "geist of saint thalia": {
+    "archetypes": [
+      {
+        "archetype": "Spell Prowess",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "jace, reality sculptor": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "proft, consulting detective": {
+    "archetypes": [
+      {
+        "archetype": "Surveil Aggro",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "ruric thar, biomagus": {
+    "archetypes": [
+      {
+        "archetype": "Spell Prowess",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "traxos, academy guardian": {
+    "archetypes": [
+      {
+        "archetype": "Spell Prowess",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "way of the cryomancer": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "way of the mind sculptor": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Jace Empowerment",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "yuriko, hope from the shadows": {
+    "archetypes": [
+      {
+        "archetype": "Surveil Aggro",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Graveyard Threshold",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "danitha, spear of agony": {
+    "archetypes": [
+      {
+        "archetype": "Face Burn",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "gallia, tragic host": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Threshold",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Creature Attrition",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "garruk, veiled butcher": {
+    "archetypes": [
+      {
+        "archetype": "Creature Attrition",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "gideon the oathless": {
+    "archetypes": [
+      {
+        "archetype": "Face Burn",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "liliana the repentant": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Threshold",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Creature Attrition",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "loot, the anomaly": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Threshold",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "mabel, bitter recluse": {
+    "archetypes": [
+      {
+        "archetype": "Deathtouch Trample",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "massacre girl, most wanted": {
+    "archetypes": [
+      {
+        "archetype": "Face Burn",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Face Burn",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "proft, sinister mastermind": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Threshold",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "teyo, diamondblade mage": {
+    "archetypes": [
+      {
+        "archetype": "Deathtouch Trample",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "tinybones, pocket nuisance": {
+    "archetypes": [
+      {
+        "archetype": "Face Burn",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "way of the deathbringer": {
+    "archetypes": [
+      {
+        "archetype": "Creature Attrition",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Jace Empowerment",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "way of the necromancer": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "winter, tormented loner": {
+    "archetypes": [
+      {
+        "archetype": "Creature Attrition",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "chandra, torch of defiance": {
+    "archetypes": [
+      {
+        "archetype": "Face Burn",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "R"
+    ],
+    "splashable": false
+  },
+  "gallia, the merrymaker": {
+    "archetypes": [
+      {
+        "archetype": "Counter Aggro",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Counter Aggro",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "jiang yanggu, alone": {
+    "archetypes": [
+      {
+        "archetype": "Counter Aggro",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "kiora of fire and ashes": {
+    "archetypes": [
+      {
+        "archetype": "Mana Ramp",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "koth, the geomancer": {
+    "archetypes": [
+      {
+        "archetype": "Face Burn",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Mana Ramp",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "R"
+    ],
+    "splashable": false
+  },
+  "pia, determined rebuilder": {
+    "archetypes": [
+      {
+        "archetype": "Mana Ramp",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "tetsuko umezawa, pursuer": {
+    "archetypes": [
+      {
+        "archetype": "Spell Prowess",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "way of the pyromancer": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "R"
+    ],
+    "splashable": false
+  },
+  "way of the warlord": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Face Burn",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "winter, team player": {
+    "archetypes": [
+      {
+        "archetype": "Spell Prowess",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "fblthp, knows the way": {
+    "archetypes": [
+      {
+        "archetype": "Mana Ramp",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "ghalta the unstoppable": {
+    "archetypes": [
+      {
+        "archetype": "Deathtouch Trample",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "loot, the nexus": {
+    "archetypes": [
+      {
+        "archetype": "Mana Ramp",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "ruric thar, magecrusher": {
+    "archetypes": [
+      {
+        "archetype": "Deathtouch Trample",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "titanbones, towering heart": {
+    "archetypes": [
+      {
+        "archetype": "Lifegain Growth",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Lifegain Growth",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "way of the paradox": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Jace Empowerment",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "way of the wildspeaker": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "edgar, ancient bloodlord": {
+    "archetypes": [
+      {
+        "archetype": "Creature Attrition",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Creature Attrition",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "karn, gilded guardian": {
+    "archetypes": [
+      {
+        "archetype": "Mana Ramp",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "kiora of salt and sand": {
+    "archetypes": [
+      {
+        "archetype": "Jace Empowerment",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "mabel, valley hero": {
+    "archetypes": [
+      {
+        "archetype": "Counter Aggro",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "saheeli, jewel of avishkar": {
+    "archetypes": [
+      {
+        "archetype": "Spell Prowess",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "vraska, soul of stone": {
+    "archetypes": [
+      {
+        "archetype": "Spell Prowess",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "vraska, the cutting glare": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "plains": {
+    "archetypes": [],
+    "fixing": [
+      "W"
+    ],
+    "splashable": false
+  },
+  "island": {
+    "archetypes": [],
+    "fixing": [
+      "U"
+    ],
+    "splashable": false
+  },
+  "swamp": {
+    "archetypes": [],
+    "fixing": [
+      "B"
+    ],
+    "splashable": false
+  },
+  "mountain": {
+    "archetypes": [],
+    "fixing": [
+      "R"
+    ],
+    "splashable": false
+  },
+  "forest": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "artifist acumen": {
+    "archetypes": [
+      {
+        "archetype": "Spell Prowess",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "tomik, orzhov lawmage": {
+    "archetypes": [
+      {
+        "archetype": "Counter Aggro",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "tomik, izzet sparkmage": {
+    "archetypes": [
+      {
+        "archetype": "Spell Prowess",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Face Burn",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  }
+}
