@@ -57,6 +57,24 @@ object LibrarySearchControl {
         return collections[PipelineState.searchControllerKey(collection)]?.firstOrNull() ?: decider
     }
 
+    /**
+     * The pick over a controlled search's [collection] decides what was found: the cards of
+     * [offered] left unpicked drop out of that player's pool, so no later step exiles them. A search
+     * with no pick (gather, then move every match) keeps its whole pool. Empty when [collection]
+     * isn't a controlled search.
+     */
+    fun narrowPool(
+        collections: Map<String, List<EntityId>>,
+        collection: String,
+        offered: List<EntityId>,
+        selected: List<EntityId>,
+    ): Map<String, List<EntityId>> {
+        val controller = collections[PipelineState.searchControllerKey(collection)]?.firstOrNull() ?: return emptyMap()
+        val poolKey = PipelineState.searchControlledPoolKey(controller)
+        val unpicked = offered.toSet() - selected.toSet()
+        return mapOf(poolKey to collections[poolKey].orEmpty().filter { it !in unpicked })
+    }
+
     /** The cards of [cards] a controlled search found, each with the player who controlled it. */
     fun foundCards(collections: Map<String, List<EntityId>>, cards: List<EntityId>): Map<EntityId, EntityId> {
         val pools = collections.filterKeys { it.startsWith(PipelineState.SEARCH_CONTROLLED_POOL_PREFIX) }

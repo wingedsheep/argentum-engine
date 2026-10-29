@@ -11335,10 +11335,12 @@ in the declare-blockers step, even before the turn-based block action has comple
   it were mana of any color to cast them." Applies to any search (a `GatherCardsEffect` with
   `search = true`) an opponent of the source's controller makes that looks through their *own*
   library, whoever's spell caused it. The pick over the searched pool goes to the source's controller
-  (same eligibility, so they can't find a card the instruction doesn't ask for); every card of that
-  pool a later `MoveCollection` would move — in any zone a multi-zone search read — is exiled instead
-  and gets a permanent `MayPlayPermission(withAnyManaColor = true)` for that player. The rest of the
-  instruction runs without them (shuffle, searched event). Several sources: the latest to enter the
+  (same eligibility, so they can't find a card the instruction doesn't ask for). The found cards —
+  the ones picked, or every match of a search with no pick — in any zone a multi-zone search read are
+  exiled by the first `MoveCollection` that would move them and get a permanent
+  `MayPlayPermission(withAnyManaColor = true)` for that player; the unpicked rest moves as written. The
+  rest of the instruction runs without them: they are dropped from every pipeline collection, so a
+  later step can't move them out of exile (shuffle and searched event still happen). Several sources: the latest to enter the
   battlefield wins. Stamped as `ControlsOpponentsLibrarySearchesComponent` by `StaticAbilityHandler`,
   ignored while the source has lost its abilities, read through `LibrarySearchControl`. Sibling of
   `PlayersCantSearchLibraries` (forbids instead of taking over).

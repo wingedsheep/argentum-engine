@@ -1418,16 +1418,16 @@ data class PlayersCantSearchLibraries(
 }
 
 /**
- * "You control your opponents while they're searching their libraries. While an opponent is
- * searching their library, they exile each card they find. You may play those cards for as long as
- * they remain exiled, and you may spend mana as though it were mana of any color to cast them."
- * (Opposition Agent)
+ * The source's controller takes over its opponents' searches of their own libraries and gets the
+ * cards found — Opposition Agent: "You control your opponents while they're searching their
+ * libraries. While an opponent is searching their library, they exile each card they find. You may
+ * play those cards for as long as they remain exiled, and you may spend mana as though it were mana
+ * of any color to cast them."
  *
  * Applies to a search (CR 701.23) an opponent of the source's controller makes of their *own*
  * library — whichever player's spell or ability tells them to. While they search, the source's
- * controller makes the search's choices: which of the cards the instruction allows are found
- * (rulings: never a card the instruction doesn't ask for; "fail to find" only when it names a
- * quality). Every card found — in the library or, for "search your graveyard, hand and/or library",
+ * controller makes the search's pick, from the same eligible cards the searcher would have had
+ * (so never a card the instruction doesn't ask for). Every card found — in the library or, for "search your graveyard, hand and/or library",
  * in any of those zones — is exiled instead of going where the instruction says, and the source's
  * controller may play it for as long as it stays exiled, spending mana as though it were mana of
  * any color. The rest of the instruction (the shuffle, other effects) still happens, and can't see

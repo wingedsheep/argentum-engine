@@ -679,6 +679,12 @@ class LibraryAndZoneContinuationResumer(
             continuation.hiddenPoolDeciders,
             continuation.storedCollections
         )
+        // A controlled search (Opposition Agent) found only what was picked.
+        continuation.sourceCollection?.let { from ->
+            updatedCollections += com.wingedsheep.engine.handlers.effects.library.LibrarySearchControl.narrowPool(
+                continuation.storedCollections, from, continuation.allCards, selected
+            )
+        }
 
         // Inject updated collections into the consumer frame beneath (if any)
         val newState = exposeCollectionsToNextFrame(state,

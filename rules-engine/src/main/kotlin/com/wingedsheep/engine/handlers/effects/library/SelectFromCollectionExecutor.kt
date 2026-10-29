@@ -204,6 +204,7 @@ class SelectFromCollectionExecutor(
             val collections = mutableMapOf(effect.storeSelected to selected)
             if (remainderName != null) collections[remainderName] = cards.filter { it !in selected }
             collections += HiddenPools.marks(listOfNotNull(effect.storeSelected, remainderName), hiddenDeciders, prior)
+            collections += LibrarySearchControl.narrowPool(prior, effect.from, cards, selected)
             return EffectResult.success(stateAfter).copy(updatedCollections = collections)
         }
         // Nothing the chooser could pick, asked anyway: the empty selection is the only answer, so
@@ -572,7 +573,10 @@ class SelectFromCollectionExecutor(
             id = decisionId,
             playerId = playerId,
             prompt = if (controlledSearch) {
-                "You control your opponent's search. ${prompt.replace("your library", "their library")}"
+                // The authored prompt speaks to the searcher, and names a destination the cards
+                // won't reach: say whose search it is and where the found cards go instead.
+                val what = prompt.replace(Regex("\\byour\\b"), "their").replace(Regex(" to put .*$"), "")
+                "You control your opponent's search. $what — the cards found are exiled, and you may play them"
             } else prompt,
             context = DecisionContext(
                 sourceId = context.sourceId,

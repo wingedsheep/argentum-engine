@@ -256,11 +256,6 @@ class MoveCollectionExecutor(
         return withDepartedPermanents(state, result, cards)
     }
 
-    /**
-     * Point each card that entered attacking at the defender its controller chose for it (CR 508.4).
-     * A card with no legal defender, or that isn't a creature on the battlefield, isn't attacking
-     * (CR 506.3b–c).
-     */
     private fun exileSearchFound(
         state: GameState,
         effect: MoveCollectionEffect,
@@ -281,30 +276,34 @@ class MoveCollectionExecutor(
         for ((controller, granted) in found.entries.groupBy({ it.value }, { it.key })) {
             newState = LibrarySearchControl.grantPlay(newState, granted, controller, context.sourceId)
         }
+        // Found cards are gone from every collection, so no later step can see them in exile — not
+        // this collection, not an alias of it, not a controlled-search pool.
+        val stripped = context.pipeline.storedCollections
+            .filterValues { pool -> pool.any { it in found } }
+            .mapValues { (_, pool) -> pool.filter { it !in found } }
         val rest = cards.filter { it !in found }
-        // Drop the found cards from every pool so the rest of the move doesn't take them again.
-        val collections = context.pipeline.storedCollections
-            .mapValues { (key, pool) -> if (key.startsWith(com.wingedsheep.engine.handlers.PipelineState.SEARCH_CONTROLLED_POOL_PREFIX)) pool - found.keys else pool }
-        val stored = collections + (effect.from to rest)
         if (rest.isEmpty()) {
             return EffectResult.success(newState, events).copy(
-                updatedCollections = collections.filterKeys { it.startsWith(com.wingedsheep.engine.handlers.PipelineState.SEARCH_CONTROLLED_POOL_PREFIX) } +
-                    listOfNotNull(effect.storeMovedAs).associateWith { emptyList() }
+                updatedCollections = stripped + listOfNotNull(effect.storeMovedAs).associateWith { emptyList() }
             )
         }
         val restResult = execute(
-            newState, effect.copy(filter = null), context.copy(pipeline = context.pipeline.copy(storedCollections = stored))
+            newState, effect.copy(filter = null),
+            context.copy(pipeline = context.pipeline.copy(
+                storedCollections = context.pipeline.storedCollections + stripped + (effect.from to rest)
+            ))
         )
-        return restResult.copy(
-            events = events + restResult.events,
-            updatedCollections = collections.filterKeys { it.startsWith(com.wingedsheep.engine.handlers.PipelineState.SEARCH_CONTROLLED_POOL_PREFIX) } +
-                (effect.from to (context.pipeline.storedCollections[effect.from] ?: cards)) + restResult.updatedCollections
-        )
+        return restResult.copy(events = events + restResult.events, updatedCollections = stripped + restResult.updatedCollections)
     }
 
     private fun ownerOf(state: GameState, cardId: EntityId): EntityId? =
         state.getEntity(cardId)?.get<OwnerComponent>()?.playerId ?: state.getEntity(cardId)?.get<CardComponent>()?.ownerId
 
+    /**
+     * Point each card that entered attacking at the defender its controller chose for it (CR 508.4).
+     * A card with no legal defender, or that isn't a creature on the battlefield, isn't attacking
+     * (CR 506.3b–c).
+     */
     private fun settleChosenDefenders(state: GameState, cards: List<EntityId>, defenders: List<EntityId?>): GameState {
         var newState = state
         for ((index, cardId) in cards.withIndex()) {

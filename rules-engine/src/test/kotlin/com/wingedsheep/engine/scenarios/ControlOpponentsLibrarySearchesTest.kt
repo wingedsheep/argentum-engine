@@ -27,6 +27,7 @@ import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
+import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -70,11 +71,36 @@ class ControlOpponentsLibrarySearchesTest : FunSpec({
                 EmitLibrarySearchedEventEffect,
             ))
         } }
+    // Doomsday's shape: "Search your library for a card and exile the rest. Put that card on top."
+    val split = card("Test Split") { manaCost = "{0}"; typeLine = "Sorcery"
+        spell {
+            effect = CompositeEffect(listOf(
+                GatherCardsEffect(CardSource.FromZone(Zone.LIBRARY, Player.You, GameObjectFilter.Any), storeAs = "searchable", search = true),
+                SelectFromCollectionEffect(from = "searchable", selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
+                    storeSelected = "found", storeRemainder = "rest"),
+                MoveCollectionEffect(from = "rest", destination = CardDestination.ToZone(Zone.EXILE)),
+                MoveCollectionEffect(from = "found", destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Top)),
+                EmitLibrarySearchedEventEffect,
+            ))
+        } }
+    // Long-Term Plans' shape: the found card is moved twice, and other library cards are moved after it.
+    val plans = card("Test Plans") { manaCost = "{0}"; typeLine = "Sorcery"
+        spell {
+            effect = CompositeEffect(listOf(
+                GatherCardsEffect(CardSource.FromZone(Zone.LIBRARY, Player.You, GameObjectFilter.Any), storeAs = "searchable", search = true),
+                SelectFromCollectionEffect(from = "searchable", selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)), storeSelected = "found"),
+                MoveCollectionEffect(from = "found", destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom)),
+                GatherCardsEffect(CardSource.TopOfLibrary(DynamicAmount.Fixed(2)), storeAs = "above"),
+                MoveCollectionEffect(from = "found", destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Top)),
+                MoveCollectionEffect(from = "above", destination = CardDestination.ToZone(Zone.GRAVEYARD)),
+                EmitLibrarySearchedEventEffect,
+            ))
+        } }
     val mute = card("Test Mute") { manaCost = "{0}"; typeLine = "Instant"
         spell { val t = target(TargetFilter.Permanent); effect = Effects.RemoveAllAbilities(t) } }
 
     fun driver() = GameTestDriver().apply {
-        registerCards(TestCards.all + listOf(agent, tutor, landTutor, wideTutor, everyoneTutors, pilfer, mute))
+        registerCards(TestCards.all + listOf(agent, tutor, landTutor, wideTutor, everyoneTutors, pilfer, split, plans, mute))
         initMirrorMatch(Deck.of("Island" to 40)); passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
     fun GameTestDriver.cast(p: EntityId, name: String, targets: List<EntityId> = emptyList()) =
@@ -150,6 +176,38 @@ class ControlOpponentsLibrarySearchesTest : FunSpec({
         pick.playerId shouldBe opp
         d.submitCardSelection(opp, listOf(inGraveyard)).error shouldBe null
         d.getExile(me) shouldContain inGraveyard
+    }
+
+    test("only the picked card is found: the unpicked rest moves as written, with no permission") {
+        val d = driver(); val me = d.activePlayer!!; val opp = d.getOpponent(me)
+        d.putPermanentOnBattlefield(opp, "Test Agent")
+        val bolt = d.putCardOnTopOfLibrary(me, "Lightning Bolt")
+        val libraryBefore = d.state.getLibrary(me).size
+        d.cast(me, "Test Split")
+        d.state.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>().playerId shouldBe opp
+        d.submitCardSelection(opp, listOf(bolt)).error shouldBe null
+
+        d.state.getLibrary(me).size shouldBe 0
+        d.getExile(me).size shouldBe libraryBefore
+        withClue("only the found card may be played by the agent's controller") {
+            d.state.mayPlayPermissions.flatMap { it.cardIds }.toSet() shouldBe setOf(bolt)
+        }
+    }
+
+    test("a found card stays in exile when a later step moves it again, and other library cards aren't found") {
+        val d = driver(); val me = d.activePlayer!!; val opp = d.getOpponent(me)
+        d.putPermanentOnBattlefield(opp, "Test Agent")
+        val bolt = d.putCardOnTopOfLibrary(me, "Lightning Bolt")
+        val libraryBefore = d.state.getLibrary(me).size
+        d.cast(me, "Test Plans")
+        d.submitCardSelection(opp, listOf(bolt)).error shouldBe null
+
+        d.getExile(me) shouldBe listOf(bolt)
+        withClue("the two cards from the top went to the graveyard as written") {
+            d.getGraveyard(me).size shouldBe 2 + 1 // + the resolved sorcery
+            d.state.getLibrary(me).size shouldBe libraryBefore - 3
+        }
+        d.state.mayPlayPermissions.flatMap { it.cardIds }.toSet() shouldBe setOf(bolt)
     }
 
     test("the source's controller's own search is untouched") {
