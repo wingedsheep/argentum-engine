@@ -741,7 +741,9 @@ internal object VariablePermanentsCostKind : SpellCostKind<CostAtom.VariablePerm
 
     /**
      * The `SacrificeVariable` picker: choose between [CostAtom.VariablePermanents.minCount] and all
-     * of [candidates]. The chosen ids come back as `additionalCostPayment.variableCostPermanents`.
+     * of [candidates] — or, for an [CostAtom.VariablePermanents.exactly] cost, exactly the cast's
+     * announced X (`sacrificeCountIsX`). The chosen ids come back as
+     * `additionalCostPayment.variableCostPermanents`.
      */
     fun sacrificeVariableData(cost: CostAtom.VariablePermanents, candidates: List<EntityId>) =
         AdditionalCostData(

@@ -8,7 +8,7 @@
  */
 import type { SliceCreator, ActionPipelineState, PhaseResult } from '../types'
 import type { ActivateAbilityAction, CastSpellAction, EntityId, GameAction, LegalActionInfo } from '@/types'
-import { computePhases, mergeResult, enterPhase } from './pipelinePhases'
+import { computePhases, mergeResult, enterPhase, dropSacrificeXPickerAtZero } from './pipelinePhases'
 import type { PipelineStoreMethods } from './pipelinePhases'
 import {
   parseManaCost as parseManaCostUtil,
@@ -263,14 +263,8 @@ export const createPipelineSlice: SliceCreator<PipelineSlice> = (set, get) => ({
       nextPhases = [{ type: 'costPayment' }, ...nextPhases]
     }
 
-    // Dynamic phase removal: "sacrifice X creatures" announced at X = 0 owes nothing, so its
-    // picker would only ask the player to confirm an empty selection.
-    if (
-      result.type === 'xSelection' &&
-      result.xValue === 0 &&
-      actionInfo.additionalCostInfo?.sacrificeCountIsX
-    ) {
-      nextPhases = nextPhases.filter((p) => !(p.type === 'costPayment' && (p.costIndex ?? 0) === 0))
+    if (result.type === 'xSelection') {
+      nextPhases = dropSacrificeXPickerAtZero(nextPhases, actionInfo, result.xValue)
     }
 
     // Dynamic phase injection: a non-mana escalate cost (CR 702.120a) is owed once per mode

@@ -351,6 +351,19 @@ export function computePhases(actionInfo: LegalActionInfo, options?: ComputePhas
 // mergeResult — applies a phase result to the accumulated action
 // ---------------------------------------------------------------------------
 
+/**
+ * "Sacrifice X creatures" announced at X = 0 owes nothing, so its picker would only ask the
+ * player to confirm an empty selection: drop it from the phases left after the X pick.
+ */
+export function dropSacrificeXPickerAtZero(
+  phases: PipelinePhase[],
+  actionInfo: LegalActionInfo,
+  xValue: number,
+): PipelinePhase[] {
+  if (xValue !== 0 || !actionInfo.additionalCostInfo?.sacrificeCountIsX) return phases
+  return phases.filter((p) => !(p.type === 'costPayment' && (p.costIndex ?? 0) === 0))
+}
+
 export function mergeResult(
   action: GameAction,
   actionInfo: LegalActionInfo,
@@ -978,7 +991,11 @@ export function enterPhase(
           maxTargets = xCount ?? validTargets.length
           flags.isSacrificeSelection = true
           flags.targetDescription =
-            xCount != null ? costInfo.description.replace(/\bX\b/, String(xCount)) : costInfo.description
+            xCount == null
+              ? costInfo.description
+              : xCount === 1
+                ? costInfo.description.replace(/\bX (\w+?)s\b/, '1 $1')
+                : costInfo.description.replace(/\bX\b/, String(xCount))
           break
         }
         case 'TapPermanents': {

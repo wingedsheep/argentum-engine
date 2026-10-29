@@ -271,8 +271,8 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
         init {
             require(maxCount == null || maxCount >= maxOf(minCount, 1)) { "maxCount must be at least minCount and 1" }
             require(exactly == null || exactly == DynamicAmount.XValue) { "exactly supports only the announced X" }
-            require(exactly == null || (minCount <= 0 && maxCount == null && minMeasure == 0)) {
-                "exactly is the whole count: leave minCount, maxCount and minMeasure open"
+            require(exactly == null || (minCount <= 0 && maxCount == null && minMeasure == 0 && xMeasure == VariableCostMeasure.COUNT)) {
+                "exactly is the whole count: measure by COUNT and leave minCount, maxCount and minMeasure open"
             }
         }
 
