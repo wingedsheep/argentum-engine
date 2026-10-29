@@ -32,6 +32,7 @@ class ChandraHeartOfFireScenarioTest : ScenarioTestBase() {
                 val game = scenario()
                     .withPlayers("Player", "Opponent")
                     .withCardOnBattlefield(1, "Chandra, Heart of Fire")
+                    .withLandsOnBattlefield(1, "Mountain", 2)
                     .withCardInHand(1, "Grizzly Bears")
                     .withCardInHand(1, "Hill Giant")
                     .withCardInLibrary(1, "Lightning Bolt")
@@ -53,6 +54,9 @@ class ChandraHeartOfFireScenarioTest : ScenarioTestBase() {
                 }
                 withClue("three cards were exiled, one left in the library") {
                     game.librarySize(1) shouldBe 1
+                }
+                withClue("Shock, exiled whichever end of the library is the top, is castable from exile this turn") {
+                    castableFromExile(game, "Shock") shouldBe true
                 }
                 withClue("+1 took Chandra from 5 to 6") { loyalty(game, chandra) shouldBe 6 }
             }
