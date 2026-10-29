@@ -620,6 +620,116 @@
     "colorIdentityOverride": []
 }
 
+// Hungry Lynx
+{
+    "name": "Hungry Lynx",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Cat",
+    "oracleText": "Cats you control have protection from Rats. (They can't be blocked, targeted, or dealt damage by Rats.)\nAt the beginning of your end step, target opponent creates a 1/1 black Rat creature token with deathtouch.\nWhenever a Rat dies, put a +1/+1 counter on each Cat you control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hungry Lynx:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Rat"
+                    ],
+                    "keywords": [
+                        "DEATHTOUCH"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/c/1/c1788d4c-31b8-4f73-8275-5470316e7ad4.jpg?1783935828",
+                    "controller": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "At the beginning of your end step, target opponent creates a 1/1 black Rat creature token with deathtouch."
+            },
+            {
+                "id": "Hungry Lynx:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature Rat",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "permanent Cat ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Whenever a Rat dies, put a +1/+1 counter on each Cat you control."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "PROTECTION_FROM_SUBTYPE_RAT",
+                "filter": {
+                    "baseFilter": "permanent Cat ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "rarity": "RARE",
+        "artist": "Shreya Shetty",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c0ad6f84-8ede-4411-9979-cefee255fa70.jpg?1783935941",
+        "rulings": [
+            {
+                "date": "2017-08-25",
+                "text": "The opponent who creates the Rat token is the owner of that token."
+            },
+            {
+                "date": "2017-08-25",
+                "text": "Tokens that are sacrificed or destroyed are put into their owner's graveyard before ceasing to exist. If the token was a Rat, Hungry Lynx's last ability will trigger."
+            },
+            {
+                "date": "2017-08-25",
+                "text": "Hungry Lynx's last ability puts a +1/+1 counter on each Cat you control, including itself."
+            },
+            {
+                "date": "2017-08-25",
+                "text": "If Hungry Lynx dies at the same time as a Rat, its ability triggers, but Hungry Lynx won't be on the battlefield as that ability resolves. It can't be saved by the +1/+1 counter that would have been put on it. The same is true of any other Cats you control that die at the same time. Your remaining Cats will each get a +1/+1 counter."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Kindred Discovery
 {
     "name": "Kindred Discovery",
@@ -927,6 +1037,72 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Qasali Slingers
+{
+    "name": "Qasali Slingers",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Cat Warrior",
+    "oracleText": "Reach\nWhenever this creature or another Cat you control enters, you may destroy target artifact or enchantment.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Qasali Slingers:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Cat ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "descriptionOverride": "Whenever this creature or another Cat you control enters, you may destroy target artifact or enchantment."
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "artifact|enchantment"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this creature or another Cat you control enters, you may destroy target artifact or enchantment."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "rarity": "RARE",
+        "artist": "Izzy",
+        "flavorText": "All things will crumble, whether by time or by force.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/40e21394-146e-4648-b81e-63659c0c4764.jpg?1783935939",
+        "rulings": [
+            {
+                "date": "2017-08-25",
+                "text": "If Qasali Slingers enters the battlefield at the same time as other Cats you control, its ability will trigger for each of those Cats."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 

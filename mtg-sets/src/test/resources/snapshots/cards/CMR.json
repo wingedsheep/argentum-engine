@@ -2038,6 +2038,81 @@
     ]
 }
 
+// Prava of the Steel Legion
+{
+    "name": "Prava of the Steel Legion",
+    "manaCost": "{2}{W}",
+    "typeLine": "Legendary Creature — Cat Soldier",
+    "oracleText": "During your turn, creature tokens you control get +1/+4.\n{3}{W}: Create a 1/1 white Soldier creature token.\nPartner (You can have two commanders if both have partner.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywordAbilities": [
+        "Partner"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Prava of the Steel Legion:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Soldier"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/4/3/430ed737-b918-4485-a623-e781c0beb67b.jpg?1783928591"
+                },
+                "descriptionOverride": "{3}{W}: Create a 1/1 white Soldier creature token."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 4,
+                    "filter": {
+                        "baseFilter": "creature token ctrl:you"
+                    }
+                },
+                "condition": "IsYourTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/9/e9e40e2a-e447-4754-a98b-5521e546781f.jpg?1783928877",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "The bonus provided by Prava's first ability will still be in effect when damage is removed during the cleanup step."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "However, if Prava leaves the battlefield, its bonus immediately stops applying. Nonlethal damage dealt to creature tokens you control may become lethal if Prava leaves the battlefield during your turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Pride of the Perfect
 {
     "name": "Pride of the Perfect",

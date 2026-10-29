@@ -1004,6 +1004,45 @@
     ]
 }
 
+// Utopia Sprawl
+{
+    "name": "Utopia Sprawl",
+    "manaCost": "{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant Forest\nAs this Aura enters, choose a color.\nWhenever enchanted Forest is tapped for mana, its controller adds an additional one mana of the chosen color.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "AdditionalManaOnTap",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "COLOR"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land Forest"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "artist": "Ron Spears",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/5047e271-fbf1-402c-9eb9-0806e5988f76.jpg?1792506540"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Vision Skeins
 {
     "name": "Vision Skeins",

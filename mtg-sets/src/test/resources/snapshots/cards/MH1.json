@@ -1682,6 +1682,77 @@
     ]
 }
 
+// Hall of Heliod's Generosity
+{
+    "name": "Hall of Heliod's Generosity",
+    "manaCost": "",
+    "typeLine": "Legendary Land",
+    "oracleText": "{T}: Add {C}.\n{1}{W}, {T}: Put target enchantment card from your graveyard on top of your library.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Hall of Heliod's Generosity:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Hall of Heliod's Generosity:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Library",
+                    "placement": "Top"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "enchantment own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{1}{W}, {T}: Put target enchantment card from your graveyard on top of your library."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "241",
+        "rarity": "RARE",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "The stronghold of Theros's light.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5cbd10a-b9a6-4c00-8280-72bb4add4390.jpg?1783933066"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Hollowhead Sliver
 {
     "name": "Hollowhead Sliver",

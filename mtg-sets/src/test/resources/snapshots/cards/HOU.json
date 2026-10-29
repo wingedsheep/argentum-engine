@@ -732,6 +732,100 @@
     ]
 }
 
+// Pride Sovereign
+{
+    "name": "Pride Sovereign",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Cat",
+    "oracleText": "This creature gets +1/+1 for each other Cat you control.\n{W}, {T}, Exert this creature: Create two 1/1 white Cat creature tokens with lifelink. (An exerted creature won't untap during your next untap step.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Pride Sovereign:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{W}"
+                            }
+                        },
+                        "CostTap",
+                        "CostExert"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Cat"
+                    ],
+                    "keywords": [
+                        "LIFELINK"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/a/f/af0086cd-56b5-450e-818c-e54f45d1a104.jpg?1783936412"
+                },
+                "descriptionOverride": "{W}, {T}, Exert this creature: Create two 1/1 white Cat creature tokens with lifelink."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "permanent Cat",
+                    "excludeSelf": true
+                },
+                "toughnessBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "permanent Cat",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "126",
+        "rarity": "RARE",
+        "artist": "Ryan Yee",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd3d32b7-672f-4ceb-a1c9-17daefd2cb0c.jpg?1783936016",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "Because damage remains marked on a creature until it's removed as the turn ends, the damage Pride Sovereign takes during combat may become lethal if other Cats you control leave the battlefield later in the turn."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "You can exert a creature to pay a cost even if you've already exerted it earlier in the turn. Exerting it multiple times will keep it tapped only during your next untap step."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Quarry Beetle
 {
     "name": "Quarry Beetle",
