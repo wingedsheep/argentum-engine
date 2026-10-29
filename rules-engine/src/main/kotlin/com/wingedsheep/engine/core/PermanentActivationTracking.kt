@@ -10,10 +10,11 @@ import com.wingedsheep.sdk.model.EntityId
 /**
  * The lightweight [EntitySnapshot] of a permanent whose ability is being activated, as
  * [PermanentAbilitiesActivatedThisTurnComponent] stores it: identity, controller, projected type
- * line, sub/supertypes, keywords and token-ness — every field `PredicateEvaluator.matchesSnapshot`
- * answers, and its caller invariant requires (`wasToken` and `keywords` populated), and nothing
- * else, since auto-pay records one of these for every source it taps. Null when [sourceId] is not
- * on the battlefield.
+ * line, sub/supertypes, keywords and token-ness — the fields `PredicateEvaluator.matchesSnapshot`
+ * needs for the filters read off this tracker, and its caller invariant requires (`wasToken` and
+ * `keywords` populated), and nothing else, since auto-pay records one of these for every source it
+ * taps. Colors are not captured, so a color predicate is unknown here and fails closed. Null when
+ * [sourceId] is not on the battlefield.
  */
 fun activationSourceSnapshot(state: GameState, sourceId: EntityId): EntitySnapshot? {
     if (sourceId !in state.getBattlefield()) return null
