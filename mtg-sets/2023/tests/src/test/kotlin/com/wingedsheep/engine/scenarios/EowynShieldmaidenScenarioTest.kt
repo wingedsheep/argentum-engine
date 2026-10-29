@@ -3,6 +3,7 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.avr.cards.Cloudshift
 import com.wingedsheep.mtg.sets.definitions.ltc.cards.EowynShieldmaiden
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
@@ -24,7 +25,7 @@ class EowynShieldmaidenScenarioTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(EowynShieldmaiden))
+        driver.registerCards(TestCards.all + listOf(EowynShieldmaiden, Cloudshift))
         driver.initMirrorMatch(deck = Deck.of("Plains" to 40))
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return driver
@@ -77,6 +78,25 @@ class EowynShieldmaidenScenarioTest : FunSpec({
         toCombat(driver)
 
         knights(driver, me).size shouldBe 0
+    }
+
+    test("Éowyn blinked this turn: her earlier entry was another object and counts (CR 400.7)") {
+        val driver = createDriver()
+        val me = driver.activePlayer!!
+        cast(driver, me, "Éowyn, Shieldmaiden", Color.BLUE to 1, Color.RED to 1, Color.WHITE to 3)
+        val eowyn = driver.getCreatures(me).first {
+            driver.state.getEntity(it)?.get<CardComponent>()?.name == "Éowyn, Shieldmaiden"
+        }
+        val shift = driver.putCardInHand(me, "Cloudshift")
+        driver.giveMana(me, Color.WHITE, 1)
+        driver.castSpell(me, shift, listOf(eowyn))
+        driver.bothPass()
+        // Same entity id, new entry — so the count must tell the two entries apart by timestamp.
+        driver.getCreatures(me).contains(eowyn) shouldBe true
+
+        toCombat(driver)
+
+        knights(driver, me).size shouldBe 2
     }
 
     test("a non-Human entering does not trigger it") {
