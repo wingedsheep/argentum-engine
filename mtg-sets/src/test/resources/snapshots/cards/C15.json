@@ -355,6 +355,98 @@
     ]
 }
 
+// Karlov of the Ghost Council
+{
+    "name": "Karlov of the Ghost Council",
+    "manaCost": "{W}{B}",
+    "typeLine": "Legendary Creature — Spirit Advisor",
+    "oracleText": "Whenever you gain life, put two +1/+1 counters on Karlov.\n{W}{B}, Remove six +1/+1 counters from Karlov: Exile target creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Karlov of the Ghost Council:1",
+                "trigger": "LifeGainEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 2,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever you gain life, put two +1/+1 counters on Karlov."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Karlov of the Ghost Council:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{W}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 6
+                                },
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{W}{B}, Remove six +1/+1 counters from Karlov: Exile target creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "MYTHIC",
+        "artist": "Volkan Baǵa",
+        "flavorText": "\"Does Teysa think me blind to her scheming? Ambition runs in our family.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8cf01688-7046-4242-8647-d1c226ae53f7.jpg?1783938107",
+        "rulings": [
+            {
+                "date": "2015-11-04",
+                "text": "The ability triggers just once for each life-gaining event, whether it's 1 life from an attacking creature with lifelink or 4 life from Faith's Fetters."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Magus of the Wheel
 {
     "name": "Magus of the Wheel",

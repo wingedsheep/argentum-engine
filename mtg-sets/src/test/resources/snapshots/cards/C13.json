@@ -447,6 +447,131 @@
     ]
 }
 
+// Oloro, Ageless Ascetic
+{
+    "name": "Oloro, Ageless Ascetic",
+    "manaCost": "{3}{W}{U}{B}",
+    "typeLine": "Legendary Creature — Giant Soldier",
+    "oracleText": "At the beginning of your upkeep, you gain 2 life.\nWhenever you gain life, you may pay {1}. If you do, draw a card and each opponent loses 1 life.\nAt the beginning of your upkeep, if Oloro is in the command zone, you gain 2 life.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Oloro, Ageless Ascetic:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, you gain 2 life."
+            },
+            {
+                "id": "Oloro, Ageless Ascetic:2",
+                "trigger": "LifeGainEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "EachOpponent"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever you gain life, you may pay {1}. If you do, draw a card and each opponent loses 1 life."
+            },
+            {
+                "id": "Oloro, Ageless Ascetic:3",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "activeZones": [
+                    "Command"
+                ],
+                "interveningIf": {
+                    "type": "SourceInZone",
+                    "zones": [
+                        "Command"
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your upkeep, if Oloro is in the command zone, you gain 2 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "203",
+        "rarity": "MYTHIC",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/abf8df47-405c-42d8-be9e-0f0d0a49589b.jpg?1783939648",
+        "rulings": [
+            {
+                "date": "2013-10-17",
+                "text": "Oloro's first ability works only if Oloro is on the battlefield."
+            },
+            {
+                "date": "2013-10-17",
+                "text": "If Oloro is your commander, its last ability will trigger at the beginning of the upkeep step on your first turn."
+            },
+            {
+                "date": "2013-10-17",
+                "text": "Oloro's second ability triggers just once for each life-gaining event, no matter how much life is gained."
+            },
+            {
+                "date": "2013-10-17",
+                "text": "You decide whether to pay {1} as the second ability resolves. If you do, you'll draw a card and each opponent will lose 1 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Ophiomancer
 {
     "name": "Ophiomancer",

@@ -119,6 +119,85 @@
     ]
 }
 
+// Aetherflux Reservoir
+{
+    "name": "Aetherflux Reservoir",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever you cast a spell, you gain 1 life for each spell you've cast this turn.\nPay 50 life: This artifact deals 50 damage to any target.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aetherflux Reservoir:1",
+                "trigger": "SpellCastEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": "SpellsCastThisTurn"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Aetherflux Reservoir:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomPayLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 50
+                        }
+                    }
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 50
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "192",
+        "rarity": "RARE",
+        "artist": "Cliff Childs",
+        "flavorText": "While most power is used for ordinary, everyday tasks, one shouldn't underestimate its potential for the extraordinary.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/6/96b6b2e1-c3e6-464c-8a13-b15deb34e862.jpg?1783937164",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "The first ability counts the spell that caused it to trigger plus any other spells you cast earlier in the turn."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "The first ability counts spells you cast earlier in the turn even if you didn't control Aetherflux Reservoir as you cast them, and even if those spells were countered."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "The number of spells you've cast is counted only as Aetherflux Reservoir's triggered ability resolves. For example, if you cast a spell, then respond to the triggered ability with a second spell, you'll gain 4 life total."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "Aetherflux Reservoir's first ability doesn't trigger when you cast Aetherflux Reservoir itself."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Ambitious Aetherborn
 {
     "name": "Ambitious Aetherborn",

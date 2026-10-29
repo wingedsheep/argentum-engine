@@ -253,6 +253,85 @@
     ]
 }
 
+// Elenda's Hierophant
+{
+    "name": "Elenda's Hierophant",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Vampire Cleric",
+    "oracleText": "Flying\nWhenever you gain life, put a +1/+1 counter on this creature.\nWhen this creature dies, create X 1/1 white Vampire creature tokens with lifelink, where X is its power.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Elenda's Hierophant:1",
+                "trigger": "LifeGainEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever you gain life, put a +1/+1 counter on this creature."
+            },
+            {
+                "id": "Elenda's Hierophant:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Vampire"
+                    ],
+                    "keywords": [
+                        "LIFELINK"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/0/4/0484390e-1167-4407-84de-7ddc726e8926.jpg?1783913608"
+                },
+                "descriptionOverride": "When this creature dies, create X 1/1 white Vampire creature tokens with lifelink, where X is its power."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "RARE",
+        "artist": "Miranda Meeks",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d12f728a-1bbb-4bee-96d4-d721292997ba.jpg?1783913913",
+        "rulings": [
+            {
+                "date": "2023-11-10",
+                "text": "The second ability of Elenda's Hierophant triggers just once for each life-gaining event, no matter how much life was gained."
+            },
+            {
+                "date": "2023-11-10",
+                "text": "If Elenda's Hierophant is dealt lethal damage at the same time that you gain life, it won't receive a counter from its second ability in time to save it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Master of Dark Rites
 {
     "name": "Master of Dark Rites",

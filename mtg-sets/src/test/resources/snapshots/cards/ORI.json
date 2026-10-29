@@ -287,6 +287,54 @@
     "colorIdentityOverride": []
 }
 
+// Alhammarret's Archive
+{
+    "name": "Alhammarret's Archive",
+    "manaCost": "{5}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "If you would gain life, you gain twice that much life instead.\nIf you would draw a card except the first one you draw in each of your draw steps, draw two cards instead.",
+    "script": {
+        "replacementEffects": [
+            "ModifyLifeGain",
+            {
+                "type": "ReplaceDrawWith",
+                "replacementEffect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "appliesTo": {
+                    "type": "DrawEvent",
+                    "firstInDrawStep": "EXCLUDED"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "221",
+        "rarity": "MYTHIC",
+        "artist": "Richard Wright",
+        "flavorText": "It contains the totality of Alhammarret's notes, theories, and ponderings.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/0/70afb856-6697-411b-b1aa-e9290a0bfd68.jpg?1783938312",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "If an effect would set your life total to a specific number that's higher than your current life total, that effect would cause you to gain life equal to the difference. Alhammarret's Archive will then double the amount of life that effect would cause you to gain. For example, if you have 3 life and an effect says that your life total \"becomes 10,\" your life total will actually become 17."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If two or more replacement effects would apply to a card-drawing event, the player drawing the card chooses the order in which to apply them."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Similarly, the effects of the last abilities of multiple Archives are cumulative. If you control two, you'll draw four times the number of cards, and so on."
+            }
+        ]
+    }
+}
+
 // Ampryn Tactician
 {
     "name": "Ampryn Tactician",

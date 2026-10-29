@@ -1633,6 +1633,64 @@
     ]
 }
 
+// Felidar Sovereign
+{
+    "name": "Felidar Sovereign",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Creature — Cat Beast",
+    "oracleText": "Vigilance (Attacking doesn't cause this creature to tap.)\nLifelink (Damage dealt by this creature also causes you to gain that much life.)\nAt the beginning of your upkeep, if you have 40 or more life, you win the game.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 6
+    },
+    "keywords": [
+        "VIGILANCE",
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Felidar Sovereign:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": "WinGame",
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "LifeTotal",
+                        "player": "You"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 40
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, if you have 40 or more life, you win the game."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "MYTHIC",
+        "artist": "Zoltan Boros & Gabor Szikszai",
+        "flavorText": "\"If survival is a game, I've seen the winner.\"\n—Hazir, Sejiri cartographer",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc3c93e6-af75-4d7e-86b0-8a38425f51a1.jpg?1783942174",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Felidar Sovereign's triggered ability checks to see if you have 40 or more life as your upkeep begins. If you don't, the ability won't trigger at all. If you do, the ability will check again as it tries to resolve. If you don't have 40 or more life at that time, the ability won't do anything."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Geyser Glider
 {
     "name": "Geyser Glider",

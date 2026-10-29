@@ -2460,6 +2460,68 @@
     "colorIdentityOverride": []
 }
 
+// Well of Lost Dreams
+{
+    "name": "Well of Lost Dreams",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever you gain life, you may pay {X}, where X is less than or equal to the amount of life you gained. If you do, draw X cards.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Well of Lost Dreams:1",
+                "trigger": "LifeGainEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "ChooseNumberThen",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.WhenCondition",
+                            "condition": {
+                                "type": "Compare",
+                                "left": "XValue",
+                                "operator": "GT",
+                                "right": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                }
+                            }
+                        },
+                        "then": {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.MayPay",
+                                "cost": {
+                                    "type": "PayDynamicManaCost",
+                                    "amount": "XValue"
+                                }
+                            },
+                            "then": {
+                                "type": "DrawCards",
+                                "count": "XValue"
+                            }
+                        }
+                    },
+                    "maxValue": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_LIFE_GAINED"
+                    },
+                    "prompt": "Choose X — pay {X} to draw X cards (0 to decline)"
+                },
+                "descriptionOverride": "Whenever you gain life, you may pay {X}, where X is less than or equal to the amount of life you gained. If you do, draw X cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "rarity": "RARE",
+        "artist": "Jeff Miracola",
+        "flavorText": "Some say the knowledge lost during the Ritual of Rebuking is returned through the well's waters.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6bf1b915-7790-43f4-b308-a80a1be6ec29.jpg?1783944414"
+    }
+}
+
 // Whispersilk Cloak
 {
     "name": "Whispersilk Cloak",

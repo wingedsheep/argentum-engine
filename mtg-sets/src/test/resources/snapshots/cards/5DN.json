@@ -164,6 +164,65 @@
     ]
 }
 
+// Beacon of Immortality
+{
+    "name": "Beacon of Immortality",
+    "manaCost": "{5}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Double target player's life total. Shuffle Beacon of Immortality into its owner's library.",
+    "script": {
+        "spellEffect": {
+            "type": "SetLifeTotal",
+            "amount": {
+                "type": "Multiply",
+                "amount": {
+                    "type": "LifeTotal",
+                    "player": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "multiplier": 2
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ],
+        "selfShuffleIntoLibraryOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "rarity": "RARE",
+        "artist": "Rob Alexander",
+        "flavorText": "The cave floods with light. A thousand rays shine forth and meld into one.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/0/601bb6d1-77f4-4ffe-94d0-bed74c33013b.jpg?1783944411",
+        "rulings": [
+            {
+                "date": "2007-07-15",
+                "text": "Beacon of Immortality's effect counts as life gain (or life loss, if the life total was negative) for effects that trigger on or replace life gain (or life loss)."
+            },
+            {
+                "date": "2007-07-15",
+                "text": "If a Beacon is countered or doesn't resolve, it's put into its owner's graveyard, not shuffled into the library."
+            },
+            {
+                "date": "2007-02-01",
+                "text": "If you double a negative life total, you do the real math. A life total of -10 becomes -20."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Blasting Station
 {
     "name": "Blasting Station",
