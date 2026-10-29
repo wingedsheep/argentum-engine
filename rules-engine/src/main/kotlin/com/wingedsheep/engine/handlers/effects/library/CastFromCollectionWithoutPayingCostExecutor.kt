@@ -157,6 +157,7 @@ class CastFromCollectionWithoutPayingCostExecutor(
             costReduction = effect.costReduction,
             castFaceDown = effect.castFaceDown,
             turnsFaceUpInstead = effect.turnsFaceUpInstead,
+            withAnyManaType = effect.withAnyManaType,
         )
 
         if (prep is TargetPrep.NeedsTargets) {
@@ -285,6 +286,7 @@ class CastFromCollectionWithoutPayingCostExecutor(
             costReduction: Int = 0,
             castFaceDown: Boolean = false,
             turnsFaceUpInstead: Boolean = false,
+            withAnyManaType: Boolean = false,
         ): Pair<EntityId, GameState> {
             val (permId, withPermId) = state.newEntity()
             var stamped = if (!withoutPayingCost) withPermId else withPermId.updateEntity(cardId) { container ->
@@ -344,6 +346,10 @@ class CastFromCollectionWithoutPayingCostExecutor(
                     castFaceDown = castFaceDown,
                     turnsFaceUpInstead = turnsFaceUpInstead,
                     castFaceIndex = faceIndex,
+                    // "And mana of any type can be spent to cast that spell" (Summon: Esper
+                    // Valigarmanda): the rider rides this one-shot grant, so CastCostPayer relaxes
+                    // exactly this cast's pips (CR 118.14) and nothing outlives it.
+                    withAnyManaType = withAnyManaType,
                     timestamp = stateWithPerm.timestamp,
                 )
             )

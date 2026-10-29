@@ -435,6 +435,13 @@ data class ExileLibraryUntilManaValueEffect(
  * the stack remembers how it was cast. A keyword the engine can't cast with this way casts
  * nothing. Exclusive with [alternativeCost], [additionalManaCost], [castTransformed] and
  * [castFaceDown], each of which names a different price or face.
+ *
+ * **Spending mana of any type.** Set [withAnyManaType] for "you may cast [it], and mana of any type
+ * can be spent to cast that spell" — Summon: Esper Valigarmanda's chapters II–IV. Every colored and
+ * colorless pip of the cost the cast owes accepts mana of any type (CR 118.14, 609.4b — the same relaxation
+ * [GrantMayPlayFromExileEffect.withAnyManaType] grants a lingering permission), for this one cast
+ * only: the rider rides the one-shot cast grant and is gone with it. It only means something when
+ * mana is paid, so it needs [payManaCost] or [alternativeManaCost].
  */
 @SerialName("CastFromCollectionWithoutPayingCost")
 @Serializable
@@ -475,8 +482,13 @@ data class CastFromCollectionWithoutPayingCostEffect(
     val alternativeManaCost: ManaCost? = null,
     /** Generic mana the cast costs less ("It costs {4} less to cast this way") — see the class KDoc. */
     val costReduction: Int = 0,
+    /** Mana of any type can be spent to cast the spell — see the class KDoc. */
+    val withAnyManaType: Boolean = false,
 ) : Effect {
     init {
+        require(!withAnyManaType || payManaCost || alternativeManaCost != null) {
+            "withAnyManaType relaxes the mana paid; a free cast needs payManaCost or alternativeManaCost"
+        }
         require(costReduction >= 0) { "costReduction is an amount of generic mana; it can't be negative" }
         require(costReduction == 0 || payManaCost || alternativeManaCost != null) {
             "costReduction reduces a price; a free cast needs payManaCost or alternativeManaCost"
@@ -518,6 +530,7 @@ data class CastFromCollectionWithoutPayingCostEffect(
             additionalManaCost != null -> append(" by paying $additionalManaCost in addition to its other costs")
         }
         if (costReduction > 0) append(". It costs {$costReduction} less to cast this way")
+        if (withAnyManaType) append(", and mana of any type can be spent to cast that spell")
         insteadOfGraveyard?.let { append(it.riderText) }
         if (turnsFaceUpInstead) {
             append(". If the creature that spell becomes as it resolves has not been turned face up and would " +

@@ -5075,7 +5075,9 @@ object Effects {
      * Cast a card from [from], paying its mana cost (see the String overload). [additionalManaCost]
      * is "by paying {R}{R} in addition to its other costs" (Ogre Battlecaster) — owed on top of the
      * mana cost for this one cast. [costReduction] is "It costs {4} less to cast this way" (Uvilda,
-     * Dean of Perfection) — generic mana taken off after every increase.
+     * Dean of Perfection) — generic mana taken off after every increase. [withAnyManaType] is "and
+     * mana of any type can be spent to cast that spell" (Summon: Esper Valigarmanda) — every pip of
+     * that one cast accepts mana of any type.
      */
     fun CastFromCollection(
         from: CollectionSlot,
@@ -5085,7 +5087,10 @@ object Effects {
         storeCastTo: String? = null,
         additionalManaCost: String? = null,
         costReduction: Int = 0,
-    ): Effect = CastFromCollection(from.key, storeCastTo, insteadOfGraveyard, caster, additionalManaCost, costReduction)
+        withAnyManaType: Boolean = false,
+    ): Effect = CastFromCollection(
+        from.key, storeCastTo, insteadOfGraveyard, caster, additionalManaCost, costReduction, withAnyManaType,
+    )
 
     /**
      * "Cast that card by paying [cost] rather than paying its mana cost" — during this effect's
@@ -5338,6 +5343,7 @@ object Effects {
             com.wingedsheep.sdk.scripting.effects.Chooser.Controller,
         additionalManaCost: String? = null,
         costReduction: Int = 0,
+        withAnyManaType: Boolean = false,
     ): Effect = CastFromCollectionWithoutPayingCostEffect(
         from = from,
         payManaCost = true,
@@ -5346,6 +5352,7 @@ object Effects {
         caster = caster,
         additionalManaCost = additionalManaCost?.let { com.wingedsheep.sdk.core.ManaCost.parse(it) },
         costReduction = costReduction,
+        withAnyManaType = withAnyManaType,
     )
 
     /**
