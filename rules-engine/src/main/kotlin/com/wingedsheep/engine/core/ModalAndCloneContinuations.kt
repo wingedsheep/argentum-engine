@@ -717,7 +717,12 @@ data class ChooseActionContinuation(
     val sourceName: String?,
     val choices: List<@Serializable EffectChoice>,
     val targets: List<ChosenTarget> = emptyList(),
-    val namedTargets: Map<String, ChosenTarget> = emptyMap(),
+    /**
+     * The whole pipeline state at the choice — named targets, stored collections and numbers — so
+     * a chosen effect can read what earlier steps of the same resolution stored (The Hunger Tide
+     * Rises' "mana value ≤ the number sacrificed this way").
+     */
+    val pipeline: com.wingedsheep.engine.handlers.PipelineState = com.wingedsheep.engine.handlers.PipelineState.EMPTY,
     val triggeringEntityId: EntityId? = null,
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
     val resolvingTriggeredAbility: com.wingedsheep.sdk.scripting.TriggeredAbility? = null,

@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
-import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.effects.MoveType
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
 import com.wingedsheep.sdk.scripting.references.Player
@@ -28,10 +27,9 @@ import com.wingedsheep.sdk.scripting.references.Player
  *  - "Sacrifice any number of creatures" gathers the creatures you control, lets you choose any
  *    number of them, and sacrifices them with a tracked move, so the count is the number that
  *    *actually* left (frozen with `storeNumber` before anything else changes the board).
- *  - "Your library and/or graveyard" is a choice of which zones to search, and only searching the
- *    library shuffles it. A nested (resolution-time) modal picks library / graveyard / both, and
- *    each mode is the stock `searchMultipleZones` over those zones — which shuffles and emits the
- *    searched-library event only when `LIBRARY` is among them. The search is choose-up-to-one, so
+ *  - "Your library and/or graveyard" is `Patterns.Library.searchLibraryAndOrGraveyard`: a
+ *    resolution-time choice of library / graveyard / both, shuffling only when the library was
+ *    searched. The search is choose-up-to-one, so
  *    failing to find is legal (and sacrificing nothing still lets you fetch a mana value 0 creature).
  */
 val TheHungerTideRises = card("The Hunger Tide Rises") {
@@ -71,23 +69,10 @@ val TheHungerTideRises = card("The Hunger Tide Rises") {
             )
             val sacrificedCount = storeNumber(sacrificed.count)
             val creatureCard = GameObjectFilter.Creature.manaValueAtMostDynamic(sacrificedCount.amount)
-            fun search(zones: List<Zone>) = Patterns.Library.searchMultipleZones(
-                zones = zones,
-                filter = creatureCard,
-                count = 1,
-                destination = SearchDestination.BATTLEFIELD
-            )
             run(
-                Effects.Modal(
-                    modes = listOf(
-                        Mode(description = "Search your library", effect = search(listOf(Zone.LIBRARY))),
-                        Mode(description = "Search your graveyard", effect = search(listOf(Zone.GRAVEYARD))),
-                        Mode(
-                            description = "Search your library and graveyard",
-                            effect = search(listOf(Zone.LIBRARY, Zone.GRAVEYARD))
-                        )
-                    ),
-                    countsAsModalSpell = false
+                Patterns.Library.searchLibraryAndOrGraveyard(
+                    filter = creatureCard,
+                    destination = SearchDestination.BATTLEFIELD
                 )
             )
         }

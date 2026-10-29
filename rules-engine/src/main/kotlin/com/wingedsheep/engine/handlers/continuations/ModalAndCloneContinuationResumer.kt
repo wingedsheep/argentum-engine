@@ -1805,7 +1805,7 @@ class ModalAndCloneContinuationResumer(
             controllerId = continuation.controllerId,
             targets = continuation.targets,
             triggeringEntityId = continuation.triggeringEntityId,
-            pipeline = PipelineState(namedTargets = continuation.namedTargets),
+            pipeline = continuation.pipeline,
             chosenCounterType = continuation.chosenCounterType
         )
 

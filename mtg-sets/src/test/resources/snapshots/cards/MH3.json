@@ -20691,9 +20691,10 @@
                             }
                         },
                         {
-                            "type": "Modal",
-                            "modes": [
+                            "type": "ChooseAction",
+                            "choices": [
                                 {
+                                    "label": "Search your library",
                                     "effect": {
                                         "type": "Composite",
                                         "effects": [
@@ -20745,10 +20746,10 @@
                                             "ShuffleLibrary",
                                             "EmitLibrarySearchedEvent"
                                         ]
-                                    },
-                                    "description": "Search your library"
+                                    }
                                 },
                                 {
+                                    "label": "Search your graveyard",
                                     "effect": {
                                         "type": "Composite",
                                         "effects": [
@@ -20778,7 +20779,7 @@
                                                 "type": "SelectFromCollection",
                                                 "from": "searchable",
                                                 "selection": {
-                                                    "type": "ChooseUpTo",
+                                                    "type": "ChooseExactly",
                                                     "count": {
                                                         "type": "Fixed",
                                                         "amount": 1
@@ -20797,10 +20798,10 @@
                                                 }
                                             }
                                         ]
-                                    },
-                                    "description": "Search your graveyard"
+                                    }
                                 },
                                 {
+                                    "label": "Search your library and graveyard",
                                     "effect": {
                                         "type": "Composite",
                                         "effects": [
@@ -20853,11 +20854,9 @@
                                             "ShuffleLibrary",
                                             "EmitLibrarySearchedEvent"
                                         ]
-                                    },
-                                    "description": "Search your library and graveyard"
+                                    }
                                 }
-                            ],
-                            "countsAsModalSpell": false
+                            ]
                         }
                     ]
                 }

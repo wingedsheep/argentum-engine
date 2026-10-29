@@ -8,7 +8,9 @@ import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ChoosePileEffect
 import com.wingedsheep.sdk.scripting.effects.Chooser
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
+import com.wingedsheep.sdk.scripting.effects.EffectChoice
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.FaceDownMode
 import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
@@ -774,10 +776,17 @@ object LibraryPatterns {
             )
         )
 
+        // A searcher may fail to find a matching card only in a hidden zone (CR 701.23b); a search
+        // of public zones alone (a graveyard) must find what is there, up to [count].
+        val selection = if (zones.any { it.isHidden }) {
+            SelectionMode.ChooseUpTo(DynamicAmount.Fixed(count))
+        } else {
+            SelectionMode.ChooseExactly(DynamicAmount.Fixed(count))
+        }
         effects.add(
             SelectFromCollectionEffect(
                 from = "searchable",
-                selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(count)),
+                selection = selection,
                 storeSelected = "found",
                 prompt = searchPrompt(
                     "your " + zones.joinToString(" and/or ") { it.name.lowercase() },
@@ -811,6 +820,39 @@ object LibraryPatterns {
         }
 
         return CompositeEffect(effects)
+    }
+
+    /**
+     * "[You may] search your library and/or graveyard for [filter] and put it [destination]. If you
+     * search your library this way, shuffle." — the M21 planeswalker-deck tutors (Basri's Aegis,
+     * Garruk's Warsteed) and The Hunger Tide Rises.
+     *
+     * "And/or" is a choice of which zones to search, made as the effect resolves — a
+     * [ChooseActionEffect], not a modal (a top-level modal would be chosen at cast or trigger
+     * time) — picking library, graveyard or both, and each option is [searchMultipleZones] over those
+     * zones — which shuffles and fires "searches their library" triggers (CR 701.23) only when the
+     * library is among them. A graveyard-only search therefore neither shuffles nor counts as
+     * searching a library. [optional] adds a "Don't search" option for the "you may" wording, so
+     * declining is one choice in the same prompt rather than a separate yes/no.
+     */
+    fun searchLibraryAndOrGraveyard(
+        filter: GameObjectFilter = GameObjectFilter.Any,
+        count: Int = 1,
+        destination: SearchDestination = SearchDestination.HAND,
+        entersTapped: Boolean = false,
+        reveal: Boolean = false,
+        optional: Boolean = false
+    ): Effect {
+        fun search(zones: List<Zone>) =
+            searchMultipleZones(zones, filter, count, destination, entersTapped, reveal)
+        return Effects.ChooseAction(
+            listOfNotNull(
+                EffectChoice("Search your library", search(listOf(Zone.LIBRARY))),
+                EffectChoice("Search your graveyard", search(listOf(Zone.GRAVEYARD))),
+                EffectChoice("Search your library and graveyard", search(listOf(Zone.LIBRARY, Zone.GRAVEYARD))),
+                if (optional) EffectChoice("Don't search", Effects.Nothing) else null
+            )
+        )
     }
 
     fun revealUntilNonlandDealDamage(target: EffectTarget): CompositeEffect = CompositeEffect(

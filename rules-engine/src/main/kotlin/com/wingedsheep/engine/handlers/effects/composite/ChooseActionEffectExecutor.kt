@@ -107,7 +107,7 @@ class ChooseActionEffectExecutor(
             sourceName = sourceName,
             choices = offered,
             targets = context.targets,
-            namedTargets = context.pipeline.namedTargets,
+            pipeline = context.pipeline,
             triggeringEntityId = context.triggeringEntityId,
             chosenCounterType = context.chosenCounterType
         )

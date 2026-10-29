@@ -155,12 +155,12 @@ class TheHungerTideRisesScenarioTest : ScenarioTestBase() {
 
             game.selectCards(listOf(lions)).error shouldBe null
             chooseMode(game, "Search your graveyard")
+            game.resolveStack()
 
-            val lionsCard = game.findCardsInGraveyard(1, "Savannah Lions").single()
-            val options = searchOptions(game)
-            options shouldContain lionsCard
-            options shouldNotContain game.findCardsInGraveyard(1, "Hill Giant").single()
-            pickFromSearch(game, lionsCard)
+            withClue("a graveyard is public, so its only match is found without a prompt") {
+                game.getPendingDecision() shouldBe null
+            }
+            game.isInGraveyard(1, "Hill Giant") shouldBe true
 
             withClue("Savannah Lions came back from the graveyard") {
                 game.findPermanent("Savannah Lions") shouldNotBe null
