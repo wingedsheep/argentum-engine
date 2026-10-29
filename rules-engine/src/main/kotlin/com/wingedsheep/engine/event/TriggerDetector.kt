@@ -3907,6 +3907,7 @@ class TriggerDetector(
             // honored — not just the handful of card predicates handled inline.
             val matchingInfos = damageEvents.filter { info ->
                 if (info.toBattle && !trigger.orBattle) return@filter false
+                if (trigger.toOpponents && !state.isOpponentOf(info.targetPlayerId, controllerId)) return@filter false
                 combatDamageSourceMatches(
                     state, projected, info.sourceId, info.lastKnown, trigger.sourceFilter,
                     PredicateContext(controllerId = controllerId, sourceId = sourceId)
@@ -3914,7 +3915,8 @@ class TriggerDetector(
             }
 
             // "… to one or more players": a single trigger for the whole batch, whoever was hit,
-            // capturing every matching source. There is no single damaged player to bind.
+            // capturing every matching source. There is no single damaged player to bind; the
+            // players hit are recorded instead ("the number of opponents dealt damage this way").
             if (trigger.toOneOrMorePlayers) {
                 if (matchingInfos.isEmpty()) return
                 triggers.add(
@@ -3925,7 +3927,8 @@ class TriggerDetector(
                         controllerId = controllerId,
                         triggerContext = TriggerContext(
                             triggeringEntityId = matchingInfos.first().sourceId,
-                            capturedEntityIds = matchingInfos.map { it.sourceId }.distinct()
+                            capturedEntityIds = matchingInfos.map { it.sourceId }.distinct(),
+                            damagedPlayerIds = matchingInfos.filterNot { it.toBattle }.map { it.targetPlayerId }.distinct()
                         )
                     )
                 )

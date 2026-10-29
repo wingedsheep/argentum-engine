@@ -1248,7 +1248,7 @@ Families:
 - `EventPattern.MutateEvent` — When a mutating creature spell merges with a permanent (CR 702.140d).
 - `EventPattern.NthCardDrawnEvent(nthCard: Int, player: Player)` — Fires on a `CardsDrawnEvent` when the drawing player's per-turn draw count crosses the specified threshold (CR 121.2 — each card drawn is an individual draw, so a single multi-card draw fires at mo…
 - `EventPattern.NthSpellCastEvent(nthSpell: Int, player: Player, spellFilter: GameObjectFilter?)` — When a player casts their Nth spell in a turn.
-- `EventPattern.OneOrMoreDealCombatDamageToPlayerEvent(sourceFilter: GameObjectFilter, orBattle: Boolean, toOneOrMorePlayers: Boolean)` — Whenever one or more creatures matching sourceFilter you control deal combat damage to a player.
+- `EventPattern.OneOrMoreDealCombatDamageToPlayerEvent(sourceFilter: GameObjectFilter, orBattle: Boolean, toOneOrMorePlayers: Boolean, toOpponents: Boolean)` — Whenever one or more creatures matching sourceFilter you control deal combat damage to a player.
 - `EventPattern.OneOrMoreDealCombatDamageToYouEvent(sourceFilter: GameObjectFilter, perSourceController: Boolean)` — Whenever one or more creatures matching sourceFilter deal combat damage to *you* (the trigger's controller).
 - `EventPattern.OpponentsDealtCombatDamageEvent` — Whenever one or more of *your opponents* (the trigger controller's opponents, CR 102.3) are dealt combat damage.
 - `EventPattern.PermanentsEnteredEvent(filter: GameObjectFilter, excludeSource: Boolean)` — Whenever one or more permanents matching a filter you control enter the battlefield.

@@ -167,6 +167,15 @@ sealed interface IterationSpace {
          * (Kambal, Profiteering Mayor). The engine seeds this collection when the triggered ability resolves.
          */
         const val TRIGGER_CAPTURED_COLLECTION = "trigger.captured"
+
+        /**
+         * Well-known [Collection] name under which a "deal combat damage to one or more players"
+         * batch trigger seeds the players it damaged (`OneOrMoreDealCombatDamageToPlayerEvent` with
+         * `toOneOrMorePlayers`). "The number of opponents dealt damage this way" is
+         * `DynamicAmounts.playersDealtDamageThisWay()` (its `_count`); "those players" is
+         * `Player.InCollection(TRIGGER_DAMAGED_PLAYERS)` (Hordewing Skaab).
+         */
+        const val TRIGGER_DAMAGED_PLAYERS = "trigger.damagedPlayers"
     }
 }
 

@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
 import com.wingedsheep.sdk.scripting.values.ManaPayment
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.effects.IterationSpace
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.TurnTracker
@@ -862,6 +863,14 @@ object DynamicAmounts {
      */
     fun noncombatDamageReceivedThisTurn(player: Player = Player.EachOpponent): DynamicAmount =
         DynamicAmount.TurnTracking(player, TurnTracker.NONCOMBAT_DAMAGE_RECEIVED)
+
+    /**
+     * "The number of opponents [players] dealt damage this way" — the distinct players a "deal combat
+     * damage to one or more players/opponents" batch trigger hit (Hordewing Skaab), read from the
+     * collection the trigger seeds (`IterationSpace.TRIGGER_DAMAGED_PLAYERS`).
+     */
+    fun playersDealtDamageThisWay(): DynamicAmount =
+        DynamicAmount.VariableReference("${IterationSpace.TRIGGER_DAMAGED_PLAYERS}_count")
 
     /** The number of creatures that left the battlefield under [player]'s control this turn. */
     fun creaturesLeftBattlefieldThisTurn(player: Player = Player.You): DynamicAmount =

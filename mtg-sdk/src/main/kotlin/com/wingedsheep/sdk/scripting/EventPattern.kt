@@ -3644,7 +3644,14 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * [orBattle], battles) were hit, capturing every matching creature that hit any of them. It binds
      * no triggering player — there is no single "that player" — so its effect must not read
      * `Player.TriggeringPlayer`. Each combat damage step (first strike, then regular) is its own
-     * batch, so a first-strike step and the regular step can each fire it once.
+     * batch, so a first-strike step and the regular step can each fire it once. The players it hit
+     * are seeded into the resolving ability's pipeline as the well-known collection
+     * `IterationSpace.TRIGGER_DAMAGED_PLAYERS`: "the number of opponents dealt damage this way" is
+     * its `_count`, "those players" is `Player.InCollection` over it.
+     *
+     * [toOpponents] narrows the damaged players to the observer's opponents — "… to **an opponent**"
+     * (Parapet Thrasher) per player, "… to **one or more of your opponents**" (Hordewing Skaab) with
+     * [toOneOrMorePlayers]. Damage to any other player neither fires the trigger nor counts.
      *
      * Examples:
      *   → OneOrMoreDealCombatDamageToPlayerEvent(sourceFilter = GameObjectFilter.Creature.withSubtype("Bird"))
@@ -3655,6 +3662,9 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      *   → OneOrMoreDealCombatDamageToPlayerEvent(toOneOrMorePlayers = true)
      *     "Whenever one or more creatures you control deal combat damage to one or more players"
      *     (Contaminant Grafter)
+     *   → OneOrMoreDealCombatDamageToPlayerEvent(Creature.withSubtype("Zombie"), toOneOrMorePlayers = true, toOpponents = true)
+     *     "Whenever one or more Zombies you control deal combat damage to one or more of your opponents"
+     *     (Hordewing Skaab)
      */
     @SerialName("OneOrMoreDealCombatDamageToPlayerEvent")
     @Serializable
@@ -3663,12 +3673,26 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         /** Also count combat damage dealt to a battle — "to a player or battle". */
         val orBattle: Boolean = false,
         /** Fire once per batch across every damaged player — "to one or more players". */
-        val toOneOrMorePlayers: Boolean = false
+        val toOneOrMorePlayers: Boolean = false,
+        /** Only the observer's opponents count as damaged players — "to an opponent". */
+        val toOpponents: Boolean = false
     ) : EventPattern {
+        init {
+            require(!(toOpponents && orBattle)) { "toOpponents has no battle form" }
+        }
+
         override val description: String = buildString {
             append("one or more ")
             append(describeObjectForEvent(sourceFilter))
-            append(if (toOneOrMorePlayers) " you control deal combat damage to one or more players" else " you control deal combat damage to a player")
+            append(" you control deal combat damage to ")
+            append(
+                when {
+                    toOneOrMorePlayers && toOpponents -> "one or more of your opponents"
+                    toOneOrMorePlayers -> "one or more players"
+                    toOpponents -> "an opponent"
+                    else -> "a player"
+                }
+            )
             if (orBattle) append(if (toOneOrMorePlayers) " or battles" else " or battle")
         }
 

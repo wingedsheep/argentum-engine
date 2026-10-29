@@ -775,13 +775,35 @@ class BatchTriggerSubject internal constructor(
     }
 
     /**
+     * "deal combat damage to an opponent" — [dealCombatDamageToAPlayer] counting only your
+     * opponents; once per opponent hit, bound as `Player.TriggeringPlayer` (Parapet Thrasher).
+     */
+    fun dealCombatDamageToAnOpponent(): TriggerSpec {
+        noOther("dealCombatDamageToAnOpponent")
+        return spec(OneOrMoreDealCombatDamageToPlayerEvent(sourceFilter = filter, toOpponents = true))
+    }
+
+    /**
      * "deal combat damage to one or more players" — once per combat-damage batch however many
      * players were hit; every matching creature that hit one is the captured collection. No
-     * triggering player is bound (Contaminant Grafter).
+     * triggering player is bound (Contaminant Grafter); the players hit are
+     * `DynamicAmounts.playersDealtDamageThisWay()` / `Player.InCollection(IterationSpace.TRIGGER_DAMAGED_PLAYERS)`.
      */
     fun dealCombatDamageToOneOrMorePlayers(): TriggerSpec {
         noOther("dealCombatDamageToOneOrMorePlayers")
         return spec(OneOrMoreDealCombatDamageToPlayerEvent(sourceFilter = filter, toOneOrMorePlayers = true))
+    }
+
+    /**
+     * "deal combat damage to one or more of your opponents" — [dealCombatDamageToOneOrMorePlayers]
+     * counting only your opponents (Hordewing Skaab: draw "equal to the number of opponents dealt
+     * damage this way" = `DynamicAmounts.playersDealtDamageThisWay()`).
+     */
+    fun dealCombatDamageToOneOrMoreOpponents(): TriggerSpec {
+        noOther("dealCombatDamageToOneOrMoreOpponents")
+        return spec(
+            OneOrMoreDealCombatDamageToPlayerEvent(sourceFilter = filter, toOneOrMorePlayers = true, toOpponents = true)
+        )
     }
 
     /**

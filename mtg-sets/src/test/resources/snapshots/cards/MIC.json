@@ -249,6 +249,115 @@
     ]
 }
 
+// Hordewing Skaab
+{
+    "name": "Hordewing Skaab",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Zombie Horror",
+    "oracleText": "Flying\nOther Zombies you control have flying.\nWhenever one or more Zombies you control deal combat damage to one or more of your opponents, you may draw cards equal to the number of opponents dealt damage this way. If you do, discard that many cards.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hordewing Skaab:1",
+                "trigger": {
+                    "type": "OneOrMoreDealCombatDamageToPlayerEvent",
+                    "sourceFilter": "creature Zombie",
+                    "toOneOrMorePlayers": true,
+                    "toOpponents": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "VariableReference",
+                                    "variableName": "trigger.damagedPlayers_count"
+                                }
+                            },
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "VariableReference",
+                                                "variableName": "trigger.damagedPlayers_count"
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose cards to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING",
+                "filter": {
+                    "baseFilter": "creature Zombie ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "rarity": "RARE",
+        "artist": "Sidharth Chaturvedi",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6e67802e-e0d9-4989-b1c2-77ef2ff69796.jpg?1783925379",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "The number of cards you discard is equal to the number of opponents that were dealt combat damage by your Zombies, even if another effect changed the number of cards you drew."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "If some of your Zombies have first strike but others don't, or if you have a Zombie with double strike, the ability will trigger twice, the first time counting the number of opponents who were dealt damage in the first strike combat damage step, and the second time counting the ones who were dealt damage in the second combat damage step."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Tomb Tyrant
 {
     "name": "Tomb Tyrant",

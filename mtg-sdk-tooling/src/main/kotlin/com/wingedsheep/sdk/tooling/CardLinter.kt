@@ -1515,11 +1515,21 @@ object CardLinter {
          * Collections the engine seeds for the ability before its effect runs, so a read with no
          * in-card writer is correct, not a silent no-op. `trigger.captured` is the batch-trigger
          * capture (the matching members of a `PermanentsEnteredEvent` batch — Kambal); the engine
-         * populates it when the triggered ability resolves.
+         * populates it when the triggered ability resolves. `trigger.damagedPlayers` is the players a
+         * "deal combat damage to one or more players" batch hit, usually read as its `_count`
+         * (Hordewing Skaab).
          */
-        fun engineSeeded(read: Access): Boolean =
-            read.space == Space.COLLECTION &&
-                read.name == com.wingedsheep.sdk.scripting.effects.IterationSpace.TRIGGER_CAPTURED_COLLECTION
+        fun engineSeeded(read: Access): Boolean {
+            val seeded = listOf(
+                com.wingedsheep.sdk.scripting.effects.IterationSpace.TRIGGER_CAPTURED_COLLECTION,
+                com.wingedsheep.sdk.scripting.effects.IterationSpace.TRIGGER_DAMAGED_PLAYERS,
+            )
+            return when (read.space) {
+                Space.COLLECTION -> read.name in seeded
+                Space.NUMBER -> seeded.any { read.name == "${it}_count" }
+                else -> false
+            }
+        }
 
         for (scope in state.scopes) {
             if (scope.collectionParent != null) continue // merged into parent already

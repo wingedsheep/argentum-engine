@@ -38,6 +38,9 @@ import io.kotest.matchers.shouldBe
  *   more players" fires once per combat-damage batch however many players were hit (the default
  *   fires once per damaged player). Each combat damage step is its own batch (CR 510.4: a
  *   first-strike step, then a second combat damage step).
+ * - `OneOrMoreDealCombatDamageToPlayerEvent.toOpponents` — only the observer's opponents count as
+ *   damaged players, in both the per-player and the batch form; the batch form records the players
+ *   it hit (`DynamicAmounts.playersDealtDamageThisWay()`).
  * - `OneOrMoreDealCombatDamageToYouEvent.perSourceController` — "… creatures an opponent controls
  *   deal combat damage to you, that opponent …" fires once per controller of the damaging
  *   creatures, binding that player; the default (Witch-king of Angmar) stays one unbound trigger.
@@ -145,6 +148,91 @@ class CombatDamageBatchScopeTest : FunSpec({
 
     fun GameTestDriver.poisonOf(player: EntityId): Int =
         state.getEntity(player)?.get<CountersComponent>()?.getCount(CounterType.POISON) ?: 0
+
+    context("toOpponents — \"… to an opponent\" / \"… to one or more of your opponents\"") {
+
+        fun watcher(name: String, opponentsOnlyBatch: Boolean) = card(name) {
+            manaCost = "{1}"
+            typeLine = "Enchantment"
+            triggeredAbility {
+                val creatures = Triggers.oneOrMore(GameObjectFilter.Creature)
+                trigger = if (opponentsOnlyBatch) creatures.dealCombatDamageToOneOrMoreOpponents()
+                else creatures.dealCombatDamageToAnOpponent()
+                effect = Effects.GainLife(1)
+            }
+        }
+
+        test("the batch form fires once and records only the opponents hit") {
+            val (d, p) = threePlayer()
+            d.registerCards(listOf(watcher("Test Opponents Batch Watcher", opponentsOnlyBatch = true)))
+            d.putPermanentOnBattlefield(p[0], "Test Opponents Batch Watcher")
+            val a = d.putCreatureOnBattlefield(p[0], "Grizzly Bears")
+            val b = d.putCreatureOnBattlefield(p[0], "Grizzly Bears")
+            val c = d.putCreatureOnBattlefield(p[0], "Grizzly Bears")
+
+            val fired = detector(d).detectTriggers(
+                d.state, listOf(combatHit(a, p[1]), combatHit(b, p[2]), combatHit(c, p[0]))
+            ).filter { it.ability.trigger is EventPattern.OneOrMoreDealCombatDamageToPlayerEvent }
+
+            fired shouldHaveSize 1
+            fired[0].triggerContext.damagedPlayerIds.orEmpty().shouldContainExactlyInAnyOrder(p[1], p[2])
+            withClue("the creature that hit its own controller isn't one of them") {
+                fired[0].triggerContext.capturedEntityIds.orEmpty().shouldContainExactlyInAnyOrder(a, b)
+            }
+        }
+
+        test("damage only to a non-opponent doesn't fire either form") {
+            val (d, p) = threePlayer()
+            d.registerCards(
+                listOf(
+                    watcher("Test Opponents Batch Watcher", opponentsOnlyBatch = true),
+                    watcher("Test An Opponent Watcher", opponentsOnlyBatch = false),
+                )
+            )
+            d.putPermanentOnBattlefield(p[0], "Test Opponents Batch Watcher")
+            d.putPermanentOnBattlefield(p[0], "Test An Opponent Watcher")
+            val a = d.putCreatureOnBattlefield(p[0], "Grizzly Bears")
+
+            detector(d).detectTriggers(d.state, listOf(combatHit(a, p[0]))).shouldBeEmpty()
+        }
+
+        test("the per-opponent form fires once per opponent hit, binding that opponent") {
+            val (d, p) = threePlayer()
+            d.registerCards(listOf(watcher("Test An Opponent Watcher", opponentsOnlyBatch = false)))
+            d.putPermanentOnBattlefield(p[0], "Test An Opponent Watcher")
+            val a = d.putCreatureOnBattlefield(p[0], "Grizzly Bears")
+            val b = d.putCreatureOnBattlefield(p[0], "Grizzly Bears")
+
+            val fired = detector(d).detectTriggers(
+                d.state, listOf(combatHit(a, p[1]), combatHit(b, p[2]), combatHit(b, p[0]))
+            )
+            fired.map { it.triggerContext.triggeringPlayerId }.shouldContainExactlyInAnyOrder(p[1], p[2])
+        }
+
+        test("the damaged-player count reaches the resolving ability") {
+            val d = GameTestDriver()
+            val counter = card("Test Damaged Count Watcher") {
+                manaCost = "{1}"
+                typeLine = "Enchantment"
+                triggeredAbility {
+                    trigger = Triggers.oneOrMore(GameObjectFilter.Creature).dealCombatDamageToOneOrMoreOpponents()
+                    effect = Effects.GainLife(DynamicAmounts.playersDealtDamageThisWay())
+                }
+            }
+            d.registerCards(cards + counter)
+            val p = d.initMultiplayer(List(3) { Deck.of("Plains" to 40) })
+            d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+            d.putPermanentOnBattlefield(p[0], "Test Damaged Count Watcher")
+            val a = d.ready(p[0], "Grizzly Bears")
+            val b = d.ready(p[0], "Grizzly Bears")
+
+            d.passPriorityUntil(Step.DECLARE_ATTACKERS)
+            d.declareAttackers(p[0], mapOf(a to p[1], b to p[2])).error shouldBe null
+            d.passPriorityUntil(Step.POSTCOMBAT_MAIN)
+
+            withClue("two opponents dealt damage this way") { d.getLifeTotal(p[0]) shouldBe 22 }
+        }
+    }
 
     context("toOneOrMorePlayers — \"deal combat damage to one or more players\"") {
 

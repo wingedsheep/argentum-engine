@@ -278,6 +278,13 @@ data class TriggerContext(
      */
     val capturedEntityIds: List<EntityId>? = null,
     /**
+     * The players a "deal combat damage to one or more players" batch trigger hit, seeded into the
+     * resolving ability's pipeline under
+     * [com.wingedsheep.sdk.scripting.effects.IterationSpace.TRIGGER_DAMAGED_PLAYERS] — "the number
+     * of opponents dealt damage this way" (Hordewing Skaab). Null for every other trigger.
+     */
+    val damagedPlayerIds: List<EntityId>? = null,
+    /**
      * Copiable values (CR 707.2) of the permanents in [capturedEntityIds], frozen when the trigger
      * fired. A "create a token that's a copy of that permanent" payoff falls back to them when the
      * captured permanent has left before resolution and its own departure snapshot is gone — a
@@ -698,4 +705,8 @@ internal fun triggerStoredCollections(
 ): Map<String, List<EntityId>> =
     (triggerContext?.capturedEntityIds?.takeIf { it.isNotEmpty() }
         ?.let { mapOf(com.wingedsheep.engine.handlers.PipelineState.TRIGGER_CAPTURED_COLLECTION to it) }
-        ?: emptyMap()) + (carried?.storedCollections ?: emptyMap())
+        ?: emptyMap()) +
+        (triggerContext?.damagedPlayerIds
+            ?.let { mapOf(com.wingedsheep.sdk.scripting.effects.IterationSpace.TRIGGER_DAMAGED_PLAYERS to it) }
+            ?: emptyMap()) +
+        (carried?.storedCollections ?: emptyMap())
