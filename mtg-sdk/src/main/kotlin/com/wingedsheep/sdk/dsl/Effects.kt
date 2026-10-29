@@ -6971,9 +6971,13 @@ object Effects {
     /** Remove a prevention shield previously placed on [target] (Pyramids). */
     fun RemoveDamageShield(target: EffectTarget): Effect = com.wingedsheep.sdk.scripting.effects.RemoveDamageShieldEffect(target)
 
-    /** Make a creature block an attacker immediately; declaration restrictions do not apply. */
-    fun BecomeBlocking(blocker: EffectTarget, attacker: EffectTarget): Effect =
-        com.wingedsheep.sdk.scripting.effects.BecomeBlockingEffect(blocker, attacker)
+    /**
+     * Make a creature block an attacker immediately; declaration restrictions do not apply.
+     * [entering] = the creature was just put onto the battlefield blocking (CR 509.4) — it never
+     * "blocked", so blocker-side block triggers don't fire.
+     */
+    fun BecomeBlocking(blocker: EffectTarget, attacker: EffectTarget, entering: Boolean = false): Effect =
+        com.wingedsheep.sdk.scripting.effects.BecomeBlockingEffect(blocker, attacker, entering)
 
     /**
      * Remove a creature from combat.

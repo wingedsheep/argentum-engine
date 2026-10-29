@@ -2776,6 +2776,12 @@ interface BlockingRelationshipsEvent {
     val newlyBlockedAttackers: Set<EntityId>
     val previousBlockedCounts: Map<EntityId, Int>
     val blockedCounts: Map<EntityId, Int>
+    /**
+     * Blockers in [blockers] that were put onto the battlefield blocking (CR 509.4): they are
+     * blocking but never "blocked", so blocker-side triggers skip them (CR 509.3a-b) while the
+     * attacker's becomes-blocked triggers still see the pair (CR 509.3c-d). Never in [newBlockers].
+     */
+    val enteredBlockers: Set<EntityId> get() = emptySet()
 }
 
 @Serializable
@@ -2788,6 +2794,7 @@ data class BlocksCreatedEvent(
     override val blockedCounts: Map<EntityId, Int>,
     override val blockerNames: Map<EntityId, String> = emptyMap(),
     override val attackerNames: Map<EntityId, String> = emptyMap(),
+    override val enteredBlockers: Set<EntityId> = emptySet(),
 ) : GameEvent, BlockingRelationshipsEvent
 
 /** Combat removal changes live relationships without undoing previously triggered abilities. */

@@ -2404,6 +2404,15 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   status transition. Combat and turn histories are recorded just as for declared blocks.
   Optional non-targeting choice composes from `Pipeline` + `gather` + `chooseUpTo(1)`; False Orders
   removes its target from combat first, then offers attackers defended by that target's controller.
+  `entering = true` is the "put onto the battlefield blocking" form (CR 509.4): run it right after the
+  effect that created the blocker. That creature is blocking but never "blocked" — none of its own or
+  observers' blocks / blocks-a-creature / blocks-or-becomes-blocked triggers fire (CR 509.3a-b) and it
+  gets no blocked-this-combat/turn history — while the attacker's becomes-blocked (if it was unblocked)
+  and becomes-blocked-by triggers do (CR 509.3c-d). An attacker that is gone or not attacking the
+  creature's controller's side leaves it entering unblocking (CR 509.4a). Brimaz, King of Oreskos's
+  "create a … token … that's blocking that creature" = `CreateToken(…) then
+  ForEachInCollection(CollectionSlot.CreatedTokens, BecomeBlocking(IterationEntity, TriggeringEntity, entering = true))`
+  under `Triggers.self.blocks(attackerFilter = Creature)`.
 - `attackingDefenderOf(reference)` — filter attacking creatures by the defending side of a player or
   permanent reference. Includes attacks on that player's planeswalkers and protected battles, and shared
   turn teams; reads projected controllers and resolves current object identity. The attack retains its

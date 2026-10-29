@@ -42,15 +42,19 @@ class BecomeBlockingExecutor : EffectExecutor<BecomeBlockingEffect> {
         if (added.isEmpty()) return EffectResult.success(state)
         val newlyBlocked = added.filter { state.getEntity(it)?.has<BlockedComponent>() != true }.toSet()
         val pairs = mapOf(blocker to added)
+        // CR 509.4: a creature put onto the battlefield blocking never "blocked" — it is no new
+        // blocker for triggers, only a new blocker of the attacker (CR 509.3c-d).
+        val entered = if (effect.entering) setOf(blocker) else emptySet()
         val event = BlocksCreatedEvent(
             blockers = pairs,
-            newBlockers = if (previous == null) setOf(blocker) else emptySet(),
+            newBlockers = if (previous == null && !effect.entering) setOf(blocker) else emptySet(),
             newlyBlockedAttackers = newlyBlocked,
             previousBlockedCounts = mapOf(blocker to previous?.blockedAttackerIds.orEmpty().size),
             blockedCounts = mapOf(blocker to previous?.blockedAttackerIds.orEmpty().size + added.size),
             blockerNames = mapOf(blocker to nameVisibleToAll(state, blocker, state.getEntity(blocker)?.get<CardComponent>()?.name ?: "Creature")),
             attackerNames = added.associateWith { nameVisibleToAll(state, it, state.getEntity(it)?.get<CardComponent>()?.name ?: "Creature") },
+            enteredBlockers = entered,
         )
-        return EffectResult.success(BlockingRelationships.establish(state, pairs), listOf(event))
+        return EffectResult.success(BlockingRelationships.establish(state, pairs, entered), listOf(event))
     }
 }

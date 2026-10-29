@@ -205,6 +205,8 @@ class TriggerMatcher(
             is EventPattern.BlockEvent -> {
                 if (event !is com.wingedsheep.engine.core.BlockingRelationshipsEvent) return false
                 if (binding != TriggerBinding.SELF) return true
+                // CR 509.3a-b: a creature put onto the battlefield blocking never "blocks".
+                if (sourceId in event.enteredBlockers) return false
                 val added = event.blockers[sourceId].orEmpty().size
                 if (trigger.attackerFilter != null) return added > 0 &&
                     (event.blockedCounts[sourceId] ?: 0) >= trigger.minBlockedAttackers
@@ -261,7 +263,7 @@ class TriggerMatcher(
                 }
                 if (trigger.oncePerCombat && trigger.partnerFilter == null && combatCreatureId !in event.newBlockers &&
                     combatCreatureId !in event.newlyBlockedAttackers) return false
-                event.blockers.keys.contains(combatCreatureId) ||
+                (combatCreatureId in event.blockers.keys && combatCreatureId !in event.enteredBlockers) ||
                     event.blockers.values.any { it.contains(combatCreatureId) }
             }
             is EventPattern.DealsDamageEvent -> {

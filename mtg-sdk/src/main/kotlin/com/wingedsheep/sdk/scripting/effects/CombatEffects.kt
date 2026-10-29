@@ -1103,14 +1103,25 @@ data class RemoveSuspectedEffect(
 
 
 
-/** Establish a blocking relationship during resolution, without declaring blockers. */
+/**
+ * Establish a blocking relationship during resolution, without declaring blockers.
+ *
+ * [entering] is the "put onto the battlefield blocking" form (CR 509.4): pair it with the effect that
+ * just created [blocker] ("create a token that's blocking that creature" — Brimaz, King of Oreskos).
+ * Such a creature is blocking but never "blocked", so its own blocks / blocks-a-creature triggers
+ * don't fire (CR 509.3a-b) and it is not recorded as having blocked; the attacker's becomes-blocked
+ * triggers still do (CR 509.3c-d).
+ */
 @SerialName("BecomeBlocking")
 @Serializable
 data class BecomeBlockingEffect(
     val blocker: EffectTarget,
     val attacker: EffectTarget,
+    val entering: Boolean = false,
 ) : Effect {
-    override val description: String = "${blocker.description} blocks ${attacker.description}"
+    override val description: String =
+        if (entering) "${blocker.description} enters blocking ${attacker.description}"
+        else "${blocker.description} blocks ${attacker.description}"
 }
 
 /** Restrict blockers to a remembered collection of objects or a current characteristic filter. */

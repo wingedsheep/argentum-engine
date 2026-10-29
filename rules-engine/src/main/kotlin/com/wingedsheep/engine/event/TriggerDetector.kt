@@ -1206,7 +1206,7 @@ class TriggerDetector(
                 ) {
                     val watched = delayed.watchedEntityId
                     val partners = mutableListOf<EntityId>()
-                    event.blockers[watched]?.let { partners.addAll(it) }
+                    if (watched !in event.enteredBlockers) event.blockers[watched]?.let { partners.addAll(it) }
                     for ((blockerId, attackerIds) in event.blockers) {
                         if (attackerIds.contains(watched)) partners.add(blockerId)
                     }
@@ -1437,7 +1437,8 @@ class TriggerDetector(
                 val watched = watchedEntityId ?: return false
                 if (specEvent.oncePerCombat && specEvent.partnerFilter == null &&
                     watched !in event.newBlockers && watched !in event.newlyBlockedAttackers) return false
-                event.blockers.containsKey(watched) || event.blockers.values.any { it.contains(watched) }
+                (event.blockers.containsKey(watched) && watched !in event.enteredBlockers) ||
+                    event.blockers.values.any { it.contains(watched) }
             }
             // "This turn, when target creature you control attacks and isn't blocked, …" — the
             // Fallen Empires Delif's artifacts. Entity-scoped: the watched creature is the one
@@ -1655,7 +1656,9 @@ class TriggerDetector(
                         (trigger as EventPattern.BlockEvent).attackerFilter != null &&
                         event is com.wingedsheep.engine.core.BlockingRelationshipsEvent) {
                         val attackerFilter = (trigger as EventPattern.BlockEvent).attackerFilter!!
-                        val blockedAttackerIds = event.blockers[entityId] ?: emptyList()
+                        // CR 509.3b: a creature put onto the battlefield blocking never "blocks a creature".
+                        val blockedAttackerIds = if (entityId in event.enteredBlockers) emptyList()
+                            else event.blockers[entityId] ?: emptyList()
                         for (attackerId in blockedAttackerIds) {
                             if (predicateEvaluator.matches(
                                     state, projected, attackerId, attackerFilter,
@@ -1743,7 +1746,9 @@ class TriggerDetector(
 
                         if (combatCreatureId != null) {
                             // Case 1: combat creature is a blocker — partners are the attackers it blocks
+                            // (none if it was put onto the battlefield blocking — CR 509.4)
                             val blockedAttackerIds = event.blockers[combatCreatureId]
+                                .takeIf { combatCreatureId !in event.enteredBlockers }
                             if (blockedAttackerIds != null) {
                                 partners.addAll(blockedAttackerIds)
                             }

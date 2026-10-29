@@ -48,6 +48,113 @@
     "colorIdentityOverride": []
 }
 
+// Brimaz, King of Oreskos
+{
+    "name": "Brimaz, King of Oreskos",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Legendary Creature — Cat Soldier",
+    "oracleText": "Vigilance\nWhenever Brimaz attacks, create a 1/1 white Cat Soldier creature token with vigilance that's attacking.\nWhenever Brimaz blocks a creature, create a 1/1 white Cat Soldier creature token with vigilance that's blocking that creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Brimaz, King of Oreskos:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Cat",
+                        "Soldier"
+                    ],
+                    "keywords": [
+                        "VIGILANCE"
+                    ],
+                    "attacking": true,
+                    "attackDefender": "CONTROLLER_CHOOSES"
+                }
+            },
+            {
+                "id": "Brimaz, King of Oreskos:2",
+                "trigger": {
+                    "type": "BlockEvent",
+                    "attackerFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "WHITE"
+                            ],
+                            "creatureTypes": [
+                                "Cat",
+                                "Soldier"
+                            ],
+                            "keywords": [
+                                "VIGILANCE"
+                            ]
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "createdTokens"
+                            },
+                            "body": {
+                                "type": "BecomeBlocking",
+                                "blocker": "IterationEntity",
+                                "attacker": "TriggeringEntity",
+                                "entering": true
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "rarity": "MYTHIC",
+        "artist": "Peter Mohrbacher",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f54eb705-6326-4bac-bf0e-68d42db7a270.jpg?1783939586",
+        "rulings": [
+            {
+                "date": "2014-02-01",
+                "text": "For the first triggered ability, you declare which player, planeswalker, or battle the token is attacking as you put it onto the battlefield. It doesn't have to be the same player or planeswalker Brimaz is attacking."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If Brimaz somehow blocks two or more creatures (note it can't naturally do this), its last ability will trigger that many times."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "Although the tokens enter the battlefield attacking or blocking, they were never declared as attacking or blocking creatures. Abilities that trigger whenever a creature attacks or blocks won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Courser of Kruphix
 {
     "name": "Courser of Kruphix",

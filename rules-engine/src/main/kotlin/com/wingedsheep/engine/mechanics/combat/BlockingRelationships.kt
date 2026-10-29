@@ -6,15 +6,27 @@ import com.wingedsheep.sdk.model.EntityId
 
 /** Shared bookkeeping for declared blocks and blocks created by resolving effects. */
 internal object BlockingRelationships {
-    fun establish(state: GameState, pairs: Map<EntityId, List<EntityId>>): GameState {
+    /**
+     * @param enteredBlockers blockers put onto the battlefield blocking (CR 509.4): they are
+     *   blocking, but for triggers and effects they never "blocked", so none of the blocker-side
+     *   "blocked this combat / turn" history is stamped on them. The attacker side is unchanged —
+     *   it did become blocked by them.
+     */
+    fun establish(
+        state: GameState,
+        pairs: Map<EntityId, List<EntityId>>,
+        enteredBlockers: Set<EntityId> = emptySet(),
+    ): GameState {
         var result = state
         val projected = state.projectedState
         for ((blocker, attackers) in pairs) {
             val existing = result.getEntity(blocker)?.get<BlockingComponent>()?.blockedAttackerIds.orEmpty()
+            val entered = blocker in enteredBlockers
             result = result.updateEntity(blocker) { c ->
+                val blocking = c.with(BlockingComponent((existing + attackers).distinct()))
+                if (entered) return@updateEntity blocking
                 val partners = c.get<CombatPartnersThisTurnComponent>() ?: CombatPartnersThisTurnComponent()
-                c.with(BlockingComponent((existing + attackers).distinct()))
-                    .with(BlockedThisCombatComponent).with(BlockedThisTurnComponent)
+                blocking.with(BlockedThisCombatComponent).with(BlockedThisTurnComponent)
                     .with(partners.copy(blockedIds = partners.blockedIds + attackers))
             }
             val blockerRef = state.objectRef(blocker)
@@ -36,7 +48,7 @@ internal object BlockingRelationships {
                     if (projected.isLegendary(blocker)) updated = updated.with(BlockedOrWasBlockedByLegendaryThisTurnComponent)
                     updated
                 }
-                if (projected.isLegendary(attacker)) result = result.updateEntity(blocker) {
+                if (!entered && projected.isLegendary(attacker)) result = result.updateEntity(blocker) {
                     it.with(BlockedOrWasBlockedByLegendaryThisTurnComponent)
                 }
             }
