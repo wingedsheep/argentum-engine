@@ -58,6 +58,25 @@ data class PipelineState(
         fun searchedKey(collection: String): String = "__searched:$collection"
 
         /**
+         * Reserved metadata collection published by a library-searching gather beside [collection]
+         * when another player controls the searcher during the search
+         * ([com.wingedsheep.sdk.scripting.ControlOpponentsLibrarySearches], Opposition Agent): a
+         * single entry, that player. The pick over [collection] goes to them. See
+         * [com.wingedsheep.engine.handlers.effects.library.LibrarySearchControl].
+         */
+        fun searchControllerKey(collection: String): String = "__searchController:$collection"
+
+        /**
+         * Reserved metadata collections, one per player who controlled a search in this pipeline
+         * (`$SEARCH_CONTROLLED_POOL_PREFIX<player id>`): the cards those searches could find. A
+         * MoveCollection exiles each of these it would move — the found cards — and lets that
+         * player play them.
+         */
+        fun searchControlledPoolKey(controllerId: EntityId): String = "$SEARCH_CONTROLLED_POOL_PREFIX${controllerId.value}"
+
+        const val SEARCH_CONTROLLED_POOL_PREFIX = "__searchControlledPool:"
+
+        /**
          * Reserved metadata collection published by a mill gather (`CardSource.TopOfLibrary` with
          * `isMill`) alongside [collection]: the cards that mill took. The MoveCollection over
          * [collection] reads it to report the move as a mill ([com.wingedsheep.engine.core.CardsMilledEvent]).

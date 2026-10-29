@@ -11329,6 +11329,19 @@ in the declare-blockers step, even before the turn-based block action has comple
   shuffles. Stamped as `ForbidsLibrarySearchComponent` by `StaticAbilityHandler` (bare abilities only,
   ignored while the source has lost its abilities) and read through `LibrarySearchRestrictions` by the
   search gather, `EmitLibrarySearchedEventExecutor` and the may-gate.
+- `ControlOpponentsLibrarySearches` — Opposition Agent's "You control your opponents while they're
+  searching their libraries. While an opponent is searching their library, they exile each card they
+  find. You may play those cards for as long as they remain exiled, and you may spend mana as though
+  it were mana of any color to cast them." Applies to any search (a `GatherCardsEffect` with
+  `search = true`) an opponent of the source's controller makes that looks through their *own*
+  library, whoever's spell caused it. The pick over the searched pool goes to the source's controller
+  (same eligibility, so they can't find a card the instruction doesn't ask for); every card of that
+  pool a later `MoveCollection` would move — in any zone a multi-zone search read — is exiled instead
+  and gets a permanent `MayPlayPermission(withAnyManaColor = true)` for that player. The rest of the
+  instruction runs without them (shuffle, searched event). Several sources: the latest to enter the
+  battlefield wins. Stamped as `ControlsOpponentsLibrarySearchesComponent` by `StaticAbilityHandler`,
+  ignored while the source has lost its abilities, read through `LibrarySearchControl`. Sibling of
+  `PlayersCantSearchLibraries` (forbids instead of taking over).
 - `RestrictCardsDrawnPerTurn(affected = Player.EachOpponent, maxPerTurn = 1)` — a per-turn cap on
   cards drawn (CR 121.2b): Narset, Parter of Veils / Leovold ("Each opponent can't draw more than one
   card each turn"), `affected = Player.Each` for Spirit of the Labyrinth, and `maxPerTurn = 0` for

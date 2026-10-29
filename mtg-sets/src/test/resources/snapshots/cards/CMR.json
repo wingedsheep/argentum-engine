@@ -1975,6 +1975,69 @@
     ]
 }
 
+// Opposition Agent
+{
+    "name": "Opposition Agent",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "Flash\nYou control your opponents while they're searching their libraries.\nWhile an opponent is searching their library, they exile each card they find. You may play those cards for as long as they remain exiled, and you may spend mana as though it were mana of any color to cast them.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "staticAbilities": [
+            "ControlOpponentsLibrarySearches"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "rarity": "RARE",
+        "artist": "Scott Murphy",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/086f97e9-8b62-44f3-b467-149c2ac5ca78.jpg?1783928831",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "You must follow the normal timing permissions and restrictions for each exiled card. If one is a land, you can't play it unless you have land plays available."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "While controlling an opponent, you make all choices and decisions for that player. However, because the control effect is limited to while they're searching their libraries, it's unlikely the player will be allowed to make any decisions other than what to find with the search."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "You can't have the player find cards in their library that aren't asked for by the search instruction. For example, if the opponent is searching their library for a basic land card, you can't have them find a different card, such as a creature card."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "If the search instruction states a quality of the card to find, such as a color or card type, you may have the opponent not find any cards. If the search is simply for a number of cards without stating a quality, you must have them find that many cards (or as many as possible, if their library doesn't contain that many cards)."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "The cards found in the search will be exiled rather than be put wherever the spell or ability tells the opponent to put them after finding them. Any other effects the spell or ability has will still apply. If such an effect refers to the found cards, it can't see them in exile."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "If a spell or ability instructs an opponent you control to search multiple zones including the library, you decide what cards they find in all zones. They'll exile all cards they find in any of the zones."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "If more than one player controls an Opposition Agent, and another player searches their library, the controller of the Opposition Agent that most recently entered the battlefield controls that player during the search."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "You'll still pay all costs for a spell cast this way, including additional costs. You may also pay alternative costs if any are available."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Pride of the Perfect
 {
     "name": "Pride of the Perfect",

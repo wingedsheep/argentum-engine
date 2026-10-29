@@ -524,7 +524,10 @@ class SelectFromCollectionExecutor(
         spellFaces: Map<EntityId, List<Int>>? = null,
         hiddenDeciders: List<EntityId> = emptyList()
     ): EffectResult {
-        val playerId = decidingPlayerId ?: context.controllerId
+        // A searcher someone else controls while they search (Opposition Agent) doesn't make the pick.
+        val playerId = LibrarySearchControl.decider(
+            context.pipeline.storedCollections, effect.from, decidingPlayerId ?: context.controllerId
+        )
         val sourceName = context.sourceId?.let { sourceId ->
             state.getEntity(sourceId)?.get<CardComponent>()?.name
         }
@@ -562,11 +565,15 @@ class SelectFromCollectionExecutor(
 
         val librarySearch = context.pipeline.storedCollections[PipelineState.searchedKey(effect.from)]
             .orEmpty().isNotEmpty()
+        // The controlling player picks for the searcher, and what they find is exiled for the picker.
+        val controlledSearch = playerId != (decidingPlayerId ?: context.controllerId)
 
         val decision = { decisionId: String -> SelectCardsDecision(
             id = decisionId,
             playerId = playerId,
-            prompt = prompt,
+            prompt = if (controlledSearch) {
+                "You control your opponent's search. ${prompt.replace("your library", "their library")}"
+            } else prompt,
             context = DecisionContext(
                 sourceId = context.sourceId,
                 sourceName = sourceName,
@@ -577,7 +584,7 @@ class SelectFromCollectionExecutor(
             maxSelections = maxSelections,
             ordered = false,
             cardInfo = cardInfoMap,
-            selectedLabel = effect.selectedLabel,
+            selectedLabel = if (controlledSearch) "Exile — you may play it" else effect.selectedLabel,
             remainderLabel = effect.remainderLabel,
             useTargetingUI = effect.useTargetingUI,
             nonSelectableOptions = nonSelectableCards,

@@ -1418,6 +1418,38 @@ data class PlayersCantSearchLibraries(
 }
 
 /**
+ * "You control your opponents while they're searching their libraries. While an opponent is
+ * searching their library, they exile each card they find. You may play those cards for as long as
+ * they remain exiled, and you may spend mana as though it were mana of any color to cast them."
+ * (Opposition Agent)
+ *
+ * Applies to a search (CR 701.23) an opponent of the source's controller makes of their *own*
+ * library — whichever player's spell or ability tells them to. While they search, the source's
+ * controller makes the search's choices: which of the cards the instruction allows are found
+ * (rulings: never a card the instruction doesn't ask for; "fail to find" only when it names a
+ * quality). Every card found — in the library or, for "search your graveyard, hand and/or library",
+ * in any of those zones — is exiled instead of going where the instruction says, and the source's
+ * controller may play it for as long as it stays exiled, spending mana as though it were mana of
+ * any color. The rest of the instruction (the shuffle, other effects) still happens, and can't see
+ * the exiled cards.
+ *
+ * If several apply, the one whose source entered the battlefield most recently decides (ruling).
+ * Ignored while the source has lost its abilities.
+ *
+ * Neighbours: [PlayersCantSearchLibraries] forbids a search outright rather than taking it over;
+ * `ControlPlayerDuringResolutionEffect` hands over every choice of a whole resolution, not just a
+ * search's, and moves no card.
+ */
+@SerialName("ControlOpponentsLibrarySearches")
+@Serializable
+data object ControlOpponentsLibrarySearches : StaticAbility {
+    override val description: String =
+        "You control your opponents while they're searching their libraries. While an opponent is " +
+            "searching their library, they exile each card they find. You may play those cards for as " +
+            "long as they remain exiled, and you may spend mana as though it were mana of any color to cast them"
+}
+
+/**
  * A per-turn cap on how many cards a player can draw (CR 121.2b): "Each opponent can't draw more
  * than one card each turn." (Narset, Parter of Veils; Leovold, Emissary of Trest), "Each player
  * can't draw more than one card each turn." (Spirit of the Labyrinth). `maxPerTurn = 0` is the

@@ -1346,6 +1346,15 @@ data class ForbidsLibrarySearchComponent(
 ) : Component
 
 /**
+ * Marks a permanent whose static abilities take over its controller's opponents' library searches —
+ * [com.wingedsheep.sdk.scripting.ControlOpponentsLibrarySearches] (Opposition Agent). Read through
+ * [com.wingedsheep.engine.handlers.effects.library.LibrarySearchControl]; leaves with the permanent,
+ * and is ignored while the permanent has lost its abilities.
+ */
+@Serializable
+data object ControlsOpponentsLibrarySearchesComponent : Component
+
+/**
  * Marks a permanent as granting the Station-using-toughness effect to creatures its
  * controller controls. When a creature with this component's controller taps for a
  * Station ability and its toughness > power, it contributes toughness instead of power.

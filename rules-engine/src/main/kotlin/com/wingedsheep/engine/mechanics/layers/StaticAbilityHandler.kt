@@ -382,6 +382,12 @@ class StaticAbilityHandler(
                 )
             }
 
+        // "You control your opponents while they're searching their libraries" (Opposition Agent) —
+        // read by LibrarySearchControl.
+        if (allStaticAbilities.any { it is com.wingedsheep.sdk.scripting.ControlOpponentsLibrarySearches }) {
+            result = result.with(com.wingedsheep.engine.state.components.battlefield.ControlsOpponentsLibrarySearchesComponent)
+        }
+
         // Global Layer 3 color-word change (Swirl the Mists): read by TextChanges, which scans the
         // battlefield for this marker and reads the source's chosen color live.
         if (allStaticAbilities.any { it is com.wingedsheep.sdk.scripting.ChangeAllColorWordsToChosenColor }) {
@@ -1401,6 +1407,7 @@ class StaticAbilityHandler(
             is com.wingedsheep.sdk.scripting.ChangeAllColorWordsToChosenColor,
             is com.wingedsheep.sdk.scripting.PlayersCantPayLifeForCosts,
             is com.wingedsheep.sdk.scripting.PlayersCantSearchLibraries,
+            is com.wingedsheep.sdk.scripting.ControlOpponentsLibrarySearches,
             is com.wingedsheep.sdk.scripting.GrantCantLoseGameFromLife,
             is GrantHexproofToController,
             is GrantProtectionToController,
