@@ -40,5 +40,6 @@ val WardenOfTheWoods = card("Warden of the Woods") {
         flavorText = "Weak and strong alike seek shelter beneath its branches."
         imageUri = "https://cards.scryfall.io/normal/front/f/1/f1d81cfc-cff8-4478-92b6-efbfc5084165.jpg?1783930665"
         ruling("2020-06-23", "An ability that triggers when something becomes the target of a spell or ability resolves before the spell or ability that caused it to trigger. It resolves even if that spell or ability is countered.")
+        ruling("2020-06-23", "Players can cast spells and activate abilities after the triggered ability resolves but before the spell that caused it to trigger does.")
     }
 }

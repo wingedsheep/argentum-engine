@@ -52,6 +52,8 @@ val VolcanicSalvo = card("Volcanic Salvo") {
         ruling("2020-06-23", "The cost reduction applies only to generic mana in the cost of Volcanic Salvo. It can't reduce the {R}{R} requirement.")
         ruling("2020-06-23", "If a creature's power is somehow less than 0, it subtracts from the total power of your other creatures. If the total power of your creatures is 0 or less, the cost remains {10}{R}{R}.")
         ruling("2020-06-23", "You can't target the same creature or planeswalker twice with Volcanic Salvo to deal 12 damage to it.")
+        ruling("2020-06-23", "Once you begin to cast Volcanic Salvo, players can't take other actions until you've finished casting it. Notably, they can't try to change the total power of your creatures.")
         ruling("2020-06-23", "The total cost to cast Volcanic Salvo is locked in before you pay that cost. For example, if you control three 2/2 creatures, including one you can sacrifice to add {C}, the total cost is {4}{R}{R}. Then you can sacrifice the creature when you activate mana abilities just before paying the cost.")
+        ruling("2020-06-23", "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying, add any cost increases, then apply any cost reductions (such as that of Volcanic Salvo). The mana value of the spell remains unchanged, no matter what the total cost to cast it was.")
     }
 }

@@ -1521,18 +1521,20 @@ class CostCalculator(
      */
     private fun countCreatures(state: GameState, playerId: EntityId): Int {
         val projected = state.projectedState
-        return state.getBattlefield(playerId).count { entityId -> projected.isCreature(entityId) }
+        return state.controlledBattlefield(playerId).count { entityId -> projected.isCreature(entityId) }
     }
 
     /**
      * Sum the power of all creatures controlled by a player.
-     * Uses projected state if available to account for continuous effects.
+     * Uses projected state if available to account for continuous effects. A creature with
+     * negative power subtracts from the total; only the total is floored at 0 (Volcanic Salvo's
+     * ruling — the same arithmetic as Ghalta's).
      */
     private fun sumPower(state: GameState, playerId: EntityId): Int {
         val projectedState = state.projectedState
 
         var totalPower = 0
-        for (entityId in state.getBattlefield(playerId)) {
+        for (entityId in state.controlledBattlefield(playerId)) {
             val container = state.getEntity(entityId) ?: continue
             val card = container.get<CardComponent>() ?: continue
 
@@ -1545,11 +1547,9 @@ class CostCalculator(
                 null -> 0
             }
             val projectedPower: Int? = projectedState.getPower(entityId)
-            val power: Int = (projectedPower ?: basePower).coerceAtLeast(0)
-
-            totalPower += power
+            totalPower += projectedPower ?: basePower
         }
-        return totalPower
+        return totalPower.coerceAtLeast(0)
     }
 
     /**

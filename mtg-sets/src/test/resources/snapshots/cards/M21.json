@@ -12298,7 +12298,15 @@
             },
             {
                 "date": "2020-06-23",
+                "text": "Once you begin to cast Volcanic Salvo, players can't take other actions until you've finished casting it. Notably, they can't try to change the total power of your creatures."
+            },
+            {
+                "date": "2020-06-23",
                 "text": "The total cost to cast Volcanic Salvo is locked in before you pay that cost. For example, if you control three 2/2 creatures, including one you can sacrifice to add {C}, the total cost is {4}{R}{R}. Then you can sacrifice the creature when you activate mana abilities just before paying the cost."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying, add any cost increases, then apply any cost reductions (such as that of Volcanic Salvo). The mana value of the spell remains unchanged, no matter what the total cost to cast it was."
             }
         ]
     },
@@ -12497,6 +12505,10 @@
             {
                 "date": "2020-06-23",
                 "text": "An ability that triggers when something becomes the target of a spell or ability resolves before the spell or ability that caused it to trigger. It resolves even if that spell or ability is countered."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Players can cast spells and activate abilities after the triggered ability resolves but before the spell that caused it to trigger does."
             }
         ]
     },
