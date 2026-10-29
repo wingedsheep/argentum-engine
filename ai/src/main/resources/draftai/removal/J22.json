@@ -1,0 +1,615 @@
+{
+  "Academy Journeymage": [
+    "removal",
+    "creature-removal"
+  ],
+  "Aether Spellbomb": [
+    "removal",
+    "creature-removal"
+  ],
+  "Aftershock": [
+    "removal",
+    "creature-removal",
+    "artifact-removal"
+  ],
+  "Angelic Edict": [
+    "removal",
+    "creature-removal"
+  ],
+  "Arms Dealer": [
+    "removal",
+    "creature-removal"
+  ],
+  "Arrest": [
+    "removal",
+    "creature-removal"
+  ],
+  "Band Together": [
+    "removal",
+    "creature-removal"
+  ],
+  "Banefire": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Barrage Ogre": [
+    "removal",
+    "creature-removal"
+  ],
+  "Blaze": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Blighted Fen": [
+    "removal",
+    "creature-removal"
+  ],
+  "Bring to Trial": [
+    "removal",
+    "creature-removal"
+  ],
+  "Broken Bond": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Bury in Books": [
+    "removal",
+    "creature-removal"
+  ],
+  "Cage of Hands": [
+    "removal",
+    "creature-removal"
+  ],
+  "Caught in the Brights": [
+    "removal",
+    "creature-removal"
+  ],
+  "Caustic Caterpillar": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Certain Death": [
+    "removal",
+    "creature-removal"
+  ],
+  "Chains of Custody": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Chandra's Pyrohelix": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Chandra, Flame's Fury": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Cone of Flame": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Consign to the Pit": [
+    "removal",
+    "creature-removal"
+  ],
+  "Cruel Sadist": [
+    "removal",
+    "creature-removal"
+  ],
+  "Crypt Rats": [
+    "removal",
+    "creature-removal"
+  ],
+  "Cyclops Electromancer": [
+    "removal",
+    "creature-removal"
+  ],
+  "Dead Weight": [
+    "removal",
+    "creature-removal"
+  ],
+  "Deadly Plot": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Death Wind": [
+    "removal",
+    "creature-removal"
+  ],
+  "Deathbringer Regent": [
+    "removal",
+    "creature-removal"
+  ],
+  "Deem Worthy": [
+    "removal",
+    "creature-removal"
+  ],
+  "Demon's Disciple": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Demon's Grasp": [
+    "removal",
+    "creature-removal"
+  ],
+  "Destructive Tampering": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Devouring Light": [
+    "removal",
+    "creature-removal"
+  ],
+  "Diabolic Edict": [
+    "removal",
+    "creature-removal"
+  ],
+  "Divine Arrow": [
+    "removal",
+    "creature-removal"
+  ],
+  "Divine Verdict": [
+    "removal",
+    "creature-removal"
+  ],
+  "Drag Under": [
+    "removal",
+    "creature-removal"
+  ],
+  "Dreadful Apathy": [
+    "removal",
+    "creature-removal"
+  ],
+  "Eaten Alive": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Electrify": [
+    "removal",
+    "creature-removal"
+  ],
+  "Endbringer": [
+    "removal",
+    "creature-removal"
+  ],
+  "Engulfing Slagwurm": [
+    "removal",
+    "creature-removal"
+  ],
+  "Eternity Snare": [
+    "removal",
+    "creature-removal"
+  ],
+  "Eviscerate": [
+    "removal",
+    "creature-removal"
+  ],
+  "Faith's Fetters": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "planeswalker-removal"
+  ],
+  "Fanatical Firebrand": [
+    "removal",
+    "creature-removal"
+  ],
+  "Feast of Blood": [
+    "removal",
+    "creature-removal"
+  ],
+  "Felidar Cub": [
+    "removal",
+    "enchantment-removal"
+  ],
+  "Fiery Conclusion": [
+    "removal",
+    "creature-removal"
+  ],
+  "Fiery Intervention": [
+    "removal",
+    "creature-removal",
+    "artifact-removal"
+  ],
+  "Firebolt": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Firecannon Blast": [
+    "removal",
+    "creature-removal"
+  ],
+  "Fireslinger": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Flame Lash": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Flames of the Firebrand": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Go for Blood": [
+    "removal",
+    "creature-removal"
+  ],
+  "Goblin Artillery": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Goblin Grenade": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Heart-Piercer Bow": [
+    "removal",
+    "creature-removal"
+  ],
+  "Hold for Questioning": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Hooded Assassin": [
+    "removal",
+    "creature-removal"
+  ],
+  "Hour of Reckoning": [
+    "removal",
+    "creature-removal"
+  ],
+  "Hungry Flames": [
+    "removal",
+    "creature-removal"
+  ],
+  "Hunter's Edge": [
+    "removal",
+    "creature-removal"
+  ],
+  "Ill-Gotten Inheritance": [
+    "removal",
+    "creature-removal"
+  ],
+  "Impeccable Timing": [
+    "removal",
+    "creature-removal"
+  ],
+  "Improvised Weaponry": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Irencrag Pyromancer": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Irreverent Revelers": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Kami of Ancient Law": [
+    "removal",
+    "enchantment-removal"
+  ],
+  "Karn Liberated": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Kuldotha Flamefiend": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Light of Hope": [
+    "removal",
+    "enchantment-removal"
+  ],
+  "Lightning Axe": [
+    "removal",
+    "creature-removal"
+  ],
+  "Lurking Deadeye": [
+    "removal",
+    "creature-removal"
+  ],
+  "Mardu Heart-Piercer": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Massacre Wurm": [
+    "removal",
+    "creature-removal"
+  ],
+  "Master of the Wild Hunt": [
+    "removal",
+    "creature-removal"
+  ],
+  "Master's Rebuke": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Meteor Golem": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Mire Blight": [
+    "removal",
+    "creature-removal"
+  ],
+  "Moment of Craving": [
+    "removal",
+    "creature-removal"
+  ],
+  "Moonlight Hunt": [
+    "removal",
+    "creature-removal"
+  ],
+  "Morkrut Banshee": [
+    "removal",
+    "creature-removal"
+  ],
+  "Necrotic Wound": [
+    "removal",
+    "creature-removal"
+  ],
+  "Ob Nixilis's Cruelty": [
+    "removal",
+    "creature-removal"
+  ],
+  "Ob Nixilis, the Hate-Twisted": [
+    "removal",
+    "creature-removal"
+  ],
+  "Ossuary Rats": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Outnumber": [
+    "removal",
+    "creature-removal"
+  ],
+  "Phyrexian Debaser": [
+    "removal",
+    "creature-removal"
+  ],
+  "Phyrexian Plaguelord": [
+    "removal",
+    "creature-removal"
+  ],
+  "Pillar of Flame": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Plague Spitter": [
+    "removal",
+    "creature-removal"
+  ],
+  "Plaguecrafter": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Pounce": [
+    "removal",
+    "creature-removal"
+  ],
+  "Prey Upon": [
+    "removal",
+    "creature-removal"
+  ],
+  "Pyre-Sledge Arsonist": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Radiant's Judgment": [
+    "removal",
+    "creature-removal"
+  ],
+  "Ram Through": [
+    "removal",
+    "creature-removal"
+  ],
+  "Rambunctious Mutt": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Raze the Effigy": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Reaper from the Abyss": [
+    "removal",
+    "creature-removal"
+  ],
+  "Reave Soul": [
+    "removal",
+    "creature-removal"
+  ],
+  "Reclamation Sage": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Sarkhan's Rage": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Savage Punch": [
+    "removal",
+    "creature-removal"
+  ],
+  "Scorching Dragonfire": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Searing Spear": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Settle Beyond Reality": [
+    "removal",
+    "creature-removal"
+  ],
+  "Shadowborn Demon": [
+    "removal",
+    "creature-removal"
+  ],
+  "Shredded Sails": [
+    "removal",
+    "creature-removal",
+    "artifact-removal"
+  ],
+  "Sparkmage Apprentice": [
+    "removal",
+    "creature-removal"
+  ],
+  "Sparktongue Dragon": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Starstorm": [
+    "removal",
+    "creature-removal"
+  ],
+  "Stolen by the Fae": [
+    "removal",
+    "creature-removal"
+  ],
+  "Storm Fleet Pyromancer": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Strangling Spores": [
+    "removal",
+    "creature-removal"
+  ],
+  "Swift Kick": [
+    "removal",
+    "creature-removal"
+  ],
+  "Synchronized Eviction": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Termination Facilitator": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Thrashing Brontodon": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Titan's Presence": [
+    "removal",
+    "creature-removal"
+  ],
+  "Titanic Brawl": [
+    "removal",
+    "creature-removal"
+  ],
+  "Tragic Slip": [
+    "removal",
+    "creature-removal"
+  ],
+  "Uktabi Orangutan": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Ulcerate": [
+    "removal",
+    "creature-removal"
+  ],
+  "Universal Solvent": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Unnatural Aggression": [
+    "removal",
+    "creature-removal"
+  ],
+  "Valorous Stance": [
+    "removal",
+    "creature-removal"
+  ],
+  "Vial of Dragonfire": [
+    "removal",
+    "creature-removal"
+  ],
+  "Volley Veteran": [
+    "removal",
+    "creature-removal"
+  ],
+  "Walking Ballista": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Weight of Conscience": [
+    "removal",
+    "creature-removal"
+  ],
+  "Welding Sparks": [
+    "removal",
+    "creature-removal"
+  ],
+  "Wicked Wolf": [
+    "removal",
+    "creature-removal"
+  ],
+  "Winter's Rest": [
+    "removal",
+    "creature-removal"
+  ],
+  "World Breaker": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ]
+}
