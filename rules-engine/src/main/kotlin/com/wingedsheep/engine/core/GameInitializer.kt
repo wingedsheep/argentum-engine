@@ -391,7 +391,7 @@ class GameInitializer(
 
             // Momir Basic: place this player's Vanguard avatar in the command zone. It never enters
             // the battlefield or stack — it grants its activated ability from the command zone (CR
-            // for Vanguard avatars), surfaced by CommandZoneAbilityEnumerator.
+            // for Vanguard avatars), surfaced by ZoneActivatedAbilityEnumerator(Zone.COMMAND).
             (config.format as? Format.MomirBasic)?.let { momir ->
                 val avatarDef = cardRegistry.requireCard(momir.avatarCardName)
                 definitionsInGame[avatarDef.name] = avatarDef

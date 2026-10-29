@@ -25,7 +25,7 @@ import com.wingedsheep.sdk.scripting.TimingRule
 
 /**
  * Enumerates activated abilities on cards in a non-battlefield [zone] the player owns —
- * one instance per zone (registered for [Zone.GRAVEYARD] and [Zone.HAND]).
+ * one instance per zone (registered for [Zone.GRAVEYARD], [Zone.HAND] and [Zone.COMMAND]).
  *
  * The abilities surfaced are those whose `activateFromZone` matches this enumerator's [zone]:
  * - **Graveyard** — Undead Gladiator ({1}{B}, Discard a card: Return this from your graveyard…),
@@ -33,6 +33,8 @@ import com.wingedsheep.sdk.scripting.TimingRule
  * - **Hand** — the "discard this card from hand" activated abilities such as Steel Wrecking Ball
  *   ({1}{R}, Discard this card: Destroy target artifact) and Stegron the Dinosaur Man, plus
  *   Urban Retreat's "{2}, Return a tapped creature you control: put this onto the battlefield".
+ * - **Command zone** — the Momir Basic avatar, Derevi's "put Derevi onto the battlefield from the
+ *   command zone", and commander ninjutsu (a `ReturnToHand` cost, like hand ninjutsu).
  *
  * Handles cost checking for Mana, Discard, DiscardSelf, ExileSelf, Blight, Sacrifice (one or several
  * atoms, jointly — [SacrificeCostAssignment]), and Composite (with

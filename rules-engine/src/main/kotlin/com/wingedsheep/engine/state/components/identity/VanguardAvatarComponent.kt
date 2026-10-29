@@ -11,7 +11,8 @@ import kotlinx.serialization.Serializable
  * Attached at game-init time to the avatar card placed in each player's command zone. The avatar
  * never enters the battlefield or the stack; it sits in the command zone and grants its activated
  * ability from there (`activateFromZone == Zone.COMMAND`, surfaced by
- * [com.wingedsheep.engine.legalactions.enumerators.CommandZoneAbilityEnumerator]). The marker lets
+ * [com.wingedsheep.engine.legalactions.enumerators.ZoneActivatedAbilityEnumerator] for
+ * `Zone.COMMAND`). The marker lets
  * later layers (client rendering, AI) identify the avatar without inferring it from the zone.
  *
  * @property ownerId The player whose avatar this is.

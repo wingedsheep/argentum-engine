@@ -13194,7 +13194,8 @@ enumerated as legal actions today, each by its own `ActionEnumerator`:
   affordability counts it as colour fixing instead (`ManaSolver.offBattlefieldColorFixers`: each lets one
   coloured pip be paid by any mana); the payment window opens and offers it, and its {1} is auto-paid on
   activation.
-- `Zone.COMMAND` — `CommandZoneAbilityEnumerator` (Momir Basic avatar).
+- `Zone.COMMAND` — the same `ZoneActivatedAbilityEnumerator` (Momir Basic avatar, Derevi, commander ninjutsu),
+  so a command-zone ability gets every cost the hand and graveyard do (a `ReturnToHand` bounce, sacrifice, X).
 
 `ActivateAbilityHandler` accepts any non-battlefield `activateFromZone` generically (it just checks
 the source is in that zone), so adding an ability in an already-enumerated zone needs no engine
@@ -14824,6 +14825,11 @@ Blighted Agent, Ichor Rats, Plague Stinger, Skithiryx.
   `ReduceActivatedAbilityCost(..., reach = ActivatedAbilityReach.ACTIVATED_BY_YOU, keyword = Keyword.NINJUTSU)`
   (Silver-Fur Master). Used by *Kaito, Bane of Nightmares* (DSK) — a planeswalker with ninjutsu whose own static makes it
   a creature on your turn, so it can enter attacking.
+  **Commander ninjutsu** (CR 702.49d) — `card { commanderNinjutsu("{cost}") }` — adds the same marker with
+  `commander = true` ("Commander ninjutsu {cost}") plus `commanderNinjutsuAbilities(cost)`: the hand ability above and an
+  identical one with `activateFromZone = Zone.COMMAND` / `fromZone = Zone.COMMAND`, surfaced by the command-zone
+  `ZoneActivatedAbilityEnumerator`. Both keep `keyword = Keyword.NINJUTSU`, and neither casts the card, so commander tax
+  doesn't grow. Used by *Yuriko, the Tiger's Shadow* (C18).
 - `WebSlinging(cost)` — `card { webSlinging("{cost}") }` builder helper (CR 702.188, Marvel's Spider-Man). An
   alternative cost bundling a non-mana portion: *"You may cast this spell by paying [cost] and returning a **tapped**
   creature you control to its owner's hand rather than paying its mana cost."* Unlike `Sneak` it grants **no

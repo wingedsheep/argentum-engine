@@ -1377,7 +1377,7 @@ class CastPermissionUtils(
      * `ActivateAbilityHandler.validate` is the authority. Every enumerator that offers an activation
      * also consults this so an ability is never offered and then rejected: `ActivatedAbilityEnumerator`
      * (own-permanent and any-player-may paths), `ManaAbilityEnumerator`, `ZoneActivatedAbilityEnumerator`
-     * and `CommandZoneAbilityEnumerator` — the four enumerators that construct an `ActivateAbility`.
+     * (graveyard, hand and command zone) — the enumerators that construct an `ActivateAbility`.
      * Not literally every path: `ManaSolver`'s auto-tap payment search filters on `isManaAbility`
      * with no permission check, so a power-up *mana* ability (none is printed today) could still be
      * auto-tapped for a cost.

@@ -185,7 +185,7 @@ class PowerUpKeywordScenarioTest : ScenarioTestBase() {
 
     /**
      * A power-up activated from the **command zone** — the one enumerator
-     * (`CommandZoneAbilityEnumerator`) the other tests here never reach, since every printed
+     * (`ZoneActivatedAbilityEnumerator(Zone.COMMAND)`) the other tests here never reach, since every printed
      * power-up activates from the battlefield. Shaped like the Momir Basic avatar: a Vanguard card
      * with `activateFromZone = Zone.COMMAND`, which is how a card gets into the command zone with
      * an activated ability at all.
@@ -555,7 +555,7 @@ class PowerUpKeywordScenarioTest : ScenarioTestBase() {
                     .withCardInCommandZone(1, "Timeline Avatar")
                     .build()
 
-                withClue("control: CommandZoneAbilityEnumerator offers it while nothing is locked") {
+                withClue("control: the command-zone enumerator offers it while nothing is locked") {
                     game.actionFor(1, avatarAbilityId) shouldNotBe null
                 }
 

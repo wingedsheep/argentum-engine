@@ -61,7 +61,7 @@ class LegalActionEnumerator(
         SaddleEnumerator(),
         ZoneActivatedAbilityEnumerator(Zone.GRAVEYARD, predicateEvaluator = predicateEvaluator),
         ZoneActivatedAbilityEnumerator(Zone.HAND, predicateEvaluator = predicateEvaluator),
-        CommandZoneAbilityEnumerator()
+        ZoneActivatedAbilityEnumerator(Zone.COMMAND, predicateEvaluator = predicateEvaluator),
     )
 
     /**

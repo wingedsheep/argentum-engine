@@ -36,8 +36,15 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * ninjutsu {2}{U}{B}", a `GrantActivatedAbility(ninjutsuAbility(...), …, recipientZone =
  * Zone.HAND)` — builds the same ability with no card around it.
  */
-fun ninjutsuAbility(cost: ManaCost): ActivatedAbility = ActivatedAbility(
-    id = AbilityId("ninjutsu_$cost"),
+fun ninjutsuAbility(cost: ManaCost): ActivatedAbility = ninjutsuAbility(cost, Zone.HAND)
+
+/**
+ * The ninjutsu ability activated from [zone] — [Zone.HAND] for plain ninjutsu, [Zone.COMMAND] for
+ * the command-zone half of commander ninjutsu ([commanderNinjutsuAbilities]). The [Effects.Move]
+ * `fromZone` gate follows the zone: a card that left it in response stays where it went.
+ */
+private fun ninjutsuAbility(cost: ManaCost, zone: Zone): ActivatedAbility = ActivatedAbility(
+    id = AbilityId(if (zone == Zone.HAND) "ninjutsu_$cost" else "commander_ninjutsu_$cost"),
     cost = Costs.Composite(
         Costs.Mana(cost),
         Costs.ReturnToHand(GameObjectFilter.Creature.attacking().unblocked()),
@@ -46,14 +53,29 @@ fun ninjutsuAbility(cost: ManaCost): ActivatedAbility = ActivatedAbility(
         EffectTarget.Self,
         Zone.BATTLEFIELD,
         placement = ZonePlacement.TappedAndAttacking,
-        fromZone = Zone.HAND,
+        fromZone = zone,
         attackDefender = EnteringAttackDefender.RETURNED_ATTACKER,
     ),
-    activateFromZone = Zone.HAND,
+    activateFromZone = zone,
     keyword = Keyword.NINJUTSU,
-    descriptionOverride = "Ninjutsu $cost ($cost, Return an unblocked attacker you control to hand: " +
-        "Put this card onto the battlefield from your hand tapped and attacking.)",
+    descriptionOverride = if (zone == Zone.HAND) {
+        "Ninjutsu $cost ($cost, Return an unblocked attacker you control to hand: " +
+            "Put this card onto the battlefield from your hand tapped and attacking.)"
+    } else {
+        "Commander ninjutsu $cost ($cost, Return an unblocked attacker you control to hand: " +
+            "Put this card onto the battlefield from the command zone tapped and attacking.)"
+    },
 )
+
+/**
+ * Commander ninjutsu (CR 702.49d): "a variant of the ninjutsu ability that also functions while
+ * the card with commander ninjutsu is in the command zone". Two activated abilities — the hand
+ * one [ninjutsuAbility] builds, and the same ability activated from [Zone.COMMAND] — both tagged
+ * [Keyword.NINJUTSU], so "ninjutsu abilities you activate" effects see either. Putting the
+ * commander onto the battlefield this way isn't casting it, so commander tax doesn't grow.
+ */
+fun commanderNinjutsuAbilities(cost: ManaCost): List<ActivatedAbility> =
+    listOf(ninjutsuAbility(cost, Zone.HAND), ninjutsuAbility(cost, Zone.COMMAND))
 
 /** [ninjutsuAbility] from a cost string — `ninjutsuAbility("{2}{U}{B}")`. */
 fun ninjutsuAbility(cost: String): ActivatedAbility = ninjutsuAbility(ManaCost.parse(cost))
@@ -65,4 +87,14 @@ fun ninjutsuAbility(cost: String): ActivatedAbility = ninjutsuAbility(ManaCost.p
 fun CardBuilder.ninjutsu(cost: String) {
     keywordAbilityList.add(KeywordAbility.ninjutsu(cost))
     activatedAbilities.add(ninjutsuAbility(cost))
+}
+
+/**
+ * Add Commander ninjutsu [cost] (CR 702.49d): the [KeywordAbility.Ninjutsu] display marker
+ * (`commander = true`) plus the hand and command-zone abilities [commanderNinjutsuAbilities] builds.
+ */
+fun CardBuilder.commanderNinjutsu(cost: String) {
+    val parsed = ManaCost.parse(cost)
+    keywordAbilityList.add(KeywordAbility.Ninjutsu(parsed, commander = true))
+    activatedAbilities.addAll(commanderNinjutsuAbilities(parsed))
 }

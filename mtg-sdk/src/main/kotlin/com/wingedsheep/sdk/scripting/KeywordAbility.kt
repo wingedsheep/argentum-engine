@@ -1343,12 +1343,16 @@ sealed interface KeywordAbility {
      * cousin. This keyword is the display marker; the behaviour is the hand-zone
      * [ActivatedAbility] `ninjutsuAbility(cost)` builds, which the `ninjutsu("{cost}")` DSL helper
      * on [com.wingedsheep.sdk.dsl.CardBuilder] adds alongside it.
+     *
+     * [commander] marks commander ninjutsu (CR 702.49d), the variant that also functions from the
+     * command zone — a ninjutsu ability all the same, so it keeps [Keyword.NINJUTSU];
+     * `commanderNinjutsu("{cost}")` adds it with a hand and a command-zone ability.
      */
     @SerialName("Ninjutsu")
     @Serializable
-    data class Ninjutsu(val cost: ManaCost) : KeywordAbility {
+    data class Ninjutsu(val cost: ManaCost, val commander: Boolean = false) : KeywordAbility {
         override val keyword: Keyword = Keyword.NINJUTSU
-        override val description: String = "Ninjutsu $cost"
+        override val description: String = (if (commander) "Commander ninjutsu " else "Ninjutsu ") + cost
     }
 
     // =========================================================================
