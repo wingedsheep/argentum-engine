@@ -1563,6 +1563,80 @@
     ]
 }
 
+// Quirion Dryad
+{
+    "name": "Quirion Dryad",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Dryad",
+    "oracleText": "Whenever you cast a spell that's white, blue, black, or red, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Quirion Dryad:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "HasColor",
+                                        "color": "WHITE"
+                                    },
+                                    {
+                                        "type": "HasColor",
+                                        "color": "BLUE"
+                                    },
+                                    {
+                                        "type": "HasColor",
+                                        "color": "BLACK"
+                                    },
+                                    {
+                                        "type": "HasColor",
+                                        "color": "RED"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "89",
+        "rarity": "RARE",
+        "artist": "Don Hazeltine",
+        "flavorText": "\"Never underestimate the ability of natural forces to adapt to unnatural influences.\"\n—Molimo, maro-sorcerer",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f6841ae6-b15f-488e-9cae-2cc5ec668278.jpg?1783945611",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "An ability that triggers when a player casts a spell resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If you cast a spell that's more than one color, Quirion Dryad's ability triggers just once."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Shriek of Dread
 {
     "name": "Shriek of Dread",

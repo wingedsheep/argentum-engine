@@ -283,6 +283,50 @@
     ]
 }
 
+// Lorescale Coatl
+{
+    "name": "Lorescale Coatl",
+    "manaCost": "{1}{G}{U}",
+    "typeLine": "Creature — Snake",
+    "oracleText": "Whenever you draw a card, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lorescale Coatl:1",
+                "trigger": "DrawEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "rarity": "UNCOMMON",
+        "artist": "Greg Staples",
+        "flavorText": "\"The enlightenment I never found in etherium I have found traced in the coatl's scales.\"\n—Ranalus, vedalken heretic",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e81c31c9-d7d7-4b45-893e-7e36d26c645f.jpg?1783942420",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "If a spell or ability causes you to put a card into your hand without specifically using the word \"draw,\" it's not a card drawn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Maelstrom Pulse
 {
     "name": "Maelstrom Pulse",
