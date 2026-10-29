@@ -2054,3 +2054,110 @@
         "WHITE"
     ]
 }
+
+// Éowyn, Shieldmaiden
+{
+    "name": "Éowyn, Shieldmaiden",
+    "manaCost": "{2}{U}{R}{W}",
+    "typeLine": "Legendary Creature — Human Knight",
+    "oracleText": "First strike\nAt the beginning of combat on your turn, if another Human entered the battlefield under your control this turn, create two 2/2 red Human Knight creature tokens with trample and haste. Then if you control six or more Humans, draw a card.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Éowyn, Shieldmaiden:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "power": 2,
+                            "toughness": 2,
+                            "colors": [
+                                "RED"
+                            ],
+                            "creatureTypes": [
+                                "Human",
+                                "Knight"
+                            ],
+                            "keywords": [
+                                "TRAMPLE",
+                                "HASTE"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/4/9/491fc1c3-a46e-4cfd-a749-57f4c96f6aea.jpg?1783916057"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": "permanent Human"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 6
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "SubtypeEnteredUnderControlThisTurn",
+                        "player": "You",
+                        "subtypes": [
+                            "Human"
+                        ],
+                        "excludeSource": true
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "At the beginning of combat on your turn, if another Human entered the battlefield under your control this turn, create two 2/2 red Human Knight creature tokens with trample and haste. Then if you control six or more Humans, draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "MYTHIC",
+        "artist": "Craig Elliott",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd4a00ff-2206-4e12-a0ab-61ed82c9e6c5.jpg?1783916039"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED",
+        "WHITE"
+    ]
+}

@@ -2177,6 +2177,10 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
      * the entry event is what's tracked). When [excludeTriggeringEntity] is true, the permanent
      * whose entry triggered the ability is not counted, giving "each *other* [subtype]" wording
      * (Geralf, the Fleshwright). Simultaneous entries each see the others (2024-04-12 ruling).
+     * When [excludeSource] is true, the ability's own source is not counted, giving "if *another*
+     * [subtype] entered" on a non-ETB trigger (Éowyn, Shieldmaiden's beginning-of-combat check):
+     * only the source's current object is dropped — an earlier entry of the same card, before it
+     * left and returned, was a different object (CR 400.7) and still counts.
      *
      * [subtypes] is a set with any-of semantics rather than a single subtype so the printed
      * "Mounts and/or Vehicles" wording (Cloudspire Coordinator) counts each qualifying entry
@@ -2191,7 +2195,8 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     data class SubtypeEnteredUnderControlThisTurn(
         val player: Player,
         val subtypes: Set<com.wingedsheep.sdk.core.Subtype>,
-        val excludeTriggeringEntity: Boolean = false
+        val excludeTriggeringEntity: Boolean = false,
+        val excludeSource: Boolean = false
     ) : DynamicAmount {
         override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount {
             val new = subtypes.map { replacer.replaceSubtype(it) }.toSet()
@@ -2199,7 +2204,7 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
         }
         override val description: String = buildString {
             append("the number of ")
-            if (excludeTriggeringEntity) append("other ")
+            if (excludeTriggeringEntity || excludeSource) append("other ")
             append(subtypes.joinToString(" and/or ") { "${it.value}s" })
             append(" that entered the battlefield under ")
             append(player.possessive)

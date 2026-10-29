@@ -685,7 +685,7 @@ Families:
 - `DynamicAmount.StationCharge` — The number of charge counters a Station ability puts on its permanent: the power of the creature tapped to pay the station cost (CR 702.184a — "equal to the tapped creature's power").
 - `DynamicAmount.StoredCardManaValue(collectionName: String)` — Mana value of a card stored in a named collection.
 - `DynamicAmount.Subtract(left: DynamicAmount, right: DynamicAmount)` — Subtract one dynamic amount from another.
-- `DynamicAmount.SubtypeEnteredUnderControlThisTurn(player: Player, subtypes: Set<Subtype>, excludeTriggeringEntity: Boolean)` — The number of permanents with **any** of subtypes that entered the battlefield under player's control this turn (counting even those that have since left or changed type — the entry event is what's…
+- `DynamicAmount.SubtypeEnteredUnderControlThisTurn(player: Player, subtypes: Set<Subtype>, excludeTriggeringEntity: Boolean, excludeSource: Boolean)` — The number of permanents with **any** of subtypes that entered the battlefield under player's control this turn (counting even those that have since left or changed type — the entry event is what's…
 - `DynamicAmount.TotalManaSpent` — The total amount of mana paid from the pool to cast the current spell.
 - `DynamicAmount.TotalPowerSacrificedThisWay` — Total power of the permanents sacrificed by the current resolving effect ("their total power").
 - `DynamicAmount.TurnTracking(player: Player, tracker: TurnTracker)` — Reads a per-player turn-tracking counter.

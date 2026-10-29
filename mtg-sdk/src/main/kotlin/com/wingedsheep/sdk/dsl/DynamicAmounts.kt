@@ -952,14 +952,17 @@ object DynamicAmounts {
      * your control this turn"). Counts entries even after the permanent has left or changed type.
      * Set [excludeTriggeringEntity] for "each *other*" — drops the permanent whose entry triggered
      * the ability (and, for simultaneous entries, lets each entrant see the others per the
-     * 2024-04-12 ruling).
+     * 2024-04-12 ruling). Set [excludeSource] for "*another* [subtype]" read off a trigger that isn't
+     * the entry itself — drops the ability's source (Éowyn, Shieldmaiden's "if another Human entered
+     * the battlefield under your control this turn").
      */
     fun subtypeEnteredUnderControlThisTurn(
         subtype: com.wingedsheep.sdk.core.Subtype,
         player: Player = Player.You,
-        excludeTriggeringEntity: Boolean = false
+        excludeTriggeringEntity: Boolean = false,
+        excludeSource: Boolean = false
     ): DynamicAmount =
-        DynamicAmount.SubtypeEnteredUnderControlThisTurn(player, setOf(subtype), excludeTriggeringEntity)
+        DynamicAmount.SubtypeEnteredUnderControlThisTurn(player, setOf(subtype), excludeTriggeringEntity, excludeSource)
 
     /**
      * "The number of [cardType]s that entered the battlefield under [player]'s control this turn"
@@ -979,9 +982,10 @@ object DynamicAmounts {
     fun subtypesEnteredUnderControlThisTurn(
         subtypes: Set<com.wingedsheep.sdk.core.Subtype>,
         player: Player = Player.You,
-        excludeTriggeringEntity: Boolean = false
+        excludeTriggeringEntity: Boolean = false,
+        excludeSource: Boolean = false
     ): DynamicAmount =
-        DynamicAmount.SubtypeEnteredUnderControlThisTurn(player, subtypes, excludeTriggeringEntity)
+        DynamicAmount.SubtypeEnteredUnderControlThisTurn(player, subtypes, excludeTriggeringEntity, excludeSource)
 
     /**
      * "The number of times [player] descended this turn" (CR 700.11) — count of

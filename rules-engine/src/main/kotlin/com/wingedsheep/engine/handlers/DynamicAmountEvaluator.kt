@@ -1182,6 +1182,16 @@ class DynamicAmountEvaluator(
                 val playerIds = resolveUnifiedPlayerIds(state, amount.player, context, projectedState)
                 val wanted = amount.subtypes.map { it.value }
                 val excludeId = if (amount.excludeTriggeringEntity) context.triggeringEntityId else null
+                // "Another" drops only the source's current object: an earlier entry under the
+                // same id, before it left and returned, was a different object (CR 400.7). A
+                // source that has since left keeps no timestamp, so all of its entries drop.
+                val sourceId = if (amount.excludeSource) context.sourceId else null
+                val sourceTimestamp = sourceId?.let {
+                    state.getEntity(it)?.get<BattlefieldEntryTimestampComponent>()?.timestamp
+                }
+                fun isSource(rec: com.wingedsheep.engine.state.components.player.EnteredPermanentRecord) =
+                    rec.entityId == sourceId &&
+                        (sourceTimestamp == null || rec.entryTimestamp == null || rec.entryTimestamp == sourceTimestamp)
                 playerIds.sumOf { playerId ->
                     val entries = state.getEntity(playerId)
                         ?.get<com.wingedsheep.engine.state.components.player.PermanentsEnteredUnderControlThisTurnComponent>()
@@ -1190,7 +1200,7 @@ class DynamicAmountEvaluator(
                     // Any-of over the wanted subtypes, counted per *entry* — an entry carrying two
                     // of them ("Mounts and/or Vehicles") still contributes 1.
                     entries.count { rec ->
-                        rec.entityId != excludeId &&
+                        rec.entityId != excludeId && !isSource(rec) &&
                             rec.subtypes.any { have -> wanted.any { have.equals(it, ignoreCase = true) } }
                     }
                 }

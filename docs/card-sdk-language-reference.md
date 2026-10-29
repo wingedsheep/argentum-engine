@@ -17849,9 +17849,9 @@ this turn").
   damage, and reset to 0 at end of turn. Backs `Conditions.YouDealtRedNoncombatDamageThisTurn(atLeast)` —
   Temple of Power's transform gate (back of Ojer Axonil, Deepest Might).
 
-`SubtypeEnteredUnderControlThisTurn(player, subtypes, excludeTriggeringEntity?)` /
-`DynamicAmounts.subtypeEnteredUnderControlThisTurn(subtype, player?, excludeTriggeringEntity?)` /
-`DynamicAmounts.subtypesEnteredUnderControlThisTurn(subtypes, player?, excludeTriggeringEntity?)` —
+`SubtypeEnteredUnderControlThisTurn(player, subtypes, excludeTriggeringEntity?, excludeSource?)` /
+`DynamicAmounts.subtypeEnteredUnderControlThisTurn(subtype, player?, excludeTriggeringEntity?, excludeSource?)` /
+`DynamicAmounts.subtypesEnteredUnderControlThisTurn(subtypes, player?, excludeTriggeringEntity?, excludeSource?)` —
 "the number of [other] [subtype]s that entered the battlefield under [player]'s control this turn"
 (Geralf, the Fleshwright — "each other Zombie that entered the battlefield under your control this
 turn"). It's a **turn-history** count: backed by `PermanentsEnteredUnderControlThisTurnComponent`,
@@ -17859,6 +17859,11 @@ which records each entrant's subtypes (from projected state) at entry, so a perm
 left the battlefield or lost the type still counts. `excludeTriggeringEntity = true` drops the
 permanent whose entry triggered the ability (giving "each *other*"); because every simultaneous
 entrant is recorded before the triggers resolve, each one sees the others (2024-04-12 ruling).
+`excludeSource = true` drops the ability's own source instead — "if *another* Human entered the
+battlefield under your control this turn" on a beginning-of-combat trigger (Éowyn, Shieldmaiden).
+Only the source's current object is dropped; an earlier entry of the same card before it left and
+returned was a different object (CR 400.7) and still counts. Feed it to `Conditions.CompareAmounts(…,
+GTE, 1)` as an `interveningIf`.
 `subtypes` is a **set with any-of semantics**, so the printed "Mounts and/or Vehicles" wording
 (Cloudspire Coordinator, via the plural facade) counts each qualifying entry exactly once — summing
 two single-subtype amounts would double-count a permanent carrying both. The singular facade is the
