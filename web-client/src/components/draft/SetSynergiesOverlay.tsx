@@ -942,42 +942,6 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
-  STX: {
-    setCode: 'STX',
-    setName: 'Strixhaven: School of Mages',
-    archetypes: [
-      {
-        name: 'Silverquill',
-        colors: ['W', 'B'],
-        keyCard: 'Silverquill Pledgemage',
-        description: 'Build a wide board of Inkling tokens, then pile on +1/+1 counters and push through with evasion and lifegain. An aggressive counters-and-tokens deck that closes the game fast.',
-      },
-      {
-        name: 'Prismari',
-        colors: ['U', 'R'],
-        keyCard: 'Prismari Pledgemage',
-        description: 'Cast a high volume of instants and sorceries to trigger magecraft, churning out Treasure and big Elemental payoffs. A spell-slinging tempo deck that snowballs with every cast.',
-      },
-      {
-        name: 'Witherbloom',
-        colors: ['B', 'G'],
-        keyCard: 'Witherbloom Pledgemage',
-        description: 'Drain the opponent with Pests and lifeloss payoffs, sacrificing tokens for value while recurring threats from the graveyard. A grindy attrition deck that bleeds the table dry.',
-      },
-      {
-        name: 'Lorehold',
-        colors: ['R', 'W'],
-        keyCard: 'Lorehold Pledgemage',
-        description: 'Recur instants and sorceries from your graveyard and reward casting historic spells, turning Spirit tokens and value loops into relentless pressure. A spells-matter midrange deck.',
-      },
-      {
-        name: 'Quandrix',
-        colors: ['G', 'U'],
-        keyCard: 'Quandrix Pledgemage',
-        description: 'Ramp into extra mana and pile +1/+1 counters onto Fractal tokens, scaling your board with the size of your mana. A go-big ramp-and-counters deck that overwhelms in the late game.',
-      },
-    ],
-  },
   TMT: {
     setCode: 'TMT',
     setName: 'Teenage Mutant Ninja Turtles',
@@ -1478,6 +1442,43 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         colors: ['G', 'U'],
         keyCard: 'Rootcoil Creeper',
         description: 'Mill your own library to stock flashback cards, then cast them from the graveyard with ramp and mana that only spells from there can use. A value deck that gets stronger the longer the game runs.',
+      },
+    ],
+  },
+  STX: {
+    setCode: 'STX',
+    setName: 'Strixhaven: School of Mages',
+    archetypes: [
+      {
+        name: 'Silverquill',
+        colors: ['W', 'B'],
+        keyCard: 'Killian, Ink Duelist',
+        description: 'Cast cheap instants and sorceries that target your own creatures to trigger magecraft, pumping and protecting evasive fliers and Inklings. A tempo deck that wins in the air while its spells drain and remove.',
+      },
+      {
+        name: 'Prismari',
+        colors: ['U', 'R'],
+        keyCard: 'Rootha, Mercurial Artist',
+        description: 'Fill the deck with instants and sorceries, ramp with Treasure, and cast big spells of five or more mana for Elementals and copies. A spells-matter deck that goes over the top with expensive payoffs.',
+      },
+      {
+        name: 'Witherbloom',
+        colors: ['B', 'G'],
+        keyCard: 'Dina, Soul Steeper',
+        description: 'Make Pests and sacrifice creatures for value, turning every point of life you gain into life your opponent loses. A grindy midrange deck that drains the opponent while staying out of reach.',
+      },
+      {
+        name: 'Lorehold',
+        colors: ['R', 'W'],
+        keyCard: 'Quintorius, Field Historian',
+        description: 'Return and exile cards from your graveyard to make 3/2 Spirits and recast instants and sorceries, pumping a board of Spirits. A graveyard-value aggro deck that keeps attacking with recycled cards.',
+        creatureTypes: ['Spirit'],
+      },
+      {
+        name: 'Quandrix',
+        colors: ['G', 'U'],
+        keyCard: 'Zimone, Quandrix Prodigy',
+        description: 'Ramp into X spells and Fractals, then double the +1/+1 counters on your creatures. A counters-ramp deck whose threats scale with every land and every counter.',
       },
     ],
   },

@@ -479,7 +479,7 @@ building). The strategies compose:
 **Dedicated-slot boosters** — `DedicatedSlotBooster(base, slots)` adds slots that each draw from their own print
 sheet to a `StandardBooster` or `PlayBooster` base. A `DedicatedSlot(sheet, rarityWeights, rareChance, sharedRarities,
 mythicChance)` names its cards with a `SheetSelector` — `DoubleFaced`, `Battle`, `LegendaryCreature`,
-`Named(names)`, `Except(matching, except)` — and opens a rarity rolled from `rarityWeights`. Its sheet is the
+`HasSubtype(subtype)`, `Named(names)`, `Except(matching, except)` — and opens a rarity rolled from `rarityWeights`. Its sheet is the
 selected cards at those rarities (plus rare and mythic when `rareChance > 0`), and they leave the base's pool unless
 their rarity is in `sharedRarities`. With `rareChance` the slot holds the pack's one rare or mythic instead, and the
 base trades its rare slot for an uncommon (`RarityCountBooster.withRareSlotAsUncommon`); the slots' chances are rolled
@@ -496,6 +496,8 @@ together, so a pack never opens two. A dry sheet (host bans) opens the rolled ra
 - Innistrad Remastered — a double-faced common slot on a 5-common Play Booster.
 - Teenage Mutant Ninja Turtles — a `Named` legendary-Turtle slot with `sharedRarities = setOf(RARE, MYTHIC)`, so the
   rare Turtles also stay on the rare sheet.
+- Strixhaven: School of Mages — base `StandardBooster(10, 3)` (its Mystical Archive slot opens a common) and a
+  `HasSubtype(Subtype.LESSON)` slot weighted 1233 C / 90 R / 9 M; uncommon Lessons stay in the uncommon slots.
 
 **Print-sheet boosters** — `PrintSheetBooster(sheets)` collates straight from paper print sheets for the sets that
 predate rarity slots: each `PrintSheet(slots, cardCounts)` opens `slots` names with probability proportional to how

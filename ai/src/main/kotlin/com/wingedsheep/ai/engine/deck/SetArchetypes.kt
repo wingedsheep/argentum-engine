@@ -382,22 +382,6 @@ object SetArchetypes {
                     "Deploy big threats early with Impending time counters, then ramp into the format's largest creatures. A midrange-ramp deck that overpowers opponents once its haymakers come online."),
             )
         ),
-        "STX" to SetSynergies(
-            setCode = "STX",
-            setName = "Strixhaven: School of Mages",
-            archetypes = listOf(
-                Archetype("Silverquill", listOf(Color.WHITE, Color.BLACK),
-                    "Build a wide board of Inkling tokens, then pile on +1/+1 counters and push through with evasion and lifegain. An aggressive counters-and-tokens deck that closes the game fast."),
-                Archetype("Prismari", listOf(Color.BLUE, Color.RED),
-                    "Cast a high volume of instants and sorceries to trigger magecraft, churning out Treasure and big Elemental payoffs. A spell-slinging tempo deck that snowballs with every cast."),
-                Archetype("Witherbloom", listOf(Color.BLACK, Color.GREEN),
-                    "Drain the opponent with Pests and lifeloss payoffs, sacrificing tokens for value while recurring threats from the graveyard. A grindy attrition deck that bleeds the table dry."),
-                Archetype("Lorehold", listOf(Color.RED, Color.WHITE),
-                    "Recur instants and sorceries from your graveyard and reward casting historic spells, turning Spirit tokens and value loops into relentless pressure. A spells-matter midrange deck."),
-                Archetype("Quandrix", listOf(Color.GREEN, Color.BLUE),
-                    "Ramp into extra mana and pile +1/+1 counters onto Fractal tokens, scaling your board with the size of your mana. A go-big ramp-and-counters deck that overwhelms in the late game."),
-            )
-        ),
         "TMT" to SetSynergies(
             setCode = "TMT",
             setName = "Teenage Mutant Ninja Turtles",
@@ -667,6 +651,23 @@ object SetArchetypes {
                     "Curve out with hasty attackers and keep shifting between day and night to grow the team. A fast aggro deck that punishes slow starts before the opponent can stabilize."),
                 Archetype("Self-Mill Flashback", listOf(Color.GREEN, Color.BLUE),
                     "Mill your own library to stock flashback cards, then cast them from the graveyard with ramp and mana that only spells from there can use. A value deck that gets stronger the longer the game runs."),
+            )
+        ),
+        "STX" to SetSynergies(
+            setCode = "STX",
+            setName = "Strixhaven: School of Mages",
+            archetypes = listOf(
+                Archetype("Silverquill", listOf(Color.WHITE, Color.BLACK),
+                    "Cast cheap instants and sorceries that target your own creatures to trigger magecraft, pumping and protecting evasive fliers and Inklings. A tempo deck that wins in the air while its spells drain and remove."),
+                Archetype("Prismari", listOf(Color.BLUE, Color.RED),
+                    "Fill the deck with instants and sorceries, ramp with Treasure, and cast big spells of five or more mana for Elementals and copies. A spells-matter deck that goes over the top with expensive payoffs."),
+                Archetype("Witherbloom", listOf(Color.BLACK, Color.GREEN),
+                    "Make Pests and sacrifice creatures for value, turning every point of life you gain into life your opponent loses. A grindy midrange deck that drains the opponent while staying out of reach."),
+                Archetype("Lorehold", listOf(Color.RED, Color.WHITE),
+                    "Return and exile cards from your graveyard to make 3/2 Spirits and recast instants and sorceries, pumping a board of Spirits. A graveyard-value aggro deck that keeps attacking with recycled cards.",
+                    creatureTypes = listOf("Spirit")),
+                Archetype("Quandrix", listOf(Color.GREEN, Color.BLUE),
+                    "Ramp into X spells and Fractals, then double the +1/+1 counters on your creatures. A counters-ramp deck whose threats scale with every land and every counter."),
             )
         ),
         "ZNR" to SetSynergies(

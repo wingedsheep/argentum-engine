@@ -244,6 +244,22 @@ class SetArchetypesTest : StringSpec({
         )
         synergies.archetypes.all { it.creatureTypes.isEmpty() } shouldBe true
     }
+    "Strixhaven: School of Mages exposes its five college archetypes" {
+        val synergies = requireNotNull(SetArchetypes.getForSet("stx"))
+
+        synergies.setName shouldBe "Strixhaven: School of Mages"
+        // STX prints gold cards only in the five enemy-pair colleges; the allied pairs have no signposts.
+        synergies.archetypes.associate { it.name to it.colors.toSet() } shouldBe mapOf(
+            "Silverquill" to setOf(Color.WHITE, Color.BLACK),
+            "Prismari" to setOf(Color.BLUE, Color.RED),
+            "Witherbloom" to setOf(Color.BLACK, Color.GREEN),
+            "Lorehold" to setOf(Color.RED, Color.WHITE),
+            "Quandrix" to setOf(Color.GREEN, Color.BLUE),
+        )
+        synergies.archetypes.filter { it.creatureTypes.isNotEmpty() }.associate { it.name to it.creatureTypes } shouldBe mapOf(
+            "Lorehold" to listOf("Spirit"),
+        )
+    }
     "Zendikar Rising exposes its ten signpost color-pair archetypes" {
         val synergies = requireNotNull(SetArchetypes.getForSet("znr"))
 

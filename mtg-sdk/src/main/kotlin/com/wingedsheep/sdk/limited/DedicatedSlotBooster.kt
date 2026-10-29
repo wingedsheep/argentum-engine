@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.limited
 
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Rarity
 import kotlin.random.Random
@@ -24,6 +25,11 @@ interface SheetSelector {
     /** Legendary creatures. */
     data object LegendaryCreature : SheetSelector {
         override fun matches(card: CardDefinition) = card.typeLine.isLegendary && card.typeLine.isCreature
+    }
+
+    /** Cards with [subtype] — Strixhaven's Lesson slot. */
+    data class HasSubtype(val subtype: Subtype) : SheetSelector {
+        override fun matches(card: CardDefinition) = card.typeLine.hasSubtype(subtype)
     }
 
     /** Cards named on the set's own collation list (reprint sheets, a named cycle). */

@@ -1,12 +1,14 @@
 package com.wingedsheep.gameserver.config
 
 import com.wingedsheep.gameserver.coverage.SetCoverageService
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.limited.DedicatedSlotBooster
 import com.wingedsheep.sdk.limited.EchoedPairsPlayBooster
 import com.wingedsheep.sdk.limited.LandSlotBooster
 import com.wingedsheep.sdk.limited.PlayBooster
 import com.wingedsheep.sdk.limited.PrintSheetBooster
 import com.wingedsheep.sdk.limited.StandardBooster
+import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Rarity
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
@@ -281,6 +283,47 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
         (mythics.toDouble() / packs) shouldBe (((15.0 + 45.0) / 444) plusOrMinus 0.03)
     }
 
+    test("Strixhaven draft pack opens a Lesson beside 10 non-Lesson commons, 3 uncommons and a rare") {
+        // Draft Booster (MTGJSON `booster.draft`): 9 non-Lesson commons, 3 uncommons, a non-Lesson rare or
+        // mythic (60 mythic draws in 444), a Lesson (137 per common, 18 per rare, 9 for the mythic Lesson:
+        // rare or mythic in 99 of 1332) and a Mystical Archive card. STA isn't a set here, so the Archive
+        // slot opens a tenth STX common; the foil replacing a common is not modelled.
+        val stx = boosterGenerator.availableSets["STX"].shouldNotBeNull()
+        stx.fullyImplemented shouldBe true
+        stx.boosterStrategy.shouldBeInstanceOf<DedicatedSlotBooster>()
+        val eligible = stx.cards.filter { it.metadata.inBooster && !it.typeLine.isBasicLand }
+        // Scryfall `set:stx is:booster -t:basic`.
+        eligible.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.COMMON to 105, Rarity.UNCOMMON to 80, Rarity.RARE to 69, Rarity.MYTHIC to 21,
+        )
+        val isLesson = { card: CardDefinition -> card.typeLine.hasSubtype(Subtype.LESSON) }
+        // Scryfall `set:stx t:lesson`: 9 commons, 5 uncommons, 5 rares, 1 mythic.
+        eligible.filter(isLesson).groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.COMMON to 9, Rarity.UNCOMMON to 5, Rarity.RARE to 5, Rarity.MYTHIC to 1,
+        )
+        val eligibleNames = eligible.mapTo(hashSetOf()) { it.name }
+        val rareOrMythic = { card: CardDefinition -> card.metadata.rarity == Rarity.RARE || card.metadata.rarity == Rarity.MYTHIC }
+        var rareLessons = 0
+        var mythics = 0
+        val packs = 2000
+        repeat(packs) {
+            val pack = boosterGenerator.generateBooster("STX")
+            pack.size shouldBe 15
+            pack.map { it.name }.toSet().size shouldBe 15
+            withClue("pack ${pack.map { it.name }} holds an off-sheet card") {
+                pack.all { it.name in eligibleNames } shouldBe true
+            }
+            val slotLesson = pack.single { isLesson(it) && it.metadata.rarity != Rarity.UNCOMMON }
+            pack.count { it.metadata.rarity == Rarity.COMMON && !isLesson(it) } shouldBe 10
+            pack.count { it.metadata.rarity == Rarity.UNCOMMON } shouldBe 3
+            val rare = pack.single { rareOrMythic(it) && !isLesson(it) }
+            if (rareOrMythic(slotLesson)) rareLessons++
+            if (rare.metadata.rarity == Rarity.MYTHIC) mythics++
+        }
+        (rareLessons.toDouble() / packs) shouldBe ((99.0 / 1332) plusOrMinus 0.02)
+        (mythics.toDouble() / packs) shouldBe ((60.0 / 444) plusOrMinus 0.03)
+    }
+
     test("March of the Machine: The Aftermath opens a 5-card Epilogue Booster from its 50-card pool") {
         // 2 uncommons, a rare/mythic and two any-rarity wildcards (foil + Booster Fun) that are each a
         // rare or mythic about 1 time in 6; the ad card/token slot is not modelled, so 5 playable cards.
@@ -499,7 +542,7 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
             "POR" to 13, "P02" to 13, "S99" to 13, "VOW" to 14, "KHM" to 15, "LCI" to 15, "MOM" to 14,
             "MKM" to 13, "OTJ" to 13, "MH3" to 13, "BLB" to 13, "DSK" to 14, "FDN" to 14, "INR" to 13,
             "DFT" to 14, "TDM" to 14, "FIN" to 14, "EOE" to 13, "SPM" to 14, "TLA" to 14, "ECL" to 13,
-            "TMT" to 14, "SOS" to 13, "MSH" to 14, "HOB" to 14, "ZNR" to 14,
+            "TMT" to 14, "SOS" to 13, "MSH" to 14, "HOB" to 14, "ZNR" to 14, "STX" to 15,
         )
         for ((code, size) in expected) {
             boosterGenerator.availableSets[code].shouldNotBeNull().fullyImplemented shouldBe true

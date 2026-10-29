@@ -30,6 +30,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-stx',
+    date: '2026-10-30',
+    kind: 'set',
+    setCode: 'STX',
+    title: 'Strixhaven: School of Mages is complete',
+    body:
+      "Enrol at Strixhaven, where five rival colleges each draft as their own two-colour deck: Silverquill's magecraft fliers, Prismari's big spells, Witherbloom's life drain, Lorehold's graveyard Spirits and Quandrix's growing counters. Every pack opens a Lesson, and Learn spells fetch one from your sideboard, so your picks keep paying off after the deck is built.",
+    tryIf: 'instants and sorceries, magecraft and toolbox sideboards',
+  },
+  {
     id: 'mode-highlander',
     date: '2026-10-29',
     kind: 'mode',
