@@ -3140,6 +3140,11 @@ class TriggerDetector(
             }
         }
         if (sacrificeByController.isEmpty()) return
+        // A sacrificed token can cease to exist (CR 704.5d) before detection runs — a Saga token
+        // sacrificed by CR 714.4 in the same state-based-action pass — so the filter falls back to
+        // its battlefield-exit snapshot.
+        val departed = events.filterIsInstance<ZoneChangeEvent>()
+            .mapNotNull { event -> event.lastKnown?.let { event.entityId to it } }.toMap()
 
         // ANY binding: check battlefield permanents with sacrifice batch triggers
         for (entry in index.getEntitiesForCategory(TriggerCategory.SACRIFICE)) {
@@ -3177,7 +3182,7 @@ class TriggerDetector(
                     // card's CardComponent; P/T payoffs should use a captured snapshot instead.
                     val matchingSacrificed = playerEvents.flatMap { event ->
                         event.permanentIds.filter { permanentId ->
-                            sacrificedPermanentMatchesFilter(state, permanentId, trigger.filter)
+                            sacrificedPermanentMatchesFilter(state, permanentId, trigger.filter, departed[permanentId])
                         }
                     }.let { matches ->
                         // "another" (OTHER) excludes the source sacrificing itself. The source is on
@@ -3245,7 +3250,7 @@ class TriggerDetector(
                         // excludes it ("one or more other creatures" — Forge Boss sacrificed with
                         // its fodder still sees the fodder), SELF only itself.
                         val eligible = batchPermanentIds.filter { pid ->
-                            sacrificedPermanentMatchesFilter(state, pid, trigger.filter) &&
+                            sacrificedPermanentMatchesFilter(state, pid, trigger.filter, departed[pid]) &&
                                 when (ability.binding) {
                                     TriggerBinding.SELF -> pid == permanentId
                                     TriggerBinding.OTHER -> pid != permanentId
@@ -3714,25 +3719,24 @@ class TriggerDetector(
     private fun sacrificedPermanentMatchesFilter(
         state: GameState,
         permanentId: EntityId,
-        filter: GameObjectFilter
+        filter: GameObjectFilter,
+        lastKnown: EntitySnapshot?
     ): Boolean {
         if (filter == GameObjectFilter.Any) return true
-        val entity = state.getEntity(permanentId) ?: return false
-        val cardComponent = entity.get<CardComponent>() ?: return false
+        val entity = state.getEntity(permanentId)
+        val typeLine = entity?.get<CardComponent>()?.typeLine ?: lastKnown?.typeLine ?: return false
+        // The sacrificed token is usually still in the graveyard here (it ceases to exist at the
+        // next SBA check, CR 704.5d), so its TokenComponent is still readable; once it is gone, the
+        // snapshot remembers.
+        val isToken = entity?.has<TokenComponent>() ?: lastKnown?.wasToken ?: false
         return filter.cardPredicates.all { predicate ->
             when (predicate) {
-                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature ->
-                    cardComponent.typeLine.isCreature
-                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsArtifact ->
-                    cardComponent.typeLine.isArtifact
+                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature -> typeLine.isCreature
+                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsArtifact -> typeLine.isArtifact
                 is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
-                    cardComponent.typeLine.hasSubtype(predicate.subtype)
-                // The sacrificed token is still in the graveyard here (it ceases to exist at the next
-                // SBA check, CR 704.5d), so its TokenComponent is still readable.
-                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsToken ->
-                    entity.has<TokenComponent>()
-                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsNontoken ->
-                    !entity.has<TokenComponent>()
+                    typeLine.hasSubtype(predicate.subtype)
+                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsToken -> isToken
+                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsNontoken -> !isToken
                 else -> true
             }
         }

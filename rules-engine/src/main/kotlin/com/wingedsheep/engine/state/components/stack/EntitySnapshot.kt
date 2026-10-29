@@ -611,7 +611,7 @@ fun captureCopyTriggeredAbilities(state: GameState, entityId: EntityId): List<co
 }
 
 /** Face-down permanents have no mana cost; copies and transformed faces use the effective card. */
-private fun permanentManaValue(state: GameState, entityId: EntityId): Int =
+internal fun permanentManaValue(state: GameState, entityId: EntityId): Int =
     if (state.getEntity(entityId)?.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>() == true) 0
     else state.getEntity(entityId)?.get<CardComponent>()?.manaValue ?: 0
 

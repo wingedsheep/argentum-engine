@@ -121,6 +121,7 @@
                         "ownerId": "player-2",
                         "imageUri": "https://cards.scryfall.io/normal/front/c/4/c4300d24-1cae-4dd5-be7e-38cc677cf5bd.jpg?1559591399"
                     },
+                    "manaValue": 1,
                     "colors": []
                 }
             },

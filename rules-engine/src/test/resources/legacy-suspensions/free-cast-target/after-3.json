@@ -169,6 +169,7 @@
                 "type": "com.wingedsheep.engine.state.components.battlefield.LastKnownPermanentComponent",
                 "snapshot": {
                     "entityId": "card-1002",
+                    "manaValue": 1,
                     "power": null,
                     "toughness": null,
                     "subtypes": [],

@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.state.components.battlefield.SagaComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.cmm.cards.NarciFableSinger
@@ -68,6 +70,29 @@ class NarciFableSingerScenarioTest : FunSpec({
         driver.getLifeTotal(opponent) shouldBe 17
         driver.getLifeTotal(me) shouldBe 24 // chapter I's 1 + Narci's 3
         driver.getHandSize(me) shouldBe handBefore + 1 // the CR 714.4 sacrifice is a sacrifice
+    }
+
+    test("a token Saga that has ceased to exist still drains for its last-known mana value") {
+        val driver = setup()
+        val me = driver.activePlayer!!
+        val opponent = driver.getOpponent(me)
+        driver.putCreatureOnBattlefield(me, "Narci, Fable Singer")
+        val saga = driver.putPermanentOnBattlefield(me, "Three-Drop One-Chapter Saga")
+        driver.replaceState(driver.state.updateEntity(saga) { it.with(TokenComponent).with(SagaComponent()) })
+
+        // Our next precombat main: the lore counter triggers chapter I, its final chapter.
+        driver.passPriorityUntil(Step.END)
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN, me)
+        val handBefore = driver.getHandSize(me)
+        var guard = 0
+        while (guard++ < 20 && driver.state.stack.isNotEmpty()) driver.bothPass()
+
+        // The sacrificed token is gone from every zone (CR 704.5d) before Narci's trigger resolves.
+        (saga in driver.state.getBattlefield()) shouldBe false
+        (saga in driver.getGraveyard(me)) shouldBe false
+        driver.getLifeTotal(opponent) shouldBe 17
+        driver.getLifeTotal(me) shouldBe 24
+        driver.getHandSize(me) shouldBe handBefore + 1 // the token was still sacrificed
     }
 
     test("a chapter that isn't the final one doesn't drain") {
