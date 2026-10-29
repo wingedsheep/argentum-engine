@@ -8193,6 +8193,66 @@
     ]
 }
 
+// Read the Tides
+{
+    "name": "Read the Tides",
+    "manaCost": "{5}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Draw three cards.\n• Return up to two target creatures to their owners' hands.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    },
+                    "description": "Draw three cards"
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": "IterationSpace.Targets",
+                        "body": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
+                            "destination": "Hand"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "count": 2,
+                            "optional": true,
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Return up to two target creatures to their owners' hands"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "artist": "Tommy Arnold",
+        "flavorText": "Charts and instruments work fine, but the best navigators aren't above a spell or two to nudge the tides in a more favorable direction.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/5360fe8c-41b0-4409-b03e-072f129fb352.jpg?1783930724"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Rin and Seri, Inseparable
 {
     "name": "Rin and Seri, Inseparable",
@@ -8340,6 +8400,746 @@
     ]
 }
 
+// Rise Again
+{
+    "name": "Rise Again",
+    "manaCost": "{4}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return target creature card from your graveyard to the battlefield.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Battlefield",
+            "fromZone": "Graveyard"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "artist": "Sean Sevestre",
+        "flavorText": "\"I love those who are eager to serve.\"\n—Liliana Vess",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/660ec88f-2063-404a-853e-c985e21d17b0.jpg?1783930700"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Roaming Ghostlight
+{
+    "name": "Roaming Ghostlight",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Flying\nWhen this creature enters, return up to one target non-Spirit creature to its owner's hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Roaming Ghostlight:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "Spirit"
+                                }
+                            ]
+                        }
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, return up to one target non-Spirit creature to its owner's hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "artist": "Zezhou Chen",
+        "flavorText": "Some who die senseless deaths return as formless spirits, seeking answers where there are none.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8cbac0e4-f79f-476d-b410-d19ab3696606.jpg?1783930723"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Rookie Mistake
+{
+    "name": "Rookie Mistake",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Until end of turn, target creature gets +0/+2 and another target creature gets -2/-0.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetOther",
+                "baseRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    }
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "artist": "Zoltan Boros",
+        "flavorText": "\"Stop locking your knees as you strike! Now stand up and try again.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/1/b19de7a5-c291-405b-a2e6-8d3ac56e6570.jpg?1783930721",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "You can't cast Rookie Mistake unless you choose two creatures as targets."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If one target creature becomes an illegal target before Rookie Mistake resolves, the other is affected as appropriate."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Rousing Read
+{
+    "name": "Rousing Read",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen this Aura enters, draw two cards, then discard a card.\nEnchanted creature gets +1/+1 and has flying.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rousing Read:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this Aura enters, draw two cards, then discard a card."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "artist": "Campbell White",
+        "flavorText": "Great literature can transport the reader.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/8/c82be2ca-8350-4cf5-83b6-e8b60a9e21c6.jpg?1783930721",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "If the creature Rousing Read would enchant is an illegal target by the time the Aura spell resolves, the entire spell doesn't resolve. It won't enter the battlefield, so its ability won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Run Afoul
+{
+    "name": "Run Afoul",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Target opponent sacrifices a creature of their choice with flying.",
+    "script": {
+        "spellEffect": {
+            "type": "ForceSacrifice",
+            "filter": "creature kw:flying",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "201",
+        "artist": "Cristi Balanescu",
+        "flavorText": "\"What did you catch today, my pet? Ah, it looks like a bit of vampire stuck between your teeth.\"\n—Atla Palani, nest tender",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/d/bd328139-0dc1-403b-ad79-b1cf3479ac33.jpg?1783930669"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Sabertooth Mauler
+{
+    "name": "Sabertooth Mauler",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Cat",
+    "oracleText": "At the beginning of your end step, if a creature died this turn, put a +1/+1 counter on this creature and untap it.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sabertooth Mauler:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "TapUntap",
+                            "target": "Self",
+                            "tap": false
+                        }
+                    ]
+                },
+                "interveningIf": "CreatureDiedThisTurn",
+                "descriptionOverride": "At the beginning of your end step, if a creature died this turn, put a +1/+1 counter on this creature and untap it."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "202",
+        "artist": "Randy Vargas",
+        "flavorText": "\"I hope the idiot who introduced these creatures to the jungle was their first meal.\"\n—Opar, veteran guide",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/fe39e38e-76e5-4883-b530-d3e30e88ccad.jpg?1783930669",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "If a creature didn't die before your end step begins, Sabertooth Mauler's ability doesn't trigger at all. The creature may have died before Sabertooth Mauler entered the battlefield, however."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "The triggered ability triggers just once, no matter how many creatures died this turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Sanctum of Calm Waters
+{
+    "name": "Sanctum of Calm Waters",
+    "manaCost": "{3}{U}",
+    "typeLine": "Legendary Enchantment — Shrine",
+    "oracleText": "At the beginning of your first main phase, you may draw X cards, where X is the number of Shrines you control. If you do, discard a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sanctum of Calm Waters:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "PRECOMBAT_MAIN"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "AggregateBattlefield",
+                                    "player": "You",
+                                    "filter": "Shrine"
+                                }
+                            },
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "At the beginning of your first main phase, you may draw X cards, where X is the number of Shrines you control. If you do, discard a card."
+                },
+                "descriptionOverride": "At the beginning of your first main phase, you may draw X cards, where X is the number of Shrines you control. If you do, discard a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "rarity": "UNCOMMON",
+        "artist": "Johannes Voss",
+        "flavorText": "Truth lurks in the depths,\nInvisible from the shore.\nKnowledge inundates.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/80b2fb65-5868-4cab-b45d-e103558ce7dc.jpg?1783930720",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "You draw X cards and discard a card all while the triggered ability is resolving. Nothing can happen between the two, and no player may choose to take actions."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If Sanctum of Calm Waters leaves the battlefield while its ability is on the stack, you may control no Shrines as the ability resolves. If so, you may choose to draw zero cards and discard one, or you may choose not to draw zero cards and not discard a card."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Each Shrine has an ability that counts the number of Shrines you control. These abilities include the Shrine they're printed on."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Shrines count only enchantments with the subtype Shrine. Other cards with \"shrine\" in their name (such as Jungle Shrine, Luxa River Shrine, and Nantuko Shrine) don't count."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Sanctum of Fruitful Harvest
+{
+    "name": "Sanctum of Fruitful Harvest",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Enchantment — Shrine",
+    "oracleText": "At the beginning of your first main phase, add X mana of any one color, where X is the number of Shrines you control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sanctum of Fruitful Harvest:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "PRECOMBAT_MAIN"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "Shrine"
+                    }
+                },
+                "descriptionOverride": "At the beginning of your first main phase, add X mana of any one color, where X is the number of Shrines you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "203",
+        "rarity": "UNCOMMON",
+        "artist": "Johannes Voss",
+        "flavorText": "Beneath bright blossoms\nVerdant with spring's rich bounty,\nThe soul blooms in song.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5ca28cfd-1a1b-4176-8b07-993d3d7b7ae4.jpg?1783930670",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Each Shrine has an ability that counts the number of Shrines you control. These abilities include the Shrine they're printed on."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Shrines count only enchantments with the subtype Shrine. Other cards with \"shrine\" in their name (such as Jungle Shrine, Luxa River Shrine, and Nantuko Shrine) don't count."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Sanctum of Shattered Heights
+{
+    "name": "Sanctum of Shattered Heights",
+    "manaCost": "{2}{R}",
+    "typeLine": "Legendary Enchantment — Shrine",
+    "oracleText": "{1}, Discard a land card or Shrine card: Sanctum of Shattered Heights deals X damage to target creature or planeswalker, where X is the number of Shrines you control.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Sanctum of Shattered Heights:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomDiscard",
+                                "filter": "land|Shrine"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "Shrine"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetCreatureOrPlaneswalker",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{1}, Discard a land card or Shrine card: Sanctum of Shattered Heights deals X damage to target creature or planeswalker, where X is the number of Shrines you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "157",
+        "rarity": "UNCOMMON",
+        "artist": "Johannes Voss",
+        "flavorText": "Rage smolders within,\nAn all-consuming wildfire\nBurning fear to ash",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/8/482ae7f4-3950-4766-8392-eea753e29426.jpg?1783930686",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Each Shrine has an ability that counts the number of Shrines you control. These abilities include the Shrine they're printed on."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Shrines count only enchantments with the subtype Shrine. Other cards with \"shrine\" in their name (such as Jungle Shrine, Luxa River Shrine, and Nantuko Shrine) don't count."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Sanctum of Stone Fangs
+{
+    "name": "Sanctum of Stone Fangs",
+    "manaCost": "{1}{B}",
+    "typeLine": "Legendary Enchantment — Shrine",
+    "oracleText": "At the beginning of your first main phase, each opponent loses X life and you gain X life, where X is the number of Shrines you control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sanctum of Stone Fangs:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "PRECOMBAT_MAIN"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "Shrine"
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "Shrine"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your first main phase, each opponent loses X life and you gain X life, where X is the number of Shrines you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "120",
+        "rarity": "UNCOMMON",
+        "artist": "Johannes Voss",
+        "flavorText": "Renounce all limits,\nFalse chains binding potential.\nPower knows no bounds.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d1439412-618c-483d-89b9-5ea37f0f1edc.jpg?1783930700",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "If Sanctum of Stone Fangs leaves the battlefield while its ability is on the stack, you may control no Shrines as the ability resolves. In that case, no player gains or loses any life."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "In a Two-Headed Giant game, Sanctum of Stone Fangs causes the opposing team to lose twice X life and you to gain X life."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Each Shrine has an ability that counts the number of Shrines you control. These abilities include the Shrine they're printed on."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Shrines count only enchantments with the subtype Shrine. Other cards with \"shrine\" in their name (such as Jungle Shrine, Luxa River Shrine, and Nantuko Shrine) don't count."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Sanctum of Tranquil Light
+{
+    "name": "Sanctum of Tranquil Light",
+    "manaCost": "{W}",
+    "typeLine": "Legendary Enchantment — Shrine",
+    "oracleText": "{5}{W}: Tap target creature. This ability costs {1} less to activate for each Shrine you control.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Sanctum of Tranquil Light:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{5}{W}: Tap target creature. This ability costs {1} less to activate for each Shrine you control.",
+                "genericCostReduction": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "Shrine"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "rarity": "UNCOMMON",
+        "artist": "Johannes Voss",
+        "flavorText": "An untroubled mind\nDwells in perfect harmony\nWith a peaceful heart.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/4/34a5478a-1a2c-4117-b543-da083ed2b562.jpg?1783930735",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "The cost reduction applies only to generic mana in the cost of the activated ability. It can't reduce the {W} requirement."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Each Shrine has an ability that counts the number of Shrines you control. These abilities include the Shrine they're printed on."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Shrines count only enchantments with the subtype Shrine. Other cards with \"shrine\" in their name (such as Jungle Shrine, Luxa River Shrine, and Nantuko Shrine) don't count."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Sanguine Indulgence
 {
     "name": "Sanguine Indulgence",
@@ -8405,6 +9205,60 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Seasoned Hallowblade
+{
+    "name": "Seasoned Hallowblade",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Discard a card: Tap this creature. It gains indestructible until end of turn. (Damage and effects that say \"destroy\" don't destroy it.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Seasoned Hallowblade:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": "AtomDiscard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "INDESTRUCTIBLE",
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Discard a card: Tap this creature. It gains indestructible until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "rarity": "UNCOMMON",
+        "artist": "Manuel Castañón",
+        "flavorText": "\"I don't know that I'll win every fight. But I have faith, and that's carried me this far.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/feb59931-8941-46fb-8e1c-f80ff3730dd9.jpg?1783930735",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "You can activate Seasoned Hallowblade's ability even if nothing's about to destroy it, even if it's already tapped, and even if it already has indestructible."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 

@@ -1263,6 +1263,89 @@
     ]
 }
 
+// Riddleform
+{
+    "name": "Riddleform",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you cast a noncreature spell, you may have this enchantment become a 3/3 Sphinx creature with flying in addition to its other types until end of turn.\n{2}{U}: Scry 1. (Look at the top card of your library. You may put that card on the bottom.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Riddleform:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "BecomeCreature",
+                        "power": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "toughness": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "keywords": [
+                            "FLYING"
+                        ],
+                        "creatureTypes": [
+                            "Sphinx"
+                        ]
+                    },
+                    "descriptionOverride": "Whenever you cast a noncreature spell, you may have this enchantment become a 3/3 Sphinx creature with flying in addition to its other types until end of turn."
+                },
+                "descriptionOverride": "Whenever you cast a noncreature spell, you may have this enchantment become a 3/3 Sphinx creature with flying in addition to its other types until end of turn."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Riddleform:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Scry",
+                    "count": 1
+                },
+                "descriptionOverride": "{2}{U}: Scry 1."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "rarity": "UNCOMMON",
+        "artist": "Steve Argyle",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/e/8e54dc4a-3fd6-4895-8497-3a19e4e9a3d8.jpg?1783936049",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Riddleform's first ability resolves before the spell that caused it to trigger but after targets for that spell are chosen. It will resolve even if that spell is countered."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If Riddleform becomes a creature the same turn it enters the battlefield, you can't attack with it unless it gains haste."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Scavenger Grounds
 {
     "name": "Scavenger Grounds",
