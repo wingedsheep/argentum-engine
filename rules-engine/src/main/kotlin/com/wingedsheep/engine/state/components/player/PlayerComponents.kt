@@ -1966,8 +1966,14 @@ data class EnteredPermanentRecord(
     val entityId: EntityId,
     val cardTypes: Set<com.wingedsheep.sdk.core.CardType> = emptySet(),
     val subtypes: Set<String> = emptySet(),
-    /** Whether the entering permanent was a token — i.e. this entry is its creation (CR 111.2). */
+    /** Whether the entering permanent was a token. */
     val isToken: Boolean = false,
+    /**
+     * Whether this entry is a copy of a permanent spell resolving (CR 707.10f): it becomes a token
+     * as it enters, but that token was never *created* (Thalisse, Reverent Medium ruling), so it
+     * doesn't count toward "tokens you created this turn".
+     */
+    val isSpellCopy: Boolean = false,
     /**
      * The entering object's `BattlefieldEntryTimestampComponent.timestamp`, so a reader can tell
      * whether the permanent now on the battlefield under [entityId] is the object that made this
@@ -1998,7 +2004,9 @@ data class EnteredPermanentRecord(
  *  - [countOfType] → `DynamicAmount.CardTypeEnteredUnderControlThisTurn` ("if three or more
  *    artifacts entered the battlefield under your control this turn", Malcator, Purity Overseer).
  *  - [countTokens] → `TurnTracker.TOKENS_CREATED` ("activate only if you created a token this
- *    turn", Idol of Oblivion) — a token's entry is its creation (CR 111.2).
+ *    turn", Idol of Oblivion; "the number of tokens you created this turn", Thalisse, Reverent
+ *    Medium) — a created token's entry is its creation (CR 111.2); a resolved permanent-spell copy
+ *    is a token that was never created and is left out.
  *  - [entries] directly → `DynamicAmount.SubtypeEnteredUnderControlThisTurn` ("each other Zombie
  *    that entered the battlefield under your control this turn", Geralf, the Fleshwright).
  *  - [includes] → `StatePredicate.EnteredThisTurn(underYourControl = true)` ("each creature that entered the
@@ -2015,8 +2023,11 @@ data class PermanentsEnteredUnderControlThisTurnComponent(
     fun countOfType(cardType: com.wingedsheep.sdk.core.CardType): Int =
         entries.count { cardType in it.cardTypes }
 
-    /** Number of logged entries that were tokens — the tokens this player created this turn. */
-    fun countTokens(): Int = entries.count { it.isToken }
+    /**
+     * Number of logged entries that were created tokens — the tokens this player created this turn.
+     * Resolved permanent-spell copies are tokens but weren't created, so they don't count.
+     */
+    fun countTokens(): Int = entries.count { it.isToken && !it.isSpellCopy }
 
     /** Whether the object that entered as [entityId] at [entryTimestamp] is among this turn's entries. */
     fun includes(entityId: EntityId, entryTimestamp: Long): Boolean =

@@ -67,14 +67,16 @@ object PermanentEntryTracker {
      * entry that is part of one simultaneous event with other permanents. [putBy] is the player
      * who put the permanent there when the caller knows it (a resolving permanent spell's caster);
      * otherwise it is read off the innermost resolving spell or ability, falling back to
-     * [controllerId] for a move with nothing resolving (a land play).
+     * [controllerId] for a move with nothing resolving (a land play). [spellCopy] marks a copy of a
+     * permanent spell resolving into a token (CR 707.10f) — a token that wasn't created.
      */
     fun record(
         state: GameState,
         controllerId: EntityId,
         entityId: EntityId,
         simultaneousEntryGroup: String? = null,
-        putBy: EntityId? = null
+        putBy: EntityId? = null,
+        spellCopy: Boolean = false
     ): GameState {
         // Object-identity stamp (CR 400.7): every battlefield entry funnels through here, so
         // this is where the entering permanent gets its entry timestamp. Delayed triggers that
@@ -109,6 +111,7 @@ object PermanentEntryTracker {
                         cardTypes,
                         subtypes,
                         isToken = stamped.getEntity(entityId)?.has<TokenComponent>() == true,
+                        isSpellCopy = spellCopy,
                         entryTimestamp = state.timestamp,
                     )
                 )

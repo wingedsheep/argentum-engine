@@ -3,7 +3,9 @@ package com.wingedsheep.engine.predicates
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.ManaCost
@@ -11,11 +13,13 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.conditions.Condition
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -31,7 +35,8 @@ import kotlinx.serialization.json.Json
  * The player who creates a token is its owner and it enters under that player's control (CR 111.2),
  * so the tracker is the token slice of the per-player entry log: a nontoken entry doesn't count, a
  * token another player creates is theirs, and the count is turn history — the token leaving doesn't
- * undo it, and it resets at end of turn.
+ * undo it, and it resets at end of turn. A copy of a permanent spell becomes a token as it resolves
+ * (CR 707.10f) but was never created, so it doesn't count (Thalisse, Reverent Medium ruling).
  */
 class TokensCreatedThisTurnTest : FunSpec({
     val makeToken = CardDefinition.sorcery(
@@ -54,8 +59,23 @@ class TokensCreatedThisTurnTest : FunSpec({
         ),
     )
 
+    val freeBear = card("Test Free Bear") {
+        manaCost = "{0}"
+        typeLine = "Creature — Bear"
+        power = 2
+        toughness = 2
+    }
+    val copyCreatureSpell = card("Test Copy Creature Spell") {
+        manaCost = "{0}"
+        typeLine = "Instant"
+        spell {
+            val creatureSpell = target(TargetFilter.CreatureSpellOnStack.youControl())
+            effect = Effects.CopyTargetSpell(target = creatureSpell, mayChooseNewTargets = false)
+        }
+    }
+
     fun driver() = GameTestDriver().apply {
-        registerCards(TestCards.all + listOf(makeToken, giveToken))
+        registerCards(TestCards.all + listOf(makeToken, giveToken, freeBear, copyCreatureSpell))
         initMirrorMatch(Deck.of("Forest" to 40), skipMulligans = true, startingPlayer = 0)
         passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -111,6 +131,19 @@ class TokensCreatedThisTurnTest : FunSpec({
         d.tokensOf(d.player2).size shouldBe 1
         d.created(Player.You) shouldBe 0
         d.created(Player.EachOpponent) shouldBe 1
+        d.holds(Conditions.CreatedTokenThisTurn()) shouldBe false
+    }
+
+    test("a permanent-spell copy resolving into a token wasn't created (CR 707.10f)") {
+        val d = driver()
+        val bear = d.putCardInHand(d.player1, "Test Free Bear")
+        d.castSpell(d.player1, bear).error shouldBe null
+        val copier = d.putCardInHand(d.player1, "Test Copy Creature Spell")
+        d.castSpellWithTargets(d.player1, copier, listOf(ChosenTarget.Spell(bear))).error shouldBe null
+        repeat(3) { d.bothPass() }
+        d.tokensOf(d.player1).size shouldBe 1
+        d.getPermanents(d.player1).count { d.state.getEntity(it)?.get<CardComponent>()?.name == "Test Free Bear" } shouldBe 2
+        d.created(Player.You) shouldBe 0
         d.holds(Conditions.CreatedTokenThisTurn()) shouldBe false
     }
 

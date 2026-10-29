@@ -34,9 +34,15 @@ object BattlefieldEntry {
      * player putting it there when that isn't read off the resolving object (a permanent spell's
      * caster — see [PermanentEntryTracker.record]).
      */
-    fun place(state: GameState, controllerId: EntityId, entityId: EntityId, putBy: EntityId? = null): GameState {
+    fun place(
+        state: GameState,
+        controllerId: EntityId,
+        entityId: EntityId,
+        putBy: EntityId? = null,
+        spellCopy: Boolean = false
+    ): GameState {
         val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
         val withZone = state.addToZone(battlefieldZone, entityId)
-        return PermanentEntryTracker.record(withZone, controllerId, entityId, putBy = putBy)
+        return PermanentEntryTracker.record(withZone, controllerId, entityId, putBy = putBy, spellCopy = spellCopy)
     }
 }

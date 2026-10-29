@@ -817,6 +817,14 @@ object DynamicAmounts {
     fun nonTokenCreaturesEnteredThisTurn(player: Player = Player.You): DynamicAmount =
         DynamicAmount.TurnTracking(player, TurnTracker.NONTOKEN_CREATURES_ENTERED_UNDER_CONTROL)
 
+    /**
+     * "The number of tokens [player] created this turn" — every kind of token, still counted after it
+     * leaves or changes controller; a resolved permanent-spell copy wasn't created and isn't counted
+     * (Thalisse, Reverent Medium).
+     */
+    fun tokensCreatedThisTurn(player: Player = Player.You): DynamicAmount =
+        DynamicAmount.TurnTracking(player, TurnTracker.TOKENS_CREATED)
+
     fun creaturesDiedThisTurn(player: Player = Player.You): DynamicAmount =
         DynamicAmount.TurnTracking(player, TurnTracker.CREATURES_DIED)
 

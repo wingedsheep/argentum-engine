@@ -2267,6 +2267,72 @@
     ]
 }
 
+// Thalisse, Reverent Medium
+{
+    "name": "Thalisse, Reverent Medium",
+    "manaCost": "{3}{W}{B}",
+    "typeLine": "Legendary Creature — Human Cleric",
+    "oracleText": "At the beginning of each end step, create X 1/1 white Spirit creature tokens with flying, where X is the number of tokens you created this turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thalisse, Reverent Medium:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "TOKENS_CREATED"
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Spirit"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/2/1/21e580cb-6092-48b7-ba3e-d64ec28860da.jpg?1783928591"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "291",
+        "rarity": "UNCOMMON",
+        "artist": "Heonhwa",
+        "flavorText": "She hears every voice from the swirling, whispering mist and swears to tell their stories.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/474d6363-ebe1-4a1a-b4e6-7bd53d878527.jpg?1783928769",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "Thalisse's ability counts all tokens you created that turn prior to the ability resolving, including both noncreature tokens and creature tokens. It doesn't matter if those tokens are still on the battlefield or still under your control."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "If an effect creates a copy of a permanent spell, that spell becomes a token on the battlefield under your control, but that token has not been \"created.\" It won't count for Thalisse's ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Training Center
 {
     "name": "Training Center",

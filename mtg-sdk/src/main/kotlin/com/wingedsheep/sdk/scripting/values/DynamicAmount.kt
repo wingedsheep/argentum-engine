@@ -185,8 +185,10 @@ enum class TurnTracker {
      * it enters under that player's control (CR 111.2), so "you created a token" is exactly "a token
      * entered the battlefield under your control"; a token that later changes controller stays
      * counted for its creator, and one gained by a control change is never counted. Tokens can't
-     * re-enter (CR 111.7, 111.8), so each entry is one creation. Backs "activate only if you created
-     * a token this turn" (Idol of Oblivion) — reach for it via `Conditions.CreatedTokenThisTurn`.
+     * re-enter (CR 111.7, 111.8), so each entry is one creation. A copy of a permanent spell becomes a
+     * token as it resolves (CR 707.10f) but wasn't created, so it isn't counted. Backs "activate only
+     * if you created a token this turn" (Idol of Oblivion) — reach for it via
+     * `Conditions.CreatedTokenThisTurn` — and `DynamicAmounts.tokensCreatedThisTurn` (Thalisse).
      */
     TOKENS_CREATED,
     /** Indicator (0 or 1) that the player sacrificed at least one Food this turn. */
