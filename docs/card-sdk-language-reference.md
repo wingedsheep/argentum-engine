@@ -19050,7 +19050,9 @@ not update an existing copy.
   Applied **once** per instruction at the action's announcement — the flagged gather
   `CardSource.TopOfLibrary(isMill | isScry | isSurveil = true)` that only `Patterns.Library.mill` /
   `scry` / `surveil` (and `Effects.Scry` / `Effects.Surveil`, every surveil spelling) set, plus the
-  mill cost atom — so a paused-and-resumed pipeline never double-modifies, and exile-top / look-at-top
+  mill cost atom (activated-ability costs and `PayCost` mills), the pay-or-suffer mill (Deep Spawn)
+  and the damage-to-mill replacements (`ReplaceDamageWithMill`,
+  `ReplaceDamageWithCounters.damagedPlayerMills`) — so a paused-and-resumed pipeline never double-modifies, and exile-top / look-at-top
   gathers are never affected. The bigger look carries through: the scry top/bottom choice and the
   surveil graveyard choice select *any number* of the looked-at cards, so the extra cards are part of
   what is scried or surveiled (CR 701.25b), and the `ScriedEvent` / `SurveiledEvent` count includes
@@ -19062,10 +19064,15 @@ not update an existing copy.
   mill 2 becomes 12 or 8), the player who mills / scries / surveils gets a `ChooseOptionDecision`
   listing each distinct result with an order that gives it ("Mill 12 (The Water Crystal, then Bruvac
   the Grandiloquent)"); several affected players are asked in APNAP order and the gather then runs
-  once. The same question is asked at every mill site: the mill effect, an activated ability's mill
-  cost (before anything is paid), a `PayCost` / pay-or-suffer mill (after the payer agrees), and the
-  damage-to-mill replacements (`ReplaceDamageWithMill`, `ReplaceDamageWithCounters.damagedPlayerMills`),
-  which mill directly when no order matters and otherwise run the mill as a replacement rider that asks.
+  once. A player who has lost or left the game is never asked and their count is not resized. The
+  same question is asked at the mill effect, an activated ability's mill cost (before anything is
+  paid; a client may pre-fill `AdditionalCostPayment.millCount`, accepted only when some order
+  produces it), a `PayCost` mill such as a morph cost and the pay-or-suffer mill (after the payer
+  agrees), and the damage-to-mill replacements (`ReplaceDamageWithMill`,
+  `ReplaceDamageWithCounters.damagedPlayerMills`), which mill directly when no order matters and
+  otherwise run the mill as a replacement rider that asks. **Exception:** an as-enters payment
+  (`EntryPayment` — "enters only if you pay …") with a mill `PayCost` doesn't ask; when the order
+  would matter its payment fails and counts as declined. No card prints that shape today.
   - Bruvac the Grandiloquent: "If an opponent would mill one or more cards, they mill twice that many
     cards instead" → `ModifyKeywordActionAmount(EventPattern.MillEvent(Player.EachOpponent), multiplier = 2)`.
   - The Water Crystal: "If an opponent would mill one or more cards, they mill that many cards plus

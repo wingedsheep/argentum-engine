@@ -6,6 +6,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.player.PlayerLostComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -31,7 +32,8 @@ import com.wingedsheep.sdk.scripting.references.Player
  * the order can't matter and [outcomes] returns the single result; otherwise it returns one
  * [AmountOutcome] per distinct result, each carrying an order that produces it, and the acting player
  * chooses (CR 616.1 — the affected player picks which replacement applies first). The result is
- * clamped to `≥ 0`. A base count of 0 is left untouched — a mill, scry or surveil of 0 is no event.
+ * clamped to `≥ 0`. A base count of 0 is left untouched — a mill, scry or surveil of 0 is no event —
+ * and so is the count of a player who has lost or left the game (CR 800.4a), who has nobody to ask.
  *
  * Also home to [librarySearchDepth], the [LimitLibrarySearch] lookup for the search keyword action
  * (CR 701.23f): a search announces no count, but it shares the same scope-and-restriction scan.
@@ -188,6 +190,12 @@ private fun amountOutcomes(
     playerOf: (EventPattern) -> Player?
 ): List<KeywordActionAmountModifier.AmountOutcome> {
     if (originalCount <= 0) return listOf(KeywordActionAmountModifier.AmountOutcome(originalCount, emptyList()))
+    // A player who has lost or left the game (CR 800.4a) is no longer an affected player who could
+    // choose an order; their announced count stands unmodified. Keeps every site's "who is asked"
+    // list (players still in the game, APNAP) and "who has a choice" in agreement.
+    if (state.getEntity(playerId)?.has<PlayerLostComponent>() == true) {
+        return listOf(KeywordActionAmountModifier.AmountOutcome(originalCount, emptyList()))
+    }
     var applicable: MutableList<Pair<EntityId, ModifyKeywordActionAmount>>? = null
     forEachApplicable<ModifyKeywordActionAmount>(state, playerId, predicateEvaluator, { playerOf(it.appliesTo) }) { sourceId, effect ->
         (applicable ?: mutableListOf<Pair<EntityId, ModifyKeywordActionAmount>>().also { applicable = it }) += sourceId to effect

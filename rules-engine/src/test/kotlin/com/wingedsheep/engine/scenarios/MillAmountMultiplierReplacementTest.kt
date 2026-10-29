@@ -3,6 +3,9 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.OptionChosenResponse
+import com.wingedsheep.engine.core.TurnFaceUp
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.core.YesNoResponse
 import com.wingedsheep.engine.support.GameTestDriver
@@ -16,7 +19,9 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.AdditionalCostPayment
 import com.wingedsheep.sdk.scripting.EventPattern
+import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.ModifyKeywordActionAmount
 import com.wingedsheep.sdk.scripting.ReplaceDamageWithMill
 import com.wingedsheep.sdk.scripting.costs.CostAtom
@@ -99,6 +104,24 @@ class MillAmountMultiplierReplacementTest : FunSpec({
             )
         }
     }
+    val globalDoubler = card("Test Global Mill Doubler") {
+        manaCost = "{0}"
+        typeLine = "Artifact"
+        replacementEffect(ModifyKeywordActionAmount(EventPattern.MillEvent(Player.Each), multiplier = 2))
+    }
+    val globalPlusFour = card("Test Global Mill Plus Four") {
+        manaCost = "{0}"
+        typeLine = "Artifact"
+        replacementEffect(ModifyKeywordActionAmount(EventPattern.MillEvent(Player.Each), modifier = 4))
+    }
+    // Morph — Mill two cards: the generic CostPaymentService PayCost path (yes/no, then the order).
+    val millMorph = card("Test Mill Morph") {
+        manaCost = "{3}"
+        typeLine = "Creature — Shapeshifter"
+        power = 2
+        toughness = 2
+        morphCost = PayCost.Atom(CostAtom.Mill(2))
+    }
     val mindskinner = card("Test Mindskinner") {
         manaCost = "{0}"
         typeLine = "Enchantment"
@@ -109,7 +132,7 @@ class MillAmountMultiplierReplacementTest : FunSpec({
         registerCards(
             TestCards.all + listOf(
                 doubler, plusFour, plusOne, targetMillTwo, targetMillsTwice, eachPlayerMillsTwo,
-                millEngine, millOrBurn, mindskinner,
+                millEngine, millOrBurn, mindskinner, globalDoubler, globalPlusFour, millMorph,
             )
         )
         initMirrorMatch(deck = Deck.of("Mountain" to 40))
@@ -299,6 +322,97 @@ class MillAmountMultiplierReplacementTest : FunSpec({
         d.getGraveyard(first).size shouldBe 12
         d.getGraveyard(second).size shouldBe 8
         d.getGraveyard(you).map { d.getCardName(it) }.count { it == "Mountain" } shouldBe 2
+    }
+
+    test("a player who has left the game is neither asked nor resized, and the others still are") {
+        val d = GameTestDriver()
+        d.registerCards(TestCards.all + listOf(globalDoubler, globalPlusFour, eachPlayerMillsTwo))
+        d.initMultiplayer(List(3) { Deck.of("Mountain" to 40) })
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val you = d.activePlayer!!
+        val (next, gone) = d.state.turnOrderStartingWith(you).drop(1)
+        d.putPermanentOnBattlefield(you, "Test Global Mill Doubler")
+        d.putPermanentOnBattlefield(you, "Test Global Mill Plus Four")
+        d.concede(gone).error.shouldBeNull()
+        withClue("the departed seat stays in turn order, which Player.Each mills iterate") {
+            (gone in d.state.turnOrder) shouldBe true
+            (gone in d.state.activePlayers) shouldBe false
+        }
+
+        d.castSpell(you, d.putCardInHand(you, "Each Player Mills Two")).error.shouldBeNull()
+        repeat(3) { if (d.state.stack.isNotEmpty() && d.pendingDecision == null) d.passPriority(d.state.priorityPlayerId!!) }
+
+        d.choose(d.orderQuestion(you), "Mill 12 (Test Global Mill Plus Four, then Test Global Mill Doubler)")
+        d.choose(d.orderQuestion(next), "Mill 8 (Test Global Mill Doubler, then Test Global Mill Plus Four)")
+
+        d.pendingDecision.shouldBeNull()
+        d.getGraveyard(you).map { d.getCardName(it) }.count { it == "Mountain" } shouldBe 12
+        d.getGraveyard(next).size shouldBe 8
+    }
+
+    test("a client-supplied mill count no order produces is rejected before anything is paid") {
+        val d = setup()
+        val you = d.activePlayer!!
+        val opponent = d.getOpponent(you)
+        d.putPermanentOnBattlefield(opponent, "Test Mill Doubler")
+        d.putPermanentOnBattlefield(opponent, "Test Mill Plus Four")
+        val engine = d.putPermanentOnBattlefield(you, "Test Mill Engine")
+
+        val result = d.submit(
+            ActivateAbility(
+                you, engine, millEngine.activatedAbilities.first().id,
+                costPayment = AdditionalCostPayment(millCount = 7),
+            )
+        )
+
+        (result.error != null) shouldBe true
+        d.isTapped(engine) shouldBe false
+        d.getGraveyard(you).size shouldBe 0
+        d.pendingDecision.shouldBeNull()
+    }
+
+    test("a client-supplied mill count some order produces is paid without a prompt") {
+        val d = setup()
+        val you = d.activePlayer!!
+        val opponent = d.getOpponent(you)
+        d.putPermanentOnBattlefield(opponent, "Test Mill Doubler")
+        d.putPermanentOnBattlefield(opponent, "Test Mill Plus Four")
+        val engine = d.putPermanentOnBattlefield(you, "Test Mill Engine")
+
+        d.submit(
+            ActivateAbility(
+                you, engine, millEngine.activatedAbilities.first().id,
+                costPayment = AdditionalCostPayment(millCount = 12),
+            )
+        ).error.shouldBeNull()
+
+        d.pendingDecision.shouldBeNull()
+        d.isTapped(engine) shouldBe true
+        d.getGraveyard(you).size shouldBe 12
+    }
+
+    test("a PayCost mill (a morph cost) asks for the order after the payer agrees") {
+        val d = setup()
+        val you = d.activePlayer!!
+        val opponent = d.getOpponent(you)
+        d.putPermanentOnBattlefield(opponent, "Test Mill Doubler")
+        d.putPermanentOnBattlefield(opponent, "Test Mill Plus Four")
+        val morph = d.putCreatureOnBattlefield(you, "Test Mill Morph")
+        val morphCost = millMorph.keywordAbilities.filterIsInstance<KeywordAbility.Morph>().single().morphCost
+        d.replaceState(d.state.updateEntity(morph) { c ->
+            c.with(FaceDownComponent).with(MorphDataComponent(morphCost, "Test Mill Morph"))
+        })
+
+        d.submit(TurnFaceUp(you, morph)).error.shouldBeNull()
+        val yesNo = d.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
+        d.submitDecision(you, YesNoResponse(yesNo.id, true)).error.shouldBeNull()
+
+        val decision = d.orderQuestion(you)
+        d.getGraveyard(you).size shouldBe 0
+        d.choose(decision, "Mill 8 (Test Mill Doubler, then Test Mill Plus Four)")
+
+        d.getGraveyard(you).size shouldBe 8
+        d.state.getEntity(morph)?.get<FaceDownComponent>().shouldBeNull()
     }
 
     test("a mill cost asks the payer for the order before anything is paid") {

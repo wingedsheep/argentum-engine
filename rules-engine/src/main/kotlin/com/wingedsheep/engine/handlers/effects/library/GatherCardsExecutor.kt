@@ -92,7 +92,8 @@ class GatherCardsExecutor(
                     askReplacementOrder(state, effect, context, action, outcomes)?.let { return it }
                     outcomes.mapValues { (playerId, options) ->
                         context.keywordActionCounts[playerId]?.takeIf { decided -> options.any { it.count == decided } }
-                            ?: options.single().count
+                            ?: options.singleOrNull()?.count
+                            ?: return EffectResult.error(state, "No replacement order chosen for a ${action.verb.lowercase()}")
                     }
                 }
                 playerIds.flatMap { playerId ->
@@ -606,14 +607,6 @@ class GatherCardsExecutor(
     }
 
     /**
-     * Resolve a [Player] reference to the list of player ids whose zone should be gathered
-     * from. Multi-player references like [Player.Each] / [Player.ActivePlayerFirst] /
-     * [Player.EachOpponent] fan out (turn-order; opponents in turn-order minus controller),
-     * so a single [CardSource.FromZone] / [CardSource.FromMultipleZones] / [CardSource.TopOfLibrary]
-     * can gather "each player's graveyard/hand/library" at once. Single-player references
-     * collapse to a one-element list.
-     */
-    /**
      * When the order of a player's [action] replacements changes the count (a doubler next to a
      * "+4") and they haven't picked one for this gather yet, ask them (CR 616.1 — the affected
      * player chooses; several players choose in APNAP order). Returns the pause, or null when every
@@ -627,8 +620,7 @@ class GatherCardsExecutor(
         outcomes: Map<EntityId, List<KeywordActionAmountModifier.AmountOutcome>>,
     ): EffectResult? {
         if (outcomes.values.all { it.size == 1 }) return null
-        val apnap = state.activePlayerId?.let { state.turnOrderStartingWith(it) } ?: state.turnOrder
-        val playerId = apnap.firstOrNull { player ->
+        val playerId = state.apnapOrder.firstOrNull { player ->
             val options = outcomes[player] ?: return@firstOrNull false
             options.size > 1 && options.none { it.count == context.keywordActionCounts[player] }
         } ?: return null
@@ -644,6 +636,14 @@ class GatherCardsExecutor(
         ))
     }
 
+    /**
+     * Resolve a [Player] reference to the list of player ids whose zone should be gathered
+     * from. Multi-player references like [Player.Each] / [Player.ActivePlayerFirst] /
+     * [Player.EachOpponent] fan out (turn-order; opponents in turn-order minus controller),
+     * so a single [CardSource.FromZone] / [CardSource.FromMultipleZones] / [CardSource.TopOfLibrary]
+     * can gather "each player's graveyard/hand/library" at once. Single-player references
+     * collapse to a one-element list.
+     */
     private fun resolvePlayers(
         player: Player,
         context: EffectContext,
