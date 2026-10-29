@@ -102,6 +102,10 @@ sealed interface EffectTarget {
      * (CR 113.7a last-known information — the effect no-ops if the granter is gone). For an ability
      * whose source already *is* the granter (Territory Forge / Sharkey-style gains), this resolves
      * to the same entity as [Self].
+     *
+     * In the count of an other-only `EntersWithDynamicCounters`, where [Self] is the entering
+     * creature, this names the replacement's source — "equal to Arwen's toughness" (Arwen, Weaver
+     * of Hope).
      */
     @SerialName("GrantingSource")
     @Serializable

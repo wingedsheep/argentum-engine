@@ -5713,7 +5713,11 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   stack (threaded `ActivatedAbilityOnStackComponent.granterId` → `EffectContext.granterId`), so it
   survives the granter leaving play — the referencing effect no-ops if it's gone (CR 113.7a). For an
   ability whose source already *is* the granter (Territory Forge / Sharkey-style gains), it resolves
-  to the same entity as `Self`.
+  to the same entity as `Self`. In the `count` of an `otherOnly` `EntersWithDynamicCounters` — where
+  `Self` is the *entering* creature — it names the **replacement's source**: Arwen, Weaver of Hope's
+  "each other creature you control enters with … additional +1/+1 counters equal to **Arwen's
+  toughness**" is `count = DynamicAmounts.toughnessOf(EffectTarget.GrantingSource)`, read as the
+  creature enters.
 - `EffectTarget.TriggeringEntity` — the entity that caused the trigger to fire.
 - `EffectTarget.TargetingSource` — "that spell or ability" in a becomes-the-target trigger: the stack
   object that did the targeting (`TriggerContext.targetingSourceEntityId`), where `TriggeringEntity` is
@@ -18790,7 +18794,8 @@ The priority groups are (CR 616.1a–f):
     **entering object**, not the replacement source — so an entering-object amount like
     `DistinctColorsManaSpent` reads the new creature's own cast (and a token / reanimated creature that
     wasn't cast spent no mana → 0). Player-scoped counts (`TurnTracking(Player.You)`, Gev) still read
-    the replacement source's controller. **Set `otherOnly` on any "each *other* …" wording** — the
+    the replacement source's controller. A count that names the replacement source itself ("equal to **Arwen's**
+    toughness", Arwen, Weaver of Hope) reads it through `EffectTarget.GrantingSource`. **Set `otherOnly` on any "each *other* …" wording** — the
     entering permanent's own entry path applies its printed enters-with effects regardless of
     `appliesTo` (that's how plain self-counter cards work), so without the flag a group effect also
     counters its own source as it enters. Source-relative predicates in `appliesTo` (notably

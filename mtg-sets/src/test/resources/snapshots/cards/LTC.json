@@ -95,6 +95,51 @@
     ]
 }
 
+// Arwen, Weaver of Hope
+{
+    "name": "Arwen, Weaver of Hope",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Legendary Creature — Elf Noble",
+    "oracleText": "Each other creature you control enters with a number of additional +1/+1 counters on it equal to Arwen's toughness.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": {
+                    "type": "EntityProperty",
+                    "entity": "GrantingSource",
+                    "numericProperty": "Toughness"
+                },
+                "otherOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "rarity": "RARE",
+        "artist": "Axel Sauerwald",
+        "flavorText": "From afar, Arwen watched over Aragorn, and in hope, she made for him a great and kingly standard.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4d4f4d41-232d-4377-be69-de590b880edb.jpg?1783916027",
+        "rulings": [
+            {
+                "date": "2023-06-23",
+                "text": "If Arwen, Weaver of Hope and another creature you control enter the battlefield at the same time, Arwen's ability won't cause that creature to enter with additional +1/+1 counters on it."
+            },
+            {
+                "date": "2023-06-23",
+                "text": "To determine how many additional +1/+1 counters a creature enters the battlefield with, use Arwen, Weaver of Hope's toughness as that creature is entering the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Corsairs of Umbar
 {
     "name": "Corsairs of Umbar",
