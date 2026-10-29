@@ -2243,6 +2243,65 @@
     ]
 }
 
+// General Ferrous Rokiric
+{
+    "name": "General Ferrous Rokiric",
+    "manaCost": "{1}{R}{W}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "Hexproof from monocolored\nWhenever you cast a multicolored spell, create a 4/4 red and white Golem artifact creature token.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywordAbilities": [
+        {
+            "type": "Hexproof",
+            "scope": "ProtectionScope.Monocolored"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "General Ferrous Rokiric:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsMulticolored"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [
+                        "RED",
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Golem"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/7/d/7ddb9e14-b299-4064-a41b-0fb6b078942e.jpg?1783926588",
+                    "artifactToken": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "198",
+        "rarity": "RARE",
+        "artist": "Matt Stewart",
+        "flavorText": "\"The Boros Legion always stands for justice, but it never stands alone.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/0/600dca0f-5964-45e7-86df-f16a5b4a0106.jpg?1783926816"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Goblin Anarchomancer
 {
     "name": "Goblin Anarchomancer",

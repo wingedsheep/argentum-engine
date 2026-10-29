@@ -219,6 +219,95 @@
     ]
 }
 
+// Faramir, Steward of Gondor
+{
+    "name": "Faramir, Steward of Gondor",
+    "manaCost": "{1}{W}{U}",
+    "typeLine": "Legendary Creature — Human Noble",
+    "oracleText": "Whenever a legendary creature you control with mana value 4 or greater enters, you become the monarch.\nAt the beginning of your end step, if you're the monarch, create two 1/1 white Human Soldier creature tokens.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Faramir, Steward of Gondor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsLegendary",
+                            {
+                                "type": "ManaValueAtLeast",
+                                "min": 4
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "TakeDesignation",
+                    "designation": "MONARCH"
+                }
+            },
+            {
+                "id": "Faramir, Steward of Gondor:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Human",
+                        "Soldier"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/d/b/dbab4309-daca-42d9-ad0b-0457717c4503.jpg?1783916056"
+                },
+                "interveningIf": {
+                    "type": "PlayerHasDesignation",
+                    "designation": "MONARCH"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "RARE",
+        "artist": "Anna Podedworna",
+        "flavorText": "\"The last Steward of Gondor begs leave to surrender his office.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5c3e8a30-de2a-4d8f-a929-5abeaea2e65a.jpg?1783916020",
+        "rulings": [
+            {
+                "date": "2023-06-16",
+                "text": "The game starts with no monarch. Once an effect makes one player the monarch, the game will have exactly one monarch from that point forward. As a player becomes the monarch, the current monarch (if any) ceases being the monarch."
+            },
+            {
+                "date": "2023-06-16",
+                "text": "There are two inherent triggered abilities associated with being the monarch. These triggered abilities have no source and are controlled by the player who was the monarch at the time the abilities triggered. The full texts of these abilities are \"At the beginning of the monarch's end step, that player draws a card\" and \"Whenever a creature deals combat damage to the monarch, its controller becomes the monarch.\""
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Farmer Cotton
 {
     "name": "Farmer Cotton",
@@ -1770,6 +1859,111 @@
         ]
     },
     "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Éomer, King of Rohan
+{
+    "name": "Éomer, King of Rohan",
+    "manaCost": "{3}{R}{W}",
+    "typeLine": "Legendary Creature — Human Noble",
+    "oracleText": "Double strike\nÉomer enters with a +1/+1 counter on it for each other Human you control.\nWhen Éomer enters, target player becomes the monarch. Éomer deals damage equal to its power to any target.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "DOUBLE_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Éomer, King of Rohan:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TakeDesignation",
+                            "designation": "MONARCH",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Power"
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "t0"
+                },
+                "additionalTargetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t1"
+                    }
+                ]
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": {
+                        "cardPredicates": [
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Human"
+                            }
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "StateNot",
+                                "predicate": "IsSource"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "rarity": "RARE",
+        "artist": "Leonardo Borazio",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f48930a-d7bd-410b-995a-4e2837aabb25.jpg?1783916021",
+        "rulings": [
+            {
+                "date": "2023-06-16",
+                "text": "The game starts with no monarch. Once an effect makes one player the monarch, the game will have exactly one monarch from that point forward. As a player becomes the monarch, the current monarch (if any) ceases being the monarch."
+            },
+            {
+                "date": "2023-06-16",
+                "text": "There are two inherent triggered abilities associated with being the monarch. These triggered abilities have no source and are controlled by the player who was the monarch at the time the abilities triggered. The full texts of these abilities are \"At the beginning of the monarch's end step, that player draws a card\" and \"Whenever a creature deals combat damage to the monarch, its controller becomes the monarch.\""
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
         "WHITE"
     ]
 }

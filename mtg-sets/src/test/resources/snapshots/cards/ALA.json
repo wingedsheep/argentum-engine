@@ -245,6 +245,95 @@
     ]
 }
 
+// Bant Charm
+{
+    "name": "Bant Charm",
+    "manaCost": "{G}{W}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Destroy target artifact.\n• Put target creature on the bottom of its owner's library.\n• Counter target instant spell.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Destroy target artifact"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "destination": "Library",
+                        "placement": "Bottom"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Put target creature on the bottom of its owner's library"
+                },
+                {
+                    "effect": "Counter",
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "instant",
+                                "zone": "Stack"
+                            },
+                            "id": "t2"
+                        }
+                    ],
+                    "description": "Counter target instant spell"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "155",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Gallegos",
+        "flavorText": "Bant is a world where death and chaos hold no sway.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/5/65b65c87-b084-44aa-b841-411a3c73e234.jpg?1783942548",
+        "rulings": [
+            {
+                "date": "2008-10-01",
+                "text": "You can choose a mode only if you can choose legal targets for that mode. If you can't choose legal targets for any of the modes, you can't cast the spell."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE",
+        "WHITE"
+    ]
+}
+
 // Blister Beetle
 {
     "name": "Blister Beetle",

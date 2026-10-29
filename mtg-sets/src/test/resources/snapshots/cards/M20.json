@@ -2877,6 +2877,97 @@
     ]
 }
 
+// Rienne, Angel of Rebirth
+{
+    "name": "Rienne, Angel of Rebirth",
+    "manaCost": "{2}{R}{G}{W}",
+    "typeLine": "Legendary Creature — Angel",
+    "oracleText": "Flying\nOther multicolored creatures you control get +1/+0.\nWhenever another multicolored creature you control dies, return it to its owner's hand at the beginning of the next end step.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rienne, Angel of Rebirth:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsMulticolored"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "step": "END",
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": "TriggeringEntity",
+                        "destination": "Hand",
+                        "fromZone": "Graveyard"
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsMulticolored"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "281",
+        "rarity": "MYTHIC",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/f/1fd040a8-b818-465b-a78b-d68402982abc.jpg?1783932925",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "If a multicolored creature you control leaves the graveyard after it dies but before the delayed triggered ability resolves, it will not return to its owner's hand."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If an effect causes a non-multicolored creature to become multicolored and that creature dies, the non-multicolored card will return to its owner's hand."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If Rienne dies at the same time as one or more other multicolored creatures you control, its last ability triggers for each of those creatures."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If Rienne leaves the battlefield after its ability has triggered but before the next end step, its delayed triggered ability will still return the card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Risen Reef
 {
     "name": "Risen Reef",

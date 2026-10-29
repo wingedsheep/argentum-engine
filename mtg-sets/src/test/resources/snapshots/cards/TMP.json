@@ -5200,6 +5200,108 @@
     ]
 }
 
+// Scroll Rack
+{
+    "name": "Scroll Rack",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{1}, {T}: Exile any number of cards from your hand face down. Put that many cards from the top of your library into your hand. Then look at the exiled cards and put them on top of your library in any order.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Scroll Rack:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected1",
+                            "prompt": "Exile any number of cards from your hand face down",
+                            "selectedLabel": "Exile face down"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "faceDown": "HIDDEN",
+                            "lookableInExile": true,
+                            "storeMovedAs": "moved2"
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "VariableReference",
+                                    "variableName": "moved2_count"
+                                }
+                            },
+                            "storeAs": "gathered3"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered3",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "moved2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Top"
+                            },
+                            "order": "ControllerChooses"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{1}, {T}: Exile any number of cards from your hand face down. Put that many cards from the top of your library into your hand. Then look at the exiled cards and put them on top of your library in any order."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "308",
+        "rarity": "RARE",
+        "artist": "Heather Hudson",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f7346d8-1aef-4618-88e6-74bd8865e0f3.jpg?1783946601",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "If there are not enough cards in the library, you do not lose. This is not a draw effect. You just get as many cards as are there, even if there are zero cards in the library."
+            }
+        ]
+    }
+}
+
 // Sea Monster
 {
     "name": "Sea Monster",

@@ -490,6 +490,46 @@
     ]
 }
 
+// Trace of Abundance
+{
+    "name": "Trace of Abundance",
+    "manaCost": "{R/W}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant land\nEnchanted land has shroud. (It can't be the target of spells or abilities.)\nWhenever enchanted land is tapped for mana, its controller adds an additional one mana of any color.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "SHROUD"
+            },
+            {
+                "type": "AdditionalManaOnTap",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
+                "anyColor": true
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "artist": "Dave Kendall",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/6151001a-cf4b-4f95-a986-7181313e2224.jpg?1783942409"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Winged Coatl
 {
     "name": "Winged Coatl",
