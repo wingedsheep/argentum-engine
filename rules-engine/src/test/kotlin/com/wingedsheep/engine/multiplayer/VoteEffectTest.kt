@@ -127,4 +127,21 @@ class VoteEffectTest : FunSpec({
         run.voters shouldContainExactly listOf(players[0], players[2])
         run.state.lifeTotal(players[0]) shouldBe 22
     }
+
+    test("a player who leaves the game while an earlier ballot is pending is skipped") {
+        val (state, players) = initGame(3)
+        val first = EngineServices(registry).effectExecutorRegistry
+            .execute(state, voteThenSpend, EffectContext(sourceId = null, controllerId = players[0])).state
+        val ballot = first.pendingDecision as ChooseOptionDecision
+        // Player 3 concedes before Player 1's vote is in; Player 2 votes next, then the vote ends.
+        val conceded = first.updateEntity(players[2]) { it.with(PlayerLostComponent(LossReason.CONCESSION)) }
+        val afterFirst = ActionProcessor(registry)
+            .process(conceded, SubmitDecision(players[0], OptionChosenResponse(ballot.id, 0))).result.newState
+        val second = afterFirst.pendingDecision as ChooseOptionDecision
+        second.playerId shouldBe players[1]
+        val done = ActionProcessor(registry)
+            .process(afterFirst, SubmitDecision(players[1], OptionChosenResponse(second.id, 0))).result.newState
+        done.pendingDecision.shouldBeNull()
+        done.lifeTotal(players[0]) shouldBe 22
+    }
 })

@@ -7,12 +7,13 @@ import { optionIcon } from '@/assets/icons/options'
 import { DecisionCardPreview } from './DecisionComponents'
 import styles from './DecisionUI.module.css'
 
+/** Lists this long or shorter are shown without a search box. */
+const SEARCH_THRESHOLD = 8
+
 /**
  * Choose option decision - select from a list of string options.
  * Uses a searchable scrollable list for large option sets (e.g., creature types).
  */
-/** Lists this long or shorter are shown without a search box. */
-const SEARCH_THRESHOLD = 8
 
 export function ChooseOptionDecisionUI({
   decision,

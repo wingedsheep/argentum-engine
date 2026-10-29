@@ -20818,8 +20818,10 @@ Council's dilemma spends every tally — **Selvala's Stampede**: `vote("wild", "
 `gatherUntilMatch(Creature, count = wild.amount)` onto the battlefield and a shuffle, then
 `chooseUpTo(free.amount, gather(hand, Permanent))` onto the battlefield. Will of the council
 ("if X gets more votes …") compares the tallies with `Conditions.CompareAmounts`. Not modelled:
-voting for objects or players (Council's Judgment), extra votes (CR 701.38d), and "whenever players
-finish voting" triggers. Secret simultaneous ballots are `SecretChoiceEffect`, not a vote.
+voting for objects or players (Council's Judgment), per-voter effects (Expropriate's "for each
+player who voted …"), extra votes (CR 701.38d), and "whenever players finish voting" triggers. A
+secret ballot (Vault 11: Voter's Dilemma) is the other vote shape, `SecretChoiceEffect`; a future
+vote trigger or extra-vote effect has to cover both.
 
 ### Numerical dice
 

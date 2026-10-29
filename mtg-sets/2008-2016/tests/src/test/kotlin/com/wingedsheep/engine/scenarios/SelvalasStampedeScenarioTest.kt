@@ -103,7 +103,7 @@ class SelvalasStampedeScenarioTest : FunSpec({
         t.d.getHand(t.p1) shouldContain bolt
     }
 
-    test("no wild votes reveals nothing, and the free placements may be declined") {
+    test("no wild votes puts no creature onto the battlefield, and the free placements may be declined") {
         val t = table()
         val bears = t.d.putCardOnTopOfLibrary(t.p1, "Grizzly Bears")
         val before = t.battlefield().size

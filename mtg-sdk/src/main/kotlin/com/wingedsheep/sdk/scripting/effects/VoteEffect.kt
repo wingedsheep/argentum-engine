@@ -14,12 +14,13 @@ import kotlinx.serialization.Serializable
  * This is the word vote — choices that are "words with no rules meaning that are each connected to
  * a different effect" (CR 701.38b). Council's dilemma spends every tally (Selvala's Stampede: one
  * creature per *wild* vote, one permanent per *free* vote); will of the council compares them with
- * `Conditions.CompareAmounts`. Voting for objects (Council's Judgment) and extra votes are not
- * modelled here.
+ * `Conditions.CompareAmounts`. Voting for objects (Council's Judgment), extra votes, and who voted
+ * for what (Expropriate) are not modelled here. A secret ballot is the other vote shape
+ * ([SecretChoiceEffect], Vault 11: Voter's Dilemma); a future vote trigger or extra-vote effect has
+ * to cover both.
  *
  * Closest types: [SecretChoiceEffect] collects *secret* ballots in APNAP order and reveals them at
- * once (Vault 11: Voter's Dilemma), where a CR 701.38 vote is public and cast one player at a time
- * starting with you; [ChooseOptionEffect] has one chooser and stores a
+ * once, where this vote is public and cast one player at a time starting with you; [ChooseOptionEffect] has one chooser and stores a
  * single string, not a tally per choice. [RollDiceEffect] publishes per-outcome tallies the same
  * way, which is the shape this follows.
  */
@@ -31,6 +32,7 @@ data class VoteEffect(
 ) : Effect {
     init {
         require(choices.size >= 2) { "A vote needs at least two choices" }
+        require(choices.none { it.isBlank() } && choices.toSet().size == choices.size) { "Vote choices must be distinct words" }
         require(voteCounts.values.all { it in choices }) { "A vote count must name one of the choices" }
     }
 
