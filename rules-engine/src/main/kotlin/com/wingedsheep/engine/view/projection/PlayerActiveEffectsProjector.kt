@@ -485,7 +485,7 @@ internal class PlayerActiveEffectsProjector(
             }
         }
 
-        // Loyalty-activation permissions (Jace's Machinations, Urza Assembles the Titans).
+        // Loyalty-activation permissions (Jace's Machinations, Urza Assembles the Titans, The Chain Veil).
         container.get<com.wingedsheep.engine.state.components.player.LoyaltyActivationPermissionsComponent>()?.let { component ->
             val instant = component.grants.filter { it.instantSpeed }
             if (instant.isNotEmpty()) {
@@ -509,6 +509,23 @@ internal class PlayerActiveEffectsProjector(
                         effectId = "extra_loyalty_activations",
                         name = "Extra loyalty activations",
                         description = "You may activate loyalty abilities of $rendered this turn rather than only once",
+                        icon = "lightning"
+                    )
+                )
+            }
+            // Additional activations sum across grants (each Chain Veil resolution is one more).
+            val additional = component.grants.filter { it.additionalActivations >= 1 }
+                .groupBy { it.filter }
+                .map { (filter, grants) -> filter to grants.sumOf { it.additionalActivations } }
+            if (additional.isNotEmpty()) {
+                val rendered = additional.joinToString(" and ") { (filter, n) ->
+                    "${filter.description}s " + (if (n == 1) "one additional time" else "$n additional times")
+                }
+                effects.add(
+                    ClientPlayerEffect(
+                        effectId = "additional_loyalty_activations",
+                        name = "Additional loyalty activations",
+                        description = "You may activate loyalty abilities of $rendered this turn",
                         icon = "lightning"
                     )
                 )
