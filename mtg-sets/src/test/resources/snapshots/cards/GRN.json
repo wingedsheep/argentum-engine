@@ -538,6 +538,53 @@
     ]
 }
 
+// Capture Sphere
+{
+    "name": "Capture Sphere",
+    "manaCost": "{3}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Flash (You may cast this spell any time you could cast an instant.)\nEnchant creature\nWhen this Aura enters, tap enchanted creature.\nEnchanted creature doesn't untap during its controller's untap step.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Capture Sphere:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "EnchantedCreature"
+                },
+                "descriptionOverride": "When this Aura enters, tap enchanted creature."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOESNT_UNTAP"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "artist": "Mark Behm",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/a/5a799ac8-5798-4a26-81c1-763d6dcfcbe8.jpg?1783934193"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Circuitous Route
 {
     "name": "Circuitous Route",

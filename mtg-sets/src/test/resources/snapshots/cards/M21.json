@@ -1203,6 +1203,64 @@
     ]
 }
 
+// Bone Pit Brute
+{
+    "name": "Bone Pit Brute",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Creature — Cyclops",
+    "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\nWhen this creature enters, target creature gets +4/+0 until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bone Pit Brute:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, target creature gets +4/+0 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "artist": "Victor Adame Minguez",
+        "flavorText": "Welcome to the club.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/0/6075e0a3-a0ab-4a11-8ad2-7dabb071d309.jpg?1783930695"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Brash Taunter
 {
     "name": "Brash Taunter",
@@ -1293,6 +1351,417 @@
                 "text": "If the target creature is an illegal target when Brash Taunter's last ability tries to resolve, the ability doesn't resolve. If Brash Taunter is no longer on the battlefield, the target creature won't deal or be dealt damage."
             }
         ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Burlfist Oak
+{
+    "name": "Burlfist Oak",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Creature — Treefolk",
+    "oracleText": "Whenever you draw a card, this creature gets +2/+2 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Burlfist Oak:1",
+                "trigger": "DrawEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever you draw a card, this creature gets +2/+2 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "174",
+        "rarity": "UNCOMMON",
+        "artist": "Milivoj Ćeran",
+        "flavorText": "If a tree fells you in the forest and no one is around to hear it, \"does it make a sound\" is the last thing you need to worry about.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3d0ec3bd-d894-4861-abcb-7b2e4f4de05c.jpg?1783930678",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "If a spell or ability causes a player to put a card into their hand without specifically using the word \"draw,\" it's not a card drawn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Caged Zombie
+{
+    "name": "Caged Zombie",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "{1}{B}, {T}: Each opponent loses 2 life. Activate only if a creature died this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Caged Zombie:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": "CreatureDiedThisTurn"
+                    }
+                ],
+                "descriptionOverride": "Each opponent loses 2 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "91",
+        "artist": "Josh Hass",
+        "flavorText": "\"Six consecutive life sentences\" takes on a new meaning when necromancy is involved.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/8/f8067745-35b6-4abd-9ae9-712159a26c89.jpg?1783930711"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Canopy Stalker
+{
+    "name": "Canopy Stalker",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Cat",
+    "oracleText": "This creature must be blocked if able.\nWhen this creature dies, you gain 1 life for each creature that died this turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Canopy Stalker:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "TurnTracking",
+                        "player": "Each",
+                        "tracker": "CREATURES_DIED"
+                    }
+                },
+                "descriptionOverride": "When this creature dies, you gain 1 life for each creature that died this turn."
+            }
+        ],
+        "staticAbilities": [
+            "MustBeBlockedStatic"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "175",
+        "rarity": "UNCOMMON",
+        "artist": "Ilse Gort",
+        "flavorText": "The forest's cover offers shade, shelter, and an increased risk of sudden death.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a3f6a13a-ab38-49d1-8712-f9c9135a23c8.jpg?1783930678",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Only one creature is required to block Canopy Stalker. Other creatures may also block it, and are free to block other creatures or not block at all."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If each creature the defending player controls can't block for any reason (such as being tapped), then Canopy Stalker isn't blocked. If there's a cost associated with blocking Canopy Stalker, the defending player isn't forced to pay that cost, so it doesn't have to be blocked in that case either."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Canopy Stalker's triggered ability counts itself, as well as any other creatures that die before the triggered ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Carrion Grub
+{
+    "name": "Carrion Grub",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Insect",
+    "oracleText": "This creature gets +X/+0, where X is the greatest power among creature cards in your graveyard.\nWhen this creature enters, mill four cards. (Put the top four cards of your library into your graveyard.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Carrion Grub:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, mill four cards."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "AggregateZone",
+                    "player": "You",
+                    "zone": "Graveyard",
+                    "filter": "creature",
+                    "aggregation": "MAX",
+                    "property": "POWER"
+                },
+                "toughnessBonus": {
+                    "type": "Fixed",
+                    "amount": 0
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "rarity": "UNCOMMON",
+        "artist": "Nicholas Gregory",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/31df3d95-bbdb-449d-9601-4fa844c3c640.jpg?1783930712",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Carrion Grub's first ability applies only while it is on the battlefield. In all other zones, its power is 0."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Any counters on creatures that die or effects that affect them until end of turn won't apply to those cards in their owner's graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Celestial Enforcer
+{
+    "name": "Celestial Enforcer",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "{1}{W}, {T}: Tap target creature. Activate only if you control a creature with flying.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Celestial Enforcer:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "creature kw:flying"
+                        }
+                    }
+                ],
+                "descriptionOverride": "Tap target creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "artist": "Bastien L. Deharme",
+        "flavorText": "\"I look to the heavens for hope, but you will kneel.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/6/46666fba-d4a7-4687-8747-a42e4c6d853e.jpg?1783930745",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Once you begin activating Celestial Enforcer's ability, players can't take any other actions until you're done activating it. Notably, they can't try to remove your creatures with flying to make it illegal to activate the ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Chandra's Firemaw
+{
+    "name": "Chandra's Firemaw",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Creature — Hellion",
+    "oracleText": "Haste\nWhen this creature enters, you may search your library and/or graveyard for a card named Chandra, Flame's Catalyst, reveal it, and put it into your hand. If you search your library this way, shuffle.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Chandra's Firemaw:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromMultipleZones",
+                                "zones": [
+                                    "Library",
+                                    "Graveyard"
+                                ],
+                                "filter": "name:Chandra, Flame's Catalyst"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library and/or graveyard for a card named Chandra, Flame's Catalyst to put into your hand",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "333",
+        "rarity": "RARE",
+        "artist": "Bryan Sola",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/6/76cf0b50-155f-4e65-9e48-88b378ad93a1.jpg?1783930618"
     },
     "colorIdentityOverride": [
         "RED"
@@ -1511,6 +1980,186 @@
     ]
 }
 
+// Chandra, Heart of Fire
+{
+    "name": "Chandra, Heart of Fire",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Legendary Planeswalker — Chandra",
+    "oracleText": "+1: Discard your hand, then exile the top three cards of your library. Until end of turn, you may play cards exiled this way.\n+1: Chandra deals 2 damage to any target.\n−9: Search your graveyard and library for any number of red instant and/or sorcery cards, exile them, then shuffle. You may cast them this turn. Add six {R}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Chandra, Heart of Fire:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "discardedHand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discardedHand",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 3
+                                        }
+                                    },
+                                    "storeAs": "impulseExiled"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "impulseExiled",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Exile"
+                                    }
+                                },
+                                {
+                                    "type": "GrantMayPlayFromExile",
+                                    "from": "impulseExiled"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Discard your hand, then exile the top three cards of your library. Until end of turn, you may play cards exiled this way."
+            },
+            {
+                "id": "Chandra, Heart of Fire:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Chandra deals 2 damage to any target."
+            },
+            {
+                "id": "Chandra, Heart of Fire:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -9
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromMultipleZones",
+                                "zones": [
+                                    "Graveyard",
+                                    "Library"
+                                ],
+                                "filter": "instant|sorcery red"
+                            },
+                            "storeAs": "gathered0",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected1",
+                            "prompt": "Search your graveyard and library for any number of red instant and/or sorcery cards to exile"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent",
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "selected1"
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "RED",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 6
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Search your graveyard and library for any number of red instant and/or sorcery cards, exile them, then shuffle. You may cast them this turn. Add six {R}."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "rarity": "MYTHIC",
+        "artist": "Josu Hernaiz",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a4c3ca8c-c77c-43b8-84ad-796313ecc813.jpg?1783930694",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "If you have no cards in hand, you still exile three cards while resolving Chandra's first ability and you may play them this turn."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "You must follow the normal timing permissions and restrictions for the exiled cards for Chandra's first and last abilities. If one is a land, you can't play it unless you have land plays available."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Because it's a loyalty ability, Chandra's last ability isn't a mana ability. It can be activated only any time you could cast a sorcery. It uses the stack and can be responded to."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Chromatic Orrery
 {
     "name": "Chromatic Orrery",
@@ -1583,6 +2232,133 @@
     "colorIdentityOverride": []
 }
 
+// Chrome Replicator
+{
+    "name": "Chrome Replicator",
+    "manaCost": "{5}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "When this creature enters, if you control two or more nonland, nontoken permanents with the same name as one another, create a 4/4 colorless Construct artifact creature token.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Chrome Replicator:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Construct"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/4/0/4001c4c6-647c-4ffc-9803-81df43b77e12.jpg?1783930588",
+                    "artifactToken": true
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "nonland permanent nontoken",
+                        "aggregation": "LARGEST_SAME_NAME_GROUP"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "descriptionOverride": "When this creature enters, if you control two or more nonland, nontoken permanents with the same name as one another, create a 4/4 colorless Construct artifact creature token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "229",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "Who would you trust to watch your back more than yourself?",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/e/1e01bcb4-e823-4da5-b433-e75be3356367.jpg?1783930658",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "If you don't control two nonland, nontoken permanents with the same name immediately after Chrome Replicator enters the battlefield, its ability doesn't trigger. If you don't control two as the ability resolves, you don't create a token. They don't have to be the same pair, however."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Chrome Replicator's ability creates just one Construct, no matter how many namesake pairs of permanents you control."
+            }
+        ]
+    }
+}
+
+// Conclave Mentor
+{
+    "name": "Conclave Mentor",
+    "manaCost": "{G}{W}",
+    "typeLine": "Creature — Centaur Cleric",
+    "oracleText": "If one or more +1/+1 counters would be put on a creature you control, that many plus one +1/+1 counters are put on that creature instead.\nWhen this creature dies, you gain life equal to its power.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Conclave Mentor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    }
+                },
+                "descriptionOverride": "When this creature dies, you gain life equal to its power."
+            }
+        ],
+        "replacementEffects": [
+            "ModifyCounterPlacement"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "216",
+        "rarity": "UNCOMMON",
+        "artist": "Raoul Vitale",
+        "flavorText": "\"I have faith in your potential.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a328a93a-e720-46d5-a190-cc65d1c90cea.jpg?1783930665",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "If a creature you control would enter the battlefield with a number of +1/+1 counters on it, it enters with that many plus one instead."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If you control two Conclave Mentors, the number of +1/+1 counters put on a creature is two plus the original number. Three Conclave Mentors add three, and so on."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Use Conclave Mentor's power as it last existed on the battlefield to determine how much life you gain."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Conspicuous Snoop
 {
     "name": "Conspicuous Snoop",
@@ -1633,6 +2409,133 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Crypt Lurker
+{
+    "name": "Crypt Lurker",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Horror",
+    "oracleText": "When this creature enters, you may sacrifice a creature or discard a creature card. If you do, draw a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Crypt Lurker:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "ChooseAction",
+                        "choices": [
+                            {
+                                "label": "Sacrifice a creature",
+                                "effect": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "Sacrifice",
+                                            "filter": "creature"
+                                        },
+                                        {
+                                            "type": "DrawCards",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        }
+                                    ]
+                                },
+                                "feasibilityCheck": {
+                                    "type": "ControlsPermanentMatching",
+                                    "filter": "creature"
+                                }
+                            },
+                            {
+                                "label": "Discard a creature card",
+                                "effect": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Hand",
+                                                "filter": "creature"
+                                            },
+                                            "storeAs": "hand"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "hand",
+                                            "selection": {
+                                                "type": "ChooseExactly",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "discarded",
+                                            "prompt": "Choose 1 card to discard"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "discarded",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Graveyard"
+                                            },
+                                            "moveType": "Discard"
+                                        },
+                                        {
+                                            "type": "DrawCards",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        }
+                                    ]
+                                },
+                                "feasibilityCheck": {
+                                    "type": "HasCardsInZone",
+                                    "zone": "Hand",
+                                    "filter": "creature"
+                                }
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "You may sacrifice a creature or discard a creature card. If you do, draw a card."
+                },
+                "descriptionOverride": "When this creature enters, you may sacrifice a creature or discard a creature card. If you do, draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"Even the rats refuse to set foot inside. I fear to think what might be waiting in there.\"\n—Gravedigger's journal",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c0bba170-5176-4fab-a10d-e23d70128875.jpg?1783930711",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "While resolving Crypt Lurker's ability, you can't sacrifice more than one creature, discard more than one card, or do both to draw more than one card."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Crypt Lurker can be sacrificed to pay the cost of its own triggered ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -1687,6 +2590,219 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Demonic Embrace
+{
+    "name": "Demonic Embrace",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +3/+1, has flying, and is a Demon in addition to its other types.\nYou may cast this card from your graveyard by paying 3 life and discarding a card in addition to paying its other costs.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 3,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING"
+            },
+            {
+                "type": "GrantSubtype",
+                "subtype": "Demon",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "MayCastSelfFromZones",
+                "zones": [
+                    "Graveyard"
+                ],
+                "additionalCost": {
+                    "type": "Composite",
+                    "steps": [
+                        {
+                            "type": "AdditionalAtom",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            }
+                        },
+                        {
+                            "type": "AdditionalAtom",
+                            "atom": "AtomDiscard"
+                        }
+                    ]
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "95",
+        "rarity": "RARE",
+        "artist": "Sidharth Chaturvedi",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/6/56149192-ddc1-45a4-b7aa-be311da5fe8e.jpg?1783930711",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Casting Demonic Embrace with the permission granted by its last ability doesn't change when you can cast it."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If another effect gives you permission to cast Demonic Embrace from your graveyard, you don't pay the additional cost imposed by its last ability if you use that permission."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Dire Fleet Warmonger
+{
+    "name": "Dire Fleet Warmonger",
+    "manaCost": "{1}{B}{R}",
+    "typeLine": "Creature — Orc Pirate",
+    "oracleText": "At the beginning of combat on your turn, you may sacrifice another creature. If you do, this creature gets +2/+2 and gains trample until end of turn. (It can deal excess combat damage to the player or planeswalker it's attacking.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dire Fleet Warmonger:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "Sacrifice",
+                            "filter": "creature",
+                            "excludeSource": true
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "target": "Self"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": "Self"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "At the beginning of combat on your turn, you may sacrifice another creature. If you do, this creature gets +2/+2 and gains trample until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "217",
+        "rarity": "UNCOMMON",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/f/1fa781df-859f-4346-9424-b3713b17e1f6.jpg?1783930663",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "While resolving Dire Fleet Warmonger's ability, you can't sacrifice multiple creatures to give it more than +2/+2 and trample."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "You choose whether to sacrifice a creature and which to sacrifice as Dire Fleet Warmonger's ability resolves. No player can take action between the time you make that choice and the time it gets +2/+2 and has trample, if appropriate."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
+// Discontinuity
+{
+    "name": "Discontinuity",
+    "manaCost": "{3}{U}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "During your turn, this spell costs {2}{U}{U} less to cast.\nEnd the turn. (Exile all spells and abilities from the stack, including this card. The player whose turn it is discards down to their maximum hand size. Damage wears off, and \"this turn\" and \"until end of turn\" effects end.)",
+    "script": {
+        "spellEffect": "EndTheTurn",
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 2
+                },
+                "gating": {
+                    "type": "OnlyIf",
+                    "condition": "IsYourTurn"
+                }
+            },
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceColored",
+                    "symbols": "{U}{U}"
+                },
+                "gating": {
+                    "type": "OnlyIf",
+                    "condition": "IsYourTurn"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "rarity": "MYTHIC",
+        "artist": "Volkan Baǵa",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b33ba0a8-04e9-4df6-af20-a3ca4470cdcc.jpg?1783930730",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying, add any cost increases, then apply any cost reductions (such as that of Discontinuity). The mana value of the spell remains unchanged, no matter what the total cost to cast it was."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Any \"at the beginning of the next end step\" triggered abilities won't get the chance to trigger that turn because the end step is skipped. Those abilities will trigger at the beginning of the end step of the next turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
