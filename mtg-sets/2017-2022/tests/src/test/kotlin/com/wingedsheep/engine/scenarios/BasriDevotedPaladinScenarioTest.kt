@@ -17,7 +17,7 @@ import io.kotest.matchers.shouldBe
  * −1: Whenever a creature attacks this turn, put a +1/+1 counter on it.
  *
  * Pins the −1's delayed trigger: it puts the counter on the attacking creature itself before
- * blockers (ruling), skips creatures that didn't attack, and keeps working after Basri is gone.
+ * blockers (ruling) and skips creatures that didn't attack.
  */
 class BasriDevotedPaladinScenarioTest : ScenarioTestBase() {
 
