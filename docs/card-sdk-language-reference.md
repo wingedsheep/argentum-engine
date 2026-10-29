@@ -2412,7 +2412,9 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   creature's controller's side leaves it entering unblocking (CR 509.4a). Brimaz, King of Oreskos's
   "create a … token … that's blocking that creature" = `CreateToken(…) then
   ForEachInCollection(CollectionSlot.CreatedTokens, BecomeBlocking(IterationEntity, TriggeringEntity, entering = true))`
-  under `Triggers.self.blocks(attackerFilter = Creature)`.
+  under `Triggers.self.blocks(attackerFilter = Creature)`. Unlike `CreateToken(attacking = true)`, entering
+  blocking is a follow-up effect rather than a token rider so it composes over any created permanent
+  (plain tokens, token copies, substitutes) through `CreatedTokens` — don't add a `CreateToken(blocking = …)`.
 - `attackingDefenderOf(reference)` — filter attacking creatures by the defending side of a player or
   permanent reference. Includes attacks on that player's planeswalkers and protected battles, and shared
   turn teams; reads projected controllers and resolves current object identity. The attack retains its

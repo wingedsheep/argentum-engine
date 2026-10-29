@@ -11,13 +11,14 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
-private fun catSoldier(attacking: Boolean) = if (attacking) Effects.CreateToken(
-    power = 1, toughness = 1, colors = setOf(Color.WHITE), creatureTypes = setOf("Cat", "Soldier"),
+private fun catSoldier(attacking: Boolean) = Effects.CreateToken(
+    power = 1,
+    toughness = 1,
+    colors = setOf(Color.WHITE),
+    creatureTypes = setOf("Cat", "Soldier"),
     keywords = setOf(Keyword.VIGILANCE),
-    attacking = true, attackDefender = EnteringAttackDefender.CONTROLLER_CHOOSES,
-) else Effects.CreateToken(
-    power = 1, toughness = 1, colors = setOf(Color.WHITE), creatureTypes = setOf("Cat", "Soldier"),
-    keywords = setOf(Keyword.VIGILANCE),
+    attacking = attacking,
+    attackDefender = if (attacking) EnteringAttackDefender.CONTROLLER_CHOOSES else EnteringAttackDefender.JOIN_SOURCE,
 )
 
 /**
