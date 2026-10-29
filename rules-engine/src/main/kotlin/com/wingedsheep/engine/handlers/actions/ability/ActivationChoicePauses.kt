@@ -33,10 +33,8 @@ import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.mechanics.mana.buildAbilityPaymentContext
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
-import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.PlayerComponent
-import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
@@ -56,7 +54,8 @@ import com.wingedsheep.sdk.scripting.util.quantify
 internal class ActivationChoicePauses(
     private val costHandler: CostHandler,
     private val manaSolver: ManaSolver,
-    private val targetFinder: TargetFinder
+    private val targetFinder: TargetFinder,
+    private val castPermissionUtils: com.wingedsheep.engine.legalactions.utils.CastPermissionUtils,
 ) {
 
     /**
@@ -168,7 +167,7 @@ internal class ActivationChoicePauses(
                 manaXCost.xCount.coerceAtLeast(1)
         } else null
         val loyaltyMaxX = if (effectiveCost == AbilityCost.LoyaltyX) {
-            activation.container.get<CountersComponent>()?.getCount(CounterType.LOYALTY) ?: 0
+            castPermissionUtils.maxLoyaltyX(state, action.sourceId, action.playerId)
         } else null
         val maxX = listOfNotNull(manaMaxX, loyaltyMaxX, counterMaxX).minOrNull() ?: 0
         // "X can't be 0" abilities (Gogo, Master of Mimicry) set a minimum; clamp it to what the

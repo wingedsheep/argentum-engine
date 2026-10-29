@@ -60,7 +60,11 @@ internal class ActivationCostTotaller(
         // A cost naming a mana cost (Merseine's attached permanent's, a granted scavenge's own) is
         // priced first, so the reductions below see the mana they apply to (CR 602.2b, 601.2f).
         val costWithDefinedX = castPermissionUtils.applyDefinedXValue(
-            castPermissionUtils.lowerReferencedManaCost(state, action.sourceId, rawCost),
+            castPermissionUtils.lowerReferencedManaCost(
+                state, action.sourceId,
+                // Carth the Lion's [+1] surcharge nets into the one loyalty payment.
+                castPermissionUtils.applyLoyaltyCostSurcharge(state, rawCost, action.playerId, action.xValue)
+            ),
             ability, state, action.sourceId, action.playerId
         )
         val costAfterConditionalReduction = AbilityCostReduction.applyConditional(

@@ -12502,6 +12502,14 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   Peacekeeper: "Activated abilities of sources with the chosen name cost {2} more to activate unless
   they're mana abilities" →
   `IncreaseActivatedAbilityCost(GroupFilter(GameObjectFilter.Any.namedFromChosenComponent()), DynamicAmounts.fixed(2), excludeManaAbilities = true)`.
+- `LoyaltyAbilitiesCostAdditional(amount = 1)` — planeswalkers' loyalty abilities this permanent's
+  controller activates cost an additional [+`amount`]. Carth the Lion: "Planeswalkers' loyalty abilities
+  you activate cost an additional [+1] to activate" → `LoyaltyAbilitiesCostAdditional(1)`. The surcharge is
+  netted into the one loyalty payment when the total cost is determined (CR 601.2f via CR 602.2b): [+1]
+  costs [+2] (all counters put on at once, so a placement replacement like Vorinclex applies once), [0]
+  costs [+1], [−3] costs [−2] and can be activated with two loyalty, and [−X] costs [−X+1] with X itself
+  unchanged — X may be announced up to loyalty + surcharge. Several are cumulative; an opponent's never
+  reaches your activations. The ability menu shows the surcharged cost.
 - `ManaAbilitiesCostAdditionalLife(amount = 1, filter = GroupFilter.source())` — **mana** abilities of
   permanents matching `filter` cost `amount` additional life to activate. Thran Portal: "Mana abilities of this
   land cost an additional 1 life to activate" → `ManaAbilitiesCostAdditionalLife(1)`. Lowered to a Layer 6

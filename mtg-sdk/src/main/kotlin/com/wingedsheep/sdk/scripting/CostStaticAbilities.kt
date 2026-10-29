@@ -1312,6 +1312,32 @@ data class IncreaseActivatedAbilityCost(
 }
 
 /**
+ * Planeswalkers' loyalty abilities this permanent's controller activates cost an additional
+ * [+amount] — Carth the Lion's "Planeswalkers' loyalty abilities you activate cost an additional
+ * [+1] to activate."
+ *
+ * The loyalty part of the cost is totalled before any counter moves (CR 601.2f via CR 602.2b): a
+ * [+1] costs [+2], a [0] costs [+1], a [−3] costs [−2] — two counters removed at once, so it can be
+ * activated with only two loyalty — and a [−X] costs [−X+1] (X itself is unchanged, so the
+ * ability's effect still reads the chosen X). Several of these are cumulative (printed ruling). The
+ * extra counters of a [+N] are *put* on the planeswalker as part of the one payment, so placement
+ * replacements (Vorinclex) apply once, to the total.
+ *
+ * Scope is the activator, not the planeswalker's controller or the ability's origin: it reaches
+ * every loyalty ability its controller activates, granted ones included.
+ *
+ * @property amount Loyalty added to each such cost (positive).
+ */
+@SerialName("LoyaltyAbilitiesCostAdditional")
+@Serializable
+data class LoyaltyAbilitiesCostAdditional(
+    val amount: Int = 1
+) : StaticAbility {
+    override val description: String =
+        "Planeswalkers' loyalty abilities you activate cost an additional [+$amount] to activate"
+}
+
+/**
  * The mana abilities of permanents matching [filter] cost an additional [amount] life to activate
  * — Thran Portal's "Mana abilities of this land cost an additional 1 life to activate."
  *

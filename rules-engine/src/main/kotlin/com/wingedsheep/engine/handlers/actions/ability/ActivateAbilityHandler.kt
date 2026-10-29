@@ -32,7 +32,6 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.AbilityActivatedEverComponent
 import com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent
-import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.DoubleFacedComponent
 import com.wingedsheep.engine.state.components.identity.TextChanges
@@ -43,7 +42,6 @@ import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
 import com.wingedsheep.engine.state.components.stack.captureEntitySnapshots
 import com.wingedsheep.engine.state.nameVisibleToAll
-import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.ActivatedAbility
@@ -113,7 +111,7 @@ class ActivateAbilityHandler(
         validator.validate(state.withPriority(action.playerId), action)?.let { ExecutionResult.error(state, it) }
             ?: executeActivation(state.withPriority(action.playerId), action)
     }
-    private val choicePauses = ActivationChoicePauses(costHandler, manaSolver, targetFinder = targetFinder)
+    private val choicePauses = ActivationChoicePauses(costHandler, manaSolver, targetFinder = targetFinder, castPermissionUtils = castPermissionUtils)
     private val autoTapper = ActivationAutoTapper(manaSolver, manaAbilitySideEffectExecutor)
     private val costPayer = ActivationCostPayer(costHandler, manaSolver, alternativePaymentHandler, autoTapper, predicateEvaluator = conditionEvaluator.predicates)
     private val manaAbilityResolver =
@@ -300,9 +298,9 @@ class ActivateAbilityHandler(
             ?: return Announcement.Rejected("Ability not found")
         val ability = abilityLookup.ability
         if (ability.cost == AbilityCost.LoyaltyX && action.xValue != null) {
-            val loyalty = container.get<CountersComponent>()?.getCount(CounterType.LOYALTY) ?: 0
-            if (action.xValue !in 0..loyalty) {
-                return Announcement.Rejected("X must be between 0 and $loyalty")
+            val maxX = castPermissionUtils.maxLoyaltyX(state, action.sourceId, action.playerId)
+            if (action.xValue !in 0..maxX) {
+                return Announcement.Rejected("X must be between 0 and $maxX")
             }
         }
 
@@ -588,7 +586,7 @@ class ActivateAbilityHandler(
             onceOnlyKind = ability.onceOnlyKind,
             cantBeCopied = ability.cantBeCopied,
             isLoyalty = ability.isPlaneswalkerAbility,
-            loyaltyCountersRemoved = when (val cost = ability.cost) {
+            loyaltyCountersRemoved = when (val cost = effectiveCost) {
                 is AbilityCost.Loyalty -> if (cost.change < 0) -cost.change else 0
                 AbilityCost.LoyaltyX -> activation.effectiveXValue ?: 0
                 else -> 0

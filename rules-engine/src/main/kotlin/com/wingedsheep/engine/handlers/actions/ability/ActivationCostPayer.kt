@@ -314,7 +314,9 @@ internal class ActivationCostPayer(
         // Emit events for cost types. Tap/TapAttachedCreature/TapXPermanents taps are emitted by
         // the tap atom inside costHandler.payAbilityCost (folded in via costResult.events above), so
         // only the loyalty change — which payAbilityCost mutates without an event — is emitted here.
-        val abilityCost = ability.cost
+        // The totalled cost: a surcharged [−3] (Carth the Lion) removed two counters, and a [−X]
+        // with a surcharge was paid as a fixed [−X+N].
+        val abilityCost = effectiveCost
         if (abilityCost is AbilityCost.Loyalty && abilityCost.change > 0) {
             // A [+N] cost *puts* N loyalty counters on the planeswalker (CR 606.4), and the
             // activating player is the one putting them (CR 122.6). Emitting the ordinary

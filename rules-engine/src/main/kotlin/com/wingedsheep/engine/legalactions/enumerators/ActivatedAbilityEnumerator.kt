@@ -160,8 +160,10 @@ class ActivatedAbilityEnumerator(
                         val allowance = context.castPermissionUtils.getLoyaltyAllowance(state, playerId, entityId)
                         if (tracker.hasReachedLoyaltyLimit(allowance)) continue
                     }
-                    // Check loyalty cost payability for negative costs
-                    val loyaltyCost = ability.cost as? AbilityCost.Loyalty
+                    // Check loyalty cost payability for negative costs — as totalled, so Carth
+                    // the Lion's [+1] surcharge lets a [−3] go with two loyalty.
+                    val loyaltyCost = context.castPermissionUtils
+                        .applyLoyaltyCostSurcharge(state, ability.cost, playerId, xValue = null) as? AbilityCost.Loyalty
                     if (loyaltyCost != null && loyaltyCost.change < 0) {
                         val counters = container.get<CountersComponent>()
                         val currentLoyalty = counters?.getCount(CounterType.LOYALTY) ?: 0
@@ -185,7 +187,11 @@ class ActivatedAbilityEnumerator(
                 // A cost naming a mana cost (Merseine's "enchanted creature's mana cost") is priced
                 // first, so the reductions below see the mana they apply to — as the totaller does.
                 val costWithDefinedX = context.castPermissionUtils.applyDefinedXValue(
-                    context.castPermissionUtils.lowerReferencedManaCost(state, entityId, rawCost),
+                    context.castPermissionUtils.lowerReferencedManaCost(
+                        state, entityId,
+                        // Carth the Lion's [+1] surcharge, as the totaller applies it.
+                        context.castPermissionUtils.applyLoyaltyCostSurcharge(state, rawCost, playerId, xValue = null)
+                    ),
                     ability, state, entityId, playerId
                 )
                 val effectiveCost = context.castPermissionUtils.relaxAbilityCostColorsIfAny(
@@ -1044,7 +1050,9 @@ class ActivatedAbilityEnumerator(
                 val abilityHasXCost = abilityHasXInManaCost || hasNonManaXCost || hasTapXPermanentsCost
 
                 val abilityMaxAffordableX: Int? = if (abilityHasXCost) {
-                    context.costUtils.calculateMaxAffordableX(state, playerId, ability.cost, abilityManaCost, precomputedSources = context.availableManaSources, sourceId = entityId)
+                    // A bare [−X] is bounded by loyalty alone — plus Carth the Lion's surcharge.
+                    if (ability.cost == AbilityCost.LoyaltyX) context.castPermissionUtils.maxLoyaltyX(state, entityId, playerId)
+                    else context.costUtils.calculateMaxAffordableX(state, playerId, ability.cost, abilityManaCost, precomputedSources = context.availableManaSources, sourceId = entityId)
                 } else null
                 // "X can't be 0" abilities (Gogo, Master of Mimicry) surface a minimum X so the
                 // client's X picker never offers 0. Enforced authoritatively by the X-choice

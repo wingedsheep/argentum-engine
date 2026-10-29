@@ -1513,6 +1513,7 @@ IncreaseActivatedAbilityCost — StaticAbility
 IsAllCreatureTypes — StaticAbility
 LegendRuleDoesNotApplyTo — StaticAbility
 LookAtFaceDownCreatures — StaticAbility
+LoyaltyAbilitiesCostAdditional — StaticAbility
 LookAtTopOfLibrary — StaticAbility
 LoseAllAbilities — StaticAbility
 ManaAbilitiesCostAdditionalLife — StaticAbility

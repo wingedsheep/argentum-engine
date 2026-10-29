@@ -39,6 +39,8 @@ import com.wingedsheep.engine.state.components.player.EquipActivationsThisTurnCo
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.manaCostOrNull
 import com.wingedsheep.sdk.scripting.ActivatedAbility
@@ -1420,6 +1422,52 @@ class CastPermissionUtils(
                 }
             }
         return LoyaltyAllowance(maximum, additional)
+    }
+
+    /**
+     * The loyalty [activatorId]'s loyalty-ability costs are raised by: the sum of every
+     * [com.wingedsheep.sdk.scripting.LoyaltyAbilitiesCostAdditional] on a permanent they control
+     * (Carth the Lion — several are cumulative).
+     */
+    fun loyaltyCostSurcharge(state: GameState, activatorId: EntityId): Int {
+        var surcharge = 0
+        val projected = state.projectedState
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            if (projected.getController(entityId) != activatorId) continue
+            val cardDef = container.faceUpCardDefinition(cardRegistry) ?: continue
+            for (ability in cardDef.liveStaticAbilities(state, entityId)) {
+                if (ability is com.wingedsheep.sdk.scripting.LoyaltyAbilitiesCostAdditional) {
+                    surcharge += ability.amount.coerceAtLeast(0)
+                }
+            }
+        }
+        return surcharge
+    }
+
+    /**
+     * Raise a loyalty-ability [cost] by [activatorId]'s [loyaltyCostSurcharge], netted into the one
+     * loyalty payment (CR 601.2f via CR 602.2b): [+1] → [+2], [−3] → [−2]. A [−X] cost becomes
+     * [−X+surcharge] once X is announced ([xValue]); before that it stays [AbilityCost.LoyaltyX] and
+     * [maxLoyaltyX] bounds the choice.
+     */
+    fun applyLoyaltyCostSurcharge(state: GameState, cost: AbilityCost, activatorId: EntityId, xValue: Int?): AbilityCost {
+        if (cost !is AbilityCost.Loyalty && cost != AbilityCost.LoyaltyX) return cost
+        val surcharge = loyaltyCostSurcharge(state, activatorId)
+        if (surcharge == 0) return cost
+        return when (cost) {
+            is AbilityCost.Loyalty -> AbilityCost.Loyalty(cost.change + surcharge)
+            else -> if (xValue != null) AbilityCost.Loyalty(surcharge - xValue) else cost
+        }
+    }
+
+    /**
+     * The largest X a [−X] loyalty cost on [walkerId] can be announced with: its loyalty, plus the
+     * activator's [loyaltyCostSurcharge] (with Carth, [−X] removes only X−1 counters).
+     */
+    fun maxLoyaltyX(state: GameState, walkerId: EntityId, activatorId: EntityId): Int {
+        val loyalty = state.getEntity(walkerId)?.get<CountersComponent>()?.getCount(CounterType.LOYALTY) ?: 0
+        return loyalty + loyaltyCostSurcharge(state, activatorId)
     }
 
     /**
