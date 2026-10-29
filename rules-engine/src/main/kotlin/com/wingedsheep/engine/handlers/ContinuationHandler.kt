@@ -41,6 +41,7 @@ class ContinuationHandler(
         registerModule(chainResumer)
         registerAutoResumerModule(chainResumer)
         registerModule(CreatureTypeChoiceContinuationResumer(services))
+        registerModule(VoteContinuationResumer())
         registerModule(TextReplacementContinuationResumer(services))
         registerModule(DrawReplacementContinuationResumer(services))
         registerModule(CardSpecificContinuationResumer(services))

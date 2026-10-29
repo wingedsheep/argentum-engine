@@ -244,3 +244,23 @@ data class CastWithCreatureTypeContinuation(
     val count: Int,
     val creatureTypes: List<String>
 ) : AnswerContinuation
+
+/**
+ * Resume a [com.wingedsheep.sdk.scripting.effects.VoteEffect] after [currentPlayerId] voted.
+ *
+ * @property choices The vote's choices, in printed order — the decision's options
+ * @property remainingVoters Players still to vote, in turn order
+ * @property tallies Votes cast so far, per choice
+ * @property voteCounts Pipeline number name → the choice it tallies
+ */
+@Serializable
+data class VoteContinuation(
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val currentPlayerId: EntityId,
+    val remainingVoters: List<EntityId>,
+    val choices: List<String>,
+    val tallies: Map<String, Int>,
+    val voteCounts: Map<String, String>,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
+) : AnswerContinuation

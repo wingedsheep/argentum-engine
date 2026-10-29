@@ -785,6 +785,20 @@ data class CreatureTypeChosenEvent(
 ) : GameEvent
 
 /**
+ * A player cast a vote (CR 701.38) for [choice] while [sourceName]'s spell or ability resolved.
+ * Votes are public and cast in turn order, so each one is announced as it happens — a later voter
+ * sees every earlier vote before choosing.
+ */
+@Serializable
+@SerialName("VoteCastEvent")
+data class VoteCastEvent(
+    val playerId: EntityId,
+    val choice: String,
+    val sourceId: EntityId?,
+    val sourceName: String?
+) : GameEvent
+
+/**
  * A creature type that had been chosen secretly is now public information — "Reveal the creature
  * type you chose" (A Killer Among Us), the reveal half of the hidden-agenda pair (CR 702.106c).
  *

@@ -61,6 +61,7 @@ class PlayerExecutors(
         GrantPlayerActionExecutor(),
         CreatePermanentEmblemExecutor(),
         EachPlayerChoosesCreatureTypeExecutor(),
+        VoteExecutor(),
         EndTheTurnExecutor(),
         RestartGameExecutor(),
         PlaySubgameExecutor(),

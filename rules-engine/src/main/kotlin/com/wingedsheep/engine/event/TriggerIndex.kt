@@ -514,6 +514,7 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.CreatureNoLongerGoadedEvent,
             is com.wingedsheep.engine.core.CreatureTypeChangedEvent,
             is com.wingedsheep.engine.core.CreatureTypeChosenEvent,
+            is com.wingedsheep.engine.core.VoteCastEvent,
             is com.wingedsheep.engine.core.CreatureTypeRevealedEvent,
             is com.wingedsheep.engine.core.CreaturesPairedEvent,
             is com.wingedsheep.engine.core.CreaturesUnpairedEvent,

@@ -6567,6 +6567,14 @@ object Effects {
         com.wingedsheep.sdk.scripting.effects.GrantCastCreaturesFromGraveyardWithForageEffect(duration)
 
     /**
+     * "Starting with you, each player votes for [choices]" (CR 701.38). [voteCounts] maps pipeline
+     * number names to the choice each one tallies; in a pipeline prefer `vote(...)`, which hands
+     * back one number handle per choice.
+     */
+    fun Vote(choices: List<String>, voteCounts: Map<String, String> = emptyMap()): Effect =
+        com.wingedsheep.sdk.scripting.effects.VoteEffect(choices, voteCounts)
+
+    /**
      * Roll dice and publish named counts of matching results from this batch. [modifier] is added
      * to each die's natural result ("roll a d20 and subtract X" is a negative modifier);
      * [storeTotalAs] records the sum of the results.

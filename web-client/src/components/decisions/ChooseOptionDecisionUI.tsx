@@ -11,6 +11,9 @@ import styles from './DecisionUI.module.css'
  * Choose option decision - select from a list of string options.
  * Uses a searchable scrollable list for large option sets (e.g., creature types).
  */
+/** Lists this long or shorter are shown without a search box. */
+const SEARCH_THRESHOLD = 8
+
 export function ChooseOptionDecisionUI({
   decision,
 }: {
@@ -131,8 +134,9 @@ export function ChooseOptionDecisionUI({
         </p>
       )}
 
-      {/* Search filter — hidden for the tiled (icon-backed) layout. */}
-      {!useTiledLayout && (
+      {/* Search filter — only for long lists (creature types, card names); a handful of options
+          (a vote, a pile, a mode) reads at a glance. Hidden for the tiled (icon-backed) layout. */}
+      {!useTiledLayout && decision.options.length > SEARCH_THRESHOLD && (
         <input
           type="text"
           value={filter}

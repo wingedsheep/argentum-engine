@@ -1753,6 +1753,10 @@ is PermanentsSacrificedEvent -> {
                 isYours = event.playerId == viewingPlayerId
             )
 
+            // The ballot's own decision line ("Opponent: (Selvala's Stampede) Chose Free") already
+            // logs each vote as it is cast; a second entry would only repeat it.
+            is VoteCastEvent -> null
+
             is CreatureTypeChosenEvent -> ClientEvent.CreatureTypeChosen(
                 playerId = event.playerId,
                 chosenType = event.chosenType,

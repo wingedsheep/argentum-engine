@@ -386,6 +386,108 @@
     ]
 }
 
+// Selvala's Stampede
+{
+    "name": "Selvala's Stampede",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Council's dilemma — Starting with you, each player votes for wild or free. Reveal cards from the top of your library until you reveal a creature card for each wild vote. Put those creature cards onto the battlefield, then shuffle the rest into your library. You may put a permanent card from your hand onto the battlefield for each free vote.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Vote",
+                    "choices": [
+                        "wild",
+                        "free"
+                    ],
+                    "voteCounts": {
+                        "votes0": "wild",
+                        "votes1": "free"
+                    }
+                },
+                {
+                    "type": "GatherUntilMatch",
+                    "filter": "creature",
+                    "storeMatch": "matched2",
+                    "storeRevealed": "revealed2",
+                    "count": {
+                        "type": "VariableReference",
+                        "variableName": "votes0"
+                    }
+                },
+                {
+                    "type": "RevealCollection",
+                    "from": "revealed2"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "matched2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    }
+                },
+                "ShuffleLibrary",
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "filter": "permanent"
+                    },
+                    "storeAs": "gathered6"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered6",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "VariableReference",
+                            "variableName": "votes1"
+                        }
+                    },
+                    "storeSelected": "selected7",
+                    "prompt": "Put a permanent card from your hand onto the battlefield for each free vote"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected7",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/5/85d6e48e-3d26-4915-9739-25edbd80bdf1.jpg?1783937340",
+        "rulings": [
+            {
+                "date": "2016-08-23",
+                "text": "You must vote for one of the available options. You can't abstain."
+            },
+            {
+                "date": "2016-08-23",
+                "text": "The creature cards revealed for the wild votes all enter the battlefield at the same time, followed by the permanent cards put onto the battlefield from your hand for the free votes."
+            },
+            {
+                "date": "2016-08-23",
+                "text": "Because the votes are made in turn order, each player will know the votes of players who voted beforehand."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Selvala, Heart of the Wilds
 {
     "name": "Selvala, Heart of the Wilds",

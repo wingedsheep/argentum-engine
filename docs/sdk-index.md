@@ -1100,6 +1100,7 @@ Families:
 - `UnlockDoorEffect(target: EffectTarget)` — Resolution-time "unlock a door" effect (CR 709.5f).
 - `UnprepareEffect(target: EffectTarget)` — Make target become unprepared (Secrets of Strixhaven) — the inverse of BecomePreparedEffect.
 - `VentureIntoTheDungeonEffect(target: EffectTarget, into: String?)` — "Venture into the dungeon" (CR 701.49) — and its "venture into quality" variant (CR 701.49d), of which "venture into Undercity" is the only one printed.
+- `VoteEffect(choices: List<String>, voteCounts: Map<String, String>)` — Vote (CR 701.38): "Starting with you, each player votes for choices".
 - `WardCounterEffect(cost: WardCost)` — Counter the spell or ability that targeted this permanent unless its controller pays the ward cost.
 - `WarpExileEffect(target: EffectTarget, enteredBattlefieldTimestamp: Long?)` — Exile a warped permanent and mark it as re-castable via warp from exile.
 - `WinGameEffect(target: EffectTarget, message: String?)` — Target player wins the game.

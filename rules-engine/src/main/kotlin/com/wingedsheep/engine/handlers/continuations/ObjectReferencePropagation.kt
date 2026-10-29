@@ -81,6 +81,7 @@ internal fun AnswerContinuation.objectReferences(): ObjectReferenceEnvironment? 
     is ChooseCardTypeForProtectionContinuation -> objectReferences
     is ChooseColorOrColorlessForProtectionContinuation -> objectReferences
     is EachPlayerChoosesCreatureTypeContinuation -> objectReferences
+    is VoteContinuation -> objectReferences
     is SelectFromCollectionContinuation -> objectReferences
     is MoveCollectionOrderContinuation -> objectReferences
     is SelectTargetPipelineContinuation -> objectReferences
@@ -213,6 +214,7 @@ internal fun AnswerContinuation.withObjectReferences(refs: ObjectReferenceEnviro
     is ChooseCardTypeForProtectionContinuation -> copy(objectReferences = refs)
     is ChooseColorOrColorlessForProtectionContinuation -> copy(objectReferences = refs)
     is EachPlayerChoosesCreatureTypeContinuation -> copy(objectReferences = refs)
+    is VoteContinuation -> copy(objectReferences = refs)
     is SelectFromCollectionContinuation -> copy(objectReferences = refs)
     is MoveCollectionOrderContinuation -> copy(objectReferences = refs)
     is SelectTargetPipelineContinuation -> copy(objectReferences = refs)

@@ -1311,6 +1311,17 @@ class PipelineBuilder private constructor(private val shared: Shared) {
     }
 
     /**
+     * "Starting with you, each player votes for [choices]" ([Effects.Vote]). Returns one numeric
+     * handle per choice, in input order, holding how many votes that choice received:
+     * `val (wild, free) = vote("wild", "free")`.
+     */
+    fun vote(vararg choices: String): List<NumberSlot> {
+        val slots = choices.map { NumberSlot(slotKey("votes", nextIndex(), null)) }
+        steps += Effects.Vote(choices.toList(), slots.zip(choices).associate { (slot, choice) -> slot.key to choice })
+        return slots
+    }
+
+    /**
      * Roll one batch and return a numeric handle to its *result* — the sum of every kept die's
      * natural result plus [modifier] (CR 706.2), summed over every roller when [player] names
      * several. For one die rolled by one player that is the die's result, which a

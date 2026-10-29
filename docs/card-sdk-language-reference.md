@@ -5435,6 +5435,7 @@ with cards):
 | `selectTarget(requirement, nonTargeting?, prompt?, excluding?)` (resolution-time choice — never printed "target"; `excluding` drops earlier picks) | `SelectTargetEffect` |
 | `ifNotEmpty(slot, filter?, minSize?) { … } orElse { … }` | `ConditionalOnCollectionEffect` |
 | `ifThen(condition) { … }` (the branch sees the surrounding handles — a die-result row: `ifThen(CompareAmounts(result.amount, LTE, 0)) { … }`) | `GatedEffect` (`Effects.If`) |
+| `vote("wild", "free")` → one `NumberSlot` per choice, holding how many votes it received | `VoteEffect` (see "Voting") |
 | `rollDice(count, sides, player, resultSets)` → one `NumberSlot` per result set / `rollDiceResult(count, sides, player, modifier)` → the summed (modified) result | `RollDiceEffect` (see "Numerical dice") |
 | `whenMatches(slot, filter)` (returns a `Condition`, adds no step) | `CollectionContainsMatch` |
 | `run(effect)` | any other `Effect`, verbatim |
@@ -20801,6 +20802,24 @@ forgets flipped status (CR 710.4). Saved identities without frozen halves recove
 registered definition when copying or flipping; already-frozen values are preserved.
 Existing characteristic-change markers and state projection expose recopy/expiry to the client; flipping
 uses its existing flip event and rotation. No additional player decision or client rule calculation is needed.
+
+### Voting
+
+`Effects.Vote(choices, voteCounts = emptyMap())` (`VoteEffect`) is "Starting with you, each player
+votes for wild or free" (CR 701.38). On resolution each player still in the game, starting with the
+controller and proceeding in turn order (CR 701.38a), picks exactly one choice — no abstaining. Each
+ballot is a `ChooseOptionDecision` whose prompt lists the votes cast so far, and each vote is
+announced as it is cast (the ballot's game-log line, plus an engine `VoteCastEvent`), so a later
+voter knows the earlier votes. `voteCounts` maps numeric pipeline keys to the choice each one
+tallies; every key is written once everyone has voted, 0 for a choice nobody picked. In a pipeline,
+`val (wild, free) = vote("wild", "free")` returns one fresh `NumberSlot` per choice in input order.
+
+Council's dilemma spends every tally — **Selvala's Stampede**: `vote("wild", "free")`, then
+`gatherUntilMatch(Creature, count = wild.amount)` onto the battlefield and a shuffle, then
+`chooseUpTo(free.amount, gather(hand, Permanent))` onto the battlefield. Will of the council
+("if X gets more votes …") compares the tallies with `Conditions.CompareAmounts`. Not modelled:
+voting for objects or players (Council's Judgment), extra votes (CR 701.38d), and "whenever players
+finish voting" triggers. Secret simultaneous ballots are `SecretChoiceEffect`, not a vote.
 
 ### Numerical dice
 
