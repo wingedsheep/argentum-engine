@@ -10,7 +10,7 @@ import com.wingedsheep.sdk.model.Printing
  *
  * Commander preconstructed decks released alongside Innistrad: Midnight Hunt. Scaffolded to hold the
  * canonical [CardDefinition] for cards that first appeared here (e.g. Wilhelt, the Rotcleaver and
- * the rest of the Undead Unleashed deck's new cards).
+ * the other new cards of the Undead Unleashed and Coven Counters decks).
  *
  * Set Code: MIC
  * Release Date: September 24, 2021
