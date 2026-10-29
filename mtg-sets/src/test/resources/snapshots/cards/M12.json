@@ -499,6 +499,67 @@
     ]
 }
 
+// Frost Breath
+{
+    "name": "Frost Breath",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Tap up to two target creatures. Those creatures don't untap during their controller's next untap step.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "TapUntap",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    {
+                        "type": "GrantKeyword",
+                        "keyword": "DOESNT_UNTAP",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "duration": "UntilAfterAffectedControllersNextUntap"
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "artist": "Mike Bierek",
+        "flavorText": "If you have to be stuck somewhere for a while, it's better to be stuck there with a friend.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/7/1724ec5b-5437-4688-aa10-b327a0ae2654.jpg?1783941093",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Frost Breath can target tapped creatures. If a targeted creature is already tapped when the spell resolves, that creature just remains tapped and doesn't untap during its controller's next untap step."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Gideon's Lawkeeper
 {
     "name": "Gideon's Lawkeeper",

@@ -2728,6 +2728,78 @@
     ]
 }
 
+// Double Vision
+{
+    "name": "Double Vision",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you cast your first instant or sorcery spell each turn, copy that spell. You may choose new targets for the copy.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Double Vision:1",
+                "trigger": "SpellCastEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "CopyTargetSpell",
+                    "target": "TriggeringEntity"
+                },
+                "triggerRestriction": {
+                    "type": "All",
+                    "conditions": [
+                        {
+                            "type": "EntityMatches",
+                            "entity": "TriggeringEntity",
+                            "filter": "instant|sorcery"
+                        },
+                        {
+                            "type": "Not",
+                            "condition": {
+                                "type": "PlayerCastSpellsThisTurn",
+                                "filter": "instant|sorcery",
+                                "atLeast": 2
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever you cast your first instant or sorcery spell each turn, copy that spell. You may choose new targets for the copy."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "rarity": "RARE",
+        "artist": "Heonhwa",
+        "flavorText": "\"Your eyes aren't playing tricks on you. I am.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/5/754b77b4-4cc4-4e49-a7a4-667401e7e063.jpg?1783930692",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "If you cast an instant or sorcery spell before Double Vision enters the battlefield during the same turn, its ability can't trigger that turn."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "A copy is created even if the spell that caused Double Vision's ability to trigger has been countered by the time that ability resolves. The copy resolves before the original spell."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If the spell that's copied is modal (that is, it says \"Choose one —\" or the like), the copy will have the same mode or modes. You can't choose different ones."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If the spell that's copied has an X whose value was determined as it was cast, the copy has the same value of X."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "The copy that Double Vision's ability creates is created on the stack, so it's not \"cast.\" Abilities that trigger when a player casts a spell won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Drowsing Tyrannodon
 {
     "name": "Drowsing Tyrannodon",
@@ -2893,6 +2965,256 @@
     ]
 }
 
+// Eliminate
+{
+    "name": "Eliminate",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target creature or planeswalker with mana value 3 or less.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|planeswalker mv<=3"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "97",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Cold",
+        "flavorText": "\"Cruelty? No. This is necessity.\"\n—Kaervek",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/8/f8eb4087-3a4c-4de8-8e29-f4cd71acb180.jpg?1783930710",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "The mana value of a token that isn't a copy of another object is 0. A token that is a copy of another object has the same mana cost as that object."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If a creature or planeswalker on the battlefield has {X} in its mana cost, X is considered to be 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Enthralling Hold
+{
+    "name": "Enthralling Hold",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nYou can't choose an untapped creature as this spell's target as you cast it.\nYou control enchanted creature.",
+    "script": {
+        "staticAbilities": [
+            "ControlEnchantedPermanent"
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        },
+        "auraCastTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature tapped"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "rarity": "UNCOMMON",
+        "artist": "Colin Boyer",
+        "flavorText": "\"I offered to pay him to do the job, but he refused. So I took matters into my own hands.\"\n—Tahim, the Puppetmaster",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/3/d3bc7176-abe0-47cf-a242-cf22a1f590be.jpg?1783930728",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "The middle ability of Enthralling Hold affects only the choice of target as the spell is cast. If the creature becomes untapped before the spell resolves, it still resolves. If a player is allowed to change the spell's target while it's on the stack, they may choose an untapped creature. If you put Enthralling Hold onto the battlefield without casting it, you may attach it to an untapped creature."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Gaining control of a permanent doesn't cause you to gain control of any Auras or Equipment attached to it. They'll remain attached, but an Aura's effect that affects \"you\" still affects its controller rather than you, the controller of an Equipment can move it during their next main phase, and so on."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Experimental Overload
+{
+    "name": "Experimental Overload",
+    "manaCost": "{2}{U}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create an X/X blue and red Weird creature token, where X is the number of instant and sorcery cards in your graveyard. Then you may return an instant or sorcery card from your graveyard to your hand. Exile Experimental Overload.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 0,
+                    "colors": [
+                        "BLUE",
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Weird"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/2/a/2a0d9c67-69ee-48c4-af4c-18cc3c2ef3cd.jpg?1783930589",
+                    "dynamicPower": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": "instant|sorcery"
+                    },
+                    "dynamicToughness": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": "instant|sorcery"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard",
+                        "filter": "instant|sorcery"
+                    },
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected2",
+                    "prompt": "You may return an instant or sorcery card from your graveyard to your hand",
+                    "selectedLabel": "Return to hand",
+                    "remainderLabel": "Leave in graveyard",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                }
+            ]
+        },
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "218",
+        "rarity": "UNCOMMON",
+        "artist": "Lie Setiawan",
+        "flavorText": "Explosions aren't necessarily failures, just a different kind of success.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/f/6f1bace4-a327-4eb6-a6ef-8394e76c06b7.jpg?1783930663",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "The value of X is determined only as Experimental Overload resolves. The Weird's power and toughness don't change if the number of instant and sorcery cards in your graveyard changes."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Because Experimental Overload is still on the stack while it's resolving, it doesn't count towards the value of X."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "You exile Experimental Overload even if you don't return a card to your hand."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
+// Falconer Adept
+{
+    "name": "Falconer Adept",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Whenever this creature attacks, create a 1/1 white Bird creature token with flying that's tapped and attacking.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Falconer Adept:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Bird"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/2/2/22e33dff-23d5-4f31-8dd6-270657e150d8.jpg?1783930594",
+                    "tapped": true,
+                    "attacking": true,
+                    "attackDefender": "CONTROLLER_CHOOSES"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "rarity": "UNCOMMON",
+        "artist": "Billy Christian",
+        "flavorText": "\"My falcons are family, as much as any other member of my clan.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/b/fb4733e6-6fe2-4460-ac9f-82feb583d790.jpg?1783930741",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "You choose which player or planeswalker the Bird token is attacking. It doesn't have to be attacking the same player or planeswalker that Falconer Adept is attacking."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Although the Bird is an attacking creature, it was never declared as an attacking creature. This means that abilities that trigger whenever a creature attacks won't trigger when it enters the battlefield attacking."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Feline Sovereign
 {
     "name": "Feline Sovereign",
@@ -3033,6 +3355,185 @@
     ]
 }
 
+// Finishing Blow
+{
+    "name": "Finishing Blow",
+    "manaCost": "{4}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target creature or planeswalker.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetCreatureOrPlaneswalker",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "artist": "Wylie Beckert",
+        "flavorText": "\"In this world, it's kill or be killed. I'd rather not be the latter.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2b85a552-2119-4d9c-b7c1-c09c2d9f2f38.jpg?1783930707"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Forgotten Sentinel
+{
+    "name": "Forgotten Sentinel",
+    "manaCost": "{4}",
+    "typeLine": "Artifact Creature — Golem",
+    "oracleText": "This creature enters tapped.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "231",
+        "artist": "Joe Slucher",
+        "flavorText": "It was built to withstand the ages, but no one remembers who built it or why it keeps its eternal watch.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3bd39a06-c53a-42c2-b2df-028358f03406.jpg?1783930657"
+    }
+}
+
+// Frantic Inventory
+{
+    "name": "Frantic Inventory",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Draw a card, then draw cards equal to the number of cards named Frantic Inventory in your graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": "name:Frantic Inventory"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "50",
+        "artist": "Aaron Miller",
+        "flavorText": "\"Another village, another angry mob. Why do I even bother unpacking?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8f14abb0-0e9f-448e-85d7-6cb71f756c56.jpg?1783930728",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Because Frantic Inventory is still on the stack while it's resolving, it doesn't count towards the number of cards you draw."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Fungal Rebirth
+{
+    "name": "Fungal Rebirth",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Return target permanent card from your graveyard to your hand. If a creature died this turn, create two 1/1 green Saproling creature tokens.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "CreatureDiedThisTurn"
+                    },
+                    "then": {
+                        "type": "CreateToken",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "GREEN"
+                        ],
+                        "creatureTypes": [
+                            "Saproling"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d71a5aa4-a960-4c42-b8ac-7003f6e83e95.jpg?1783930590"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "permanent own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "182",
+        "rarity": "UNCOMMON",
+        "artist": "Nicholas Gregory",
+        "flavorText": "\"We're all food for something in the end.\"\n—Cevraya, Golgari shaman",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/4037e3b2-cb62-4f88-943d-3edcd6827c23.jpg?1783930677",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "If a creature died this turn, you get Saproling tokens in addition to the permanent card being returned to your hand."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Fungal Rebirth checks only whether a creature died this turn. It doesn't give you additional Saprolings if more than one creature died."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Gadrak, the Crown-Scourge
 {
     "name": "Gadrak, the Crown-Scourge",
@@ -3106,6 +3607,56 @@
     ]
 }
 
+// Gale Swooper
+{
+    "name": "Gale Swooper",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Griffin",
+    "oracleText": "Flying\nWhen this creature enters, target creature gains flying until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gale Swooper:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "20",
+        "artist": "Johann Bodin",
+        "flavorText": "\"Be glad the griffin set you back on your feet when it was done with you. My goat wasn't so lucky.\"\n—Arram, goatherd",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d2e3b99c-e48e-4f4d-ba7a-e9218137b432.jpg?1783930741"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Garruk's Gorehorn
 {
     "name": "Garruk's Gorehorn",
@@ -3120,6 +3671,140 @@
         "artist": "Svetlin Velinov",
         "flavorText": "\"It certainly takes after its master: big and brutish, and you can smell it from a mile away.\"\n—Liliana Vess",
         "imageUri": "https://cards.scryfall.io/normal/front/3/9/3928bbce-87b7-4b28-9af4-20362935c909.jpg?1783930677"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Garruk's Harbinger
+{
+    "name": "Garruk's Harbinger",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "Hexproof from black\nWhenever this creature deals combat damage to a player or planeswalker, look at that many cards from the top of your library. You may reveal a creature card or Garruk planeswalker card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywordAbilities": [
+        {
+            "type": "Hexproof",
+            "scope": {
+                "type": "ProtectionScope.Color",
+                "color": "BLACK"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Garruk's Harbinger:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientAnyOf",
+                        "options": [
+                            {
+                                "type": "RecipientPlayer",
+                                "player": "Any"
+                            },
+                            {
+                                "type": "RecipientObject",
+                                "filter": "planeswalker"
+                            }
+                        ]
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "ContextProperty",
+                                    "key": "TRIGGER_DAMAGE_AMOUNT"
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsCreature",
+                                            {
+                                                "type": "And",
+                                                "predicates": [
+                                                    "IsPlaneswalker",
+                                                    {
+                                                        "type": "HasSubtype",
+                                                        "subtype": "Garruk"
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "prompt": "You may reveal a creature card or Garruk planeswalker card to put into your hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "185",
+        "rarity": "RARE",
+        "artist": "Lie Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9e0fa0b6-5f3f-4669-84e8-2c38c9593d88.jpg?1783930675",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Hexproof from black means that Garruk's Harbinger can't be the target of black spells your opponents control or abilities your opponents control of black sources."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If Garruk's Harbinger deals damage to a planeswalker greater than their loyalty or to a player greater than their life total, you look at a number of cards equal to that full amount of damage dealt, not just that loyalty or life total."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -3205,6 +3890,166 @@
             }
         ]
     },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Garruk, Savage Herald
+{
+    "name": "Garruk, Savage Herald",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Legendary Planeswalker — Garruk",
+    "oracleText": "+1: Reveal the top card of your library. If it's a creature card, put it into your hand. Otherwise, put it on the bottom of your library.\n−2: Target creature you control deals damage equal to its power to another target creature.\n−7: Until end of turn, creatures you control gain \"You may have this creature assign its combat damage as though it weren't blocked.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Garruk, Savage Herald:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "looked"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "looked",
+                            "filter": "creature",
+                            "storeMatching": "kept",
+                            "storeNonMatching": "rest"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Garruk, Savage Herald:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "damageSource": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    },
+                    {
+                        "type": "TargetOther",
+                        "baseRequirement": {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            }
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Garruk, Savage Herald:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantStaticAbility",
+                        "ability": "AssignCombatDamageAsUnblocked",
+                        "target": "IterationEntity"
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "336",
+        "rarity": "MYTHIC",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/8/48133629-4a5b-4c91-b496-2ee94f6cbc4c.jpg?1783930617",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "If either creature is an illegal target as Garruk's second ability tries to resolve, the creature you control won't deal damage to any creature."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "When assigning combat damage, you choose for each creature whether you want to assign its damage to the creature blocking it, or if you want to assign it to the player or planeswalker the creature is attacking. You can't split the damage assignment between them."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Garruk's last ability affects only creatures you control at the time it resolves. Creatures you begin to control later in the turn won't gain the ability."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
     "colorIdentityOverride": [
         "GREEN"
     ]

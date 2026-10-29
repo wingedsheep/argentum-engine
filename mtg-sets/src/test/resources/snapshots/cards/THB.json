@@ -1394,6 +1394,89 @@
     ]
 }
 
+// Furious Rise
+{
+    "name": "Furious Rise",
+    "manaCost": "{2}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your end step, if you control a creature with power 4 or greater, exile the top card of your library. You may play that card until you exile another card with this enchantment.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Furious Rise:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "impulseExiled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "impulseExiled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "impulseExiled",
+                            "expiry": "UntilSourceExilesAnother"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "creature pow>=4"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "rarity": "UNCOMMON",
+        "artist": "Chase Stone",
+        "flavorText": "Klothys set out to mend the destiny of Theros, her fury guiding every stitch.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/5/2531fb76-038b-49ab-b4d6-31b291faa7ca.jpg?1783931552",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "If you don't control a creature with power 4 or greater as your end step begins, Furious Rise's ability doesn't trigger. If you don't control one as the ability resolves, it has no effect. It doesn't have to be the same creature at both times, however."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Furious Rise's effect doesn't change when you can play the exiled card. For example, if you exile a sorcery card, you can cast it only during your main phase when the stack is empty. If you exile a land card, you can't play it unless you have land plays available."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If Furious Rise leaves the battlefield before you play the most recently exiled card, you can play that card for as long as it remains exiled."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Furious Rise's ability has you exile only one card, no matter how many creatures with power 4 or greater you control beyond the first."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Glory Bearers
 {
     "name": "Glory Bearers",
