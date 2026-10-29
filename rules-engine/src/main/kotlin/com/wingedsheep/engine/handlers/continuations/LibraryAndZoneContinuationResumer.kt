@@ -194,6 +194,12 @@ class LibraryAndZoneContinuationResumer(
             )
         )
 
+        // A tracked move ("put them on the bottom; if you did, …") publishes what it moved, the
+        // same as the move that never paused for the order.
+        continuation.storeMovedAs?.let {
+            newState = exposeCollectionsToNextFrame(newState, mapOf(it to orderedCards))
+        }
+
         return checkForMore(newState, events)
     }
 

@@ -76,6 +76,8 @@ data class SelectFromCollectionContinuation(
  * @property destinationPlayerId The player whose zone the cards go to
  * @property revealed Whether the move was public (MoveCollectionEffect.revealed), which decides
  *   who keeps knowing the cards once they are in the library
+ * @property storeMovedAs The move's `MoveCollectionEffect.storeMovedAs`: the ordered cards are
+ *   handed to the frame beneath under this name once placed, as the unpaused move would store them
  */
 @Serializable
 data class MoveCollectionOrderContinuation(
@@ -88,6 +90,7 @@ data class MoveCollectionOrderContinuation(
     val placement: com.wingedsheep.sdk.scripting.effects.ZonePlacement = com.wingedsheep.sdk.scripting.effects.ZonePlacement.Top,
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
     val revealed: Boolean = false,
+    val storeMovedAs: String? = null,
 ) : AnswerContinuation
 
 /**

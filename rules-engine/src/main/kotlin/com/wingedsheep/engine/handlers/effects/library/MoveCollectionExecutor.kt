@@ -108,7 +108,7 @@ class MoveCollectionExecutor(
                 val destPlayerId = resolvePlayer(destination.player, context, state)
                     ?: return EffectResult.error(state, "Could not resolve destination player for MoveCollection")
                 val chooserId = if (effect.order == CardOrder.OwnerChooses) destPlayerId else context.controllerId
-                return pauseForOrderDecision(state, context, emptyList(), Zone.LIBRARY, destPlayerId, destination.placement, chooserId, effect.revealed)
+                return pauseForOrderDecision(state, context, emptyList(), Zone.LIBRARY, destPlayerId, destination.placement, chooserId, effect.revealed, effect.storeMovedAs)
             }
             // Nothing to move, but for library shuffles we still shuffle (e.g., ShuffleGraveyardIntoLibrary
             // shuffles even when the graveyard is empty, per the card's rules text).
@@ -656,7 +656,7 @@ class MoveCollectionExecutor(
             val noOrderToChoose = cards.size == 1
             val alreadySeen = cards.isNotEmpty() && cards.all { it in shown }
             if (countHidden || ((!isBottom || cards.size > 1) && !(alreadySeen && noOrderToChoose))) {
-                return pauseForOrderDecision(state, context, cards, destZone, destPlayerId, destination.placement, chooserId, revealed)
+                return pauseForOrderDecision(state, context, cards, destZone, destPlayerId, destination.placement, chooserId, revealed, storeMovedAs)
             }
         }
 
@@ -696,7 +696,8 @@ class MoveCollectionExecutor(
         destPlayerId: EntityId,
         placement: ZonePlacement = ZonePlacement.Top,
         playerId: EntityId = context.controllerId,
-        revealed: Boolean = false
+        revealed: Boolean = false,
+        storeMovedAs: String? = null
     ): EffectResult {
 
         // Build card info map for the UI
@@ -745,7 +746,8 @@ class MoveCollectionExecutor(
             destinationZone = destZone,
             destinationPlayerId = destPlayerId,
             placement = placement,
-            revealed = revealed
+            revealed = revealed,
+            storeMovedAs = storeMovedAs
         )
 
         return EffectResult.from(state.suspendForDecision(decision, continuation))

@@ -35,6 +35,102 @@
     "colorIdentityOverride": []
 }
 
+// Commandeer
+{
+    "name": "Commandeer",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "You may exile two blue cards from your hand rather than pay this spell's mana cost.\nGain control of target noncreature spell. You may choose new targets for it. (If that spell is an artifact, enchantment, or planeswalker, the permanent enters under your control.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "ChangeTriggeringObjectTargets",
+                    "spell": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "noncreature",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ],
+        "selfAlternativeCost": {
+            "manaCost": "{0}",
+            "additionalCosts": [
+                {
+                    "type": "AdditionalAtom",
+                    "atom": {
+                        "type": "AtomExileFrom",
+                        "zone": "Hand",
+                        "filter": "blue",
+                        "count": 2
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "rarity": "RARE",
+        "artist": "John Matson",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7e6e6204-c622-4efe-ac4f-8195528cec9c.jpg?1783943362",
+        "rulings": [
+            {
+                "date": "2007-02-01",
+                "text": "If you Commandeer a spell for which buyback has been paid, the card returns to its owner's hand."
+            },
+            {
+                "date": "2006-07-15",
+                "text": "After Commandeer resolves, you control the targeted spell. Any instance of \"you\" in that spell's text now refers to you, \"an opponent\" refers to one of your opponents, and so on. The change of control happens before new targets are chosen, so any targeting restrictions such as \"target opponent\" or \"target creature you control\" are now made in reference to you, not the spell's original controller. You may either change those targets to be legal in reference to you, or, if those are the spell's only targets, the spell doesn't resolve for having illegal targets. When the spell resolves, any illegal targets are unaffected by it and you make all decisions the spell's effect calls for."
+            },
+            {
+                "date": "2006-07-15",
+                "text": "You may change any of the targeted spell's targets. If you change a target, you must choose a legal target for the spell. If you can't, you must leave the target the same (even if that target is now illegal)."
+            },
+            {
+                "date": "2006-07-15",
+                "text": "If the targeted spell has a triggered ability that copies it (for example, replicate or storm), the copies will be controlled by the player who cast that spell."
+            },
+            {
+                "date": "2006-07-15",
+                "text": "If you gain control of an instant or sorcery spell with Commandeer, it will still be put into its owner's graveyard when it resolves."
+            },
+            {
+                "date": "2006-07-15",
+                "text": "If you don't have two cards of the right color in your hand, you can't choose to cast the spell using the alternative cost."
+            },
+            {
+                "date": "2006-07-15",
+                "text": "You can't exile a card from your hand to pay for itself. At the time you would pay costs, that card is on the stack, not in your hand."
+            },
+            {
+                "date": "2006-07-15",
+                "text": "You may pay the alternative cost rather than the card's mana cost. Any additional costs are paid as normal."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Counterbalance
 {
     "name": "Counterbalance",
