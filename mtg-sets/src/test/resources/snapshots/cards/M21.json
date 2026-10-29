@@ -9262,6 +9262,185 @@
     ]
 }
 
+// Secure the Scene
+{
+    "name": "Secure the Scene",
+    "manaCost": "{4}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exile target nonland permanent. Its controller creates a 1/1 white Soldier creature token.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Soldier"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/b/1bdb2914-bba2-4cb6-802e-af2aeef46de8.jpg?1783930592",
+                    "controller": "TargetController"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "nonland permanent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "artist": "Zoltan Boros",
+        "flavorText": "\"You know it's a great show when the Azorius arrest the props, too!\"\n—Judith, the Scourge Diva",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d6467d96-e43a-4b1e-b6ce-578d991077b5.jpg?1783930734",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "If the target nonland permanent is an illegal target by the time Secure the Scene tries to resolve, the spell won't resolve. No player will create a Soldier token."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// See the Truth
+{
+    "name": "See the Truth",
+    "manaCost": "{1}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Look at the top three cards of your library. Put one of those cards into your hand and the rest on the bottom of your library in any order. If this spell was cast from anywhere other than your hand, put each of those cards into your hand instead.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "All",
+                    "conditions": [
+                        "WasCast",
+                        {
+                            "type": "Not",
+                            "condition": "WasCastFromHand"
+                        }
+                    ]
+                }
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "TopOfLibrary",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        },
+                        "storeAs": "gathered0"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "gathered0",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Hand"
+                        }
+                    }
+                ]
+            },
+            "otherwise": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "TopOfLibrary",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        },
+                        "storeAs": "looked"
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "looked",
+                        "selection": {
+                            "type": "ChooseExactly",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        "storeSelected": "kept",
+                        "storeRemainder": "rest",
+                        "selectedLabel": "Put in hand",
+                        "remainderLabel": "Put on bottom"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "kept",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Hand"
+                        }
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "rest",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Library",
+                            "placement": "Bottom"
+                        },
+                        "order": "ControllerChooses"
+                    }
+                ]
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "rarity": "RARE",
+        "artist": "Ekaterina Burmak",
+        "flavorText": "\"What is this that is neither future nor past?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/1/91af15cc-fdd5-4d72-a53a-314fa5353527.jpg?1783930719",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "See the Truth doesn't give you permission to cast it from a zone other than your hand. You'll need to find another way to do so."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If an effect copies See the Truth while it's on the stack, the copy wasn't cast at all, so you only get one of the cards it has you look at."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Selfless Savior
 {
     "name": "Selfless Savior",
@@ -9308,6 +9487,77 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Shacklegeist
+{
+    "name": "Shacklegeist",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Flying\nThis creature can block only creatures with flying.\nTap two untapped Spirits you control: Tap target creature you don't control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Shacklegeist:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomTapPermanents",
+                        "count": 2,
+                        "filter": "permanent Spirit"
+                    }
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Tap two untapped Spirits you control: Tap target creature you don't control."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CanOnlyBlockCreaturesWith",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "HasKeyword",
+                            "keyword": "FLYING"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "rarity": "RARE",
+        "artist": "Igor Kieryluk",
+        "flavorText": "The Blessed Sleep doesn't come easily to a mind chained by regrets.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/a/7a5a88e3-e73c-4b34-a645-06fe27e68cee.jpg?1783930719"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -9387,6 +9637,704 @@
     ]
 }
 
+// Siege Striker
+{
+    "name": "Siege Striker",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Double strike (This creature deals both first-strike and regular combat damage.)\nWhenever this creature attacks, you may tap any number of untapped creatures you control. This creature gets +1/+1 until end of turn for each creature tapped this way.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "DOUBLE_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Siege Striker:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "ControlledPermanents",
+                                "filter": "creature untapped ctrl:you"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected1",
+                            "prompt": "You may tap any number of untapped creatures you control",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "TapUntapCollection",
+                            "collectionName": "selected1"
+                        },
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "VariableReference",
+                                "variableName": "selected1_count"
+                            },
+                            "toughnessModifier": {
+                                "type": "VariableReference",
+                                "variableName": "selected1_count"
+                            },
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature attacks, you may tap any number of untapped creatures you control. This creature gets +1/+1 until end of turn for each creature tapped this way."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "rarity": "UNCOMMON",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/a/7a0ffa89-e6ee-466c-8edc-dd24c8b52e80.jpg?1783930733",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "You choose how many and which creatures to tap while Siege Striker's ability is resolving. No player may take other actions between the time you make this choice and the time Siege Striker's power and toughness are raised."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If an attacking creature with vigilance is tapped for Siege Striker's ability, that creature remains an attacking creature."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If Siege Striker gains vigilance and attacks or attacks and becomes untapped before its last ability resolves, it can be tapped for its own ability."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Once Siege Striker's ability has resolved, it keeps the power-and-toughness bonus even if some of the tapped creatures leave the battlefield or become untapped."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Sigiled Contender
+{
+    "name": "Sigiled Contender",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "This creature has lifelink as long as it has a +1/+1 counter on it. (Damage dealt by this creature also causes you to gain that much life.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "LIFELINK",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "323",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Vargas",
+        "flavorText": "\"All right. Warm-ups are over.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5ba81e67-8fa5-441c-bf14-2d75c168a617.jpg?1783930622"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Silversmote Ghoul
+{
+    "name": "Silversmote Ghoul",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Zombie Vampire",
+    "oracleText": "At the beginning of your end step, if you gained 3 or more life this turn, return this card from your graveyard to the battlefield tapped.\n{1}{B}, Sacrifice this creature: Draw a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Silversmote Ghoul:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Battlefield",
+                    "placement": "Tapped",
+                    "fromZone": "Graveyard"
+                },
+                "activeZones": [
+                    "Graveyard"
+                ],
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "LIFE_GAINED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "descriptionOverride": "At the beginning of your end step, if you gained 3 or more life this turn, return this card from your graveyard to the battlefield tapped."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Silversmote Ghoul:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "{1}{B}, Sacrifice this creature: Draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "rarity": "UNCOMMON",
+        "artist": "Bryan Sola",
+        "flavorText": "Being trapped between two forms of unlife is a fate worse than mere death.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff5444cb-0ecd-4482-a8d8-09332f382dbd.jpg?1783930700",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Silversmote Ghoul's first ability looks at how much life you've gained in the turn, even if it wasn't on the battlefield or in your graveyard when you gained life. It doesn't care if you also lost life, even if you lost more life than you gained."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If you haven't gained 3 life by the time your end step begins, Silversmote Ghoul's first ability won't trigger at all."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If Silversmote Ghoul isn't in your graveyard as your end step begins, its first ability won't trigger at all."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Skyway Sniper
+{
+    "name": "Skyway Sniper",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Elf Archer",
+    "oracleText": "Reach (This creature can block creatures with flying.)\n{2}{G}: This creature deals 1 damage to target creature with flying.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Skyway Sniper:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature kw:flying"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{2}{G}: This creature deals 1 damage to target creature with flying."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "206",
+        "rarity": "UNCOMMON",
+        "artist": "Even Amundsen",
+        "flavorText": "\"No sight is more beautiful than a clear sky.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/7/1776f5b4-1292-460f-9719-e1b603cee46c.jpg?1783930666"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Soul Sear
+{
+    "name": "Soul Sear",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Soul Sear deals 5 damage to target creature or planeswalker. That permanent loses indestructible until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "RemoveKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetCreatureOrPlaneswalker",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "160",
+        "rarity": "UNCOMMON",
+        "artist": "Mathias Kollros",
+        "flavorText": "There was no witty retort, no confident boast to accompany the attack. There was only pain.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/62584e4f-dac1-4d99-ac0a-6a2451603889.jpg?1783930684",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Soul Sear can target a creature or planeswalker that doesn't have indestructible."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Sparkhunter Masticore
+{
+    "name": "Sparkhunter Masticore",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Masticore",
+    "oracleText": "As an additional cost to cast this spell, discard a card.\nProtection from planeswalkers\n{1}: This creature deals 1 damage to target planeswalker.\n{3}: This creature gains indestructible until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.CardType",
+                "cardType": "Planeswalker"
+            }
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Sparkhunter Masticore:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "planeswalker"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{1}: This creature deals 1 damage to target planeswalker."
+            },
+            {
+                "id": "Sparkhunter Masticore:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "target": "Self"
+                },
+                "descriptionOverride": "{3}: This creature gains indestructible until end of turn."
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": "AtomDiscard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "240",
+        "rarity": "RARE",
+        "artist": "Randy Vargas",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/d/ad357ed4-b4f2-45b5-b7c4-3c6013a4ea3d.jpg?1783930654"
+    },
+    "colorIdentityOverride": []
+}
+
+// Speaker of the Heavens
+{
+    "name": "Speaker of the Heavens",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "Vigilance, lifelink (Attacking doesn't cause this creature to tap. Damage dealt by this creature also causes you to gain that much life.)\n{T}: Create a 4/4 white Angel creature token with flying. Activate only if you have at least 7 life more than your starting life total and only as a sorcery.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "VIGILANCE",
+        "LIFELINK"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Speaker of the Heavens:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Angel"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/9/e/9e12d954-3ec2-46e3-b01f-1fd63159e8a4.jpg?1783930594"
+                },
+                "timing": "SorcerySpeed",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "LifeTotal",
+                                "player": "You"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Add",
+                                "left": {
+                                    "type": "StartingLifeTotal",
+                                    "player": "You"
+                                },
+                                "right": {
+                                    "type": "Fixed",
+                                    "amount": 7
+                                }
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "{T}: Create a 4/4 white Angel creature token with flying. Activate only if you have at least 7 life more than your starting life total and only as a sorcery."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "rarity": "RARE",
+        "artist": "Randy Vargas",
+        "flavorText": "\"All are welcome in the angels' light.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/f/1f44b96a-8498-414a-a4ac-54c80dfa9f23.jpg?1783930732",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "In a Two-Headed Giant game, you can activate the ability only if your team's life total is at least 7 more than your team's starting life total."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Spined Megalodon
+{
+    "name": "Spined Megalodon",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Creature — Shark",
+    "oracleText": "Hexproof (This creature can't be the target of spells or abilities your opponents control.)\nWhenever this creature attacks, scry 1. (Look at the top card of your library. You may put that card on the bottom.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 7
+    },
+    "keywords": [
+        "HEXPROOF"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Spined Megalodon:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Scry",
+                    "count": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6d42d3dd-29df-44a1-89b8-994761eda77d.jpg?1783930718"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Spirit of Malevolence
+{
+    "name": "Spirit of Malevolence",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "When this creature dies, each opponent loses 1 life and you gain 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Spirit of Malevolence:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "331",
+        "artist": "Josu Hernaiz",
+        "flavorText": "Great evil weighs on the soul.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/f/cf3765b7-11e2-4837-b5e5-ca24adc0e33c.jpg?1783930618",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "If your life total is brought to 0 or less at the same time that Spirit of Malevolence is dealt lethal damage, you lose the game before its ability goes on the stack."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "In a Two-Headed Giant game, Spirit of Malevolence's ability causes the opposing team to lose 2 life and you to gain 1 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Sporeweb Weaver
+{
+    "name": "Sporeweb Weaver",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Spider",
+    "oracleText": "Reach, hexproof from blue\nWhenever this creature is dealt damage, you gain 1 life and create a 1/1 green Saproling creature token.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Hexproof",
+            "scope": {
+                "type": "ProtectionScope.Color",
+                "color": "BLUE"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sporeweb Weaver:1",
+                "trigger": "DamageReceivedEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "CreateToken",
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "GREEN"
+                            ],
+                            "creatureTypes": [
+                                "Saproling"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/d/7/d71a5aa4-a960-4c42-b8ac-7003f6e83e95.jpg?1783930590"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "208",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "flavorText": "It spins its web throughout the undercity, strange growths sprouting in its wake.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e6ab63c8-0adc-4d74-aee5-a58ce5c0dad8.jpg?1783930666",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Hexproof from blue means that Sporeweb Weaver can't be the target of blue spells your opponents control or abilities your opponents control of blue sources."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Sporeweb Weaver's last ability triggers just once, no matter how many things deal how much damage to it at once (most likely because two or more creatures blocked it)."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Sporeweb Weaver's last ability triggers even if the damage causes it to die."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Staunch Shieldmate
 {
     "name": "Staunch Shieldmate",
@@ -9404,6 +10352,167 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Storm Caller
+{
+    "name": "Storm Caller",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Ogre Shaman",
+    "oracleText": "When this creature enters, it deals 2 damage to each opponent.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Storm Caller:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "335",
+        "artist": "Manuel Castañón",
+        "flavorText": "He became elder shaman when his predecessor was mysteriously struck by lightning on a cloudless day.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1b6d123c-c16d-43fa-b183-8a59c7e1a11e.jpg?1783930617",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "In a Two-Headed Giant game, Storm Caller's ability causes the opposing team to lose 4 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Stormwing Entity
+{
+    "name": "Stormwing Entity",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "This spell costs {2}{U} less to cast if you've cast an instant or sorcery spell this turn.\nFlying\nProwess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)\nWhen this creature enters, scry 2.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "PROWESS"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Stormwing Entity:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Stormwing Entity:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Scry",
+                    "count": 2
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 2
+                },
+                "gating": {
+                    "type": "OnlyIf",
+                    "condition": {
+                        "type": "PlayerCastSpellsThisTurn",
+                        "filter": "instant|sorcery",
+                        "atLeast": 1
+                    }
+                }
+            },
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceColored",
+                    "symbols": "{U}"
+                },
+                "gating": {
+                    "type": "OnlyIf",
+                    "condition": {
+                        "type": "PlayerCastSpellsThisTurn",
+                        "filter": "instant|sorcery",
+                        "atLeast": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "73",
+        "rarity": "RARE",
+        "artist": "Caroline Gariba",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/5/0540ee72-6370-4f70-9526-6f441b3cac1e.jpg?1783930718",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying, add any cost increases, then apply any cost reductions (such as that of Stormwing Entity). The mana value of the spell remains unchanged, no matter what the total cost to cast it was."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Stormwing Entity's cost reduction applies even if the instant or sorcery spell you cast was countered or didn't resolve."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Stormwing Entity's cost reduction applies just once, no matter how many instant and sorcery spells you've cast this turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
