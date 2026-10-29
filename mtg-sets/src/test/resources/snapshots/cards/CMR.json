@@ -2466,6 +2466,58 @@
     ]
 }
 
+// Sphinx of the Second Sun
+{
+    "name": "Sphinx of the Second Sun",
+    "manaCost": "{6}{U}{U}",
+    "typeLine": "Creature — Sphinx",
+    "oracleText": "Flying\nAt the beginning of each of your postcombat main phases, there is an additional beginning phase after this phase. (The beginning phase includes the untap, upkeep, and draw steps.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sphinx of the Second Sun:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "POSTCOMBAT_MAIN"
+                },
+                "binding": "ANY",
+                "effect": "AddBeginningPhase"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "rarity": "MYTHIC",
+        "artist": "Antonio José Manzanedo",
+        "flavorText": "He watches in silence as the shadows shift, bringing Amonkhet ever nearer to the Hour of Revelation.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e68b70a6-a150-4d81-921c-9b178fe0037d.jpg?1783928849",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "The additional beginning phase all happens during the current turn. Any effects that last \"until your next turn\" or similar won't expire just because you'll go through an additional beginning phase."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "Even if you don't attack with any creatures during combat, you'll still get a postcombat main phase and Sphinx of the Second Sun's ability will still trigger."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "If multiple phases are added to the same point in your turn, the most recently created phase happens first."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Thalisse, Reverent Medium
 {
     "name": "Thalisse, Reverent Medium",

@@ -1444,6 +1444,51 @@
     ]
 }
 
+// Mirari's Wake
+{
+    "name": "Mirari's Wake",
+    "manaCost": "{3}{G}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Creatures you control get +1/+1.\nWhenever you tap a land for mana, add one mana of any type that land produced.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            {
+                "type": "AdditionalManaOnSourceTap",
+                "sourceFilter": "land ctrl:you"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "rarity": "RARE",
+        "artist": "David Martin",
+        "flavorText": "The land drank power from the Mirari as though it had thirsted forever.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5ddad46-5e2e-43c9-8c91-7aca6ca23562.jpg?1783945107",
+        "rulings": [
+            {
+                "date": "2021-06-18",
+                "text": "If tapping a land produces more than one type of mana, you choose one type that was produced and add one mana of that type."
+            },
+            {
+                "date": "2021-06-18",
+                "text": "If the mana produced by the land has any additional restrictions or riders, those restrictions or riders don't apply to the mana added by Mirari's Wake. You just get one mana of the appropriate type."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Nomad Mythmaker
 {
     "name": "Nomad Mythmaker",

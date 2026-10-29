@@ -498,6 +498,78 @@
     ]
 }
 
+// Chromatic Orrery
+{
+    "name": "Chromatic Orrery",
+    "manaCost": "{7}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "You may spend mana as though it were mana of any color.\n{T}: Add {C}{C}{C}{C}{C}.\n{5}, {T}: Draw a card for each color among permanents you control.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Chromatic Orrery:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Chromatic Orrery:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "permanent",
+                        "aggregation": "DISTINCT_COLORS"
+                    }
+                },
+                "descriptionOverride": "{5}, {T}: Draw a card for each color among permanents you control."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "SpendManaAsColor",
+                "fromColor": null,
+                "toColor": null
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "228",
+        "rarity": "MYTHIC",
+        "artist": "Volkan Baǵa",
+        "flavorText": "Visitors marvel at its design, unaware of the other world that inspired it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3af78d76-ad5c-44ba-880d-b834bcde5398.jpg?1783930659",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Chromatic Orrery's last ability can have you draw at most five cards. \"Colorless,\" \"artifact,\" and \"gold\" are not colors."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Conspicuous Snoop
 {
     "name": "Conspicuous Snoop",
