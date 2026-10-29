@@ -2,6 +2,9 @@ package com.wingedsheep.engine.mechanics.combat
 
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.event.GrantedStaticAbility
+import com.wingedsheep.engine.legalactions.LegalActionEnumerator
+import com.wingedsheep.engine.state.components.combat.GoadedComponent
+import com.wingedsheep.engine.state.components.combat.MustAttackPlayerComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -16,6 +19,7 @@ import com.wingedsheep.sdk.scripting.MustAttack
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
@@ -159,6 +163,42 @@ class PlayerHeldAttackTaxTest : FunSpec({
         driver.putPermanentOnBattlefield(driver.player2, "Test Prison")
         driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
 
+        driver.declareAttackers(driver.player1, emptyMap()).error shouldBe null
+    }
+
+    test("goad's \"a player other than the goader\" doesn't count a taxed player (CR 508.1d)") {
+        val driver = GameTestDriver()
+        driver.registerCards(TestCards.all)
+        driver.registerCards(listOf(walker, brute, prison))
+        val p = driver.initMultiplayer(decks = List(3) { Deck.of("Forest" to 40) }, startingPlayer = 0)
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val courser = driver.putCreatureOnBattlefield(p[0], "Centaur Courser")
+        driver.removeSummoningSickness(courser)
+        // Goaded by P2; P3 — the only player other than the goader — holds the tax.
+        driver.replaceState(driver.state.updateEntity(courser) { it.with(GoadedComponent(setOf(p[1]))) })
+        driver.grantTax(p[2])
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+
+        LegalActionEnumerator.create(driver.cardRegistry).enumerate(driver.state, p[0])
+            .single { it.actionType == "DeclareAttackers" }.mandatoryAttackers shouldBe listOf(courser)
+        driver.declareAttackers(p[0], emptyMap()).error shouldNotBe null
+        // Attacking the goader is the free way to obey goad — not a broken "other than" requirement.
+        driver.declareAttackers(p[0], mapOf(courser to p[1])).error shouldBe null
+    }
+
+    test("Taunt doesn't bind a creature that could attack the taunter only by paying") {
+        val driver = newDriver()
+        driver.readyCreature("Centaur Courser")
+        driver.replaceState(
+            driver.state.updateEntity(driver.player1) {
+                it.with(MustAttackPlayerComponent(defenderId = driver.player2, activeThisTurn = true))
+            }
+        )
+        driver.grantTax(driver.player2)
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+
+        LegalActionEnumerator.create(driver.cardRegistry).enumerate(driver.state, driver.player1)
+            .single { it.actionType == "DeclareAttackers" }.mandatoryAttackers shouldBe null
         driver.declareAttackers(driver.player1, emptyMap()).error shouldBe null
     }
 

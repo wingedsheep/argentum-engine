@@ -691,16 +691,16 @@ internal class PlayerActiveEffectsProjector(
      * this badge the attacker would only meet it at the payment prompt.
      */
     private fun attackTaxGrants(state: GameState, playerId: EntityId): List<ClientPlayerEffect> =
-        state.grantedStaticAbilities.mapIndexedNotNull { index, grant ->
-            val tax = grant.ability as? AttackTax ?: return@mapIndexedNotNull null
-            if (grant.entityId != playerId) return@mapIndexedNotNull null
+        // Indexed among this player's own taxes, so an unrelated grant expiring doesn't renumber it.
+        state.grantedStaticAbilities.filter { it.entityId == playerId && it.ability is AttackTax }.mapIndexed { index, grant ->
+            val tax = grant.ability as AttackTax
             val description = if (grant.duration is Duration.Permanent) {
                 tax.description.replaceFirstChar { it.uppercase() }
             } else {
                 "${grant.duration.description.replaceFirstChar { it.uppercase() }}, ${tax.description}"
             }
             ClientPlayerEffect(
-                effectId = "attack_tax_$index",
+                effectId = "attack_tax_${grant.sourceId?.value ?: "none"}_$index",
                 name = "Attack Tax",
                 description = description,
                 icon = "lock"

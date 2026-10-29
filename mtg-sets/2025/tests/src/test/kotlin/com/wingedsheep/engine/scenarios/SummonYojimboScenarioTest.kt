@@ -91,5 +91,22 @@ class SummonYojimboScenarioTest : ScenarioTestBase() {
                 game.findPermanent("Summon: Yojimbo") shouldBe null
             }
         }
+
+        test("chapter IV counts only opponents — your own 5/5 Saga doesn't make a Treasure") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardOnBattlefield(1, "Summon: Yojimbo")
+                .withCardOnBattlefield(2, "Grizzly Bears")
+                .withActivePlayer(1)
+                .inPhase(Phase.BEGINNING, Step.UPKEEP)
+                .apply { repeat(6) { withCardInLibrary(1, "Plains"); withCardInLibrary(2, "Forest") } }
+                .build()
+            game.setLore(3)
+
+            game.passUntilPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+            game.resolveStack()
+
+            game.findPermanents("Treasure").size shouldBe 0
+        }
     }
 }

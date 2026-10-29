@@ -135,7 +135,7 @@ internal class AttackPhaseManager(
         }
         val excused = (if (loneOnly.isEmpty()) emptySet() else LoneAttackers.excusedRequirements(
             attackers.keys, requiredAttackers(state, attackingPlayer), loneOnly
-        )) + attackersOnlyAtACost(state, attackingPlayer, getValidAttackers(state, attackingPlayer) - attackers.keys)
+        )) + attackersOnlyAtACost(state, attackingPlayer, (unexcusedRequiredAttackers(state, attackingPlayer).keys - attackers.keys).toList())
 
         // Check attacker-count caps — global (Dueling Grounds — "No more than one creature can
         // attack each combat") and per-defender (Tomik, Orzhov Lawmage). Both apply to the whole
@@ -934,16 +934,20 @@ internal class AttackPhaseManager(
 
         val requiredDefender = mustAttack.defenderId
         val validAttackers = getValidAttackers(state, attackingPlayer)
+        val projected = state.projectedState
+        // CR 508.1d: a creature that could attack the taunter only by paying a cost isn't bound.
+        fun bound(attackerId: EntityId) =
+            attacksFreely(state, projected, attackingPlayer, attackerId, requiredDefender)
 
         for (attackerId in validAttackers) {
-            if (attackerId !in attackers.keys && attackerId !in excused) {
+            if (attackerId !in attackers.keys && attackerId !in excused && bound(attackerId)) {
                 val cardName = state.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
                 return "$cardName must attack this turn (Taunt)"
             }
         }
 
         for ((attackerId, defenderId) in attackers) {
-            if (defenderId != requiredDefender) {
+            if (defenderId != requiredDefender && bound(attackerId)) {
                 val cardName = state.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
                 val defenderName = state.getEntity(requiredDefender)?.get<CardComponent>()?.name ?: "that player"
                 return "$cardName must attack $defenderName (Taunt)"
@@ -1133,10 +1137,9 @@ internal class AttackPhaseManager(
     ): Boolean {
         val broken = avoided.count { it == player }
         if (broken == 0) return false
-        val ctx = AttackCheckContext(state, projected, attackerId, attackingPlayer, cardRegistry)
         return opponents.any { other ->
             other != player && avoided.count { it == other } < broken &&
-                attackDefenderRules.all { rule -> rule.check(ctx, other) == null }
+                attacksFreely(state, projected, attackingPlayer, attackerId, other)
         }
     }
 
@@ -1214,11 +1217,7 @@ internal class AttackPhaseManager(
         if (breaksAvoidableRequirement(state, projected, attackingPlayer, attackerId, player, avoided, opponents)) {
             return false
         }
-        val ctx = AttackCheckContext(state, projected, attackerId, attackingPlayer, cardRegistry)
-        return defenders.any { defenderId ->
-            attackDefenderRules.all { it.check(ctx, defenderId) == null } &&
-                calculateTotalAttackTax(state, mapOf(attackerId to defenderId), projected) == 0
-        }
+        return defenders.any { defenderId -> attacksFreely(state, projected, attackingPlayer, attackerId, defenderId) }
     }
 
     /**
@@ -1283,11 +1282,8 @@ internal class AttackPhaseManager(
         for ((attackerId, defenderId) in attackers) {
             if (state.getEntity(defenderId)?.has<LifeTotalComponent>() == true) continue
             if (!mustAttackAPlayer(state, attackerId)) continue
-            val ctx = AttackCheckContext(
-                state, projected, attackerId, attackingPlayer, cardRegistry
-            )
             val canAttackAPlayer = opponents.any { playerId ->
-                attackDefenderRules.all { rule -> rule.check(ctx, playerId) == null }
+                attacksFreely(state, projected, attackingPlayer, attackerId, playerId)
             }
             if (canAttackAPlayer) {
                 val cardName = state.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
@@ -1357,6 +1353,13 @@ internal class AttackPhaseManager(
      * "can only attack alone" (CR 508.1d) — see [getMandatoryAttackers].
      */
     private fun requiredAttackers(state: GameState, attackingPlayer: EntityId): Map<EntityId, Int> {
+        val mandatory = unexcusedRequiredAttackers(state, attackingPlayer).toMutableMap()
+        mandatory.keys.removeAll(attackersOnlyAtACost(state, attackingPlayer, mandatory.keys.toList()))
+        return mandatory
+    }
+
+    /** [requiredAttackers] before the CR 508.1d cost excusal ([attackersOnlyAtACost]). */
+    private fun unexcusedRequiredAttackers(state: GameState, attackingPlayer: EntityId): Map<EntityId, Int> {
         val validAttackers = getValidAttackers(state, attackingPlayer)
         // Creature → how many "attacks if able" requirements it carries (CR 508.1d counts
         // requirements, not creatures).
@@ -1368,7 +1371,10 @@ internal class AttackPhaseManager(
         // 1. MustAttackPlayerComponent (Taunt effect) — all valid attackers must attack
         val mustAttackPlayer = state.getEntity(attackingPlayer)?.get<MustAttackPlayerComponent>()
         if (mustAttackPlayer != null && mustAttackPlayer.activeThisTurn) {
-            validAttackers.forEach { require(it) }
+            // Only creatures that could attack the taunter without paying a cost (CR 508.1d).
+            val projected = state.projectedState
+            validAttackers.filter { attacksFreely(state, projected, attackingPlayer, it, mustAttackPlayer.defenderId) }
+                .forEach { require(it) }
         }
 
         // 2. A requirement marked on the creature (Walking Desecration, Sizzling Soloist)
@@ -1399,7 +1405,6 @@ internal class AttackPhaseManager(
         // 5. A requirement naming the player to attack (Public Enemy), where it binds
         boundAttackDefenders(state, attackingPlayer, goadRules = goadRules).keys.forEach { require(it) }
 
-        mandatory.keys.removeAll(attackersOnlyAtACost(state, attackingPlayer, mandatory.keys.toList()))
         return mandatory
     }
 
@@ -1418,20 +1423,32 @@ internal class AttackPhaseManager(
     ): Set<EntityId> {
         if (candidates.isEmpty()) return emptySet()
         val projected = state.projectedState
-        val opponents = CombatDefenders.legalDefendingPlayers(state, attackingPlayer)
-        val defenders = opponents.toList() + state.getBattlefield().filter { entityId ->
-            when {
-                projected.isBattle(entityId) -> Battles.canBeAttackedBy(state, entityId, attackingPlayer, opponents)
-                projected.isPlaneswalker(entityId) -> projected.getController(entityId) in opponents
-                else -> false
-            }
-        }
+        val defenders = CombatDefenders.attackTargets(state, projected, attackingPlayer)
         return candidates.filterTo(mutableSetOf()) { attackerId ->
             if (AttackSacrificeCosts.requirementFor(state, attackerId, cardRegistry) != null) return@filterTo true
             val ctx = AttackCheckContext(state, projected, attackerId, attackingPlayer, cardRegistry)
             val legal = defenders.filter { defenderId -> attackDefenderRules.all { it.check(ctx, defenderId) == null } }
             legal.isNotEmpty() && legal.none { calculateTotalAttackTax(state, mapOf(attackerId to it), projected) == 0 }
         }
+    }
+
+    /**
+     * Whether [attackerId] may attack [defenderId] at no cost — legal under the per-defender rules,
+     * untaxed, and with no sacrifice demanded. CR 508.1d: only such an attack counts as "able" for
+     * a requirement, so every check that weighs one defender against another ("a player other than
+     * X", "a player", Taunt's player) asks this rather than legality alone.
+     */
+    private fun attacksFreely(
+        state: GameState,
+        projected: ProjectedState,
+        attackingPlayer: EntityId,
+        attackerId: EntityId,
+        defenderId: EntityId,
+    ): Boolean {
+        if (AttackSacrificeCosts.requirementFor(state, attackerId, cardRegistry) != null) return false
+        val ctx = AttackCheckContext(state, projected, attackerId, attackingPlayer, cardRegistry)
+        return attackDefenderRules.all { it.check(ctx, defenderId) == null } &&
+            calculateTotalAttackTax(state, mapOf(attackerId to defenderId), projected) == 0
     }
 
     // =========================================================================

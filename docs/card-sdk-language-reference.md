@@ -11118,8 +11118,13 @@ in the declare-blockers step, even before the turn-based block action has comple
     same tax granted to the player: `Effects.GrantStaticAbility(AttackTax(DynamicAmounts.fixed(2)),
     EffectTarget.Controller, Duration.UntilYourNextTurn)`. `CombatTaxes.attackTax` prices
     player-held grants exactly like a printed tax on a permanent that player controls, so the tax
-    outlives its source, is skipped for must-attack creatures (CR 508.1d), and shows as an
+    outlives its source, and shows as an
     "Attack Tax" badge on the player until the granting player's next turn begins.
+  - **Taxes and attack requirements (CR 508.1d).** A player is never required to pay a cost to obey
+    a requirement, printed tax or granted: a creature that "attacks each combat if able" (or is
+    goaded, taunted, or must attack a player) need not attack when every defender it could attack
+    would tax it or the attack demands a sacrifice, and a directed requirement ("a player other
+    than X", "a player", Taunt's player) only counts a defender it could attack for free.
 - `BlockTax(amountPerBlocker: DynamicAmount, condition: Condition? = null)` — Archangel of Tithes'
   second ability ("creatures can't block unless their controller pays {1} for each of those
   creatures"). A *global* per-blocker generic-mana tax: while any permanent with this ability — whose

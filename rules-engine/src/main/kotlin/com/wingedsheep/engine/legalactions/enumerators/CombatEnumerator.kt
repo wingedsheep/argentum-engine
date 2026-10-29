@@ -55,22 +55,10 @@ class CombatEnumerator : ActionEnumerator {
             if (!attackersAlreadyDeclared) {
                 val validAttackers = context.turnManager.getValidAttackers(state, playerId)
                 val projected = context.projected
-                // Opponents this player may attack under the game's AttackMode (CR 802 / 803).
-                // A planeswalker is attackable iff its controller is one of those opponents; a
-                // battle iff its *protector* is (CR 310.9b), which is why a Siege the attacking
-                // player controls themselves shows up here once an opponent protects it.
-                val attackableOpponents = com.wingedsheep.engine.mechanics.combat.CombatDefenders
-                    .legalDefendingPlayers(state, playerId)
-                val attackablePermanents = state.getBattlefield().filter { entityId ->
-                    when {
-                        projected.isBattle(entityId) -> com.wingedsheep.engine.mechanics.battle.Battles
-                            .canBeAttackedBy(state, entityId, playerId, attackableOpponents)
-                        projected.isPlaneswalker(entityId) ->
-                            projected.getController(entityId) in attackableOpponents
-                        else -> false
-                    }
-                }
-                val validAttackTargets = attackableOpponents.toList() + attackablePermanents
+                // Opponents this player may attack under the game's AttackMode (CR 802 / 803), their
+                // planeswalkers, and the battles they protect.
+                val validAttackTargets = com.wingedsheep.engine.mechanics.combat.CombatDefenders
+                    .attackTargets(state, projected, playerId)
                 // CR 508.1b–c — each attacker picks its own defender, and per-defender
                 // restrictions (Goblin Rock Sled's "unless defending player controls a Mountain",
                 // Blazing Archon's "creatures can't attack you") rule out single defenders. Run the

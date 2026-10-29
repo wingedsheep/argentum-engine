@@ -88,6 +88,24 @@ object CombatDefenders {
         }
 
     /**
+     * Everything [attackingPlayer] may declare an attack on this combat, before any per-creature
+     * rule narrows it: the [legalDefendingPlayers], then the planeswalkers they control and the
+     * battles they protect (CR 310.9b — which is why a Siege the attacking player controls
+     * themselves appears once an opponent protects it).
+     */
+    fun attackTargets(state: GameState, projected: ProjectedState, attackingPlayer: EntityId): List<EntityId> {
+        val opponents = legalDefendingPlayers(state, attackingPlayer)
+        return opponents.toList() + state.getBattlefield().filter { entityId ->
+            when {
+                projected.isBattle(entityId) ->
+                    com.wingedsheep.engine.mechanics.battle.Battles.canBeAttackedBy(state, entityId, attackingPlayer, opponents)
+                projected.isPlaneswalker(entityId) -> projected.getController(entityId) in opponents
+                else -> false
+            }
+        }
+    }
+
+    /**
      * True if a creature [controllerId] puts onto the battlefield attacking may attack
      * [defenderId] (CR 508.4 / 506.3c): a defending player still in the game, a planeswalker on the
      * battlefield controlled by a defending player, or a battle on the battlefield protected by a
