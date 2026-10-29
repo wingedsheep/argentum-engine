@@ -6652,6 +6652,106 @@
     ]
 }
 
+// Malefic Scythe
+{
+    "name": "Malefic Scythe",
+    "manaCost": "{1}{B}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "This Equipment enters with a soul counter on it.\nEquipped creature gets +1/+1 for each soul counter on this Equipment.\nWhenever equipped creature dies, put a soul counter on this Equipment.\nEquip {1}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Malefic Scythe:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "SOUL",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Malefic Scythe:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                },
+                "powerBonus": {
+                    "type": "EntityProperty",
+                    "entity": "Self",
+                    "numericProperty": {
+                        "type": "CounterCount",
+                        "counterType": "SOUL"
+                    }
+                },
+                "toughnessBonus": {
+                    "type": "EntityProperty",
+                    "entity": "Self",
+                    "numericProperty": {
+                        "type": "CounterCount",
+                        "counterType": "SOUL"
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "SOUL",
+                "count": 1,
+                "selfOnly": true
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "112",
+        "rarity": "UNCOMMON",
+        "artist": "Joe Slucher",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/89e2bc57-8f18-4ba1-a11b-9d69d029f56a.jpg?1783930705"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Mangara, the Diplomat
 {
     "name": "Mangara, the Diplomat",
@@ -6729,6 +6829,57 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Masked Blackguard
+{
+    "name": "Masked Blackguard",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "Flash (You may cast this spell any time you could cast an instant.)\n{2}{B}: This creature gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Masked Blackguard:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "This creature gets +1/+1 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "artist": "Bryan Sola",
+        "flavorText": "Her footsteps are whispers, her passage a last breath.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d61b4b71-3cbb-4422-8ce7-657ca3bb6a82.jpg?1783930702"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -6848,6 +6999,96 @@
     "colorIdentityOverride": []
 }
 
+// Miscast
+{
+    "name": "Miscast",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target instant or sorcery spell unless its controller pays {3}.",
+    "script": {
+        "spellEffect": {
+            "type": "Counter",
+            "condition": {
+                "type": "CounterCondition.UnlessPaysMana",
+                "cost": "{3}"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "instant|sorcery",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "rarity": "UNCOMMON",
+        "artist": "Steve Argyle",
+        "flavorText": "\"Next time, try something more appropriate for your skill level.\"\n—Barrin, Tolarian archmage",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/033afbd5-9937-4957-98ba-48e469a490bb.jpg?1783930726"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Mistral Singer
+{
+    "name": "Mistral Singer",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Siren",
+    "oracleText": "Flying\nProwess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "PROWESS"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mistral Singer:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "58",
+        "artist": "Ryan Yee",
+        "flavorText": "\"I sang of storms, there came a squall. I sang of waves, the seas grew tall. I sang of love, but no voice called.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d961c441-b76b-4bd8-b510-a3e073207a1b.jpg?1783930725"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Mystic Skyfish
 {
     "name": "Mystic Skyfish",
@@ -6894,6 +7135,384 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Necromentia
+{
+    "name": "Necromentia",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose a card name other than a basic land card name. Search target opponent's graveyard, hand, and library for any number of cards with that name and exile them. That player shuffles, then creates a 2/2 black Zombie creature token for each card exiled from their hand this way.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ChooseOption",
+                    "optionType": "CARD_NAME",
+                    "storeAs": "cardName0",
+                    "prompt": "Choose a card name other than a basic land card name",
+                    "excludedOptions": [
+                        "Plains",
+                        "Island",
+                        "Swamp",
+                        "Mountain",
+                        "Forest"
+                    ]
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromMultipleZones",
+                        "zones": [
+                            "Graveyard",
+                            "Hand",
+                            "Library"
+                        ],
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "filter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "NameEqualsChosen",
+                                    "variableName": "cardName0"
+                                }
+                            ]
+                        }
+                    },
+                    "storeAs": "gathered1",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": "ChooseAnyNumber",
+                    "storeSelected": "selected2",
+                    "prompt": "Choose any number of cards with that name to exile",
+                    "showAllCards": true,
+                    "alwaysPrompt": true
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "selected2",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "InZone",
+                                "zone": "Hand"
+                            }
+                        ]
+                    },
+                    "storeMatching": "matching3"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                {
+                    "type": "ShuffleLibrary",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "VariableReference",
+                        "variableName": "matching3_count"
+                    },
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/3/f/3f170f84-6c36-43e2-91e6-3c7a136944b1.jpg?1783930590",
+                    "controller": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "116",
+        "rarity": "RARE",
+        "artist": "Mila Pesic",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/32c5252e-ff15-4f86-ad63-d8286427e70f.jpg?1783930700"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Niambi, Esteemed Speaker
+{
+    "name": "Niambi, Esteemed Speaker",
+    "manaCost": "{W}{U}",
+    "typeLine": "Legendary Creature — Human Cleric",
+    "oracleText": "Flash\nWhen Niambi enters, you may return another target creature you control to its owner's hand. If you do, you gain life equal to that creature's mana value.\n{1}{W}{U}, {T}, Discard a legendary card: Draw two cards.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Niambi, Esteemed Speaker:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "StoreNumber",
+                                "name": "number0",
+                                "amount": {
+                                    "type": "EntityProperty",
+                                    "entity": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "numericProperty": "ManaValue"
+                                }
+                            },
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Hand"
+                            },
+                            {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "VariableReference",
+                                    "variableName": "number0"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Niambi, Esteemed Speaker:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{W}{U}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomDiscard",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsLegendary"
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "descriptionOverride": "Draw two cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "222",
+        "rarity": "RARE",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e21827eb-fa49-4784-a86b-aef164a5018e.jpg?1783930660",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "If a creature on the battlefield has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If the target creature is an illegal target by the time Niambi's triggered ability tries to resolve, the ability won't resolve. You won't return the card from the zone it moved to or gain any life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
+// Obsessive Stitcher
+{
+    "name": "Obsessive Stitcher",
+    "manaCost": "{1}{U}{B}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "{T}: Draw a card, then discard a card.\n{2}{U}{B}, {T}, Sacrifice this creature: Return target creature card from your graveyard to the battlefield.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Obsessive Stitcher:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "{T}: Draw a card, then discard a card."
+            },
+            {
+                "id": "Obsessive Stitcher:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{U}{B}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{2}{U}{B}, {T}, Sacrifice this creature: Return target creature card from your graveyard to the battlefield."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "223",
+        "rarity": "UNCOMMON",
+        "artist": "Joe Slucher",
+        "flavorText": "No one is as dedicated to perfection as a stitcher working on their latest masterpiece.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/4/e449f985-d149-49eb-87d9-7a325215f82d.jpg?1783930661",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Obsessive Stitcher can't be the target of its last ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 
@@ -7114,6 +7733,135 @@
     ]
 }
 
+// Pestilent Haze
+{
+    "name": "Pestilent Haze",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• All creatures get -2/-2 until end of turn.\n• Remove two loyalty counters from each planeswalker.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature"
+                            }
+                        },
+                        "body": {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": -2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": -2
+                            },
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "description": "All creatures get -2/-2 until end of turn."
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "planeswalker"
+                            }
+                        },
+                        "body": {
+                            "type": "RemoveCounters",
+                            "counterType": "LOYALTY",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "description": "Remove two loyalty counters from each planeswalker."
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "118",
+        "rarity": "UNCOMMON",
+        "artist": "Sidharth Chaturvedi",
+        "flavorText": "\"Your crops will rot. The air itself will turn against you. You will suffer as I have suffered.\"\n—Karaz, outcast",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/08b78aa8-a63a-4aa2-bb82-3fbf2595ed7c.jpg?1783930701",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Pestilent Haze's first mode affects only creatures on the battlefield at the time it resolves. Creatures that enter the battlefield later in the turn won't get -2/-2."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Predatory Wurm
+{
+    "name": "Predatory Wurm",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Wurm",
+    "oracleText": "Vigilance (Attacking doesn't cause this creature to tap.)\nThis creature gets +2/+2 as long as you control a Garruk planeswalker.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 2,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "planeswalker Garruk"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "338",
+        "rarity": "UNCOMMON",
+        "artist": "Jason A. Engle",
+        "flavorText": "\"The strong eat. The weak are eaten. That's the way of things.\"\n—Garruk Wildspeaker",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/4073cbc6-11de-4d4a-bcd7-792f9b7c5219.jpg?1783930615",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Because damage remains marked on a creature until the damage is removed as the turn ends, nonlethal damage dealt to Predatory Wurm may become lethal if you controlled a Garruk planeswalker and he leaves the battlefield during that turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Pridemalkin
 {
     "name": "Pridemalkin",
@@ -7239,6 +7987,159 @@
         "imageUri": "https://cards.scryfall.io/normal/front/1/c/1cd8cee8-7ea0-4037-8a3b-39334dc064fb.jpg"
     },
     "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Pursued Whale
+{
+    "name": "Pursued Whale",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Creature — Whale",
+    "oracleText": "When this creature enters, each opponent creates a 1/1 red Pirate creature token with \"This token can't block\" and \"Creatures you control attack each combat if able.\"\nSpells your opponents cast that target this creature cost {3} more to cast.",
+    "creatureStats": {
+        "power": 8,
+        "toughness": 8
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pursued Whale:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Pirate"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/d/a/da3002d9-7754-4c7f-a051-382cd7a86e80.jpg?1783930590",
+                    "controller": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    },
+                    "staticAbilities": [
+                        "CantBlock",
+                        {
+                            "type": "MustAttack",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "OpponentsCastTargeting",
+                    "targetFilter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "modification": {
+                    "type": "IncreaseGeneric",
+                    "amount": 3
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "rarity": "RARE",
+        "artist": "Jonathan Kuo",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/1/b1501118-5837-49b5-9446-0bc3032035ca.jpg?1783930724",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "If a creature affected by the Pirate token can't attack for any reason (such as being tapped or having come under that player's control that turn), then it doesn't attack. If there's a cost associated with having it attack, the player isn't forced to pay that cost, so it doesn't have to attack in that case either."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying, add any cost increases (such as that of Pursued Whale), then apply any cost reductions. The mana value of the spell remains unchanged, no matter what the total cost to cast it was."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Radha, Heart of Keld
+{
+    "name": "Radha, Heart of Keld",
+    "manaCost": "{1}{R}{G}",
+    "typeLine": "Legendary Creature — Elf Warrior",
+    "oracleText": "During your turn, Radha has first strike.\nYou may look at the top card of your library any time, and you may play lands from the top of your library.\n{4}{R}{G}: Radha gets +X/+X until end of turn, where X is the number of lands you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Radha, Heart of Keld:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{R}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land"
+                    },
+                    "toughnessModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land"
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "{4}{R}{G}: Radha gets +X/+X until end of turn, where X is the number of lands you control."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "IsYourTurn"
+            },
+            "LookAtTopOfLibrary",
+            {
+                "type": "PlayLandsAndCastFilteredFromTopOfLibrary",
+                "spellFilter": null
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "224",
+        "rarity": "RARE",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2bbd37b1-49cb-4295-9a1f-fb85368a8f12.jpg?1783930660"
+    },
+    "colorIdentityOverride": [
+        "RED",
         "GREEN"
     ]
 }

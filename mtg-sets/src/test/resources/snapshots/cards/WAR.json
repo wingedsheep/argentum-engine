@@ -4321,6 +4321,59 @@
     ]
 }
 
+// Makeshift Battalion
+{
+    "name": "Makeshift Battalion",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Battalion — Whenever this creature and at least two other creatures attack, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Makeshift Battalion:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        {
+                            "type": "AttackerCountAtLeast",
+                            "n": 3
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "artist": "Zoltan Boros",
+        "flavorText": "Their ranks are thin, their formation is improvised, their weapons are borrowed, and you'd best get out of their way.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/2/82293d58-d3b4-4cf6-8a16-32ae3e509696.jpg?1783933479",
+        "rulings": [
+            {
+                "date": "2024-01-12",
+                "text": "Makeshift Battalion and the other attacking creatures don't have to be attacking the same player, planeswalker, or battle."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Once Makeshift Battalion's ability has triggered, it doesn't matter how many creatures are still attacking when that ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Mana Geode
 {
     "name": "Mana Geode",
