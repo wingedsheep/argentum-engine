@@ -48,6 +48,30 @@ class EmptyTheLaboratoryScenarioTest : ScenarioTestBase() {
             game.librarySize(1) shouldBe 3
         }
 
+        test("an Aura on the Zombie is not offered for sacrifice") {
+            val game = scenario()
+                .withPlayers("Player1", "Player2")
+                .withCardInHand(1, "Empty the Laboratory")
+                .withCardOnBattlefield(1, "Walking Corpse")
+                .withCardAttachedTo(2, "Pacifism", "Walking Corpse")
+                .withLandsOnBattlefield(1, "Island", 3)
+                .withCardInLibrary(1, "Scathe Zombies")
+                .withCardInLibrary(1, "Scathe Zombies")
+                .withCardInLibrary(2, "Island")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            game.castXSpell(1, "Empty the Laboratory", 1).error shouldBe null
+            game.resolveStack()
+
+            // The only choice is the Zombie itself; one sacrificed → one Zombie card revealed.
+            game.state.pendingDecision shouldBe null
+            game.isOnBattlefield("Walking Corpse") shouldBe false
+            game.findAllPermanents("Scathe Zombies").size shouldBe 1
+            game.librarySize(1) shouldBe 1
+        }
+
         test("with no Zombies to sacrifice, nothing is revealed") {
             val game = scenario()
                 .withPlayers("Player1", "Player2")

@@ -166,8 +166,7 @@
                     "source": {
                         "type": "BattlefieldMatching",
                         "filter": "permanent Zombie",
-                        "player": "You",
-                        "includeAttachments": true
+                        "player": "You"
                     },
                     "storeAs": "gathered0"
                 },

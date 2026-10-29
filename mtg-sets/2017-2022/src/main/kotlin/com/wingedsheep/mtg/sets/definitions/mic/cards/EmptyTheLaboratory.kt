@@ -38,7 +38,6 @@ val EmptyTheLaboratory = card("Empty the Laboratory") {
             val zombies = gather(
                 GameObjectFilter.Permanent.withSubtype(Subtype.ZOMBIE),
                 player = Player.You,
-                includeAttachments = true,
             )
             val chosen = chooseExactly(
                 DynamicAmounts.xValue(),
