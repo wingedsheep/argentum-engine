@@ -600,7 +600,11 @@ class TurnManager(
         if (currentStep == Step.UPKEEP) {
             state = cleanupPhaseManager.expireEndOfYourNextUpkeepEffects(state, activePlayer)
             state = ControlHistory.endUpkeep(state, state.sharedTurnTeam(activePlayer))
-            if (state.getEntity(activePlayer)?.has<UpkeepStepEndedThisTurnComponent>() != true) {
+            // An upkeep that actually happened is over: later upkeeps this turn are not its first
+            // (IsFirstUpkeepStepOfTurn). A skipped one doesn't count, as for combat above.
+            if (!skipsTurnPart(state, Step.UPKEEP, activePlayer) &&
+                state.getEntity(activePlayer)?.has<UpkeepStepEndedThisTurnComponent>() != true
+            ) {
                 state = state.updateEntity(activePlayer) { it.with(UpkeepStepEndedThisTurnComponent) }
             }
         }

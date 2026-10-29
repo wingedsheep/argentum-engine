@@ -4314,7 +4314,8 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   untap or draw step between them, and the turn goes on to its draw step afterwards (or back to the
   postcombat main phase from an Obeka upkeep). Accumulates an `AdditionalUpkeepStepsAfterStepComponent`
   count on the active player, drained by `TurnManager.advanceStep` when leaving the upkeep step;
-  upkeep triggers fire again in each. Gate a rider that re-triggers in it on
+  upkeep triggers fire again in each. Use it only from an upkeep-step trigger (a count queued
+  elsewhere waits for the next upkeep step of the turn, or is dropped at cleanup). Gate a rider that re-triggers in it on
   `Conditions.IsFirstUpkeepStepOfTurn`.
 - `Effects.AddAdditionalEndSteps(amount)` (`amount: DynamicAmount` or `Int`, default `1`) — insert
   `amount` additional end step(s) directly after the current end step (Y'shtola Rhul: "there is an

@@ -301,7 +301,8 @@ data object AddBeginningPhaseEffect : Effect {
 
 /**
  * Give the controller additional upkeep steps after the current phase
- * (Obeka, Splitter of Seconds: "you get that many additional upkeep steps after this phase").
+ * (Obeka, Splitter of Seconds: "you get that many additional upkeep steps after this phase"), or,
+ * with [afterThisStep], directly after the current upkeep step (Paradox Haze).
  *
  * Per CR 500.10, adding an upkeep step after a phase creates the beginning phase that normally
  * contains the upkeep step, with its untap and draw steps skipped. The phases are inserted after
@@ -312,7 +313,8 @@ data object AddBeginningPhaseEffect : Effect {
  * With [afterThisStep] the steps are instead added directly after the current upkeep step
  * (Paradox Haze: "that player gets an additional upkeep step after this step"). Per CR 500.9 that
  * inserts a bare upkeep step into the same beginning phase — no new phase — and the turn then goes
- * on to its draw step. Guard a rider that re-triggers in it with
+ * on to its draw step. Only meaningful while resolving during an upkeep step — the count is drained
+ * when an upkeep step ends, and dropped at cleanup if none does. Guard a rider that re-triggers in it with
  * [com.wingedsheep.sdk.scripting.conditions.IsFirstUpkeepStepOfTurn].
  *
  * Always added to the active player's turn: the effects that use this resolve on the turn of the

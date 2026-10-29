@@ -83,9 +83,29 @@ class ParadoxHazeScenarioTest : FunSpec({
 
         driver.passPriorityUntil(Step.UPKEEP, me)
         val lifeBefore = driver.getLifeTotal(me)
+        val handBefore = driver.getHandSize(me)
         driver.passPriorityUntil(Step.DRAW, me)
 
         driver.getLifeTotal(me) shouldBe lifeBefore + 2
+        driver.getHandSize(me) shouldBe handBefore + 1
+    }
+
+    test("two Hazes on the same player give two extra upkeep steps") {
+        val driver = newDriver()
+        val me = driver.player1
+        driver.haze(controller = me, enchanted = me)
+        driver.haze(controller = me, enchanted = me)
+        driver.putPermanentOnBattlefield(me, "Upkeep Witness")
+
+        driver.passPriorityUntil(Step.UPKEEP, me)
+        val lifeBefore = driver.getLifeTotal(me)
+        val handBefore = driver.getHandSize(me)
+        driver.passPriorityUntil(Step.DRAW, me)
+
+        withClue("both trigger in the first upkeep; neither re-triggers in the extra ones") {
+            driver.getLifeTotal(me) shouldBe lifeBefore + 3
+        }
+        driver.getHandSize(me) shouldBe handBefore + 1
     }
 
     test("other players' turns are untouched") {
