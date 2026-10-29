@@ -642,6 +642,13 @@ data class PlayFromTopWithAlternativeCost(
  *   through this permission — Falco Spara, Pactweaver's "by removing a counter from a creature you
  *   control in addition to paying their other costs". Not owed when another cost-free permission
  *   (Future Sight, a costless grant) also covers the card. Null for none.
+ * @property castThisWayKeyword The cast-this-way rider: a spell cast from the top through this
+ *   permission gains this keyword, and the permanent it becomes keeps it for
+ *   [castThisWayKeywordDuration] — Thundermane Dragon's "If you cast a creature spell this way, it
+ *   gains haste until end of turn". Frozen onto the spell as it is cast, so it holds even if the
+ *   granting permanent leaves before the spell resolves; a spell that never resolves carries
+ *   nothing. Null for none.
+ * @property castThisWayKeywordDuration How long the resulting permanent keeps [castThisWayKeyword].
  */
 @SerialName("CastSpellTypesFromTopOfLibrary")
 @Serializable
@@ -654,6 +661,8 @@ data class CastSpellTypesFromTopOfLibrary(
      */
     val maxCastsPerTurn: Int? = null,
     val additionalCost: AdditionalCost? = null,
+    val castThisWayKeyword: Keyword? = null,
+    val castThisWayKeywordDuration: Duration = Duration.EndOfTurn,
 ) : StaticAbility {
     override val description: String = buildString {
         if (maxCastsPerTurn == 1) {
@@ -665,6 +674,11 @@ data class CastSpellTypesFromTopOfLibrary(
             append(" by ${additionalCost.description.replaceFirstChar { it.lowercase() }} in addition to paying their other costs")
         }
         append(".")
+        if (castThisWayKeyword != null) {
+            append(" If you cast a spell this way, it gains ${castThisWayKeyword.displayName.lowercase()}")
+            castThisWayKeywordDuration.description.takeIf { it.isNotEmpty() }?.let { append(" $it") }
+            append(".")
+        }
     }
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)

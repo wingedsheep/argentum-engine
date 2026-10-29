@@ -21,6 +21,9 @@ import com.wingedsheep.sdk.scripting.CastThisWayExile
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.CardsDiscardedThisTurnComponent
 import com.wingedsheep.engine.state.components.stack.CastThisWayEntryRiderComponent
+import com.wingedsheep.engine.state.components.stack.EntryKeywordGrant
+import com.wingedsheep.engine.state.components.stack.SpellGrantedKeywordsComponent
+import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Zone
@@ -45,6 +48,8 @@ internal class CastAuthorization(
     val selfZoneExileRider: CastThisWayExile = CastThisWayExile.NONE,
     /** Kaldring, the Rimestaff: the `entersTapped` riders of the may-play permission this cast goes through. */
     val mayPlayEntersTapped: List<com.wingedsheep.sdk.scripting.GameObjectFilter> = emptyList(),
+    /** Thundermane Dragon: the keyword a top-of-library cast permission grants the spell cast this way. */
+    val topLibraryKeywordRider: EntryKeywordGrant? = null,
 )
 
 /**
@@ -90,6 +95,9 @@ internal class CastRecords(
         selfZoneExileRider = zoneResolver.findMayCastSelfFromZoneAbility(state, action.playerId, action.cardId, action)
             ?.exileCastThisWay ?: CastThisWayExile.NONE,
         mayPlayEntersTapped = zoneResolver.castEntersTappedRiders(state, action, cardComponent),
+        topLibraryKeywordRider = if (action.cardId in state.getLibrary(action.playerId)) {
+            zoneResolver.findTopLibraryCastKeywordRider(state, action.playerId, action.cardId)
+        } else null,
     )
 
     /**
@@ -257,6 +265,14 @@ internal class CastRecords(
                     entersWithCounter = riderCounter, addedSubtype = riderSubtype, grantedAbility = riderAbility,
                     entersTapped = riderTapped,
                 ))
+            }
+        }
+        authorization.topLibraryKeywordRider?.let { rider ->
+            newState = newState.updateEntity(action.cardId) { c ->
+                val onStack = c.get<SpellOnStackComponent>() ?: return@updateEntity c
+                val granted = c.get<SpellGrantedKeywordsComponent>()?.keywords ?: emptySet()
+                c.with(SpellGrantedKeywordsComponent(granted + rider.keyword))
+                    .with(onStack.copy(entryKeywordGrants = onStack.entryKeywordGrants + rider))
             }
         }
         val exileRider = grant?.exileCastThisWay?.takeIf { it != CastThisWayExile.NONE }

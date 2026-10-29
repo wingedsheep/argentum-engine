@@ -13132,6 +13132,13 @@ concerns — the `ClientStateTransformer` reveals the top card for `PlayFromTopO
   `CastSpellTypesFromTopOfLibrary(GameObjectFilter.Creature.withChosenSubtype())` + `EntersWithChoice(
   CREATURE_TYPE)`; a changeling card matches any chosen type, no choice matches nothing), and
   `sharingCardTypeWithLinkedExile()` its linked-exile pile (Cemetery Illuminator).
+  `castThisWayKeyword` (+ `castThisWayKeywordDuration`, default `Duration.EndOfTurn`) is the
+  cast-this-way rider: a spell cast off the top that this permission covers gains the keyword, and the
+  permanent it becomes keeps it for the duration — Thundermane Dragon = `CastSpellTypesFromTopOfLibrary(
+  GameObjectFilter.Creature.powerAtLeast(4), castThisWayKeyword = Keyword.HASTE)`. It is frozen onto the
+  spell as it is cast (the `GrantKeywordToSpell` entry path), so it holds if the granter leaves first;
+  when another permission also covers the card the rider still applies (the caster would choose it),
+  but a card only another permission covers gets nothing.
 - `LookAtTopOfLibrary(libraryOwner = EffectTarget.Controller)` — *private*: the holder may look at the
   top card of a library any time (revealed only to them). Default is their own (Lens of Clarity,
   Vizier of the Menagerie); a granted copy can name another player's library, pinned at grant

@@ -1761,6 +1761,54 @@
     ]
 }
 
+// Thundermane Dragon
+{
+    "name": "Thundermane Dragon",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nYou may look at the top card of your library any time.\nYou may cast creature spells with power 4 or greater from the top of your library. If you cast a creature spell this way, it gains haste until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            "LookAtTopOfLibrary",
+            {
+                "type": "CastSpellTypesFromTopOfLibrary",
+                "filter": "creature pow>=4",
+                "castThisWayKeyword": "HASTE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7ca93b31-d6ec-4265-b2ff-d46090086f07.jpg?1783907172",
+        "rulings": [
+            {
+                "date": "2025-04-04",
+                "text": "Thundermane Dragon lets you look at the top card of your library whenever you want (with one restriction—see below), even if you don't have priority. This action doesn't use the stack. Knowing what that card is becomes part of the information you have access to, just like you can look at the cards in your hand."
+            },
+            {
+                "date": "2025-04-04",
+                "text": "If the top card of your library changes while you're casting a spell, playing a land, activating an ability, or taking a special action, you can't look at the new top card until you finish doing so. This means that if you cast the top card of your library, you can't look at the next one until you're done paying for that spell."
+            },
+            {
+                "date": "2025-04-04",
+                "text": "Thundermane Dragon's last ability allows you to cast the top card of your library if the resulting spell is a creature spell with power 4 or greater, it's your main phase, and the stack is empty. If that creature spell has flash, you'll be able to cast it any time you could cast an instant, even on an opponent's turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Ureni of the Unwritten
 {
     "name": "Ureni of the Unwritten",
