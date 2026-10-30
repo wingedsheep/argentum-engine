@@ -49,6 +49,58 @@
     ]
 }
 
+// Alert Heedbonder
+{
+    "name": "Alert Heedbonder",
+    "manaCost": "{1}{G/W}{G/W}",
+    "typeLine": "Creature — Human Scout",
+    "oracleText": "Vigilance\nAt the beginning of your end step, you gain 1 life for each creature you control with vigilance.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Alert Heedbonder:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature kw:vigilance"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "218",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Vargas",
+        "flavorText": "Considering the zealous armies, vile poachers, and titanic monsters, it's always wise to keep one eye on the horizon.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/15a2ccae-c322-4e99-a094-a68fc5d52ea3.jpg?1783931012",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "The number of creatures you control with vigilance is determined as Alert Heedbonder's last ability resolves. If it's still on the battlefield, the count will include Alert Heedbonder itself."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Almighty Brushwagg
 {
     "name": "Almighty Brushwagg",
@@ -150,6 +202,93 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Back for More
+{
+    "name": "Back for More",
+    "manaCost": "{4}{B}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Return target creature card from your graveyard to the battlefield. When you do, it fights up to one target creature you don't control. (Each deals damage equal to its power to the other.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "returnedCreature"
+                },
+                {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Battlefield",
+                        "fromZone": "Graveyard"
+                    },
+                    "optional": false,
+                    "reflexiveEffect": {
+                        "type": "Fight",
+                        "target1": {
+                            "type": "PipelineTarget",
+                            "collectionName": "returnedCreature"
+                        },
+                        "target2": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "optional": true,
+                            "filter": {
+                                "baseFilter": "creature ctrl:opponent"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "descriptionOverride": "When you do, it fights up to one target creature you don't control."
+                }
+            ],
+            "descriptionOverride": "Return target creature card from your graveyard to the battlefield. When you do, it fights up to one target creature you don't control."
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "177",
+        "rarity": "UNCOMMON",
+        "artist": "Daarken",
+        "flavorText": "\"How can you be sure you pierced its heart? Do you even know where its heart is?\"\n—Trundan, Indatha poacher",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/f/3fc7210c-da23-4cec-9195-4de75587f40f.jpg?1783931029",
+        "rulings": [
+            {
+                "date": "2024-04-12",
+                "text": "You don't choose a target creature you don't control at the time you cast Back for More. Rather, a \"reflexive\" ability triggers when you return the target creature card from your graveyard to the battlefield. You choose a target for that ability as it goes on the stack. Each player may respond to this triggered ability as normal."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If the target creature is an illegal target when the reflexive triggered ability tries to resolve, the ability doesn't resolve. If the creature you put onto the battlefield is no longer on the battlefield or no longer a creature, the target creature won't deal or be dealt damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
     ]
 }
 
@@ -383,6 +522,215 @@
     ]
 }
 
+// Blitz Leech
+{
+    "name": "Blitz Leech",
+    "manaCost": "{5}{B}",
+    "typeLine": "Creature — Leech",
+    "oracleText": "Flash\nWhen this creature enters, target creature an opponent controls gets -2/-2 until end of turn. Remove all counters from that creature.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Blitz Leech:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": -2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": -2
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "RemoveAllCounters",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "artist": "Nicholas Gregory",
+        "flavorText": "\"Fools wear armor against it as if the worst it could take is your blood.\"\n—Gavi, nest warden",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/d/7d9b5bde-a851-480b-b45e-d384fd1c11bb.jpg?1783931066",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Blitz Leech's ability removes all counters from the target creature before state-based actions are checked to see if that creature should die. For example, a 2/2 creature with a flying counter on it will lose that counter while it's a 0/0 creature before it dies."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Blitz of the Thunder-Raptor
+{
+    "name": "Blitz of the Thunder-Raptor",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Blitz of the Thunder-Raptor deals damage to target creature or planeswalker equal to the number of instant and sorcery cards in your graveyard. If that creature or planeswalker would die this turn, exile it instead.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MarkExileOnDeath",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": "instant|sorcery"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetCreatureOrPlaneswalker",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "rarity": "UNCOMMON",
+        "artist": "Zack Stella",
+        "flavorText": "The sound of Vadrok's gigantic wings is ominous. But the true terror is when they fall silent.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0174556-9f9b-4756-84ca-d14a5a60720c.jpg?1783931053",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Blitz of the Thunder-Raptor is still on the stack while you determine how much damage is dealt. It isn't in your graveyard to contribute to that amount of damage."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Blitz of the Thunder-Raptor's replacement effect will exile the target creature or planeswalker if it would die this turn for any reason, not just due to lethal damage. It applies to the target creature or planeswalker even if Blitz of the Thunder-Raptor deals no damage to it (most likely because you have no instant or sorcery cards in your graveyard)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Blood Curdle
+{
+    "name": "Blood Curdle",
+    "manaCost": "{3}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target creature. Put a menace counter on a creature you control. (It can't be blocked except by two or more creatures.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "SelectTarget",
+                    "requirement": {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "storeAs": "target1",
+                    "nonTargeting": true,
+                    "prompt": "Choose a creature you control to get a menace counter"
+                },
+                {
+                    "type": "AddCounters",
+                    "counterType": "MENACE",
+                    "count": 1,
+                    "target": {
+                        "type": "PipelineTarget",
+                        "collectionName": "target1"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "artist": "Antonio José Manzanedo",
+        "flavorText": "Fear pierces the strongest armor.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/4184c851-1419-476c-ba9c-9f0cb1137114.jpg?1783931065",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Blood Curdle targets only one creature: the one that will be destroyed. You choose which creature to put a menace counter on after the target creature has been destroyed."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If the target creature is an illegal target by the time Blood Curdle tries to resolve, the spell won't resolve. You won't put a menace counter on any creature. If the target is legal but not destroyed (most likely because it has indestructible), you do put a menace counter on a creature you control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Bonders' Enclave
 {
     "name": "Bonders' Enclave",
@@ -450,6 +798,61 @@
     "colorIdentityOverride": []
 }
 
+// Boneyard Lurker
+{
+    "name": "Boneyard Lurker",
+    "manaCost": "{2}{B}{G}",
+    "typeLine": "Creature — Nightmare Beast",
+    "oracleText": "Mutate {2}{B/G}{B/G} (If you cast this spell for its mutate cost, put it over or under target non-Human creature you own. They mutate into the creature on top plus all abilities from under it.)\nWhenever this creature mutates, return target permanent card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "MUTATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Mutate",
+            "cost": "{2}{B/G}{B/G}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Boneyard Lurker:1",
+                "trigger": "MutateEvent",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "178",
+        "rarity": "UNCOMMON",
+        "artist": "Nils Hamm",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/37e4df5b-ec53-4f8a-8c26-272b3177c0a6.jpg?1783931028"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Boon of the Wish-Giver
 {
     "name": "Boon of the Wish-Giver",
@@ -480,6 +883,449 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Boot Nipper
+{
+    "name": "Boot Nipper",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "This creature enters with your choice of a deathtouch counter or a lifelink counter on it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "modeOptions": [
+                    {
+                        "id": "deathtouch",
+                        "label": "A deathtouch counter"
+                    },
+                    {
+                        "id": "lifelink",
+                        "label": "A lifelink counter"
+                    }
+                ]
+            },
+            {
+                "type": "EntersWithCounters",
+                "counterType": "DEATHTOUCH",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "deathtouch"
+                }
+            },
+            {
+                "type": "EntersWithCounters",
+                "counterType": "LIFELINK",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "lifelink"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "artist": "Nicholas Gregory",
+        "flavorText": "\"I have a number of hyper-specific phobias and this somehow hits all of them.\"\n—Aaru, Zagoth lumberjack",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/f/cff5a5b8-f823-4429-acd8-c4f34a676cb4.jpg?1783931066"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Brokkos, Apex of Forever
+{
+    "name": "Brokkos, Apex of Forever",
+    "manaCost": "{2}{B}{G}{U}",
+    "typeLine": "Legendary Creature — Nightmare Beast Elemental",
+    "oracleText": "Mutate {2}{U/B}{G}{G} (If you cast this spell for its mutate cost, put it over or under target non-Human creature you own. They mutate into the creature on top plus all abilities from under it.)\nTrample\nYou may cast this card from your graveyard using its mutate ability.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "TRAMPLE",
+        "MUTATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Mutate",
+            "cost": "{2}{U/B}{G}{G}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "MayCastSelfFromZones",
+                "zones": [
+                    "Graveyard"
+                ],
+                "castUsing": "MUTATE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "179",
+        "rarity": "MYTHIC",
+        "artist": "Filip Burburan",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c9f07625-fbd8-4581-8568-eb3cfb2a4c1e.jpg?1783931028",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Casting Brokkos with the permission granted by its last ability doesn't change when you can cast it."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If you cast Brokkos with the permission granted by its last ability, you must pay its mutate cost to cast it. You can't choose to pay its mana cost or another alternative cost."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If another effect gives you permission to cast Brokkos from your graveyard, you may cast it for any cost associated with that permission."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN",
+        "BLUE"
+    ]
+}
+
+// Bushmeat Poacher
+{
+    "name": "Bushmeat Poacher",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "{1}, {T}, Sacrifice another creature: You gain life equal to the sacrificed creature's toughness. Draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Bushmeat Poacher:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "SacrificedAsCost",
+                                "numericProperty": "Toughness"
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "77",
+        "artist": "Randy Vargas",
+        "flavorText": "\"If you've never feasted on Zagoth terror-pig, I got the best price you'll find.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc01faf4-fabb-40c9-a1d6-359280535f91.jpg?1783931065",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Use the sacrificed creature's toughness as it last existed on the battlefield to determine how much life you gain."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "You draw only one card, no matter how much life you gain."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Call of the Death-Dweller
+{
+    "name": "Call of the Death-Dweller",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return up to two target creature cards with total mana value 3 or less from your graveyard to the battlefield. Put a deathtouch counter on either of them. Then put a menace counter on either of them.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    },
+                    "storeMovedAs": "moved1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "moved1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected2",
+                    "prompt": "Choose a creature to put a deathtouch counter on",
+                    "useTargetingUI": true
+                },
+                {
+                    "type": "AddCountersToCollection",
+                    "collectionName": "selected2",
+                    "counterType": "DEATHTOUCH"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "moved1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected4",
+                    "prompt": "Choose a creature to put a menace counter on",
+                    "useTargetingUI": true
+                },
+                {
+                    "type": "AddCountersToCollection",
+                    "collectionName": "selected4",
+                    "counterType": "MENACE"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0",
+                "totalManaValueAtMost": {
+                    "type": "Fixed",
+                    "amount": 3
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "rarity": "UNCOMMON",
+        "artist": "Vincent Proce",
+        "flavorText": "The living fear Nethroi's whispers. The dead heed them.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/37e34017-0aeb-4a93-9edf-596bf3597a0e.jpg?1783931064",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "If a card in a player's graveyard has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "You could target a single creature card with Call of the Death-Dweller. In this case, you'll put both counters on that creature."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If you return two creature cards, you may put one counter on each or put both counters on one."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If you return no creature cards to the battlefield, you won't put any counters on any creatures."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Cavern Whisperer
+{
+    "name": "Cavern Whisperer",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Nightmare",
+    "oracleText": "Mutate {3}{B} (If you cast this spell for its mutate cost, put it over or under target non-Human creature you own. They mutate into the creature on top plus all abilities from under it.)\nMenace (This creature can't be blocked except by two or more creatures.)\nWhenever this creature mutates, each opponent discards a card.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "MENACE",
+        "MUTATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Mutate",
+            "cost": "{3}{B}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cavern Whisperer:1",
+                "trigger": "MutateEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "discarded"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "79",
+        "artist": "Antonio José Manzanedo",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/64ae7651-4a5c-41f3-b528-41b9b0f2e5d8.jpg?1783931065"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Charge of the Forever-Beast
+{
+    "name": "Charge of the Forever-Beast",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "As an additional cost to cast this spell, reveal a creature card from your hand.\nCharge of the Forever-Beast deals damage to target creature or planeswalker equal to the revealed card's power.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "EntityProperty",
+                "entity": "RevealedAsCost",
+                "numericProperty": "Power"
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetCreatureOrPlaneswalker",
+                "id": "t0"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomRevealFromHand",
+                    "filter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "147",
+        "rarity": "UNCOMMON",
+        "artist": "Filip Burburan",
+        "flavorText": "The Zagoth wetlands are fertilized by centuries of Brokkos's former challengers.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4bf147a6-2282-4120-9cbd-d0309fc9b02b.jpg?1783931039",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "You must reveal exactly one card to cast Charge of the Forever-Beast; you can't cast it without revealing a card, and you can't reveal additional cards. The revealed card remains revealed until Charge of the Forever-Beast resolves."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "As Charge of the Forever-Beast resolves, it deals damage based on the revealed card's power if it's still in your hand. If that card has left your hand, Charge of the Forever-Beast deals damage based on the card's power immediately before it left your hand."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -537,6 +1383,227 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Chevill, Bane of Monsters
+{
+    "name": "Chevill, Bane of Monsters",
+    "manaCost": "{B}{G}",
+    "typeLine": "Legendary Creature — Human Rogue",
+    "oracleText": "Deathtouch\nAt the beginning of your upkeep, if your opponents control no permanents with bounty counters on them, put a bounty counter on target creature or planeswalker an opponent controls.\nWhenever a permanent an opponent controls with a bounty counter on it dies, you gain 3 life and draw a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Chevill, Bane of Monsters:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "BOUNTY",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature|planeswalker ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "Exists",
+                    "player": "EachOpponent",
+                    "zone": "Battlefield",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsPermanent"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "BOUNTY"
+                            }
+                        ]
+                    },
+                    "negate": true
+                }
+            },
+            {
+                "id": "Chevill, Bane of Monsters:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsPermanent"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "BOUNTY"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByOpponent"
+                    },
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "rarity": "MYTHIC",
+        "artist": "Yongjae Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/fecbf0a3-ebe1-43b6-a720-462ba19002eb.jpg?1783931028",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Chevill's middle ability and last ability look for any bounty counter on your opponents' permanents, not just one from that Chevill. For example, if players A and B each control a Chevill and player A has put a bounty counter on player C's creature, player B's Chevill won't put a counter on anything and both players will gain 3 life and draw a card when that creature dies."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If the creature or planeswalker with a bounty counter on it ceases to be a creature or planeswalker, Chevill's last ability will still trigger if that permanent is put into a graveyard from the battlefield."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If Chevill leaves the battlefield at the same time that an opponent's permanent with a bounty counter on it dies, you gain 3 life and draw a card. If Chevill leaves the battlefield before that permanent dies, Chevill's last ability won't be around to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
+// Chittering Harvester
+{
+    "name": "Chittering Harvester",
+    "manaCost": "{5}{B}",
+    "typeLine": "Creature — Nightmare",
+    "oracleText": "Mutate {4}{B} (If you cast this spell for its mutate cost, put it over or under target non-Human creature you own. They mutate into the creature on top plus all abilities from under it.)\nWhenever this creature mutates, each opponent sacrifices a creature of their choice.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 6
+    },
+    "keywords": [
+        "MUTATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Mutate",
+            "cost": "{4}{B}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Chittering Harvester:1",
+                "trigger": "MutateEvent",
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": "creature",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "rarity": "UNCOMMON",
+        "artist": "Grzegorz Rutkowski",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d51a0700-d4d3-4b7e-bdb5-6cd913c948d9.jpg?1783931064"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Clash of Titans
+{
+    "name": "Clash of Titans",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature fights another target creature. (Each deals damage equal to its power to the other.)",
+    "script": {
+        "spellEffect": {
+            "type": "Fight",
+            "target1": {
+                "type": "BoundVariable",
+                "name": "t0[0]"
+            },
+            "target2": {
+                "type": "BoundVariable",
+                "name": "t0[1]"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "rarity": "UNCOMMON",
+        "artist": "Viktor Titov",
+        "flavorText": "\"Let the brutes fight. If they kill each other, we lose no more soldiers today.\"\n—Orthion, Lavabrink captain",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/a/ca10e2b8-a317-4c98-a866-43bf274e82cb.jpg?1783931052",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Clash of Titans can target two creatures controlled by the same player."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If either target is an illegal target as Clash of Titans tries to resolve, neither creature will deal or be dealt damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
