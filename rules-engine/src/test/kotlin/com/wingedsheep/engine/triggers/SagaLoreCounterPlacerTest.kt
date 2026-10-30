@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.triggers
 
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
@@ -23,7 +24,7 @@ import io.kotest.matchers.shouldBe
 /**
  * Engine coverage for the placer of a Saga's lore counters (G146). A Saga's controller puts its
  * entry lore counter on it as it enters (CR 714.3a; CR 122.6a) and the precombat-main lore counter
- * (CR 714.3b), so "whenever you put a lore counter on a Saga you control"
+ * (CR 714.3c), so "whenever you put a lore counter on a Saga you control"
  * (`getsCounters(LORE, by = Player.You)`) sees all three entry/accrual paths: a resolving Saga
  * spell (`PermanentEntry`), a Saga put onto the battlefield by an effect (`ZoneMovementUtils`), and
  * the turn-based action (`BeginningPhaseManager`).
@@ -61,9 +62,19 @@ class SagaLoreCounterPlacerTest : FunSpec({
         }
     }
 
+    // An opponent's instant that puts a lore counter on any Saga — placer and controller differ.
+    val loreBump = card("Lore Bump") {
+        manaCost = "{1}"
+        typeLine = "Instant"
+        spell {
+            val saga = target(TargetFilter(GameObjectFilter.Enchantment.withSubtype(Subtype.SAGA)))
+            effect = Effects.AddCounters(CounterType.LORE, 1, saga)
+        }
+    }
+
     fun newDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(loreObserver, quietSaga, returnSaga))
+        driver.registerCards(TestCards.all + listOf(loreObserver, quietSaga, returnSaga, loreBump))
         driver.initMirrorMatch(deck = Deck.of("Forest" to 40))
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return driver
@@ -126,17 +137,24 @@ class SagaLoreCounterPlacerTest : FunSpec({
         withClue("the observer saw the entry lore counter") { driver.getLifeTotal(me) shouldBe life + 1 }
     }
 
-    test("an opponent's Saga entering doesn't trigger your observer") {
+    test("a lore counter an opponent puts on your Saga doesn't trigger your observer") {
         val driver = newDriver()
         val me = driver.activePlayer!!
         val opponent = driver.state.turnOrder.first { it != me }
-        driver.putPermanentOnBattlefield(opponent, "Lore Placer Observer")
-        val life = driver.getLifeTotal(opponent)
-
+        driver.putPermanentOnBattlefield(me, "Lore Placer Observer")
         driver.castQuietSaga(me)
+        val saga = driver.findPermanent(me, "Quiet Test Saga")!!
+        val life = driver.getLifeTotal(me)
 
-        withClue("the opponent didn't put the counter, and doesn't control the Saga") {
-            driver.getLifeTotal(opponent) shouldBe life
+        driver.passPriority(me)
+        val bump = driver.putCardInHand(opponent, "Lore Bump")
+        driver.giveColorlessMana(opponent, 1)
+        driver.castSpellWithTargets(opponent, bump, listOf(ChosenTarget.Permanent(saga)))
+        driver.drain()
+
+        withClue("the Saga got the opponent's lore counter") {
+            driver.state.getEntity(saga)?.get<CountersComponent>()?.getCount(CounterType.LORE) shouldBe 2
         }
+        withClue("you didn't put it, so your observer stays quiet") { driver.getLifeTotal(me) shouldBe life }
     }
 })
