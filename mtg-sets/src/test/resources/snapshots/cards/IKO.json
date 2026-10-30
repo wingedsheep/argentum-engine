@@ -3287,6 +3287,68 @@
     ]
 }
 
+// Huntmaster Liger
+{
+    "name": "Huntmaster Liger",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Cat",
+    "oracleText": "Mutate {2}{W} (If you cast this spell for its mutate cost, put it over or under target non-Human creature you own. They mutate into the creature on top plus all abilities from under it.)\nWhenever this creature mutates, other creatures you control get +X/+X until end of turn, where X is the number of times this creature has mutated.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "MUTATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Mutate",
+            "cost": "{2}{W}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Huntmaster Liger:1",
+                "trigger": "MutateEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "EntityProperty",
+                            "entity": "Self",
+                            "numericProperty": "TimesMutated"
+                        },
+                        "toughnessModifier": {
+                            "type": "EntityProperty",
+                            "entity": "Self",
+                            "numericProperty": "TimesMutated"
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "rarity": "UNCOMMON",
+        "artist": "Leesha Hannigan",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/5/058d6a7d-12b0-4d82-a5bd-91fa44bbc5e1.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Imposing Vantasaur
 {
     "name": "Imposing Vantasaur",
@@ -4509,6 +4571,62 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Porcuparrot
+{
+    "name": "Porcuparrot",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Bird Beast",
+    "oracleText": "Mutate {2}{R} (If you cast this spell for its mutate cost, put it over or under target non-Human creature you own. They mutate into the creature on top plus all abilities from under it.)\n{T}: This creature deals X damage to any target, where X is the number of times this creature has mutated.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "MUTATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Mutate",
+            "cost": "{2}{R}"
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Porcuparrot:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "TimesMutated"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "128",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Seaman",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/5/856892c8-ba47-46d0-aec2-0416b55b9e88.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

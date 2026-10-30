@@ -1910,6 +1910,13 @@ class DynamicAmountEvaluator(
                 ?.get<com.wingedsheep.engine.state.components.combat.TimesAttackedThisTurnComponent>()
                 ?.countFor(state.turnNumber, state.objectRef(entityId)) ?: 0
 
+            // Each mutating spell that merged with this permanent added exactly one component to
+            // its pile (CR 702.140c); the host itself is the remaining one. The merge record is
+            // dropped as the permanent leaves, so a new object starts at zero (CR 400.7).
+            is EntityNumericProperty.TimesMutated -> state.getEntity(entityId)
+                ?.get<com.wingedsheep.engine.mechanics.MergedComponent>()
+                ?.let { it.componentIds.size - 1 } ?: 0
+
             is EntityNumericProperty.DamageDealtThisTurn -> state.getEntity(entityId)
                 ?.get<com.wingedsheep.engine.state.components.battlefield.DamageDealtThisTurnComponent>()
                 ?.takeIf { it.turnNumber == state.turnNumber && it.sourceObject == state.objectRef(entityId) }

@@ -59,6 +59,20 @@ sealed interface EntityNumericProperty {
     }
 
     /**
+     * How many times this permanent has mutated — the number of mutating creature spells that have
+     * merged with it (CR 702.140c), whether each went over or under. "Where X is the number of times
+     * this creature has mutated" (Porcuparrot, Huntmaster Liger, the Ikoria mutate payoffs). Read
+     * inside a "whenever this creature mutates" trigger it already counts the merge that triggered
+     * it. A permanent that never mutated is 0, and a mutated permanent that changes zones is a new
+     * object that hasn't mutated (CR 400.7). The count-valued sibling of `Triggers.self.mutates()`.
+     */
+    @SerialName("TimesMutated")
+    @Serializable
+    data object TimesMutated : EntityNumericProperty {
+        override val description: String = "the number of times it has mutated"
+    }
+
+    /**
      * Paid enlist instances for this rules object during the current combat. Unlike
      * [DamageDealtThisTurn], this is combat-scoped and records optional attack costs rather than
      * damage; [PermanentsSacrificedToCast] records spell costs, not a permanent's attack costs.

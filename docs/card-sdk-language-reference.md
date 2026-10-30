@@ -17253,6 +17253,13 @@ read is available to other snapshot-backed entity references once their captured
   (CR 400.7). Per affected creature in a lord — **Moraug, Fury of Akoum**:
   `GrantDynamicStats(GroupFilter(Creature.youControl()), DynamicAmounts.propertyOf(EffectTarget.AffectedEntity, TimesAttackedThisTurn), DynamicAmounts.fixed(0))`.
   The count-valued sibling of the `attackedThisTurn()` filter.
+- `EntityProperty(entity, EntityNumericProperty.TimesMutated)` — "the number of times this creature has
+  mutated": how many mutating creature spells have merged with the permanent (CR 702.140c), over or
+  under alike. Read in a `Triggers.self.mutates()` trigger it already includes the merge that fired it,
+  so the first mutate reads 1. A permanent that never mutated reads 0, and a mutated permanent that
+  changes zones is a new object at 0 (CR 400.7). Backed by the permanent's merged-pile record. As a
+  count — **Porcuparrot**: `Effects.DealDamage(DynamicAmounts.propertyOf(EffectTarget.Self, TimesMutated), target)`;
+  sizing a group pump — **Huntmaster Liger**.
 - `EntityProperty(entity, EntityNumericProperty.KeywordValue(keyword))` — the total N across the entity's
   instances of a numeric keyword ("for each point of bushido it has"); instances add, so bushido 1 plus
   bushido 2 is 3. Reads the *printed* N, stamped on the entity at creation (`NumericKeywordValuesComponent`)
