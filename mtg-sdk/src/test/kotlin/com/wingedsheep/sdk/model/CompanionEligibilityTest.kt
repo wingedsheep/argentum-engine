@@ -131,6 +131,31 @@ class CompanionEligibilityTest : FunSpec({
         CompanionEligibility.conditionError(jegantha, listOf(forest, hybridTwice), 40).shouldNotBeNull() shouldContain "Twin"
     }
 
+    test("EachCard: Jegantha — a split card's halves combine, so a symbol on both halves repeats (CR 709.4b)") {
+        val jegantha = companion(
+            CompanionCondition.EachCard(
+                GameObjectFilter.Any.withCardPredicate(CardPredicate.Not(CardPredicate.HasRepeatedManaSymbol))
+            )
+        )
+        fun split(name: String, left: String, right: String) = card(name) {
+            layout = CardLayout.SPLIT
+            face(name.substringBefore(" // ")) {
+                manaCost = left
+                typeLine = "Instant"
+            }
+            face(name.substringAfter(" // ")) {
+                manaCost = right
+                typeLine = "Instant"
+            }
+        }
+        val ok = split("Wear // Tear", "{R}", "{W}")
+        val withinHalf = split("Find // Finality", "{B/G}{B/G}", "{4}{B}{G}")
+        val acrossHalves = split("Fire // Ice", "{1}{R}", "{1}{U}")
+        CompanionEligibility.conditionError(jegantha, listOf(forest, ok), 40).shouldBeNull()
+        CompanionEligibility.conditionError(jegantha, listOf(forest, withinHalf), 40).shouldNotBeNull() shouldContain "Find"
+        CompanionEligibility.conditionError(jegantha, listOf(forest, acrossHalves), 40).shouldNotBeNull() shouldContain "Fire"
+    }
+
     test("DeckSizeAboveMinimum: Yorion — twenty over the minimum; never in a 100-card Commander deck") {
         val yorion = companion(CompanionCondition.DeckSizeAboveMinimum(20))
         CompanionEligibility.conditionError(yorion, List(60) { forest }, 40).shouldBeNull()

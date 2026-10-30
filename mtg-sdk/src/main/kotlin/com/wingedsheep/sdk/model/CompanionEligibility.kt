@@ -1,5 +1,7 @@
 package com.wingedsheep.sdk.model
 
+import com.wingedsheep.sdk.core.ManaCost
+
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.CompanionCondition
@@ -108,8 +110,15 @@ object CompanionEligibility {
 
     private fun matchesPrinted(card: CardDefinition, predicate: CardPredicate): Boolean {
         val typeLine = card.typeLine
+        // CR 709.4b: off the stack a split card's mana cost is its halves' costs combined, and an
+        // effect reading its symbols sees each half's symbols ({1}{R} // {1}{U} holds {1} twice).
+        val manaCost = if (card.isSplit && card.cardFaces.isNotEmpty()) {
+            ManaCost(card.cardFaces.flatMap { it.manaCost.symbols })
+        } else {
+            card.manaCost
+        }
         // CR 202.3e / the companion rulings: X in a card's mana cost counts as 0 off the stack.
-        val manaValue = card.manaCost.cmc
+        val manaValue = manaCost.cmc
         return when (predicate) {
             is CardPredicate.And -> predicate.predicates.all { matchesPrinted(card, it) }
             is CardPredicate.Or -> predicate.predicates.any { matchesPrinted(card, it) }
@@ -152,9 +161,9 @@ object CompanionEligibility {
             is CardPredicate.ManaValueAtLeast -> manaValue >= predicate.min
             CardPredicate.ManaValueIsEven -> manaValue % 2 == 0
             CardPredicate.ManaValueIsOdd -> manaValue % 2 == 1
-            CardPredicate.HasXInManaCost -> card.manaCost.hasX
-            CardPredicate.HasRepeatedManaSymbol -> card.manaCost.hasRepeatedSymbol
-            is CardPredicate.ManaCostIs -> card.manaCost == predicate.manaCost
+            CardPredicate.HasXInManaCost -> manaCost.hasX
+            CardPredicate.HasRepeatedManaSymbol -> manaCost.hasRepeatedSymbol
+            is CardPredicate.ManaCostIs -> manaCost == predicate.manaCost
             // Zirda's "has an activated ability" in deck construction (ruling): any printed
             // activated ability in any zone — cycling included, since "some keyword abilities are
             // activated abilities" — and the intrinsic mana ability of a basic land type.

@@ -7287,7 +7287,8 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
 - `.hasRepeatedManaSymbol()` — the card's **printed** mana cost holds the same symbol more than once
   (`{1}{G}{G}`, `{X}{X}{R}`, `{R/G}{R/G}`). Exact symbols compare, per Jegantha's ruling: hybrid
   `{R/G}` is its own symbol (`{R}{R/G}` has no repeat) and `{4}` is one symbol. No mana cost and
-  face-down objects never match; the cast-record path returns `false`. Jegantha, the Wellspring's
+  face-down objects never match; the cast-record path returns `false`. Deck construction reads a split
+  card's halves combined (CR 709.4b — `{1}{R} // {1}{U}` repeats `{1}`). Jegantha, the Wellspring's
   companion condition negates it: `EachCard(Any.withCardPredicate(Not(HasRepeatedManaSymbol)))`.
   Underlying predicate: `CardPredicate.HasRepeatedManaSymbol`.
 - `.manaCostIs(vararg costs)` — the card's **printed** mana cost is exactly one of `costs`
