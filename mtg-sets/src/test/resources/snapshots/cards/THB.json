@@ -1,3 +1,419 @@
+// Acolyte of Affliction
+{
+    "name": "Acolyte of Affliction",
+    "manaCost": "{2}{B}{G}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "When this creature enters, mill two cards, then you may return a permanent card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Acolyte of Affliction:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        },
+                                        "isMill": true
+                                    },
+                                    "storeAs": "milled"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "milled",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": "permanent"
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered1",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected2",
+                            "prompt": "You may return a permanent card from your graveyard to your hand",
+                            "selectedLabel": "Return to hand",
+                            "remainderLabel": "Leave in graveyard",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "206",
+        "rarity": "UNCOMMON",
+        "artist": "Chase Stone",
+        "flavorText": "The best healers are intimately familiar with death.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a14afed6-ca42-442d-ba86-621179e6957c.jpg?1783931526",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "The card you return with Acolyte of Affliction's ability may be one that you just put into your graveyard with its ability. This is because the ability doesn't target the card that you'll return."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
+// Agonizing Remorse
+{
+    "name": "Agonizing Remorse",
+    "manaCost": "{1}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent reveals their hand. You choose a nonland card from it or a card from their graveyard. Exile that card. You lose 1 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "RevealHand",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromMultipleZones",
+                        "zones": [
+                            "Hand",
+                            "Graveyard"
+                        ],
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "filter": {
+                            "anyOf": [
+                                {
+                                    "cardPredicates": [
+                                        "IsNonland"
+                                    ]
+                                },
+                                {
+                                    "statePredicates": [
+                                        {
+                                            "type": "InZone",
+                                            "zone": "Graveyard"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected2",
+                    "prompt": "Choose a nonland card from their hand or a card from their graveyard to exile",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Controller"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "83",
+        "rarity": "UNCOMMON",
+        "artist": "Wisnu Tan",
+        "flavorText": "The sharp memory of Daxos's death stabbed into Elspeth's soul.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/9/09270c65-546e-4737-a6b7-402cbb87917a.jpg?1783931572",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If you choose a card from their graveyard, it may be a land card."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "You must choose a card to exile if able. If there are no nonland cards in the opponent's hand, you must exile a card from their graveyard, and vice versa."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If there are no nonland cards in their hand and no cards in their graveyard, then you just lose 1 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Alirios, Enraptured
+{
+    "name": "Alirios, Enraptured",
+    "manaCost": "{2}{U}",
+    "typeLine": "Legendary Creature — Human",
+    "oracleText": "Alirios enters tapped.\nAlirios doesn't untap during your untap step if you control a Reflection.\nWhen Alirios enters, create a 3/2 blue Reflection creature token.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Alirios, Enraptured:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 2,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Reflection"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/a/b/ab1c23b2-ac39-46b1-aa2b-7d6cbedba767.jpg?1783931454"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "DOESNT_UNTAP",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent Reflection"
+                }
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "rarity": "UNCOMMON",
+        "artist": "Kieran Yanner",
+        "flavorText": "\"Why would I ever want to look away?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/6/26f9ebbe-3791-4d19-88d2-d5de95faff48.jpg?1783931586",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "Spells and abilities can untap Alirios, even if it doesn't untap during your untap step."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "Once you no longer control a Reflection, Alirios doesn't immediately become untapped. It'll be untapped during your next untap step."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Allure of the Unknown
+{
+    "name": "Allure of the Unknown",
+    "manaCost": "{3}{B}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Reveal the top six cards of your library. An opponent exiles a nonland card from among them, then you put the rest into your hand. That opponent may cast the exiled card without paying its mana cost.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ChooseOpponentForSource",
+                    "prompt": "Choose an opponent to exile a nonland card"
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 6
+                        }
+                    },
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "RevealCollection",
+                    "from": "gathered1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "chooser": "ChosenOpponent",
+                    "filter": "nonland",
+                    "storeSelected": "selected3",
+                    "prompt": "Exile a nonland card from among the revealed cards",
+                    "selectedLabel": "Exile",
+                    "remainderLabel": "Put into their hand",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected3",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    }
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "gathered1",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "InZone",
+                                "zone": "Library"
+                            }
+                        ]
+                    },
+                    "storeMatching": "matching5"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "matching5",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "selected3",
+                    "selection": "ChooseSpell",
+                    "chooser": "ChosenOpponent",
+                    "storeSelected": "selected7",
+                    "prompt": "You may cast the exiled card without paying its mana cost",
+                    "selectedLabel": "Cast without paying its mana cost",
+                    "remainderLabel": "Leave in exile",
+                    "showAllCards": true
+                },
+                {
+                    "type": "CastFromCollectionWithoutPayingCost",
+                    "from": "selected7",
+                    "caster": "ChosenOpponent"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "RARE",
+        "artist": "Seb McKinnon",
+        "flavorText": "The light of hope blinded Pantor to the ills of the world.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f77e09c3-917c-4bbb-bb94-60f4e9417832.jpg?1783931526",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If all six of the revealed cards are land cards, your opponent doesn't exile anything. You put all six cards into your hand."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If your opponent wishes to cast the card, they do so as part of the resolution of Allure of the Unknown. They can't wait to cast it later. Timing permissions based on a card's type are ignored."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Alseid of Life's Bounty
 {
     "name": "Alseid of Life's Bounty",
@@ -60,6 +476,288 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Anax, Hardened in the Forge
+{
+    "name": "Anax, Hardened in the Forge",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Legendary Enchantment Creature — Demigod",
+    "oracleText": "Anax's power is equal to your devotion to red. (Each {R} in the mana costs of permanents you control counts toward your devotion to red.)\nWhenever Anax or another nontoken creature you control dies, create a 1/1 red Satyr creature token with \"This token can't block.\" If the creature had power 4 or greater, create two of those tokens instead.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "DevotionTo",
+                "colors": [
+                    "RED"
+                ]
+            }
+        },
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Anax, Hardened in the Forge:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Power"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 4
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "CreateToken",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "RED"
+                        ],
+                        "creatureTypes": [
+                            "Satyr"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/9/0/903e30f3-580e-4a14-989b-ae0632363407.jpg?1783931453",
+                        "staticAbilities": [
+                            "CantBlock"
+                        ]
+                    },
+                    "otherwise": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "RED"
+                        ],
+                        "creatureTypes": [
+                            "Satyr"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/9/0/903e30f3-580e-4a14-989b-ae0632363407.jpg?1783931453",
+                        "staticAbilities": [
+                            "CantBlock"
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever Anax or another nontoken creature you control dies, create a 1/1 red Satyr creature token with \"This token can't block.\" If the creature had power 4 or greater, create two of those tokens instead."
+            },
+            {
+                "id": "Anax, Hardened in the Forge:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Power"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 4
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "CreateToken",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "RED"
+                        ],
+                        "creatureTypes": [
+                            "Satyr"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/9/0/903e30f3-580e-4a14-989b-ae0632363407.jpg?1783931453",
+                        "staticAbilities": [
+                            "CantBlock"
+                        ]
+                    },
+                    "otherwise": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "RED"
+                        ],
+                        "creatureTypes": [
+                            "Satyr"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/9/0/903e30f3-580e-4a14-989b-ae0632363407.jpg?1783931453",
+                        "staticAbilities": [
+                            "CantBlock"
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever Anax or another nontoken creature you control dies, create a 1/1 red Satyr creature token with \"This token can't block.\" If the creature had power 4 or greater, create two of those tokens instead."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "125",
+        "rarity": "UNCOMMON",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a07285b4-77c5-4a38-8810-20d7e49593ec.jpg?1783931556",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If Anax dies at the same time as another nontoken creature you control, its ability triggers for each of them."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "To determine whether you create two tokens, check the power of the creature that died immediately before it died."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If you create a token that's a copy of Anax, its last ability triggers when it dies."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Aphemia, the Cacophony
+{
+    "name": "Aphemia, the Cacophony",
+    "manaCost": "{1}{B}",
+    "typeLine": "Legendary Enchantment Creature — Harpy",
+    "oracleText": "Flying\nAt the beginning of your end step, you may exile an enchantment card from your graveyard. If you do, create a 2/2 black Zombie creature token.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aphemia, the Cacophony:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Graveyard",
+                                            "filter": "enchantment"
+                                        },
+                                        "storeAs": "gathered0"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered0",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "toExile",
+                                        "selectedLabel": "Exile"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "toExile",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Exile"
+                                        }
+                                    }
+                                ]
+                            },
+                            "successCriterion": {
+                                "type": "SuccessCriterion.CollectionNonEmpty",
+                                "name": "toExile"
+                            }
+                        },
+                        "then": {
+                            "type": "CreateToken",
+                            "power": 2,
+                            "toughness": 2,
+                            "colors": [
+                                "BLACK"
+                            ],
+                            "creatureTypes": [
+                                "Zombie"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/6/b/6b3e6b4d-d798-4c6a-8a09-255be2a6df2c.jpg?1783931454"
+                        }
+                    }
+                },
+                "descriptionOverride": "At the beginning of your end step, you may exile an enchantment card from your graveyard. If you do, create a 2/2 black Zombie creature token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "rarity": "RARE",
+        "artist": "Lucas Graciano",
+        "flavorText": "\"Sing, beauty. Sing for death, and for the dead.\"\n—Ashiok",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5b359607-d699-4ba9-a438-48f0dd8f1bf5.jpg?1783931572",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "While resolving Aphemia's triggered ability, you can't exile more than one enchantment card to get more than one Zombie token."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "You choose whether to exile an enchantment card and which one to exile while Aphemia's triggered ability is resolving. If Aphemia dies in response to its own triggered ability, it could be the card you exile."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -258,6 +956,1196 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Arena Trickster
+{
+    "name": "Arena Trickster",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "Whenever you cast your first spell during each opponent's turn, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Arena Trickster:1",
+                "trigger": {
+                    "type": "NthSpellCastEvent",
+                    "nthSpell": 1,
+                    "player": "You"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "triggerRestriction": "IsOpponentsTurn",
+                "descriptionOverride": "Whenever you cast your first spell during each opponent's turn, put a +1/+1 counter on this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "126",
+        "artist": "PINDURSKI",
+        "flavorText": "\"It's not enough to surprise your opponent. You have to delight the crowd as well.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e096049d-9f02-4abb-bb5a-97b14fd17099.jpg?1783931556",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "An ability that triggers when you cast a spell resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "This ability triggers only on your very first spell during an opponent's turn, not the first spell after the card is on the battlefield. If you cast a spell before it's on the battlefield (including if you cast this card somehow during an opponent's turn), the ability won't trigger."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If you have more than one opponent, this ability can trigger once during each of those opponents' turns."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "In a Two-Headed Giant game, this ability triggers no more than once during each opposing team's turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Ashiok's Erasure
+{
+    "name": "Ashiok's Erasure",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Flash\nWhen this enchantment enters, exile target spell.\nYour opponents can't cast spells with the same name as the exiled card.\nWhen this enchantment leaves the battlefield, return the exiled card to its owner's hand.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ashiok's Erasure:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ExileTargetSpell",
+                    "linkToSource": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {},
+                        "zone": "Stack"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this enchantment enters, exile target spell."
+            },
+            {
+                "id": "Ashiok's Erasure:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "linked_return_hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "linked_return_hand",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this enchantment leaves the battlefield, return the exiled card to its owner's hand."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "PlayersCantCastSpells",
+                "spellFilter": {
+                    "cardPredicates": [
+                        "SharesNameWithLinkedExile"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "rarity": "RARE",
+        "artist": "Zezhou Chen",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d568c679-8421-4184-a73c-b18c4164fea5.jpg?1783931586",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "The exiled spell isn't countered, but it won't resolve. This works against spells that can't be countered."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If Ashiok's Erasure leaves the battlefield before its enters-the-battlefield ability has resolved, its last ability triggers and resolves with no effect, then its enters-the-battlefield ability exiles the target spell for the rest of the game."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If there is no exiled card (perhaps because the exiled spell was a copy of a spell), or if the exiled card leaves exile somehow, Ashiok's Erasure won't stop players from casting spells."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If Ashiok's Erasure has exiled a split card, your opponents can't cast a spell with the same name as either half of that card."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If Ashiok's Erasure has exiled an adventurer card, your opponents can't cast spells with the same name as the creature, but may cast their Adventures."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Ashiok's Forerunner
+{
+    "name": "Ashiok's Forerunner",
+    "manaCost": "{3}{U}{B}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Flash\nWhen this creature enters, you may search your library and/or graveyard for a card named Ashiok, Sculptor of Fears, reveal it, and put it into your hand. If you search your library this way, shuffle.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ashiok's Forerunner:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "Search your library",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Library"
+                                            ],
+                                            "filter": {
+                                                "cardPredicates": [
+                                                    {
+                                                        "type": "NameEquals",
+                                                        "name": "Ashiok, Sculptor of Fears"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library for a card named Ashiok, Sculptor of Fears to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Search your graveyard",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Graveyard"
+                                            ],
+                                            "filter": {
+                                                "cardPredicates": [
+                                                    {
+                                                        "type": "NameEquals",
+                                                        "name": "Ashiok, Sculptor of Fears"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "storeAs": "searchable"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your graveyard for a card named Ashiok, Sculptor of Fears to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Search your library and graveyard",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Library",
+                                                "Graveyard"
+                                            ],
+                                            "filter": {
+                                                "cardPredicates": [
+                                                    {
+                                                        "type": "NameEquals",
+                                                        "name": "Ashiok, Sculptor of Fears"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library and/or graveyard for a card named Ashiok, Sculptor of Fears to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Don't search",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": []
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, you may search your library and/or graveyard for a card named Ashiok, Sculptor of Fears, reveal it, and put it into your hand. If you search your library this way, shuffle."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "277",
+        "rarity": "RARE",
+        "artist": "Johannes Voss",
+        "flavorText": "\"Every dream is a doorway.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/781bfbae-acd9-4583-88d2-d31978eef565.jpg?1783931498"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
+// Ashiok, Nightmare Muse
+{
+    "name": "Ashiok, Nightmare Muse",
+    "manaCost": "{3}{U}{B}",
+    "typeLine": "Legendary Planeswalker — Ashiok",
+    "oracleText": "+1: Create a 2/3 blue and black Nightmare creature token with \"Whenever this token attacks or blocks, each opponent exiles the top two cards of their library.\"\n−3: Return target nonland permanent to its owner's hand, then that player exiles a card from their hand.\n−7: You may cast up to three spells from among face-up cards your opponents own from exile without paying their mana costs.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ashiok, Nightmare Muse:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 3,
+                    "colors": [
+                        "BLUE",
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Nightmare"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/c/5/c528581f-f671-45ae-8d7a-ae26a4e62ceb.jpg?1783931456",
+                    "triggeredAbilities": [
+                        {
+                            "id": "Ashiok, Nightmare Muse:1",
+                            "trigger": {
+                                "type": "AnyOfEvents",
+                                "events": [
+                                    "AttackEvent",
+                                    "BlockEvent"
+                                ]
+                            },
+                            "effect": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Players",
+                                    "players": "EachOpponent"
+                                },
+                                "body": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "TopOfLibrary",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 2
+                                                }
+                                            },
+                                            "storeAs": "exiled_top"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "exiled_top",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Exile"
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "descriptionOverride": "Whenever this token attacks or blocks, each opponent exiles the top two cards of their library."
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Create a 2/3 blue and black Nightmare creature token with \"Whenever this token attacks or blocks, each opponent exiles the top two cards of their library.\""
+            },
+            {
+                "id": "Ashiok, Nightmare Muse:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Hand"
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand",
+                                        "player": {
+                                            "type": "OwnerOf",
+                                            "targetDescription": "target nonland permanent"
+                                        },
+                                        "filter": "nontoken"
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "chooser": "ControllerOfTarget",
+                                    "storeSelected": "selected1",
+                                    "prompt": "Choose a card to exile from your hand",
+                                    "selectedLabel": "Exile"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "selected1",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Exile",
+                                        "player": {
+                                            "type": "OwnerOf",
+                                            "targetDescription": "target nonland permanent"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "nonland permanent"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Return target nonland permanent to its owner's hand, then that player exiles a card from their hand."
+            },
+            {
+                "id": "Ashiok, Nightmare Muse:4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Exile",
+                                "player": "EachOpponent",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsNonland"
+                                    ],
+                                    "statePredicates": [
+                                        "IsFaceUp"
+                                    ]
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "CastAnyNumberFromCollectionWithoutPayingCost",
+                            "from": "gathered0",
+                            "maxCasts": 3
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You may cast up to three spells from among face-up cards your opponents own from exile without paying their mana costs."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "208",
+        "rarity": "MYTHIC",
+        "artist": "Raymond Swanland",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/112eb5ce-4fe5-45b3-b810-79fef74b07f9.jpg?1783931525",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "Any effect that exiles a card exiles it face up unless that effect specifies otherwise."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "The card exiled while resolving Ashiok's second ability may be the one that was returned to its owner's hand."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If Ashiok's second ability returns a token to its owner's hand, that player can't exile that token from their hand. They must exile a card from their hand if possible."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "You may cast any face-up cards your opponents own from exile while resolving Ashiok's last ability, not just those exiled by Ashiok's second ability or by Ashiok's Nightmare tokens."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If you wish to cast any exiled cards, you do so as part of the resolution of Ashiok's last ability. You can't wait to cast them later. Timing permissions based on a card's type are ignored."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If you cast a spell \"without paying its mana cost,\" you can't choose to cast it for any alternative costs. You can, however, pay additional costs, such as kicker costs. If the card has any mandatory additional costs, such as that of Thrill of Possibility, those must be paid to cast the card."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If a spell has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
+// Ashiok, Sculptor of Fears
+{
+    "name": "Ashiok, Sculptor of Fears",
+    "manaCost": "{4}{U}{B}",
+    "typeLine": "Legendary Planeswalker — Ashiok",
+    "oracleText": "+2: Draw a card. Each player mills two cards.\n−5: Put target creature card from a graveyard onto the battlefield under your control.\n−11: Gain control of all creatures target opponent controls.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ashiok, Sculptor of Fears:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        },
+                                        "player": "Each",
+                                        "isMill": true
+                                    },
+                                    "storeAs": "milled"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "milled",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard",
+                                        "player": "Each"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Draw a card. Each player mills two cards."
+            },
+            {
+                "id": "Ashiok, Sculptor of Fears:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -5
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield",
+                    "controllerOverride": "Controller",
+                    "fromZone": "Graveyard"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Put target creature card from a graveyard onto the battlefield under your control."
+            },
+            {
+                "id": "Ashiok, Sculptor of Fears:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -11
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "controllerPredicate": {
+                                    "type": "ControlledByReferencedPlayer",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t1"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "GainControl",
+                        "target": "IterationEntity"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Gain control of all creatures target opponent controls."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "274",
+        "rarity": "MYTHIC",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/36a5fc37-e7bd-41a9-88ac-74a3f14fea8b.jpg?1783931501",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "The effect of Ashiok's last ability lasts indefinitely. It doesn't expire as the turn ends or if Ashiok leaves the battlefield."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
+// Aspect of Lamprey
+{
+    "name": "Aspect of Lamprey",
+    "manaCost": "{3}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature you control\nWhen this Aura enters, target opponent discards two cards.\nEnchanted creature has lifelink.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aspect of Lamprey:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "chooser": "TargetPlayer",
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 2 cards to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this Aura enters, target opponent discards two cards."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "LIFELINK"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature ctrl:you"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "artist": "Deruchenko Alexander",
+        "flavorText": "\"Some aspire to be mighty like the lion or the hydra. I am the parasite that feeds on them all.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/27157f01-8aed-4485-9f0f-9e7486492e6e.jpg?1783931571",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If the creature Aspect of Lamprey would enchant is an illegal target by the time the Aura spell resolves, the entire spell doesn't resolve. It won't enter the battlefield, so its ability won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Aspect of Manticore
+{
+    "name": "Aspect of Manticore",
+    "manaCost": "{2}{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Flash\nEnchant creature\nWhen this Aura enters, enchanted creature gains first strike until end of turn.\nEnchanted creature gets +2/+0.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aspect of Manticore:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "target": "EnchantedCreature"
+                },
+                "descriptionOverride": "When this Aura enters, enchanted creature gains first strike until end of turn."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 0
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "artist": "Tomasz Jedruszek",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f67d0091-1925-44a5-89f3-21c2afd5665c.jpg?1783931556",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If Aspect of Manticore leaves the battlefield before its enters-the-battlefield triggered ability resolves, the creature it last enchanted before it left gains first strike until end of turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Athreos, Shroud-Veiled
+{
+    "name": "Athreos, Shroud-Veiled",
+    "manaCost": "{4}{W}{B}",
+    "typeLine": "Legendary Enchantment Creature — God",
+    "oracleText": "Indestructible\nAs long as your devotion to white and black is less than seven, Athreos isn't a creature.\nAt the beginning of your end step, put a coin counter on another target creature.\nWhenever a creature with a coin counter on it dies or is put into exile, return that card to the battlefield under your control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 7
+    },
+    "keywords": [
+        "INDESTRUCTIBLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Athreos, Shroud-Veiled:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "COIN",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "At the beginning of your end step, put a coin counter on another target creature."
+            },
+            {
+                "id": "Athreos, Shroud-Veiled:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "COIN"
+                            }
+                        ]
+                    },
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "TriggeringEntity",
+                    "destination": "Battlefield",
+                    "controllerOverride": "Controller",
+                    "fromZone": "Graveyard"
+                },
+                "descriptionOverride": "Whenever a creature with a coin counter on it dies or is put into exile, return that card to the battlefield under your control."
+            },
+            {
+                "id": "Athreos, Shroud-Veiled:3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "COIN"
+                            }
+                        ]
+                    },
+                    "from": "Battlefield",
+                    "to": "Exile"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "TriggeringEntity",
+                    "destination": "Battlefield",
+                    "controllerOverride": "Controller",
+                    "fromZone": "Exile"
+                },
+                "descriptionOverride": "Whenever a creature with a coin counter on it dies or is put into exile, return that card to the battlefield under your control."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "RemoveCardType",
+                    "cardType": "CREATURE"
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "DevotionTo",
+                        "colors": [
+                            "WHITE",
+                            "BLACK"
+                        ]
+                    },
+                    "operator": "LT",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 7
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "269",
+        "rarity": "MYTHIC",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/871c19fc-7d99-4022-9e13-d679a9e3547e.jpg?1783931501",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If a token with a coin counter on it dies or is exiled, Athreos's last ability triggers, but won't return it to the battlefield."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "The creature returns to the battlefield without a coin counter on it."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If an effect exiles a creature with a coin counter on it and immediately returns it to the battlefield, Athreos's last ability triggers but will have no effect. If an effect exiles a creature with a coin counter on it and would return it to the battlefield at a later time, Athreos's last ability will return that card to the battlefield and it won't be returned later."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If a creature with a coin counter on it is put into a graveyard or exile but leaves that zone before Athreos's last ability resolves, that card stays in its new zone, even if that zone is also a graveyard or exile. You don't return it to the battlefield."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If Athreos and a creature with a coin counter on it are both put into graveyards and/or exiled at the same time, the other creature will be returned to the battlefield."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If Athreos somehow gets a coin counter on itself, its last ability will return it when it dies or is exiled."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If Athreos leaves the battlefield, creatures with coin counters on them keep them. The counters won't have any meaning or effect unless another Athreos is on the battlefield later."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If a creature with a coin counter on it stops being a creature, it keeps its coin counter, but Athreos's last ability won't trigger when that permanent dies or is exiled unless it's a creature again by that time."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If a creature you don't own has a coin counter on it, that permanent will return to the battlefield under your control when it dies or is exiled while you control Athreos."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
+// Atris, Oracle of Half-Truths
+{
+    "name": "Atris, Oracle of Half-Truths",
+    "manaCost": "{2}{U}{B}",
+    "typeLine": "Legendary Creature — Human Advisor",
+    "oracleText": "Menace\nWhen Atris enters, target opponent looks at the top three cards of your library and separates them into a face-down pile and a face-up pile. Put one pile into your hand and the other into your graveyard.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Atris, Oracle of Half-Truths:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "storeAs": "gathered0",
+                            "lookAudience": "None"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseAnyNumber",
+                            "chooser": "TargetPlayer",
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "Separate the top three cards of your opponent's library into a face-up pile and a face-down pile. The cards you select are placed face up; the rest stay face down.",
+                            "selectedLabel": "Face-up pile",
+                            "remainderLabel": "Face-down pile",
+                            "alwaysPrompt": true
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromVariable",
+                                "variableName": "selected1"
+                            },
+                            "storeAs": "gathered2",
+                            "revealed": true
+                        },
+                        {
+                            "type": "ChoosePile",
+                            "pileA": "gathered2",
+                            "pileB": "remainder1",
+                            "pileALabel": "Face-up pile",
+                            "pileBLabel": "Face-down pile",
+                            "storeChosenAs": "chosenPile3",
+                            "storeOtherAs": "otherPile3",
+                            "prompt": "Choose which pile goes to your hand; the other goes to your graveyard."
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "chosenPile3",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "otherPile3",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When Atris enters, target opponent looks at the top three cards of your library and separates them into a face-down pile and a face-up pile. Put one pile into your hand and the other into your graveyard."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "209",
+        "rarity": "RARE",
+        "artist": "Bastien L. Deharme",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/b/db6c91ec-df14-460f-967c-f182562fe7d8.jpg?1783931525",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "You choose just one target opponent to look at the top three cards of your library and put them into piles. Other players can't look, but they may attempt to offer advice without knowing what cards are there. The player who looks may also tell other players truths about those cards, or half-truths, or outright lies."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "You don't have to reveal the cards in the face-down pile if you put it into your hand."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "The opponent may split the cards into one pile of three and one pile of zero. The pile of three cards could be the face-up pile or the face-down pile."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 

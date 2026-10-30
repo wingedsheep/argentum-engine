@@ -6967,8 +6967,9 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   spell you cast, so "a card exiled with Circu" is the whole pile and
   `.sharingNameWith(EffectTarget.LinkedExiledCard())` could only ever name one index of it. Printed
   names on both sides — neither an exiled card nor a card in a hand or library has a battlefield
-  projection a Layer-3 rename could have touched. An empty pile matches nothing; no source in context
-  fails closed. Circu's third line is
+  projection a Layer-3 rename could have touched. A split card compares half by half, so an exiled
+  `Wear // Tear` matches a `Tear` half being cast (Ashiok's Erasure's ruling). An empty pile matches
+  nothing; no source in context fails closed. Circu's third line is
   `PlayersCantCastSpells(affected = Player.EachOpponent, spellFilter = GameObjectFilter.Any.sharingNameWithLinkedExile())`
   — and note that a `PlayersCantCastSpells` filter is evaluated with the *granting permanent* as its
   source, which is what makes any source-relative predicate usable there.

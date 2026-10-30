@@ -1341,16 +1341,19 @@ class PredicateEvaluator(
             // exiling on every blue and every black spell, so no single index names "a card exiled
             // with Circu". Printed names on both sides — a card in exile and a card in a hand or
             // library have no battlefield projection a Layer-3 rename could have touched. Fails
-            // closed with no source in context.
+            // closed with no source in context. A split card off the stack has both halves' names,
+            // so names compare half by half: an exiled "Spite // Malice" shares a name with a
+            // "Spite" half being cast (Ashiok's Erasure's split-card ruling), and vice versa.
             CardPredicate.SharesNameWithLinkedExile -> {
                 val sourceId = context?.sourceId ?: return false
                 val exiledNames = com.wingedsheep.engine.handlers.effects.linkedexile.LinkedExileLookup
                     .exiledCards(state, sourceId)
                     .mapNotNull { state.getEntity(it)?.get<CardComponent>()?.name?.takeIf { n -> n.isNotBlank() } }
+                    .flatMap { splitCardNames(it) }
                     .toSet()
                 if (exiledNames.isEmpty()) return false
                 val entityName = projected.getName(entityId)?.takeIf { it.isNotBlank() } ?: card.name
-                entityName.isNotBlank() && entityName in exiledNames
+                entityName.isNotBlank() && splitCardNames(entityName).any { it in exiledNames }
             }
 
             is CardPredicate.SharesNameWith -> {
@@ -2945,6 +2948,10 @@ class PredicateEvaluator(
         }
     }
 }
+
+/** A split card's names, one per half ("Spite // Malice" → Spite, Malice); any other name alone. */
+private fun splitCardNames(name: String): List<String> =
+    if (" // " in name) name.split(" // ").map { it.trim() } else listOf(name)
 
 /** Every creature type, as a set: a Changeling's subtypes off the battlefield. */
 private val ALL_CREATURE_TYPE_SET: Set<String> = Subtype.ALL_CREATURE_TYPES.toSet()
