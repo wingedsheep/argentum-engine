@@ -254,7 +254,7 @@ internal class EffectApplicator(
                 }
                 is Modification.SetCreatureSubtypesFrom -> {
                     // "Has the creature types of [that object]" (Duplicant). Same replace-only-the-
-                    // creature-types semantics as SetCreatureSubtypes above (CR 205.1b — non-creature
+                    // creature-types semantics as SetCreatureSubtypes above (CR 205.1a — non-creature
                     // subtypes are untouched), but the set is read from the referenced object on every
                     // projection pass instead of being baked in at conversion time.
                     //

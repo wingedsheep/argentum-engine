@@ -41,7 +41,7 @@ val FuturistOperative = card("Futurist Operative") {
             condition = Conditions.SourceIsTapped,
             ability = CompositeStaticAbility(
                 listOf(
-                    TransformPermanent(setSubtypes = setOf("Human", "Citizen"), filter = Filters.Self),
+                    TransformPermanent(setCreatureSubtypes = setOf("Human", "Citizen"), filter = Filters.Self),
                     SetBasePowerToughnessStatic(1, 1, Filters.Self),
                     CantBeBlocked(Filters.Self),
                 )

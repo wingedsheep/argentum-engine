@@ -19,7 +19,7 @@ import com.wingedsheep.sdk.scripting.TransformPermanent
  * (It loses all other creature types.)
  *
  * Futurist Operative's shape, gated on the turn instead of on being tapped: one static ability
- * spanning two layers. [TransformPermanent] with only `setSubtypes` replaces every creature type
+ * spanning two layers. [TransformPermanent] with only `setCreatureSubtypes` replaces every creature type
  * with Bear (Layer 4) while leaving the card types alone, and [SetBasePowerToughnessStatic] sets
  * base P/T to 4/2 (Layer 7b), so +1/+1 counters and pumps still apply on top. Off your turn the
  * condition fails and it is a 2/4 Human Elf Druid again. "Bear Form" is an ability word with no
@@ -39,7 +39,7 @@ val CircleOfTheMoonDruid = card("Circle of the Moon Druid") {
             condition = Conditions.IsYourTurn,
             ability = CompositeStaticAbility(
                 listOf(
-                    TransformPermanent(setSubtypes = setOf(Subtype.BEAR.value), filter = Filters.Self),
+                    TransformPermanent(setCreatureSubtypes = setOf(Subtype.BEAR.value), filter = Filters.Self),
                     SetBasePowerToughnessStatic(4, 2, Filters.Self),
                 )
             ),

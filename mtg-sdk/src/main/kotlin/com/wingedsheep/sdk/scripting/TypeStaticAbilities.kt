@@ -127,7 +127,7 @@ data class IsAllCreatureTypes(
 
 /**
  * The permanents matching [filter] **have the creature types of the object [source] names**,
- * replacing their own (CR 205.1b) while keeping every non-creature subtype.
+ * replacing their own (CR 205.1a) while keeping every non-creature subtype.
  *
  * The type half of the "copy some characteristics of another object" family: [source] is an
  * ordinary [com.wingedsheep.sdk.scripting.targets.EffectTarget.SingleEntity], so the same static reads a card
@@ -629,7 +629,7 @@ data class AnimateLandGroup(
  *   names it had and has only the specified name" — applied at Layer 3 (TEXT), before the
  *   type/color layers. Used by Witness Protection ("named Legitimate Businessperson").
  * @property setCreatureSubtypes Creature types to set, replacing only the existing **creature** types
- *   and leaving every card type, supertype and non-creature subtype in place (CR 205.1b). This is the
+ *   and leaving every card type, supertype and non-creature subtype in place (CR 205.1a). This is the
  *   "is a [creature type]" wording with no card type named — Ichthyomorphosis's "is a blue Fish",
  *   Lignify's "is a Treefolk": an enchanted artifact creature stays an artifact, an Equipment keeps
  *   its Equipment subtype. Use it *instead of* `setCardTypes = {"CREATURE"}` + [setSubtypes], which
@@ -658,7 +658,7 @@ data class TransformPermanent(
         if (setSubtypes.isNotEmpty()) append(setSubtypes.joinToString(" "))
         if (setCreatureSubtypes.isNotEmpty()) append(setCreatureSubtypes.joinToString(" "))
         if (setCardTypes.isNotEmpty()) {
-            if (setSubtypes.isNotEmpty()) append(" ")
+            if (setSubtypes.isNotEmpty() || setCreatureSubtypes.isNotEmpty()) append(" ")
             append(setCardTypes.joinToString(" ") { it.lowercase() })
         }
         if (setName != null) append(" named $setName")

@@ -21,7 +21,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  *  - [TransformPermanent] with only `setCreatureSubtypes` — Layer 4 `SetCreatureSubtypes`
  *    **replaces** every creature type with Treefolk (the 2007-10-01 ruling: it overwrites earlier
  *    type-changing effects, changeling included). Card types and non-creature subtypes are
- *    untouched (CR 205.1b) — "is a Treefolk" changes only the creature type, so an artifact
+ *    untouched (CR 205.1a) — "is a Treefolk" changes only the creature type, so an artifact
  *    creature stays an artifact. Colors and name are untouched for the same reason.
  *  - [LoseAllAbilities] — Layer 6.
  *  - [SetBasePowerToughnessStatic] 0/4 — Layer 7b, so it overwrites a CDA (the ruling names

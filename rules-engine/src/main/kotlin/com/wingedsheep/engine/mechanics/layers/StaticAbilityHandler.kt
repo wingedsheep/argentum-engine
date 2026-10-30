@@ -728,7 +728,7 @@ class StaticAbilityHandler(
             ))
         }
 
-        // Layer 4 (TYPE): "is a [creature type]" — replace only the creature types (CR 205.1b).
+        // Layer 4 (TYPE): "is a [creature type]" — replace only the creature types (CR 205.1a).
         if (ability.setCreatureSubtypes.isNotEmpty()) {
             effects.add(ContinuousEffectData(
                 modification = Modification.SetCreatureSubtypes(ability.setCreatureSubtypes),

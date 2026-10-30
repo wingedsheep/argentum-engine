@@ -17,7 +17,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * Enchant creature
  * Enchanted creature loses all abilities and is a blue Fish with base power and toughness 0/1.
  *
- * "Is a blue Fish" names a creature type but no card type, so per CR 205.1b it replaces only the
+ * "Is a blue Fish" names a creature type but no card type, so per CR 205.1a it replaces only the
  * creature types: an enchantment creature stays an enchantment, a legendary one stays legendary
  * (`setCreatureSubtypes`, not `setCardTypes` + `setSubtypes`). Colors are overwritten to blue
  * (Layer 5), abilities removed (Layer 6), base P/T set to 0/1 (Layer 7b).

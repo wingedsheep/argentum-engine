@@ -17,7 +17,7 @@ import io.kotest.matchers.shouldBe
  * and toughness 0/1."
  *
  * The ruling: it overwrites colors and creature types, but the creature keeps its supertypes and
- * every other card type (CR 205.1b — "is a Fish" names no card type).
+ * every other card type (CR 205.1a — "is a Fish" names no card type).
  */
 class IchthyomorphosisScenarioTest : FunSpec({
 

@@ -52,7 +52,7 @@ val GoddricCloakedReveler = card("Goddric, Cloaked Reveler") {
             condition = Conditions.Celebration,
             ability = CompositeStaticAbility(
                 listOf(
-                    TransformPermanent(setSubtypes = setOf("Dragon"), filter = Filters.Self),
+                    TransformPermanent(setCreatureSubtypes = setOf("Dragon"), filter = Filters.Self),
                     SetBasePowerToughnessStatic(4, 4, Filters.Self),
                     GrantKeyword(Keyword.FLYING, Filters.Self),
                     GrantActivatedAbility(

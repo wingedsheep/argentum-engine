@@ -7131,13 +7131,13 @@
                     "abilities": [
                         {
                             "type": "TransformPermanent",
-                            "setSubtypes": [
-                                "Dragon"
-                            ],
                             "filter": {
                                 "baseFilter": "permanent",
                                 "scope": "Self"
-                            }
+                            },
+                            "setCreatureSubtypes": [
+                                "Dragon"
+                            ]
                         },
                         {
                             "type": "SetBasePowerToughnessStatic",

@@ -2478,13 +2478,13 @@
                     "abilities": [
                         {
                             "type": "TransformPermanent",
-                            "setSubtypes": [
-                                "Bear"
-                            ],
                             "filter": {
                                 "baseFilter": "permanent",
                                 "scope": "Self"
-                            }
+                            },
+                            "setCreatureSubtypes": [
+                                "Bear"
+                            ]
                         },
                         {
                             "type": "SetBasePowerToughnessStatic",
