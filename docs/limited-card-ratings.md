@@ -119,6 +119,8 @@ set.
      `_manifest.json`;
    - add the code to `DraftsimData`'s first-party list and to `DraftsimDataTest`'s name-join test.
 
+   The `set-loop` finishing PR does this for every draftable set it completes that has no table yet.
+
 `DraftsimDataTest` fails when a manifest code has an empty table, when a key isn't already
 nameKey-normalized, or when our registry's cards for a listed set don't resolve a rating.
 

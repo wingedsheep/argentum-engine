@@ -50,7 +50,7 @@ data class DraftsimSetTables(
  * **Provenance.** Most tables are vendored from the Draftsim bundle, but not all of them are:
  * Draftsim's simulator never covered the pre-2004 sets or original Dominaria, so `ATQ`, `SCG`,
  * `LGN`, `POR`, `DOM`, `MRD`, `ONS` and `INV` are **first-party**, hand-curated on the same 0–5
- * scale. So are `KHM`, `ZNR`, `LRW`, `RAV`, `CHK`, `J22`, `LEA`, `LEB`, `LEG`, `ARN`, `DRK`, `FEM`,
+ * scale. So are `KHM`, `ZNR`, `M21`, `LRW`, `RAV`, `CHK`, `J22`, `LEA`, `LEB`, `LEG`, `ARN`, `DRK`, `FEM`,
  * `PTK`, `P02` and `S99`, which the vendored bundle doesn't ship (`LEA`/`LEB` are almost entirely
  * carried from `30A`), and `STX`, `MAT` and the Commander, duel-deck and treasure-chest products
  * `PIP`, `BLC`, `NCC`, `NEC`, `C15`, `C17`, `CMD`, `DDQ` and `PZ2`. Those last nine aren't drafted;

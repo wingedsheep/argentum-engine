@@ -1,0 +1,237 @@
+{
+  "Angelic Ascension": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Brash Taunter": [
+    "removal",
+    "creature-removal"
+  ],
+  "Capture Sphere": [
+    "removal",
+    "creature-removal"
+  ],
+  "Chandra's Incinerator": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Chandra's Magmutt": [
+    "removal",
+    "planeswalker-removal"
+  ],
+  "Chandra, Flame's Catalyst": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Chandra, Heart of Fire": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Destructive Tampering": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Eliminate": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Enthralling Hold": [
+    "removal",
+    "creature-removal"
+  ],
+  "Faith's Fetters": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Feline Sovereign": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Finishing Blow": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Frost Breath": [
+    "removal",
+    "creature-removal"
+  ],
+  "Garruk, Savage Herald": [
+    "removal",
+    "creature-removal"
+  ],
+  "Goblin Arsonist": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Goremand": [
+    "removal",
+    "creature-removal"
+  ],
+  "Grasp of Darkness": [
+    "removal",
+    "creature-removal"
+  ],
+  "Heartfire Immolator": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Hooded Blightfang": [
+    "removal",
+    "planeswalker-removal"
+  ],
+  "Hunter's Edge": [
+    "removal",
+    "creature-removal"
+  ],
+  "Kaervek, the Spiteful": [
+    "removal",
+    "creature-removal"
+  ],
+  "Legion's Judgment": [
+    "removal",
+    "creature-removal"
+  ],
+  "Liliana's Scorn": [
+    "removal",
+    "creature-removal"
+  ],
+  "Liliana, Waker of the Dead": [
+    "removal",
+    "creature-removal"
+  ],
+  "Massacre Wurm": [
+    "removal",
+    "creature-removal"
+  ],
+  "Meteorite": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Pestilent Haze": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Pitchburn Devils": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Primal Might": [
+    "removal",
+    "creature-removal"
+  ],
+  "Rambunctious Mutt": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Return to Nature": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Run Afoul": [
+    "removal",
+    "creature-removal"
+  ],
+  "Sanctum of Shattered Heights": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Scorching Dragonfire": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Secure the Scene": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Shock": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Silent Dart": [
+    "removal",
+    "creature-removal"
+  ],
+  "Skeleton Archer": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Skyway Sniper": [
+    "removal",
+    "creature-removal"
+  ],
+  "Soul Sear": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Sparkhunter Masticore": [
+    "removal",
+    "planeswalker-removal"
+  ],
+  "Swift Response": [
+    "removal",
+    "creature-removal"
+  ],
+  "Teferi, Master of Time": [
+    "removal",
+    "creature-removal"
+  ],
+  "Teferi, Timeless Voyager": [
+    "removal",
+    "creature-removal"
+  ],
+  "Thrashing Brontodon": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Transmogrify": [
+    "removal",
+    "creature-removal"
+  ],
+  "Turn to Slag": [
+    "removal",
+    "creature-removal"
+  ],
+  "Ugin, the Spirit Dragon": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Volcanic Geyser": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Volcanic Salvo": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ]
+}

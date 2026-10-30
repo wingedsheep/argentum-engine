@@ -115,7 +115,7 @@ class DraftsimDataTest : FunSpec({
     // sets and the rest the bundle never covered (see `DraftsimData`'s class doc), where the join is
     // against names we authored ourselves and so should be near-total.
     listOf("LTR", "MSH", "HOB", "FRA", "ATQ", "SCG", "LGN", "POR", "DOM", "MRD", "ONS", "INV",
-        "KHM", "ZNR", "LRW", "RAV", "CHK", "J22", "LEA", "LEB", "LEG", "ARN", "DRK", "FEM", "PTK",
+        "KHM", "ZNR", "M21", "LRW", "RAV", "CHK", "J22", "LEA", "LEB", "LEG", "ARN", "DRK", "FEM", "PTK",
         "P02", "S99", "PIP", "BLC", "STX", "NCC", "C15", "CMD", "C17", "PZ2", "DDQ", "NEC", "MAT",
     ).forEach { code ->
         test("most $code cards in our registry resolve a Draftsim rating (name join works)") {
