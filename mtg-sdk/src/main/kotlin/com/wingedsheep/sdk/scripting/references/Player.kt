@@ -163,6 +163,19 @@ sealed interface Player {
         override val description: String = "each player, starting with you"
     }
 
+    /**
+     * All players in turn order **starting with the next opponent** after you (the ability's
+     * controller) and ending with you — "Starting with the next opponent in turn order, each player
+     * …" (Sadistic Shell Game). The rotation [EachStartingWithYou] gives, moved on to the first
+     * opponent after you, so you act after every opponent; in a team game a teammate seated before
+     * that opponent acts after you. Like its sibling, anchored to the controller when the loop starts.
+     */
+    @SerialName("EachStartingWithNextOpponent")
+    @Serializable
+    data object EachStartingWithNextOpponent : Player {
+        override val description: String = "each player, starting with the next opponent in turn order"
+    }
+
     /** Any player (for matching/filtering) */
     @SerialName("Any")
     @Serializable
@@ -564,6 +577,7 @@ sealed interface Player {
             ActivePlayer -> "the active player's"
             ActivePlayerFirst -> "each player's"
             EachStartingWithYou -> "each player's"
+            EachStartingWithNextOpponent -> "each player's"
             EachOpponent -> "each opponent's"
             EachOtherPlayer -> "each other player's"
             Any -> "a player's"

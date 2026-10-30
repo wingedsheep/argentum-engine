@@ -1754,6 +1754,21 @@ class PredicateEvaluator(
             // creature's — so the turn-order guard lives here.
             Player.TriggeringPlayer ->
                 context.triggeringEntityId?.takeIf { it in state.turnOrder }
+            // "you", read off the source rather than off the context's controller — which a
+            // per-player loop rebinds to the iterated player. "Each player chooses a creature you
+            // don't control" (Sadistic Shell Game) is `Not(ControlledByReferencedPlayer(this))`
+            // evaluated with each chooser as `Player.You`. A spell or ability on the stack answers
+            // with its caster / controller, a permanent with its projected controller.
+            Player.ControllerOfSource -> context.sourceId?.let { sourceId ->
+                state.getEntity(sourceId)?.let {
+                    it.get<SpellOnStackComponent>()?.casterId
+                        ?: it.get<ActivatedAbilityOnStackComponent>()?.controllerId
+                        ?: it.get<TriggeredAbilityOnStackComponent>()?.controllerId
+                        ?: projected.getController(sourceId)
+                        ?: it.get<ControllerComponent>()?.playerId
+                        ?: it.get<LastKnownPermanentComponent>()?.snapshot?.controllerId
+                }
+            }
             // "the same owner as this" — the source card's immutable owner, in any zone.
             Player.OwnerOfSource -> context.sourceId?.let { state.getEntity(it) }?.let {
                 it.get<com.wingedsheep.engine.state.components.identity.OwnerComponent>()?.playerId

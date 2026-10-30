@@ -1001,6 +1001,19 @@ data class GameState(
     }
 
     /**
+     * [activePlayers] rotated to start with the first opponent after [playerId] in turn order, so
+     * [playerId] comes after every opponent before them — "starting with the next opponent in turn
+     * order, each player …" (Sadistic Shell Game). A teammate seated between [playerId] and that
+     * opponent is passed over to begin with and acts last in the rotation. Falls back to
+     * [turnOrderStartingWith] [playerId] when they have no opponent left.
+     */
+    fun turnOrderStartingWithNextOpponent(playerId: EntityId): List<EntityId> {
+        val fromYou = turnOrderStartingWith(playerId)
+        val next = fromYou.firstOrNull { it != playerId && isOpponentOf(it, playerId) } ?: return fromYou
+        return turnOrderStartingWith(next)
+    }
+
+    /**
      * Opponents of a player, in turn order, excluding players who have lost or left the
      * game. There is deliberately no single-opponent helper: any code that needs one
      * specific opponent must say which one (a chosen target, an iteration, or the

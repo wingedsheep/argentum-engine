@@ -1726,6 +1726,7 @@ class DynamicAmountEvaluator(
             }
             is Player.ActivePlayerFirst -> state.apnapOrder
             is Player.EachStartingWithYou -> state.turnOrderStartingWith(context.controllerId)
+            is Player.EachStartingWithNextOpponent -> state.turnOrderStartingWithNextOpponent(context.controllerId)
             is Player.Candidate -> listOfNotNull(context.candidatePlayerId)
             is Player.ChosenOpponent -> listOfNotNull(
                 context.chosenOpponent(state)

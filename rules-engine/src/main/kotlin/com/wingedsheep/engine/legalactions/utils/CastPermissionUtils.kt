@@ -428,7 +428,8 @@ class CastPermissionUtils(
         when (affected) {
             is Player.You -> castingPlayerId == controllerId
             is Player.EachOpponent -> castingPlayerId != controllerId
-            is Player.Each, is Player.Any, is Player.ActivePlayerFirst, is Player.EachStartingWithYou -> true
+            is Player.Each, is Player.Any, is Player.ActivePlayerFirst, is Player.EachStartingWithYou,
+            is Player.EachStartingWithNextOpponent -> true
             // Target-bound references (TargetPlayer, …) have no meaning for a continuous static.
             else -> false
         }

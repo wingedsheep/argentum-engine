@@ -139,6 +139,91 @@
     ]
 }
 
+// Sadistic Shell Game
+{
+    "name": "Sadistic Shell Game",
+    "manaCost": "{4}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Starting with the next opponent in turn order, each player chooses a creature you don't control. Destroy the chosen creatures.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachStartingWithNextOpponent"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsCreature"
+                                        ],
+                                        "controllerPredicate": {
+                                            "type": "ControllerNot",
+                                            "predicate": {
+                                                "type": "ControlledByReferencedPlayer",
+                                                "target": {
+                                                    "type": "PlayerRef",
+                                                    "player": "ControllerOfSource"
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "storeAs": "gathered1"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered1",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected2",
+                                "prompt": "Choose a creature the caster doesn't control",
+                                "useTargetingUI": true
+                            }
+                        ]
+                    },
+                    "collectCollections": {
+                        "selected2": "collected3"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "collected3",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "rarity": "RARE",
+        "artist": "Karl Kopinski",
+        "flavorText": "\"Shame about your friends. Wanna see what's inside yours?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/c/4c5c8eb3-c866-4974-90eb-be99c07af1a1.jpg?1783909657"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Spiked Corridor // Torture Pit
 {
     "name": "Spiked Corridor // Torture Pit",

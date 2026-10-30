@@ -5976,8 +5976,10 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   that candidate, so `Player.You` inside the loop means "the player being tested" and the ability's own
   controller is otherwise unreachable. That is the shape of "for each opponent who has more cards in
   hand **than you**" (Wojek Investigator): `CountPlayersWith(EachOpponent, CompareAmounts(Count(You,
-  HAND), GT, Count(ControllerOfSource, HAND)))`. Pairs with `Player.OwnerOfSource`, which follows
-  *ownership* instead of control.
+  HAND), GT, Count(ControllerOfSource, HAND)))`. It also scopes filters through
+  `ControllerPredicate.ControlledByReferencedPlayer(PlayerRef(ControllerOfSource))` — negated, "a
+  creature you don't control" inside a per-player loop (Sadistic Shell Game). Pairs with
+  `Player.OwnerOfSource`, which follows *ownership* instead of control.
 - `Player.OwnersOfLinkedExile` — the **distinct owners** of the cards still in the effect source's
   linked-exile pile (`LinkedExileComponent`, populated by `Effects.ExileUntilLeaves`). A *list*
   reference: reach it only through `Effects.ForEachPlayer(Player.OwnersOfLinkedExile, …)`, typically
@@ -6045,6 +6047,16 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   until no one puts a card onto the battlefield") = `RepeatWhile(Pipeline {
   forEachPlayerCollecting(Player.EachStartingWithYou) { chooseUpTo(1, permanents in hand) → move(→
   BATTLEFIELD) } }, WhileCondition(CollectionContainsMatch(putThisRound)))`.
+- `Player.EachStartingWithNextOpponent` — every player in turn order **starting with the next
+  opponent** after you and ending with you — "Starting with the next opponent in turn order, each
+  player …". The `EachStartingWithYou` rotation moved on to the first opponent after you, so you act
+  after every opponent; in a team game a teammate seated before that opponent is passed over and acts
+  after you. Resolves wherever `EachStartingWithYou` does. Sadistic Shell Game ("… each player chooses
+  a creature you don't control. Destroy the chosen creatures.") = `Pipeline { val (chosen) =
+  forEachPlayerCollecting(Player.EachStartingWithNextOpponent) { listOf(chooseExactly(1,
+  gather(BattlefieldMatching(Creature.copy(controllerPredicate = Not(ControlledByReferencedPlayer(
+  PlayerRef(Player.ControllerOfSource))))))) }; destroy(chosen) }` — inside the loop `Player.You` is
+  the chooser, so "you don't control" names the caster through `ControllerOfSource`.
 - `Player.EachOtherPlayer` — every player **other than you**, in turn order — "each other player".
   Not `Player.EachOpponent`: a player's opponents are everyone not on their team (CR 102.3), so in a
   team game (Two-Headed Giant) "each opponent" skips your teammate while "each other player" includes

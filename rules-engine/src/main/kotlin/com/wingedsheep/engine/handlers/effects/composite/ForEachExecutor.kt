@@ -328,6 +328,7 @@ class ForEachExecutor(
             Player.Each -> state.activePlayers
             Player.ActivePlayerFirst -> state.apnapOrder
             Player.EachStartingWithYou -> state.turnOrderStartingWith(context.controllerId)
+            Player.EachStartingWithNextOpponent -> state.turnOrderStartingWithNextOpponent(context.controllerId)
             Player.You -> listOf(context.controllerId)
             Player.EachOpponent -> state.getOpponents(context.controllerId)
             Player.EachOtherPlayer -> state.getOtherPlayers(context.controllerId)

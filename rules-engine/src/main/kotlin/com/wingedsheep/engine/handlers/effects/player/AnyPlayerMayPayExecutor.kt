@@ -70,6 +70,7 @@ class AnyPlayerMayPayExecutor(
         val eligible = when (effect.eligiblePlayers) {
             Player.Each, Player.ActivePlayerFirst -> apnapOrder
             Player.EachStartingWithYou -> state.turnOrderStartingWith(context.controllerId)
+            Player.EachStartingWithNextOpponent -> state.turnOrderStartingWithNextOpponent(context.controllerId)
             Player.EachOpponent -> state.getOpponents(context.controllerId).toSet()
                 .let { opponents -> apnapOrder.filter { it in opponents } }
             Player.EachOtherPlayer -> apnapOrder.filter { it != context.controllerId }
