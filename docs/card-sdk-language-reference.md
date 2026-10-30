@@ -12686,6 +12686,13 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   Peacekeeper: "Activated abilities of sources with the chosen name cost {2} more to activate unless
   they're mana abilities" →
   `IncreaseActivatedAbilityCost(GroupFilter(GameObjectFilter.Any.namedFromChosenComponent()), DynamicAmounts.fixed(2), excludeManaAbilities = true)`.
+  `loyaltyAbilitiesOnly = true` taxes only loyalty abilities (the ability's `isPlaneswalkerAbility`)
+  and leaves every other activated ability of a matching source alone. The tax is mana prepended to
+  the loyalty cost — "+1:" becomes "{1}, +1:" — so the loyalty change, a [−X]'s X choice and its cap
+  are untouched. Eidolon of Obstruction: "Loyalty abilities of planeswalkers your opponents control
+  cost {1} more to activate" →
+  `IncreaseActivatedAbilityCost(GroupFilter(GameObjectFilter.Planeswalker.opponentControls()), DynamicAmounts.fixed(1), loyaltyAbilitiesOnly = true)`.
+  (Carth the Lion's loyalty-symbol surcharge is the separate `LoyaltyAbilitiesCostAdditional`.)
 - `LoyaltyAbilitiesCostAdditional(amount = 1)` — planeswalkers' loyalty abilities this permanent's
   controller activates cost an additional [+`amount`]. Carth the Lion: "Planeswalkers' loyalty abilities
   you activate cost an additional [+1] to activate" → `LoyaltyAbilitiesCostAdditional(1)`. The surcharge is

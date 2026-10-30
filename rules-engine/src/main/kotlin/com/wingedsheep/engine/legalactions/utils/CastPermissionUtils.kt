@@ -944,6 +944,7 @@ class CastPermissionUtils(
         isManaAbility: Boolean = false,
         chosenTargetIds: List<EntityId>? = emptyList(),
         abilityKeyword: com.wingedsheep.sdk.core.Keyword? = null,
+        isLoyaltyAbility: Boolean = false,
     ): AbilityCost {
         if (sourceId == null) return cost
         val reduced =
@@ -951,7 +952,7 @@ class CastPermissionUtils(
         val (net, manaFloor) =
             sumActivatedAbilityCostModifications(
                 state, sourceId, activatorId, onceOnlyKind, isManaAbility, chosenTargetIds,
-                abilityKeyword
+                abilityKeyword, isLoyaltyAbility
             )
         if (net == 0) return reduced
         // net > 0 reduces (floored), net < 0 taxes. A reduction can only shrink mana that is
@@ -1065,7 +1066,8 @@ class CastPermissionUtils(
      * A `onceOnlyKind` reduction contributes nothing unless the ability is of that [onceOnlyKind],
      * and a `keyword` one unless
      * [abilityKeyword] (the ability's `ActivatedAbility.keyword`) is that keyword. An `excludeManaAbilities` *increase*
-     * contributes nothing when [isManaAbility] is set (Suppression Field). An
+     * contributes nothing when [isManaAbility] is set (Suppression Field), and a `loyaltyAbilitiesOnly`
+     * one unless [isLoyaltyAbility] is (Eidolon of Obstruction). An
      * `onlyIfTargetIsSource` reduction contributes only when [chosenTargetIds] include the static's
      * own source (see [applyActivatedAbilityCostReduction] for the `null` enumeration case).
      */
@@ -1077,6 +1079,7 @@ class CastPermissionUtils(
         isManaAbility: Boolean,
         chosenTargetIds: List<EntityId>?,
         abilityKeyword: com.wingedsheep.sdk.core.Keyword?,
+        isLoyaltyAbility: Boolean,
     ): Pair<Int, Int> {
         var net = 0
         var floor = 0
@@ -1126,6 +1129,8 @@ class CastPermissionUtils(
                         // abilities" (CR 605): a board-wide tax that skipped this would price every
                         // land's `{T}: Add …` at {2} more.
                         if (ability.excludeManaAbilities && isManaAbility) continue
+                        // Eidolon of Obstruction taxes only loyalty abilities (CR 606).
+                        if (ability.loyaltyAbilitiesOnly && !isLoyaltyAbility) continue
                         if (!activatedAbilityReductionApplies(state, entityId, ability.filter, sourceId)) continue
                         val owner = controllerId ?: continue
                         net -= evaluator.evaluate(

@@ -626,7 +626,8 @@ export function buildActionOptions(
       options.push({
         key: `pw-${pw.abilityId}-${index}`,
         label: pw.description,
-        manaCost: null,
+        // A loyalty tax (Eidolon of Obstruction) adds mana to the loyalty cost; untaxed it's null.
+        manaCost: match?.manaCostString || null,
         isAvailable: match !== undefined && match.isAffordable !== false,
         action: match ?? null,
         actionType: 'activate',

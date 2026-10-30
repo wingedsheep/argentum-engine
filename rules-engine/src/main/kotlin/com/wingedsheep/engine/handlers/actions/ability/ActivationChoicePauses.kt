@@ -156,7 +156,8 @@ internal class ActivationChoicePauses(
         val tapXCost = effectiveCost.extractTapXPermanentsCost()
         val manaXCost = effectiveCost.extractManaCost()
         val counterMaxX = PlayerCounterPayment.abilityMaxX(state, action.playerId, effectiveCost)
-        if (!((manaXCost?.hasX == true || effectiveCost == AbilityCost.LoyaltyX || counterMaxX != null) && action.xValue == null && tapXCost == null)) {
+        val loyaltyX = effectiveCost.extractLoyaltyCost() == AbilityCost.LoyaltyX
+        if (!((manaXCost?.hasX == true || loyaltyX || counterMaxX != null) && action.xValue == null && tapXCost == null)) {
             return null
         }
         val fixedMana = manaXCost?.cmc ?: 0 // the non-X portion ({X} alone is 0; {1}{X} is 1)
@@ -166,7 +167,7 @@ internal class ActivationChoicePauses(
             ) - fixedMana).coerceAtLeast(0) /
                 manaXCost.xCount.coerceAtLeast(1)
         } else null
-        val loyaltyMaxX = if (effectiveCost == AbilityCost.LoyaltyX) {
+        val loyaltyMaxX = if (loyaltyX) {
             castPermissionUtils.maxLoyaltyX(state, action.sourceId, action.playerId)
         } else null
         val maxX = listOfNotNull(manaMaxX, loyaltyMaxX, counterMaxX).minOrNull() ?: 0

@@ -586,7 +586,7 @@ class ActivateAbilityHandler(
             onceOnlyKind = ability.onceOnlyKind,
             cantBeCopied = ability.cantBeCopied,
             isLoyalty = ability.isPlaneswalkerAbility,
-            loyaltyCountersRemoved = when (val cost = effectiveCost) {
+            loyaltyCountersRemoved = when (val cost = effectiveCost.extractLoyaltyCost()) {
                 is AbilityCost.Loyalty -> if (cost.change < 0) -cost.change else 0
                 AbilityCost.LoyaltyX -> activation.effectiveXValue ?: 0
                 else -> 0

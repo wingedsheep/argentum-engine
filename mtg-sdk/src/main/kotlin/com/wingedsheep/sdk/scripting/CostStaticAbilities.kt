@@ -1292,19 +1292,25 @@ enum class ActivatedAbilityReach {
  *   `{T}: Add …` at {2} more, which is the opposite of what the card says. The flag is the mirror of
  *   [PreventActivatedAbilities]'s `nonManaAbilitiesOnly`; the ability's own `isManaAbility` flag
  *   (CR 605.1a, enforced by `CardLinter`) is what the engine reads.
+ * @property loyaltyAbilitiesOnly Tax only loyalty abilities (the ability's `isPlaneswalkerAbility`
+ *   flag) — Eidolon of Obstruction's "Loyalty abilities of planeswalkers your opponents control cost
+ *   {1} more to activate". The tax is mana prepended to the loyalty cost ("{1}, +1:"); the loyalty
+ *   change itself is untouched.
  */
 @SerialName("IncreaseActivatedAbilityCost")
 @Serializable
 data class IncreaseActivatedAbilityCost(
     val filter: GroupFilter,
     val amount: DynamicAmount,
-    val excludeManaAbilities: Boolean = false
+    val excludeManaAbilities: Boolean = false,
+    val loyaltyAbilitiesOnly: Boolean = false
 ) : StaticAbility {
     override val description: String = buildString {
         append(filter.description.replaceFirstChar { it.uppercase() })
+        val kind = if (loyaltyAbilitiesOnly) "loyalty" else "activated"
         when (amount) {
-            is DynamicAmount.Fixed -> append("'s activated abilities cost {${amount.amount}} more to activate")
-            else -> append("'s activated abilities cost {X} more to activate, where X is ${amount.description}")
+            is DynamicAmount.Fixed -> append("'s $kind abilities cost {${amount.amount}} more to activate")
+            else -> append("'s $kind abilities cost {X} more to activate, where X is ${amount.description}")
         }
         if (excludeManaAbilities) append(" unless they're mana abilities")
     }
