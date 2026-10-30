@@ -478,9 +478,9 @@ sealed interface EffectTarget {
 
     /**
      * TAPPED AS COST: a permanent tapped to pay this activation's cost, or this spell's additional
-     * cost — the tap counterpart of [SacrificedAsCost], reading `EffectContext.tappedPermanents`. A
-     * value read of it falls back to the snapshot taken as the cost was paid if it has since left
-     * the battlefield.
+     * cost — the tap counterpart of [SacrificedAsCost], reading `EffectContext.tappedPermanents`. On an
+     * activation, a value read of it falls back to the snapshot taken as the cost was paid if it has
+     * since left the battlefield; a spell records the ids only (no snapshot fallback).
      *
      * Vodalian War Machine (FEM) is the card that needs it: each of its abilities taps an untapped
      * Merfolk, and its death trigger destroys the Merfolk that paid. Each activation schedules its
