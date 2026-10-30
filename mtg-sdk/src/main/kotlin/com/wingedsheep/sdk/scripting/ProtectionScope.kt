@@ -81,9 +81,8 @@ sealed interface ProtectionScope {
      * Halo enters, choose a card name. You have protection from the chosen card name." The name
      * twin of [ChosenCardType]: late-bound, the engine reads the source's durable choice under
      * [slot] wherever the protection is applied and matches a source whose (projected) name equals
-     * it — a token only when it carries that name, a face-down permanent never (it has no name),
-     * and a split, adventurer or double-faced card only by the face name it currently has. With no
-     * name chosen it protects from nothing.
+     * it — a token only when it carries that name, a face-down permanent never (it has no name).
+     * With no name chosen it protects from nothing.
      *
      * Engine-wired for player protection only — [GrantProtectionToController]; there is no
      * creature-protection keyword for a name, so the printed keywords, the one-shot grants and the
