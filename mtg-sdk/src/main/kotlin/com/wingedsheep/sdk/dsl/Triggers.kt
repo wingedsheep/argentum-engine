@@ -416,12 +416,14 @@ class ObjectTriggerSubject internal constructor(
     /**
      * "Whenever this creature mutates" (CR 702.140d) — a mutating creature spell merged with this
      * permanent, whether it went over or under, and whether this card is the mutating one or an
-     * existing component. Self-only: the mutated permanent is the one whose abilities trigger.
+     * existing component. Under [Triggers.a] / [Triggers.another] the subject filter picks the
+     * merged permanent, which becomes the triggering entity: `Triggers.a(Creature.youControl())
+     * .mutates()` is "whenever a creature you control mutates" (Essence Symbiote).
      */
     fun mutates(): TriggerSpec {
-        only("mutates", TriggerBinding.SELF)
-        unfiltered("mutates")
-        return spec(MutateEvent)
+        only("mutates", TriggerBinding.SELF, TriggerBinding.ANY, TriggerBinding.OTHER)
+        if (binding == TriggerBinding.SELF) unfiltered("mutates")
+        return spec(MutateEvent(filter = filterOrAny))
     }
 
     /**

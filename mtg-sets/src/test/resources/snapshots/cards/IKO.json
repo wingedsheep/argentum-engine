@@ -2063,6 +2063,57 @@
     ]
 }
 
+// Essence Symbiote
+{
+    "name": "Essence Symbiote",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "Whenever a creature you control mutates, put a +1/+1 counter on that creature and you gain 2 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Essence Symbiote:1",
+                "trigger": {
+                    "type": "MutateEvent",
+                    "filter": "creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "TriggeringEntity"
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "149",
+        "artist": "Jason Felix",
+        "flavorText": "The Ozolith's appearance spawned a new era of wild mutation on Ikoria. Some creatures hunted different prey, lived in new habitats, and thrived on mutation itself.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8d09ddf0-91f0-4e76-809f-c39ca7418ed5.jpg?1783931039"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Excavation Mole
 {
     "name": "Excavation Mole",

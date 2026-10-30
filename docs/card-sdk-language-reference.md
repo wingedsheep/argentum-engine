@@ -8209,7 +8209,7 @@ moves), `attacks(requires)`, `blocks(attackerFilter?, minBlockedAttackers?)`, `b
 `blocksOrBecomesBlocked(by?, oncePerCombat?)`, `attacksAndIsntBlocked()`, `dealsDamage(to, damageType,
 requireExcess, batch, requires)`, `dealsCombatDamage(to, …)`, `isDealtDamage(by)`,
 `damagedCreatureDies(dying?)`, `becomesTapped(reason?, firstTimeEachTurn?)`, `becomesUntapped()`, `tappedForMana()` (SELF / ATTACHED), `manaAbilityResolves()` (SELF only),
-`turnedFaceUp()`, `mutates()` (SELF only), `transforms(intoBackFace?)`, `phasesIn()`, `becomesTarget(of?, byYou, byOpponent,
+`turnedFaceUp()`, `mutates()` (SELF / ANY / OTHER), `transforms(intoBackFace?)`, `phasesIn()`, `becomesTarget(of?, byYou, byOpponent,
 spellsOnly, abilitiesOnly, firstTimeEachTurn, includeSpellTargets, players, ofBackupAbility,
 targetsOnlyIt)`,
 `getsCounters(type?, by?, firstTimeEachTurn?, batch?, orPlayer?)`, `losesCounters(type?, lastRemoved?,
@@ -9409,6 +9409,9 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
 ### State change & misc
 
 - `Triggers.self.mutates()` — "whenever this creature mutates" (Gemrazer); see `Mutate` under parameterized keywords.
+- `Triggers.a(Creature.youControl()).mutates()` — "whenever a creature you control mutates" (Essence Symbiote). The
+  subject filter is matched against the merged permanent (projected, after the merge), which is the triggering entity —
+  `EffectTarget.TriggeringEntity` is "that creature". `Triggers.another(…)` excludes the source's own permanent.
 - `Triggers.self.turnedFaceUp()` — source turns face up. Use `Triggers.self.turnedFaceUp()` / `Triggers.attached.turnedFaceUp()` for the ATTACHED-binding aura variant (Fatal Mutation).
 - `Triggers.<player>.permanentTurnedFaceUp(filter)` — when a creature you control turns face up. `filter`
   narrows *which* creature and is evaluated against the permanent's **post-flip** characteristics
@@ -14193,7 +14196,8 @@ Blighted Agent, Ichor Rats, Plague Stinger, Skithiryx.
   the battlefield every component goes to the new zone (CR 730.3); a token component is a token
   there, and the permanent is a token only while a token is on top (CR 730.2d). "Whenever this
   creature mutates" is `Triggers.self.mutates()` — it fires for each mutate ability of the merged
-  permanent, whichever card carries it. Gemrazer:
+  permanent, whichever card carries it. "Whenever a creature you control mutates" is
+  `Triggers.a(Creature.youControl()).mutates()`. Gemrazer:
   `keywordAbility(KeywordAbility.mutate("{1}{G}{G}"))` + `keywords(REACH, TRAMPLE)` +
   `triggeredAbility { trigger = Triggers.self.mutates(); val p = target(TargetFilter.ArtifactOrEnchantment.opponentControls()); effect = Effects.Destroy(p) }`.
   Engine side: `MutateCasts` (target, merge, separation) and `MergedComponent`; the composite

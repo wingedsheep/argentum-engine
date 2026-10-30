@@ -2591,12 +2591,22 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     /**
      * When a mutating creature spell merges with a permanent (CR 702.140d). Binding SELF =
      * "whenever this creature mutates": the merged permanent — whichever of its cards carries the
-     * ability, top or under — is the one that mutated.
+     * ability, top or under — is the one that mutated. [filter] narrows *which* permanent under a
+     * non-SELF binding ("whenever a creature you control mutates" — Essence Symbiote), matched
+     * against the merged permanent's characteristics; that permanent is the triggering entity.
      */
     @SerialName("MutateEvent")
     @Serializable
-    data object MutateEvent : EventPattern {
-        override val description: String = "this creature mutates"
+    data class MutateEvent(
+        val filter: GameObjectFilter = GameObjectFilter.Any
+    ) : EventPattern {
+        override val description: String =
+            if (filter == GameObjectFilter.Any) "this creature mutates" else "a ${filter.description} mutates"
+
+        override fun applyTextReplacement(replacer: TextReplacer): EventPattern {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
     }
 
     /**

@@ -867,7 +867,18 @@ class TriggerMatcher(
                 event is BecomesTargetEvent && matchesBecomesTargetTrigger(trigger, binding, event, sourceId, controllerId, state)
             }
             is EventPattern.MutateEvent -> {
-                event is com.wingedsheep.engine.core.MutatedEvent && event.permanentId == sourceId
+                if (event !is com.wingedsheep.engine.core.MutatedEvent) return false
+                if (binding == TriggerBinding.SELF) return event.permanentId == sourceId
+                if (binding == TriggerBinding.OTHER && event.permanentId == sourceId) return false
+                // "a creature you control mutates" — the merge has already happened by detection
+                // time, so the projected state holds the merged permanent's characteristics.
+                trigger.filter == GameObjectFilter.Any || predicateEvaluator.matches(
+                    state,
+                    state.projectedState,
+                    event.permanentId,
+                    trigger.filter,
+                    com.wingedsheep.engine.handlers.PredicateContext(controllerId = controllerId, sourceId = sourceId)
+                )
             }
             is EventPattern.TurnFaceUpEvent -> {
                 event is TurnFaceUpEvent && (binding != TriggerBinding.SELF || event.entityId == sourceId)
