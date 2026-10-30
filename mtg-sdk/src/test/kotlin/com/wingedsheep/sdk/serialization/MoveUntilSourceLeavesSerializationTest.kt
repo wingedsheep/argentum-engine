@@ -15,4 +15,10 @@ class MoveUntilSourceLeavesSerializationTest : FunSpec({
         val encoded = CardSerialization.json.encodeToString<Effect>(effect)
         CardSerialization.json.decodeFromString<Effect>(encoded) shouldBe effect
     }
+
+    test("zone-return effect round trips with another anchor") {
+        val effect = Effects.MoveUntilLeaves(EffectTarget.ContextTarget(0), Zone.EXILE, anchor = EffectTarget.ContextTarget(1))
+        val encoded = CardSerialization.json.encodeToString<Effect>(effect)
+        CardSerialization.json.decodeFromString<Effect>(encoded) shouldBe effect
+    }
 })

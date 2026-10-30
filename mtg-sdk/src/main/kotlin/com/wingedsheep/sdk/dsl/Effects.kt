@@ -1200,6 +1200,14 @@ object Effects {
     fun MoveUntilSourceLeaves(target: EffectTarget, destination: Zone): Effect =
         com.wingedsheep.sdk.scripting.effects.MoveUntilSourceLeavesEffect(target, destination)
 
+    /**
+     * Move out of a zone and return immediately when [anchor] — another permanent, usually a
+     * target — leaves the battlefield ("exile target creature until target enchantment you
+     * control leaves the battlefield"). Nothing moves if the anchor is already gone.
+     */
+    fun MoveUntilLeaves(target: EffectTarget, destination: Zone, anchor: EffectTarget): Effect =
+        com.wingedsheep.sdk.scripting.effects.MoveUntilSourceLeavesEffect(target, destination, anchor)
+
     /** Exile and link to this source; a separate printed return ability must retrieve the card. */
     fun ExileUntilLeaves(target: EffectTarget): Effect =
         ExileUntilLeavesEffect(target)

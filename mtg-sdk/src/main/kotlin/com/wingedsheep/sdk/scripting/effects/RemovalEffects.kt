@@ -866,19 +866,26 @@ data class MoveTrackedBattlefieldObjectEffect(
 }
 
 /**
- * Move an object out of its zone until this source leaves the battlefield. The return is a
+ * Move an object out of its zone until a permanent leaves the battlefield. The return is a
  * one-shot effect, not a triggered ability: it happens immediately, even during resolution.
- * Both the source's battlefield visit and the moved object's destination visit are remembered.
+ * Both the anchor's battlefield visit and the moved object's destination visit are remembered.
+ *
+ * [anchor] is the permanent whose departure ends the duration: this source by default, or another
+ * permanent ("until target enchantment you control leaves the battlefield" — Calix, Destiny's
+ * Hand). If the anchor is no longer on the battlefield as the effect resolves, nothing moves.
  */
 @SerialName("MoveUntilSourceLeaves")
 @Serializable
 data class MoveUntilSourceLeavesEffect(
     val target: EffectTarget,
-    val destination: Zone
+    val destination: Zone,
+    val anchor: EffectTarget = EffectTarget.Self
 ) : Effect {
     init {
         require(destination != Zone.BATTLEFIELD && destination != Zone.STACK)
     }
     override val description: String =
-        "Move ${target.description} to ${destination.name.lowercase()} until this permanent leaves the battlefield"
+        "Move ${target.description} to ${destination.name.lowercase()} until " +
+            (if (anchor == EffectTarget.Self) "this permanent" else anchor.description) +
+            " leaves the battlefield"
 }

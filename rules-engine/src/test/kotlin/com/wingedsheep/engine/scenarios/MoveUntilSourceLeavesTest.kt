@@ -8,6 +8,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.handlers.ObjectReferenceEnvironment
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
@@ -157,6 +158,38 @@ class MoveUntilSourceLeavesTest : ScenarioTestBase() {
             }
             val result = zones.moveToZone(state, source, Zone.GRAVEYARD)
             for (name in listOf("Grizzly Bears", "Hill Giant")) result.state.getBattlefield() shouldContain game.findPermanent(name)!!
+            result.state.zoneReturns.size shouldBe 0
+        }
+
+        test("another anchor bounds the duration: the source leaving changes nothing") {
+            val game = board()
+            val source = game.findPermanent("Sol Ring")!!
+            val anchor = game.findPermanent("Hill Giant")!!
+            val victim = game.findPermanent("Grizzly Bears")!!
+            val effect = MoveUntilSourceLeavesEffect(
+                EffectTarget.SpecificEntity(victim), Zone.EXILE, anchor = EffectTarget.SpecificEntity(anchor)
+            )
+            val moved = executor.execute(game.state, effect, context(game.state, source))
+            moved.state.getExile(game.player2Id) shouldContain victim
+            moved.state.getEntity(source)?.get<LinkedExileComponent>() shouldBe null
+            val sourceGone = zones.moveToZone(moved.state, source, Zone.GRAVEYARD).state
+            sourceGone.getExile(game.player2Id) shouldContain victim
+            val anchorGone = zones.moveToZone(sourceGone, anchor, Zone.GRAVEYARD).state
+            anchorGone.getBattlefield() shouldContain victim
+            anchorGone.zoneReturns.size shouldBe 0
+        }
+
+        test("an anchor already off the battlefield moves nothing") {
+            val game = board()
+            val source = game.findPermanent("Sol Ring")!!
+            val anchor = game.findPermanent("Hill Giant")!!
+            val victim = game.findPermanent("Grizzly Bears")!!
+            val gone = zones.moveToZone(game.state, anchor, Zone.GRAVEYARD).state
+            val effect = MoveUntilSourceLeavesEffect(
+                EffectTarget.SpecificEntity(victim), Zone.EXILE, anchor = EffectTarget.SpecificEntity(anchor)
+            )
+            val result = executor.execute(gone, effect, context(gone, source))
+            result.state.getBattlefield() shouldContain victim
             result.state.zoneReturns.size shouldBe 0
         }
     }
