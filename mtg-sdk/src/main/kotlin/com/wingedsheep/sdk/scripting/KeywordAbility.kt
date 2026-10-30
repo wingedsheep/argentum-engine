@@ -147,6 +147,7 @@ sealed interface KeywordAbility {
             is ProtectionScope.RingBearers -> "Protection from Ring-bearers"
             is ProtectionScope.ActivatedAbilities -> "Protection from activated abilities"
             is ProtectionScope.TriggeredAbilities -> "Protection from triggered abilities"
+            is ProtectionScope.ManaValueParity -> "Protection from each ${scope.parity.displayName} mana value"
         }
     }
 
@@ -192,6 +193,7 @@ sealed interface KeywordAbility {
             is ProtectionScope.RingBearers -> "Hexproof from Ring-bearers"
             is ProtectionScope.ActivatedAbilities -> "Hexproof from activated abilities"
             is ProtectionScope.TriggeredAbilities -> "Hexproof from triggered abilities"
+            is ProtectionScope.ManaValueParity -> "Hexproof from each ${scope.parity.displayName} mana value"
         }
     }
 

@@ -47,7 +47,8 @@ object HexproofFromRules {
         ProtectionScope.PermanentsCastThisTurn,
         ProtectionScope.RingBearers,
         ProtectionScope.ActivatedAbilities,
-        ProtectionScope.TriggeredAbilities ->
+        ProtectionScope.TriggeredAbilities,
+        is ProtectionScope.ManaValueParity ->
             setOf(SourceKindProtection.hexproofKeyword(checkNotNull(SourceKind.of(scope))))
         is ProtectionScope.Subtype,
         is ProtectionScope.Supertype,

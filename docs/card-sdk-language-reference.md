@@ -10665,8 +10665,8 @@ staticAbility {
   uses (`HexproofFromRules.keywordsFor`), so it blocks targeting by matching spells and abilities
   opponents control; the controller can still target their own permanents. Accepts the scopes with a
   hexproof keyword — `Color`, `Colors`, `NonColor`, `Monocolored`, `Multicolored`, `CardType`, `Spells`,
-  `PermanentsCastThisTurn`, `RingBearers`, `ActivatedAbilities`, `TriggeredAbilities`; the rest are rejected at
-  construction. `ProtectionScope.Monocolored` = exactly one color (CR 105.2a): Dragonfire Blade
+  `PermanentsCastThisTurn`, `RingBearers`, `ActivatedAbilities`, `TriggeredAbilities`, `ManaValueParity`; the rest are
+  rejected at construction. `ProtectionScope.Monocolored` = exactly one color (CR 105.2a): Dragonfire Blade
   (`GrantHexproofFromToGroup(ProtectionScope.Monocolored)`). `ProtectionScope.Multicolored` = two or more
   colors (CR 105.2b): Niv-Mizzet, Guildpact, printed on itself
   (`GrantHexproofFromToGroup(ProtectionScope.Multicolored, GroupFilter.source())`). "Hexproof from each of
@@ -10676,8 +10676,8 @@ staticAbility {
   keyword a printed `KeywordAbility.Protection(scope)` uses (`ProtectionKeywords.keywordsFor`), so every
   protection leg — targeting, damage, enchanting/equipping, blocking — honours it with no extra wiring.
   Accepts `Colors`, `Multicolored`, `Subtype`, `Supertype`, `EachOpponent`, `ChosenCardType`, and the source kinds
-  (`Spells`, `PermanentsCastThisTurn`, `RingBearers`, `ActivatedAbilities`, `TriggeredAbilities`);
-  `NonColor`, `Monocolored` and `Everything` (no keyword) and `Color` / `CardType` (one spelling per
+  (`Spells`, `PermanentsCastThisTurn`, `RingBearers`, `ActivatedAbilities`, `TriggeredAbilities`) and
+  `ManaValueParity`; `NonColor`, `Monocolored` and `Everything` (no keyword) and `Color` / `CardType` (one spelling per
   concept) are rejected at construction. Lord of
   the Nazgûl: `GrantProtectionFromToGroup(ProtectionScope.RingBearers,
   GroupFilter(GameObjectFilter.Permanent.withSubtype("Wraith").youControl()))`. A single color or card type
@@ -14096,6 +14096,17 @@ Blighted Agent, Ichor Rats, Plague Stinger, Skithiryx.
   targeting by abilities whose source is a Ring-bearer (CR 702.16b). Printed (`KeywordAbility.Protection`),
   granted to a group (`GrantProtectionFromToGroup` — Lord of the Nazgûl), as hexproof, or as player
   protection.
+- `ProtectionScope.ManaValueParity(Parity.ODD | Parity.EVEN)` — "protection from each odd/even mana value".
+  Mana value is a characteristic (CR 202.3), read off the source when protection is checked through
+  `SourceKindProtection` (kinds `ODD_MANA_VALUE` / `EVEN_MANA_VALUE`), so every leg applies: spells of that
+  parity (a spell's {X} counts as its announced value, CR 202.3e — checked at cast time too), abilities from
+  sources of it, damage, enchanting/equipping and blocking. Zero is even: non-copy tokens and face-down
+  permanents (mana value 0) are even; a source with no mana value (an emblem) matches neither. Printed, granted
+  (`GrantProtectionFromToGroup`), as hexproof, or as player protection. "As this creature enters, choose odd or
+  even … protection from each mana value of the chosen quality" (Lavabrink Venturer) is an `EntersWithChoice(MODE)`
+  with options "odd"/"even" plus one `SourceChosenModeIs(parity.displayName)`-gated
+  `GrantProtectionFromToGroup(ManaValueParity(parity), GroupFilter.source())` per parity (Ashling's Prerogative's
+  shape).
 - `Protection(ProtectionScope.Supertype("Legendary", cardType = "Creature"))` / `KeywordAbility.protectionFromSupertype("Legendary", "Creature")` — protection from a supertype, optionally narrowed to a card type: "protection from legendary creatures" (Tsabo Tavoc) doesn't stop a legendary artifact or land.
 - `Protection(ProtectionScope.Subtype("God", cardType = "Creature"))` / `KeywordAbility.protectionFromSubtype("God", "Creature")` — "protection from God creatures" (Sigrid, God-Favored): a subtype narrowed to a card type, so a Theros God that isn't currently a creature doesn't match. Without `cardType` it's the plain "protection from Goblins".
   Both type scopes are enforced across targeting, enchanting/equipping, blocking and damage through `TypeQualityProtection` (projected `PROTECTION_FROM_SUBTYPE_<X>[@<TYPE>]` / `PROTECTION_FROM_SUPERTYPE_<X>[@<TYPE>]` keywords).

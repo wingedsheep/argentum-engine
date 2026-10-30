@@ -129,6 +129,8 @@ object PlayerProtectionRules {
             ProtectionScope.Spells -> SourceKindProtection.isSpell(state, sourceId)
             ProtectionScope.PermanentsCastThisTurn -> SourceKindProtection.isPermanentCastThisTurn(state, sourceId)
             ProtectionScope.RingBearers -> SourceKindProtection.isRingBearer(state, sourceId)
+            is ProtectionScope.ManaValueParity ->
+                SourceKindProtection.manaValue(state, sourceId)?.let(scope.parity::matches) == true
             // An ability kind is a property of the targeting spell-or-ability, not of the source
             // object this reading is given; no player-protection grant names one.
             ProtectionScope.ActivatedAbilities, ProtectionScope.TriggeredAbilities -> false

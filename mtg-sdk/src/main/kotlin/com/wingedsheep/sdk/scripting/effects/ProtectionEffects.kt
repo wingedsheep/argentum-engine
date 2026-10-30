@@ -201,6 +201,7 @@ fun ProtectionScope.protectionDescription(): String = when (this) {
     ProtectionScope.RingBearers -> "Ring-bearers"
     ProtectionScope.ActivatedAbilities -> "activated abilities"
     ProtectionScope.TriggeredAbilities -> "triggered abilities"
+    is ProtectionScope.ManaValueParity -> "each ${parity.displayName} mana value"
 }
 
 /**

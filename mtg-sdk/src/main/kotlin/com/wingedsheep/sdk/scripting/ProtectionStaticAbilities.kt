@@ -149,7 +149,8 @@ data class GrantHexproofFromToGroup(
             is ProtectionScope.Color, is ProtectionScope.Colors, is ProtectionScope.NonColor,
             ProtectionScope.Monocolored, ProtectionScope.Multicolored, is ProtectionScope.CardType,
             ProtectionScope.Spells, ProtectionScope.PermanentsCastThisTurn, ProtectionScope.RingBearers,
-            ProtectionScope.ActivatedAbilities, ProtectionScope.TriggeredAbilities -> true
+            ProtectionScope.ActivatedAbilities, ProtectionScope.TriggeredAbilities,
+            is ProtectionScope.ManaValueParity -> true
             is ProtectionScope.Subtype, is ProtectionScope.Supertype, is ProtectionScope.ChosenCardType,
             is ProtectionScope.ChosenCardName, ProtectionScope.Everything, ProtectionScope.EachOpponent -> false
         }
@@ -200,7 +201,8 @@ data class GrantProtectionFromToGroup(
             is ProtectionScope.Subtype, is ProtectionScope.Supertype,
             ProtectionScope.EachOpponent, is ProtectionScope.ChosenCardType,
             ProtectionScope.Spells, ProtectionScope.PermanentsCastThisTurn, ProtectionScope.RingBearers,
-            ProtectionScope.ActivatedAbilities, ProtectionScope.TriggeredAbilities -> true
+            ProtectionScope.ActivatedAbilities, ProtectionScope.TriggeredAbilities,
+            is ProtectionScope.ManaValueParity -> true
             is ProtectionScope.Color, is ProtectionScope.CardType,
             is ProtectionScope.NonColor, ProtectionScope.Monocolored, ProtectionScope.Everything,
             is ProtectionScope.ChosenCardName -> false
@@ -440,6 +442,7 @@ data class GrantProtectionToController(
             ProtectionScope.RingBearers -> "Ring-bearers"
             ProtectionScope.ActivatedAbilities -> "activated abilities"
             ProtectionScope.TriggeredAbilities -> "triggered abilities"
+            is ProtectionScope.ManaValueParity -> "each ${s.parity.displayName} mana value"
         }
 }
 

@@ -2,6 +2,7 @@ package com.wingedsheep.engine.mechanics.targeting
 
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.TargetingSourceType
+import com.wingedsheep.engine.mechanics.ManaValues
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.WasCastComponent
 import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
@@ -10,13 +11,15 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.RingBearerComponent
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.Parity
 import com.wingedsheep.sdk.scripting.ProtectionScope
 import kotlinx.serialization.Serializable
 
 /**
- * A protection/hexproof quality that is a *kind of source* rather than a characteristic:
- * spells, permanents that were cast this turn, Ring-bearers, activated abilities, triggered
- * abilities (CR 702.16a — the quality "can be any characteristic value or information").
+ * A protection/hexproof quality read straight off the source when protection is checked, rather
+ * than off its projected colours and types: spells, permanents that were cast this turn,
+ * Ring-bearers, activated abilities, triggered abilities, and the parity of its mana value
+ * (CR 702.16a — the quality "can be any characteristic value or information").
  */
 @Serializable
 enum class SourceKind(val phrase: String) {
@@ -24,7 +27,9 @@ enum class SourceKind(val phrase: String) {
     PERMANENT_CAST_THIS_TURN("permanents that were cast this turn"),
     RING_BEARER("Ring-bearers"),
     ACTIVATED_ABILITY("activated abilities"),
-    TRIGGERED_ABILITY("triggered abilities");
+    TRIGGERED_ABILITY("triggered abilities"),
+    ODD_MANA_VALUE("each odd mana value"),
+    EVEN_MANA_VALUE("each even mana value");
 
     companion object {
         /** The source kind a [ProtectionScope] names, or null for a characteristic scope. */
@@ -34,7 +39,13 @@ enum class SourceKind(val phrase: String) {
             ProtectionScope.RingBearers -> RING_BEARER
             ProtectionScope.ActivatedAbilities -> ACTIVATED_ABILITY
             ProtectionScope.TriggeredAbilities -> TRIGGERED_ABILITY
+            is ProtectionScope.ManaValueParity -> parity(scope.parity)
             else -> null
+        }
+
+        fun parity(parity: Parity): SourceKind = when (parity) {
+            Parity.ODD -> ODD_MANA_VALUE
+            Parity.EVEN -> EVEN_MANA_VALUE
         }
     }
 }
@@ -80,10 +91,30 @@ object SourceKindProtection {
         return state.projectedState.getController(entityId) == bearer.ownerId
     }
 
+    /**
+     * [sourceId]'s mana value (CR 202.3), or null for a source without one (an emblem, a vanished
+     * id). A face-down permanent's is 0 (CR 708.2). A spell's {X} counts as the number chosen for
+     * it (CR 202.3e): read off the stack object once it is there, or from [announcedX] while the
+     * spell is still being cast and its targets are being checked.
+     */
+    fun manaValue(state: GameState, sourceId: EntityId, announcedX: Int? = null): Int? {
+        val card = state.getEntity(sourceId)?.get<CardComponent>() ?: return null
+        if (sourceId in state.getBattlefield() && state.projectedState.isFaceDown(sourceId)) return 0
+        val pendingX = if (announcedX != null && sourceId !in state.stack &&
+            card.manaValueOverride == null && card.manaCost.hasX
+        ) announcedX * card.manaCost.xCount else 0
+        return ManaValues.of(state, sourceId, card) + pendingX
+    }
+
+    /** The mana-value parity kind of [sourceId], or null when it has no mana value. */
+    private fun manaValueKind(state: GameState, sourceId: EntityId, announcedX: Int? = null): SourceKind? =
+        manaValue(state, sourceId, announcedX)?.let { mv -> SourceKind.parity(if (mv % 2 == 0) Parity.EVEN else Parity.ODD) }
+
     /** The object kinds — those that describe [sourceId] itself rather than a spell-or-ability. */
     private fun objectKinds(state: GameState, sourceId: EntityId): Set<SourceKind> = buildSet {
         if (isPermanentCastThisTurn(state, sourceId)) add(SourceKind.PERMANENT_CAST_THIS_TURN)
         if (isRingBearer(state, sourceId)) add(SourceKind.RING_BEARER)
+        manaValueKind(state, sourceId)?.let(::add)
     }
 
     /**
@@ -91,12 +122,14 @@ object SourceKindProtection {
      * from [targetingSourceType] (at cast time the card is still in hand, not yet on the stack);
      * an unknown type falls back to the source being a spell on the stack. Abilities additionally
      * carry their source's object qualities — "permanent cast this turn", "Ring-bearer" — (CR
-     * 702.16b: "abilities from a source with the stated quality").
+     * 702.16b: "abilities from a source with the stated quality"). A spell carries its own mana
+     * value's parity, counting [announcedX] while it is still being cast.
      */
     fun targetingKinds(
         state: GameState,
         sourceId: EntityId?,
-        targetingSourceType: TargetingSourceType
+        targetingSourceType: TargetingSourceType,
+        announcedX: Int? = null
     ): Set<SourceKind> = buildSet {
         when (targetingSourceType) {
             TargetingSourceType.SPELL -> add(SourceKind.SPELL)
@@ -104,8 +137,9 @@ object SourceKindProtection {
             TargetingSourceType.TRIGGERED_ABILITY -> add(SourceKind.TRIGGERED_ABILITY)
             TargetingSourceType.ANY -> if (sourceId != null && isSpell(state, sourceId)) add(SourceKind.SPELL)
         }
-        if (targetingSourceType != TargetingSourceType.SPELL && sourceId != null) {
-            addAll(objectKinds(state, sourceId))
+        if (sourceId != null) {
+            if (targetingSourceType != TargetingSourceType.SPELL) addAll(objectKinds(state, sourceId))
+            else manaValueKind(state, sourceId, announcedX)?.let(::add)
         }
     }
 
@@ -120,10 +154,11 @@ object SourceKindProtection {
         sourceId: EntityId?,
         casterId: EntityId,
         targetingSourceType: TargetingSourceType,
-        predicateEvaluator: PredicateEvaluator
+        predicateEvaluator: PredicateEvaluator,
+        announcedX: Int? = null
     ): String? {
         if (targetId !in state.getBattlefield()) return null
-        val kinds = targetingKinds(state, sourceId, targetingSourceType)
+        val kinds = targetingKinds(state, sourceId, targetingSourceType, announcedX)
         if (kinds.isEmpty()) return null
         val projected = state.projectedState
         val name = state.getEntity(targetId)?.get<CardComponent>()?.name ?: "target"
@@ -140,8 +175,8 @@ object SourceKindProtection {
     /**
      * True when [protectedId] has protection from [sourceId] as an *object* — the damage,
      * attachment and blocking legs (CR 702.16c–f). Only [SourceKind.SPELL] and the object kinds
-     * ([SourceKind.PERMANENT_CAST_THIS_TURN], [SourceKind.RING_BEARER]) describe objects; ability
-     * kinds never match here.
+     * ([SourceKind.PERMANENT_CAST_THIS_TURN], [SourceKind.RING_BEARER], the mana-value parities)
+     * describe objects; ability kinds never match here.
      */
     fun isProtectedFromObject(state: GameState, protectedId: EntityId, sourceId: EntityId?): Boolean {
         if (sourceId == null) return false

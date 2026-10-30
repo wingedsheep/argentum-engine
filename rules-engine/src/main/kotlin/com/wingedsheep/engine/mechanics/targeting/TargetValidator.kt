@@ -532,10 +532,11 @@ class TargetValidator(
         if (hexproofError != null) return hexproofError
 
         // Protection / hexproof from a kind of source — spells, permanents cast this turn,
-        // activated or triggered abilities (Emrakul, the World Anew; Volatile Stormdrake).
+        // activated or triggered abilities, a mana-value parity (Emrakul, the World Anew; Volatile
+        // Stormdrake; Lavabrink Venturer). A spell's announced X counts toward its mana value.
         if (target is ChosenTarget.Permanent) {
             SourceKindProtection.targetingError(
-                state, target.entityId, sourceId, casterId, targetingSourceType, predicateEvaluator
+                state, target.entityId, sourceId, casterId, targetingSourceType, predicateEvaluator, xValue
             )?.let { return it }
         }
 

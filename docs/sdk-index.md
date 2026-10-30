@@ -1539,6 +1539,7 @@ Families:
 - `ProtectionScope.Colors(colors: Set<Color>)` — Protection from multiple colors — "from white and from blue".
 - `ProtectionScope.EachOpponent` — Protection from each of the controller's opponents (Rule 702.16e).
 - `ProtectionScope.Everything` — Protection from everything (Rule 702.16i).
+- `ProtectionScope.ManaValueParity(parity: Parity)` — From each mana value of a parity — "protection from each mana value of the chosen quality" (Lavabrink Venturer, with one conditional grant per choice).
 - `ProtectionScope.Monocolored` — From monocolored — matches a source with exactly one color (CR 105.2a), the twin of Multicolored.
 - `ProtectionScope.Multicolored` — From multicolored — matches a source with two or more colors (CR 105.2b: a multicolored object has two or more colors).
 - `ProtectionScope.NonColor(color: Color)` — The complement of a single color — "from nongreen".
