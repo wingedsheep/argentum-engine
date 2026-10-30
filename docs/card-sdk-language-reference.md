@@ -2005,6 +2005,19 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   Voyage**: `EntryCounter(PLUS_ONE_PLUS_ONE, count = voyage.amount)` after
   `storeNumber(countersOnSelf(VOYAGE))`; the exiled card's counters are gone once it leaves exile). A
   count of zero or less places none.
+- `EntersWithCharacteristics(addedCardTypes, addedSubtypes, addedColors, power?, toughness?)` — characteristics
+  a card an effect puts onto the battlefield has **as it enters**, carried as `entersWith` on `MoveToZoneEffect`
+  (also `Effects.PutOntoBattlefieldFromGraveyard(…, entersWith = …)`) and `MoveCollectionEffect` (pipeline
+  `move` / `moveTracked`). Everything *adds* — "in addition to their other types" — and `power`/`toughness`
+  (set together) set base P/T in layer 7b; types/subtypes go in layer 4, colors in layer 5. Unlike moving and then
+  `BecomeCreature`, the permanent is already a creature when it arrives, as the rulings demand ("they don't enter as
+  noncreature permanents and then become creatures"): "[creatures] enter tapped" replacements, creature-gated entry
+  counters and "whenever a creature enters" triggers all see it. The change is a permanent floating effect on that
+  object, gone when it leaves (CR 400.7); a later effect that sets P/T wins by timestamp, counters apply on top.
+  Ignored face down and for non-battlefield destinations; an Aura entering through the attach prompt doesn't take it.
+  `EntersWithCharacteristics.creature(power, toughness, vararg subtypes)` builds the common shape. **Dance of the
+  Manse** (`If(X ≥ 6, move(targets, entersWith = creature(4, 4)), otherwise = move(targets))`), **Relive the Past**
+  (`move(gather(ChosenTargets), BATTLEFIELD, entersWith = creature(5, 5, "Elemental"))`).
 - `ExileAndGrantOwnerPlayPermission(target, until?)` — exile + owner may play it (Garth-style).
 - `ExileOpponentsGraveyards()` — exile every card in each opponent's graveyard.
 - `MoveUntilSourceLeaves(target, destination)` — move an object to a non-battlefield, non-stack zone and return it to its previous zone immediately when the source's battlefield visit ends. The return does not use the stack and survives loss of the source's abilities. An exile also populates the ordinary linked-exile pile for client display and linked abilities. Returning permanents enter under their owner's control; tokens and objects that have since left the destination do not return. If the source has already left (including leaving and returning), the initial move does nothing. Ossification uses `Effects.MoveUntilSourceLeaves(victim, Zone.EXILE)` with no leaves trigger.

@@ -964,6 +964,141 @@
     ]
 }
 
+// Dance of the Manse
+{
+    "name": "Dance of the Manse",
+    "manaCost": "{X}{W}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return up to X target artifact and/or non-Aura enchantment cards each with mana value X or less from your graveyard to the battlefield. If X is 6 or more, those permanents are 4/4 creatures in addition to their other types.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": "XValue",
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 6
+                    }
+                }
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": "ChosenTargets",
+                        "storeAs": "gathered0"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "gathered0",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Battlefield"
+                        },
+                        "entersWith": {
+                            "addedCardTypes": [
+                                "CREATURE"
+                            ],
+                            "power": 4,
+                            "toughness": 4
+                        }
+                    }
+                ]
+            },
+            "otherwise": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": "ChosenTargets",
+                        "storeAs": "gathered0"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "gathered0",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Battlefield"
+                        }
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsArtifact",
+                                    {
+                                        "type": "And",
+                                        "predicates": [
+                                            "IsEnchantment",
+                                            {
+                                                "type": "NotSubtype",
+                                                "subtype": "Aura"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "ManaValueAtMostDynamic",
+                                "amount": "XValue"
+                            }
+                        ],
+                        "controllerPredicate": "OwnedByYou"
+                    },
+                    "zone": "Graveyard"
+                },
+                "dynamicMaxCount": "XValue"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "186",
+        "rarity": "RARE",
+        "artist": "Yeong-Hao Han",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5dca90ef-1c17-4dcc-9fef-dab9ee92f590.jpg?1783932599",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "If a card in a player's graveyard has {X} in its mana cost, that X is considered to be 0."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If X is 6 or more, the artifacts and/or enchantments enter the battlefield as 4/4 creatures. They don't enter as noncreature permanents and then become creatures."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "An artifact creature or enchantment creature returned this way will be a 4/4 creature."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "An Equipment that's also a creature can't be attached to anything. You can activate its equip ability, but it won't become attached."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If another effect causes one of the returned permanents to become a creature and sets its power and toughness as it does so, that creature will have that power and toughness; it won't be 4/4. Notably, crewing a Vehicle does not set its power and toughness, so a Vehicle will remain a 4/4 creature if you crew it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Emry, Lurker of the Loch
 {
     "name": "Emry, Lurker of the Loch",

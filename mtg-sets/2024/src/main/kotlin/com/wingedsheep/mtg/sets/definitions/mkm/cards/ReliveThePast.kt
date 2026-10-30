@@ -5,8 +5,10 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.effects.CardDestination
+import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.EntersWithCharacteristics
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 
 /**
@@ -26,29 +28,23 @@ val ReliveThePast = card("Relive the Past") {
         "Elemental creatures in addition to their other types."
 
     spell {
-        val artifact = target(TargetFilter.ArtifactInYourGraveyard, optional = true)
-        val land = target(TargetFilter(GameObjectFilter.Land.ownedByYou(), zone = Zone.GRAVEYARD), optional = true)
-        val enchantment = target(
+        target(TargetFilter.ArtifactInYourGraveyard, optional = true)
+        target(TargetFilter(GameObjectFilter.Land.ownedByYou(), zone = Zone.GRAVEYARD), optional = true)
+        target(
             TargetFilter(
                 GameObjectFilter.Enchantment.notSubtype(Subtype.AURA).ownedByYou(),
                 zone = Zone.GRAVEYARD,
             ),
             optional = true,
         )
-
-        fun returnAsElemental(target: com.wingedsheep.sdk.scripting.targets.EffectTarget) =
-            Effects.PutOntoBattlefield(target) then
-                Effects.BecomeCreature(
-                    target = target,
-                    power = 5,
-                    toughness = 5,
-                    duration = Duration.Permanent,
-                ) then
-                Effects.AddSubtype("Elemental", target, Duration.Permanent)
-
-        effect = returnAsElemental(artifact) then
-            returnAsElemental(land) then
-            returnAsElemental(enchantment)
+        // One simultaneous return, and each card is already a 5/5 Elemental creature as it enters.
+        effect = Effects.Pipeline {
+            move(
+                gather(CardSource.ChosenTargets),
+                CardDestination.ToZone(Zone.BATTLEFIELD),
+                entersWith = EntersWithCharacteristics.creature(5, 5, "Elemental"),
+            )
+        }
     }
 
     metadata {

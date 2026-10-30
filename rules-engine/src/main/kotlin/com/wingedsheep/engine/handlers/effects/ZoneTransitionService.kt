@@ -191,7 +191,13 @@ data class ZoneEntryOptions(
      * Enter an Aura card as a non-Aura enchantment (`PutOntoBattlefieldAsNonAuraEffect`): applied
      * as the object arrives, like [asAura], so it is never an unattached Aura.
      */
-    val asNonAura: com.wingedsheep.engine.handlers.effects.zones.NonAuraEntry? = null
+    val asNonAura: com.wingedsheep.engine.handlers.effects.zones.NonAuraEntry? = null,
+    /**
+     * Characteristics the entrant has as it enters ("they enter as 5/5 creatures in addition to
+     * their other types", `EntersWithCharacteristics`). Applied as the object arrives, before the
+     * rest of entry, so entry replacements and enters triggers see them. Ignored face down.
+     */
+    val entersWith: com.wingedsheep.sdk.scripting.effects.EntersWithCharacteristics? = null
 )
 
 /**
@@ -1020,6 +1026,10 @@ class ZoneTransitionService(
                     }
                 }
                 newState = newState.addToZone(destZoneKey, entityId)
+                if (!options.faceDown) options.entersWith?.let {
+                    newState = com.wingedsheep.engine.handlers.effects.zones.CharacteristicsEntry
+                        .apply(newState, entityId, destControllerId, it)
+                }
                 newState = applyBattlefieldEntry(
                     newState, entityId, cardComponent, destControllerId,
                     options.copy(entryCopy = entryCopyChoice, tapped = options.tapped ||

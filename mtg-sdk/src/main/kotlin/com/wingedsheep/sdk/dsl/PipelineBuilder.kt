@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.effects.CaptureControllersEffect
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardOrder
+import com.wingedsheep.sdk.scripting.effects.EntersWithCharacteristics
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ChooseOnePerCategoryEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseOptionEffect
@@ -1008,7 +1009,8 @@ class PipelineBuilder private constructor(private val shared: Shared) {
         markEnteredViaSourceAbility: Boolean = false,
         filter: GameObjectFilter? = null,
         attachTo: EffectTarget? = null,
-        attackDefender: EnteringAttackDefender = EnteringAttackDefender.JOIN_SOURCE
+        attackDefender: EnteringAttackDefender = EnteringAttackDefender.JOIN_SOURCE,
+        entersWith: EntersWithCharacteristics? = null
     ) {
         nextIndex()
         steps += MoveCollectionEffect(
@@ -1028,7 +1030,8 @@ class PipelineBuilder private constructor(private val shared: Shared) {
             markEnteredViaSourceAbility = markEnteredViaSourceAbility,
             filter = filter,
             attachTo = attachTo,
-            attackDefender = attackDefender
+            attackDefender = attackDefender,
+            entersWith = entersWith
         )
     }
 
@@ -1054,6 +1057,7 @@ class PipelineBuilder private constructor(private val shared: Shared) {
         markEnteredViaSourceAbility: Boolean = false,
         filter: GameObjectFilter? = null,
         attachTo: EffectTarget? = null,
+        entersWith: EntersWithCharacteristics? = null,
         name: String? = null
     ): CollectionSlot {
         val slot = CollectionSlot(slotKey("moved", nextIndex(), name))
@@ -1074,7 +1078,8 @@ class PipelineBuilder private constructor(private val shared: Shared) {
             addCounterType = addCounterType,
             markEnteredViaSourceAbility = markEnteredViaSourceAbility,
             filter = filter,
-            attachTo = attachTo
+            attachTo = attachTo,
+            entersWith = entersWith
         )
         return slot
     }

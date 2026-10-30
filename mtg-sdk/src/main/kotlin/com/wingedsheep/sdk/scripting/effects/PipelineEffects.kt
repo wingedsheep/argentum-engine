@@ -1493,7 +1493,12 @@ data class MoveCollectionEffect(
      * printed (CR 508.4) — the controller picks a defending player, a planeswalker one controls or
      * a battle one protects for each card, before any of them moves (Minion of the Mighty).
      */
-    val attackDefender: EnteringAttackDefender = EnteringAttackDefender.JOIN_SOURCE
+    val attackDefender: EnteringAttackDefender = EnteringAttackDefender.JOIN_SOURCE,
+    /**
+     * Characteristics each card moved to the battlefield has as it enters — "they enter as 5/5
+     * creatures in addition to their other types" (Dance of the Manse). See [EntersWithCharacteristics].
+     */
+    val entersWith: EntersWithCharacteristics? = null,
 ) : Effect {
     init {
         require(attackDefender != EnteringAttackDefender.RETURNED_ATTACKER) {

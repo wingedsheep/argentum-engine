@@ -1842,17 +1842,22 @@ object Effects {
      * Skeleton, Haunted Dead, Persistent Specimen, Tunnel Rats, Teacher's Pest) had no way to say
      * *both*, so five cards reached for [PutOntoBattlefield] and silently dropped the guard this
      * facade exists to carry. A frozen parameter on a facade is a card's missing word.
+     *
+     * [entersWith] is the fourth: characteristics the card has as it enters — "they're 5/5 Elemental
+     * creatures in addition to their other types" (Relive the Past). See `EntersWithCharacteristics`.
      */
     fun PutOntoBattlefieldFromGraveyard(
         target: EffectTarget,
         underYourControl: Boolean = false,
-        tapped: Boolean = false
+        tapped: Boolean = false,
+        entersWith: com.wingedsheep.sdk.scripting.effects.EntersWithCharacteristics? = null
     ): Effect = MoveToZoneEffect(
         target,
         Zone.BATTLEFIELD,
         placement = if (tapped) ZonePlacement.Tapped else ZonePlacement.Default,
         fromZone = Zone.GRAVEYARD,
-        controllerOverride = if (underYourControl) EffectTarget.Controller else null
+        controllerOverride = if (underYourControl) EffectTarget.Controller else null,
+        entersWith = entersWith
     )
 
     /**

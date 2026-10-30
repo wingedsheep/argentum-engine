@@ -383,12 +383,14 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
                 value.getValue("expiresAtStep") shouldBe JsonNull
                 value - "expiresAfterTurn" - "expiryControllerId" - "expiresAtStep"
             } else if (value["type"] == JsonPrimitive("MoveToZone")) {
-                // The entering-attack defender choice (ninjutsu, CR 702.49c) postdates the capture.
+                // The entering-attack defender choice (ninjutsu, CR 702.49c) and the as-it-enters
+                // characteristics (Dance of the Manse) postdate the capture.
                 value.getValue("attackDefender") shouldBe JsonPrimitive("JOIN_SOURCE")
+                value.getValue("entersWith") shouldBe JsonNull
                 // The captured single entry counter (`addCounterType`/`addCounterIf`, both null
                 // here) is now the `entryCounters` list; RetiredSdkTypeLift rewrote it on load.
                 value.getValue("entryCounters") shouldBe JsonArray(emptyList())
-                JsonObject(value - "attackDefender" - "entryCounters" +
+                JsonObject(value - "attackDefender" - "entersWith" - "entryCounters" +
                     ("addCounterType" to JsonNull) + ("addCounterIf" to JsonNull))
             } else value
             JsonObject(fields.mapValues { withoutPostCaptureCardDefaults(it.value) })

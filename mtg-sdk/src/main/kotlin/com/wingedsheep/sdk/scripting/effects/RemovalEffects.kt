@@ -1,6 +1,9 @@
 package com.wingedsheep.sdk.scripting.effects
 
+import com.wingedsheep.sdk.core.CardType
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -372,6 +375,46 @@ data class EntryCounter(
     val count: DynamicAmount = DynamicAmount.Fixed(1)
 )
 
+/**
+ * Characteristics a card put onto the battlefield by an effect has **as it enters** — "they enter
+ * as 5/5 creatures in addition to their other types" (Dance of the Manse), "they're 5/5 Elemental
+ * creatures in addition to their other types" (Relive the Past). Everything here *adds*: the card
+ * keeps its printed types, subtypes and colors (the "in addition to" templating), and
+ * [power]/[toughness] set its base P/T (layer 7b) only when both are given.
+ *
+ * Unlike entering and then animating with `BecomeCreatureEffect`, the permanent already has these
+ * characteristics the moment it arrives, so entry replacements ("creatures enter tapped"), entry
+ * counters gated on being a creature, and "whenever a creature enters" triggers all see it as a
+ * creature. The change lasts for as long as the permanent stays on the battlefield.
+ *
+ * Carried by [MoveToZoneEffect.entersWith] and [MoveCollectionEffect.entersWith]; ignored for a
+ * face-down entry and for any destination but the battlefield. The closest neighbours are
+ * `BecomeCreatureEffect` (a resolving effect on a permanent already in play, with a duration) and
+ * `CopyExceptions` (copiable values of a copy effect) — neither is an entry rider.
+ */
+@Serializable
+data class EntersWithCharacteristics(
+    val addedCardTypes: Set<CardType> = emptySet(),
+    val addedSubtypes: Set<Subtype> = emptySet(),
+    val addedColors: Set<Color> = emptySet(),
+    val power: Int? = null,
+    val toughness: Int? = null,
+) {
+    init {
+        require((power == null) == (toughness == null)) { "power and toughness are set together" }
+    }
+
+    companion object {
+        /** "enters as a [power]/[toughness] [subtypes] creature in addition to its other types". */
+        fun creature(power: Int, toughness: Int, vararg subtypes: String) = EntersWithCharacteristics(
+            addedCardTypes = setOf(CardType.CREATURE),
+            addedSubtypes = subtypes.map { Subtype(it) }.toSet(),
+            power = power,
+            toughness = toughness,
+        )
+    }
+}
+
 @SerialName("MoveToZone")
 @Serializable
 data class MoveToZoneEffect(
@@ -413,7 +456,9 @@ data class MoveToZoneEffect(
      * first opponent); [EnteringAttackDefender.RETURNED_ATTACKER] is ninjutsu's "the same player,
      * planeswalker, or battle as the creature that was returned" (CR 702.49c).
      */
-    val attackDefender: EnteringAttackDefender = EnteringAttackDefender.JOIN_SOURCE
+    val attackDefender: EnteringAttackDefender = EnteringAttackDefender.JOIN_SOURCE,
+    /** Characteristics the card has as it enters the battlefield — see [EntersWithCharacteristics]. */
+    val entersWith: EntersWithCharacteristics? = null,
 ) : Effect {
     init {
         require(attackDefender != EnteringAttackDefender.CONTROLLER_CHOOSES) {

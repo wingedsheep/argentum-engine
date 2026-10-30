@@ -17956,113 +17956,27 @@
             "type": "Composite",
             "effects": [
                 {
-                    "type": "MoveToZone",
-                    "target": {
-                        "type": "BoundVariable",
-                        "name": "t0"
-                    },
-                    "destination": "Battlefield"
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
                 },
                 {
-                    "type": "BecomeCreature",
-                    "target": {
-                        "type": "BoundVariable",
-                        "name": "t0"
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
                     },
-                    "power": {
-                        "type": "Fixed",
-                        "amount": 5
-                    },
-                    "toughness": {
-                        "type": "Fixed",
-                        "amount": 5
-                    },
-                    "duration": "Permanent"
-                },
-                {
-                    "type": "AddSubtype",
-                    "subtype": "Elemental",
-                    "target": {
-                        "type": "BoundVariable",
-                        "name": "t0"
-                    },
-                    "duration": "Permanent"
-                },
-                {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "MoveToZone",
-                            "target": {
-                                "type": "BoundVariable",
-                                "name": "t1"
-                            },
-                            "destination": "Battlefield"
-                        },
-                        {
-                            "type": "BecomeCreature",
-                            "target": {
-                                "type": "BoundVariable",
-                                "name": "t1"
-                            },
-                            "power": {
-                                "type": "Fixed",
-                                "amount": 5
-                            },
-                            "toughness": {
-                                "type": "Fixed",
-                                "amount": 5
-                            },
-                            "duration": "Permanent"
-                        },
-                        {
-                            "type": "AddSubtype",
-                            "subtype": "Elemental",
-                            "target": {
-                                "type": "BoundVariable",
-                                "name": "t1"
-                            },
-                            "duration": "Permanent"
-                        }
-                    ]
-                },
-                {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "MoveToZone",
-                            "target": {
-                                "type": "BoundVariable",
-                                "name": "t2"
-                            },
-                            "destination": "Battlefield"
-                        },
-                        {
-                            "type": "BecomeCreature",
-                            "target": {
-                                "type": "BoundVariable",
-                                "name": "t2"
-                            },
-                            "power": {
-                                "type": "Fixed",
-                                "amount": 5
-                            },
-                            "toughness": {
-                                "type": "Fixed",
-                                "amount": 5
-                            },
-                            "duration": "Permanent"
-                        },
-                        {
-                            "type": "AddSubtype",
-                            "subtype": "Elemental",
-                            "target": {
-                                "type": "BoundVariable",
-                                "name": "t2"
-                            },
-                            "duration": "Permanent"
-                        }
-                    ]
+                    "entersWith": {
+                        "addedCardTypes": [
+                            "CREATURE"
+                        ],
+                        "addedSubtypes": [
+                            "Elemental"
+                        ],
+                        "power": 5,
+                        "toughness": 5
+                    }
                 }
             ]
         },
