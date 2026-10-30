@@ -912,6 +912,53 @@
     "colorIdentityOverride": []
 }
 
+// Damnable Pact
+{
+    "name": "Damnable Pact",
+    "manaCost": "{X}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player draws X cards and loses X life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": "XValue",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": "XValue",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "rarity": "RARE",
+        "artist": "Zack Stella",
+        "flavorText": "\"Silumgar's mind is a dark labyrinth, full of grim secrets and subtle traps.\"\n—Siara, the Dragon's Mouth",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f65bcf62-48c3-4e4d-b129-8e03b3635326.jpg?1783938599"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Deathbringer Regent
 {
     "name": "Deathbringer Regent",

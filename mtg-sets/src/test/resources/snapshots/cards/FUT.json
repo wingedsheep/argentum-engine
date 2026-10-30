@@ -772,6 +772,118 @@
     ]
 }
 
+// Sword of the Meek
+{
+    "name": "Sword of the Meek",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+2.\nEquip {2}\nWhenever a 1/1 creature you control enters, you may return this card from your graveyard to the battlefield, then attach it to that creature.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sword of the Meek:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature pow=1 tou=1 ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "MoveToZone",
+                                "target": "Self",
+                                "destination": "Battlefield",
+                                "fromZone": "Graveyard"
+                            }
+                        },
+                        "then": {
+                            "type": "AttachEquipment",
+                            "target": "TriggeringEntity"
+                        }
+                    }
+                },
+                "activeZones": [
+                    "Graveyard"
+                ],
+                "descriptionOverride": "Whenever a 1/1 creature you control enters, you may return this card from your graveyard to the battlefield, then attach it to that creature."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Sword of the Meek:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 2
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "165",
+        "rarity": "UNCOMMON",
+        "artist": "Franz Vohwinkel",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/9/e9f13705-6ede-4c29-a2b4-a082bf69e9c5.jpg?1783943091",
+        "rulings": [
+            {
+                "date": "2020-08-07",
+                "text": "Sword of the Meek's last ability triggers only if it's in your graveyard immediately after the 1/1 creature enters the battlefield."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "If a creature is entering the battlefield under your control, consider static abilities to determine whether its power and toughness are both 1. Spells, activated abilities, and triggered abilities can't be used to raise or lower the creature's power and toughness in time to have the last ability trigger or to stop it from triggering."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "Once the last ability has triggered, changing the power or toughness of the creature won't stop you from returning Sword of the Meek and attaching it to the creature."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "Any creature can be equipped with Sword of the Meek, not just 1/1 creatures."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "If Sword of the Meek can't be attached to the creature that caused its last ability to trigger, most likely because that creature has left the battlefield, Sword of the Meek returns to the battlefield and remains unattached."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Tarmogoyf
 {
     "name": "Tarmogoyf",

@@ -1807,6 +1807,101 @@
     ]
 }
 
+// Master Transmuter
+{
+    "name": "Master Transmuter",
+    "manaCost": "{3}{U}",
+    "typeLine": "Artifact Creature — Human Artificer",
+    "oracleText": "{U}, {T}, Return an artifact you control to its owner's hand: You may put an artifact card from your hand onto the battlefield.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Master Transmuter:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{U}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomReturnToHand",
+                                "filter": "artifact"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "artifact"
+                            },
+                            "storeAs": "put_candidates"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "put_candidates",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "putting",
+                            "prompt": "You may put an artifact card from your hand onto the battlefield"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "putting",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{U}, {T}, Return an artifact you control to its owner's hand: You may put an artifact card from your hand onto the battlefield."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "rarity": "RARE",
+        "artist": "Chippy",
+        "flavorText": "\"Wasted potential surrounds us. Lend me that bauble, and let me see what it can be made to be.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/5/252482b2-aaa7-49f3-af8c-30923ca98994.jpg?1783942487",
+        "rulings": [
+            {
+                "date": "2020-08-07",
+                "text": "Master Transmuter can be returned to its owner's hand to pay the cost of its activated ability."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "The artifact card you put onto the battlefield when the ability resolves may be the same card that you returned to your hand when you paid the cost. If so, it returns to the battlefield as a new object with no relation to its previous existence."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Matca Rioters
 {
     "name": "Matca Rioters",

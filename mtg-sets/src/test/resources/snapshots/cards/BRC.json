@@ -140,3 +140,94 @@
         "WHITE"
     ]
 }
+
+// Urza, Chief Artificer
+{
+    "name": "Urza, Chief Artificer",
+    "manaCost": "{3}{W}{U}{B}",
+    "typeLine": "Legendary Creature — Human Artificer",
+    "oracleText": "Affinity for artifact creatures (This spell costs {1} less to cast for each artifact creature you control.)\nArtifact creatures you control have menace.\nAt the beginning of your end step, create a 0/0 colorless Construct artifact creature token with \"This token gets +1/+1 for each artifact you control.\"",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Urza, Chief Artificer:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 0,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Construct"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/9/1/914fecab-24c0-4179-84d6-ded78c29134f.jpg?1783919909",
+                    "artifactToken": true,
+                    "staticAbilities": [
+                        {
+                            "type": "GrantDynamicStats",
+                            "filter": {
+                                "baseFilter": "permanent",
+                                "scope": "Self"
+                            },
+                            "powerBonus": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "artifact"
+                            },
+                            "toughnessBonus": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "artifact"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "PermanentsYouControlMatching",
+                        "filter": "artifact creature"
+                    }
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "MENACE",
+                "filter": {
+                    "baseFilter": "artifact creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "MYTHIC",
+        "artist": "Bartłomiej Gaweł",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/a/ea409050-4296-4b76-a6cd-2896ce1b88e4.jpg?1783919724",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "The ability of that Construct token does count the Construct itself, so it'll be at least 1/1."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK"
+    ]
+}

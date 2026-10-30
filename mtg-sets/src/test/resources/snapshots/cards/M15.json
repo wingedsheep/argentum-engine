@@ -1265,6 +1265,62 @@
     ]
 }
 
+// In Garruk's Wake
+{
+    "name": "In Garruk's Wake",
+    "manaCost": "{7}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy all creatures you don't control and all planeswalkers you don't control.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "Or",
+                                    "predicates": [
+                                        "IsCreature",
+                                        "IsPlaneswalker"
+                                    ]
+                                }
+                            ],
+                            "controllerPredicate": {
+                                "type": "ControllerNot",
+                                "predicate": "ControlledByYou"
+                            }
+                        }
+                    },
+                    "storeAs": "destroyAll_gathered"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "destroyAll_gathered",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "100",
+        "rarity": "RARE",
+        "artist": "Chase Stone",
+        "flavorText": "Beyond pain, beyond obsession and wild despair, there lies a place of twisted power only the most tormented souls can reach.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f6f2c2f6-d07f-42af-9944-70d3dac8348c.jpg?1783939183"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Inferno Fist
 {
     "name": "Inferno Fist",

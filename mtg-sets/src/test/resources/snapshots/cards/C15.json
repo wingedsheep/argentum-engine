@@ -1,3 +1,75 @@
+// Arachnogenesis
+{
+    "name": "Arachnogenesis",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Create X 1/2 green Spider creature tokens with reach, where X is the number of creatures attacking you. Prevent all combat damage that would be dealt this turn by non-Spider creatures.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "Each",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                {
+                                    "type": "IsAttackingPlayer",
+                                    "player": "Controller"
+                                }
+                            ]
+                        }
+                    },
+                    "power": 1,
+                    "toughness": 2,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Spider"
+                    ],
+                    "keywords": [
+                        "REACH"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/e/8/e8efa0fc-e710-44f8-8128-485c2d43cc9e.jpg?1783938018"
+                },
+                {
+                    "type": "PreventDamageShield",
+                    "scope": "CombatOnly",
+                    "direction": "FromTarget",
+                    "sourceFilter": {
+                        "type": "PreventFromMatching",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "Spider"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "rarity": "RARE",
+        "artist": "Johannes Voss",
+        "flavorText": "Every movement is a summons—even your screams.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/9/7967cb69-1868-45c0-92d1-39dabe30f2a2.jpg?1783938110"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Blade of Selves
 {
     "name": "Blade of Selves",

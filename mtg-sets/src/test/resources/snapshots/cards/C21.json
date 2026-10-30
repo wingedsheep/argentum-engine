@@ -898,6 +898,95 @@
     ]
 }
 
+// Stinging Study
+{
+    "name": "Stinging Study",
+    "manaCost": "{4}{B}",
+    "typeLine": "Instant",
+    "oracleText": "You draw X cards and you lose X life, where X is the mana value of a commander you own on the battlefield or in the command zone.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromMultipleZones",
+                        "zones": [
+                            "Battlefield",
+                            "Command"
+                        ],
+                        "player": "Each",
+                        "filter": {
+                            "statePredicates": [
+                                "IsCommander"
+                            ],
+                            "controllerPredicate": "OwnedByYou"
+                        }
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected1",
+                    "prompt": "Choose a commander you own — X is its mana value"
+                },
+                {
+                    "type": "StoreNumber",
+                    "name": "number2",
+                    "amount": {
+                        "type": "StoredCardManaValue",
+                        "collectionName": "selected1"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "VariableReference",
+                        "variableName": "number2"
+                    }
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "VariableReference",
+                        "variableName": "number2"
+                    },
+                    "target": "Controller"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "rarity": "RARE",
+        "artist": "Kieran Yanner",
+        "flavorText": "Silverquill first-years welcome discomfort in the classroom, knowing it will prepare them for the years ahead.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/8/b8840226-1693-44bc-a067-e50198c5e17e.jpg?1783927597",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If your commander is under the control of another player as Stinging Study resolves, it is still on the battlefield and will still be used to determine the value of X."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If you own multiple commanders on the battlefield and/or in the command zone, you choose one of them as Stinging Study resolves to determine the value of X."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Tivash, Gloom Summoner
 {
     "name": "Tivash, Gloom Summoner",

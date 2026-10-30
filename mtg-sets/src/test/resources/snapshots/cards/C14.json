@@ -852,6 +852,112 @@
     ]
 }
 
+// Sylvan Offering
+{
+    "name": "Sylvan Offering",
+    "manaCost": "{X}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose an opponent. You and that player each create an X/X green Treefolk creature token.\nChoose an opponent. You and that player each create X 1/1 green Elf Warrior creature tokens.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ChooseOpponentForSource",
+                    "prompt": "Choose an opponent: you and that player each create an X/X Treefolk"
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 0,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Treefolk"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/2/a/2a3f0d52-34cd-4095-bfa0-bbf9562a8146.jpg?1783938794",
+                    "dynamicPower": "XValue",
+                    "dynamicToughness": "XValue"
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 0,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Treefolk"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/2/a/2a3f0d52-34cd-4095-bfa0-bbf9562a8146.jpg?1783938794",
+                    "controller": {
+                        "type": "PlayerRef",
+                        "player": "ChosenOpponent"
+                    },
+                    "dynamicPower": "XValue",
+                    "dynamicToughness": "XValue"
+                },
+                {
+                    "type": "ChooseOpponentForSource",
+                    "prompt": "Choose an opponent: you and that player each create X 1/1 Elf Warriors"
+                },
+                {
+                    "type": "CreateToken",
+                    "count": "XValue",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Elf",
+                        "Warrior"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/a/1/a1ad366d-645c-4b14-8e51-437431eb0fa5.jpg?1783938794"
+                },
+                {
+                    "type": "CreateToken",
+                    "count": "XValue",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Elf",
+                        "Warrior"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/a/1/a1ad366d-645c-4b14-8e51-437431eb0fa5.jpg?1783938794",
+                    "controller": {
+                        "type": "PlayerRef",
+                        "player": "ChosenOpponent"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "rarity": "RARE",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/584ffe37-cc49-410d-b8a6-06d20d43b36d.jpg?1783938864",
+        "rulings": [
+            {
+                "date": "2014-11-07",
+                "text": "You may choose the same opponent for each of the effects, or you may choose different opponents. None of the affected players are targets of the spell."
+            },
+            {
+                "date": "2014-11-07",
+                "text": "You choose the opponents for each effect as the spell resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Titania, Protector of Argoth
 {
     "name": "Titania, Protector of Argoth",

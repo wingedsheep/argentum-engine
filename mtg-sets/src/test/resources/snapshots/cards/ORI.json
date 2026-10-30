@@ -434,6 +434,109 @@
     ]
 }
 
+// Animist's Awakening
+{
+    "name": "Animist's Awakening",
+    "manaCost": "{X}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Reveal the top X cards of your library. Put all land cards from among them onto the battlefield tapped and the rest on the bottom of your library in a random order.\nSpell mastery — If there are two or more instant and/or sorcery cards in your graveyard, untap those lands.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": "XValue"
+                    },
+                    "storeAs": "gathered0",
+                    "revealed": true
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "gathered0",
+                    "filter": "land",
+                    "storeMatching": "matching1",
+                    "storeNonMatching": "rest1"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "matching1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "placement": "Tapped"
+                    },
+                    "storeMovedAs": "moved2"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "rest1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Bottom"
+                    },
+                    "order": "Random"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Graveyard",
+                                "filter": "instant|sorcery"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "TapUntapCollection",
+                        "collectionName": "moved2",
+                        "tap": false
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "169",
+        "rarity": "RARE",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e3b62616-c1a3-45f7-a329-f1305c462eaf.jpg?1783938325",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Check to see if there are two or more instant and/or sorcery cards in your graveyard as the spell resolves to determine whether the spell mastery ability applies. The spell itself won't count because it's still on the stack as you make this check."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If the spell mastery ability applies, you untap only the lands put onto the battlefield with Animist's Awakening."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "No player will know the order of the cards put on the bottom of your library. Practically speaking, the cards should be shuffled (although this is not the game action of \"shuffling\")."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If you have X or less cards in your library, you'll reveal all the cards from your library, put all land cards from among them onto the battlefield tapped, and then put the rest of the cards back in your library in a random order. (This is effectively the same as shuffling your library, although it's still not technically a shuffle.)"
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Anointer of Champions
 {
     "name": "Anointer of Champions",

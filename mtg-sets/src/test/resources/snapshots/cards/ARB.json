@@ -534,6 +534,86 @@
     ]
 }
 
+// Thopter Foundry
+{
+    "name": "Thopter Foundry",
+    "manaCost": "{W/B}{U}",
+    "typeLine": "Artifact",
+    "oracleText": "{1}, Sacrifice a nontoken artifact: Create a 1/1 blue Thopter artifact creature token with flying. You gain 1 life.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Thopter Foundry:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "artifact nontoken"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "BLUE"
+                            ],
+                            "creatureTypes": [
+                                "Thopter"
+                            ],
+                            "keywords": [
+                                "FLYING"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/e/e/eef8b4fc-238f-4c1f-ad98-a1769fd44eab.jpg?1783930233",
+                            "artifactToken": true
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "rarity": "UNCOMMON",
+        "artist": "Ralph Horsley",
+        "flavorText": "\"Etherium is limited. Innovation is not.\"\n—Tezzeret",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/42b8d797-b01d-49cf-9818-d84bba17029d.jpg?1783942412",
+        "rulings": [
+            {
+                "date": "2020-08-07",
+                "text": "You may sacrifice Thopter Foundry to pay the cost of its own ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Time Sieve
 {
     "name": "Time Sieve",
