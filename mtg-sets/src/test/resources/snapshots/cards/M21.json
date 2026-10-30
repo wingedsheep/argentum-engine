@@ -772,6 +772,186 @@
     ]
 }
 
+// Basri Ket
+{
+    "name": "Basri Ket",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Legendary Planeswalker — Basri",
+    "oracleText": "+1: Put a +1/+1 counter on up to one target creature. It gains indestructible until end of turn.\n−2: Whenever one or more nontoken creatures attack this turn, create that many 1/1 white Soldier creature tokens that are tapped and attacking.\n−6: You get an emblem with \"At the beginning of combat on your turn, create a 1/1 white Soldier creature token, then put a +1/+1 counter on each creature you control.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Basri Ket:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "INDESTRUCTIBLE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Basri Ket:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "CreateToken",
+                        "count": {
+                            "type": "DistinctEntitiesInCollections",
+                            "collections": [
+                                "trigger.captured"
+                            ]
+                        },
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "WHITE"
+                        ],
+                        "creatureTypes": [
+                            "Soldier"
+                        ],
+                        "tapped": true,
+                        "attacking": true,
+                        "attackDefender": "CONTROLLER_CHOOSES"
+                    },
+                    "trigger": {
+                        "event": {
+                            "type": "YouAttackEvent",
+                            "attackerFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "IsNontoken"
+                                ]
+                            },
+                            "player": "Each"
+                        },
+                        "binding": "ANY"
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Basri Ket:4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -6
+                },
+                "effect": {
+                    "type": "CreateGlobalTriggeredAbility",
+                    "ability": {
+                        "id": "Basri Ket:3",
+                        "trigger": {
+                            "type": "StepEvent",
+                            "step": "BEGIN_COMBAT"
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "CreateToken",
+                                    "power": 1,
+                                    "toughness": 1,
+                                    "colors": [
+                                        "WHITE"
+                                    ],
+                                    "creatureTypes": [
+                                        "Soldier"
+                                    ]
+                                },
+                                {
+                                    "type": "ForEach",
+                                    "space": {
+                                        "type": "IterationSpace.Group",
+                                        "filter": {
+                                            "baseFilter": "creature ctrl:you"
+                                        }
+                                    },
+                                    "body": {
+                                        "type": "AddCounters",
+                                        "counterType": "PLUS_ONE_PLUS_ONE",
+                                        "count": 1,
+                                        "target": "IterationEntity"
+                                    }
+                                }
+                            ]
+                        },
+                        "descriptionOverride": "At the beginning of combat on your turn, create a 1/1 white Soldier creature token, then put a +1/+1 counter on each creature you control."
+                    },
+                    "descriptionOverride": "At the beginning of combat on your turn, create a 1/1 white Soldier creature token, then put a +1/+1 counter on each creature you control.",
+                    "emblem": true
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "rarity": "MYTHIC",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/98c85699-2daf-4e87-a3be-465d02bd64bb.jpg?1783930745",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "The delayed triggered ability of Basri's second ability triggers if any nontoken creatures attack, and it counts how many nontoken creatures attacked. Attacking nontoken creatures that leave combat before the triggered ability resolves are counted. Token creatures that are attacking don't stop the ability from triggering and aren't counted."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "You choose which player or planeswalker each Soldier token is attacking. They don't have to be attacking the same players or planeswalkers that the nontoken creatures are attacking, and they don't have to be attacking the same player or planeswalker as each other."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Although the Soldiers are attacking creatures, they were never declared as attacking creatures. This means that abilities that trigger whenever a creature attacks won't trigger when the Soldiers enter the battlefield attacking."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "The Soldier token created by Basri's last ability can't attack during the turn you create it unless it gains haste somehow."
+            }
+        ]
+    },
+    "startingLoyalty": 3,
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Basri's Acolyte
 {
     "name": "Basri's Acolyte",

@@ -2000,14 +2000,6 @@ class TriggerDetector(
                         val capturedTargets = (event as? SpellCastEvent)?.let {
                             matcher.capturedCastTargets(trigger, it, state, entityId, controllerId)
                         }
-                        // "Whenever you attack with one or more creatures, create that many …"
-                        // (Rabble Rousing): the creatures the trigger counted, frozen at declaration.
-                        val capturedAttackers = (trigger as? EventPattern.YouAttackEvent)?.let { trigger ->
-                            (event as? AttackersDeclaredEvent)?.let {
-                                matcher.youAttackAttackers(trigger, it, entityId, controllerId, state)
-                            }
-                        }
-
                         triggers.add(
                             PendingTrigger(
                                 ability = ability,
@@ -2019,16 +2011,9 @@ class TriggerDetector(
                                         enchantedCreatureLastKnownPower = enchantedPower,
                                         // Never clobber a capture the event itself carries
                                         // (manifest dread's graveyard cards).
-                                        capturedEntityIds = capturedTargets ?: capturedAttackers ?: ctx.capturedEntityIds,
-                                        capturedEntitySnapshots = capturedTargets?.let { copiableSnapshots(state, it) },
-                                        capturedAttackerDefenders = capturedAttackers?.let { attackers ->
-                                            attackers.mapNotNull { id ->
-                                                state.getEntity(id)
-                                                    ?.get<com.wingedsheep.engine.state.components.combat.AttackingComponent>()
-                                                    ?.defenderId?.let { id to it }
-                                            }.toMap()
-                                        }
-                                    )
+                                        capturedEntityIds = capturedTargets ?: ctx.capturedEntityIds,
+                                        capturedEntitySnapshots = capturedTargets?.let { copiableSnapshots(state, it) }
+                                    ).withYouAttackAttackers(trigger, event, entityId, controllerId, state)
                                 }
                             )
                         )
@@ -2420,9 +2405,10 @@ class TriggerDetector(
     }
 
     /**
-     * "…attack you" triggers detected off the battlefield scan (delayed, graveyard/command zone,
-     * global grants) capture their attackers the way the battlefield path does, so "that many"
-     * reads the declared attackers there too ([TriggerMatcher.attackersAgainstYou]).
+     * Attack-declaration triggers detected off the battlefield scan (delayed, graveyard/command
+     * zone, global grants) capture their attackers the way the battlefield path does, so "that
+     * many" reads the declared attackers there too — the defender side "…attack you"
+     * ([TriggerMatcher.attackersAgainstYou]) and the attacker side ([withYouAttackAttackers]).
      */
     private fun TriggerContext.withAttackersAgainstYou(
         trigger: EventPattern,
@@ -2431,8 +2417,37 @@ class TriggerDetector(
         controllerId: EntityId,
         state: GameState
     ): TriggerContext {
-        val attackTrigger = trigger as? EventPattern.CreaturesAttackYouEvent ?: return this
+        val attackTrigger = trigger as? EventPattern.CreaturesAttackYouEvent
+            ?: return withYouAttackAttackers(trigger, event, sourceId, controllerId, state)
         return copy(capturedEntityIds = matcher.attackersAgainstYou(attackTrigger, event, sourceId, controllerId, state))
+    }
+
+    /**
+     * "Whenever you attack with one or more creatures, create that many …" (Rabble Rousing) and its
+     * delayed / emblem forms ("whenever one or more nontoken creatures attack this turn, create that
+     * many …" — Basri Ket's −2): freeze the declared attackers the trigger counted as its captured
+     * collection, and whom each was declared attacking, so "that many" and "those creatures" read
+     * the declaration even after an attacker leaves combat. The per-attacked-player form
+     * ([EventPattern.YouAttackEvent.attackedPlayer]) binds a player instead and captures nothing.
+     */
+    private fun TriggerContext.withYouAttackAttackers(
+        trigger: EventPattern,
+        event: EngineGameEvent,
+        sourceId: EntityId,
+        controllerId: EntityId,
+        state: GameState
+    ): TriggerContext {
+        val attackTrigger = trigger as? EventPattern.YouAttackEvent ?: return this
+        if (attackTrigger.attackedPlayer != null || event !is AttackersDeclaredEvent) return this
+        val attackers = matcher.youAttackAttackers(attackTrigger, event, sourceId, controllerId, state)
+        return copy(
+            capturedEntityIds = attackers,
+            capturedAttackerDefenders = attackers.mapNotNull { id ->
+                state.getEntity(id)
+                    ?.get<com.wingedsheep.engine.state.components.combat.AttackingComponent>()
+                    ?.defenderId?.let { id to it }
+            }.toMap()
+        )
     }
 
     /**

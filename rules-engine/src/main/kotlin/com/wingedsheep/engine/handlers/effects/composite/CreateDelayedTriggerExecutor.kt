@@ -99,7 +99,14 @@ class CreateDelayedTriggerExecutor(
         // the triggering entity, so that reference stays late-bound rather than being baked to the
         // creating trigger's triggering entity (the Dragon itself, for an enters trigger).
         val filterScoped = effect.trigger != null && effect.watchedTarget == null && effect.watchedRecipient == null
-        val bakingContext = if (filterScoped) context.copy(triggeringEntityId = null) else context
+        // Likewise its trigger-scoped collections ("that many", "those creatures") are its own
+        // firing's capture, not the creating trigger's, so they stay late-bound too.
+        val bakingContext = if (filterScoped) context.copy(
+            triggeringEntityId = null,
+            pipeline = context.pipeline.copy(
+                storedCollections = context.pipeline.storedCollections - TRIGGER_SCOPED_COLLECTIONS
+            )
+        ) else context
         val resolvedEffect = resolveContextTargets(effect.effect, bakingContext, state, bound, snapshots)
 
         // Bake any chosen-value references in the trigger's filter into concrete predicates.
@@ -344,31 +351,37 @@ class CreateDelayedTriggerExecutor(
         context: EffectContext,
         state: GameState
     ): DynamicAmount {
-        if (!readsPipeline(amount)) return amount
+        if (!readsPipeline(amount, context.pipeline.storedCollections.keys)) return amount
         return DynamicAmount.Fixed(dynamicAmountEvaluator.evaluate(state, amount, context))
     }
 
-    /** Whether [amount] anywhere reads a pipeline-scoped collection or stored number. */
-    private fun readsPipeline(amount: DynamicAmount): Boolean = when (amount) {
-        is DynamicAmount.DistinctEntitiesInCollections,
-        is DynamicAmount.DistinctCardTypesInCollections,
-        is DynamicAmount.ManaValueSumOfCollection,
+    /**
+     * Whether [amount] anywhere reads a pipeline-scoped collection or stored number. A collection
+     * read counts only when the scheduling pipeline holds that collection ([stored]): one it
+     * doesn't hold is the firing trigger's own — "whenever one or more nontoken creatures attack
+     * this turn, create **that many** …" (Basri Ket's −2) counts the attackers its own firing
+     * captured — so freezing it now would bake the answer to 0.
+     */
+    private fun readsPipeline(amount: DynamicAmount, stored: Set<String>): Boolean = when (amount) {
+        is DynamicAmount.DistinctEntitiesInCollections -> amount.collections.any { it in stored }
+        is DynamicAmount.DistinctCardTypesInCollections -> amount.collections.any { it in stored }
+        is DynamicAmount.ManaValueSumOfCollection -> amount.collectionName in stored
         is DynamicAmount.StoredCardManaValue,
         is DynamicAmount.VariableReference,
         // Read off the spell on the stack, which is gone by the time a delayed trigger fires.
         is DynamicAmount.CapturedAtCast -> true
 
-        is DynamicAmount.Add -> readsPipeline(amount.left) || readsPipeline(amount.right)
-        is DynamicAmount.Subtract -> readsPipeline(amount.left) || readsPipeline(amount.right)
-        is DynamicAmount.Max -> readsPipeline(amount.left) || readsPipeline(amount.right)
-        is DynamicAmount.Min -> readsPipeline(amount.left) || readsPipeline(amount.right)
-        is DynamicAmount.Multiply -> readsPipeline(amount.amount)
-        is DynamicAmount.IfPositive -> readsPipeline(amount.amount)
-        is DynamicAmount.Power -> readsPipeline(amount.exponent)
-        is DynamicAmount.Divide -> readsPipeline(amount.numerator) || readsPipeline(amount.denominator)
-        is DynamicAmount.Conditional -> readsPipeline(amount.ifTrue) || readsPipeline(amount.ifFalse)
-        is DynamicAmount.GreatestAmongPlayers -> readsPipeline(amount.inner)
-        is DynamicAmount.LeastAmongPlayers -> readsPipeline(amount.inner)
+        is DynamicAmount.Add -> readsPipeline(amount.left, stored) || readsPipeline(amount.right, stored)
+        is DynamicAmount.Subtract -> readsPipeline(amount.left, stored) || readsPipeline(amount.right, stored)
+        is DynamicAmount.Max -> readsPipeline(amount.left, stored) || readsPipeline(amount.right, stored)
+        is DynamicAmount.Min -> readsPipeline(amount.left, stored) || readsPipeline(amount.right, stored)
+        is DynamicAmount.Multiply -> readsPipeline(amount.amount, stored)
+        is DynamicAmount.IfPositive -> readsPipeline(amount.amount, stored)
+        is DynamicAmount.Power -> readsPipeline(amount.exponent, stored)
+        is DynamicAmount.Divide -> readsPipeline(amount.numerator, stored) || readsPipeline(amount.denominator, stored)
+        is DynamicAmount.Conditional -> readsPipeline(amount.ifTrue, stored) || readsPipeline(amount.ifFalse, stored)
+        is DynamicAmount.GreatestAmongPlayers -> readsPipeline(amount.inner, stored)
+        is DynamicAmount.LeastAmongPlayers -> readsPipeline(amount.inner, stored)
 
         // Leaves that read game state or the resolution context, never a pipeline slot. A new
         // leaf that reads a stored collection or number belongs in the `true` group above.
@@ -698,3 +711,9 @@ class CreateDelayedTriggerExecutor(
             is Gate.OnceEachTurn -> gate
         }
 }
+
+/** Pipeline collections a triggered ability's own firing seeds (see `triggerStoredCollections`). */
+private val TRIGGER_SCOPED_COLLECTIONS = setOf(
+    com.wingedsheep.engine.handlers.PipelineState.TRIGGER_CAPTURED_COLLECTION,
+    com.wingedsheep.sdk.scripting.effects.IterationSpace.TRIGGER_DAMAGED_PLAYERS
+)

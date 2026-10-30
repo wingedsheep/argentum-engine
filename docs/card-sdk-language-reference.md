@@ -8576,7 +8576,11 @@ The shapes in this family, with their engine notes.
   `CollectionSlot.TriggerCaptured`, frozen at declaration (CR 508.4: a creature put onto the battlefield
   attacking was never declared). "Create **that many** …" is
   `DynamicAmounts.distinctEntitiesIn(CollectionSlot.TriggerCaptured)`; it still counts an attacker
-  removed before the trigger resolves (Rabble Rousing). Battlefield trigger path only.
+  removed before the trigger resolves (Rabble Rousing). The capture holds on every detection path —
+  battlefield, graveyard/command zone, an `Effects.CreateDelayedTrigger(trigger = …attacks(…))` ("whenever
+  one or more nontoken creatures attack this turn, create that many 1/1 white Soldier creature tokens that
+  are tapped and attacking" — Basri Ket's −2: `Triggers.anyPlayer.attacks(with = Creature.nontoken())`, so
+  attacking tokens neither trigger it nor count) and an emblem/global grant.
 - `Triggers.you.attacksAPlayer(with?, minAttackers?)` — "whenever you attack **a player**" /
   "whenever one or more [with] you control attack a player" / "two or more creatures you control
   attack a player" (CR 508.3e). `YouAttackEvent(attackedPlayer = Player.Each)`: fires **once per player
@@ -10164,7 +10168,12 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
   the `DelayedTriggeredAbility` and seeded into the pipeline its `effect` resolves in, under the same
   names, so the effect can `MoveCollection(from = "<name>")` or `PipelineTarget("<name>")` them; an
   object that has since changed zones (a new object) or ceased to exist is dropped when it fires
-  (Flickerform). Two orthogonal axes control *whose / which* turn fires the trigger:
+  (Flickerform). An amount in `effect` that reads a collection the creating pipeline holds ("for each
+  creature returned **this way**") is frozen at scheduling; one reading a collection it doesn't hold —
+  the firing's own `CollectionSlot.TriggerCaptured`, and for a filter-scoped event trigger always its
+  own — stays late-bound, so "whenever one or more nontoken creatures attack this turn, create **that
+  many** …" (Basri Ket's −2) counts its own attackers. Two orthogonal axes control *whose / which* turn
+  fires the trigger:
   - `fireOnPlayer: EffectTarget?` — the single "whose turn" gate. Resolved to a concrete player
     at scheduling time; only matches when that player is active. Defaults to `null` (no player
     gate — fires on the next matching step of *any* turn). Two common shapes:

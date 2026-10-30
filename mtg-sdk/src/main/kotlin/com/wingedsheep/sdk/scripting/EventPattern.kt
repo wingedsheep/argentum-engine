@@ -1204,7 +1204,8 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * player, [Player.EachOpponent] is "whenever a player attacks **one of your opponents**"
      * (Breena, the Demagogue — where "that attacking player" is then `Player.ActivePlayer`).
      *
-     * Without [attackedPlayer] (null), a battlefield firing captures the declared attackers it counted
+     * Without [attackedPlayer] (null), every firing — battlefield, delayed (Basri Ket's −2) or emblem —
+     * captures the declared attackers it counted
      * as its trigger-captured collection, so "create that many …" (Rabble Rousing) reads how many
      * creatures you attacked with, even after one leaves combat. The firing also freezes whom each
      * of them was declared attacking, for `TriggeringAttackersAttackedPlayer` ("if none of those
