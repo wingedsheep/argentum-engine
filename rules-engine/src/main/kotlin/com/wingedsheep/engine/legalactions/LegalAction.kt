@@ -534,6 +534,11 @@ data class AdditionalCostData(
     val tapBatchMaxActivations: Int = 1,
     val validDiscardTargets: List<EntityId> = emptyList(),
     val discardCount: Int = 0,
+    /**
+     * Upper bound for a variable discard ("discard X cards", Channeled Force): the caster picks
+     * [discardCount]..[discardMaxCount] cards. `null` means exactly [discardCount].
+     */
+    val discardMaxCount: Int? = null,
     val validBounceTargets: List<EntityId> = emptyList(),
     val bounceCount: Int = 0,
     val validExileTargets: List<EntityId> = emptyList(),

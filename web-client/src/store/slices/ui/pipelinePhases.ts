@@ -1088,9 +1088,11 @@ export function enterPhase(
         case 'DiscardCard':
           validTargets = [...(costInfo.validDiscardTargets ?? [])]
           minTargets = costInfo.discardCount ?? 1
-          maxTargets = costInfo.discardCount ?? 1
+          // A variable discard ("discard X cards") sends its own upper bound; a fixed one doesn't.
+          maxTargets = costInfo.discardMaxCount ?? costInfo.discardCount ?? 1
           flags.isSacrificeSelection = true
           flags.isDiscardSelection = true
+          if (costInfo.discardMaxCount != null) flags.targetDescription = costInfo.description
           break
         case 'ExileFromGraveyard':
           validTargets = [...(costInfo.validExileTargets ?? [])]

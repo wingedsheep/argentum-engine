@@ -150,6 +150,9 @@ class SpellCostOffer {
     var collectEvidenceCost: CostAtom.CollectEvidence? = null
     var discardTargets = emptyList<EntityId>()
     var discardCount = 0
+    /** Set by a variable discard ("discard X cards"): [discardCount] is then its minimum. */
+    var discardMaxCount: Int? = null
+    var discardDescription: String? = null
     var bounceTargets = emptyList<EntityId>()
     var bounceCount = 0
     var tapTargets = emptyList<EntityId>()

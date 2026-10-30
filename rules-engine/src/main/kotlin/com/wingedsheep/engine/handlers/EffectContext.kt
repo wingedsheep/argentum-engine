@@ -207,7 +207,7 @@ data class EffectContext(
     val modeTargetRequirementsOrdered: List<List<TargetRequirement>> = emptyList(),
     val modeTargetsOrdered: List<List<ChosenTarget>> = emptyList(),
     val modeTargetRequirements: Map<Int, List<TargetRequirement>> = emptyMap(),
-    /** Number of cards exiled as an additional cost (for ExileVariableCards) */
+    /** Number of cards exiled as an additional cost (for an exiling AdditionalCost.VariableCards) */
     val exiledCardCount: Int = 0,
     /** X chosen for [com.wingedsheep.sdk.scripting.AdditionalCost.BlightVariable] */
     val additionalCostBlightAmount: Int = 0,

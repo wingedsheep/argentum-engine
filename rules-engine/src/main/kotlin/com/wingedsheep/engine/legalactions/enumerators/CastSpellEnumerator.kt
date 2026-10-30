@@ -44,6 +44,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AdditionalCost
+import com.wingedsheep.sdk.scripting.CardCostAction
 import com.wingedsheep.sdk.scripting.AdditionalCostPayment
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.ChoiceSlot
@@ -2887,8 +2888,8 @@ class CastSpellEnumerator(
             }
             if (offer.exileTargets.isNotEmpty()) {
                 val exileCostDesc = additionalCosts
-                    .filterIsInstance<AdditionalCost.ExileVariableCards>()
-                    .firstOrNull()?.description
+                    .filterIsInstance<AdditionalCost.VariableCards>()
+                    .firstOrNull { it.action == CardCostAction.EXILE }?.description
                     ?: additionalCosts
                         .firstNotNullOfOrNull { (it as? AdditionalCost.Atom)?.atom as? CostAtom.ExileFrom }
                         ?.description?.replaceFirstChar { it.uppercase() }
@@ -2904,10 +2905,12 @@ class CastSpellEnumerator(
             if (offer.discardTargets.isNotEmpty()) {
                 val discardCost = additionalCosts.firstNotNullOfOrNull { (it as? AdditionalCost.Atom)?.atom as? CostAtom.Discard }
                 add(AdditionalCostData(
-                    description = discardCost?.description?.replaceFirstChar { it.uppercase() } ?: "Discard a card",
+                    description = offer.discardDescription
+                        ?: discardCost?.description?.replaceFirstChar { it.uppercase() } ?: "Discard a card",
                     costType = "DiscardCard",
                     validDiscardTargets = offer.discardTargets,
-                    discardCount = offer.discardCount
+                    discardCount = offer.discardCount,
+                    discardMaxCount = offer.discardMaxCount,
                 ))
             }
             if (offer.bounceTargets.isNotEmpty()) {

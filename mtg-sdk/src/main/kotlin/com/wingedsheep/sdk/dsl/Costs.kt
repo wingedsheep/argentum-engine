@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.dsl.Costs.additional.Behold
 import com.wingedsheep.sdk.dsl.Costs.additional.ExileFromStorage
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.AdditionalCost
+import com.wingedsheep.sdk.scripting.CardCostAction
 import com.wingedsheep.sdk.scripting.CostZone
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.costs.CardMeasure
@@ -869,7 +870,17 @@ object Costs {
             minCount: Int = 1,
             filter: GameObjectFilter = GameObjectFilter.Any,
             fromZone: CostZone = CostZone.GRAVEYARD
-        ): AdditionalCost = AdditionalCost.ExileVariableCards(minCount, filter, fromZone)
+        ): AdditionalCost = AdditionalCost.VariableCards(CardCostAction.EXILE, minCount, filter, fromZone)
+
+        /**
+         * Discard X (at least [minCount]) cards matching [filter] — "as an additional cost to cast this
+         * spell, discard X cards" (Channeled Force). X may be 0 by default; the number discarded is the
+         * spell's X, read with `DynamicAmount.XValue`.
+         */
+        fun DiscardVariableCards(
+            minCount: Int = 0,
+            filter: GameObjectFilter = GameObjectFilter.Any,
+        ): AdditionalCost = AdditionalCost.VariableCards(CardCostAction.DISCARD, minCount, filter, CostZone.HAND)
 
         /**
          * "You may sacrifice any number of [filter]. This spell costs {[reductionPerUnit]} less to cast

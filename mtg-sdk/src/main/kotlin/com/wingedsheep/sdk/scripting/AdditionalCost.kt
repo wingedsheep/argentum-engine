@@ -23,7 +23,7 @@ import kotlinx.serialization.Serializable
  * zone, tap permanents) live in the [CostAtom] vocabulary and are carried here by [Atom]. The remaining
  * subtypes are genuinely casting-context-specific: the "X or pay mana" wrapper ([OrPay], plus
  * [BlightOrPay] which has no standalone cost to wrap), pipeline-storage flow
- * (Behold/ExileFromStorage/Composite), per-target life, variable exile, and the cross-zone
+ * (Behold/ExileFromStorage/Composite), per-target life, variable exile/discard, and the cross-zone
  * [ChooseEntity] pick.
  */
 @Serializable
@@ -78,29 +78,40 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
     }
 
     /**
-     * Exile a variable number of cards from a zone as an additional cost.
-     * The player chooses how many matching cards to exile (at least [minCount]).
-     * Example: "Exile X creature cards from your graveyard" for Chill Haunting
+     * Exile or discard a variable number of cards as an additional cost. The player chooses how many
+     * matching cards (at least [minCount]).
+     *  - `EXILE` — "exile X creature cards from your graveyard" (Chill Haunting), from [fromZone].
+     *  - `DISCARD` — "discard X cards" (Channeled Force), always from the hand; a real discard, so
+     *    discard triggers and madness see it.
      *
-     * The number exiled is the spell's X (CR 107.3a), stamped onto its X value — so a flashback cost
-     * of this shape gives a `{X}` spell its X without paying the `{X}` (Summons of Saruman). The card
-     * being cast is never in its own pool: it's on the stack before costs are paid (CR 601.2a).
+     * The number chosen is the spell's X (CR 107.3a), stamped onto its X value — so a flashback cost
+     * of this shape gives a `{X}` spell its X without paying the `{X}` (Summons of Saruman), and a
+     * spell with no `{X}` reads it as `DynamicAmount.XValue` (Channeled Force). The card being cast
+     * is never in its own pool: it's on the stack before costs are paid (CR 601.2a).
      *
-     * @property minCount Minimum number of cards to exile (default 1)
-     * @property filter Which cards can be exiled
-     * @property fromZone Zone to exile from
+     * @property action what is done with each chosen card.
+     * @property minCount Minimum number of cards (default 1; `0` when X may be 0)
+     * @property filter Which cards can be chosen
+     * @property fromZone Zone the cards come from — `HAND` for `DISCARD`
      */
-    @SerialName("ExileVariableCards")
+    @SerialName("VariableCards")
     @Serializable
-    data class ExileVariableCards(
+    data class VariableCards(
+        val action: CardCostAction = CardCostAction.EXILE,
         val minCount: Int = 1,
         val filter: GameObjectFilter = GameObjectFilter.Any,
         val fromZone: CostZone = CostZone.GRAVEYARD
     ) : AdditionalCost {
-        override val description: String = buildString {
-            append("Exile X ")
-            append(filter.description)
-            append("s from your ${fromZone.description}")
+        init {
+            require(action != CardCostAction.DISCARD || fromZone == CostZone.HAND) {
+                "A discard cost takes cards from the hand"
+            }
+        }
+
+        override val description: String = when (action) {
+            CardCostAction.EXILE -> "Exile X ${filter.description}s from your ${fromZone.description}"
+            CardCostAction.DISCARD ->
+                if (filter == GameObjectFilter.Any) "Discard X cards" else "Discard X ${filter.description}s"
         }
 
         override fun applyTextReplacement(replacer: TextReplacer): AdditionalCost {
@@ -123,7 +134,7 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
      *    `EXILE` is hand-only for now.
      *
      * Closest neighbours: [CostAtom.VariablePermanents] (a variable-count cost whose count becomes
-     * the ability's X, never a discount, and battlefield-only) and [ExileVariableCards] (the count is
+     * the ability's X, never a discount, and battlefield-only) and [VariableCards] (the count is
      * the spell's X). Here the count is a *price*, not a value the effect reads.
      *
      * @property action what is done with each chosen object.
@@ -543,6 +554,10 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
 /**
  * Zones that cards can be exiled from as an additional cost.
  */
+/** What [AdditionalCost.VariableCards] does with each card the caster chooses. */
+@Serializable
+enum class CardCostAction { EXILE, DISCARD }
+
 @Serializable
 enum class CostZone(val description: String) {
     HAND("hand"),

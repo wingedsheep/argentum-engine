@@ -1272,6 +1272,66 @@
     ]
 }
 
+// Channeled Force
+{
+    "name": "Channeled Force",
+    "manaCost": "{2}{U}{R}",
+    "typeLine": "Instant",
+    "oracleText": "As an additional cost to cast this spell, discard X cards.\nTarget player draws X cards. Channeled Force deals X damage to up to one target creature or planeswalker.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": "XValue",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": "XValue",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            },
+            {
+                "type": "TargetCreatureOrPlaneswalker",
+                "optional": true,
+                "id": "t1"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "VariableCards",
+                "action": "DISCARD",
+                "minCount": 0,
+                "fromZone": "HAND"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "180",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Vargas",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/8918d24e-8ae8-4028-9f06-ba6fafcc717e.jpg?1783931027"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Charge of the Forever-Beast
 {
     "name": "Charge of the Forever-Beast",

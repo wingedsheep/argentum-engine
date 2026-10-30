@@ -334,6 +334,8 @@ data class AdditionalCostInfo(
     val tapBatchMaxActivations: Int = 1,
     val validDiscardTargets: List<EntityId> = emptyList(),
     val discardCount: Int = 0,
+    /** Upper bound of a variable discard ("discard X cards"); null means exactly [discardCount]. */
+    val discardMaxCount: Int? = null,
     val validBounceTargets: List<EntityId> = emptyList(),
     val bounceCount: Int = 0,
     val validExileTargets: List<EntityId> = emptyList(),

@@ -1112,6 +1112,12 @@ cast action advertises the first selection cost as `additionalCostInfo` and the 
   `keywordAbility(KeywordAbility.flashback("{3}{U}{R}", Costs.additional.ExileVariableCards(minCount = 0)))`; cast
   from hand, X comes from the mana cost. Like every exile-from-zone spell cost, the card being cast is never in
   its own pool (CR 601.2a). Don't combine it with a paid `{X}` on the same cast — both write the one X.
+  Both are `AdditionalCost.VariableCards` with a `CardCostAction` axis (`EXILE` here, `DISCARD` below).
+- `Costs.additional.DiscardVariableCards(minCount = 0, filter = Any)` — "as an additional cost to cast this
+  spell, discard X cards" (Channeled Force). The caster picks how many cards to discard from hand (zero
+  included); the number discarded **is the spell's X**, read with `DynamicAmount.XValue`. It's a real discard
+  through the shared discard path, so discard triggers and madness see it. Client picker: `DiscardCard` with
+  `discardCount` as the minimum and `discardMaxCount` as the maximum.
 - `Costs.additional.ExileOtherCardsWithCardTypes(minTypes, filter = Any)` — "exile any number of other
   cards from your graveyard with N or more card types among them" (Nethergoyf's escape cost). A
   `CostAtom.ExileFromGraveyardForTotal` under the union measure `CardMeasure.DistinctCardTypes`; see

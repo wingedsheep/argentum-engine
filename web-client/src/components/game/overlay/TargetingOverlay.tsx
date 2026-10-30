@@ -650,7 +650,10 @@ export function TargetingOverlay() {
   const promptText = isBehold
     ? `${targetingState.targetDescription ?? 'Behold a card'} (${targetDisplay})`
     : isDiscard
-      ? `Select card to discard (${targetDisplay})`
+      ? // A variable discard ("Discard X cards") names its range rather than a fixed count.
+        targetingState.targetDescription && minTargets !== maxTargets
+        ? `${targetingState.targetDescription}: choose ${minTargets}–${maxTargets} (${selectedCount} selected)`
+        : `Select card to discard (${targetDisplay})`
       : isReveal
         ? `Select card to reveal (${targetDisplay})`
         : isTapPermanent

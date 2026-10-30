@@ -1436,6 +1436,11 @@ export interface AdditionalCostInfo {
   readonly validDiscardTargets?: readonly EntityId[]
   readonly discardCount?: number
   /**
+   * Upper bound for a variable discard ("discard X cards", Channeled Force): pick
+   * discardCount..discardMaxCount cards. Absent means exactly discardCount.
+   */
+  readonly discardMaxCount?: number
+  /**
    * Cards in your hand that could pay a reveal-from-hand additional cost ("reveal an Elf card from
    * your hand or pay {3}"), and how many to pick. Distinct from `validBeholdTargets` because
    * behold also offers battlefield permanents (CR 701.4a); a reveal never does. Picks are

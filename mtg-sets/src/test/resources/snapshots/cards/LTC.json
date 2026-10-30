@@ -1677,7 +1677,7 @@
             "type": "Flashback",
             "cost": "{3}{U}{R}",
             "additionalCost": {
-                "type": "ExileVariableCards",
+                "type": "VariableCards",
                 "minCount": 0
             }
         }

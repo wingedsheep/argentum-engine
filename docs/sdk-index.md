@@ -135,13 +135,13 @@ Families:
 - `AdditionalCost.ChooseEntity(zoneFilters: Map<Zone, GameObjectFilter>, storeAs: String, captureSnapshot: Boolean, descriptionOverride: String?)` — Choose one entity from any of the zones declared in zoneFilters, applying the matching filter for that zone, without moving it.
 - `AdditionalCost.Composite(steps: List<AdditionalCost>)` — A composite additional cost that groups multiple atomic costs into a single logical cost.
 - `AdditionalCost.ExileFromStorage(from: String, linkToSource: Boolean)` — Exile cards from a named pipeline collection and optionally link them to the source spell/permanent via LinkedExileComponent.
-- `AdditionalCost.ExileVariableCards(minCount: Int, filter: GameObjectFilter, fromZone: CostZone)` — Exile a variable number of cards from a zone as an additional cost.
 - `AdditionalCost.Forage` — Forage: exile three cards from your graveyard or sacrifice a Food.
 - `AdditionalCost.OrPay(cost: AdditionalCost, alternativeManaCost: String)` — Pay cost, **or** pay alternativeManaCost on top of the spell's mana cost — the whole "do X or pay {N}" shape, parameterized by the cost on the non-mana leg.
 - `AdditionalCost.OthersGainLife(amount: Int, eachOtherPlayer: Boolean)` — Have other players gain life as the cost — "rather than pay this spell's mana cost, you may have **an opponent** gain 3 life" (Invigorate) or "… have **each other player** gain 6 life" (Reverent Si…
 - `AdditionalCost.PayLifeEqualToManaValueOfSpell` — Pay life equal to the mana value of the spell being cast.
 - `AdditionalCost.PayLifePerTarget(amountPerTarget: Int)` — Pay amountPerTarget life for each target chosen by this spell.
 - `AdditionalCost.PayXLife(minCount: Int)` — Pay X life (variable): the caster declares X at cast time and pays X life as an additional cost.
+- `AdditionalCost.VariableCards(action: CardCostAction, minCount: Int, filter: GameObjectFilter, fromZone: CostZone)` — Exile or discard a variable number of cards as an additional cost.
 
 ## AmountFilter
 

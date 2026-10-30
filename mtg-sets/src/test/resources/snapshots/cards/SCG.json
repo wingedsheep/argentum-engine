@@ -1325,7 +1325,7 @@
         ],
         "additionalCosts": [
             {
-                "type": "ExileVariableCards",
+                "type": "VariableCards",
                 "filter": "creature"
             }
         ]
