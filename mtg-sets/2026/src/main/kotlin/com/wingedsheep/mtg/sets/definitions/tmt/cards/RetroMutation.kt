@@ -33,7 +33,7 @@ val RetroMutation = card("Retro-Mutation") {
 
     // "is a Turtle" — set its only creature subtype to Turtle (keeps the Creature type).
     staticAbility {
-        ability = TransformPermanent(setCardTypes = setOf("CREATURE"), setSubtypes = setOf("Turtle"))
+        ability = TransformPermanent(setCreatureSubtypes = setOf("Turtle"))
     }
     staticAbility {
         ability = SetBasePowerToughnessStatic(0, 1)

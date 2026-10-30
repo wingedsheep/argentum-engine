@@ -27,7 +27,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  *
  * "Your upkeep" is the Aura controller's; the sacrifice is unconditional and any creature they
  * control is a legal choice, including the enchanted one. "Is a Demon Spirit" replaces every
- * creature type (Layer 4 `setSubtypes`) and leaves card types, colours and abilities alone.
+ * creature type (Layer 4 `setCreatureSubtypes`) and leaves card types, colours and abilities alone.
  */
 val OniPossession = card("Oni Possession") {
     manaCost = "{2}{B}"
@@ -54,7 +54,7 @@ val OniPossession = card("Oni Possession") {
 
     staticAbility {
         ability = TransformPermanent(
-            setSubtypes = setOf("Demon", "Spirit"),
+            setCreatureSubtypes = setOf("Demon", "Spirit"),
             filter = GroupFilter.attachedCreature()
         )
     }

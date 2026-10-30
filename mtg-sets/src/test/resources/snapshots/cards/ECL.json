@@ -13022,13 +13022,10 @@
         "staticAbilities": [
             {
                 "type": "TransformPermanent",
-                "setCardTypes": [
-                    "CREATURE"
-                ],
-                "setSubtypes": [
+                "setColors": [],
+                "setCreatureSubtypes": [
                     "Noggle"
-                ],
-                "setColors": []
+                ]
             },
             "LoseAllAbilities",
             {

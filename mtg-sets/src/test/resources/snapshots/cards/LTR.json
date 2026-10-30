@@ -5578,7 +5578,7 @@
         "staticAbilities": [
             {
                 "type": "TransformPermanent",
-                "setSubtypes": [
+                "setCreatureSubtypes": [
                     "Spirit"
                 ]
             },

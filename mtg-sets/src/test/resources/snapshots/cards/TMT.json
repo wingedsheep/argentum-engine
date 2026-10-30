@@ -9616,10 +9616,7 @@
         "staticAbilities": [
             {
                 "type": "TransformPermanent",
-                "setCardTypes": [
-                    "CREATURE"
-                ],
-                "setSubtypes": [
+                "setCreatureSubtypes": [
                     "Turtle"
                 ]
             },

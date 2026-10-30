@@ -23,8 +23,8 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * shape as Witness Protection — but keyed to the Aura remaining attached, so the whole transform
  * reverts the moment the Aura leaves the battlefield (these are continuous static abilities on
  * the Aura, not a one-shot resolution effect):
- *  - [TransformPermanent] Layer 4 (TYPE) keeps the CREATURE card type and replaces all creature
- *    subtypes with Citizen. Colors and name are deliberately left unchanged — unlike Witness
+ *  - [TransformPermanent] Layer 4 (TYPE) replaces only the creature subtypes with Citizen, keeping
+ *    every card type and non-creature subtype (CR 205.1b). Colors and name are deliberately left unchanged — unlike Witness
  *    Protection, this card does NOT recolor or rename the creature (the reminder text only calls
  *    out losing other creature types).
  *  - [SetBasePowerToughnessStatic] 1/1 (Layer 7b).
@@ -46,12 +46,9 @@ val SpiderManNoMore = card("Spider-Man No More") {
 
     auraTarget = TargetObject(filter = TargetFilter.Creature)
 
-    // "is a Citizen" — Layer 4: keep the creature card type, replace all subtypes with Citizen.
+    // "is a Citizen" — Layer 4: replace only the creature types with Citizen (CR 205.1b).
     staticAbility {
-        ability = TransformPermanent(
-            setCardTypes = setOf("CREATURE"),
-            setSubtypes = setOf("Citizen")
-        )
+        ability = TransformPermanent(setCreatureSubtypes = setOf("Citizen"))
     }
 
     // "with base power and toughness 1/1" — Layer 7b.

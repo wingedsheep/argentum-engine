@@ -11676,7 +11676,7 @@
             },
             {
                 "type": "TransformPermanent",
-                "setSubtypes": [
+                "setCreatureSubtypes": [
                     "Demon",
                     "Spirit"
                 ]

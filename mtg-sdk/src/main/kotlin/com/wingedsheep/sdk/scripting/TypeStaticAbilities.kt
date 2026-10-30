@@ -628,6 +628,13 @@ data class AnimateLandGroup(
  * @property setName Name to set (null = don't change). Per CR 612.8 the object "loses any
  *   names it had and has only the specified name" — applied at Layer 3 (TEXT), before the
  *   type/color layers. Used by Witness Protection ("named Legitimate Businessperson").
+ * @property setCreatureSubtypes Creature types to set, replacing only the existing **creature** types
+ *   and leaving every card type, supertype and non-creature subtype in place (CR 205.1b). This is the
+ *   "is a [creature type]" wording with no card type named — Ichthyomorphosis's "is a blue Fish",
+ *   Lignify's "is a Treefolk": an enchanted artifact creature stays an artifact, an Equipment keeps
+ *   its Equipment subtype. Use it *instead of* `setCardTypes = {"CREATURE"}` + [setSubtypes], which
+ *   is the "is a [type] creature" wording that loses all other card types (Eaten by Piranhas).
+ *   Empty = don't change creature types.
  * @property clearSubtypes When true, removes all subtypes (used with `setSubtypes = emptySet()`
  *   to express "has no subtypes" — e.g. the Enduring cycle's enchantment-only return, which
  *   strips Sheep/Glimmer). Distinguishes "clear subtypes" from "don't change subtypes".
@@ -641,17 +648,26 @@ data class TransformPermanent(
     val setColors: Set<Color>? = null,
     val setName: String? = null,
     val clearSubtypes: Boolean = false,
-    val filter: GroupFilter = GroupFilter.attachedCreature()
+    val filter: GroupFilter = GroupFilter.attachedCreature(),
+    val setCreatureSubtypes: Set<String> = emptySet()
 ) : StaticAbility {
     override val description: String = buildString {
         append("is ")
         if (setColors?.isEmpty() == true) append("a colorless ")
         else if (setColors != null) append("a ${setColors.joinToString("/") { it.name.lowercase() }} ")
         if (setSubtypes.isNotEmpty()) append(setSubtypes.joinToString(" "))
+        if (setCreatureSubtypes.isNotEmpty()) append(setCreatureSubtypes.joinToString(" "))
         if (setCardTypes.isNotEmpty()) {
             if (setSubtypes.isNotEmpty()) append(" ")
             append(setCardTypes.joinToString(" ") { it.lowercase() })
         }
         if (setName != null) append(" named $setName")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        val newCreatureSubtypes = setCreatureSubtypes.map { replacer.replaceCreatureType(it) }.toSet()
+        return if (newFilter !== filter || newCreatureSubtypes != setCreatureSubtypes)
+            copy(filter = newFilter, setCreatureSubtypes = newCreatureSubtypes) else this
     }
 }

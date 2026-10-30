@@ -32,8 +32,7 @@ val NoggleTheMind = card("Noggle the Mind") {
 
     staticAbility {
         ability = TransformPermanent(
-            setCardTypes = setOf("CREATURE"),
-            setSubtypes = setOf("Noggle"),
+            setCreatureSubtypes = setOf("Noggle"),
             setColors = emptySet(),
             filter = GroupFilter.attachedCreature()
         )

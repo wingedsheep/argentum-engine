@@ -10853,7 +10853,7 @@ staticAbility {
   GroupFilter.AllCreaturesYouControl, includeControlledSpells = true, includeOwnedCardsOutsideBattlefield = true)` is
   Maskwood Nexus's "Creatures you control are every creature type. The same is true for creature spells you control and
   creature cards you own that aren't on the battlefield." (Maskwood Nexus)
-- `TransformPermanent(setCardTypes, setSubtypes, setColors?, setName?, clearSubtypes, filter)` — Layer 3/4/5 "becomes a
+- `TransformPermanent(setCardTypes, setSubtypes, setColors?, setName?, clearSubtypes, filter, setCreatureSubtypes)` — Layer 3/4/5 "becomes a
   whole new identity" (Sugar Coat, Darksteel Mutation, Witness Protection, Imprisoned in the Moon). A non-empty `setSubtypes` replaces all
   subtypes; an empty `setSubtypes` leaves subtypes alone **unless** `clearSubtypes = true`, which replaces them with
   none ("has no subtypes" — the Enduring return strips Sheep/Glimmer). `setColors = null` keeps colors. `setName`
@@ -10862,6 +10862,11 @@ staticAbility {
   so two same-controller permanents renamed to the same name can trigger the legend rule (Witness Protection: "named
   Legitimate Businessperson"). `ClientCard.name` and `LegendRuleCheck` both prefer the projected name over the base
   `CardComponent.name` when one is active.
+  `setCreatureSubtypes` is the "is a [creature type]" wording that names **no card type** (Ichthyomorphosis's "is a blue
+  Fish", Lignify's "is a Treefolk", Spider-Man No More's "is a Citizen"): it lowers to `Modification.SetCreatureSubtypes`,
+  replacing only the creature types and keeping every card type, supertype and non-creature subtype (CR 205.1b) — an
+  enchanted artifact creature stays an artifact. Don't spell that wording as `setCardTypes = {"CREATURE"}` +
+  `setSubtypes`: that is "is a [type] **creature**", which loses all other card types (Eaten by Piranhas).
 - `SetName(name, filter)` — a standalone static that overrides the matching permanents' **name** with a fixed string
   (Layer 3 / TEXT; CR 612 / 613.1c — setting a name is a text-changing effect). Lowers to the same `Modification.SetName`
   as `TransformPermanent.setName`, exposed by `ProjectedState.getName` and surfaced to the client by

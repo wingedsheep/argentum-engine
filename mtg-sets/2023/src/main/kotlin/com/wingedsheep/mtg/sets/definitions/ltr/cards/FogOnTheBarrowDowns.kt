@@ -29,7 +29,7 @@ val FogOnTheBarrowDowns = card("Fog on the Barrow-Downs") {
     // Only replace creature subtypes — keep card types/colors/abilities intact.
     staticAbility {
         ability = TransformPermanent(
-            setSubtypes = setOf("Spirit"),
+            setCreatureSubtypes = setOf("Spirit"),
             filter = GroupFilter.attachedCreature()
         )
     }

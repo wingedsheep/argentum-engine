@@ -18,11 +18,11 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * Enchanted creature is a Treefolk with base power and toughness 0/4 and loses all abilities.
  *
  * Three layered statics over the enchanted creature, matching the printed clause order:
- *  - [TransformPermanent] with only `setSubtypes` — Layer 4 `SetAllSubtypes` **replaces** every
- *    creature type with Treefolk (the 2007-10-01 ruling: it overwrites earlier type-changing
- *    effects, changeling included). `setCardTypes` is left empty on purpose so the card types are
- *    untouched — "is a Treefolk" changes only the creature type, so an artifact creature stays an
- *    artifact. Colors and name are untouched for the same reason.
+ *  - [TransformPermanent] with only `setCreatureSubtypes` — Layer 4 `SetCreatureSubtypes`
+ *    **replaces** every creature type with Treefolk (the 2007-10-01 ruling: it overwrites earlier
+ *    type-changing effects, changeling included). Card types and non-creature subtypes are
+ *    untouched (CR 205.1b) — "is a Treefolk" changes only the creature type, so an artifact
+ *    creature stays an artifact. Colors and name are untouched for the same reason.
  *  - [LoseAllAbilities] — Layer 6.
  *  - [SetBasePowerToughnessStatic] 0/4 — Layer 7b, so it overwrites a CDA (the ruling names
  *    Dauntless Dourbark) but loses to later +N/+N effects and counters, which apply in 7c/7d.
@@ -40,7 +40,7 @@ val Lignify = card("Lignify") {
     auraTarget = TargetObject(filter = TargetFilter.Creature)
 
     staticAbility {
-        ability = TransformPermanent(setSubtypes = setOf(Subtype.TREEFOLK.value))
+        ability = TransformPermanent(setCreatureSubtypes = setOf(Subtype.TREEFOLK.value))
     }
 
     staticAbility {

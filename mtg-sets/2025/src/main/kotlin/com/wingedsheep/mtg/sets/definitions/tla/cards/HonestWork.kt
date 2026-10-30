@@ -45,13 +45,10 @@ val HonestWork = card("Honest Work") {
             Effects.RemoveAllCounters(EffectTarget.EnchantedCreature)
     }
 
-    // "is a Citizen ..." — keep the Creature type, replace all creature subtypes with just Citizen
+    // "is a Citizen ..." — keep every card type, replace all creature subtypes with just Citizen
     // (Layer 4). This also strips its other creature types/names alongside the SetName override.
     staticAbility {
-        ability = TransformPermanent(
-            setCardTypes = setOf("CREATURE"),
-            setSubtypes = setOf("Citizen")
-        )
+        ability = TransformPermanent(setCreatureSubtypes = setOf("Citizen"))
     }
 
     // "with base power and toughness 1/1" — Layer 7b

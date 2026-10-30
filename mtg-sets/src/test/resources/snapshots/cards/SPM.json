@@ -10076,10 +10076,7 @@
         "staticAbilities": [
             {
                 "type": "TransformPermanent",
-                "setCardTypes": [
-                    "CREATURE"
-                ],
-                "setSubtypes": [
+                "setCreatureSubtypes": [
                     "Citizen"
                 ]
             },

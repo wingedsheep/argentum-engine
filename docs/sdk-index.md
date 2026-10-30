@@ -2021,7 +2021,7 @@ Families:
 - `SuppressHexproofForGroup(filter: GroupFilter)` — Creatures matching filter can be the targets of spells and abilities as though they didn't have hexproof.
 - `SuppressLandwalkForGroup(landwalks: Set<Keyword>, filter: GroupFilter)` — Creatures matching filter can be blocked as though they didn't have landwalks — the landwalk evasion of CR 702.14 is ignored for them, and nothing else about the keywords changes.
 - `SuppressWardForGroup(filter: GroupFilter)` — Ward abilities of creatures matching filter don't trigger.
-- `TransformPermanent(setCardTypes: Set<String>, setSubtypes: Set<String>, setColors: Set<Color>?, setName: String?, clearSubtypes: Boolean, filter: GroupFilter)` — Transforms the enchanted permanent into a completely different card type identity.
+- `TransformPermanent(setCardTypes: Set<String>, setSubtypes: Set<String>, setColors: Set<Color>?, setName: String?, clearSubtypes: Boolean, filter: GroupFilter, setCreatureSubtypes: Set<String>)` — Transforms the enchanted permanent into a completely different card type identity.
 - `UntapDuringOtherUntapSteps(duringStepsOf: Player)` — Untap all permanents you control during each other player's untap step — Seedborn Muse — or, with duringStepsOf = Player.EachOpponent, during each *opponent's* untap step (Teferi, Who Slows the Sun…
 - `UntapFilteredDuringOtherUntapSteps(filter: GameObjectFilter)` — Untap permanents matching a filter you control during each other player's untap step.
 - `UntapLimitPerStep(filter: GameObjectFilter, max: Int)` — Caps how many permanents matching filter a player may untap during their own untap step (CR 502.3 — "effects can keep one or more of a player's permanents from untapping").

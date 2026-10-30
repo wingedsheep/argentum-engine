@@ -8022,6 +8022,54 @@
     ]
 }
 
+// Ichthyomorphosis
+{
+    "name": "Ichthyomorphosis",
+    "manaCost": "{3}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature loses all abilities and is a blue Fish with base power and toughness 0/1.",
+    "script": {
+        "staticAbilities": [
+            "LoseAllAbilities",
+            {
+                "type": "TransformPermanent",
+                "setColors": [
+                    "BLUE"
+                ],
+                "setCreatureSubtypes": [
+                    "Fish"
+                ]
+            },
+            {
+                "type": "SetBasePowerToughnessStatic",
+                "power": 0,
+                "toughness": 1
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "artist": "Campbell White",
+        "flavorText": "Tycthis's military career was a flop.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/4/e4763b6c-6471-41bd-b3e4-785564bcf06f.jpg?1783931583",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "Ichthyomorphosis overwrites all colors and creature types the enchanted creature has. It's just a blue Fish. The creature keeps any supertypes (such as legendary) it has, as well as any other card types it has (such as enchantment)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Ilysian Caryatid
 {
     "name": "Ilysian Caryatid",
