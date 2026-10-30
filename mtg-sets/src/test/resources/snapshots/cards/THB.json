@@ -12642,6 +12642,218 @@
     ]
 }
 
+// Scavenging Harpy
+{
+    "name": "Scavenging Harpy",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Harpy",
+    "oracleText": "Flying\nWhen this creature enters, exile target card from an opponent's graveyard.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Scavenging Harpy:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "own:opponent",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, exile target card from an opponent's graveyard."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "Desecrating the dead is a convenient way for harpies to expand their foul collections.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b0e237c5-45b4-49df-adb9-62b9f3b62986.jpg?1783931561"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Sea God's Scorn
+{
+    "name": "Sea God's Scorn",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return up to three target creatures and/or enchantments to their owners' hands.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                },
+                "destination": "Hand"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 3,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature|enchantment"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "rarity": "UNCOMMON",
+        "artist": "Zoltan Boros",
+        "flavorText": "Instead of performing their daily devotions, Heliod's acolytes spent the morning picking strands of kelp off the altar.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/9504dc26-f5d8-4b9d-9eb1-51a12b893beb.jpg?1783931579"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Sentinel's Eyes
+{
+    "name": "Sentinel's Eyes",
+    "manaCost": "{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +1/+1 and has vigilance.\nEscape—{W}, Exile two other cards from your graveyard. (You may cast this card from your graveyard for its escape cost.)",
+    "keywords": [
+        "ESCAPE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Escape",
+            "cost": "{W}",
+            "additionalCost": {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomExileFrom",
+                    "zone": "Graveyard",
+                    "count": 2,
+                    "excludeSelf": true
+                }
+            }
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "artist": "Wisnu Tan",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/32adc118-b81e-48c2-b7ef-b62e8c3308d6.jpg?1783931590",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "After an escaped spell resolves, it returns to its owner's graveyard if it's not a permanent spell. If it is a permanent spell, it enters the battlefield and will return to its owner's graveyard if it dies later. Perhaps it will escape again—good underworld security is so hard to come by these days."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Serpent of Yawning Depths
+{
+    "name": "Serpent of Yawning Depths",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Enchantment Creature — Serpent",
+    "oracleText": "Krakens, Leviathans, Octopuses, and Serpents you control can't be blocked except by Krakens, Leviathans, Octopuses, and Serpents.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedExceptBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "Or",
+                            "predicates": [
+                                {
+                                    "type": "HasSubtype",
+                                    "subtype": "Kraken"
+                                },
+                                {
+                                    "type": "HasSubtype",
+                                    "subtype": "Leviathan"
+                                },
+                                {
+                                    "type": "HasSubtype",
+                                    "subtype": "Octopus"
+                                },
+                                {
+                                    "type": "HasSubtype",
+                                    "subtype": "Serpent"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "filter": {
+                    "baseFilter": "creature Kraken|Leviathan|Octopus|Serpent ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "291",
+        "rarity": "RARE",
+        "artist": "Tomasz Jedruszek",
+        "flavorText": "\"Gleams like moonlight on water drew us through the storm and toward our doom.\"\n—Siona, captain of the *Pyleas*",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a4ac18ae-0d1e-43f5-9cc9-722fa6e36fe5.jpg?1783931490"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Setessan Champion
 {
     "name": "Setessan Champion",
@@ -12690,6 +12902,55 @@
         "artist": "Emrah Elmasli",
         "flavorText": "\"A blessing is not a gift. It is a duty.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/f/8/f8ce9858-747e-441c-95a8-6af44aa2098d.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Setessan Petitioner
+{
+    "name": "Setessan Petitioner",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Creature — Human Druid",
+    "oracleText": "When this creature enters, you gain life equal to your devotion to green. (Each {G} in the mana costs of permanents you control counts toward your devotion to green.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Setessan Petitioner:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "DevotionTo",
+                        "colors": [
+                            "GREEN"
+                        ]
+                    }
+                },
+                "descriptionOverride": "When this creature enters, you gain life equal to your devotion to green."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "199",
+        "rarity": "UNCOMMON",
+        "artist": "Livia Prima",
+        "flavorText": "\"Cypress leaves for family, larkspur for protection, amaranth for a bountiful harvest.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/8/384495c2-238b-4f8d-89c2-e05b64f9dde0.jpg?1783931529",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If an activated ability or triggered ability has an effect that depends on your devotion to a color, you count the number of mana symbols of that color among the mana costs of permanents you control as the ability resolves. The permanent with that ability will be counted if it's still on the battlefield at that time."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -12792,6 +13053,803 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Shadowspear
+{
+    "name": "Shadowspear",
+    "manaCost": "{1}",
+    "typeLine": "Legendary Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+1 and has trample and lifelink.\n{1}: Permanents your opponents control lose hexproof and indestructible until end of turn.\nEquip {2}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Shadowspear:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "permanent ctrl:opponent"
+                                }
+                            },
+                            "body": {
+                                "type": "RemoveKeyword",
+                                "keyword": "HEXPROOF",
+                                "target": "IterationEntity"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "permanent ctrl:opponent"
+                                }
+                            },
+                            "body": {
+                                "type": "RemoveKeyword",
+                                "keyword": "INDESTRUCTIBLE",
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{1}: Permanents your opponents control lose hexproof and indestructible until end of turn."
+            },
+            {
+                "id": "Shadowspear:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE"
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "LIFELINK"
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "236",
+        "rarity": "RARE",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "A weapon of darkness for a warrior of light.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/3/939c6e19-4b27-4023-bb9c-ae440f91e21c.jpg?1783931515",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If a permanent enters the battlefield under an opponent's control with hexproof or indestructible after Shadowspear's second ability resolves, it won't lose that ability unless you activate Shadowspear's second ability again. The same is true if an opponent's permanent gains indestructible or hexproof after Shadowspear's second ability resolves."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "You can activate Shadowspear's second ability whether or not it's equipped to a creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
+// Shatter the Sky
+{
+    "name": "Shatter the Sky",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each player who controls a creature with power 4 or greater draws a card. Then destroy all creatures.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.WhenCondition",
+                            "condition": {
+                                "type": "Exists",
+                                "player": "You",
+                                "zone": "Battlefield",
+                                "filter": "creature pow>=4"
+                            }
+                        },
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "creature"
+                            },
+                            "storeAs": "destroyAll_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "destroyAll_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "rarity": "RARE",
+        "artist": "Bayard Wu",
+        "flavorText": "When the gods go to war, mortals pay the highest price.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/7/b706977b-db8e-4810-882d-ed3745404489.jpg?1783931589",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "Shatter the Sky destroys all creatures, even if no player draws a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Shimmerwing Chimera
+{
+    "name": "Shimmerwing Chimera",
+    "manaCost": "{3}{U}",
+    "typeLine": "Enchantment Creature — Chimera",
+    "oracleText": "Flying\nAt the beginning of your upkeep, return up to one other target enchantment you control to its owner's hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shimmerwing Chimera:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "enchantment ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "At the beginning of your upkeep, return up to one other target enchantment you control to its owner's hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "rarity": "UNCOMMON",
+        "artist": "Christopher Burdett",
+        "flavorText": "It swims upon the winds and soars through the waves.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/3/f3b54bea-f2c5-4000-9cbd-04c03a1d2ea2.jpg?1783931578"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Shoal Kraken
+{
+    "name": "Shoal Kraken",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Kraken",
+    "oracleText": "Constellation — Whenever an enchantment you control enters, you may draw a card. If you do, discard a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shoal Kraken:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "enchantment ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Constellation — Whenever an enchantment you control enters, you may draw a card. If you do, discard a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "rarity": "UNCOMMON",
+        "artist": "Vincent Proce",
+        "flavorText": "It eats the things that eat the things that are drawn to the light.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/c/ec538182-efba-48d0-91ad-457461b44748.jpg?1783931579",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "A constellation ability triggers whenever an enchantment enters the battlefield under your control for any reason. Enchantments with other card types, such as enchantment creatures, will also cause constellation abilities to trigger."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "An Aura spell that has an illegal target when it tries to resolve doesn't resolve and is instead put into its owner's graveyard. It doesn't enter the battlefield, so constellation abilities don't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Siona, Captain of the Pyleas
+{
+    "name": "Siona, Captain of the Pyleas",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "When Siona enters, look at the top seven cards of your library. You may reveal an Aura card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.\nWhenever an Aura you control becomes attached to a creature you control, create a 1/1 white Human Soldier creature token.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Siona, Captain of the Pyleas:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 7
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "enchantment Aura",
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "prompt": "You may reveal an Aura card from among them and put it into your hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Siona enters, look at the top seven cards of your library. You may reveal an Aura card from among them and put it into your hand. Put the rest on the bottom of your library in a random order."
+            },
+            {
+                "id": "Siona, Captain of the Pyleas:2",
+                "trigger": {
+                    "type": "BecomesAttachedEvent",
+                    "attachmentFilter": {
+                        "cardPredicates": [
+                            "IsEnchantment",
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Aura"
+                            }
+                        ]
+                    },
+                    "attachmentController": "You",
+                    "attachedToFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Human",
+                        "Soldier"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/e/1e76f0e3-9411-401d-ab38-9c3c64769483.jpg?1783931455"
+                },
+                "descriptionOverride": "Whenever an Aura you control becomes attached to a creature you control, create a 1/1 white Human Soldier creature token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "226",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Rallis",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2b1d890f-7ef8-47b9-9ec8-f3884a1d09db.jpg?1783931518",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "Siona's last ability triggers both whenever an Aura enters the battlefield attached to a creature you control and whenever an Aura on the battlefield attached to a different object becomes attached to a creature you control. It doesn't trigger if an effect tries to attach an Aura to the creature it already enchants."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If an Aura becomes attached to Siona that causes it to lose all abilities, Siona's last ability won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
+// Skola Grovedancer
+{
+    "name": "Skola Grovedancer",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment Creature — Satyr Druid",
+    "oracleText": "Whenever a land card is put into your graveyard from anywhere, you gain 1 life.\n{2}{G}: Mill a card. (Put the top card of your library into your graveyard.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Skola Grovedancer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land nontoken own:you",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Whenever a land card is put into your graveyard from anywhere, you gain 1 life."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Skola Grovedancer:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "202",
+        "artist": "Josh Hass",
+        "flavorText": "\"From the ashes of last night's revel, I bring the dawn of new growth.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/076ec900-345d-4720-96b6-441bce01618a.jpg?1783931528",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "Because Skola Grovedancer's ability triggers when land cards are put into your graveyard \"from anywhere,\" Skola Grovedancer must be on the battlefield immediately after a land card is put there in order to trigger. This means that if Skola Grovedancer dies at the same time as a land you control, its ability won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Skophos Warleader
+{
+    "name": "Skophos Warleader",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Minotaur Warrior",
+    "oracleText": "{R}, Sacrifice another creature or an enchantment: This creature gets +1/+0 and gains menace until end of turn. (It can't be blocked except by two or more creatures.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Skophos Warleader:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{R}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature|enchantment",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "MENACE",
+                            "target": "Self"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "artist": "Svetlin Velinov",
+        "flavorText": "The minotaur polis of Skophos boasts grand temples to the god of slaughter.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/59c39c70-8360-4c7c-b5fa-61c42828609a.jpg?1783931544"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Slaughter-Priest of Mogis
+{
+    "name": "Slaughter-Priest of Mogis",
+    "manaCost": "{B}{R}",
+    "typeLine": "Creature — Minotaur Shaman",
+    "oracleText": "Whenever you sacrifice a permanent, this creature gets +2/+0 until end of turn.\n{2}, Sacrifice another creature or an enchantment: This creature gains first strike until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Slaughter-Priest of Mogis:1",
+                "trigger": {
+                    "type": "PermanentsSacrificedEvent",
+                    "perPermanent": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever you sacrifice a permanent, this creature gets +2/+0 until end of turn."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Slaughter-Priest of Mogis:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature|enchantment",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "227",
+        "rarity": "UNCOMMON",
+        "artist": "Steve Prescott",
+        "flavorText": "\"Mogis is pleased by this offering. Bring him more!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a2b441c0-261e-4094-b694-5e11ea3c14ab.jpg?1783931518",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "The first ability of Slaughter-Priest of Mogis is a triggered ability, not an activated ability. It doesn't allow you to sacrifice a permanent whenever you want; rather, you need some other way of sacrificing permanents, such as its second ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
+// Sleep of the Dead
+{
+    "name": "Sleep of the Dead",
+    "manaCost": "{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Tap target creature. It doesn't untap during its controller's next untap step.\nEscape—{2}{U}, Exile three other cards from your graveyard. (You may cast this card from your graveyard for its escape cost.)",
+    "keywords": [
+        "ESCAPE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Escape",
+            "cost": "{2}{U}",
+            "additionalCost": {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomExileFrom",
+                    "zone": "Graveyard",
+                    "count": 3,
+                    "excludeSelf": true
+                }
+            }
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "DOESNT_UNTAP",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "UntilAfterAffectedControllersNextUntap"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "artist": "Kari Christensen",
+        "flavorText": "Normally, a cerberus sleeps one head at a time.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/4007572b-a6c8-4a56-b1a7-ff099189c9c0.jpg?1783931579",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "Sleep of the Dead can target a creature that's already tapped. That creature won't untap during its controller's next untap step."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "After an escaped spell resolves, it returns to its owner's graveyard if it's not a permanent spell. If it is a permanent spell, it enters the battlefield and will return to its owner's graveyard if it dies later. Perhaps it will escape again—good underworld security is so hard to come by these days."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -12987,6 +14045,71 @@
         "inBooster": false
     },
     "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Staggering Insight
+{
+    "name": "Staggering Insight",
+    "manaCost": "{W}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +1/+1 and has lifelink and \"Whenever this creature deals combat damage to a player, draw a card.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "LIFELINK"
+            },
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Staggering Insight:1",
+                    "trigger": {
+                        "type": "DealsDamageEvent",
+                        "damageType": "DamageCombat",
+                        "recipient": {
+                            "type": "RecipientPlayer",
+                            "player": "Any"
+                        }
+                    },
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "228",
+        "rarity": "UNCOMMON",
+        "artist": "Dmitry Burmak",
+        "flavorText": "\"Only cowards flee from the truth.\"\n—Perisophia the philosopher",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/2/125b8be1-76b9-434e-a505-5099d950767c.jpg?1783931517",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "Multiple instances of lifelink on the same creature are redundant. On the other hand, multiple instances of the triggered ability trigger separately if a creature is enchanted by more than one Staggering Insight."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
         "BLUE"
     ]
 }
