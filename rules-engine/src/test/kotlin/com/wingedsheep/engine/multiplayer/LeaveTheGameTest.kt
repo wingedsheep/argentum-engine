@@ -416,6 +416,48 @@ class LeaveTheGameTest : FunSpec({
         banned(state) shouldBe false
     }
 
+    test("a departed player's 'until the end of your next turn' phase-in lock ends when that turn would have begun (CR 800.4m)") {
+        val (base, players) = initGame(4)
+        val processor = ActionProcessor(registry())
+        val (s1, creature) = base.withCreature(owner = players[2])
+        val lock = com.wingedsheep.engine.state.components.battlefield.PhaseInLock.UntilEndOfControllersNextTurn(
+            controllerId = players[1],
+            expiresAfterTurn = base.turnNumber + 1
+        )
+        val armed = s1.updateEntity(creature) {
+            it.with(com.wingedsheep.engine.state.components.battlefield.PhasedOutComponent(players[2], phaseInLock = lock))
+        }
+        fun locked(s: GameState) =
+            s.getEntity(creature)?.get<com.wingedsheep.engine.state.components.battlefield.PhasedOutComponent>()?.phaseInLock != null
+
+        // The lock's controller concedes; Teferi's ruling: the effect "neither expires immediately
+        // nor lasts indefinitely" — it ends when that player's next turn would have begun.
+        var state = processor.process(armed, Concede(players[1])).result.newState
+        locked(state) shouldBe true
+        var safety = 0
+        while (state.activePlayerId == players[0]) {
+            check(++safety < 500) { "stuck at ${state.step}" }
+            val prio = state.priorityPlayerId ?: break
+            val pending = state.pendingDecision
+            if (pending is com.wingedsheep.engine.core.SelectCardsDecision) {
+                val resp = com.wingedsheep.engine.core.CardsSelectedResponse(pending.id, pending.options.take(pending.minSelections))
+                state = processor.process(state, com.wingedsheep.engine.core.SubmitDecision(pending.playerId, resp)).result.newState
+                continue
+            }
+            if (state.step == com.wingedsheep.sdk.core.Step.DECLARE_ATTACKERS && state.isActiveTurnFor(prio) &&
+                state.getEntity(prio)?.has<com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisCombatComponent>() != true
+            ) {
+                state = processor.process(state, com.wingedsheep.engine.core.DeclareAttackers(prio, emptyMap())).result.newState
+                continue
+            }
+            state = processor.process(state, PassPriority(prio)).result.newState
+        }
+        state.activePlayerId shouldBe players[2]
+        locked(state) shouldBe false
+        // Released before players[2]'s untap step, so the creature phased in during it.
+        (creature in state.getBattlefield()) shouldBe true
+    }
+
     test("priority held by the leaver passes to the next player still in the game (CR 800.4a)") {
         val (base, players) = initGame(4)
         // Give players[1] priority, then mark them lost (priority is still on them at this point).

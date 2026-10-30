@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.dsl.readAhead
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.references.Player
@@ -41,12 +42,12 @@ val ThePhasingOfZhalfir = card("The Phasing of Zhalfir") {
 
     sagaChapter(1) {
         val permanent = target(TargetFilter.OtherNonlandPermanent)
-        effect = Effects.PhaseOut(permanent, cantPhaseInWhileYouControlSource = true)
+        effect = Effects.PhaseOut(permanent, cantPhaseIn = Duration.WhileYouControlSource("this Saga"))
     }
 
     sagaChapter(2) {
         val permanent = target(TargetFilter.OtherNonlandPermanent)
-        effect = Effects.PhaseOut(permanent, cantPhaseInWhileYouControlSource = true)
+        effect = Effects.PhaseOut(permanent, cantPhaseIn = Duration.WhileYouControlSource("this Saga"))
     }
 
     sagaChapter(3) {

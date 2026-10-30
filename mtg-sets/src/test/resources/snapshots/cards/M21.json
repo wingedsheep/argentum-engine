@@ -12632,6 +12632,118 @@
     ]
 }
 
+// Teferi, Timeless Voyager
+{
+    "name": "Teferi, Timeless Voyager",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Legendary Planeswalker — Teferi",
+    "oracleText": "+1: Draw a card.\n−3: Put target creature on top of its owner's library.\n−8: Each creature target opponent controls phases out. Until the end of your next turn, they can't phase in. (Treat them and anything attached to them as though they don't exist.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Teferi, Timeless Voyager:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Teferi, Timeless Voyager:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Library",
+                    "placement": "Top"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Teferi, Timeless Voyager:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -8
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:target-opponent"
+                        }
+                    },
+                    "body": {
+                        "type": "PhaseOut",
+                        "target": "IterationEntity",
+                        "cantPhaseIn": "EndOfYourNextTurn"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "324",
+        "rarity": "MYTHIC",
+        "artist": "Jake Murray",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/62d05287-ad7f-4de8-9f68-8f36c62fae72.jpg?1783930622",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Normally, phased-out permanents phase in during their controller's untap step. Teferi's last ability causes the phased-out permanents to not phase in until the duration has expired; they'll phase in during their controller's next untap step after your next turn."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "While a permanent is phased out, it's treated as though it doesn't exist. It can't be the target of spells or abilities, its static abilities have no effect on the game, its triggered abilities can't trigger, it can't attack or block, and so on."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Each Aura and Equipment attached to a permanent that's phasing out also phases out. They will phase in with that permanent and still be attached to it. Similarly, permanents that phase out with counters phase in with those counters."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "In a multiplayer game, if you leave the game after Teferi's last ability resolves but before your next turn ends, its effect lasts until your next turn would have begun. It neither expires immediately nor lasts indefinitely."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Tempered Veteran
 {
     "name": "Tempered Veteran",

@@ -15483,7 +15483,10 @@
                         "type": "BoundVariable",
                         "name": "t0"
                     },
-                    "cantPhaseInWhileYouControlSource": true
+                    "cantPhaseIn": {
+                        "type": "WhileYouControlSource",
+                        "sourceDescription": "this Saga"
+                    }
                 },
                 "targetRequirement": {
                     "type": "TargetObject",
@@ -15502,7 +15505,10 @@
                         "type": "BoundVariable",
                         "name": "t1"
                     },
-                    "cantPhaseInWhileYouControlSource": true
+                    "cantPhaseIn": {
+                        "type": "WhileYouControlSource",
+                        "sourceDescription": "this Saga"
+                    }
                 },
                 "targetRequirement": {
                     "type": "TargetObject",

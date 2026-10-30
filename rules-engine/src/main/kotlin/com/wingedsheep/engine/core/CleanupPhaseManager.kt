@@ -7,6 +7,8 @@ import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent
+import com.wingedsheep.engine.state.components.battlefield.PhaseInLock
+import com.wingedsheep.engine.state.components.battlefield.PhasedOutComponent
 import com.wingedsheep.engine.state.components.battlefield.CastFromTopOfLibraryUsesThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.CrewSaddleContributorsComponent
 import com.wingedsheep.engine.state.components.battlefield.SaddledComponent
@@ -1413,7 +1415,35 @@ class CleanupPhaseManager(
         // Card-scoped hand restrictions lasting "this turn".
         newState = com.wingedsheep.engine.mechanics.HandObjectRestrictions.expireAtEndOfTurn(newState)
 
+        // 11. Release "until the end of your next turn, it can't phase in" locks (Teferi, Timeless
+        // Voyager) at the cleanup of the locking player's first turn at or after the floor. The
+        // permanent stays phased out; it phases in at its controller's next untap step.
+        val turn = newState.turnNumber
+        val lockState = newState
+        newState = releasePhaseInLocks(newState) {
+            turn >= it.expiresAfterTurn && lockState.isActiveTurnFor(it.controllerId)
+        }
+
         return newState
+    }
+
+    /**
+     * Clear every [PhaseInLock.UntilEndOfControllersNextTurn] for which [released] holds, leaving
+     * the permanent phased out. Returns the same instance when nothing changed.
+     */
+    fun releasePhaseInLocks(
+        state: GameState,
+        released: (PhaseInLock.UntilEndOfControllersNextTurn) -> Boolean
+    ): GameState {
+        var result = state
+        for (entityId in state.allBattlefieldEntities()) {
+            val phased = state.getEntity(entityId)?.get<PhasedOutComponent>() ?: continue
+            val lock = phased.phaseInLock as? PhaseInLock.UntilEndOfControllersNextTurn ?: continue
+            if (released(lock)) {
+                result = result.updateEntity(entityId) { it.with(phased.copy(phaseInLock = null)) }
+            }
+        }
+        return result
     }
 
     companion object {

@@ -11,6 +11,7 @@ import com.wingedsheep.engine.state.components.battlefield.PhaseInLock
 import com.wingedsheep.engine.state.components.battlefield.PhasedOutComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.effects.PhaseOutEffect
 import kotlin.reflect.KClass
 
@@ -45,14 +46,21 @@ class PhaseOutExecutor : EffectExecutor<PhaseOutEffect> {
         // Indirect phasing: the permanent and everything attached to it phase out together.
         val toPhaseOut = collectWithAttachments(state, targetId)
 
-        // "It can't phase in for as long as you control [source]": lock the permanent and its
-        // indirectly phased attachments, which phase back in with it. A source already gone has
-        // nothing to lock against, so the permanent phases out normally.
-        val lock = if (effect.cantPhaseInWhileYouControlSource) {
-            context.sourceId
+        // A window during which the permanent and its indirectly phased attachments (which phase
+        // back in with it) can't phase in.
+        val lock = when (val window = effect.cantPhaseIn) {
+            null -> null
+            // "It can't phase in for as long as you control [source]". A source already gone has
+            // nothing to lock against, so the permanent phases out normally.
+            is Duration.WhileYouControlSource -> context.sourceId
                 ?.takeIf { it in state.getBattlefield() }
-                ?.let { PhaseInLock(it, context.controllerId) }
-        } else null
+                ?.let { PhaseInLock.WhileControlsSource(it, context.controllerId) }
+            // "Until the end of your next turn, it can't phase in": the current turn never counts,
+            // even when the effect resolves on your own turn (see Duration.EndOfYourNextTurn).
+            Duration.EndOfYourNextTurn ->
+                PhaseInLock.UntilEndOfControllersNextTurn(context.controllerId, state.turnNumber + 1)
+            else -> error("PhaseOutEffect.cantPhaseIn does not support $window")
+        }
 
         var newState = state
         val events = mutableListOf<GameEvent>()

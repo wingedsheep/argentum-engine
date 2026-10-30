@@ -1001,7 +1001,7 @@ Families:
 - `PayManaCostRepeatedlyEffect(cost: ManaCost, maxTimes: Int?, storeCountAs: String)` — "Pay cost up to maxTimes times" / "…any number of times" — a **repeatable** optional mana payment made during resolution, whose payoff scales with *how many times* it was paid (Hawkeye, Master Mark…
 - `PayOrSufferEffect(cost: PayCost, suffer: Effect, player: EffectTarget, consequenceDescription: String?)` — Generic "unless" effect for punisher mechanics.
 - `PhaseInLinkedToSourceEffect` — Phase in every permanent that was phased out "until source leaves" by the effect's source (matched on the stored source link).
-- `PhaseOutEffect(target: EffectTarget, cantPhaseInWhileYouControlSource: Boolean)` — Phase out the target permanent (and anything attached to it).
+- `PhaseOutEffect(target: EffectTarget, cantPhaseIn: Duration?)` — Phase out the target permanent (and anything attached to it).
 - `PhaseOutUntilLeavesEffect(target: EffectTarget, tapOnPhaseIn: Boolean)` — Phase a target permanent out **indefinitely**, linked to the effect's source: it stays phased out (it does not phase in at its controller's untap step) until the source leaves the battlefield, at w…
 - `PlayAdditionalLandsEffect(count: DynamicAmount)` — You may play additional lands this turn.
 - `PlayFromCollectionWithoutPayingCostEffect(from: String)` — Play the first card in from during this effect's resolution without paying its mana cost.

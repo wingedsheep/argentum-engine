@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.scripting.ReplacementEffect
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
@@ -52,21 +53,45 @@ data class PhasedOutComponent(
     /** Tap this permanent when it phases back in (Oubliette: "Tap that creature as it phases in"). */
     val tapOnPhaseIn: Boolean = false,
     /**
-     * When non-null, this permanent "can't phase in for as long as [PhaseInLock.controllerId]
-     * controls [PhaseInLock.sourceId]" (The Phasing of Zhalfir). The untap step skips it while the
-     * lock is present; `EndedDurationExpiryCheck` removes the lock the moment the source leaves the
-     * battlefield or changes controller (one-way, CR 611.2b). Releasing the lock does not phase the
-     * permanent in — it phases in at its controller's next untap step like any other.
+     * When non-null, this permanent can't phase in until the lock is released (The Phasing of
+     * Zhalfir, Teferi, Timeless Voyager). The untap step skips it while the lock is present.
+     * Releasing the lock does not phase the permanent in — it phases in at its controller's next
+     * untap step like any other. See [PhaseInLock] for when each kind is released.
      */
     val phaseInLock: PhaseInLock? = null
 ) : Component
 
-/** The "for as long as you control [sourceId]" prohibition on a [PhasedOutComponent]'s phase-in. */
+/** A window during which a [PhasedOutComponent]'s permanent can't phase in. */
 @Serializable
-data class PhaseInLock(
-    val sourceId: EntityId,
+sealed interface PhaseInLock {
+    /** The player whose effect created the lock. */
     val controllerId: EntityId
-)
+
+    /**
+     * "Can't phase in for as long as [controllerId] controls [sourceId]" (The Phasing of
+     * Zhalfir). `EndedDurationExpiryCheck` releases it one-way (CR 611.2b) the moment the source
+     * leaves the battlefield or changes controller.
+     */
+    @Serializable
+    @SerialName("WhileControlsSource")
+    data class WhileControlsSource(
+        val sourceId: EntityId,
+        override val controllerId: EntityId
+    ) : PhaseInLock
+
+    /**
+     * "Until the end of your next turn, it can't phase in" (Teferi, Timeless Voyager). Released at
+     * the cleanup step of the first turn of [controllerId]'s at or after [expiresAfterTurn] — the
+     * `Duration.EndOfYourNextTurn` floor-plus-controller window — or as soon as that player's turn
+     * would have begun if they left the game (CR 800.4m).
+     */
+    @Serializable
+    @SerialName("UntilEndOfControllersNextTurn")
+    data class UntilEndOfControllersNextTurn(
+        override val controllerId: EntityId,
+        val expiresAfterTurn: Int
+    ) : PhaseInLock
+}
 
 /**
  * Marks a permanent as having been cast from its controller's hand.

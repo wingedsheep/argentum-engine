@@ -6209,15 +6209,17 @@ object Effects {
      * Phase out a target permanent (Rule 702.26). It's treated as though it
      * doesn't exist until it phases back in before its controller's next untap step.
      *
-     * Set [cantPhaseInWhileYouControlSource] for "It can't phase in for as long as you control
-     * this Saga" (The Phasing of Zhalfir): the untap step skips the permanent until you lose
-     * control of the source, after which it phases in at its controller's next untap step.
+     * Set [cantPhaseIn] for a window during which it can't phase in; it phases in at its
+     * controller's first untap step after the window ends:
+     * `Duration.WhileYouControlSource("this Saga")` — "It can't phase in for as long as you control
+     * this Saga" (The Phasing of Zhalfir); `Duration.EndOfYourNextTurn` — "Until the end of your
+     * next turn, they can't phase in" (Teferi, Timeless Voyager).
      */
     fun PhaseOut(
         target: EffectTarget = EffectTarget.Self,
-        cantPhaseInWhileYouControlSource: Boolean = false
+        cantPhaseIn: Duration? = null
     ): Effect =
-        com.wingedsheep.sdk.scripting.effects.PhaseOutEffect(target, cantPhaseInWhileYouControlSource)
+        com.wingedsheep.sdk.scripting.effects.PhaseOutEffect(target, cantPhaseIn)
 
     /**
      * Phase a target permanent out indefinitely, linked to the effect's source — it stays phased

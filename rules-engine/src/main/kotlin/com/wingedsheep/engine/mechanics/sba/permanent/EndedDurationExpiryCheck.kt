@@ -12,6 +12,7 @@ import com.wingedsheep.engine.mechanics.sba.StateBasedActionCheck
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.battlefield.PhaseInLock
 import com.wingedsheep.engine.state.components.battlefield.PhasedOutComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -319,7 +320,7 @@ class EndedDurationExpiryCheck : StateBasedActionCheck {
     }
 
     /**
-     * Release every [PhaseInLock] whose window has closed: its source left the battlefield (or is
+     * Release every [PhaseInLock.WhileControlsSource] whose window has closed: its source left the battlefield (or is
      * itself phased out, so no one controls it) or its projected controller is no longer the
      * player who locked it. Release only clears the lock — the permanent stays phased out until its
      * controller's next untap step. One-way like the other latches: regaining control of the
@@ -327,7 +328,7 @@ class EndedDurationExpiryCheck : StateBasedActionCheck {
      */
     private fun pruneEndedPhaseInLocks(state: GameState): GameState {
         val locked = state.allBattlefieldEntities().filter {
-            state.getEntity(it)?.get<PhasedOutComponent>()?.phaseInLock != null
+            state.getEntity(it)?.get<PhasedOutComponent>()?.phaseInLock is PhaseInLock.WhileControlsSource
         }
         if (locked.isEmpty()) return state
         val projected = state.projectedState
@@ -335,7 +336,7 @@ class EndedDurationExpiryCheck : StateBasedActionCheck {
         var current = state
         for (entityId in locked) {
             val phased = current.getEntity(entityId)?.get<PhasedOutComponent>() ?: continue
-            val lock = phased.phaseInLock ?: continue
+            val lock = phased.phaseInLock as? PhaseInLock.WhileControlsSource ?: continue
             val holds = battlefield.contains(lock.sourceId) &&
                 projected.getController(lock.sourceId) == lock.controllerId
             if (!holds) {

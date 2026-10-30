@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting.effects
 
+import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.selfNounToken
 import com.wingedsheep.sdk.scripting.text.TextReplacer
@@ -71,22 +72,35 @@ data class TapUntapCollectionEffect(
  * Used as the "suffer" effect of a pay-or-phase trigger
  * (e.g. Vaporous Djinn: "phases out unless you pay {U}{U}").
  *
- * @property cantPhaseInWhileYouControlSource "It can't phase in for as long as you control this
- *   Saga" (The Phasing of Zhalfir). The permanent skips its untap-step phase-in while the effect's
- *   controller controls the source; once that ends (the source leaves or changes hands) the
- *   prohibition is gone for good, and it phases in at its controller's next untap step — not
- *   immediately, which is what separates this from [PhaseOutUntilLeavesEffect].
+ * @property cantPhaseIn A window during which the permanent can't phase in — its untap-step
+ *   phase-in is skipped until the window ends, after which it phases in at its controller's *next*
+ *   untap step (the window ending never phases anything in, which is what separates this from
+ *   [PhaseOutUntilLeavesEffect]). Null for ordinary phasing. Two windows are supported:
+ *   - [Duration.WhileYouControlSource] — "It can't phase in for as long as you control this Saga"
+ *     (The Phasing of Zhalfir). Ends one-way (CR 611.2b) the moment the source leaves the
+ *     battlefield or changes controller.
+ *   - [Duration.EndOfYourNextTurn] — "Until the end of your next turn, they can't phase in"
+ *     (Teferi, Timeless Voyager). Ends at the cleanup step of the effect controller's next turn.
  */
 @SerialName("PhaseOut")
 @Serializable
 data class PhaseOutEffect(
     val target: EffectTarget = EffectTarget.Self,
-    val cantPhaseInWhileYouControlSource: Boolean = false
+    val cantPhaseIn: Duration? = null
 ) : Effect {
+    init {
+        require(cantPhaseIn == null || cantPhaseIn is Duration.WhileYouControlSource ||
+            cantPhaseIn == Duration.EndOfYourNextTurn) {
+            "PhaseOutEffect.cantPhaseIn supports WhileYouControlSource and EndOfYourNextTurn, not $cantPhaseIn"
+        }
+    }
+
     override val description: String = buildString {
         append("${target.description} phases out")
-        if (cantPhaseInWhileYouControlSource) {
-            append(". It can't phase in for as long as you control this permanent")
+        when (cantPhaseIn) {
+            null -> {}
+            is Duration.WhileYouControlSource -> append(". It can't phase in ${cantPhaseIn.description}")
+            else -> append(". ${cantPhaseIn.description.replaceFirstChar { it.uppercase() }}, it can't phase in")
         }
     }
 }

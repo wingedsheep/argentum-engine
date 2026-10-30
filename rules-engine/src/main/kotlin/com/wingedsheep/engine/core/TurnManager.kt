@@ -1359,6 +1359,8 @@ class TurnManager(
                 },
                 delayedTriggers = s.delayedTriggers.filterNot { it.expiryPlayerId == leaver }
             )
+            // ... and on a phased-out permanent's phase-in lock (Teferi, Timeless Voyager).
+            s = cleanupPhaseManager.releasePhaseInLocks(s) { it.controllerId == leaver }
             // The same floor-plus-controller window on a player's cast ban (Single Combat).
             for (playerId in s.turnOrder) {
                 val bans = s.getEntity(playerId)?.get<CantCastSpellsComponent>() ?: continue
