@@ -92,6 +92,8 @@ class CreateGlobalTriggeredAbilityExecutor :
                     manaCost = ManaCost.ZERO,
                     typeLine = TypeLine(cardTypes = emptySet()),
                     oracleText = description,
+                    // The player who gets an emblem owns it (CR 114.2), so it leaves with them.
+                    ownerId = context.controllerId,
                 )
             )
         return emblemId to stateWithId.withEntity(emblemId, container)

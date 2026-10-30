@@ -553,6 +553,10 @@ data class CreateGlobalTriggeredAbilityEffect(
     val descriptionOverride: String? = null,
     val emblem: Boolean = false
 ) : Effect {
+    init {
+        require(!emblem || duration == Duration.Permanent) { "An emblem lasts for the rest of the game" }
+    }
+
     override val description: String = descriptionOverride ?: when (duration) {
         Duration.Permanent -> ability.description
         else -> "${duration.description.replaceFirstChar { it.uppercase() }}, " +
