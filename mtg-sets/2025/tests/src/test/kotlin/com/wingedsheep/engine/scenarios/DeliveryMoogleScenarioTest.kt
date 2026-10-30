@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.ChooseOptionDecision
+import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.core.CardsSelectedResponse
 import com.wingedsheep.engine.support.GameTestDriver
@@ -49,6 +51,10 @@ class DeliveryMoogleScenarioTest : FunSpec({
 
         driver.bothPass() // resolve the ETB trigger -> presents the multi-zone search
 
+        // "Your library and/or graveyard": choose which zones to search.
+        driver.pendingDecision.shouldBeInstanceOf<ChooseOptionDecision>().let {
+            driver.submitDecision(active, OptionChosenResponse(it.id, it.options.indexOf("Search your library and graveyard")))
+        }
         val decision = driver.pendingDecision
         decision.shouldBeInstanceOf<SelectCardsDecision>()
         // Both the library artifact and the graveyard artifact are valid choices.

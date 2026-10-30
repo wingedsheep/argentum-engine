@@ -1,6 +1,5 @@
 package com.wingedsheep.mtg.sets.definitions.khm.cards
 
-import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -34,12 +33,11 @@ val RuneforgeChampion = card("Runeforge Champion") {
 
     triggeredAbility {
         trigger = Triggers.self.enters()
-        effect = Patterns.Library.searchMultipleZones(
-            zones = listOf(Zone.LIBRARY, Zone.GRAVEYARD),
+        effect = Patterns.Library.searchLibraryAndOrGraveyard(
             filter = GameObjectFilter.Any.withSubtype("Rune"),
-            count = 1,
             destination = SearchDestination.HAND,
             reveal = true,
+            optional = true,
         )
     }
 

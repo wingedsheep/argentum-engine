@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.fin.cards
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -34,10 +33,8 @@ val DeliveryMoogle = card("Delivery Moogle") {
 
     triggeredAbility {
         trigger = Triggers.self.enters()
-        effect = Patterns.Library.searchMultipleZones(
-            zones = listOf(Zone.LIBRARY, Zone.GRAVEYARD),
+        effect = Patterns.Library.searchLibraryAndOrGraveyard(
             filter = GameObjectFilter.Artifact.manaValueAtMost(2),
-            count = 1,
             destination = SearchDestination.HAND,
             reveal = true,
         )

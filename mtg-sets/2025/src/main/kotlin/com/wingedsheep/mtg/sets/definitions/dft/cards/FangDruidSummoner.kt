@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.dft.cards
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.Triggers
@@ -24,12 +23,11 @@ val FangDruidSummoner = card("Fang-Druid Summoner") {
     keywords(Keyword.REACH)
     triggeredAbility {
         trigger = Triggers.self.enters()
-        effect = Patterns.Library.searchMultipleZones(
-            zones = listOf(Zone.LIBRARY, Zone.GRAVEYARD),
+        effect = Patterns.Library.searchLibraryAndOrGraveyard(
             filter = Filters.CreatureWithNoAbilities,
-            count = 1,
             destination = SearchDestination.HAND,
             reveal = true,
+            optional = true,
         )
     }
     metadata {

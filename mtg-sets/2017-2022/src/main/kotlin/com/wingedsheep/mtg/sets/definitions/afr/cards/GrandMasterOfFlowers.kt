@@ -2,7 +2,6 @@ package com.wingedsheep.mtg.sets.definitions.afr.cards
 
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Patterns
@@ -75,10 +74,8 @@ val GrandMasterOfFlowers = card("Grand Master of Flowers") {
     }
 
     loyaltyAbility(+1) {
-        effect = Patterns.Library.searchMultipleZones(
-            zones = listOf(Zone.LIBRARY, Zone.GRAVEYARD),
+        effect = Patterns.Library.searchLibraryAndOrGraveyard(
             filter = GameObjectFilter.Any.named("Monk of the Open Hand"),
-            count = 1,
             destination = SearchDestination.HAND,
             reveal = true,
         )

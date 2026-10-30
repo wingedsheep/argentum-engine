@@ -29,8 +29,9 @@ import com.wingedsheep.sdk.scripting.references.Player
  *    *actually* left (frozen with `storeNumber` before anything else changes the board).
  *  - "Your library and/or graveyard" is `Patterns.Library.searchLibraryAndOrGraveyard`: a
  *    resolution-time choice of library / graveyard / both, shuffling only when the library was
- *    searched. The search is choose-up-to-one, so
- *    failing to find is legal (and sacrificing nothing still lets you fetch a mana value 0 creature).
+ *    searched. A search that includes the library may come up
+ *    empty; a graveyard-only search must take a match that is there (CR 701.23b). Sacrificing
+ *    nothing still lets you fetch a mana value 0 creature.
  */
 val TheHungerTideRises = card("The Hunger Tide Rises") {
     manaCost = "{2}{G}"

@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.CardsSelectedResponse
+import com.wingedsheep.engine.core.ChooseOptionDecision
+import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -31,6 +33,10 @@ class FangDruidSummonerScenarioTest : FunSpec({
         driver.bothPass()
         driver.bothPass()
 
+        // "Your library and/or graveyard": choose which zones to search.
+        driver.pendingDecision.shouldBeInstanceOf<ChooseOptionDecision>().let {
+            driver.submitDecision(active, OptionChosenResponse(it.id, it.options.indexOf("Search your library and graveyard")))
+        }
         val decision = driver.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>()
         decision.options shouldContain vanilla
         decision.options shouldNotContain creatureWithAbilities

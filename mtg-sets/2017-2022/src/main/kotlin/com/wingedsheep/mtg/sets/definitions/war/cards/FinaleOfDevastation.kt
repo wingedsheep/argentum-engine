@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.war.cards
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.Effects
@@ -22,9 +21,8 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * onto the battlefield. If you search your library this way, shuffle. If X is 10 or more,
  * creatures you control get +X/+X and gain haste until end of turn.
  *
- * The search is [Patterns.Library.searchMultipleZones] over library + graveyard (Fang-Druid
- * Summoner's "and/or" shape — up-to-one pick, shuffle only because the library is among the
- * zones). The X ≥ 10 rider runs after the search, so the creature just put onto the battlefield
+ * The search is [Patterns.Library.searchLibraryAndOrGraveyard]: a choice of library, graveyard
+ * or both, shuffling only when the library was searched. The X ≥ 10 rider runs after the search, so the creature just put onto the battlefield
  * gets +X/+X and haste too (ruling), and it applies even when nothing was found. Pump and haste
  * are one pass over one group, as the sentence names its group once.
  */
@@ -37,11 +35,9 @@ val FinaleOfDevastation = card("Finale of Devastation") {
         "or more, creatures you control get +X/+X and gain haste until end of turn."
 
     spell {
-        effect = Patterns.Library.searchMultipleZones(
-            zones = listOf(Zone.LIBRARY, Zone.GRAVEYARD),
+        effect = Patterns.Library.searchLibraryAndOrGraveyard(
             filter = GameObjectFilter.Creature.manaValueAtMostDynamic(DynamicAmounts.xValue()),
-            count = 1,
-            destination = SearchDestination.BATTLEFIELD
+            destination = SearchDestination.BATTLEFIELD,
         ) then Effects.If(
             condition = Conditions.CompareAmounts(
                 DynamicAmounts.xValue(),
