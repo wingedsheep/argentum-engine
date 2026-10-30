@@ -4,7 +4,11 @@ import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.SagaComponent
+import com.wingedsheep.engine.state.components.battlefield.ChoiceValue
 import com.wingedsheep.engine.state.components.battlefield.chosenCardName
+import com.wingedsheep.engine.state.components.battlefield.withCastChoice
+import com.wingedsheep.engine.state.components.identity.RevealedToComponent
+import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Phase
@@ -80,17 +84,48 @@ class MedomaisProphecyScenarioTest : ScenarioTestBase() {
             withClue("the second Bolt this turn draws nothing") { game.handSize(1) shouldBe before }
         }
 
+        test("the name is still read if the Saga is destroyed in response to chapter III") {
+            val game = builder()
+                .withLandsOnBattlefield(1, "Plains", 2)
+                .withCardInHand(1, "Disenchant")
+                .withCardInHand(1, "Lightning Bolt")
+                .build()
+            game.setLore(2)
+            val saga = game.findPermanent("Medomai's Prophecy")!!
+            game.state = game.state.updateEntity(saga) {
+                it.withCastChoice(ChoiceSlot.CARD_NAME, ChoiceValue.TextChoice("Lightning Bolt"))
+            }
+            game.passUntilPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+            withClue("chapter III is waiting on the stack") { game.state.stack.isEmpty() shouldBe false }
+            game.castSpell(1, "Disenchant", saga).error shouldBe null
+            game.resolveStack()
+            withClue("the Saga is gone before chapter III resolved") {
+                game.findPermanent("Medomai's Prophecy") shouldBe null
+            }
+
+            val before = game.handSize(1)
+            game.castSpellTargetingPlayer(1, "Lightning Bolt", 2).error shouldBe null
+            game.resolveStack()
+            withClue("the Saga's last-known chosen name still counts: -1 Bolt, +2 cards") {
+                game.handSize(1) shouldBe before + 1
+            }
+        }
+
         test("chapter IV looks at each library's top card without moving anything") {
             val game = builder().build()
             game.setLore(3)
             val library1 = game.librarySize(1)
             val library2 = game.librarySize(2)
+            val tops = listOf(game.state.getLibrary(game.player1Id).first(), game.state.getLibrary(game.player2Id).first())
             game.passUntilPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
             game.resolveStack()
 
             withClue("the look moved nothing (the starting player skips the turn-1 draw)") {
                 game.librarySize(1) shouldBe library1
                 game.librarySize(2) shouldBe library2
+            }
+            withClue("each top card was seen by the Saga's controller only") {
+                tops.forEach { game.state.getEntity(it)?.get<RevealedToComponent>()?.playerIds shouldBe setOf(game.player1Id) }
             }
             withClue("sacrificed after IV") { game.findPermanent("Medomai's Prophecy") shouldBe null }
         }

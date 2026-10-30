@@ -18640,8 +18640,10 @@ staticAbility { ability = GrantLandwalkOfChosenType() }
     (Medomai's Prophecy) reads it with `GameObjectFilter.namedFromChosenComponent()`. Nothing is recorded when
     the source is no longer the permanent that resolved the ability; the pipeline variable is stored either way.
     A delayed trigger whose filter holds `namedFromChosenComponent()` has the recorded name **frozen in** as it is
-    created (the source as it last existed, if it has left); with no name recorded it never matches a cast.
-- `ChooseOption(OptionType.CARD_TYPE)` (pipeline: `chooseOption(OptionType.CARD_TYPE)`) — "choose a card type" at resolution; offers `CardType.CHOOSABLE_TYPE_NAMES` (artifact, battle, creature, enchantment, instant, kindred, land, planeswalker, sorcery — CR 205.2a, the types a library card can have) and stores the display name in `chosenValues[storeAs]`. Match cards by it with `GameObjectFilter.ofChosenCardTypeFromVariable(slot)`. For a choice that must persist on the permanent (a static reads it later), use `Effects.ChooseCardTypeForSource` instead. (Alrund, God of the Cosmos)
+    created (the source as it last existed, if it has left); with no name recorded a `castsNth` trigger never
+    matches (the predicate fails closed against cast records), while a plain `casts` trigger keeps reading the
+    source's bag live.
+- `ChooseOption(OptionType.CARD_TYPE)` (pipeline: `chooseOption(OptionType.CARD_TYPE)`) — "choose a card type" at resolution; offers `CardType.CHOOSABLE_TYPE_NAMES` (artifact, battle, creature, enchantment, instant, kindred, land, planeswalker, sorcery — CR 205.2a, the types a library card can have) and stores the display name in `chosenValues[storeAs]`. Match cards by it with `GameObjectFilter.ofChosenCardTypeFromVariable(slot)`. For a choice that must persist on the permanent (a static reads it later), pass `recordOnSource = true`; reach for `Effects.ChooseCardTypeForSource` only for its extra axes (`lookAtOpponentHand`, a non-default slot). (Alrund, God of the Cosmos)
 - `Effects.StoreCardName(from, storeAs)` — capture the name of the first card in collection `from` into `chosenValues[storeAs]`. The "choose a card, then act on cards of that name" counterpart to `ChooseCardName`. (Lobotomy)
 - `SelectTargetEffect(...)` *(SDK-internal step; cards use `Effects.Pipeline { selectTarget }` — §5.5.)* — pick from a valid target set.
 

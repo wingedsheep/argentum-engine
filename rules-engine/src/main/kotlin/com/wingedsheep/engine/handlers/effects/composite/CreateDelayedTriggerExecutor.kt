@@ -261,7 +261,8 @@ class CreateDelayedTriggerExecutor(
      * Substitute any chosen-value references in the trigger spec's filter with the concrete
      * values chosen so far. After the delayed trigger is created, the originating EffectContext is
      * gone — and a value recorded on the source may be gone with the source — so the trigger spec
-     * needs to be self-contained for the matcher to evaluate it on its own (CR 603.7c).
+     * needs to be self-contained for the matcher to evaluate it on its own. Like any information an
+     * effect reads, the value is determined once, as the effect is applied (CR 608.2h).
      *
      * Handles the spell filter of [EventPattern.SpellCastEvent] / [EventPattern.NthSpellCastEvent]
      * and the source filter of [EventPattern.DealsDamageEvent]; see [bakeChosenValuesIntoFilter]
@@ -293,8 +294,9 @@ class CreateDelayedTriggerExecutor(
      *  - `NameEqualsChosen(v)`            → `NameEquals(chosen[v])`          (The Clone Saga ch. III)
      *  - `NameEqualsChosenComponent(slot)` → `NameEquals(<the source's recorded name>)` — read off the
      *    source as it last existed if it has left (CR 113.7a), else off its cast-choices bag
-     *    (Medomai's Prophecy III). With no name recorded the predicate is left as it is, and it never
-     *    matches a cast spell — per the card's ruling, the trigger then can't trigger.
+     *    (Medomai's Prophecy III). With no name recorded the predicate is left as it is: it never
+     *    matches a cast-spell record, so an ordinal (`castsNth`) trigger can't trigger (the card's
+     *    ruling); a plain cast trigger would read the source's bag live.
      *
      * `chosen` is `EffectContext.pipeline.chosenValues`.
      */
