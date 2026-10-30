@@ -2744,7 +2744,14 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   apply. Works on a player target (poison) as well as a permanent. Pass
   `kindFrom = CounterKindSource.ITERATION` to place the kind an enclosing
   `ForEachCounterKindAmong` / `ForEachCounterKindOn` loop is visiting instead — no choice is asked, and outside such a loop
-  it places nothing (Exotic Pets).
+  it places nothing (Exotic Pets). `atRandom = true` draws the kind uniformly through the game RNG instead of
+  asking ("choose a kind of counter on it at random").
+- `AddCounterOfAbsentKind(kinds, target = Self, count = 1, atRandom = false)` — "choose a kind of counter [at
+  random] that this creature doesn't have on it from among flying, first strike, …, and +1/+1. Put a counter of
+  that kind on it" (Crystalline Giant): `AddCountersOfChosenKindEffect(kindFrom = LISTED_ABSENT, kinds)`. The
+  candidates are the printed `kinds` the recipient has no counter of, read at resolution (a counter gained in
+  response is excluded); none left is a no-op, one is placed without a prompt, otherwise the controller picks
+  (`ChooseOptionDecision`) or, with `atRandom`, the engine draws one.
 - `RemoveCountersOfIteratedKind(target?, count = 1)` — remove `count` counters of the kind an enclosing
   counter-kind loop (`ForEachCounterKindOn` / `ForEachCounterKindAmong`) is visiting; the removing
   counterpart of `AddCountersOfChosenKind(kindFrom = ITERATION)`, a no-op outside such a loop. Removal

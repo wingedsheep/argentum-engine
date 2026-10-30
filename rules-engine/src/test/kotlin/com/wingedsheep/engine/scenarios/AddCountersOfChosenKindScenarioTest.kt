@@ -12,6 +12,10 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.model.GameRng
+import com.wingedsheep.sdk.scripting.effects.AddCountersOfChosenKindEffect
+import com.wingedsheep.sdk.scripting.effects.CounterKindSource
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 
@@ -23,6 +27,10 @@ import io.kotest.matchers.shouldBe
  * Proves: with two or more kinds the controller picks among exactly the kinds present and only that
  * kind grows; with one kind it is placed without a prompt; with none nothing happens; `count`
  * scales the placement; and counters on a player (poison) are a legal kind too.
+ *
+ * The printed-list form (`kindFrom = LISTED_ABSENT`, Crystalline Giant) offers only the listed kinds
+ * the recipient has none of, read at resolution; `atRandom` draws the kind through the game RNG
+ * instead of asking, never a kind already present.
  */
 class AddCountersOfChosenKindScenarioTest : ScenarioTestBase() {
 
@@ -56,6 +64,38 @@ class AddCountersOfChosenKindScenarioTest : ScenarioTestBase() {
         }
     }
 
+    private val listed = listOf(CounterType.FLYING, CounterType.TRAMPLE, CounterType.PLUS_ONE_PLUS_ONE)
+
+    private val pick = card("Test Pick") {
+        manaCost = "{1}"
+        typeLine = "Sorcery"
+        oracleText = "Choose a kind of counter that target permanent doesn't have on it from among flying, trample, and +1/+1. Put a counter of that kind on it."
+        spell {
+            val t = target(TargetFilter.Permanent)
+            effect = Effects.AddCounterOfAbsentKind(listed, t)
+        }
+    }
+
+    private val lottery = card("Test Lottery") {
+        manaCost = "{1}"
+        typeLine = "Sorcery"
+        oracleText = "Choose a kind of counter at random that target permanent doesn't have on it from among flying, trample, and +1/+1. Put a counter of that kind on it."
+        spell {
+            val t = target(TargetFilter.Permanent)
+            effect = Effects.AddCounterOfAbsentKind(listed, t, atRandom = true)
+        }
+    }
+
+    private val reroll = card("Test Reroll") {
+        manaCost = "{1}"
+        typeLine = "Sorcery"
+        oracleText = "Choose a kind of counter on target permanent at random. Put an additional counter of that kind on it."
+        spell {
+            val t = target(TargetFilter.Permanent)
+            effect = Effects.AddCountersOfChosenKind(t, atRandom = true)
+        }
+    }
+
     private fun seed(game: TestGame, id: EntityId, type: CounterType, amount: Int) {
         game.state = game.state.updateEntity(id) { c ->
             c.with((c.get<CountersComponent>() ?: CountersComponent()).withAdded(type, amount))
@@ -78,6 +118,9 @@ class AddCountersOfChosenKindScenarioTest : ScenarioTestBase() {
         cardRegistry.register(nudge)
         cardRegistry.register(shove)
         cardRegistry.register(infect)
+        cardRegistry.register(pick)
+        cardRegistry.register(lottery)
+        cardRegistry.register(reroll)
 
         test("two kinds: the controller picks one and only that kind grows") {
             val game = board("Test Nudge")
@@ -148,6 +191,94 @@ class AddCountersOfChosenKindScenarioTest : ScenarioTestBase() {
             game.resolveStack()
 
             count(game, game.player2Id, CounterType.POISON) shouldBe 3
+        }
+            test("listed kinds: only the ones the permanent has none of are offered") {
+            val game = board("Test Pick")
+            val bears = game.findPermanent("Grizzly Bears")!!
+            seed(game, bears, CounterType.FLYING, 1)
+            seed(game, bears, CounterType.STUN, 1)
+
+            game.castSpell(1, "Test Pick", targetId = bears).error shouldBe null
+            game.resolveStack()
+
+            val decision = game.getPendingDecision() as ChooseOptionDecision
+            withClue("Flying is already there and stun isn't listed") {
+                decision.options.toSet() shouldBe setOf(CounterType.TRAMPLE.printed, CounterType.PLUS_ONE_PLUS_ONE.printed)
+            }
+            game.submitDecision(
+                OptionChosenResponse(decision.id, decision.options.indexOf(CounterType.TRAMPLE.printed))
+            ).error shouldBe null
+
+            count(game, bears, CounterType.TRAMPLE) shouldBe 1
+            count(game, bears, CounterType.FLYING) shouldBe 1
+            count(game, bears, CounterType.PLUS_ONE_PLUS_ONE) shouldBe 0
+        }
+
+        test("listed kinds: one absent kind is placed with no prompt, none absent is a no-op") {
+            val game = board("Test Pick")
+            val bears = game.findPermanent("Grizzly Bears")!!
+            seed(game, bears, CounterType.FLYING, 1)
+            seed(game, bears, CounterType.PLUS_ONE_PLUS_ONE, 2)
+
+            game.castSpell(1, "Test Pick", targetId = bears).error shouldBe null
+            game.resolveStack()
+            game.hasPendingDecision() shouldBe false
+            count(game, bears, CounterType.TRAMPLE) shouldBe 1
+
+            val full = board("Test Pick")
+            val other = full.findPermanent("Grizzly Bears")!!
+            listed.forEach { seed(full, other, it, 1) }
+            full.castSpell(1, "Test Pick", targetId = other).error shouldBe null
+            full.resolveStack()
+            full.hasPendingDecision() shouldBe false
+            listed.forEach { count(full, other, it) shouldBe 1 }
+        }
+
+        test("at random: no prompt, the draw follows the RNG and never repeats a present kind") {
+            val drawn = (0L until 24L).map { s ->
+                val game = board("Test Lottery")
+                game.state = game.state.copy(rng = GameRng.seeded(s))
+                val bears = game.findPermanent("Grizzly Bears")!!
+                seed(game, bears, CounterType.FLYING, 1)
+
+                game.castSpell(1, "Test Lottery", targetId = bears).error shouldBe null
+                game.resolveStack()
+
+                game.hasPendingDecision() shouldBe false
+                count(game, bears, CounterType.FLYING) shouldBe 1
+                val placed = listOf(CounterType.TRAMPLE, CounterType.PLUS_ONE_PLUS_ONE)
+                    .filter { count(game, bears, it) == 1 }
+                placed.size shouldBe 1
+                placed.single()
+            }
+            withClue("Both absent kinds come up across seeds") {
+                drawn.toSet() shouldBe setOf(CounterType.TRAMPLE, CounterType.PLUS_ONE_PLUS_ONE)
+            }
+        }
+
+        test("at random among the recipient's own kinds: no prompt, one present kind grows") {
+            val game = board("Test Reroll")
+            val bears = game.findPermanent("Grizzly Bears")!!
+            seed(game, bears, CounterType.STUN, 1)
+            seed(game, bears, CounterType.CHARGE, 1)
+
+            game.castSpell(1, "Test Reroll", targetId = bears).error shouldBe null
+            game.resolveStack()
+
+            game.hasPendingDecision() shouldBe false
+            (count(game, bears, CounterType.STUN) + count(game, bears, CounterType.CHARGE)) shouldBe 3
+        }
+
+        test("the listed form needs its kinds, and an iterated kind can't be random") {
+            shouldThrow<IllegalArgumentException> {
+                AddCountersOfChosenKindEffect(kindFrom = CounterKindSource.LISTED_ABSENT)
+            }
+            shouldThrow<IllegalArgumentException> {
+                AddCountersOfChosenKindEffect(kinds = listOf(CounterType.FLYING))
+            }
+            shouldThrow<IllegalArgumentException> {
+                AddCountersOfChosenKindEffect(kindFrom = CounterKindSource.ITERATION, atRandom = true)
+            }
         }
     }
 }

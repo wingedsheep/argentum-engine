@@ -25,8 +25,10 @@ import kotlin.reflect.KClass
  * [CounterKindSource.ITERATION] skips the choice: the kind is the one the enclosing
  * `IterationSpace.CounterKindsAmong` loop bound as `chosenCounterType` (none → no-op).
  *
- * Reads the kinds on the recipient at resolution. None → no-op; one → placed with no prompt (the
- * only legal choice); two or more → the controller picks through a [ChooseOptionDecision], resumed
+ * Reads the candidate kinds at resolution — those on the recipient, or for
+ * [CounterKindSource.LISTED_ABSENT] the printed kinds the recipient has none of. None → no-op; one →
+ * placed with no prompt (the only legal choice); `atRandom` → drawn uniformly through the game RNG;
+ * otherwise two or more → the controller picks through a [ChooseOptionDecision], resumed
  * by [AddCountersOfChosenKindContinuation]. Placement always goes through [AddCountersEffect], so
  * counter-placement replacements and counter-placed triggers see it like any other placement.
  */
@@ -63,25 +65,38 @@ class AddCountersOfChosenKindExecutor(
             )
         }
 
-        val kinds = state.getEntity(recipientId)?.get<CountersComponent>()?.counters
+        val present = state.getEntity(recipientId)?.get<CountersComponent>()?.counters
             ?.filterValues { it > 0 }?.keys?.toList().orEmpty()
+        val kinds = if (effect.kindFrom == CounterKindSource.LISTED_ABSENT) {
+            effect.kinds.distinct().filterNot { it in present }
+        } else {
+            present
+        }
         if (kinds.isEmpty()) return EffectResult.success(state, emptyList())
 
-        if (kinds.size == 1) {
+        if (kinds.size == 1 || effect.atRandom) {
+            val (kind, drawnState) =
+                if (kinds.size == 1) kinds.single() to state else state.nextRandom { pick(kinds) }
             return addCounters.execute(
-                state,
-                AddCountersEffect(kinds.single(), effect.count, EffectTarget.SpecificEntity(recipientId)),
+                drawnState,
+                AddCountersEffect(kind, effect.count, EffectTarget.SpecificEntity(recipientId)),
                 context
             )
         }
 
         val recipientName = state.getEntity(recipientId)?.get<CardComponent>()?.name ?: ""
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
+        val prompt = if (effect.kindFrom == CounterKindSource.LISTED_ABSENT) {
+            "Choose a kind of counter to put " +
+                (if (effect.count == 1) "on" else "${effect.count} of on") + " $recipientName"
+        } else {
+            "Choose a kind of counter on $recipientName to add " +
+                (if (effect.count == 1) "another" else "${effect.count} more") + " of"
+        }
         val decision = { decisionId: String -> ChooseOptionDecision(
             id = decisionId,
             playerId = context.controllerId,
-            prompt = "Choose a kind of counter on $recipientName to add " +
-                (if (effect.count == 1) "another" else "${effect.count} more") + " of",
+            prompt = prompt,
             context = DecisionContext(
                 sourceId = context.sourceId,
                 sourceName = sourceName,

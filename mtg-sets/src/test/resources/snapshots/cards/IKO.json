@@ -1723,6 +1723,55 @@
     ]
 }
 
+// Crystalline Giant
+{
+    "name": "Crystalline Giant",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Giant",
+    "oracleText": "At the beginning of combat on your turn, choose a kind of counter at random that this creature doesn't have on it from among flying, first strike, deathtouch, hexproof, lifelink, menace, reach, trample, vigilance, and +1/+1. Put a counter of that kind on this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Crystalline Giant:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCountersOfChosenKind",
+                    "target": "Self",
+                    "kindFrom": "LISTED_ABSENT",
+                    "kinds": [
+                        "FLYING",
+                        "FIRST_STRIKE",
+                        "DEATHTOUCH",
+                        "HEXPROOF",
+                        "LIFELINK",
+                        "MENACE",
+                        "REACH",
+                        "TRAMPLE",
+                        "VIGILANCE",
+                        "PLUS_ONE_PLUS_ONE"
+                    ],
+                    "atRandom": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "234",
+        "rarity": "RARE",
+        "artist": "Jason Rainville",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/1146c418-2176-466e-8a06-f2ef6bf2b1a9.jpg?1783931007"
+    },
+    "colorIdentityOverride": []
+}
+
 // Daysquad Marshal
 {
     "name": "Daysquad Marshal",

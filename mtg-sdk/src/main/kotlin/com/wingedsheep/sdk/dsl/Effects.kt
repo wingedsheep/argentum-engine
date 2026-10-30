@@ -2414,9 +2414,26 @@ object Effects {
         target: EffectTarget = EffectTarget.ContextTarget(0),
         count: Int = 1,
         kindFrom: com.wingedsheep.sdk.scripting.effects.CounterKindSource =
-            com.wingedsheep.sdk.scripting.effects.CounterKindSource.RECIPIENT
+            com.wingedsheep.sdk.scripting.effects.CounterKindSource.RECIPIENT,
+        atRandom: Boolean = false
     ): Effect =
-        com.wingedsheep.sdk.scripting.effects.AddCountersOfChosenKindEffect(target, count, kindFrom)
+        com.wingedsheep.sdk.scripting.effects.AddCountersOfChosenKindEffect(target, count, kindFrom, atRandom = atRandom)
+
+    /**
+     * "Choose a kind of counter [at random] that [target] doesn't have on it from among [kinds].
+     * Put [count] counter(s) of that kind on it" (Crystalline Giant) — the printed-list form of
+     * [AddCountersOfChosenKind] (`kindFrom = LISTED_ABSENT`). Candidates are read at resolution;
+     * none left is a no-op.
+     */
+    fun AddCounterOfAbsentKind(
+        kinds: List<CounterType>,
+        target: EffectTarget = EffectTarget.Self,
+        count: Int = 1,
+        atRandom: Boolean = false
+    ): Effect =
+        com.wingedsheep.sdk.scripting.effects.AddCountersOfChosenKindEffect(
+            target, count, com.wingedsheep.sdk.scripting.effects.CounterKindSource.LISTED_ABSENT, kinds, atRandom
+        )
 
     /**
      * "Remove [count] counter(s) of that kind from [target]" — the kind an enclosing

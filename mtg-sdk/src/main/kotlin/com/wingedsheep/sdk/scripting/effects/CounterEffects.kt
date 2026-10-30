@@ -127,25 +127,54 @@ data class AddCountersUpToEffect(
  * counter-placement replacements (Hardened Scales) and counter-placed triggers apply. A recipient
  * that can't have counters put on it gets none. Works on a permanent or a player target.
  *
+ * With [CounterKindSource.LISTED_ABSENT] the candidates are the printed [kinds] the recipient
+ * doesn't already have a counter of — "choose a kind of counter at random that Crystalline Giant
+ * doesn't have on it from among flying, first strike, … and +1/+1" — read at resolution; none left
+ * is a no-op. [atRandom] has the engine draw the kind uniformly from the candidates instead of
+ * asking the controller (RECIPIENT or LISTED_ABSENT; ITERATION has no choice to randomise).
+ *
  * @property target The permanent (or player) that receives the counters.
  * @property count How many counters of the kind to add.
- * @property kindFrom Where the kind comes from: chosen among the recipient's own, or the loop's.
+ * @property kindFrom Where the kind comes from: the recipient's own, the loop's, or the printed list.
+ * @property kinds The printed candidate kinds for [CounterKindSource.LISTED_ABSENT]; empty otherwise.
+ * @property atRandom The kind is chosen at random rather than by the controller.
  */
 @SerialName("AddCountersOfChosenKind")
 @Serializable
 data class AddCountersOfChosenKindEffect(
     val target: EffectTarget = EffectTarget.ContextTarget(0),
     val count: Int = 1,
-    val kindFrom: CounterKindSource = CounterKindSource.RECIPIENT
+    val kindFrom: CounterKindSource = CounterKindSource.RECIPIENT,
+    val kinds: List<CounterType> = emptyList(),
+    val atRandom: Boolean = false
 ) : Effect {
+    init {
+        require((kindFrom == CounterKindSource.LISTED_ABSENT) == kinds.isNotEmpty()) {
+            "kinds lists the candidates of LISTED_ABSENT, and only of it"
+        }
+        require(!atRandom || kindFrom != CounterKindSource.ITERATION) {
+            "ITERATION places the loop's kind; there is no choice to make at random"
+        }
+    }
+
     override val description: String = when (kindFrom) {
         CounterKindSource.RECIPIENT ->
-            "Choose a kind of counter on ${target.description}. Put " +
+            "Choose a kind of counter on ${target.description}${if (atRandom) " at random" else ""}. Put " +
                 (if (count == 1) "an additional counter" else "$count additional counters") +
                 " of that kind on it"
         CounterKindSource.ITERATION ->
             "Put " + (if (count == 1) "a counter" else "$count counters") +
                 " of that kind on ${target.description}"
+        CounterKindSource.LISTED_ABSENT ->
+            "Choose a kind of counter${if (atRandom) " at random" else ""} that ${target.description} " +
+                "doesn't have on it from among ${listedKinds()}. Put " +
+                (if (count == 1) "a counter" else "$count counters") + " of that kind on it"
+    }
+
+    private fun listedKinds(): String {
+        val names = kinds.map { it.printed }
+        return if (names.size <= 2) names.joinToString(" and ")
+        else names.dropLast(1).joinToString(", ") + ", and " + names.last()
     }
 }
 
@@ -182,7 +211,13 @@ enum class CounterKindSource {
      * The kind an enclosing `IterationSpace.CounterKindsAmong` (Exotic Pets) or
      * `IterationSpace.CounterKindsOn` (Dramatist's Puppet) loop is visiting.
      */
-    ITERATION
+    ITERATION,
+
+    /**
+     * One of the effect's printed `kinds` that the recipient doesn't already have a counter of
+     * (Crystalline Giant) — read at resolution.
+     */
+    LISTED_ABSENT
 }
 
 /**

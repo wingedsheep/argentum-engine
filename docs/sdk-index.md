@@ -710,7 +710,7 @@ Families:
 - `AddColorlessManaEffect(amount: DynamicAmount, restriction: ManaRestriction?, riders: Set<ManaSpellRider>, expiry: ManaExpiry)` — Add colorless mana effect.
 - `AddCombatPhaseEffect(attackerRestriction: GameObjectFilter?, atBeginningOfThatCombat: Effect?)` — Insert a single additional combat phase into the current turn — and *only* a combat phase, with no trailing main phase (Aurelia, the Warleader / Combat Celebrant / Fear of Missing Out: "After this…
 - `AddCountersEffect(counterType: CounterType, count: Int, target: EffectTarget)` — Add counters effect.
-- `AddCountersOfChosenKindEffect(target: EffectTarget, count: Int, kindFrom: CounterKindSource)` — "Choose a kind of counter on target.
+- `AddCountersOfChosenKindEffect(target: EffectTarget, count: Int, kindFrom: CounterKindSource, kinds: List<CounterType>, atRandom: Boolean)` — "Choose a kind of counter on target.
 - `AddCountersToCollectionEffect(collectionName: String, counterType: CounterType, count: Int, amount: DynamicAmount?)` — Add counters to all entities in a named collection.
 - `AddCountersUpToEffect(counterType: CounterType, max: DynamicAmount, target: EffectTarget)` — Put a player-chosen number (0 up to max) of a single kind of counter on a target.
 - `AddCountersWithLimitEffect(counterType: CounterType, amount: DynamicAmount, totalLimit: DynamicAmount, target: EffectTarget)` — Place amount counters without this instruction raising their total above totalLimit.
