@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -1233,36 +1234,54 @@ data class MakeNextSpellUncounterableEffect(
 }
 
 /**
- * The next spell its controller casts this turn matching [spellFilter] can be cast without paying
- * its mana cost (CR 118.9 — "without paying its mana cost" is an alternative cost, so mandatory
+ * Spells its controller casts this turn matching [spellFilter] can be cast without paying their
+ * mana costs (CR 118.9 — "without paying its mana cost" is an alternative cost, so mandatory
  * additional costs still apply, and X is 0 per CR 107.3b because the free-cast action variant the
- * enumerator offers carries no X).
+ * enumerator offers carries no X). It changes no timing: a sorcery still waits for a main phase.
  *
- * One-shot rider, the same shape as [MakeNextSpellUncounterableEffect] and
- * [GrantNextSpellAffinityEffect]: it waits on the game state for the controller's next matching
- * cast, offers that cast the free-cast alternative, and is then consumed. **Consumption is by the
- * cast, not by the discount** — the printed text names "the next" matching spell, so a matching
- * spell cast for full price is that spell and spends the rider; a later one is not "the next".
+ * A turn-scoped permission held on the game state, not on a permanent: unlike
+ * [com.wingedsheep.sdk.scripting.MayCastWithoutPayingManaCost] (a static ability read off a
+ * permanent on the battlefield, or an emblem), it survives its source leaving the battlefield — the
+ * ability has already resolved — and ends with the turn.
  *
- * Unlike [com.wingedsheep.sdk.scripting.MayCastWithoutPayingManaCost], which is a static ability
- * read off a permanent on the battlefield, this rider lives on the game state: it survives its
- * source leaving the battlefield (the ability has already resolved) and is not tied to the source
- * being a permanent at all.
+ * Two axes:
+ *  - [nextSpellOnly] — `true` for the one-shot "the next … spell you cast this turn can be cast
+ *    without paying its mana cost" (World War Hulk chapter I), the same rider shape as
+ *    [MakeNextSpellUncounterableEffect] and [GrantNextSpellAffinityEffect]. **Consumption is by the
+ *    cast, not by the discount** — the printed text names "the next" matching spell, so a matching
+ *    spell cast for full price is that spell and spends the rider. `false` for "until end of turn,
+ *    you may cast spells … without paying their mana costs" (Chandra, Flame's Catalyst −8): every
+ *    matching spell this turn may be cast free, and nothing is consumed. Same axis, same name, as
+ *    [ModifySpellCostsEffect.nextSpellOnly].
+ *  - [fromZones] — the zones the spell must be cast *from*, `null` for any zone. Chandra frees only
+ *    spells cast from your hand; a spell cast from the graveyard that turn pays its cost. Same axis
+ *    as [com.wingedsheep.sdk.scripting.MayCastWithoutPayingManaCost.fromZones].
  *
- * Used by World War Hulk chapter I ("The next red or green creature spell you cast this turn can
- * be cast without paying its mana cost.").
- *
- * @property spellFilter Which spell the rider waits for (defaults to any spell).
+ * @property spellFilter Which spells the permission covers (defaults to any spell).
+ * @property nextSpellOnly Whether only the next matching spell is covered (see above).
+ * @property fromZones The zones a covered spell is cast from, or `null` for any zone.
  */
-@SerialName("GrantNextSpellFreeCast")
+@SerialName("GrantFreeCastThisTurn")
 @Serializable
-data class GrantNextSpellFreeCastEffect(
-    val spellFilter: GameObjectFilter = GameObjectFilter.Any
+data class GrantFreeCastThisTurnEffect(
+    val spellFilter: GameObjectFilter = GameObjectFilter.Any,
+    val nextSpellOnly: Boolean = true,
+    val fromZones: Set<Zone>? = null
 ) : Effect {
+    init {
+        require(fromZones == null || fromZones.isNotEmpty()) { "fromZones must be null (any zone) or non-empty" }
+    }
+
     override val description: String = buildString {
-        append("The next ")
-        if (spellFilter != GameObjectFilter.Any) append("${spellFilter.description} ")
-        append("spell you cast this turn can be cast without paying its mana cost")
+        val filter = if (spellFilter != GameObjectFilter.Any) "${spellFilter.description} " else ""
+        val from = fromZones?.let { zones ->
+            " from your " + zones.joinToString(" or ") { it.name.lowercase() }
+        } ?: ""
+        if (nextSpellOnly) {
+            append("The next ${filter}spell you cast${from} this turn can be cast without paying its mana cost")
+        } else {
+            append("Until end of turn, you may cast ${filter}spells${from} without paying their mana costs")
+        }
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect =

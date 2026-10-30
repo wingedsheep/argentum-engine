@@ -494,7 +494,10 @@ class CastSpellHandler(
         // --- 5. What the cast sets off -----------------------------------------------------------
 
         currentState = castRecords.applyCastThisWayRiders(currentState, action, cardComponent, authorization, paid.isForageCast)
-        val spell = CastSpellOnStack(action, cardDef, cardComponent, targeting.requirements)
+        val spell = CastSpellOnStack(
+            action, cardDef, cardComponent, targeting.requirements,
+            castFromZone = castCostTotaller.castSourceZone(state, action.cardId)
+        )
         val (afterManaRiders, riderTriggers) = castTriggers.applyManaRiders(currentState, spell, paid.payment.consumedRiders)
         currentState = castRecords.consumeCastPermissions(
             afterManaRiders, state, action, cardDef, cardComponent, authorization, castingFromGraveyardViaMuldrotha

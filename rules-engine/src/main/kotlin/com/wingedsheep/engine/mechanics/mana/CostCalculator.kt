@@ -2283,10 +2283,10 @@ class CostCalculator(
         spellCardDef: CardDefinition? = null,
         castFromZone: com.wingedsheep.sdk.core.Zone? = null
     ): Boolean {
-        // A state-held "the next matching spell you cast this turn can be cast without paying its
-        // mana cost" rider (World War Hulk I) is checked first: it isn't tied to a battlefield
-        // source and isn't restricted to a cast zone, so none of the per-source gates below apply.
-        if (hasFreeCastRider(state, casterId, spellCardDef)) return true
+        // A state-held free-cast permission (World War Hulk I's next-spell rider, Chandra, Flame's
+        // Catalyst's whole turn) is checked first: it isn't tied to a battlefield source, so none
+        // of the per-source gates below apply — only its own zone scope.
+        if (hasFreeCastRider(state, casterId, spellCardDef, castFromZone)) return true
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
             val card = container.get<CardComponent>() ?: continue
@@ -2328,7 +2328,9 @@ class CostCalculator(
     /**
      * The pending-rider half of [hasFreeCastPermission]: a
      * [com.wingedsheep.engine.state.PendingFreeCastSpell] installed by
-     * [com.wingedsheep.sdk.scripting.effects.GrantNextSpellFreeCastEffect] (World War Hulk I).
+     * [com.wingedsheep.sdk.scripting.effects.GrantFreeCastThisTurnEffect] (World War Hulk I,
+     * Chandra, Flame's Catalyst). A rider scoped to cast zones covers only a cast from one of them;
+     * the coarse probe (no [castFromZone]) reads as a hand cast, as the battlefield scan does.
      *
      * The rider's own `sourceId` goes in as the predicate source so source-relative predicates
      * ("shares a creature type with this permanent") resolve against the permanent that installed
@@ -2351,9 +2353,11 @@ class CostCalculator(
     private fun hasFreeCastRider(
         state: GameState,
         casterId: EntityId,
-        spellCardDef: CardDefinition?
+        spellCardDef: CardDefinition?,
+        castFromZone: com.wingedsheep.sdk.core.Zone?
     ): Boolean = state.pendingFreeCastSpells.any { rider ->
         rider.controllerId == casterId &&
+            rider.allowsCastFrom(castFromZone) &&
             (
                 spellCardDef == null ||
                     rider.spellFilter == GameObjectFilter.Any ||
@@ -2424,7 +2428,7 @@ class CostCalculator(
         if (hasEmblemFreeCastPermission(state, casterId, spellCardDef, castFromZone)) return null
         // Same for a pending "next spell you cast" rider — it pays for this cast and is itself
         // consumed by the cast, so a Zaffai-style once-per-turn use must not be burned as well.
-        if (hasFreeCastRider(state, casterId, spellCardDef)) return null
+        if (hasFreeCastRider(state, casterId, spellCardDef, castFromZone)) return null
         var oncePerTurnCandidate: EntityId? = null
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue

@@ -10,11 +10,14 @@ import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.sdk.scripting.effects.GrantFreeCastThisTurnEffect
 import com.wingedsheep.sdk.scripting.AdditionalCostPayment
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.MayCastWithoutPayingManaCost
@@ -28,9 +31,11 @@ import io.kotest.matchers.shouldNotBe
 import com.wingedsheep.engine.core.Outcome
 
 /**
- * Tests for the one-shot "the next matching spell you cast this turn can be cast without paying its
- * mana cost" rider ([com.wingedsheep.sdk.scripting.effects.GrantNextSpellFreeCastEffect]), the
- * primitive behind World War Hulk chapter I.
+ * Tests for the state-held free-cast permission
+ * ([com.wingedsheep.sdk.scripting.effects.GrantFreeCastThisTurnEffect]): the one-shot "the next
+ * matching spell you cast this turn can be cast without paying its mana cost" rider behind World War
+ * Hulk chapter I, and the whole-turn "until end of turn, you may cast spells from your hand without
+ * paying their mana costs" behind Chandra, Flame's Catalyst's −8 (the tests at the end).
  *
  * Sibling of [MakeNextSpellUncounterableTest]: a pending rider held on the game state, matched
  * against the controller's next cast and then consumed. The properties that distinguish it from the
@@ -38,7 +43,7 @@ import com.wingedsheep.engine.core.Outcome
  * being the turn's first spell, and it's spent by the cast rather than by the discount — are what
  * this file pins down. The card-level filter behaviour lives in [WorldWarHulkScenarioTest].
  */
-class GrantNextSpellFreeCastTest : FunSpec({
+class GrantFreeCastThisTurnTest : FunSpec({
 
     // A sorcery: by the time the free cast happens the source is in the graveyard, so a passing
     // test proves the permission doesn't depend on its source being on the battlefield.
@@ -90,12 +95,38 @@ class GrantNextSpellFreeCastTest : FunSpec({
         additionalCost(Costs.additional.SacrificePermanent(GameObjectFilter.Creature))
     }
 
+    // The whole-turn form, scoped to hand casts like Chandra, Flame's Catalyst's −8.
+    val handFreeCastRitual = card("Hand Free Cast Ritual") {
+        manaCost = "{G}"
+        typeLine = "Sorcery"
+        spell {
+            effect = Effects.GrantFreeCastThisTurn(fromZones = setOf(Zone.HAND))
+        }
+    }
+
+    // The one-shot form scoped to hand casts, to pin that a cast from elsewhere doesn't spend it.
+    val nextHandFreeCastRitual = card("Next Hand Free Cast Ritual") {
+        manaCost = "{G}"
+        typeLine = "Sorcery"
+        spell {
+            effect = GrantFreeCastThisTurnEffect(fromZones = setOf(Zone.HAND))
+        }
+    }
+
+    // A graveyard-castable spell (flashback {G}) — a cast that isn't from the hand.
+    val flashbackLife = card("Test Flashback Life") {
+        manaCost = "{G}"
+        typeLine = "Sorcery"
+        keywordAbility(KeywordAbility.flashback("{G}"))
+        spell { effect = Effects.GainLife(1) }
+    }
+
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
         driver.registerCards(
             TestCards.all + listOf(
                 freeCastRitual, creatureFreeCastRitual, onceEachTurnFreeCaster,
-                xLifeRitual, sacrificeGolem
+                xLifeRitual, sacrificeGolem, handFreeCastRitual, nextHandFreeCastRitual, flashbackLife
             )
         )
         driver.initMirrorMatch(deck = Deck.of("Forest" to 40), startingLife = 20)
@@ -312,5 +343,108 @@ class GrantNextSpellFreeCastTest : FunSpec({
             driver.getGraveyard(player) shouldContain fodder
             driver.state.pendingFreeCastSpells.shouldBeEmpty()
         }
+    }
+    // --- Whole turn (nextSpellOnly = false): Chandra, Flame's Catalyst −8 -----------------------
+
+    fun GameTestDriver.castFree(player: EntityId, cardId: EntityId) {
+        submit(
+            CastSpell(player, cardId, useWithoutPayingManaCost = true, paymentStrategy = PaymentStrategy.FromPool)
+        ).outcome shouldBe Outcome.Done
+        bothPass()
+    }
+
+    test("whole turn: every spell cast from hand this turn may be free, and nothing is consumed") {
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+
+        driver.castRitual(player, "Hand Free Cast Ritual")
+
+        driver.castFree(player, driver.putCardInHand(player, "Force of Nature"))
+        driver.castFree(player, driver.putCardInHand(player, "Grizzly Bears"))
+        driver.castFree(player, driver.putCardInHand(player, "Force of Nature"))
+
+        driver.getCreatures(player).count { driver.getCardName(it) == "Force of Nature" } shouldBe 2
+        driver.findPermanent(player, "Grizzly Bears") shouldNotBe null
+        withClue("the permission is still there for the rest of the turn") {
+            driver.state.pendingFreeCastSpells.single().nextSpellOnly shouldBe false
+        }
+    }
+
+    test("whole turn: the permission ends with the turn") {
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+
+        driver.castRitual(player, "Hand Free Cast Ritual")
+        driver.passPriorityUntil(Step.UPKEEP)
+        driver.state.pendingFreeCastSpells.shouldBeEmpty()
+    }
+
+    test("whole turn, from hand: a spell cast from the graveyard still pays its cost") {
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+        val costCalculator = CostCalculator(driver.cardRegistry, predicateEvaluator = PredicateEvaluator(cardRegistry = null))
+
+        driver.castRitual(player, "Hand Free Cast Ritual")
+        val flashback = driver.putCardInGraveyard(player, "Test Flashback Life")
+        val flashbackDef = driver.cardRegistry.requireCard("Test Flashback Life")
+
+        costCalculator.hasFreeCastPermission(driver.state, player, flashbackDef, Zone.HAND) shouldBe true
+        withClue("'from your hand' — the graveyard cast is not covered") {
+            costCalculator.hasFreeCastPermission(driver.state, player, flashbackDef, Zone.GRAVEYARD) shouldBe false
+            driver.legalActions(player).none {
+                it.actionType == "CastWithoutPayingManaCost" && (it.action as CastSpell).cardId == flashback
+            } shouldBe true
+        }
+    }
+
+    test("whole turn: timing is unchanged — a sorcery-speed spell can't be cast free in combat") {
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+
+        driver.castRitual(player, "Hand Free Cast Ritual")
+        val bears = driver.putCardInHand(player, "Grizzly Bears")
+        val bolt = driver.putCardInHand(player, "Lightning Bolt")
+        driver.passPriorityUntil(Step.BEGIN_COMBAT)
+
+        val freeCasts = driver.legalActions(player)
+            .filter { it.actionType == "CastWithoutPayingManaCost" }
+            .map { (it.action as CastSpell).cardId }
+        withClue("the instant may be cast free in combat; the creature must wait for a main phase") {
+            freeCasts shouldContain bolt
+            freeCasts.contains(bears) shouldBe false
+        }
+    }
+
+    test("whole turn: the opponent gets nothing from it") {
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+        val opponent = driver.getOpponent(player)
+        val costCalculator = CostCalculator(driver.cardRegistry, predicateEvaluator = PredicateEvaluator(cardRegistry = null))
+
+        driver.castRitual(player, "Hand Free Cast Ritual")
+        costCalculator.hasFreeCastPermission(
+            driver.state, opponent, driver.cardRegistry.requireCard("Lightning Bolt"), Zone.HAND
+        ) shouldBe false
+    }
+
+    test("a hand-scoped next-spell rider isn't spent by a cast from the graveyard") {
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+
+        driver.castRitual(player, "Next Hand Free Cast Ritual")
+        val flashback = driver.putCardInGraveyard(player, "Test Flashback Life")
+        driver.giveMana(player, Color.GREEN, 1)
+        val flashbackCast = driver.legalActions(player)
+            .single { it.actionType == "CastWithFlashback" && (it.action as CastSpell).cardId == flashback }
+        driver.submit(flashbackCast.action).outcome shouldBe Outcome.Done
+        driver.bothPass()
+
+        withClue("the flashback cast came from the graveyard, so it isn't the rider's spell") {
+            driver.state.pendingFreeCastSpells.size shouldBe 1
+        }
+
+        driver.castFree(player, driver.putCardInHand(player, "Grizzly Bears"))
+        driver.findPermanent(player, "Grizzly Bears") shouldNotBe null
+        driver.state.pendingFreeCastSpells.shouldBeEmpty()
     }
 })

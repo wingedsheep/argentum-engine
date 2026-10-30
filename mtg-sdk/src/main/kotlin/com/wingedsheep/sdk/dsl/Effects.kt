@@ -5952,7 +5952,22 @@ object Effects {
      */
     fun GrantNextSpellFreeCast(
         spellFilter: GameObjectFilter = GameObjectFilter.Any
-    ): Effect = com.wingedsheep.sdk.scripting.effects.GrantNextSpellFreeCastEffect(spellFilter)
+    ): Effect = com.wingedsheep.sdk.scripting.effects.GrantFreeCastThisTurnEffect(spellFilter)
+
+    /**
+     * Until end of turn, you may cast spells matching [spellFilter] from [fromZones] without paying
+     * their mana costs (Chandra, Flame's Catalyst −8: from your hand). Not consumed — every matching
+     * spell cast this turn may be cast free. Like [GrantNextSpellFreeCast], the permission lives on
+     * the game state, so it outlives its source; it changes no timing.
+     */
+    fun GrantFreeCastThisTurn(
+        spellFilter: GameObjectFilter = GameObjectFilter.Any,
+        fromZones: Set<com.wingedsheep.sdk.core.Zone>? = null
+    ): Effect = com.wingedsheep.sdk.scripting.effects.GrantFreeCastThisTurnEffect(
+        spellFilter,
+        nextSpellOnly = false,
+        fromZones = fromZones
+    )
 
     /**
      * Grant the next [spellFilter] spell you cast this turn affinity for [forType] (Don & Raph).

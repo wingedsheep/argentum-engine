@@ -21557,7 +21557,7 @@
             {
                 "chapter": 1,
                 "effect": {
-                    "type": "GrantNextSpellFreeCast",
+                    "type": "GrantFreeCastThisTurn",
                     "spellFilter": {
                         "cardPredicates": [
                             {

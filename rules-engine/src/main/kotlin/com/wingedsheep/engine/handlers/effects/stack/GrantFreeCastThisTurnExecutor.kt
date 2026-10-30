@@ -6,25 +6,26 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.PendingFreeCastSpell
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.sdk.scripting.effects.GrantNextSpellFreeCastEffect
+import com.wingedsheep.sdk.scripting.effects.GrantFreeCastThisTurnEffect
 import kotlin.reflect.KClass
 
 /**
- * Executor for [GrantNextSpellFreeCastEffect].
+ * Executor for [GrantFreeCastThisTurnEffect].
  *
- * Adds a [PendingFreeCastSpell] rider to the game state.
- * [com.wingedsheep.engine.mechanics.mana.CostCalculator.hasFreeCastPermission] reads it so the
- * controller's next matching spell is offered as a `CastSpell.useWithoutPayingManaCost` action, and
- * [com.wingedsheep.engine.handlers.actions.spell.CastSpellHandler] consumes the rider on that cast
- * (whether or not the free cast was taken). Mirrors [GrantNextSpellAffinityExecutor].
+ * Adds a [PendingFreeCastSpell] permission to the game state.
+ * [com.wingedsheep.engine.mechanics.mana.CostCalculator.hasFreeCastPermission] reads it so a
+ * matching spell is offered as a `CastSpell.useWithoutPayingManaCost` action. A `nextSpellOnly`
+ * rider is consumed by the next matching cast (whether or not the free cast was taken); a
+ * whole-turn one stays until [com.wingedsheep.engine.core.TurnManager.startTurn] clears it.
+ * Mirrors [GrantNextSpellAffinityExecutor].
  */
-class GrantNextSpellFreeCastExecutor : EffectExecutor<GrantNextSpellFreeCastEffect> {
+class GrantFreeCastThisTurnExecutor : EffectExecutor<GrantFreeCastThisTurnEffect> {
 
-    override val effectType: KClass<GrantNextSpellFreeCastEffect> = GrantNextSpellFreeCastEffect::class
+    override val effectType: KClass<GrantFreeCastThisTurnEffect> = GrantFreeCastThisTurnEffect::class
 
     override fun execute(
         state: GameState,
-        effect: GrantNextSpellFreeCastEffect,
+        effect: GrantFreeCastThisTurnEffect,
         context: EffectContext
     ): EffectResult {
         val (effectiveState, sourceId) = if (context.sourceId != null) {
@@ -38,6 +39,8 @@ class GrantNextSpellFreeCastExecutor : EffectExecutor<GrantNextSpellFreeCastEffe
         val pending = PendingFreeCastSpell(
             controllerId = context.controllerId,
             spellFilter = effect.spellFilter,
+            nextSpellOnly = effect.nextSpellOnly,
+            fromZones = effect.fromZones,
             sourceId = sourceId,
             sourceName = sourceName
         )

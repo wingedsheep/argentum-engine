@@ -2276,6 +2276,162 @@
     ]
 }
 
+// Chandra, Flame's Catalyst
+{
+    "name": "Chandra, Flame's Catalyst",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Legendary Planeswalker — Chandra",
+    "oracleText": "+1: Chandra deals 3 damage to each opponent.\n−2: You may cast target red instant or sorcery card from your graveyard. If that spell would be put into your graveyard, exile it instead.\n−8: Discard your hand, then draw seven cards. Until end of turn, you may cast spells from your hand without paying their mana costs.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Chandra, Flame's Catalyst:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Chandra deals 3 damage to each opponent."
+            },
+            {
+                "id": "Chandra, Flame's Catalyst:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "CastFromCollectionWithoutPayingCost",
+                                "from": "gathered0",
+                                "payManaCost": true,
+                                "insteadOfGraveyard": "EXILE"
+                            },
+                            "descriptionOverride": "You may cast target red instant or sorcery card from your graveyard."
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "instant|sorcery red own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You may cast target red instant or sorcery card from your graveyard. If that spell would be put into your graveyard, exile it instead."
+            },
+            {
+                "id": "Chandra, Flame's Catalyst:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -8
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "discardedHand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discardedHand",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 7
+                            }
+                        },
+                        {
+                            "type": "GrantFreeCastThisTurn",
+                            "nextSpellOnly": false,
+                            "fromZones": [
+                                "Hand"
+                            ]
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Discard your hand, then draw seven cards. Until end of turn, you may cast spells from your hand without paying their mana costs."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "332",
+        "rarity": "MYTHIC",
+        "artist": "Grzegorz Rutkowski",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/e/1e49ce44-5286-4310-88c2-f8a1402b113b.jpg?1783930619",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "You must pay the costs for the spell you wish to cast with Chandra's second ability. If that spell has any alternative costs, you may pay those."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If you wish to cast the target card, you must cast it while Chandra's second ability is resolving. You can't cast it later in the turn."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If you have no cards in hand while Chandra's last ability is resolving, you still draw seven cards and may cast spells from your hand without paying their mana costs this turn."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Chandra's last ability doesn't change when you may cast those spells. For example, you can't cast a sorcery spell from your hand during combat."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If you cast a spell \"without paying its mana cost,\" you can't choose to cast it for any alternative costs. You can, however, pay additional costs. If the card has any mandatory additional costs, those must be paid to cast the spell."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If a spell has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Chandra, Heart of Fire
 {
     "name": "Chandra, Heart of Fire",

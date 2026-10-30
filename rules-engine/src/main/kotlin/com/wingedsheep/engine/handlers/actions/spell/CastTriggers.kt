@@ -46,6 +46,8 @@ internal class CastSpellOnStack(
     val cardComponent: CardComponent,
     /** The requirements its targets were chosen against — a copy may choose new ones from them. */
     val targetRequirements: List<TargetRequirement>,
+    /** The zone it was cast from (read before it moved to the stack); `null` when unknown. */
+    val castFromZone: com.wingedsheep.sdk.core.Zone? = null,
 )
 
 /**
@@ -425,10 +427,13 @@ internal class CastTriggers(
      * (World War Hulk I). The permission was already offered while the rider was present. Not gated
      * on `useWithoutPayingManaCost`: the printed text names a spell ("the next red or green creature
      * spell you cast this turn"), so a matching spell cast for full price is that spell and spends
-     * the rider — the same contract as the affinity rider.
+     * the rider — the same contract as the affinity rider. Whole-turn permissions (`nextSpellOnly =
+     * false`, Chandra, Flame's Catalyst) are never consumed.
      */
     private fun consumeFreeCastRiders(state: GameState, spell: CastSpellOnStack): GameState {
-        val matching = state.pendingFreeCastSpells.filter { spellMatchesRider(state, spell, it.controllerId, it.sourceId, it.spellFilter) }
+        val matching = state.pendingFreeCastSpells.filter {
+            it.nextSpellOnly && it.allowsCastFrom(spell.castFromZone) && spellMatchesRider(state, spell, it.controllerId, it.sourceId, it.spellFilter)
+        }
         if (matching.isEmpty()) return state
         return state.copy(pendingFreeCastSpells = state.pendingFreeCastSpells.filter { it !in matching })
     }

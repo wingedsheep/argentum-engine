@@ -797,7 +797,7 @@ internal class PlayerActiveEffectsProjector(
 
         // Check for pending "next spell can be cast without paying its mana cost" riders
         // (e.g. World War Hulk I) — the player needs to see the free cast is still available.
-        val pendingFreeCasts = state.pendingFreeCastSpells.filter { it.controllerId == playerId }
+        val pendingFreeCasts = state.pendingFreeCastSpells.filter { it.controllerId == playerId && it.nextSpellOnly }
         if (pendingFreeCasts.isNotEmpty()) {
             val sourceName = pendingFreeCasts.map { it.sourceName }.distinct().joinToString(", ")
             // With several riders the broadest one sets the wording: an unfiltered rider frees the
@@ -820,6 +820,26 @@ internal class PlayerActiveEffectsProjector(
                 )
             )
         }
+
+        // Whole-turn free-cast permissions (Chandra, Flame's Catalyst −8) — one badge each, since
+        // their filters and zones differ and none is spent by a cast.
+        state.pendingFreeCastSpells
+            .filter { it.controllerId == playerId && !it.nextSpellOnly }
+            .distinctBy { Triple(it.spellFilter, it.fromZones, it.sourceName) }
+            .forEachIndexed { index, grant ->
+                val filterDesc = if (grant.spellFilter == GameObjectFilter.Any) "" else "${grant.spellFilter.description} "
+                val fromDesc = grant.fromZones?.let { zones ->
+                    " from your " + zones.joinToString(" or ") { it.name.lowercase() }
+                } ?: ""
+                effects.add(
+                    ClientPlayerEffect(
+                        effectId = "free_cast_this_turn_$index",
+                        name = "Free Cast",
+                        description = "This turn you may cast ${filterDesc}spells$fromDesc without paying their mana costs (${grant.sourceName})",
+                        icon = "free-cast"
+                    )
+                )
+            }
 
         // Check for pending "for one spell this turn, mana of any type" riders (North Star) — the
         // player needs to see the rider is still waiting for the spell that needs it.

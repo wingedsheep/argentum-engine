@@ -37,7 +37,7 @@ class StackExecutors(
         MakeNextSpellUncounterableExecutor(),
         GrantNextSpellAffinityExecutor(),
         GrantNextSpellKeywordExecutor(),
-        GrantNextSpellFreeCastExecutor(),
+        GrantFreeCastThisTurnExecutor(),
         GrantOneSpellAnyManaTypeExecutor(),
         ModifySpellCostsExecutor(amountEvaluator),
         ReselectTargetRandomlyExecutor(targetFinder = targetFinder),
