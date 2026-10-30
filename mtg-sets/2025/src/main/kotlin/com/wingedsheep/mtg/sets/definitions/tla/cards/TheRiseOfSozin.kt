@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.events.Recipient
 import com.wingedsheep.sdk.dsl.Targets
+import com.wingedsheep.sdk.scripting.targets.TotalCap
 
 /**
  * The Rise of Sozin // Fire Lord Sozin (TLA #117)
@@ -51,7 +52,7 @@ import com.wingedsheep.sdk.dsl.Targets
  * reanimation targets "any number of target creature cards with total mana value X or less"
  * (CR 115.1a / 601.2c), the targets are chosen after X is paid: [Effects.MayPayX] gates on paying X,
  * and its post-payment `then` is a [ReflexiveTriggerEffect] whose [TargetObject] is `unlimited` (any
- * number) with the new [TargetObject.totalManaValueAtMost]` = DynamicAmount.XValue` aggregate cap —
+ * number) with the new [TargetObject.totalAtMost]` = TotalCap.manaValue(DynamicAmount.XValue)` aggregate cap —
  * resolved against the X in scope, and scoped to the damaged player's graveyard via the new
  * `GameObjectFilter.ownedByTriggeringPlayer()`. The chosen cards are then reanimated under your control
  * ([CardDestination.ToZone] battlefield sets the controller to you while ownership stays with the
@@ -79,7 +80,7 @@ private val FireLordSozin = card("Fire Lord Sozin") {
     // The reflexive ability is *targeted* (CR 115.1a / 601.2c): once you pay {X}, you announce which
     // creature cards you're reanimating, subject to their combined mana value not exceeding X. We
     // model this by nesting the target selection inside [Effects.MayPayX]'s post-payment `then`, so
-    // the `X` just paid is in scope when the reflexive [TargetObject.totalManaValueAtMost] cap
+    // the `X` just paid is in scope when the reflexive [TargetObject.totalAtMost] cap
     // resolves. The [ReflexiveTriggerEffect] wrapper is borrowed only for its mid-resolution target
     // selection — its `action` is an empty composite because the "when you do" is already the pay-{X}
     // gate. `ownedByTriggeringPlayer()` scopes the graveyard to the player Sozin just damaged.
@@ -96,7 +97,7 @@ private val FireLordSozin = card("Fire Lord Sozin") {
                             GameObjectFilter.Creature.ownedByTriggeringPlayer(),
                             zone = Zone.GRAVEYARD
                         ),
-                        totalManaValueAtMost = DynamicAmounts.xValue()
+                        totalAtMost = TotalCap.manaValue(DynamicAmounts.xValue())
                     )
                 ),
                 // Put the chosen cards onto the battlefield under your control (owner stays the

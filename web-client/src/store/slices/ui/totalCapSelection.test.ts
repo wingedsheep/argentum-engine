@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest'
 import { create } from 'zustand'
 import { createSelectionSlice } from './selectionSlice'
 import type { GameStore, EntityId } from '../types'
+import type { TargetRequirementInfo } from '@/types'
+import { totalCapSum, totalCapsFor, wouldExceedTotalCaps } from '@/utils/targeting'
 const id = (s: string) => s as EntityId
 
 describe('total-capped decisions', () => {
@@ -32,5 +34,16 @@ describe('total-capped decisions', () => {
     expect(store.getState().decisionSelectionState!.warning).toContain('total power')
     store.getState().toggleDecisionSelection(id('elf'))
     expect(store.getState().decisionSelectionState!.selectedOptions).toEqual([id('wurm'), id('elf')])
+  })
+  it('reads the server-baked cap off a requirement and holds picks to it', () => {
+    const req = { index: 0, description: 'any number of target creature cards with total power 10 or less', minTargets: 0,
+      maxTargets: 3, totalCap: 10, totalCapLabel: 'power',
+      targetValues: { [id('wurm')]: 6, [id('goyf')]: 5, [id('elf')]: 1 } } as unknown as TargetRequirementInfo
+    const caps = totalCapsFor(req)
+    expect(caps).toEqual([{ label: 'power', cap: 10, values: req.targetValues }])
+    expect(wouldExceedTotalCaps(caps, [id('wurm')], id('goyf'))?.label).toBe('power')
+    expect(wouldExceedTotalCaps(caps, [id('wurm')], id('elf'))).toBeUndefined()
+    expect(totalCapSum(caps[0]!, [id('wurm'), id('elf')])).toBe(7)
+    expect(totalCapsFor({ ...req, totalCap: null })).toEqual([])
   })
 })

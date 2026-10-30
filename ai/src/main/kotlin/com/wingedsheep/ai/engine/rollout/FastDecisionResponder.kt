@@ -102,9 +102,9 @@ class FastDecisionResponder(private val intents: IntentCatalog = IntentCatalog.N
                         req.minTargets.coerceAtMost(legal.size)
                     )
                     val ranked = legal.sortedByDescending { TargetSelection.rank(state, it, playerId, intents) }
-                    chosen + (req.index to
-                        if (req.totalManaValueAtMost == null && req.totalPowerAtMost == null) ranked.take(count)
-                        else TargetSelection.underTotalCaps(state, ranked, req.totalManaValueAtMost, req.totalPowerAtMost, req.targetPowers, count))
+                    chosen + (req.index to (req.totalCap?.let { cap ->
+                        TargetSelection.underTotalCap(ranked, cap, req.targetValues, count)
+                    } ?: ranked.take(count)))
                 }
             )
 

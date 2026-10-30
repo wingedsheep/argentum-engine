@@ -5,6 +5,7 @@ import type { EntityId } from '@/types'
 import type { SelectionTotalCap } from '@/store/slices/types'
 import { calculateFittingCardWidth, type ResponsiveSizes } from '@/hooks/useResponsive.ts'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
+import { totalCapSum, wouldExceedTotalCaps } from '@/utils/targeting.ts'
 
 /**
  * Card info for zone selection - works with both visible cards and hidden cards.
@@ -178,7 +179,7 @@ export function ZoneSelectionUI({
       }
       if ((maxSelections > 1 || distinctCategories) && !compatibleSelectionPool(cards.map((c) => c.id), selectionGroups, maxSelections > 1 ? prev : [], exclusiveGroups, distinctCategories).includes(cardId)) return prev
       const kept = prev.length >= maxSelections && maxSelections === 1 ? [] : prev
-      if (totalCaps.some((c) => kept.reduce((sum, id) => sum + (c.values[id] ?? 0), 0) + (c.values[cardId] ?? 0) > c.cap)) return prev
+      if (wouldExceedTotalCaps(totalCaps, kept, cardId)) return prev
       if (prev.length >= maxSelections) {
         // Single-select at its cap: clicking a different card replaces the pick rather than being
         // ignored — the same rule the board path uses (toggleDecisionSelection), and the only way a
@@ -313,7 +314,7 @@ export function ZoneSelectionUI({
           <span key={c.label}>
             Total {c.label}:{' '}
             <span style={{ fontWeight: 600 }}>
-              {selectedCards.reduce((sum, id) => sum + (c.values[id] ?? 0), 0)}
+              {totalCapSum(c, selectedCards)}
             </span>
             {' / '}
             {c.cap}

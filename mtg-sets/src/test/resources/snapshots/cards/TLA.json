@@ -20153,7 +20153,10 @@
                                         "baseFilter": "creature own:triggering-player",
                                         "zone": "Graveyard"
                                     },
-                                    "totalManaValueAtMost": "XValue"
+                                    "totalAtMost": {
+                                        "property": "MANA_VALUE",
+                                        "amount": "XValue"
+                                    }
                                 }
                             ],
                             "descriptionOverride": "put any number of target creature cards with total mana value X or less from that player's graveyard onto the battlefield under your control"

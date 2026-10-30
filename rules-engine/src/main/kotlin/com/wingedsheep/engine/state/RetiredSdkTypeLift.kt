@@ -143,11 +143,38 @@ internal object RetiredSdkTypeLift {
      * a stored grant. A true flag is a cap of one; a false one is the uncapped default.
      */
     private fun withoutRetiredFields(element: JsonObject, type: String?): JsonObject =
+        withTotalCap(element)
+            .let { withRetiredFieldsLifted(it, type) }
+
+    private fun withRetiredFieldsLifted(element: JsonObject, type: String?): JsonObject =
         withDynamicLandCount(withoutSkipUntapFlags(withoutLandEntersTapped(
             withoutCreaturesOnly(
                 withoutSingleEntryCounter(withoutCastTimeFlags(withoutColorlessAsAnyColor(withoutSingleUse(element, type))), type)
             )
         ), type), type)
+
+    /**
+     * The mana-value-only aggregate target cap became a cap over any numeric property: a card
+     * script's `TargetObject.totalManaValueAtMost` amount is now `totalAtMost = TotalCap(MANA_VALUE,
+     * amount)`, and a stored target pause's resolved `totalManaValueAtMost` integer is now
+     * `totalCap` labelled "mana value" (its per-candidate `targetValues` weren't stored, so that
+     * pause's picker no longer pre-checks the sum; `TargetValidator` still enforces it). A null
+     * field was the uncapped default.
+     */
+    private fun withTotalCap(element: JsonObject): JsonObject {
+        val old = element["totalManaValueAtMost"] ?: return element
+        val rest = element - "totalManaValueAtMost"
+        return when (old) {
+            is JsonObject -> JsonObject(rest + ("totalAtMost" to JsonObject(mapOf(
+                "property" to JsonPrimitive(CardNumericProperty.MANA_VALUE.name),
+                "amount" to old,
+            ))))
+            is JsonPrimitive -> if (old is JsonNull) JsonObject(rest) else JsonObject(
+                rest + ("totalCap" to old) + ("totalCapLabel" to JsonPrimitive(CardNumericProperty.MANA_VALUE.description))
+            )
+            else -> JsonObject(rest)
+        }
+    }
 
     /**
      * `PlayAdditionalLandsEffect.count` was a bare number; it is now a `DynamicAmount`, so a stored

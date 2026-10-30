@@ -56,8 +56,7 @@ object TrivialDecisions {
                     targets.size == 1 &&
                         req.minTargets == 1 &&
                         req.maxTargets == 1 &&
-                        req.totalManaValueAtMost == null &&
-                        req.totalPowerAtMost == null
+                        req.totalCap == null
                 }
             if (allForced) {
                 TargetsResponse(

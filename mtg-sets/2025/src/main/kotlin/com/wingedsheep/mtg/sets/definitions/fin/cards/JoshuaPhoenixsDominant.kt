@@ -17,6 +17,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.scripting.targets.TotalCap
 
 /**
  * Joshua, Phoenix's Dominant // Phoenix, Warden of Fire — Final Fantasy #229
@@ -44,7 +45,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * flips it back to the front face rather than sacrificing it. Flames of Rebirth
  * targets: the chapter ability chooses any number of creature cards in your graveyard as it
  * goes on the stack (CR 603.3d), their summed mana value capped at 6 by
- * [TargetObject.totalManaValueAtMost], and returns whichever are still there on resolution.
+ * [TargetObject.totalAtMost], and returns whichever are still there on resolution.
  * Rising Flames'
  * damage feeds the back face's lifelink automatically.
  */
@@ -79,7 +80,7 @@ private val PhoenixWardenOfFire = card("Phoenix, Warden of Fire") {
         targets(
             TargetFilter.CreatureInYourGraveyard,
             unlimited = true,
-            totalManaValueAtMost = DynamicAmounts.fixed(6),
+            totalAtMost = TotalCap.manaValue(DynamicAmounts.fixed(6)),
         )
         effect = Effects.Pipeline {
             val toBattlefield = gather(CardSource.ChosenTargets)

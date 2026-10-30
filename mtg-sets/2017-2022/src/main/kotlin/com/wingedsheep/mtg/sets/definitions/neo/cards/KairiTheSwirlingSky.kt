@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.scripting.targets.TotalCap
 
 /**
  * Kairi, the Swirling Sky — Kamigawa: Neon Dynasty #60 (canonical printing)
@@ -29,7 +30,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * • Mill six cards, then return up to two instant and/or sorcery cards from your graveyard to your hand.
  *
  * The cycle's modal dies trigger (Kura, Junji). Mode one is an `unlimited` [TargetObject] with the
- * aggregate [TargetObject.totalManaValueAtMost] cap, held to 6 when the mode's targets are chosen as
+ * aggregate [TargetObject.totalAtMost] cap, held to 6 when the mode's targets are chosen as
  * the trigger goes on the stack. Mode two mills, then picks from the graveyard at resolution — the
  * return doesn't target.
  */
@@ -55,7 +56,7 @@ val KairiTheSwirlingSky = card("Kairi, the Swirling Sky") {
                 TargetObject(
                     filter = TargetFilter.NonlandPermanent,
                     unlimited = true,
-                    totalManaValueAtMost = DynamicAmounts.fixed(6),
+                    totalAtMost = TotalCap.manaValue(DynamicAmounts.fixed(6)),
                 ),
                 "Return any number of target nonland permanents with total mana value 6 or less to their " +
                     "owners' hands.",

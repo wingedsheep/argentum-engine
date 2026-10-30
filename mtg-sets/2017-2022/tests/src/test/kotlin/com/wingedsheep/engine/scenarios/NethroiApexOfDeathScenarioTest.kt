@@ -16,7 +16,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  * Nethroi, Apex of Death (IKO #197) — "Whenever this creature mutates, return any number of target
  * creature cards with total power 10 or less from your graveyard to the battlefield."
  *
- * The cap is on the summed power of the chosen cards (`totalPowerAtMost`): checked when the targets
+ * The cap is on the summed power of the chosen cards (`TotalCap.power`): checked when the targets
  * are chosen, using each card's power as it is in the graveyard — a `*` power card's
  * characteristic-defining ability included — and re-checked on resolution, where a set that has
  * grown past 10 makes every target illegal (rulings).
@@ -65,9 +65,10 @@ class NethroiApexOfDeathScenarioTest : ScenarioTestBase() {
                 val targets = game.mutateOverBears()
                 withClue("the decision carries the cap and each candidate's power") {
                     val req = targets.targetRequirements.single()
-                    req.totalPowerAtMost shouldBe 10
-                    req.targetPowers?.get(wurm) shouldBe 6
-                    req.targetPowers?.get(thopters.first()) shouldBe 0
+                    req.totalCap shouldBe 10
+                    req.totalCapLabel shouldBe "power"
+                    req.targetValues?.get(wurm) shouldBe 6
+                    req.targetValues?.get(thopters.first()) shouldBe 0
                 }
                 withClue("Craw Wurm + Hill Giant + Grizzly Bears is total power 11") {
                     game.selectTargets(listOf(wurm, giant, graveBears)).error.shouldNotBeNull()
@@ -98,7 +99,7 @@ class NethroiApexOfDeathScenarioTest : ScenarioTestBase() {
 
                 val targets = game.mutateOverBears()
                 withClue("Lhurgoyf counts the three creature cards in graveyards, itself included") {
-                    targets.targetRequirements.single().targetPowers?.get(lhurgoyf) shouldBe 3
+                    targets.targetRequirements.single().targetValues?.get(lhurgoyf) shouldBe 3
                 }
                 withClue("Craw Wurm + Lhurgoyf + Hill Giant is 6 + 3 + 3 = 12") {
                     game.selectTargets(listOf(wurm, lhurgoyf, giant)).error.shouldNotBeNull()

@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.text.TextReplaceable
 import com.wingedsheep.sdk.scripting.text.TextReplacer
+import com.wingedsheep.sdk.scripting.values.CardNumericProperty
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.util.numberToWord
 import com.wingedsheep.sdk.scripting.util.pluralNounPhrase
@@ -37,6 +38,35 @@ import kotlinx.serialization.Serializable
  * relative to the controller). Only the announcement layer reads it, to route the selection
  * decision to the right player.
  */
+/**
+ * An aggregate cap on a multi-target choice: the chosen targets' summed [property] may not exceed
+ * [amount] — "… with total mana value 6 or less" (Kairi, the Swirling Sky), "… with total power 10
+ * or less" (Nethroi, Apex of Death). Each target counts its *current* value (power projected on the
+ * battlefield; off it, the card's own power with a `*` evaluated by its characteristic-defining
+ * ability, CR 604.3); an object without the property counts 0.
+ *
+ * [amount] is resolved as the targets are chosen (so `DynamicAmount.XValue` reads the X just paid)
+ * and enforced by `TargetValidator` (authoritative) and, on an interactive target pause, against
+ * the cap and per-candidate values baked into the decision. Because a value can change while the
+ * spell or ability waits, the cap restricts the *set*: when the still-legal targets of the
+ * requirement exceed it at resolution (CR 608.2b), every one of them is illegal (Nethroi's ruling).
+ * The cap-on-a-sum sibling of [TargetObject.sameNumericProperty] / [TargetObject.differentNumericProperty],
+ * over the same [CardNumericProperty] axis.
+ */
+@Serializable
+data class TotalCap(val property: CardNumericProperty, val amount: DynamicAmount) {
+    /** "total power 10 or less". */
+    val description: String get() = "total ${property.description} ${amount.description} or less"
+
+    companion object {
+        /** "… with total mana value [amount] or less". */
+        fun manaValue(amount: DynamicAmount) = TotalCap(CardNumericProperty.MANA_VALUE, amount)
+
+        /** "… with total power [amount] or less". */
+        fun power(amount: DynamicAmount) = TotalCap(CardNumericProperty.POWER, amount)
+    }
+}
+
 @Serializable
 enum class TargetChooser {
     Controller,
@@ -528,30 +558,13 @@ data class TargetObject(
      */
     val sameCardType: Boolean = false,
     /**
-     * When non-null, the chosen card targets for this requirement must have a **combined mana
-     * value no greater than this amount** — "any number of target creature cards with total mana
-     * value X or less" (Fire Lord Sozin). The [DynamicAmount] is resolved once the ability is
-     * being put on the stack (so `DynamicAmount.XValue` reads the X just paid) and enforced
-     * cross-target against the summed `manaValue` of the chosen cards by both `TargetValidator`
-     * (authoritative) and the interactive `DecisionValidators` (which sees the resolved integer
-     * cap baked into the decision). Pair with `unlimited = true` for the "any number … with total
-     * mana value N or less" shape. `null` (the default) imposes no aggregate cap. Distinct from
-     * `dynamicMaxCount`, which caps the *count* of targets, not their summed mana value.
+     * When non-null, the chosen targets for this requirement must have a **combined value of one
+     * numeric property no greater than an amount** — "any number of target creature cards with
+     * total mana value X or less" (Fire Lord Sozin), "… with total power 10 or less" (Nethroi, Apex
+     * of Death). See [TotalCap]. `null` (the default) imposes no aggregate cap. Distinct from
+     * `dynamicMaxCount`, which caps the *count* of targets, not their summed values.
      */
-    val totalManaValueAtMost: DynamicAmount? = null,
-    /**
-     * When non-null, the chosen card or permanent targets for this requirement must have a
-     * **combined power no greater than this amount** — "any number of target creature cards with
-     * total power 10 or less from your graveyard" (Nethroi, Apex of Death). The power sibling of
-     * [totalManaValueAtMost], resolved and enforced the same way: by `TargetValidator`
-     * (authoritative), the interactive `DecisionValidators` (cap baked into the decision), and the
-     * CR 608.2b re-check at resolution. Each target counts its *current* power — projected on the
-     * battlefield, the card's own power in other zones; a card with no defined power counts 0.
-     * Because power can change while the ability waits (a `*` power card in a graveyard), the cap
-     * restricts the *set*: when the still-legal targets exceed it at resolution, every target of
-     * the requirement is illegal (Nethroi's ruling). `null` (the default) imposes no cap.
-     */
-    val totalPowerAtMost: DynamicAmount? = null,
+    val totalAtMost: TotalCap? = null,
     /**
      * When true and more than one target is chosen for this requirement, every chosen target must
      * have a **different name** from the others — "up to six target creature cards with different
@@ -668,12 +681,7 @@ data class TargetObject(
         }
         val numericQualified = sameNumericProperty?.let { "$qualified with equal ${it.description}" }
             ?: differentNumericProperty?.let { "$qualified with different ${it.pluralDescription}" } ?: qualified
-        when {
-            totalManaValueAtMost != null ->
-                "$numericQualified with total mana value ${totalManaValueAtMost.description} or less"
-            totalPowerAtMost != null -> "$numericQualified with total power ${totalPowerAtMost.description} or less"
-            else -> numericQualified
-        }
+        totalAtMost?.let { "$numericQualified with ${it.description}" } ?: numericQualified
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): TargetRequirement {

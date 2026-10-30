@@ -9340,7 +9340,10 @@
                     "filter": {
                         "baseFilter": "artifact|enchantment"
                     },
-                    "totalManaValueAtMost": "CastX"
+                    "totalAtMost": {
+                        "property": "MANA_VALUE",
+                        "amount": "CastX"
+                    }
                 }
             }
         ],

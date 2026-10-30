@@ -10278,9 +10278,12 @@
                             "zone": "Graveyard"
                         },
                         "id": "t0",
-                        "totalManaValueAtMost": {
-                            "type": "Fixed",
-                            "amount": 6
+                        "totalAtMost": {
+                            "property": "MANA_VALUE",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 6
+                            }
                         }
                     }
                 }

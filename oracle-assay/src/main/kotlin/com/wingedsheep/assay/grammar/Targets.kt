@@ -356,7 +356,7 @@ object Targets {
      * creatures" is a `minCount` below its `count` and is a seventh row nobody has needed
      * (`Combat.returnOneOrTwoTargets` still spells it whole), and "target creature an opponent
      * controls" is a filter rather than a quantifier. Anything else a requirement can carry — a
-     * `sameController`, a `totalManaValueAtMost` — is a rider on the noun phrase and belongs to a
+     * `sameController`, a `totalAtMost` — is a rider on the noun phrase and belongs to a
      * layer above this list, exactly as [Filters]' controller clause does.
      */
     val quantifiers: List<Quantifier> = listOf(

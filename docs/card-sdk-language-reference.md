@@ -6346,7 +6346,7 @@ spell {
 - **Several object targets under one requirement** — "two target creatures", "up to X target
   creatures", "any number of target cards from a single graveyard" — are
   `targets(filter, count, minCount, optional, unlimited, dynamicMaxCount, exactly, sameController,
-  sameOwner, sameNumericProperty, differentNumericProperty, sameCreatureType, sameCardType, totalManaValueAtMost, totalPowerAtMost, differentNames, differentControllers,
+  sameOwner, sameNumericProperty, differentNumericProperty, sameCreatureType, sameCardType, totalAtMost, differentNames, differentControllers,
   onePerCardType, onePerColor, chooser)`, which returns one handle per slot:
   `val (first, second) = targets(TargetFilter.Creature, count = 2)`. An ability that treats the
   targets uniformly ignores the handles and reads them with `Effects.ForEachTarget(…)`.
@@ -6556,36 +6556,31 @@ Every `TargetRequirement` carries count semantics (defaults shown):
   both being legendary. A target off the battlefield contributes nothing and rejects the set. A no-op for
   single-target requirements and non-permanent targets. E.g. `TargetObject(filter = TargetFilter.NonlandPermanent, count = 2, sameCardType = true)` (Burglar's Plot, the Adventure half of
   Bilbo, Luckwearer).
-- `totalManaValueAtMost = null` — on `TargetObject`; when set to a `DynamicAmount`, the **combined
-  mana value** of the chosen card or permanent targets may not exceed the resolved amount ("**any
-  number of target creature cards with total mana value X or less**", Kairi, the Swirling Sky's
-  "any number of target nonland permanents with total mana value 6 or less"). The amount is resolved
-  once the ability is put on the stack — for a reflexive after a pay-`{X}` (`DynamicAmount.XValue`
-  reads the X just paid), and per mode when the requirement sits on a chosen `Mode` of a modal
-  triggered ability, whether its targets are picked as it goes on the stack or at resolution — and
-  enforced cross-target against the summed `manaValue` by both `TargetValidator`
-  (authoritative, resolving the `DynamicAmount` against `xValue`) and, on the interactive target
-  decision, `DecisionValidators` (which sees the cap already baked to a concrete int in
-  `TargetRequirementInfo`). Pair with `unlimited = true` for the "any number … with total mana value
-  N or less" shape. Distinct from `dynamicMaxCount`, which caps the target *count*, not their summed
-  mana value. The web-client's graveyard target picker enforces the same cap eagerly (blocks a pick
-  that would exceed it). E.g. `TargetObject(unlimited = true, filter =
-  TargetFilter(GameObjectFilter.Creature.ownedByTriggeringPlayer(), zone = Zone.GRAVEYARD),
-  totalManaValueAtMost = DynamicAmount.XValue)` — **Fire Lord Sozin** (back face of The Rise of Sozin),
-  reanimating post-payment via a `Effects.MayPayX(ReflexiveTriggerEffect(...))`.
-- `totalPowerAtMost = null` — on `TargetObject`; the **power** sibling of `totalManaValueAtMost`:
-  the combined power of the chosen card or permanent targets may not exceed the resolved amount
-  ("**any number of target creature cards with total power 10 or less from your graveyard**" —
-  Nethroi, Apex of Death). Each target counts its current power: projected on the battlefield; in any
-  other zone the card's own power, with a `*` evaluated by its characteristic-defining ability
-  (CR 604.3 — a Lhurgoyf in the graveyard counts the creature cards in graveyards); 0 for an object
-  with no power. The interactive target decision carries the resolved cap
-  (`TargetRequirementInfo.totalPowerAtMost`) **and** each candidate's power (`targetPowers`), so
-  `DecisionValidators`, the AI and the web-client's graveyard / battlefield pickers all sum the
-  server's numbers; `TargetValidator` is authoritative. Because power can change while the ability
-  waits, the cap is re-checked as a restriction on the *set* at resolution (CR 608.2b): when the
-  still-legal targets now exceed it, every one of them is illegal. Pair with `unlimited = true`. E.g.
-  `targets(TargetFilter.CreatureInYourGraveyard, unlimited = true, totalPowerAtMost = DynamicAmounts.fixed(10))`.
+- `totalAtMost = null` — on `TargetObject`; a `TotalCap(property: CardNumericProperty, amount:
+  DynamicAmount)` caps the **summed value of one numeric property** over the chosen card or permanent
+  targets: `TotalCap.manaValue(amount)` — "**any number of target creature cards with total mana
+  value X or less**" (Fire Lord Sozin; Kairi, the Swirling Sky's "any number of target nonland
+  permanents with total mana value 6 or less") — and `TotalCap.power(amount)` — "**any number of
+  target creature cards with total power 10 or less from your graveyard**" (Nethroi, Apex of Death).
+  The cap-on-a-sum sibling of `sameNumericProperty` / `differentNumericProperty`, over the same
+  `CardNumericProperty` axis, so a "total toughness" card is data. Each target counts its *current*
+  value (`NumericTargetEquality.value`): power projected on the battlefield; off it, the card's own
+  power with a `*` evaluated by its characteristic-defining ability (CR 604.3 — a Lhurgoyf in the
+  graveyard counts the creature cards in graveyards); 0 for an object without the property. The
+  amount is resolved once the targets are chosen — for a reflexive after a pay-`{X}`
+  (`DynamicAmount.XValue` reads the X just paid), and per mode on a modal triggered ability — and
+  floored at 0. `TargetValidator` is authoritative; an interactive target pause carries the resolved
+  cap, its property's label and each candidate's value (`TargetRequirementInfo.totalCap` /
+  `totalCapLabel` / `targetValues`), so `DecisionValidators`, the AI and every web-client picker
+  (board, single pile, multi-pile) sum the server's numbers. Because a value can change while the
+  spell or ability waits, the cap is re-checked as a restriction on the *set* at resolution
+  (CR 608.2b): when a requirement's still-legal targets now exceed it, every one of them is illegal.
+  Pair with `unlimited = true` for the "any number … with total … N or less" shape. Distinct from
+  `dynamicMaxCount`, which caps the target *count*. E.g. `targets(TargetFilter.CreatureInYourGraveyard,
+  unlimited = true, totalAtMost = TotalCap.power(DynamicAmounts.fixed(10)))` (Nethroi); `TargetObject(
+  unlimited = true, filter = TargetFilter(GameObjectFilter.Creature.ownedByTriggeringPlayer(), zone =
+  Zone.GRAVEYARD), totalAtMost = TotalCap.manaValue(DynamicAmount.XValue))` — **Fire Lord Sozin**
+  (back face of The Rise of Sozin), reanimating post-payment via `Effects.MayPayX(ReflexiveTriggerEffect(...))`.
 - `differentNames = false` — on `TargetObject`; when `true` and more than one target is chosen, no two
   chosen targets may share a **name** ("**up to six target creature cards with different names**" —
   Behold the Sinister Six!). Enforced cross-target by `TargetValidator` (authoritative) and, on the
@@ -6877,7 +6872,7 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   Sozin's "put any number of target creature cards … from that player's graveyard" reads "that player"
   as whoever Sozin just damaged. Works at target-validation/finding time in a graveyard zone:
   `TargetObject(unlimited = true, filter = TargetFilter(GameObjectFilter.Creature.ownedByTriggeringPlayer(),
-  zone = Zone.GRAVEYARD), totalManaValueAtMost = DynamicAmount.XValue)`.
+  zone = Zone.GRAVEYARD), totalAtMost = TotalCap.manaValue(DynamicAmount.XValue))`.
 - `.controlledByTriggeringPlayer()` (`ControllerPredicate.ControlledByTriggeringPlayer`, FQL
   `ctrl:triggering-player`) — the **control** sibling of `.ownedByTriggeringPlayer()`: controlled by the
   trigger's associated player (the damaged player for a combat/damage trigger). Reads *projected*

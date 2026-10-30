@@ -126,20 +126,14 @@ internal class ResolutionTargetValidator(
         }.toSet()
         val sharingController = targetsSharingAController(projected, state, targets, individuallyLegal, targetRequirements)
         val sharingValue = targetsSharingADifferentValue(state, targets, individuallyLegal, targetRequirements) +
-            targetsOverTotalPower(state, targets, individuallyLegal, targetRequirements, predicateContext)
+            targetsOverTotalCap(state, targets, individuallyLegal, targetRequirements, predicateContext)
         if (targetRequirements.none { (it as? TargetObject)?.sameNumericProperty != null }) {
             return targets.filterIndexed { index, _ ->
                 index in individuallyLegal && index !in sharingController && index !in sharingValue
             }
         }
         val unequal = (individuallyLegal - sharingController).groupBy { index ->
-            var offset = 0
-            targetRequirements.indices.firstOrNull { group ->
-                val end = offset + targetRequirements[group].count
-                val contains = index in offset until end
-                offset = end
-                contains
-            }
+            requirementIndexOf(index, targetRequirements)
         }.flatMap { (group, indices) ->
                 val property = (group?.let { targetRequirements[it] } as? TargetObject)?.sameNumericProperty
                 if (property != null && !com.wingedsheep.engine.mechanics.targeting.NumericTargetEquality.isSatisfied(
@@ -153,27 +147,43 @@ internal class ResolutionTargetValidator(
 
     /**
      * "… with total power N or less" (Nethroi, Apex of Death) restricts the *set* of targets: when the
-     * still-legal targets of a `totalPowerAtMost` requirement now exceed the cap (a `*` power card
-     * grew in the graveyard), every one of them is illegal and nothing is returned (the card's ruling).
+     * still-legal targets of a `totalAtMost` requirement now exceed its cap (a `*` power card grew in
+     * the graveyard), every one of them is illegal and nothing is returned (the card's ruling).
+     * Grouped per requirement, so two requirements with equal caps are summed apart.
      */
-    private fun targetsOverTotalPower(
+    private fun targetsOverTotalCap(
         state: GameState,
         targets: List<ChosenTarget>,
         legalIndices: Set<Int>,
         targetRequirements: List<TargetRequirement>,
         predicateContext: PredicateContext,
-    ): Set<Int> = legalIndices
-        .groupBy { index -> (getRequirementForTargetIndex(index, targetRequirements) as? TargetObject)?.totalPowerAtMost }
-        .flatMap { (cap, indices) ->
-            if (cap == null) return@flatMap emptyList()
-            val max = try {
-                predicateEvaluator.amounts.evaluate(state, cap, predicateContext.toEffectContext())
-            } catch (_: Exception) {
-                return@flatMap emptyList()
-            }
-            val total = indices.sumOf { com.wingedsheep.engine.mechanics.targeting.powerTowardTotal(state, targets[it].toEntityId(), predicateEvaluator.amounts) }
-            if (total > max) indices else emptyList()
-        }.toSet()
+    ): Set<Int> {
+        if (targetRequirements.none { (it as? TargetObject)?.totalAtMost != null }) return emptySet()
+        val context = predicateContext.toEffectContext()
+        return legalIndices
+            .groupBy { index -> requirementIndexOf(index, targetRequirements) }
+            .flatMap { (group, indices) ->
+                val cap = (group?.let { targetRequirements[it] } as? TargetObject)?.totalAtMost ?: return@flatMap emptyList()
+                val max = com.wingedsheep.engine.mechanics.targeting.TotalCaps.resolve(
+                    state, cap, predicateEvaluator.amounts, context
+                ) ?: return@flatMap emptyList()
+                val total = indices.sumOf {
+                    com.wingedsheep.engine.mechanics.targeting.TotalCaps.valueOf(state, targets[it].toEntityId(), cap.property)
+                }
+                if (total > max) indices else emptyList()
+            }.toSet()
+    }
+
+    /** Which requirement the flat target [index] belongs to (each requirement owns `count` slots). */
+    private fun requirementIndexOf(index: Int, targetRequirements: List<TargetRequirement>): Int? {
+        var offset = 0
+        return targetRequirements.indices.firstOrNull { group ->
+            val end = offset + targetRequirements[group].count
+            val contains = index in offset until end
+            offset = end
+            contains
+        }
+    }
 
     /**
      * "… with different mana values" (Long Rest) restricts the *set* of targets, so it is re-checked

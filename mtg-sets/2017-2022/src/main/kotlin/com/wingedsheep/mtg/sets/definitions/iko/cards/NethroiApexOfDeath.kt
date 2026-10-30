@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.targets.TotalCap
 
 /**
  * Nethroi, Apex of Death
@@ -22,7 +23,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * Whenever this creature mutates, return any number of target creature cards with total power 10
  * or less from your graveyard to the battlefield.
  *
- * "Total power 10 or less" is the targeting cap `totalPowerAtMost`: the chosen cards' powers as they
+ * "Total power 10 or less" is the targeting cap `TotalCap.power`: the chosen cards' powers as they
  * are in the graveyard are summed when targets are chosen and again on resolution, where an
  * over-cap set makes every target illegal (rulings).
  */
@@ -44,7 +45,7 @@ val NethroiApexOfDeath = card("Nethroi, Apex of Death") {
         targets(
             TargetFilter.CreatureInYourGraveyard,
             unlimited = true,
-            totalPowerAtMost = DynamicAmounts.fixed(10),
+            totalAtMost = TotalCap.power(DynamicAmounts.fixed(10)),
         )
         effect = Effects.Pipeline {
             val chosen = gather(CardSource.ChosenTargets)

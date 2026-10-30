@@ -16,6 +16,7 @@ import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.targets.TotalCap
 
 /**
  * Tocasia, Dig Site Mentor
@@ -67,7 +68,7 @@ val TocasiaDigSiteMentor = card("Tocasia, Dig Site Mentor") {
         targets(
             TargetFilter.ArtifactInYourGraveyard,
             unlimited = true,
-            totalManaValueAtMost = DynamicAmounts.fixed(10),
+            totalAtMost = TotalCap.manaValue(DynamicAmounts.fixed(10)),
         )
         effect = Effects.Pipeline {
             val artifacts = gather(CardSource.ChosenTargets)

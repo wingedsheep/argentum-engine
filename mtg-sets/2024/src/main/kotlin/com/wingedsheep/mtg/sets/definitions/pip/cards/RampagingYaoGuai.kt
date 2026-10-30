@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.scripting.EntersWithDynamicCounters
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.scripting.targets.TotalCap
 
 /**
  * Rampaging Yao Guai — Fallout #82.
@@ -20,7 +21,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * (CR 107.3m reads X from the cast; otherwise it is 0).
  *
  * "Any number of target artifacts and/or enchantments with total mana value X or less" is an
- * `unlimited` [TargetObject] with the aggregate [TargetObject.totalManaValueAtMost] cap. The cap is
+ * `unlimited` [TargetObject] with the aggregate [TargetObject.totalAtMost] cap. The cap is
  * baked to a concrete integer when the trigger's targets are chosen (CR 603.3d) and the summed mana
  * value of the chosen permanents is enforced by `DecisionValidators`. A permanent with {X} in its
  * cost counts X as 0, and a plain token has mana value 0 (rulings) — both are what the card's
@@ -46,7 +47,7 @@ val RampagingYaoGuai = card("Rampaging Yao Guai") {
         target = TargetObject(
             filter = TargetFilter.ArtifactOrEnchantment,
             unlimited = true,
-            totalManaValueAtMost = DynamicAmounts.castX(),
+            totalAtMost = TotalCap.manaValue(DynamicAmounts.castX()),
         )
         effect = Effects.ForEachTarget(Effects.Destroy(EffectTarget.ContextTarget(0)))
     }

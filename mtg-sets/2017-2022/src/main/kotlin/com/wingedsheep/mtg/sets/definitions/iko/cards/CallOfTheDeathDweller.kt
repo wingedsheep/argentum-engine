@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.targets.TotalCap
 
 /**
  * Call of the Death-Dweller
@@ -36,7 +37,7 @@ val CallOfTheDeathDweller = card("Call of the Death-Dweller") {
             TargetFilter.CreatureInYourGraveyard,
             count = 2,
             optional = true,
-            totalManaValueAtMost = DynamicAmounts.fixed(3),
+            totalAtMost = TotalCap.manaValue(DynamicAmounts.fixed(3)),
         )
         effect = Effects.Pipeline {
             val chosen = gather(CardSource.ChosenTargets)

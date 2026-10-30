@@ -47,55 +47,47 @@ private fun com.wingedsheep.engine.core.TargetRequirementInfo.withDistinctCatego
 }
 
 /**
- * A requirement's aggregate cap — [com.wingedsheep.sdk.scripting.targets.TargetObject.totalManaValueAtMost]
- * ("... with total mana value 6 or less", the default [cap]) or
- * [com.wingedsheep.sdk.scripting.targets.TargetObject.totalPowerAtMost] ("... with total power 10
- * or less") — baked to a concrete integer for a targeting pause, so the decision validator can hold
- * the selection to it. `null` when the requirement has no such cap or the amount can't be read in
- * [context].
+ * Bake a requirement's [com.wingedsheep.sdk.scripting.targets.TargetObject.totalAtMost] cap into a
+ * targeting pause: the cap resolved to an integer in [context], its property's label, and each
+ * candidate's value ([TotalCaps.valueOf]) — so the decision validator, the AI and the client all sum
+ * the numbers the server does, a `*` power card's characteristic-defining ability included. A no-op
+ * when the requirement has no such cap or its amount can't be read in [context].
  */
-fun resolveTotalManaValueCap(
-    state: GameState,
-    requirement: com.wingedsheep.sdk.scripting.targets.TargetRequirement,
-    evaluator: com.wingedsheep.engine.handlers.DynamicAmountEvaluator,
-    cap: (com.wingedsheep.sdk.scripting.targets.TargetObject) -> com.wingedsheep.sdk.scripting.values.DynamicAmount? =
-        { it.totalManaValueAtMost },
-    context: () -> com.wingedsheep.engine.handlers.EffectContext,
-): Int? {
-    val amount = (requirement as? com.wingedsheep.sdk.scripting.targets.TargetObject)?.let(cap) ?: return null
-    return try {
-        evaluator.evaluate(state, amount, context()).coerceAtLeast(0)
-    } catch (_: Exception) {
-        null
-    }
-}
-
-/**
- * Bake a requirement's [com.wingedsheep.sdk.scripting.targets.TargetObject.totalPowerAtMost] cap
- * into a targeting pause: the resolved cap plus each candidate's power ([powerTowardTotal]), so the
- * decision validator, the AI and the client all sum the same numbers the server does — a `*` power
- * card's characteristic-defining ability included. A no-op when the requirement has no such cap.
- */
-fun com.wingedsheep.engine.core.TargetRequirementInfo.withTotalPowerCap(
+fun com.wingedsheep.engine.core.TargetRequirementInfo.withTotalCap(
     state: GameState,
     requirement: com.wingedsheep.sdk.scripting.targets.TargetRequirement,
     candidates: List<EntityId>,
     evaluator: com.wingedsheep.engine.handlers.DynamicAmountEvaluator,
     context: () -> com.wingedsheep.engine.handlers.EffectContext,
 ): com.wingedsheep.engine.core.TargetRequirementInfo {
-    val cap = resolveTotalManaValueCap(state, requirement, evaluator, { it.totalPowerAtMost }, context) ?: return this
-    return copy(totalPowerAtMost = cap, targetPowers = candidates.associateWith { powerTowardTotal(state, it, evaluator) })
+    val totalCap = (requirement as? com.wingedsheep.sdk.scripting.targets.TargetObject)?.totalAtMost ?: return this
+    val cap = TotalCaps.resolve(state, totalCap, evaluator, context()) ?: return this
+    return copy(
+        totalCap = cap,
+        totalCapLabel = totalCap.property.description,
+        targetValues = candidates.associateWith { TotalCaps.valueOf(state, it, totalCap.property) },
+    )
 }
 
-/**
- * The power a target counts toward a "total power N or less" cap: projected power on the
- * battlefield; in any other zone the card's own power, a `*` evaluated by its characteristic-defining
- * ability (CR 604.3); 0 for an object with no power.
- */
-fun powerTowardTotal(
-    state: GameState,
-    entityId: EntityId,
-    evaluator: com.wingedsheep.engine.handlers.DynamicAmountEvaluator,
-): Int = state.projectedState.getPower(entityId)
-    ?: evaluator.offBattlefieldStat(state, entityId, isPower = true)
-    ?: 0
+/** The one reading of a [com.wingedsheep.sdk.scripting.targets.TotalCap] — its cap and each target's share. */
+object TotalCaps {
+    /** The cap's amount resolved in [context], floored at 0; `null` when it can't be read there. */
+    fun resolve(
+        state: GameState,
+        cap: com.wingedsheep.sdk.scripting.targets.TotalCap,
+        evaluator: com.wingedsheep.engine.handlers.DynamicAmountEvaluator,
+        context: com.wingedsheep.engine.handlers.EffectContext,
+    ): Int? = try {
+        evaluator.evaluate(state, cap.amount, context).coerceAtLeast(0)
+    } catch (_: Exception) {
+        null
+    }
+
+    /**
+     * What one target adds to the sum: its current [property] value ([NumericTargetEquality.value] —
+     * projected on the battlefield; off it a `*` stat is its characteristic-defining ability,
+     * CR 604.3), 0 for an object without one (a player, a noncreature's power).
+     */
+    fun valueOf(state: GameState, id: EntityId, property: com.wingedsheep.sdk.scripting.values.CardNumericProperty): Int =
+        NumericTargetEquality.value(state, id, property) ?: 0
+}

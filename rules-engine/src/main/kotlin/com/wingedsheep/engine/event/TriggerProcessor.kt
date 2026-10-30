@@ -2,7 +2,7 @@ package com.wingedsheep.engine.event
 
 import com.wingedsheep.sdk.scripting.AbilityTriggerCause
 import com.wingedsheep.engine.mechanics.targeting.withTargetConstraints
-import com.wingedsheep.engine.mechanics.targeting.withTotalPowerCap
+import com.wingedsheep.engine.mechanics.targeting.withTotalCap
 import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.handlers.DependentTargetSelection
 import com.wingedsheep.engine.core.*
@@ -502,12 +502,11 @@ class TriggerProcessor(
                     com.wingedsheep.engine.mechanics.targeting.NumericTargetEquality.groups(state, allLegalTargets[index].orEmpty(), it)
                 },
                 sameOwner = (req as? com.wingedsheep.sdk.scripting.targets.TargetObject)?.sameOwner == true,
-                totalManaValueAtMost = resolveTotalManaValueAtMost(state, trigger, req),
                 differentNames = (req as? com.wingedsheep.sdk.scripting.targets.TargetObject)?.differentNames == true,
                 differentControllers =
                     (req as? com.wingedsheep.sdk.scripting.targets.TargetObject)?.differentControllers == true
             ).withTargetConstraints(state, req, allLegalTargets[index].orEmpty())
-                .withTotalPowerCap(state, req, allLegalTargets[index].orEmpty(), amountEvaluator) {
+                .withTotalCap(state, req, allLegalTargets[index].orEmpty(), amountEvaluator) {
                     triggerTargetContext(trigger)
                 }
         }
@@ -896,10 +895,9 @@ class TriggerProcessor(
                         req.unlimited && req.dynamicMaxCount != null -> minOf(req.count, legalTargetsMap[index].orEmpty().size)
                         req.unlimited -> legalTargetsMap[index].orEmpty().size
                         else -> req.count
-                    },
-                    totalManaValueAtMost = resolveModeTotalManaValueAtMost(state, ability, req)
+                    }
                 ).withTargetConstraints(state, req, legalTargetsMap[index].orEmpty())
-                    .withTotalPowerCap(state, req, legalTargetsMap[index].orEmpty(), amountEvaluator) {
+                    .withTotalCap(state, req, legalTargetsMap[index].orEmpty(), amountEvaluator) {
                         modeEffectContext(ability)
                     }
             }
@@ -1031,15 +1029,6 @@ class TriggerProcessor(
             targetRequirements = flatRequirements,
             triggerCause = triggerCause
         )
-    }
-
-    /** [resolveTotalManaValueAtMost] for a mode's requirement, read against the ability going on the stack. */
-    private fun resolveModeTotalManaValueAtMost(
-        state: GameState,
-        ability: TriggeredAbilityOnStackComponent,
-        requirement: TargetRequirement
-    ): Int? = com.wingedsheep.engine.mechanics.targeting.resolveTotalManaValueCap(state, requirement, amountEvaluator) {
-        modeEffectContext(ability)
     }
 
     /** The context a mode's target-time amounts read: the ability going on the stack. */
@@ -1463,20 +1452,6 @@ class TriggerProcessor(
         return DynamicTargetCount.bounds(requirement, trigger.triggerContext.xValue) { amount ->
             amountEvaluator.evaluate(state, amount, context)
         }
-    }
-
-    /**
-     * Resolve a [TargetObject.totalManaValueAtMost] aggregate cap ("...with total mana value X or
-     * less") to a concrete integer at decision-build time — e.g. Fire Lord Sozin's cap reflecting
-     * the X just paid, or a reflexive trigger's action-half payment (CR 603.12) via
-     * [PendingTrigger.carriedPipeline]. `null` when the requirement carries no such cap.
-     */
-    private fun resolveTotalManaValueAtMost(
-        state: GameState,
-        trigger: PendingTrigger,
-        requirement: TargetRequirement
-    ): Int? = com.wingedsheep.engine.mechanics.targeting.resolveTotalManaValueCap(state, requirement, amountEvaluator) {
-        triggerTargetContext(trigger)
     }
 
     /** The context a trigger's target-time amounts read (caps resolved as its targets are chosen). */

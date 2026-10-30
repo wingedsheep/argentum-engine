@@ -1,4 +1,5 @@
-import type { ChooseTargetsDecision, ClientCard, ClientGameState, EntityId } from '@/types'
+import type { ChooseTargetsDecision, ClientCard, ClientGameState, EntityId, TargetRequirementInfo } from '@/types'
+import type { SelectionTotalCap } from '@/store/slices/types'
 import { ZoneType } from '@/types'
 
 /**
@@ -199,4 +200,27 @@ export function derivePileAction(effectHint: string | null | undefined): PileAct
     return { confirmText: 'Return to Hand', verb: 'return to your hand' }
   }
   return { confirmText: 'Confirm Target', verb: 'target' }
+}
+
+/**
+ * A requirement's "… with total power / mana value N or less" cap as the pickers hold it: empty when
+ * it has none. Cap and per-candidate values are the server's, so the client sums nothing it computed.
+ */
+export function totalCapsFor(req: TargetRequirementInfo | undefined): SelectionTotalCap[] {
+  if (req?.totalCap == null) return []
+  return [{ label: req.totalCapLabel ?? 'value', cap: req.totalCap, values: req.targetValues ?? {} }]
+}
+
+/** Would adding [candidate] to [kept] push any cap's running sum over it? */
+export function wouldExceedTotalCaps(
+  caps: readonly SelectionTotalCap[],
+  kept: readonly EntityId[],
+  candidate: EntityId,
+): SelectionTotalCap | undefined {
+  return caps.find((c) => kept.reduce((sum, id) => sum + (c.values[id] ?? 0), 0) + (c.values[candidate] ?? 0) > c.cap)
+}
+
+/** The running sum of [cap] over [selected]. */
+export function totalCapSum(cap: SelectionTotalCap, selected: readonly EntityId[]): number {
+  return selected.reduce((sum, id) => sum + (cap.values[id] ?? 0), 0)
 }

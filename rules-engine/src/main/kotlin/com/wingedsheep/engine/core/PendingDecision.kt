@@ -179,25 +179,17 @@ data class TargetRequirementInfo(
      */
     val distinctCategories: Map<EntityId, List<String>>? = null,
     /**
-     * When non-null, the combined mana value of the chosen card targets for this requirement may
-     * not exceed this cap — "any number of target creature cards with total mana value X or less"
-     * (Fire Lord Sozin). Already resolved to a concrete integer at decision-build time (so a
-     * `DynamicAmount.XValue` cap reflects the X just paid); the interactive
-     * [DecisionValidators.validateTargets] rejects a selection whose summed `manaValue` exceeds it.
-     * `null` imposes no aggregate cap.
+     * When non-null, the summed value of the chosen targets may not exceed this cap — the
+     * requirement's `TotalCap` ("any number of target creature cards with total power 10 or less",
+     * Nethroi, Apex of Death) already resolved to an integer at decision-build time (so an
+     * `XValue` cap reflects the X just paid). [totalCapLabel] names the summed property and
+     * [targetValues] holds each candidate's share; all three are set together. `null` imposes no cap.
      */
-    val totalManaValueAtMost: Int? = null,
-    /**
-     * The power sibling of [totalManaValueAtMost]: when non-null, the combined power of the chosen
-     * targets may not exceed this resolved cap — "any number of target creature cards with total
-     * power 10 or less" (Nethroi, Apex of Death). `null` imposes no cap.
-     */
-    val totalPowerAtMost: Int? = null,
-    /**
-     * Each candidate's power toward [totalPowerAtMost], computed server-side (`powerTowardTotal`)
-     * when the pause is built; set exactly when [totalPowerAtMost] is.
-     */
-    val targetPowers: Map<EntityId, Int>? = null,
+    val totalCap: Int? = null,
+    /** The summed property's name for the running tally ("mana value", "power"); set with [totalCap]. */
+    val totalCapLabel: String? = null,
+    /** Each candidate's value toward [totalCap], computed server-side; set with [totalCap]. */
+    val targetValues: Map<EntityId, Int>? = null,
     /**
      * When true, no two chosen targets for this requirement may share a name — "target creature
      * cards with different names" (Behold the Sinister Six!). Enforced against each selected

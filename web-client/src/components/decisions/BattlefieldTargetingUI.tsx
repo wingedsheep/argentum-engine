@@ -4,6 +4,7 @@ import type { DecisionSelectionState } from '@/store/slices'
 import type { EntityId, ChooseTargetsDecision } from '@/types'
 import { useResponsive } from '@/hooks/useResponsive.ts'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
+import { totalCapSum, totalCapsFor, wouldExceedTotalCaps } from '@/utils/targeting.ts'
 import { DecisionCardPreview } from './DecisionComponents'
 import { DraggableBanner } from './DraggableBanner'
 import styles from './DecisionUI.module.css'
@@ -67,13 +68,10 @@ export function BattlefieldTargetingUI({
   const minTargets = targetReq?.minTargets ?? 1
 
   // "... with total mana value / power N or less" (Kairi, the Swirling Sky; Nethroi, Apex of
-  // Death): a permanent whose own value is over a cap can never be picked, and each click is held
+  // Death): a permanent whose own value is over the cap can never be picked, and each click is held
   // to the running total.
-  const totalCaps = [
-    { label: 'mana value', cap: targetReq?.totalManaValueAtMost ?? null, valueOf: (id: EntityId) => gameState?.cards[id]?.manaValue ?? 0 },
-    { label: 'power', cap: targetReq?.totalPowerAtMost ?? null, valueOf: (id: EntityId) => targetReq?.targetPowers?.[id] ?? 0 },
-  ].flatMap(({ cap, ...rest }) => (cap == null ? [] : [{ ...rest, cap }]))
-  const selectableTargets = legalTargets.filter((id) => totalCaps.every((c) => c.valueOf(id) <= c.cap))
+  const totalCaps = totalCapsFor(targetReq)
+  const selectableTargets = legalTargets.filter((id) => !wouldExceedTotalCaps(totalCaps, [], id))
   const maxTargets = totalCaps.length === 0
     ? targetReq?.maxTargets ?? 1
     : Math.min(targetReq?.maxTargets ?? 1, selectableTargets.length)
@@ -95,11 +93,7 @@ export function BattlefieldTargetingUI({
       minSelections: minTargets,
       maxSelections: maxTargets,
       prompt: targetReq?.description ?? decision.prompt,
-      totalCaps: totalCaps.map((c) => ({
-        label: c.label,
-        cap: c.cap,
-        values: Object.fromEntries(selectableTargets.map((id) => [id, c.valueOf(id)])),
-      })),
+      totalCaps,
     }
     startDecisionSelection(selectionState)
 
@@ -179,7 +173,7 @@ export function BattlefieldTargetingUI({
       </div>
       {totalCaps.map((c) => (
         <div key={c.label} className={styles.hint}>
-          {`Total ${c.label}: ${(decisionSelectionState?.selectedOptions ?? []).reduce((sum, id) => sum + c.valueOf(id), 0)} / ${c.cap}`}
+          {`Total ${c.label}: ${totalCapSum(c, decisionSelectionState?.selectedOptions ?? [])} / ${c.cap}`}
         </div>
       ))}
       {decisionSelectionState?.warning && (

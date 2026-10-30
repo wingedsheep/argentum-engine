@@ -6,7 +6,8 @@ import type { EntityId, ChooseTargetsDecision, ClientCard } from '@/types'
 import { calculateFittingCardWidth, type ResponsiveSizes } from '@/hooks/useResponsive.ts'
 import { ZoneSelectionUI, type ZoneCardInfo } from './ZoneSelectionUI'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
-import { derivePileAction } from '@/utils/targeting.ts'
+import { derivePileAction, totalCapSum, totalCapsFor, wouldExceedTotalCaps } from '@/utils/targeting.ts'
+import type { SelectionTotalCap } from '@/store/slices/types'
 import styles from './DecisionUI.module.css'
 
 /**
@@ -196,15 +197,7 @@ export function GraveyardTargetingUI({
         selectionGroups={targetReq?.selectionGroups ?? null}
         exclusiveGroups={targetReq?.exclusiveGroups ?? null}
         distinctCategories={targetReq?.distinctCategories ?? null}
-        totalCaps={[
-          ...(targetReq?.totalManaValueAtMost != null
-            ? [{ label: 'mana value', cap: targetReq.totalManaValueAtMost,
-                values: Object.fromEntries(cards.map((c) => [c.id, c.manaValue ?? 0])) }]
-            : []),
-          ...(targetReq?.totalPowerAtMost != null
-            ? [{ label: 'power', cap: targetReq.totalPowerAtMost, values: targetReq.targetPowers ?? {} }]
-            : []),
-        ]}
+        totalCaps={totalCapsFor(targetReq)}
         responsive={responsive}
         onConfirm={handleConfirm}
         confirmText={isOptionalTarget ? optionalConfirmText : 'Confirm Target'}
@@ -294,9 +287,7 @@ export function GraveyardTargetingUI({
         onSelectedCardsChange={setSelectedCards}
         minSelections={minTargets}
         maxSelections={maxTargets}
-        totalManaValueAtMost={targetReq?.totalManaValueAtMost ?? null}
-        totalPowerAtMost={targetReq?.totalPowerAtMost ?? null}
-        targetPowers={targetReq?.targetPowers ?? null}
+        totalCaps={totalCapsFor(targetReq)}
         selectionGroups={targetReq?.selectionGroups ?? null}
         exclusiveGroups={targetReq?.exclusiveGroups ?? null}
         distinctCategories={targetReq?.distinctCategories ?? null}
@@ -326,9 +317,7 @@ function GraveyardCardSelection({
   onSelectedCardsChange,
   minSelections,
   maxSelections,
-  totalManaValueAtMost,
-  totalPowerAtMost,
-  targetPowers,
+  totalCaps,
   responsive,
   onConfirm,
   onMinimize,
@@ -343,10 +332,8 @@ function GraveyardCardSelection({
   onSelectedCardsChange: (cards: EntityId[]) => void
   minSelections: number
   maxSelections: number
-  totalManaValueAtMost?: number | null
-  totalPowerAtMost?: number | null
-  /** Server-computed power of each candidate toward [totalPowerAtMost]. */
-  targetPowers?: Readonly<Record<EntityId, number>> | null
+  /** "… with total power / mana value N or less" — see [totalCapsFor]. */
+  totalCaps: readonly SelectionTotalCap[]
   selectionGroups?: readonly (readonly EntityId[])[] | null
   exclusiveGroups?: readonly (readonly EntityId[])[] | null
   /** Each candidate's claimable categories; picks must each claim a different one ("of each color"). */
@@ -397,17 +384,8 @@ function GraveyardCardSelection({
     60
   )
 
-  // Running "total mana value ≤ cap" limit (Fire Lord Sozin). Selecting a card that would push the
-  // summed mana value over the cap is blocked, mirroring the server-side aggregate target rule.
-  const manaValueOf = (id: EntityId) => cards.find((c) => c.id === id)?.manaValue ?? 0
-  const selectedManaValue = selectedCards.reduce((sum, id) => sum + manaValueOf(id), 0)
-  // The same running limit for "total power ≤ cap" (Nethroi, Apex of Death).
-  const powerOf = (id: EntityId) => targetPowers?.[id] ?? 0
-  const selectedPower = selectedCards.reduce((sum, id) => sum + powerOf(id), 0)
-  const overCaps = (manaValue: number, power: number) =>
-    (totalManaValueAtMost != null && manaValue > totalManaValueAtMost) ||
-    (totalPowerAtMost != null && power > totalPowerAtMost)
-
+  // Running "total mana value / power ≤ cap" limit (Fire Lord Sozin, Nethroi). Selecting a card
+  // that would push the sum over the cap is blocked, mirroring the server-side aggregate target rule.
   const toggleCard = (cardId: EntityId) => {
     if (selectedCards.includes(cardId)) {
       onSelectedCardsChange(selectedCards.filter((id) => id !== cardId))
@@ -420,12 +398,12 @@ function GraveyardCardSelection({
       // `battlefield ∪ pile` requirement — the pick carried in from the board fills the only slot
       // and isn't in this ribbon, so without replacement no graveyard card could ever be clicked.
       if (maxSelections === 1) {
-        if (overCaps(manaValueOf(cardId), powerOf(cardId))) return
+        if (wouldExceedTotalCaps(totalCaps, [], cardId)) return
         onSelectedCardsChange([cardId])
       }
       return
     }
-    if (overCaps(selectedManaValue + manaValueOf(cardId), selectedPower + powerOf(cardId))) return
+    if (wouldExceedTotalCaps(totalCaps, selectedCards, cardId)) return
     onSelectedCardsChange([...selectedCards, cardId])
   }
 
@@ -463,22 +441,14 @@ function GraveyardCardSelection({
           {' / '}
           {maxSelections}
         </span>
-        {totalManaValueAtMost != null && (
-          <span>
-            {' · '}Total mana value:{' '}
-            <span className={styles.selectionCount}>{selectedManaValue}</span>
+        {totalCaps.map((c) => (
+          <span key={c.label}>
+            {' · '}Total {c.label}:{' '}
+            <span className={styles.selectionCount}>{totalCapSum(c, selectedCards)}</span>
             {' / '}
-            {totalManaValueAtMost}
+            {c.cap}
           </span>
-        )}
-        {totalPowerAtMost != null && (
-          <span>
-            {' · '}Total power:{' '}
-            <span className={styles.selectionCount}>{selectedPower}</span>
-            {' / '}
-            {totalPowerAtMost}
-          </span>
-        )}
+        ))}
       </div>
 
       {/* Card ribbon */}

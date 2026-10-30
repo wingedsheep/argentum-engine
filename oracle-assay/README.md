@@ -3541,7 +3541,7 @@ So the quantifier is a **row**, a rule that uses it is a *family* of rules, and
 The rows are exhaustive over the *printed* forms rather than over the SDK's fields. "One or two target
 creatures" is a `minCount` below its `count` and is a seventh row nobody has needed yet
 (`Combat.returnOneOrTwoTargets` still spells it whole); "target creature an opponent controls" is a
-filter, not a quantifier; a `sameController` or a `totalManaValueAtMost` is a rider on the noun phrase
+filter, not a quantifier; a `sameController` or a `totalAtMost` is a rider on the noun phrase
 and belongs to a layer above the list, exactly as `Filters`' controller clause does.
 
 ### `plural` is one column with two consequences

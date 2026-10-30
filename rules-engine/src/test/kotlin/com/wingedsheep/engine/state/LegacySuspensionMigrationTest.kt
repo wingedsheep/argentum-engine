@@ -104,6 +104,17 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
             result.state.getLibrary(action.playerId).size shouldBe 1
         }
 
+        test("a retired mana-value target cap lifts to the property-general total cap") {
+            val amount = JsonObject(mapOf("type" to JsonPrimitive("Fixed"), "amount" to JsonPrimitive(6)))
+            val script = RetiredSdkTypeLift.lift(JsonObject(mapOf("totalManaValueAtMost" to amount))).jsonObject
+            script shouldBe JsonObject(mapOf("totalAtMost" to JsonObject(mapOf(
+                "property" to JsonPrimitive("MANA_VALUE"), "amount" to amount,
+            ))))
+            val pause = RetiredSdkTypeLift.lift(JsonObject(mapOf("totalManaValueAtMost" to JsonPrimitive(6)))).jsonObject
+            pause shouldBe JsonObject(mapOf("totalCap" to JsonPrimitive(6), "totalCapLabel" to JsonPrimitive("mana value")))
+            RetiredSdkTypeLift.lift(JsonObject(mapOf("totalManaValueAtMost" to JsonNull))) shouldBe JsonObject(emptyMap())
+        }
+
         test("legacy active answer still requires its response identity") {
             val old = fixtureObject("nested-may", "state.json")
             val stack = fixtureStack("nested-may").toMutableList()
@@ -419,7 +430,8 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
      * `singleUse` flag became the `playsRemaining` cap; every captured permission is uncapped, so the
      * flag is false and drops out (its replacement defaults to null). Its `landEntersTapped` flag
      * became the `entersTapped` filter; every captured permission's flag is false, which is a null
-     * filter.
+     * filter. A target pause's `totalManaValueAtMost` cap became `totalCap`; every captured one is
+     * uncapped (null), which drops out.
      */
     private fun withoutRetiredFields(value: JsonElement): JsonElement = when (value) {
         is JsonObject -> {
@@ -428,7 +440,8 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
                 value.getValue("landEntersTapped") shouldBe JsonPrimitive(false)
                 JsonObject(value - "landEntersTapped" + ("entersTapped" to JsonNull))
             } else value
-            JsonObject((lifted - "singleUse").mapValues { (_, child) -> withoutRetiredFields(child) })
+            if ("totalManaValueAtMost" in value) value.getValue("totalManaValueAtMost") shouldBe JsonNull
+            JsonObject((lifted - "singleUse" - "totalManaValueAtMost").mapValues { (_, child) -> withoutRetiredFields(child) })
         }
         is JsonArray -> JsonArray(value.map { withoutRetiredFields(it) })
         else -> value

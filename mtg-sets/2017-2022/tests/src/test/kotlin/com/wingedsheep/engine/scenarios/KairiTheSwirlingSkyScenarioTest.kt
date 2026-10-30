@@ -69,7 +69,7 @@ class KairiTheSwirlingSkyScenarioTest : ScenarioTestBase() {
                 game.chooseMode("Return any number")
                 val targets = game.getPendingDecision().shouldBeInstanceOf<ChooseTargetsDecision>()
                 withClue("the decision carries the total mana value cap") {
-                    targets.targetRequirements.single().totalManaValueAtMost shouldBe 6
+                    targets.targetRequirements.single().totalCap shouldBe 6
                 }
                 withClue("Bears + Hill Giant + Serra Angel is total mana value 11") {
                     game.selectTargets(listOf(bears, giant, angel)).error.shouldNotBeNull()

@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.scripting.targets.TotalCap
 
 /**
  * Scout for Survivors {2}{W}
@@ -19,7 +20,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * from your graveyard to the battlefield. Put a +1/+1 counter on each of them.
  *
  * The creature cards are real targets chosen as the spell is cast (CR 601.2c), with the summed
- * mana value capped by [TargetObject.totalManaValueAtMost]. Any target that has left the graveyard
+ * mana value capped by [TargetObject.totalAtMost]. Any target that has left the graveyard
  * by resolution is dropped (CR 608.2b); the rest come back with their counter.
  */
 val ScoutForSurvivors = card("Scout for Survivors") {
@@ -33,7 +34,7 @@ val ScoutForSurvivors = card("Scout for Survivors") {
             TargetFilter.CreatureInYourGraveyard,
             count = 3,
             optional = true,
-            totalManaValueAtMost = DynamicAmounts.fixed(3),
+            totalAtMost = TotalCap.manaValue(DynamicAmounts.fixed(3)),
         )
         effect = Effects.Pipeline {
             val survivors = gather(CardSource.ChosenTargets)

@@ -234,24 +234,14 @@ object DecisionValidators {
                     return "Targets for requirement $reqIndex must be from a single graveyard"
                 }
             }
-            // "... with total mana value N or less" — the summed mana value of the chosen card or
-            // permanent targets may not exceed the resolved cap (Fire Lord Sozin's "total mana value X or
-            // less"; the cap was baked to a concrete int at decision-build time). CR 601.2c.
-            val manaCap = req.totalManaValueAtMost
-            if (manaCap != null && state != null) {
-                val totalManaValue = selectedIds.sumOf { id ->
-                    com.wingedsheep.engine.mechanics.ManaValues.of(state, id)
-                }
-                if (totalManaValue > manaCap) {
-                    return "Targets for requirement $reqIndex exceed total mana value $manaCap"
-                }
-            }
-            // "... with total power N or less" (Nethroi, Apex of Death) — the power sibling.
-            val powerCap = req.totalPowerAtMost
-            if (powerCap != null) {
-                val totalPower = selectedIds.sumOf { id -> req.targetPowers?.get(id) ?: 0 }
-                if (totalPower > powerCap) {
-                    return "Targets for requirement $reqIndex exceed total power $powerCap"
+            // "... with total mana value / power N or less" — the summed value of the chosen targets
+            // may not exceed the cap; cap and per-candidate values were baked at decision-build time
+            // (`withTotalCap`). CR 601.2c.
+            val totalCap = req.totalCap
+            if (totalCap != null) {
+                val total = selectedIds.sumOf { id -> req.targetValues?.get(id) ?: 0 }
+                if (total > totalCap) {
+                    return "Targets for requirement $reqIndex exceed total ${req.totalCapLabel} $totalCap"
                 }
             }
             // "... with different names" — no two chosen targets may share a name (Behold the

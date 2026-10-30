@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.targets.TotalCap
 
 /**
  * Orcus, Prince of Undeath
@@ -59,7 +60,7 @@ val OrcusPrinceOfUndeath = card("Orcus, Prince of Undeath") {
                     TargetFilter.CreatureInYourGraveyard,
                     optional = true,
                     dynamicMaxCount = DynamicAmounts.castX(),
-                    totalManaValueAtMost = DynamicAmounts.castX(),
+                    totalAtMost = TotalCap.manaValue(DynamicAmounts.castX()),
                 )
                 effect = Effects.ForEachTarget(
                     Effects.PutOntoBattlefieldFromGraveyard(EffectTarget.ContextTarget(0)) then

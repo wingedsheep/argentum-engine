@@ -14,6 +14,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.targets.TargetOther
+import com.wingedsheep.sdk.scripting.targets.TotalCap
 
 /**
  * The Super Hero Civil War — Marvel Super Heroes #231
@@ -28,7 +29,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetOther
  * Modeling notes:
  *  - Chapter I is one targeting requirement, not two: "total mana value 6 or less" is an
  *    *aggregate* restriction across the chosen targets (CR 601.2c), so it's
- *    [TargetObject.totalManaValueAtMost] on a single `count = 2, optional = true` requirement.
+ *    [TargetObject.totalAtMost] on a single `count = 2, optional = true` requirement.
  *    Two separate "mana value 6 or less" requirements would have been strictly more permissive.
  *    [ForEachTargetEffect] then fans the gain-control out over however many were chosen (zero,
  *    one, or two), so declining is a clean no-op.
@@ -52,7 +53,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetOther
  * wrong tool — it excludes the *ability's source*, here the Saga, which isn't a creature at all.)
  *
  * Known engine deviation (pre-existing, shared with Fall of Gil-galad / Fire Lord Sozin):
- *  - The `totalManaValueAtMost` cap is enforced interactively by `DecisionValidators` (which sums
+ *  - The `totalAtMost` cap is enforced interactively by `DecisionValidators` (which sums
  *    each selected permanent's mana value), but `TargetValidator`'s authoritative cross-target
  *    check only sums *card* targets, so battlefield permanents contribute 0 there — it can only
  *    ever be more permissive, never reject a legal choice. The battlefield targeting UI likewise
@@ -77,7 +78,7 @@ val TheSuperHeroCivilWar = card("The Super Hero Civil War") {
             TargetFilter.Creature,
             count = 2,
             optional = true,
-            totalManaValueAtMost = DynamicAmounts.fixed(6),
+            totalAtMost = TotalCap.manaValue(DynamicAmounts.fixed(6)),
         )
         effect = Effects.ForEachTarget(
             Effects.GainControl(
