@@ -232,6 +232,9 @@ data class ManaSource(
      * Mana one tap yields when it produces [color] (null = colorless). [manaAmount] is the most any
      * of the source's abilities yields; a per-kind entry narrows it for the kind actually produced.
      */
+    fun amountFor(color: Color?): Int =
+        if (color == null) colorlessAmount ?: manaAmount else colorAmounts[color] ?: manaAmount
+
     /** Whether the mana this source makes as [color] (null = colorless) may pay a generic symbol. */
     fun paysGenericWith(color: Color?): Boolean =
         ((color?.let { colorRestrictions[it] }) ?: restriction)?.paysGeneric != false
@@ -239,9 +242,6 @@ data class ManaSource(
     /** True when some of this source's mana can't pay generic (Jegantha, the Wellspring). */
     val barsGeneric: Boolean
         get() = restriction?.paysGeneric == false || colorRestrictions.values.any { !it.paysGeneric }
-
-    fun amountFor(color: Color?): Int =
-        if (color == null) colorlessAmount ?: manaAmount else colorAmounts[color] ?: manaAmount
 
     /**
      * Every fixed-color mana one tap adds beyond what `manaProduced` records: the aura/tap bonus
@@ -700,7 +700,8 @@ class ManaSolver private constructor(
             val primaryColor = source.availableColorsFor(spellContext).firstOrNull()
             if (primaryColor != null) {
                 manaProduced[source.entityId] = ManaProduction(color = primaryColor, amount = source.amountFor(primaryColor))
-                bonusManaPool.add(BonusManaEntry(primaryColor, source.amountFor(primaryColor), source.restriction, sourceId = source.entityId, snow = source.isSnow))
+                bonusManaPool.add(BonusManaEntry(primaryColor, source.amountFor(primaryColor),
+                    source.colorRestrictions[primaryColor] ?: source.restriction, sourceId = source.entityId, snow = source.isSnow))
             } else {
                 manaProduced[source.entityId] = ManaProduction(colorless = source.amountFor(null))
             }
@@ -804,7 +805,7 @@ class ManaSolver private constructor(
         if (preferGenericBarred) {
             val wanted = cost.symbols.flatMap { it.colors }.toSet()
             availableSources.filter { source ->
-                source.barsGeneric && !source.requiresSacrifice && source.colorActivationManaCost.isEmpty() &&
+                source.barsGeneric && source.colorActivationManaCost.isEmpty() && source.colorPainCost.isEmpty() &&
                     (source.availableColorsFor(spellContext) + source.compositeBonusMana.keys).any { it in wanted }
             }.forEach(::tapIntoBonusPool)
         }
@@ -833,7 +834,7 @@ class ManaSolver private constructor(
         }.toSet()
         val needsColorless = paymentSymbols.any { it is ManaSymbol.Colorless } ||
             (strictColors.isNotEmpty() && (colorlessAsAnyColor || spendingColors.values.any { null in it }))
-        val matchingSources = if (!substitutes) emptyList() else availableSources.filter { source ->
+        val matchingSources = if (!substitutes) emptyList() else remainingSources.filter { source ->
             val relevant = source.availableColorsFor(spellContext).any { it in strictColors } ||
                 (needsColorless && source.producesColorless)
             (relevant || (strictColors.isNotEmpty() && snowStandIn(source) != null)) && source.bonusManaPerTap == 0 && source.bonusManaColorlessPerTap == 0 &&

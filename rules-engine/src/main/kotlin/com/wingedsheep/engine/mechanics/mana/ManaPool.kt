@@ -202,7 +202,9 @@ val ManaRestriction.paysGeneric: Boolean
     get() = when (this) {
         is ManaRestriction.CannotPayGenericCosts -> false
         is ManaRestriction.AllOf -> restrictions.all { it.paysGeneric }
+        // AnyOf(CannotPayGenericCosts, x) never narrows: either branch may pay generic.
         is ManaRestriction.AnyOf -> restrictions.any { it.paysGeneric }
+        // Every other restriction gates the payment, not the symbol.
         else -> true
     }
 
@@ -684,8 +686,7 @@ data class ManaPool(
                     // X is 0 unless specified otherwise
                 }
                 is ManaSymbol.Hybrid, is ManaSymbol.HybridPhyrexian -> {
-                    val spent = remaining.trySpendColored(symbol.color1, spellContext)
-                        ?: remaining.trySpendColored(symbol.color2, spellContext)
+                    val spent = remaining.trySpendHybrid(symbol.color1, symbol.color2, spellContext)
                         ?: return false
                     remaining = spent
                 }
@@ -732,6 +733,20 @@ data class ManaPool(
     }
 
     /**
+     * Try to spend one mana of either color for a hybrid pip: mana that can't pay generic
+     * (ManaRestriction.CannotPayGenericCosts) of either color first, then [trySpendColored] in order.
+     */
+    private fun trySpendHybrid(color1: Color, color2: Color, spellContext: SpellPaymentContext?): ManaPool? {
+        for (color in listOf(color1, color2)) {
+            val index = restrictedMana.indexOfFirst {
+                it.color == color && !it.restriction.paysGeneric && it.restriction.isEligibleForPayment(spellContext)
+            }
+            if (index >= 0) return spendRestricted(color, spellContext)
+        }
+        return trySpendColored(color1, spellContext) ?: trySpendColored(color2, spellContext)
+    }
+
+    /**
      * Try to spend one colorless mana, preferring eligible restricted mana first.
      */
     private fun trySpendColorless(spellContext: SpellPaymentContext?): ManaPool? {
@@ -770,8 +785,7 @@ data class ManaPool(
                     // Handled by caller
                 }
                 is ManaSymbol.Hybrid, is ManaSymbol.HybridPhyrexian -> {
-                    remaining = remaining.trySpendColored(symbol.color1, spellContext)
-                        ?: remaining.trySpendColored(symbol.color2, spellContext)!!
+                    remaining = remaining.trySpendHybrid(symbol.color1, symbol.color2, spellContext)!!
                 }
                 is ManaSymbol.Phyrexian -> {
                     remaining = remaining.trySpendColored(symbol.color, spellContext)!!
@@ -927,8 +941,7 @@ data class ManaPool(
                 }
                 is ManaSymbol.Hybrid, is ManaSymbol.HybridPhyrexian -> {
                     val beforeRemaining = remaining
-                    val spent = remaining.trySpendColored(symbol.color1, spellContext)
-                        ?: remaining.trySpendColored(symbol.color2, spellContext)
+                    val spent = remaining.trySpendHybrid(symbol.color1, symbol.color2, spellContext)
                     if (spent != null) {
                         // Determine which color was used by checking what changed
                         val color1Before = beforeRemaining.get(symbol.color1) +

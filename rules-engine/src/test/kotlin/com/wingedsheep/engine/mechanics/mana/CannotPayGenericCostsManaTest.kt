@@ -95,6 +95,12 @@ class CannotPayGenericCostsManaTest : FunSpec({
             both.pay(ManaCost.parse("{1}{W}"), creatureSpell).shouldNotBeNull().isEmpty() shouldBe true
         }
 
+        test("a two-color hybrid takes the barred unit of either color, leaving the other for generic") {
+            val pool = ManaPool().add(Color.RED).addRestricted(Color.GREEN, 1, barred)
+            pool.canPay(ManaCost.parse("{R/G}{1}"), creatureSpell) shouldBe true
+            pool.pay(ManaCost.parse("{R/G}{1}"), creatureSpell).shouldNotBeNull().isEmpty() shouldBe true
+        }
+
         test("the exact allocator also keeps it off generic pips") {
             wubrg().allocateFloating(ManaCost.parse("{W}{U}"), creatureSpell).shouldNotBeNull()
             wubrg().allocateFloating(ManaCost.parse("{1}{W}"), creatureSpell).shouldBeNull()
