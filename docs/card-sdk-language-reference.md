@@ -7238,6 +7238,12 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   printed cost. Face-down objects (no mana cost) never match; the cast-record path returns `false`
   (a record stores the resolved mana value, not the printed cost). Used by *Paradox Surveyor*
   ("a card with {X} in its mana cost"). Underlying predicate: `CardPredicate.HasXInManaCost`.
+- `.manaCostIs(vararg costs)` — the card's **printed** mana cost is exactly one of `costs`
+  (symbols, not mana value): *Urza's Saga*'s "an artifact card with mana cost {0} or {1}" is
+  `GameObjectFilter.Artifact.manaCostIs("{0}", "{1}")` (an `Or` of two). Per its ruling `{U}` and
+  `{X}` don't match, and a card with no mana cost (a land, *Ancestral Vision*) is not a `{0}` card.
+  Face-down objects never match; the cast-record path returns `false`. Underlying predicate:
+  `CardPredicate.ManaCostIs(manaCost)`.
 - `.coloredManaSymbolsAtLeast(vararg colors, min = 1)` — the card's **printed** mana cost contains
   at least `min` mana symbols of `colors`: "a noncreature spell with one or more blue mana symbols
   in its mana cost" (*Namor the Sub-Mariner*, `coloredManaSymbolsAtLeast(Color.BLUE)`), and the

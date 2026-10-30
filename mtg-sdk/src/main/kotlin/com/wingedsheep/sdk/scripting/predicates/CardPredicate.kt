@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.scripting.predicates
 
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
@@ -668,6 +669,23 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data object HasXInManaCost : CardPredicate {
         override val description: String = "with {X} in its mana cost"
+    }
+
+    /**
+     * Matches a card whose printed mana cost is exactly [manaCost] — "an artifact card with mana
+     * cost {0} or {1}" (Urza's Saga, an [Or] of two). This compares the printed symbols, not the
+     * mana value: per the Urza's Saga ruling a card costing `{U}` or `{X}` does not match `{1}` /
+     * `{0}` even though its mana value does. A card with no mana cost (a land, Ancestral Vision)
+     * is not a card with mana cost `{0}` — a printed `{0}` parses to a `{0}` symbol while no cost
+     * parses to the empty cost — and face-down objects (no mana cost, CR 708.2) never match.
+     *
+     * Closest neighbours: [ManaValueEquals] reads the computed number, so it cannot tell `{1}`
+     * from `{U}`; [HasXInManaCost] inspects one symbol, not the whole cost.
+     */
+    @SerialName("ManaCostIs")
+    @Serializable
+    data class ManaCostIs(val manaCost: ManaCost) : CardPredicate {
+        override val description: String = "with mana cost $manaCost"
     }
 
     /**

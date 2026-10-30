@@ -153,6 +153,7 @@ object CompanionEligibility {
             CardPredicate.ManaValueIsEven -> manaValue % 2 == 0
             CardPredicate.ManaValueIsOdd -> manaValue % 2 == 1
             CardPredicate.HasXInManaCost -> card.manaCost.hasX
+            is CardPredicate.ManaCostIs -> card.manaCost == predicate.manaCost
             // Zirda's "has an activated ability" in deck construction (ruling): any printed
             // activated ability in any zone — cycling included, since "some keyword abilities are
             // activated abilities" — and the intrinsic mana ability of a basic land type.

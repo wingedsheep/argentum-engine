@@ -234,6 +234,7 @@ Families:
 - `CardPredicate.IsSorcery`
 - `CardPredicate.IsToken`
 - `CardPredicate.IsTriggeredAbility` — Matches only triggered abilities on the stack (not activated abilities or spells).
+- `CardPredicate.ManaCostIs(manaCost: ManaCost)` — Matches a card whose printed mana cost is exactly manaCost — "an artifact card with mana cost {0} or {1}" (Urza's Saga, an Or of two).
 - `CardPredicate.ManaCostPayableWithManaSpent` — The card's mana cost could be paid by some amount of, or all of, the mana spent to activate the resolving ability (or cast the resolving spell) — Illusionary Mask's "a creature card in your hand wh…
 - `CardPredicate.ManaValueAtLeast(min: Int)`
 - `CardPredicate.ManaValueAtMost(max: Int)`

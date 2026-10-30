@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.events.DamageType
@@ -280,6 +281,17 @@ interface ObjectFilterBuilder<out Self> {
 
     /** Printed mana cost contains an {X} symbol (Paradox Surveyor). */
     fun hasXInManaCost() = withCardPredicate(CardPredicate.HasXInManaCost)
+
+    /**
+     * Printed mana cost is exactly one of [costs] — "with mana cost {0} or {1}" (Urza's Saga) is
+     * `manaCostIs("{0}", "{1}")`. Compares symbols, not mana value, so `{U}` and `{X}` never match
+     * `{1}` / `{0}`, and a card with no mana cost never matches `{0}` (see [CardPredicate.ManaCostIs]).
+     */
+    fun manaCostIs(vararg costs: String): Self {
+        require(costs.isNotEmpty()) { "manaCostIs needs at least one cost" }
+        val predicates = costs.map { CardPredicate.ManaCostIs(ManaCost.parse(it)) }
+        return withCardPredicate(predicates.singleOrNull() ?: CardPredicate.Or(predicates))
+    }
 
     /**
      * Printed mana cost contains at least [min] mana symbols of [colors] — "with one or more blue
