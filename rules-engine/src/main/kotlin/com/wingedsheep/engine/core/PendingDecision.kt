@@ -765,7 +765,12 @@ data class SearchCardInfo(
      * characteristic-defining `*` power. Lets a hidden-zone selection UI group cards
      * by power for [SelectCardsDecision.onePerPower].
      */
-    val power: Int? = null
+    val power: Int? = null,
+    /**
+     * The zone the card is in, so a selection spanning several zones can group a hidden card
+     * (a library card the client state doesn't carry) under its own zone heading.
+     */
+    val zone: com.wingedsheep.sdk.core.Zone? = null
 )
 
 /**

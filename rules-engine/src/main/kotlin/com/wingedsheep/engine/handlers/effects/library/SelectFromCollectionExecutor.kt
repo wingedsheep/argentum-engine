@@ -544,7 +544,8 @@ class SelectFromCollectionExecutor(
                 typeLine = cardComponent?.typeLine?.toString() ?: "",
                 imageUri = null,
                 colors = if (cardComponent == null) emptyList() else state.projectedState.colorsOf(cardId).toList(),
-                power = cardComponent?.baseStats?.basePower
+                power = cardComponent?.baseStats?.basePower,
+                zone = state.logicalZone(cardId)?.zoneType
             )
         }
 

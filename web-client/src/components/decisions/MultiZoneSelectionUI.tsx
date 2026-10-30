@@ -13,11 +13,12 @@ interface ZoneGroup {
   cards: { id: EntityId; card: ClientCard | undefined }[]
 }
 
-const ZONE_ORDER: ZoneType[] = [ZoneType.BATTLEFIELD, ZoneType.HAND, ZoneType.GRAVEYARD, ZoneType.EXILE]
+const ZONE_ORDER: ZoneType[] = [ZoneType.BATTLEFIELD, ZoneType.HAND, ZoneType.LIBRARY, ZoneType.GRAVEYARD, ZoneType.EXILE]
 
 const ZONE_LABELS: Partial<Record<ZoneType, string>> = {
   [ZoneType.BATTLEFIELD]: 'Battlefield',
   [ZoneType.HAND]: 'Hand',
+  [ZoneType.LIBRARY]: 'Library',
   [ZoneType.GRAVEYARD]: 'Graveyard',
   [ZoneType.EXILE]: 'Exile',
 }
@@ -44,12 +45,15 @@ export function MultiZoneSelectionUI({
   const submitDecision = useGameStore((s) => s.submitDecision)
   const gameState = useGameStore((s) => s.gameState)
 
-  // Group options by zone
+  // Group options by zone. A hidden card (a library card in a "library and/or graveyard" search)
+  // isn't in the client state, so its zone comes from the decision's card info.
+  const zoneOf = (id: EntityId): ZoneType | undefined =>
+    gameState?.cards[id]?.zone?.zoneType ?? decision.cardInfo?.[id]?.zone ?? undefined
   const zoneGroups: ZoneGroup[] = ZONE_ORDER
     .map((zone) => {
       const cards = decision.options
+        .filter((id) => zoneOf(id) === zone)
         .map((id) => ({ id, card: gameState?.cards[id] }))
-        .filter(({ card }) => card?.zone?.zoneType === zone)
       return { zone, label: ZONE_LABELS[zone] ?? zone, cards }
     })
     .filter((group) => group.cards.length > 0)
@@ -57,8 +61,8 @@ export function MultiZoneSelectionUI({
   // Catch any cards in unexpected zones
   const knownZones = new Set(ZONE_ORDER)
   const otherCards = decision.options
+    .filter((id) => { const zone = zoneOf(id); return !zone || !knownZones.has(zone) })
     .map((id) => ({ id, card: gameState?.cards[id] }))
-    .filter(({ card }) => !card?.zone?.zoneType || !knownZones.has(card.zone.zoneType))
   if (otherCards.length > 0) {
     zoneGroups.push({ zone: ZoneType.BATTLEFIELD, label: 'Other', cards: otherCards })
   }
@@ -84,11 +88,17 @@ export function MultiZoneSelectionUI({
   const gap = responsive.isMobile ? 4 : 8
   const maxCardWidth = responsive.isMobile ? 90 : 130
   const maxCardsInAnyGroup = Math.max(...zoneGroups.map((g) => g.cards.length), 1)
+  // Every zone group stacks a heading and a row of cards, so the rows also have to fit the
+  // height left after the source card, prompt and buttons — or the buttons fall off-screen.
+  const reservedHeight = responsive.isMobile ? 280 : 500
+  const groupHeadingHeight = 64
+  const heightPerGroup = (responsive.viewportHeight - reservedHeight) / Math.max(zoneGroups.length, 1)
+  const heightCappedWidth = Math.floor((heightPerGroup - groupHeadingHeight) / 1.4)
   const cardWidth = calculateFittingCardWidth(
     maxCardsInAnyGroup,
     availableWidth,
     gap,
-    maxCardWidth,
+    Math.max(45, Math.min(maxCardWidth, heightCappedWidth)),
     45
   )
 
@@ -133,8 +143,7 @@ export function MultiZoneSelectionUI({
   // Count selected per zone for badges
   const selectedByZone = new Map<ZoneType, number>()
   for (const id of selectedCards) {
-    const card = gameState?.cards[id]
-    const zone = card?.zone?.zoneType
+    const zone = zoneOf(id)
     if (zone) {
       selectedByZone.set(zone, (selectedByZone.get(zone) ?? 0) + 1)
     }

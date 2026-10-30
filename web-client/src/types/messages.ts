@@ -1,4 +1,4 @@
-import { ErrorCode, GameOverReason } from './enums'
+import { ErrorCode, GameOverReason, ZoneType } from './enums'
 import { EntityId } from './entities'
 import { DecisionResponse, GameAction } from './actions'
 import { ClientEvent } from './events'
@@ -550,6 +550,8 @@ export interface SearchCardInfo {
   readonly colors?: readonly string[]
   /** Printed (base) power, when fixed; null/undefined for cards with no fixed power. */
   readonly power?: number | null
+  /** The card's zone, so a multi-zone selection can group hidden (library) cards under their own heading. */
+  readonly zone?: ZoneType | null
 }
 
 /**
