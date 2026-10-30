@@ -10004,8 +10004,11 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
   the "you put" scope can't come from a `.youControl()` recipient filter) — Earth Kingdom General.
   The placer is the controller of the placing effect, the entering permanent's controller (for a
   permanent entering with counters, CR 122.6a), the mover's controller (CR 122.5 — *moving* a counter
-  "puts" it on the destination), or the damage source's controller (wither, CR 702.80). A few
-  low-value paths carry no placer (saga lore counters) and never match a non-null `placedBy`; combat
+  "puts" it on the destination), or the damage source's controller (wither, CR 702.80). A Saga's
+  lore counters — its entry counter (cast or put onto the battlefield) and the precombat-main
+  turn-based one — are put by its controller, so Sigurd, Jarl of Ravensthorpe's "whenever you put a
+  lore counter on a Saga you control" is `Triggers.a(Enchantment.withSubtype(SAGA).youControl())
+  .getsCounters(CounterType.LORE, by = Player.You)` and sees all three; combat
   poison from toxic is placed by the toxic creature's controller (CR 702.164c). Default `null` matches any placer. A planeswalker's **[+N] loyalty cost** is
   a placement too (CR 606.4): paying it emits `CountersAddedEvent(loyalty, N, placedBy = activator)`
   (a cost, so counter-placement replacements such as Doubling Season don't apply), while [−N]/[0]

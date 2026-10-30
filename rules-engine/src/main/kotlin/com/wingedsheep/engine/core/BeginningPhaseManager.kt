@@ -480,8 +480,11 @@ class BeginningPhaseManager(
             // placement replacements see it (Innkeeper's Talent), but not an effect's, so
             // Doubling Season's "if an effect would put" doesn't.
             val counters = container.get<CountersComponent>() ?: CountersComponent()
+            // CR 714.3c — the Saga's controller puts the counter on it ("whenever you put a lore
+            // counter on a Saga you control" sees it).
+            val placerId = projected.getController(entityId)
             val added = com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils.applyCounterPlacementModifiers(
-                newState, entityId, CounterType.LORE, 1, placerId = projected.getController(entityId),
+                newState, entityId, CounterType.LORE, 1, placerId = placerId,
                 predicateEvaluator = predicateEvaluator, byEffect = false
             )
             if (added <= 0) continue
@@ -503,7 +506,7 @@ class BeginningPhaseManager(
                     .with(updatedSaga)
             }
             newState = com.wingedsheep.engine.handlers.effects.DamageUtils.markCounterOnControlledPermanent(newState, entityId, CounterType.LORE)
-            events.add(CountersAddedEvent(entityId, CounterType.LORE, added, cardComponent.name))
+            events.add(CountersAddedEvent(entityId, CounterType.LORE, added, cardComponent.name, placedBy = placerId))
         }
 
         return ExecutionResult.success(newState, events)

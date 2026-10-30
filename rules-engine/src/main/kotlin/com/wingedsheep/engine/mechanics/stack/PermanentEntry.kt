@@ -184,7 +184,10 @@ internal class PermanentEntry(
             if (loreCount > 0) {
                 newState = com.wingedsheep.engine.handlers.effects.DamageUtils
                     .markCounterOnControlledPermanent(newState, spellId, CounterType.LORE, entering = true)
-                counterEvents.add(CountersAddedEvent(spellId, CounterType.LORE, loreCount, cardDef.name))
+                // CR 122.6a — the entering Saga's controller puts its entry counters on it.
+                counterEvents.add(CountersAddedEvent(spellId, CounterType.LORE, loreCount, cardDef.name,
+                    placedBy = newState.getEntity(spellId)?.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()?.playerId
+                        ?: spellComponent.casterId))
             }
         }
 

@@ -168,9 +168,11 @@ object ZoneMovementUtils {
         }
         // Counters it's given as it enters (CR 122.6): the placement replacements apply — the
         // totals branch above gets them when the collected entry counters are placed.
+        // CR 122.6a — the entering Saga's controller puts its entry counters on it.
+        val placerId = state.projectedState.getController(entityId)
         val placed = ReplacementEffectUtils.applyCounterPlacementModifiers(
             state, entityId, CounterType.LORE, loreCount,
-            placerId = state.projectedState.getController(entityId), predicateEvaluator = predicateEvaluator, byEffect = true
+            placerId = placerId, predicateEvaluator = predicateEvaluator, byEffect = true
         )
         // The chapters the entry reaches follow what was actually put on it.
         val sagaComponent = SagaComponent(triggeredChapters = (1..placed).toSet())
@@ -179,7 +181,7 @@ object ZoneMovementUtils {
             c.with(sagaComponent)
                 .with(current.withAdded(CounterType.LORE, placed))
         }.let { DamageUtils.markCounterOnControlledPermanent(it, entityId, CounterType.LORE, entering = true) }
-        return newState to listOf(CountersAddedEvent(entityId, CounterType.LORE, placed, cardComponent.name))
+        return newState to listOf(CountersAddedEvent(entityId, CounterType.LORE, placed, cardComponent.name, placedBy = placerId))
     }
 
     /**
