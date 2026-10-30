@@ -1,5 +1,11 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.Outcome
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.engine.mechanics.layers.FloatingEffectData
 import com.wingedsheep.engine.mechanics.layers.Layer
@@ -43,11 +49,24 @@ class SuspendMechanicTest : FunSpec({
         toughness = 2
     }
 
+    // "Remove a time counter from target land or suspended card." — an off-upkeep removal (the
+    // shape of Clockspinning / Jhoira's Timebug) that also exercises the IsSuspended predicate.
+    // The cross-zone union is deliberate: a suspended creature card fails the primary (land)
+    // clause, so resolution must re-check it against the exile clause it was chosen under.
+    val timeTap = card("Time Tap") {
+        manaCost = "{U}"
+        typeLine = "Instant"
+        spell {
+            val t = target(TargetFilter.Land.or(TargetFilter(GameObjectFilter.Any.suspended()).inZone(Zone.EXILE)))
+            effect = Effects.RemoveCounters(CounterType.TIME, 1, t)
+        }
+    }
+
     val projector = StateProjector()
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(suspendedBear))
+        driver.registerCards(TestCards.all + listOf(suspendedBear, timeTap))
         return driver
     }
 
@@ -147,14 +166,18 @@ class SuspendMechanicTest : FunSpec({
         val player = driver.activePlayer!!
         val cardId = suspendInExile(driver, player, "Suspended Bear", timeCounters = 2)
 
-        // First owner upkeep: 2 -> 1, still in exile.
+        // First owner upkeep: 2 -> 1, still in exile — and no cast trigger for a non-last removal.
         resolveNextOwnerUpkeep(driver, player)
         timeCounters(driver, cardId) shouldBe 1
         driver.getExile(player).contains(cardId) shouldBe true
+        driver.state.stack.isEmpty() shouldBe true
 
-        // Second owner upkeep: 1 -> 0, the suspend trigger offers to play it for free.
+        // Second owner upkeep: 1 -> 0. Removing the last counter fires suspend's separate cast
+        // trigger, which goes on the stack and offers to play it for free as it resolves.
         resolveNextOwnerUpkeep(driver, player)
-        // CR 702.62f — "they may play it." Accept, then resolve the cast.
+        driver.state.stack.size shouldBe 1
+        driver.bothPass() // resolve the last-counter cast trigger
+        // CR 702.62a — "you may play it." Accept, then resolve the cast.
         driver.submitYesNo(player, true)
         driver.bothPass()
 
@@ -178,6 +201,7 @@ class SuspendMechanicTest : FunSpec({
 
         // Owner's upkeep: 1 -> 0, play it for free; it enters under the owner's control with haste.
         resolveNextOwnerUpkeep(driver, player)
+        driver.bothPass() // resolve the last-counter cast trigger
         driver.submitYesNo(player, true)
         driver.bothPass()
 
@@ -213,5 +237,77 @@ class SuspendMechanicTest : FunSpec({
         projected.getController(perm) shouldBe opponent
         // ...so the suspend haste is gone — it was "for as long as you control it".
         projected.hasKeyword(perm, Keyword.HASTE) shouldBe false
+    }
+
+    test("an effect that removes the last time counter offers the free cast right away, not at the next upkeep") {
+        val driver = createDriver()
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 40))
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val player = driver.activePlayer!!
+        val cardId = suspendInExile(driver, player, "Suspended Bear", timeCounters = 1)
+
+        // "It doesn't matter why the last time counter was removed or what effect removed it."
+        val tap = driver.putCardInHand(player, "Time Tap")
+        driver.giveMana(player, Color.BLUE, 1)
+        driver.castSpellWithTargets(player, tap, listOf(ChosenTarget.Card(cardId, player, Zone.EXILE))).outcome shouldBe Outcome.Done
+        driver.bothPass() // resolve Time Tap: 1 -> 0
+        timeCounters(driver, cardId) shouldBe 0
+
+        driver.state.stack.size shouldBe 1
+        driver.bothPass() // resolve the last-counter cast trigger
+        driver.submitYesNo(player, true)
+        driver.bothPass()
+
+        driver.getExile(player).contains(cardId) shouldBe false
+        val perm = driver.findPermanent(player, "Suspended Bear")
+        perm shouldNotBe null
+        projector.project(driver.state).hasKeyword(perm!!, Keyword.HASTE) shouldBe true
+    }
+
+    test("declining the cast leaves the card in exile with no time counters, no longer suspended") {
+        val driver = createDriver()
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 40))
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val player = driver.activePlayer!!
+        val cardId = suspendInExile(driver, player, "Suspended Bear", timeCounters = 1)
+
+        resolveNextOwnerUpkeep(driver, player)
+        driver.bothPass() // resolve the last-counter cast trigger
+        driver.submitYesNo(player, false)
+
+        driver.getExile(player).contains(cardId) shouldBe true
+        timeCounters(driver, cardId) shouldBe 0
+        // CR 702.62b — no time counter, so it is no longer a "suspended card": not targetable.
+        val tap = driver.putCardInHand(player, "Time Tap")
+        driver.giveMana(player, Color.BLUE, 1)
+        driver.castSpellWithTargets(player, tap, listOf(ChosenTarget.Card(cardId, player, Zone.EXILE))).outcome shouldNotBe Outcome.Done
+    }
+
+    test("a suspended card is a legal target in exile; an unsuspended exiled card is not") {
+        val driver = createDriver()
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 40))
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val player = driver.activePlayer!!
+        val opponent = driver.getOpponent(player)
+        // Another player's suspended card is just as targetable as your own.
+        val theirs = suspendInExile(driver, opponent, "Suspended Bear", timeCounters = 3)
+        // Exiled with time counters but never suspended: not a suspended card (CR 702.62b).
+        val plain = driver.putCardInGraveyard(player, "Suspended Bear")
+        driver.replaceState(
+            driver.state
+                .removeFromZone(ZoneKey(player, Zone.GRAVEYARD), plain)
+                .addToZone(ZoneKey(player, Zone.EXILE), plain)
+                .updateEntity(plain) { it.with(CountersComponent().withAdded(CounterType.TIME, 3)) }
+        )
+
+        val tap = driver.putCardInHand(player, "Time Tap")
+        driver.giveMana(player, Color.BLUE, 2)
+        driver.castSpellWithTargets(player, tap, listOf(ChosenTarget.Card(plain, player, Zone.EXILE))).outcome shouldNotBe Outcome.Done
+        driver.castSpellWithTargets(player, tap, listOf(ChosenTarget.Card(theirs, opponent, Zone.EXILE))).outcome shouldBe Outcome.Done
+        driver.bothPass()
+        timeCounters(driver, theirs) shouldBe 2
     }
 })

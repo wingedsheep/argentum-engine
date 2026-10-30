@@ -29,13 +29,11 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  *  3. **"When the last time counter is removed from this permanent, sacrifice it."**
  *     [lastCounterSacrifice].
  *
- * Parts 2 and 3 are deliberately **two abilities, not one fused countdown**. Suspend
- * ([Suspend.countdownAbility]) folds its "when the last is removed" clause into a
- * [com.wingedsheep.sdk.dsl.Effects.If] inside the upkeep trigger because
- * nothing else ever removes a suspended card's time counters. A vanishing permanent sits on the
+ * Parts 2 and 3 are deliberately **two abilities, not one fused countdown** — the same split as
+ * [Suspend.countdownAbility] / [Suspend.lastCounterCastAbility]. A vanishing permanent sits on the
  * battlefield where Vampire Hexmage, Hex Parasite and friends can strip its counters at instant
- * speed — and CR 702.62c says it is sacrificed *whenever* the last one leaves, not only on an
- * upkeep. Fusing them would silently ignore every off-turn removal.
+ * speed, and it is sacrificed *whenever* the last one leaves, not only on an upkeep. Fusing them
+ * would silently ignore every off-turn removal.
  *
  * Both triggers are singletons granted by the engine to any permanent whose *projected* keywords
  * include [Keyword.VANISHING], the same shape as [Flanking.blockedByNonFlankerTrigger] and

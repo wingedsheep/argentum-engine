@@ -113,8 +113,8 @@ class TriggerAbilityResolver(
 
         val ringBearerAbilities = getRingBearerAbilities(entityId, state)
 
-        // A suspended card (CR 702.62) gains the owner's-upkeep countdown-and-cast ability
-        // while it carries the marker. Component-driven, so it works for an arbitrary card
+        // A suspended card (CR 702.62) gains the owner's-upkeep countdown and the last-counter
+        // cast ability while it carries the marker. Component-driven, so it works for an arbitrary card
         // with no printed suspend (e.g. a spell exiled by Taigam, Master Opportunist).
         val suspendAbilities = getSuspendTriggeredAbilities(entityId, state)
         val paradigmAbilities = getParadigmTriggeredAbilities(entityId, state)
@@ -192,13 +192,14 @@ class TriggerAbilityResolver(
     }
 
     /**
-     * Grant [com.wingedsheep.sdk.scripting.Suspend.countdownAbility] to any card carrying the
-     * [SuspendedComponent] marker. The ability functions only in exile (`activeZones == {EXILE}`),
-     * so it is inert anywhere else and harmless to return universally.
+     * Grant suspend's two exile triggers ([com.wingedsheep.sdk.scripting.Suspend.exileAbilities]:
+     * the upkeep countdown and the last-counter cast) to any card carrying the [SuspendedComponent]
+     * marker. Both function only in exile (`activeZones == {EXILE}`), so they are inert anywhere
+     * else and harmless to return universally.
      */
     private fun getSuspendTriggeredAbilities(entityId: EntityId, state: GameState): List<TriggeredAbility> =
         if (state.getEntity(entityId)?.has<SuspendedComponent>() == true) {
-            listOf(com.wingedsheep.sdk.scripting.Suspend.countdownAbility)
+            com.wingedsheep.sdk.scripting.Suspend.exileAbilities
         } else {
             emptyList()
         }

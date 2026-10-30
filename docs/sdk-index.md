@@ -941,7 +941,7 @@ Families:
 - `GrantSpellsCantBeCounteredEffect(target: EffectTarget, spellFilter: GameObjectFilter, duration: Duration)` — Spells matching spellFilter that target casts can't be countered until duration.
 - `GrantStateTriggeredAbilityEffect(ability: StateTriggeredAbility, target: EffectTarget, duration: Duration)` — The permanent target names **gains a state-triggered ability** (CR 603.8) for duration.
 - `GrantStaticAbilityEffect(ability: StaticAbility, target: EffectTarget, duration: Duration)` — Grant a static ability to a target until end of turn.
-- `GrantSuspendEffect(target: EffectTarget)` — Mark target as suspended (CR 702.62) — the engine attaches the suspended marker component so the card gains the countdown-and-cast triggered ability while in exile (see com.wingedsheep.sdk.scriptin…
+- `GrantSuspendEffect(target: EffectTarget)` — Mark target as suspended (CR 702.62) — the engine attaches the suspended marker component so the card gains the countdown and last-counter cast triggered abilities while in exile (see com.wingedshe…
 - `GrantToEnchantedCreatureTypeGroupEffect(powerModifier: Int, toughnessModifier: Int, keyword: Keyword?, protectionColors: Set<Color>, duration: Duration)` — Grant stats and/or a keyword to the enchanted creature and all other creatures that share a creature type with it.
 - `GrantTriggeredAbilityEffect(ability: TriggeredAbility, target: EffectTarget, duration: Duration)` — Grant a triggered ability to a target until end of turn.
 - `HijackNextTurnEffect(target: EffectTarget, scope: HijackScope)` — The ability's controller controls the target player during a scoped future window — either that player's next **turn** (HijackScope.NextTurn) or their next **combat phase** (HijackScope.NextCombatP…
@@ -1783,6 +1783,7 @@ Families:
 - `StatePredicate.IsSolved` — Permanent that currently has the solved designation (CR 719.3b, Murders at Karlov Manor).
 - `StatePredicate.IsSource` — The candidate permanent IS the effect's source permanent itself.
 - `StatePredicate.IsSuspected` — Permanent that is currently suspected (CR 701.60a, Murders at Karlov Manor).
+- `StatePredicate.IsSuspended` — A **suspended card** (CR 702.62b): a card in the exile zone that has suspend and has a time counter on it.
 - `StatePredicate.IsTapped`
 - `StatePredicate.IsTransformed` — Is a **transformed permanent** (CR 701.27g): a nonmodal double-faced permanent on the battlefield with its back face up — a Siege cast transformed, a werewolf flipped at night, a saga that exiled i…
 - `StatePredicate.IsTriggeringEntity` — The candidate is the *triggering entity* of the resolving triggered ability — the permanent the trigger's event was about (read from the evaluation context's `triggeringEntityId`).

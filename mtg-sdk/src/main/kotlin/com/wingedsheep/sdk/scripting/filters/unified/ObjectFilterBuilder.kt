@@ -1181,6 +1181,12 @@ interface ObjectFilterBuilder<out Self> {
     fun foretold() = withStatePredicate(StatePredicate.IsForetold)
 
     /**
+     * Must be a suspended card (CR 702.62b) — in exile, with suspend and a time counter on it.
+     * Use with an exile-zone filter ("suspended card you own").
+     */
+    fun suspended() = withStatePredicate(StatePredicate.IsSuspended)
+
+    /**
      * Must be a card exiled by the effect's source permanent (recorded in the source's
      * `LinkedExileComponent`). Source-relative — use when filtering candidates in the exile zone
      * for "target card exiled with ~" reanimation abilities (The Darkness Crystal).

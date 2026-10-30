@@ -33,6 +33,7 @@ import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.SagaComponent
+import com.wingedsheep.engine.state.components.battlefield.SuspendedComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.battlefield.TriggeredAbilityFiredEverComponent
 import com.wingedsheep.engine.state.components.battlefield.TriggeredAbilityFiredThisTurnComponent
@@ -55,6 +56,7 @@ import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.scripting.Suspend
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
@@ -2029,20 +2031,30 @@ class TriggerDetector(
         // battlefield scan reaches.
         //
         // Exile is scanned only for the triggered abilities an exiled card was *granted* there
-        // (Uvilda, Dean of Perfection's "when the last refine counter is removed from this card").
-        // Every printed or synthesized exile-active shape (suspend, madness, paradigm) already has
-        // its own dedicated detection path, which a general exile pass would fire a second time.
+        // (Uvilda, Dean of Perfection's "when the last refine counter is removed from this card"),
+        // plus suspend's last-time-counter cast trigger on the card that just lost a time counter
+        // (CR 702.62a — however it was removed: the upkeep countdown, Clockspinning, …). Every
+        // other exile-active shape (suspend's upkeep countdown, madness, paradigm) already has its
+        // own dedicated detection path, which a general exile pass would fire a second time.
         val exileGrantsInPlay = state.grantedTriggeredAbilities.any { Zone.EXILE in it.ability.activeZones }
+        val suspendCastCandidate = (event as? com.wingedsheep.engine.core.CountersRemovedEvent)
+            ?.takeIf { it.counterType == CounterType.TIME }
+            ?.entityId
+            ?.takeIf { state.getEntity(it)?.has<SuspendedComponent>() == true }
         for (zone in NON_BATTLEFIELD_ACTIVE_ZONES) {
             val grantsOnly = zone !in NON_BATTLEFIELD_EVENT_TRIGGER_ZONES
-            if (grantsOnly && (zone != Zone.EXILE || !exileGrantsInPlay)) continue
+            if (grantsOnly && (zone != Zone.EXILE || (!exileGrantsInPlay && suspendCastCandidate == null))) continue
             for (playerId in state.turnOrder) {
                 for (entityId in state.getZone(playerId, zone)) {
                     val container = state.getEntity(entityId) ?: continue
                     val cardComponent = container.get<CardComponent>() ?: continue
 
-                    val abilities = if (grantsOnly) exileGrantedAbilities(state, entityId)
-                    else abilityResolver.getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state, index.statics)
+                    val abilities = if (grantsOnly) {
+                        val granted = if (exileGrantsInPlay) exileGrantedAbilities(state, entityId) else emptyList()
+                        if (entityId == suspendCastCandidate) granted + Suspend.lastCounterCastAbility else granted
+                    } else {
+                        abilityResolver.getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state, index.statics)
+                    }
 
                     for (ability in abilities) {
                         if (zone !in ability.activeZones) continue

@@ -1009,7 +1009,7 @@ sealed interface KeywordAbility {
      *
      * This class only carries the printed *setup* half — [cost] and [timeCounters]. The
      * countdown-and-cast half is component-driven, not definition-driven: the engine's
-     * synthesized [com.wingedsheep.sdk.scripting.Suspend.countdownAbility] is granted to
+     * synthesized [com.wingedsheep.sdk.scripting.Suspend.exileAbilities] are granted to
      * *any* exiled card carrying the runtime `SuspendedComponent` marker, so the same
      * machinery serves both a printed suspend (stamped by the engine's
      * `SuspendCardFromHandHandler` special action) and a suspend granted at runtime to an

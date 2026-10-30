@@ -871,6 +871,8 @@ internal class AffectsFilterResolver(
             container.has<com.wingedsheep.engine.state.components.identity.WarpExiledComponent>()
         StatePredicate.IsForetold ->
             container.has<com.wingedsheep.engine.state.components.identity.ForetoldComponent>()
+        // Exile-only: a battlefield permanent in group-static projection is never suspended.
+        StatePredicate.IsSuspended -> false
         StatePredicate.WasCastForWarp ->
             container.has<com.wingedsheep.engine.state.components.battlefield.WarpedComponent>()
         // Stack-only: cast-origin zone reads SpellOnStackComponent, which battlefield permanents

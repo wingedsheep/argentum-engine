@@ -142,6 +142,7 @@ class AncestralVisionScenarioTest : FunSpec({
         // Fourth owner upkeep: the last time counter is removed and the "may cast it for free"
         // trigger fires (CR 702.62a).
         resolveNextOwnerUpkeep(driver, me)
+        driver.bothPass() // resolve suspend's last-counter cast trigger
         driver.submitYesNo(me, true)
         // "Target player draws three cards" — the free cast still needs its target chosen.
         driver.submitTargetSelection(me, listOf(me))
@@ -172,6 +173,7 @@ class AncestralVisionScenarioTest : FunSpec({
         val myHandSizeBefore = driver.getHand(me).size
         val opponentHandSizeBefore = driver.getHand(opponent).size
 
+        driver.bothPass() // resolve suspend's last-counter cast trigger
         driver.submitYesNo(me, true)
         // "Target player draws three cards" is a real choice — the caster (who controls this
         // free cast, per CR 601.2c/2d — target selection is the caster's, not the target's) may
@@ -199,6 +201,7 @@ class AncestralVisionScenarioTest : FunSpec({
         timeCounters(driver, card) shouldBe 0
 
         // CR 702.62a: "you may play it" — declining is legal, and it remains exiled forever.
+        driver.bothPass() // resolve suspend's last-counter cast trigger
         driver.submitYesNo(me, false)
         driver.bothPass()
 

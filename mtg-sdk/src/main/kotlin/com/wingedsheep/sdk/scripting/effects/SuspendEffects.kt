@@ -7,8 +7,8 @@ import kotlinx.serialization.Serializable
 
 /**
  * Mark [target] as suspended (CR 702.62) — the engine attaches the suspended marker
- * component so the card gains the countdown-and-cast triggered ability while in exile
- * (see [com.wingedsheep.sdk.scripting.Suspend.countdownAbility]).
+ * component so the card gains the countdown and last-counter cast triggered abilities while
+ * in exile (see [com.wingedsheep.sdk.scripting.Suspend.exileAbilities]).
  *
  * This is the marker step of the [com.wingedsheep.sdk.dsl.Effects.Suspend] chain; it does
  * not move the card or add time counters itself (the chain composes those from

@@ -17,7 +17,7 @@ import com.wingedsheep.sdk.scripting.Duration
  * counters as it resolves (`spell { selfExile(timeCounters = n) }`).
  *
  * - The [SuspendedComponent] marker is what makes the engine grant the exile-side
- *   countdown-and-cast triggered ability (see [com.wingedsheep.sdk.scripting.Suspend]).
+ *   countdown and last-counter cast triggered abilities (see [com.wingedsheep.sdk.scripting.Suspend]).
  * - CR 702.62a: a creature played via suspend "gains haste until you lose control of the spell
  *   or the permanent it becomes." A normal `GrantKeyword(HASTE)` can't be used here because the
  *   card is in exile (not a projected creature), so this adds a self-sourced floating haste effect

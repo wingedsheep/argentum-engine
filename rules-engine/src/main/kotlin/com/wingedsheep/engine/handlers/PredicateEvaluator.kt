@@ -2624,6 +2624,13 @@ class PredicateEvaluator(
             StatePredicate.IsForetold ->
                 container.has<com.wingedsheep.engine.state.components.identity.ForetoldComponent>()
 
+            // Suspended card (CR 702.62b) — in exile, carrying the suspend marker that drives its
+            // countdown, with at least one time counter left.
+            StatePredicate.IsSuspended ->
+                container.has<com.wingedsheep.engine.state.components.battlefield.SuspendedComponent>() &&
+                    (container.get<CountersComponent>()?.getCount(com.wingedsheep.sdk.core.CounterType.TIME) ?: 0) > 0 &&
+                    state.turnOrder.any { entityId in state.getExile(it) }
+
             // Battlefield marker — set when a warped spell resolves (CR 702.185).
             StatePredicate.WasCastForWarp ->
                 container.has<com.wingedsheep.engine.state.components.battlefield.WarpedComponent>()

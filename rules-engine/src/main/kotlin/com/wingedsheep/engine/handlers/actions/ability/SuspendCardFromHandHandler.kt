@@ -288,7 +288,7 @@ class SuspendCardFromHandHandler(
         )
 
         // Mark it suspended and pre-arm haste — the same tail GrantSuspendExecutor uses, so the
-        // engine's synthesized countdown-and-cast trigger (Suspend.countdownAbility) takes over
+        // engine's synthesized countdown and cast triggers (Suspend.exileAbilities) take over
         // from here exactly as it does for a runtime-granted suspend.
         currentState = currentState.markSuspended(
             action.cardId, EffectContext(sourceId = action.cardId, controllerId = action.playerId)

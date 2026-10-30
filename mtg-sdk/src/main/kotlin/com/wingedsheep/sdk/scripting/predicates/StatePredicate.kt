@@ -1549,6 +1549,21 @@ sealed interface StatePredicate {
     }
 
     /**
+     * A **suspended card** (CR 702.62b): a card in the exile zone that has suspend and has a time
+     * counter on it. "Has suspend" reads the engine's suspended marker — the same marker that grants
+     * the countdown and cast triggers, set by the suspend special action, `Effects.Suspend`
+     * (Taigam, Master Opportunist) and a spell that exiles itself with time counters — so the
+     * predicate and the card's actual suspend lifecycle never disagree. A card whose last time
+     * counter is gone is no longer suspended, even while it lingers in exile. Union it with a
+     * battlefield clause for "target permanent or suspended card" (Clockspinning).
+     */
+    @SerialName("IsSuspended")
+    @Serializable
+    data object IsSuspended : Entity {
+        override val description: String = "suspended"
+    }
+
+    /**
      * Permanent on the battlefield that was cast for its warp cost (CR 702.185).
      * Matches the `WarpedComponent` marker the engine writes when a warped spell
      * resolves — the permanent-side bookkeeping equivalent of 702.185c's "a spell

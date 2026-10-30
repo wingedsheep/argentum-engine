@@ -25,6 +25,7 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.stack.*
 import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.*
@@ -469,8 +470,19 @@ internal class ResolutionTargetValidator(
             targetPlayerId = predicateContext.targetPlayerId
                 ?: targets.firstNotNullOfOrNull { (it as? ChosenTarget.Player)?.playerId },
         )
-        return predicateEvaluator.matches(state, projected, target.cardId, filter.baseFilter, cardContext)
+        return clausesForZone(filter, target.zone).any { clause ->
+            predicateEvaluator.matches(state, projected, target.cardId, clause.baseFilter, cardContext)
+        }
     }
+
+    /**
+     * The filters a target in [zone] is re-checked against (CR 608.2b). A cross-zone union
+     * ("target permanent or suspended card", Clockspinning) re-checks only the clauses for the zone
+     * the target sits in, so an alternative clause's object isn't judged by the primary clause's
+     * predicate; a non-union filter is its own single clause, as before.
+     */
+    private fun clausesForZone(filter: TargetFilter, zone: Zone): List<TargetFilter> =
+        if (filter.isUnion) filter.clauses().filter { it.zone == zone } else listOf(filter)
 
     private fun stillMatchesRequirementFilter(
         state: GameState,
@@ -482,16 +494,10 @@ internal class ResolutionTargetValidator(
     ): Boolean {
         // Re-validate target filter (Rule 608.2b)
         val requirement = getRequirementForTargetIndex(index, targetRequirements)
-        val filter = extractTargetFilter(requirement)
-        if (filter != null) {
-            if (!predicateEvaluator.matches(
-                    state, projected, target.entityId, filter.baseFilter, predicateContext
-                )
-            ) {
-                return false
-            }
+        val filter = extractTargetFilter(requirement) ?: return true
+        return clausesForZone(filter, Zone.BATTLEFIELD).any { clause ->
+            predicateEvaluator.matches(state, projected, target.entityId, clause.baseFilter, predicateContext)
         }
-        return true
     }
 
     /**

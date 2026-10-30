@@ -96,6 +96,7 @@ class SelfExileWithTimeCountersTest : FunSpec({
         timeCounters(driver, boon) shouldBe 1
         resolveNextOwnerUpkeep(driver, player)
         // CR 702.62a — the last counter is gone; its owner may cast it without paying its mana cost.
+        driver.bothPass() // resolve suspend's last-counter cast trigger
         driver.submitYesNo(player, true)
         driver.bothPass()
 
