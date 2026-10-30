@@ -125,7 +125,8 @@ internal class ResolutionTargetValidator(
                 }
         }.toSet()
         val sharingController = targetsSharingAController(projected, state, targets, individuallyLegal, targetRequirements)
-        val sharingValue = targetsSharingADifferentValue(state, targets, individuallyLegal, targetRequirements)
+        val sharingValue = targetsSharingADifferentValue(state, targets, individuallyLegal, targetRequirements) +
+            targetsOverTotalPower(state, targets, individuallyLegal, targetRequirements, predicateContext)
         if (targetRequirements.none { (it as? TargetObject)?.sameNumericProperty != null }) {
             return targets.filterIndexed { index, _ ->
                 index in individuallyLegal && index !in sharingController && index !in sharingValue
@@ -149,6 +150,30 @@ internal class ResolutionTargetValidator(
             index in individuallyLegal && index !in sharingController && index !in unequal && index !in sharingValue
         }
     }
+
+    /**
+     * "… with total power N or less" (Nethroi, Apex of Death) restricts the *set* of targets: when the
+     * still-legal targets of a `totalPowerAtMost` requirement now exceed the cap (a `*` power card
+     * grew in the graveyard), every one of them is illegal and nothing is returned (the card's ruling).
+     */
+    private fun targetsOverTotalPower(
+        state: GameState,
+        targets: List<ChosenTarget>,
+        legalIndices: Set<Int>,
+        targetRequirements: List<TargetRequirement>,
+        predicateContext: PredicateContext,
+    ): Set<Int> = legalIndices
+        .groupBy { index -> (getRequirementForTargetIndex(index, targetRequirements) as? TargetObject)?.totalPowerAtMost }
+        .flatMap { (cap, indices) ->
+            if (cap == null) return@flatMap emptyList()
+            val max = try {
+                predicateEvaluator.amounts.evaluate(state, cap, predicateContext.toEffectContext())
+            } catch (_: Exception) {
+                return@flatMap emptyList()
+            }
+            val total = indices.sumOf { com.wingedsheep.engine.mechanics.targeting.powerTowardTotal(state, targets[it].toEntityId(), predicateEvaluator.amounts) }
+            if (total > max) indices else emptyList()
+        }.toSet()
 
     /**
      * "… with different mana values" (Long Rest) restricts the *set* of targets, so it is re-checked

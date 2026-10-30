@@ -4634,6 +4634,93 @@
     ]
 }
 
+// Nethroi, Apex of Death
+{
+    "name": "Nethroi, Apex of Death",
+    "manaCost": "{2}{W}{B}{G}",
+    "typeLine": "Legendary Creature — Cat Nightmare Beast",
+    "oracleText": "Mutate {4}{G/W}{B}{B} (If you cast this spell for its mutate cost, put it over or under target non-Human creature you own. They mutate into the creature on top plus all abilities from under it.)\nDeathtouch, lifelink\nWhenever this creature mutates, return any number of target creature cards with total power 10 or less from your graveyard to the battlefield.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "DEATHTOUCH",
+        "LIFELINK",
+        "MUTATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Mutate",
+            "cost": "{4}{G/W}{B}{B}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nethroi, Apex of Death:1",
+                "trigger": "MutateEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "unlimited": true,
+                    "filter": {
+                        "baseFilter": "creature own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0",
+                    "totalPowerAtMost": {
+                        "type": "Fixed",
+                        "amount": 10
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "197",
+        "rarity": "MYTHIC",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8ca6eb5a-8bc9-4091-bcfb-b207f0afd188.jpg?1783931020",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Nethroi's triggered ability can return any combination of creatures whose powers total 10 or less. For example, it could target ten 1/1 creature cards, two 5/5 creature cards, and so on. Regardless of what other creature cards you choose as targets, you can also choose any number of creature cards with power 0 as targets."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Use the power of the creature cards as they exist in your graveyard to determine whether they can be the targets of Nethroi's triggered ability. For example, a 0/0 creature card that will enter the battlefield as a copy of a 15/15 creature can be returned, as can five 0/0 creature cards that will each enter the battlefield with three +1/+1 counters on them."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If the power of the target creature cards change while in your graveyard, most likely because one has a characteristic-defining ability that defines a * in its power, the total power of the creatures may become greater than 10. If this happens, the entire selection of targets is illegal and nothing is returned to the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Neutralize
 {
     "name": "Neutralize",

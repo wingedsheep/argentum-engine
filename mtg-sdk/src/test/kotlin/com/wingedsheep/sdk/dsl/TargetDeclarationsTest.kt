@@ -204,6 +204,8 @@ class TargetDeclarationsTest : DescribeSpec({
                 "one or more target creatures"
             TargetObject(filter = TargetFilter.CreatureInYourGraveyard, count = 2, optional = true).description shouldBe
                 "up to two target creature cards in your graveyard"
+            TargetObject(filter = TargetFilter.CreatureInYourGraveyard, unlimited = true, totalPowerAtMost = DynamicAmount.Fixed(10))
+                .description shouldBe "any number of target creature cards in your graveyard with total power 10 or less"
             TargetObject(filter = TargetFilter.Creature, optional = true, dynamicMaxCount = DynamicAmount.XValue)
                 .description shouldBe "up to X target creatures"
             TargetObject(filter = TargetFilter.Creature, dynamicMaxCount = DynamicAmount.XValue, dynamicMinCount = DynamicAmount.XValue)

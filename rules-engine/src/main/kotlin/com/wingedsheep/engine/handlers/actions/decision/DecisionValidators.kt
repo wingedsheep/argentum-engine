@@ -246,6 +246,14 @@ object DecisionValidators {
                     return "Targets for requirement $reqIndex exceed total mana value $manaCap"
                 }
             }
+            // "... with total power N or less" (Nethroi, Apex of Death) — the power sibling.
+            val powerCap = req.totalPowerAtMost
+            if (powerCap != null) {
+                val totalPower = selectedIds.sumOf { id -> req.targetPowers?.get(id) ?: 0 }
+                if (totalPower > powerCap) {
+                    return "Targets for requirement $reqIndex exceed total power $powerCap"
+                }
+            }
             // "... with different names" — no two chosen targets may share a name (Behold the
             // Sinister Six!). TargetValidator is authoritative; this rejects it interactively too.
             if (req.differentNames && selectedIds.size > 1 && state != null) {

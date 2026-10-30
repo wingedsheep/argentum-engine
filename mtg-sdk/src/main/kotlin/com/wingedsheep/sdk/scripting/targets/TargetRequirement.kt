@@ -540,6 +540,19 @@ data class TargetObject(
      */
     val totalManaValueAtMost: DynamicAmount? = null,
     /**
+     * When non-null, the chosen card or permanent targets for this requirement must have a
+     * **combined power no greater than this amount** — "any number of target creature cards with
+     * total power 10 or less from your graveyard" (Nethroi, Apex of Death). The power sibling of
+     * [totalManaValueAtMost], resolved and enforced the same way: by `TargetValidator`
+     * (authoritative), the interactive `DecisionValidators` (cap baked into the decision), and the
+     * CR 608.2b re-check at resolution. Each target counts its *current* power — projected on the
+     * battlefield, the card's own power in other zones; a card with no defined power counts 0.
+     * Because power can change while the ability waits (a `*` power card in a graveyard), the cap
+     * restricts the *set*: when the still-legal targets exceed it at resolution, every target of
+     * the requirement is illegal (Nethroi's ruling). `null` (the default) imposes no cap.
+     */
+    val totalPowerAtMost: DynamicAmount? = null,
+    /**
      * When true and more than one target is chosen for this requirement, every chosen target must
      * have a **different name** from the others — "up to six target creature cards with different
      * names" (Behold the Sinister Six!). Enforced cross-target by `TargetValidator` (authoritative)
@@ -655,10 +668,11 @@ data class TargetObject(
         }
         val numericQualified = sameNumericProperty?.let { "$qualified with equal ${it.description}" }
             ?: differentNumericProperty?.let { "$qualified with different ${it.pluralDescription}" } ?: qualified
-        if (totalManaValueAtMost != null) {
-            "$numericQualified with total mana value ${totalManaValueAtMost.description} or less"
-        } else {
-            numericQualified
+        when {
+            totalManaValueAtMost != null ->
+                "$numericQualified with total mana value ${totalManaValueAtMost.description} or less"
+            totalPowerAtMost != null -> "$numericQualified with total power ${totalPowerAtMost.description} or less"
+            else -> numericQualified
         }
     }
 

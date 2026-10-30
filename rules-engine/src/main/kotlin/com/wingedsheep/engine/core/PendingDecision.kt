@@ -188,6 +188,17 @@ data class TargetRequirementInfo(
      */
     val totalManaValueAtMost: Int? = null,
     /**
+     * The power sibling of [totalManaValueAtMost]: when non-null, the combined power of the chosen
+     * targets may not exceed this resolved cap — "any number of target creature cards with total
+     * power 10 or less" (Nethroi, Apex of Death). `null` imposes no cap.
+     */
+    val totalPowerAtMost: Int? = null,
+    /**
+     * Each candidate's power toward [totalPowerAtMost], computed server-side (`powerTowardTotal`)
+     * when the pause is built; set exactly when [totalPowerAtMost] is.
+     */
+    val targetPowers: Map<EntityId, Int>? = null,
+    /**
      * When true, no two chosen targets for this requirement may share a name — "target creature
      * cards with different names" (Behold the Sinister Six!). Enforced against each selected
      * target's name in [DecisionValidators.validateTargets].

@@ -2,6 +2,7 @@ import { compatibleSelectionPool } from '@/utils/selectionGroups'
 import { useState, useMemo } from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
 import type { EntityId } from '@/types'
+import type { SelectionTotalCap } from '@/store/slices/types'
 import { calculateFittingCardWidth, type ResponsiveSizes } from '@/hooks/useResponsive.ts'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
 
@@ -37,6 +38,9 @@ interface ZoneSelectionUIProps {
   exclusiveGroups?: readonly (readonly EntityId[])[] | null
   /** Each candidate's claimable categories; picks must each claim a different one ("of each color"). */
   distinctCategories?: Readonly<Record<EntityId, readonly string[]>> | null
+  /** "... with total mana value / power N or less": a pick that would push a cap's running sum over
+   * it is blocked, and each cap's tally is shown beside the count. */
+  totalCaps?: readonly SelectionTotalCap[]
   /** Responsive sizing info */
   responsive: ResponsiveSizes
   /** Called when selection is confirmed */
@@ -84,6 +88,7 @@ export function ZoneSelectionUI({
   selectionGroups,
   exclusiveGroups,
   distinctCategories,
+  totalCaps = [],
   title,
   prompt,
   helperText,
@@ -172,6 +177,8 @@ export function ZoneSelectionUI({
         return prev.filter((id) => id !== cardId)
       }
       if ((maxSelections > 1 || distinctCategories) && !compatibleSelectionPool(cards.map((c) => c.id), selectionGroups, maxSelections > 1 ? prev : [], exclusiveGroups, distinctCategories).includes(cardId)) return prev
+      const kept = prev.length >= maxSelections && maxSelections === 1 ? [] : prev
+      if (totalCaps.some((c) => kept.reduce((sum, id) => sum + (c.values[id] ?? 0), 0) + (c.values[cardId] ?? 0) > c.cap)) return prev
       if (prev.length >= maxSelections) {
         // Single-select at its cap: clicking a different card replaces the pick rather than being
         // ignored — the same rule the board path uses (toggleDecisionSelection), and the only way a
@@ -302,6 +309,16 @@ export function ZoneSelectionUI({
           {' / '}
           {maxSelections}
         </span>
+        {totalCaps.map((c) => (
+          <span key={c.label}>
+            Total {c.label}:{' '}
+            <span style={{ fontWeight: 600 }}>
+              {selectedCards.reduce((sum, id) => sum + (c.values[id] ?? 0), 0)}
+            </span>
+            {' / '}
+            {c.cap}
+          </span>
+        ))}
         {filterDescription && (
           <>
             <span style={{ color: '#666' }}>|</span>

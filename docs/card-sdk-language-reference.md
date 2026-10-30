@@ -6346,7 +6346,7 @@ spell {
 - **Several object targets under one requirement** — "two target creatures", "up to X target
   creatures", "any number of target cards from a single graveyard" — are
   `targets(filter, count, minCount, optional, unlimited, dynamicMaxCount, exactly, sameController,
-  sameOwner, sameNumericProperty, differentNumericProperty, sameCreatureType, sameCardType, totalManaValueAtMost, differentNames, differentControllers,
+  sameOwner, sameNumericProperty, differentNumericProperty, sameCreatureType, sameCardType, totalManaValueAtMost, totalPowerAtMost, differentNames, differentControllers,
   onePerCardType, onePerColor, chooser)`, which returns one handle per slot:
   `val (first, second) = targets(TargetFilter.Creature, count = 2)`. An ability that treats the
   targets uniformly ignores the handles and reads them with `Effects.ForEachTarget(…)`.
@@ -6573,6 +6573,19 @@ Every `TargetRequirement` carries count semantics (defaults shown):
   TargetFilter(GameObjectFilter.Creature.ownedByTriggeringPlayer(), zone = Zone.GRAVEYARD),
   totalManaValueAtMost = DynamicAmount.XValue)` — **Fire Lord Sozin** (back face of The Rise of Sozin),
   reanimating post-payment via a `Effects.MayPayX(ReflexiveTriggerEffect(...))`.
+- `totalPowerAtMost = null` — on `TargetObject`; the **power** sibling of `totalManaValueAtMost`:
+  the combined power of the chosen card or permanent targets may not exceed the resolved amount
+  ("**any number of target creature cards with total power 10 or less from your graveyard**" —
+  Nethroi, Apex of Death). Each target counts its current power: projected on the battlefield; in any
+  other zone the card's own power, with a `*` evaluated by its characteristic-defining ability
+  (CR 604.3 — a Lhurgoyf in the graveyard counts the creature cards in graveyards); 0 for an object
+  with no power. The interactive target decision carries the resolved cap
+  (`TargetRequirementInfo.totalPowerAtMost`) **and** each candidate's power (`targetPowers`), so
+  `DecisionValidators`, the AI and the web-client's graveyard / battlefield pickers all sum the
+  server's numbers; `TargetValidator` is authoritative. Because power can change while the ability
+  waits, the cap is re-checked as a restriction on the *set* at resolution (CR 608.2b): when the
+  still-legal targets now exceed it, every one of them is illegal. Pair with `unlimited = true`. E.g.
+  `targets(TargetFilter.CreatureInYourGraveyard, unlimited = true, totalPowerAtMost = DynamicAmounts.fixed(10))`.
 - `differentNames = false` — on `TargetObject`; when `true` and more than one target is chosen, no two
   chosen targets may share a **name** ("**up to six target creature cards with different names**" —
   Behold the Sinister Six!). Enforced cross-target by `TargetValidator` (authoritative) and, on the

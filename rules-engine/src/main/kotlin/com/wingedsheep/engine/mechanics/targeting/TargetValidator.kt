@@ -362,6 +362,31 @@ class TargetValidator(
                 }
             }
 
+            // "... with total power N or less" (Nethroi, Apex of Death) — the power sibling of the
+            // mana-value cap: each target counts its current power (projected on the battlefield).
+            val totalPowerCap = (requirement as? TargetObject)?.totalPowerAtMost
+            if (totalPowerCap != null && targetsForReq.isNotEmpty()) {
+                val cap = try {
+                    amountEvaluator.evaluate(
+                        state,
+                        totalPowerCap,
+                        EffectContext(sourceId = sourceId, controllerId = casterId, xValue = xValue)
+                    ).coerceAtLeast(0)
+                } catch (_: Exception) {
+                    Int.MAX_VALUE
+                }
+                val summedPower = targetsForReq.sumOf { target ->
+                    when (target) {
+                        is ChosenTarget.Card -> powerTowardTotal(state, target.cardId, amountEvaluator)
+                        is ChosenTarget.Permanent -> powerTowardTotal(state, target.entityId, amountEvaluator)
+                        else -> 0
+                    }
+                }
+                if (summedPower > cap) {
+                    return "Targets must have total power $cap or less"
+                }
+            }
+
             // "... with different names" — no two chosen targets for this requirement may share a
             // name (Behold the Sinister Six!: "up to six target creature cards with different
             // names"). CR 601.2c. Grouped by projected name on the battlefield, base card name in

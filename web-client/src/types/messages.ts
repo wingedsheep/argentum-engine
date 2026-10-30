@@ -537,6 +537,14 @@ export interface TargetRequirementInfo {
    */
   readonly totalManaValueAtMost?: number | null
   /**
+   * The power sibling of `totalManaValueAtMost`: the combined power of the chosen targets may not
+   * exceed this cap ("any number of target creature cards with total power 10 or less" — Nethroi,
+   * Apex of Death). Already resolved server-side.
+   */
+  readonly totalPowerAtMost?: number | null
+  /** Each candidate's power toward `totalPowerAtMost`, computed server-side; set with it. */
+  readonly targetPowers?: Readonly<Record<EntityId, number>> | null
+  /**
    * True for "another target" wording: a pick here must differ from every target chosen for an
    * earlier requirement. Absent/false lets separate "target" instances choose the same object
    * (Seeds of Strength), so earlier picks stay in this requirement's pool.

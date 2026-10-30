@@ -286,9 +286,14 @@ class DecisionResponder(
                 return TargetsResponse(decision.id, mapOf(req.index to best))
             }
             val legal = decision.legalTargets[req.index]
-                // A target whose own mana value is over a "total mana value N or less" cap can never
+                // A target whose own mana value / power is over a "total … N or less" cap can never
                 // be picked; growTargets' simulation rejects the combinations that go over.
                 ?.let { all -> req.totalManaValueAtMost?.let { cap -> all.filter { ManaValues.of(state, it) <= cap } } ?: all }
+                ?.let { all ->
+                    req.totalPowerAtMost?.let { cap ->
+                        all.filter { (req.targetPowers?.get(it) ?: 0) <= cap }
+                    } ?: all
+                }
                 ?: return cancelOrFirst(decision)
             if (legal.isEmpty()) return cancelOrFirst(decision)
             val targets = polarityPool(state, legal, playerId, polarities[req.index], optional = req.minTargets == 0)

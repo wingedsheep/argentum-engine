@@ -66,12 +66,15 @@ export function BattlefieldTargetingUI({
   const targetReq = decision.targetRequirements[requirementIndex]
   const minTargets = targetReq?.minTargets ?? 1
 
-  // "... with total mana value N or less" (Kairi, the Swirling Sky): a permanent whose own mana
-  // value is over the cap can never be picked, and each click is held to the running total.
-  const manaCap = targetReq?.totalManaValueAtMost ?? null
-  const manaValueOf = (id: EntityId) => gameState?.cards[id]?.manaValue ?? 0
-  const selectableTargets = manaCap == null ? legalTargets : legalTargets.filter((id) => manaValueOf(id) <= manaCap)
-  const maxTargets = manaCap == null
+  // "... with total mana value / power N or less" (Kairi, the Swirling Sky; Nethroi, Apex of
+  // Death): a permanent whose own value is over a cap can never be picked, and each click is held
+  // to the running total.
+  const totalCaps = [
+    { label: 'mana value', cap: targetReq?.totalManaValueAtMost ?? null, valueOf: (id: EntityId) => gameState?.cards[id]?.manaValue ?? 0 },
+    { label: 'power', cap: targetReq?.totalPowerAtMost ?? null, valueOf: (id: EntityId) => targetReq?.targetPowers?.[id] ?? 0 },
+  ].flatMap(({ cap, ...rest }) => (cap == null ? [] : [{ ...rest, cap }]))
+  const selectableTargets = legalTargets.filter((id) => totalCaps.every((c) => c.valueOf(id) <= c.cap))
+  const maxTargets = totalCaps.length === 0
     ? targetReq?.maxTargets ?? 1
     : Math.min(targetReq?.maxTargets ?? 1, selectableTargets.length)
 
@@ -92,10 +95,11 @@ export function BattlefieldTargetingUI({
       minSelections: minTargets,
       maxSelections: maxTargets,
       prompt: targetReq?.description ?? decision.prompt,
-      manaValueCap: manaCap == null ? null : {
-        cap: manaCap,
-        values: Object.fromEntries(selectableTargets.map((id) => [id, manaValueOf(id)])),
-      },
+      totalCaps: totalCaps.map((c) => ({
+        label: c.label,
+        cap: c.cap,
+        values: Object.fromEntries(selectableTargets.map((id) => [id, c.valueOf(id)])),
+      })),
     }
     startDecisionSelection(selectionState)
 
@@ -105,7 +109,6 @@ export function BattlefieldTargetingUI({
   }, [decision.id, requirementIndex])
 
   const selectedCount = decisionSelectionState?.selectedOptions.length ?? 0
-  const selectedManaValue = (decisionSelectionState?.selectedOptions ?? []).reduce((sum, id) => sum + manaValueOf(id), 0)
   const canConfirm = selectedCount >= minTargets && selectedCount <= maxTargets
   const canDecline = minTargets === 0
 
@@ -174,11 +177,11 @@ export function BattlefieldTargetingUI({
       <div className={styles.hint}>
         {`${selectedCount} / ${maxTargets} selected`}
       </div>
-      {manaCap != null && (
-        <div className={styles.hint}>
-          {`Total mana value: ${selectedManaValue} / ${manaCap}`}
+      {totalCaps.map((c) => (
+        <div key={c.label} className={styles.hint}>
+          {`Total ${c.label}: ${(decisionSelectionState?.selectedOptions ?? []).reduce((sum, id) => sum + c.valueOf(id), 0)} / ${c.cap}`}
         </div>
-      )}
+      ))}
       {decisionSelectionState?.warning && (
         <div className={styles.hint}>
           {decisionSelectionState.warning}
