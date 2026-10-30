@@ -2575,6 +2575,73 @@
     ]
 }
 
+// Callaphe, Beloved of the Sea
+{
+    "name": "Callaphe, Beloved of the Sea",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Legendary Enchantment Creature — Demigod",
+    "oracleText": "Callaphe's power is equal to your devotion to blue. (Each {U} in the mana costs of permanents you control counts toward your devotion to blue.)\nCreatures and enchantments you control have \"Spells your opponents cast that target this permanent cost {1} more to cast.\"",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "DevotionTo",
+                "colors": [
+                    "BLUE"
+                ]
+            }
+        },
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantStaticAbility",
+                "ability": {
+                    "type": "ModifySpellCost",
+                    "target": {
+                        "type": "OpponentsCastTargeting",
+                        "targetFilter": {
+                            "baseFilter": "permanent",
+                            "scope": "Self"
+                        }
+                    },
+                    "modification": {
+                        "type": "IncreaseGeneric",
+                        "amount": 1
+                    }
+                },
+                "filter": {
+                    "baseFilter": "creature|enchantment ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "rarity": "UNCOMMON",
+        "artist": "Zack Stella",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c5d433f2-0a3b-4f45-83a3-ed600a6d10b1.jpg?1783931586",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "Callaphe's last ability applies to itself as well as other creatures and enchantments you control."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "Callaphe's last ability gives only one instance of the ability to creatures you control that are also enchantments."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "An opponent's spell that targets a single creature or enchantment you control more than once costs only {1} more to cast. An opponent's spell that targets multiple creatures and/or enchantments you control costs {1} more for each of them."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Captivating Unicorn
 {
     "name": "Captivating Unicorn",
