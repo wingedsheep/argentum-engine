@@ -3630,6 +3630,56 @@
     ]
 }
 
+// Jubilant Skybonder
+{
+    "name": "Jubilant Skybonder",
+    "manaCost": "{1}{W/U}{W/U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Flying\nCreatures you control with flying have \"Spells your opponents cast that target this creature cost {2} more to cast.\"",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantStaticAbility",
+                "ability": {
+                    "type": "ModifySpellCost",
+                    "target": {
+                        "type": "OpponentsCastTargeting",
+                        "targetFilter": {
+                            "baseFilter": "permanent",
+                            "scope": "Self"
+                        }
+                    },
+                    "modification": {
+                        "type": "IncreaseGeneric",
+                        "amount": 2
+                    }
+                },
+                "filter": {
+                    "baseFilter": "creature kw:flying ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "223",
+        "rarity": "UNCOMMON",
+        "artist": "Jesper Ejsing",
+        "flavorText": "She was born unable to walk. Through the *eludha*, she was able to fly.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f8f2d69-fba9-40e5-8ef7-75e14ef4070a.jpg?1783931012"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Kaheera, the Orphanguard
 {
     "name": "Kaheera, the Orphanguard",

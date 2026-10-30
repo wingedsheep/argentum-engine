@@ -10610,9 +10610,13 @@ staticAbility {
   `GrantStaticAbility(NoMaximumHandSize, Filters.EnchantedCreature)` — an Aura on an opponent's creature frees
   the opponent's hand. `ability` is typed `ProjectedStaticAbility` — the sealed marker for kinds whose engine
   read consults the holder's projected statics (`ProjectedState.getStaticAbilities`): today `NoMaximumHandSize`,
-  `Enlist`, `GrantCantLoseGame` and `GrantOpponentsCantWinGame` (Cloudsteel Kirin: "Equipped creature has 'You
-  can't lose the game and your opponents can't win the game'" is one `GrantStaticAbility` per clause over
-  `Filters.EquippedCreature`). To grant another point-of-use kind this way, route its read through projection and
+  `Enlist`, `GrantCantLoseGame`, `GrantOpponentsCantWinGame` and `ModifySpellCost` (Cloudsteel Kirin: "Equipped
+  creature has 'You can't lose the game and your opponents can't win the game'" is one `GrantStaticAbility` per
+  clause over `Filters.EquippedCreature`). A granted `ModifySpellCost` is one modifier per holder, read relative to
+  that holder — Jubilant Skybonder's "Creatures you control with flying have 'Spells your opponents cast that target
+  this creature cost {2} more to cast'" = `GrantStaticAbility(ModifySpellCost(OpponentsCastTargeting(GroupFilter.source()),
+  IncreaseGeneric(2)), GroupFilter(Creature.youControl().withKeyword(FLYING)))`, so a spell targeting two of those
+  flyers costs {4} more (the scan in `CostCalculator.scanModifySpellCost` adds projected instances to printed ones). To grant another point-of-use kind this way, route its read through projection and
   mark it. **A granted ability that lowers to a continuous effect** (`ModifyStats`, `GrantKeyword`, a
   `CompositeStaticAbility` of them, …) is generated *by the holder* exactly as if printed on it — sourced from the
   holder, its filters resolved relative to the holder, timestamped at the later of holder and granter (CR 613.7a),
@@ -11775,6 +11779,7 @@ staticAbility {
 
 - `target: SpellCostTarget` — `SelfCast`, `YouCast(filter)`, `AnyCaster(filter)`, `OpponentsCast(filter)`,
   `OpponentsCastTargeting(GroupFilter)`, `OpponentsCastFromZones(zones, filter?)`, `YouCastFromZones(zones, filter?)`, `PlayerCasts(player, filter?)`, `FaceDownYouCast`, `MorphActivation`.
+  - `OpponentsCastTargeting(targetFilter)` — spells the source-controller's opponents cast with at least one chosen target matching `targetFilter` relative to the source: `GroupFilter.source()` is "that target this creature" (Syr Elenora), a battlefield group is "that target a Merfolk you control" (Kopala — once per spell however many Merfolk it targets). Granted by `GrantStaticAbility`, each holder taxes separately (Jubilant Skybonder).
   - `OpponentsCast(filter = Any)` — spells matching `filter` cast by an **opponent** of the source's controller, from any zone; the controller's own spells are untouched. Thalia, the Survivor: `OpponentsCast(Noncreature)` + `IncreaseGeneric(1)`. Like `AnyCaster`, it also taxes alternative costs such as flashback (CR 118.9d).
   - `OpponentsCastFromZones(zones, filter = Any)` — spells the source-controller's opponents cast **from one of `zones`** (matched against the spell's actual cast zone, threaded as `fromZone`), matching `filter`. Pair with `CostModification.IncreaseGeneric(n)` for the Aven Interrupter shape: `OpponentsCastFromZones(setOf(Zone.GRAVEYARD, Zone.EXILE))` + `IncreaseGeneric(2)` = "Spells your opponents cast from graveyards or from exile cost {2} more to cast."
   - `YouCastFromZones(zones, filter = Any)` — the you-cast analogue: spells the **source's controller** casts **from one of `zones`**, matching `filter`. Pair with `CostModification.ReduceGeneric(n)` for Doc Aurlock, Grizzled Genius: `YouCastFromZones(setOf(Zone.GRAVEYARD, Zone.EXILE))` + `ReduceGeneric(2)` = "Spells you cast from your graveyard or from exile cost {2} less to cast." (Only the normal-cast path threads `fromZone`; alternative-cost casts such as flashback compute their own base cost and are unaffected.)

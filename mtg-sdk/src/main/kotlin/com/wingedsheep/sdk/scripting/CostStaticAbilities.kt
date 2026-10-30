@@ -22,6 +22,11 @@ import kotlinx.serialization.Serializable
  * @property target Which spells/costs the modifier applies to.
  * @property modification How the cost is changed (reduce/increase, generic/colored, fixed/dynamic).
  * @property gating Optional extra restriction (e.g. only the first matching spell each turn).
+ *
+ * A [ProjectedStaticAbility], so a [GrantStaticAbility] can hand it to other permanents — Jubilant
+ * Skybonder's "creatures you control with flying have 'Spells your opponents cast that target this
+ * creature cost {2} more to cast'". Each holder's granted instance is its own modifier, read
+ * relative to the holder: a spell targeting two such creatures costs {4} more.
  */
 @SerialName("ModifySpellCost")
 @Serializable
@@ -31,7 +36,7 @@ data class ModifySpellCost(
     val gating: CostGating = CostGating.None,
     /** Optional additional life payment elected once per instance while announcing the spell. */
     val optionalLifePayment: Int? = null,
-) : StaticAbility {
+) : ProjectedStaticAbility {
     init { require(optionalLifePayment == null || optionalLifePayment > 0) }
 
     override val description: String = buildDescription()
