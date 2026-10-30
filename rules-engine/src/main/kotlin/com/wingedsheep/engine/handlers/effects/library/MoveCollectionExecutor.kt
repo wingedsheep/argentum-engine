@@ -164,7 +164,7 @@ class MoveCollectionExecutor(
             entrants = entrants.filterNot { (id, controller) ->
                 ZoneMovementUtils.entryRedirected(
                     state, id, state.logicalZone(id)?.zoneType, controller, context.entryCopies[id],
-                    cardRegistry, predicateEvaluator
+                    cardRegistry, predicateEvaluator, effect.entersWith
                 )
             }
             // "If this would enter, you may [pay] instead" (EntersOnlyIfPaid) — asked once each entry

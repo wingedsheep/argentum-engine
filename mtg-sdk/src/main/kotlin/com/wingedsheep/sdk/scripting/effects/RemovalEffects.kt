@@ -388,7 +388,9 @@ data class EntryCounter(
  * creature. The change lasts for as long as the permanent stays on the battlefield.
  *
  * Carried by [MoveToZoneEffect.entersWith] and [MoveCollectionEffect.entersWith]; ignored for a
- * face-down entry and for any destination but the battlefield. The closest neighbours are
+ * face-down entry, for any destination but the battlefield, and for an Aura entering through the
+ * attach/enchant prompt (an Aura that is also a creature can't stay attached anyway). Replacements
+ * that ask whether a creature would enter (Containment Priest) judge the entrant with it applied. The closest neighbours are
  * `BecomeCreatureEffect` (a resolving effect on a permanent already in play, with a duration) and
  * `CopyExceptions` (copiable values of a copy effect) — neither is an entry rider.
  */

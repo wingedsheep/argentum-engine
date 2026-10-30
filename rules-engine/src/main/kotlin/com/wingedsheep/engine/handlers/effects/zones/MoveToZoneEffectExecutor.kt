@@ -172,7 +172,7 @@ class MoveToZoneEffectExecutor(
         val entersHere = effect.destination == Zone.BATTLEFIELD && effect.faceDown == null &&
             !ZoneMovementUtils.entryRedirected(
                 state, targetId, currentZone.zoneType, controllerId, context.entryCopies[targetId],
-                cardRegistry, zones.predicateEvaluator
+                cardRegistry, zones.predicateEvaluator, effect.entersWith
             )
 
         if (entersHere) {

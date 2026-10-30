@@ -412,7 +412,7 @@ class ZoneTransitionService(
                 entersAsCreature = {
                     EntryCharacteristics.wouldBeCreature(
                         state, entityId, options.controllerId, options.entryCopy, options.faceDown,
-                        cardRegistry, predicateEvaluator
+                        cardRegistry, predicateEvaluator, options.entersWith
                     )
                 }
             )

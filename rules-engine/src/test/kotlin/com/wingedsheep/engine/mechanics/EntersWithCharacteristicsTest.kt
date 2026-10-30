@@ -14,6 +14,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.PermanentsEnterTapped
+import com.wingedsheep.sdk.scripting.RedirectZoneChange
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.EntersWithCharacteristics
@@ -92,6 +93,21 @@ class EntersWithCharacteristicsTest : FunSpec({
         }
     }
 
+    val priest = card("Test Entry Priest") {
+        manaCost = "{1}{W}"
+        typeLine = "Creature — Human Cleric"
+        power = 2
+        toughness = 2
+        replacementEffect(
+            RedirectZoneChange(
+                newDestination = Zone.EXILE,
+                appliesTo = EventPattern.ZoneChangeEvent(
+                    filter = GameObjectFilter.Creature.nontoken().notCast(),
+                    to = Zone.BATTLEFIELD,
+                ),
+            )
+        )
+    }
     val plainReanimate = card("Test Entry Plain Reanimate") {
         manaCost = "{0}"
         typeLine = "Sorcery"
@@ -118,7 +134,7 @@ class EntersWithCharacteristicsTest : FunSpec({
     }
 
     fun driver(): GameTestDriver = GameTestDriver().also {
-        it.registerCards(TestCards.all + listOf(relic, idol, reanimate, massReturn, watcher, creaturesEnterTapped, shrink, plainReanimate, shatter, pump))
+        it.registerCards(TestCards.all + listOf(relic, idol, reanimate, massReturn, watcher, creaturesEnterTapped, shrink, plainReanimate, shatter, pump, priest))
         it.initMirrorMatch(Deck.of("Forest" to 40), skipMulligans = true)
         it.passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -204,5 +220,20 @@ class EntersWithCharacteristicsTest : FunSpec({
         d.cast(plainReanimate.name, listOf(relicId))
         (relicId in d.state.getBattlefield()) shouldBe true
         d.state.projectedState.isCreature(relicId) shouldBe false
+    }
+
+    test("a 'nontoken creature would enter' redirect judges it as the creature it enters as (Containment Priest)") {
+        val d = driver()
+        val p = d.activePlayer!!
+        d.putCreatureOnBattlefield(p, priest.name)
+        val relicId = d.putCardInGraveyard(p, relic.name)
+        val idolId = d.putCardInGraveyard(p, idol.name)
+
+        d.cast(reanimate.name, listOf(relicId))
+        d.getExile(p) shouldContain relicId
+
+        d.cast(massReturn.name)
+        d.getExile(p) shouldContain idolId
+        (idolId in d.state.getBattlefield()) shouldBe false
     }
 })

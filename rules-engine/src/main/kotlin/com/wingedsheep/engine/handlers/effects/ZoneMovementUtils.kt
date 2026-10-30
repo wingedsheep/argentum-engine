@@ -851,13 +851,15 @@ object ZoneMovementUtils {
         controllerId: EntityId?,
         entryCopy: com.wingedsheep.engine.handlers.effects.copy.EntryCopyChoice?,
         cardRegistry: com.wingedsheep.engine.registry.CardRegistry,
-        predicateEvaluator: PredicateEvaluator
+        predicateEvaluator: PredicateEvaluator,
+        entersWith: com.wingedsheep.sdk.scripting.effects.EntersWithCharacteristics? = null
     ): Boolean = fromZone != Zone.BATTLEFIELD &&
         checkZoneChangeRedirect(
             state, entityId, fromZone, Zone.BATTLEFIELD, predicateEvaluator = predicateEvaluator,
             entersAsCreature = {
                 EntryCharacteristics.wouldBeCreature(
-                    state, entityId, controllerId, entryCopy, faceDown = false, cardRegistry, predicateEvaluator
+                    state, entityId, controllerId, entryCopy, faceDown = false, cardRegistry, predicateEvaluator,
+                    entersWith
                 )
             }
         ).destinationZone != Zone.BATTLEFIELD

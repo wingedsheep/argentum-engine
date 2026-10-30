@@ -35,6 +35,7 @@ object EntryCharacteristics {
         faceDown: Boolean,
         cardRegistry: CardRegistry,
         predicateEvaluator: PredicateEvaluator,
+        entersWith: com.wingedsheep.sdk.scripting.effects.EntersWithCharacteristics? = null,
     ): Boolean {
         // A face-down permanent is a 2/2 creature with no other characteristics (CR 708.2a).
         if (faceDown) return true
@@ -50,6 +51,10 @@ object EntryCharacteristics {
         val statics = StaticAbilityHandler(cardRegistry)
         scratch = scratch.addToZone(ZoneKey(controller, Zone.BATTLEFIELD), entityId)
             .updateEntity(entityId) { statics.addContinuousEffectComponent(it.with(ControllerComponent(controller))) }
+        // The effect's own "enters as a … creature" rider (Dance of the Manse) is part of how it enters.
+        entersWith?.let {
+            scratch = com.wingedsheep.engine.handlers.effects.zones.CharacteristicsEntry.apply(scratch, entityId, controller, it)
+        }
         return scratch.projectedState.isCreature(entityId)
     }
 }
