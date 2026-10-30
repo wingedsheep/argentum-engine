@@ -24,11 +24,10 @@ import kotlinx.serialization.Serializable
  *
  * [Duration.EndOfTurn] entries are cleared at every turn boundary by
  * [com.wingedsheep.engine.core.TurnManager.startTurn]; [Duration.UntilYourNextTurn] entries survive
- * it and are removed after the untap step of [controllerId]'s next turn by
+ * it and are removed after the untap step of [expiresWithPlayerId]'s next turn by
  * [com.wingedsheep.engine.core.CleanupPhaseManager.expireUntilYourNextTurnEffects].
  *
- * @property controllerId The player whose matching spells are modified — and whose next turn
- *   ends an [Duration.UntilYourNextTurn] discount.
+ * @property controllerId The player whose matching spells are modified.
  * @property spellFilter Which of that player's spells the discount applies to.
  * @property amount Generic mana taken off (or added to) each matching spell (CR 601.2f — colored
  *   mana is never changed, and the mana component is floored at {0}).
@@ -40,6 +39,11 @@ import kotlinx.serialization.Serializable
  * @property nextSpellOnly `true` for a one-shot "the next spell you cast this turn costs {N} less"
  *   (Peerless Samurai): the first matching spell [controllerId] casts spends it, in
  *   [com.wingedsheep.engine.handlers.actions.spell.CastTriggers.consumeNextSpellRiders].
+ * @property expiresWithPlayerId The player whose next turn ends an [Duration.UntilYourNextTurn]
+ *   entry — the controller of the effect that installed it, which is not [controllerId] when the
+ *   effect taxes someone else (Elspeth Conquers Death: "until your next turn, your opponents'
+ *   noncreature spells cost {2} more"). `null` means [controllerId] (entries installed for
+ *   yourself).
  */
 @Serializable
 data class SpellCostModifier(
@@ -51,4 +55,8 @@ data class SpellCostModifier(
     val duration: Duration = Duration.EndOfTurn,
     val increase: Boolean = false,
     val nextSpellOnly: Boolean = false,
-)
+    val expiresWithPlayerId: EntityId? = null,
+) {
+    /** The player whose next turn ends an [Duration.UntilYourNextTurn] entry. */
+    val durationOwnerId: EntityId get() = expiresWithPlayerId ?: controllerId
+}

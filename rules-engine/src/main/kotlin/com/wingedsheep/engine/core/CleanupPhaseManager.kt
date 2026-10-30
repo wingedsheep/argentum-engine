@@ -262,9 +262,11 @@ class CleanupPhaseManager(
         val remainingGrantedStatic = state.grantedStaticAbilities.filter { grant ->
             !(grant.duration is Duration.UntilYourNextTurn && grant.controllerId in activeTeam)
         }
-        // "Until your next turn, … spells you cast cost {N} less" (Ral, Leyline Prodigy's +1).
+        // "Until your next turn, … spells you cast cost {N} less" (Ral, Leyline Prodigy's +1) and
+        // "… your opponents' spells cost {2} more" (Elspeth Conquers Death) — keyed to the player
+        // who installed it, not the player it taxes.
         val remainingCostReductions = state.spellCostModifiers.filter { reduction ->
-            !(reduction.duration is Duration.UntilYourNextTurn && reduction.controllerId in activeTeam)
+            !(reduction.duration is Duration.UntilYourNextTurn && reduction.durationOwnerId in activeTeam)
         }
         // Granted replacement effects keyed to the granting player ("until your next turn, each
         // creature you control enters with an additional +1/+1 counter" — Arlinn, the Pack's Hope).

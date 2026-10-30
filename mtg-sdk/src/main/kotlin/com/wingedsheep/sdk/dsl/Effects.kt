@@ -6032,8 +6032,9 @@ object Effects {
      * turn cost {2} more", with `player = Player.TriggeringPlayer`.
      *
      * [amount] and [player] are locked in when this effect resolves; the tax outlives its source
-     * and adds only generic mana. Only `EndOfTurn` and (for [Player.You]) `UntilYourNextTurn` are
-     * accepted.
+     * and adds only generic mana. Only `EndOfTurn` and `UntilYourNextTurn` are accepted; the latter
+     * lasts until the *effect controller's* next turn whoever [player] is — Elspeth Conquers Death:
+     * "until your next turn, your opponents' noncreature spells cost {2} more to cast".
      */
     fun IncreaseSpellCosts(
         amount: DynamicAmount,

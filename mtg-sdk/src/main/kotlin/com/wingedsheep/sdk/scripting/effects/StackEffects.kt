@@ -1415,9 +1415,10 @@ data class GrantOneSpellAnyManaTypeEffect(
  *
  * [duration] is [Duration.EndOfTurn] ("this turn") or [Duration.UntilYourNextTurn] (Ral, Leyline
  * Prodigy's +1 — the discount keeps applying to instants cast on opponents' turns and ends when
- * the controller's next turn begins). Any other duration is rejected at construction rather than
- * silently treated as one of these; so is `UntilYourNextTurn` for anyone but [Player.You], whose
- * turn it would have to end on.
+ * the controller's next turn begins). `UntilYourNextTurn` always means the *effect controller's*
+ * next turn, whichever players [player] names — Elspeth Conquers Death's "until your next turn,
+ * your opponents' noncreature spells cost {2} more to cast" taxes the opponents until *you* untap.
+ * Any other duration is rejected at construction rather than silently treated as one of these.
  *
  * Will, Scion of Peace: `ModifySpellCostsEffect(Filters.whiteOrBlue,
  * DynamicAmount.TurnTracking(Player.You, TurnTracker.LIFE_GAINED))`.
@@ -1447,9 +1448,6 @@ data class ModifySpellCostsEffect(
         }
         require(duration == Duration.EndOfTurn || duration == Duration.UntilYourNextTurn) {
             "ModifySpellCostsEffect supports EndOfTurn or UntilYourNextTurn, not $duration"
-        }
-        require(duration == Duration.EndOfTurn || player == Player.You) {
-            "ModifySpellCostsEffect supports UntilYourNextTurn only for Player.You, not $player"
         }
     }
 

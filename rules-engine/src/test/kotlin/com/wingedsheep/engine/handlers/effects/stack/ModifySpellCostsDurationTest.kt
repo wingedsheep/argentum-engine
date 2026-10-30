@@ -48,6 +48,18 @@ class ModifySpellCostsDurationTest : FunSpec({
         "Tax Opponents This Turn", "{W}",
         CardScript.spell(Effects.IncreaseSpellCosts(DynamicAmount.Fixed(1), player = Player.EachOpponent))
     )
+    val taxOpponentsUntilNextTurn = instant(
+        "Tax Opponents Until Next Turn", "{W}",
+        CardScript.spell(
+            Effects.IncreaseSpellCosts(
+                DynamicAmount.Fixed(2), player = Player.EachOpponent,
+                spellFilter = GameObjectFilter.Noncreature, duration = Duration.UntilYourNextTurn,
+            )
+        )
+    )
+    val whiteBear = CardDefinition.creature(
+        name = "White Bear", manaCost = ManaCost.parse("{W}"), subtypes = emptySet(), power = 1, toughness = 1,
+    )
     val taxMe = instant(
         "Tax Me This Turn", "{W}",
         CardScript.spell(Effects.IncreaseSpellCosts(DynamicAmount.Fixed(1)))
@@ -67,7 +79,7 @@ class ModifySpellCostsDurationTest : FunSpec({
     fun newDriver(): GameTestDriver {
         val driver = GameTestDriver()
         driver.registerCards(TestCards.all + listOf(
-                untilNextTurn, thisTurn, taxOpponents, taxMe, nextSpell, nextCreatureSpell,
+                untilNextTurn, thisTurn, taxOpponents, taxOpponentsUntilNextTurn, whiteBear, taxMe, nextSpell, nextCreatureSpell,
                 genericInstant, twoGenericInstant, coloredInstant,
             ))
         driver.initMirrorMatch(deck = Deck.of("Plains" to 40), skipMulligans = true, startingPlayer = 0)
@@ -181,13 +193,6 @@ class ModifySpellCostsDurationTest : FunSpec({
         }
     }
 
-    test("until your next turn is rejected for anyone but you") {
-        shouldThrow<IllegalArgumentException> {
-            ModifySpellCostsEffect(
-                GameObjectFilter.Any, DynamicAmount.Fixed(1), Duration.UntilYourNextTurn, player = Player.EachOpponent,
-            )
-        }
-    }
     /** Casts [name] with [white] white mana and lets it resolve; returns whether the cast was legal. */
     fun castWithWhite(driver: GameTestDriver, player: EntityId, name: String, white: Int): Boolean {
         val card = driver.putCardInHand(player, name)
@@ -195,6 +200,38 @@ class ModifySpellCostsDurationTest : FunSpec({
         val result = driver.castSpell(player, card)
         if (result.error == null) driver.bothPass()
         return result.error == null
+    }
+
+    test("an until-your-next-turn tax on opponents lasts through their turn and ends on yours") {
+        val driver = newDriver()
+        val me = driver.player1
+        val opponent = driver.player2
+        castWithOneWhite(driver, me, "Tax Opponents Until Next Turn") shouldBe true
+        driver.state.spellCostModifiers.single().controllerId shouldBe opponent
+        withClue("only noncreature spells are taxed, and not the controller's") {
+            castWithOneWhite(driver, me, "Discount This Turn") shouldBe true
+        }
+
+        driver.passPriorityUntil(Step.UPKEEP)
+        driver.activePlayer shouldBe opponent
+        withClue("the opponent's own untap step does not end it — it is keyed to the caster's turn") {
+            driver.state.spellCostModifiers.size shouldBe 1
+        }
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        withClue("{W} now costs {2}{W} for the opponent") {
+            castWithOneWhite(driver, opponent, "Discount This Turn") shouldBe false
+            castWithWhite(driver, opponent, "Discount This Turn", white = 3) shouldBe true
+        }
+        withClue("creature spells are untaxed") {
+            castWithOneWhite(driver, opponent, "White Bear") shouldBe true
+        }
+
+        driver.passPriorityUntil(Step.END)
+        driver.passPriorityUntil(Step.UPKEEP)
+        driver.activePlayer shouldBe me
+        withClue("gone once the caster's next turn begins") {
+            driver.state.spellCostModifiers shouldBe emptyList()
+        }
     }
 
     test("a next-spell discount reduces only the next spell you cast") {

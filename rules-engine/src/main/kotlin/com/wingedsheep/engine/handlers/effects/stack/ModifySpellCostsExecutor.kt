@@ -50,6 +50,9 @@ class ModifySpellCostsExecutor(
         }
         val sourceName = effectiveState.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Unknown"
 
+        // "Until your next turn" is the effect controller's turn, even when the modified spells
+        // are someone else's (Elspeth Conquers Death taxes the opponents until *you* untap).
+        val effectControllerId = context.effectControllerId ?: context.controllerId
         val modifiers = context.resolvePlayerTargets(EffectTarget.PlayerRef(effect.player), effectiveState)
             .map { playerId ->
                 SpellCostModifier(
@@ -61,6 +64,7 @@ class ModifySpellCostsExecutor(
                     duration = effect.duration,
                     increase = effect.increase,
                     nextSpellOnly = effect.nextSpellOnly,
+                    expiresWithPlayerId = effectControllerId.takeIf { it != playerId },
                 )
             }
         return EffectResult.success(

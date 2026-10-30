@@ -1235,6 +1235,127 @@
     ]
 }
 
+// Elspeth Conquers Death
+{
+    "name": "Elspeth Conquers Death",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — Exile target permanent an opponent controls with mana value 3 or greater.\nII — Noncreature spells your opponents cast cost {2} more to cast until your next turn.\nIII — Return target creature or planeswalker card from your graveyard to the battlefield. Put a +1/+1 counter or a loyalty counter on it.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent mv>=3 ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "ModifySpellCosts",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    },
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "duration": "UntilYourNextTurn",
+                    "player": "EachOpponent",
+                    "increase": true
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "destination": "Battlefield",
+                            "fromZone": "Graveyard"
+                        },
+                        {
+                            "type": "ChooseAction",
+                            "choices": [
+                                {
+                                    "label": "Put a +1/+1 counter on it",
+                                    "effect": {
+                                        "type": "AddCounters",
+                                        "counterType": "PLUS_ONE_PLUS_ONE",
+                                        "count": 1,
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t1"
+                                        }
+                                    }
+                                },
+                                {
+                                    "label": "Put a loyalty counter on it",
+                                    "effect": {
+                                        "type": "AddCounters",
+                                        "counterType": "LOYALTY",
+                                        "count": 1,
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t1"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature|planeswalker own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t1"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "rarity": "RARE",
+        "artist": "Ryan Yee",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/a/ea20208b-1939-4c69-8cfd-c0a42f9dc427.jpg?1783931598",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "The effect of the second chapter lasts until your next turn even if this Saga leaves the battlefield before then."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "You choose which kind of counter to put on the returned permanent after it has entered the battlefield. You may put a +1/+1 counter on a planeswalker or a loyalty counter on a creature, but this isn't normally going to have any effect."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Fateful End
 {
     "name": "Fateful End",
