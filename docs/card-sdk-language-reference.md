@@ -17843,6 +17843,15 @@ restriction matches the spell context.
   included), ability activations, and every non-cast payment are allowed. Not the same as
   `CastFromNonHandOnly`, which is a spell-cast whitelist and rejects ability activations. Backed by
   `SpellPaymentContext.isSpellCast` and `isFromHand`.
+- `ManaRestriction.CannotPayGenericCosts` — "This mana can't be spent to pay generic mana costs"
+  (Jegantha, the Wellspring). The family's only **symbol-level** restriction: it admits every
+  payment (spell, ability, special action, contextless cost) and instead refuses the generic
+  symbols of a cost — `{N}`, `{X}`, and the generic half of a monocolored hybrid `{2/W}` (CR 107.4b,
+  107.4e) — so the mana pays only colored, `{C}` and `{S}` symbols. Floating-pool payment spends it
+  on colored pips before other restricted mana, and the auto-tapper never taps its source for
+  generic (it retries giving the source's colors to colored pips when lands are needed for the
+  generic part). Compose with `AllOf` to add a payment whitelist. Engine predicate:
+  `ManaRestriction.paysGeneric`.
 - `ManaRestriction.AnyOf(restrictions)` — disjunction; the mana is spendable in any context that
   satisfies *any* listed restriction. Compose atomic restrictions for multi-option mana — e.g.
   Creeping Peeper's "cast an enchantment spell, unlock a door, or turn a permanent face up" is

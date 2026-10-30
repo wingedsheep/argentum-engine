@@ -22,6 +22,7 @@ import com.wingedsheep.engine.handlers.costs.GraveyardTotalExileResolver
 import com.wingedsheep.engine.handlers.effects.bend.BendEvents
 import com.wingedsheep.engine.mechanics.mana.AlternativePaymentHandler
 import com.wingedsheep.engine.mechanics.mana.ManaPool
+import com.wingedsheep.engine.mechanics.mana.paysGeneric
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
 import com.wingedsheep.engine.state.GameState
@@ -649,7 +650,8 @@ internal class ActivationCostPayer(
                 // A color-restricted X can't be paid with off-color or colorless restricted mana.
                 if (entry.color != null && entry.color !in xColorsAllowed) continue
                 if (entry.color == null && xManaRestriction.isNotEmpty()) continue
-                manaPool.spendRestricted(entry.color, paymentContext)?.let {
+                if (!entry.restriction.paysGeneric) continue
+                manaPool.spendRestricted(entry.color, paymentContext, forGeneric = true)?.let {
                     manaPool = it
                     xRemainingToPay--
                 }

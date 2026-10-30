@@ -472,6 +472,19 @@ sealed interface ManaRestriction {
     }
 
     /**
+     * "This mana can't be spent to pay generic mana costs" (Jegantha, the Wellspring). Unlike every
+     * other restriction this one is about *which symbol* the mana pays, not which payment: it is
+     * spendable on any spell, ability or special action, but only on a colored, colorless ({C}) or
+     * snow ({S}) symbol — never on generic mana ({1}, {X}, or the generic half of a monocolored
+     * hybrid {2/W}; CR 107.4b, 107.4e). Compose with [AllOf] to add a payment restriction.
+     */
+    @SerialName("CannotPayGenericCosts")
+    @Serializable
+    data object CannotPayGenericCosts : ManaRestriction {
+        override val description: String = "This mana can't be spent to pay generic mana costs"
+    }
+
+    /**
      * "Spend this mana only to cast a spell from anywhere other than your hand."
      *
      * Used by Mm'menon, the Right Hand's granted artifact ability. Generalizes

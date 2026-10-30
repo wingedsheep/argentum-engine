@@ -1402,6 +1402,7 @@ Families:
 - `ManaRestriction.AnySpend` — No restriction — this mana satisfies any spend context.
 - `ManaRestriction.CannotCastSpellsFromHand` — "This mana can't be spent to cast spells from your hand" (Heartwood Crafter).
 - `ManaRestriction.CannotCastSpellsOtherThan(cardTypes: Set<CardType>)` — "This mana can't be spent to cast a non-cardTypes spell" (Hydraulic Helper: "{T}: Add {U}.
+- `ManaRestriction.CannotPayGenericCosts` — "This mana can't be spent to pay generic mana costs" (Jegantha, the Wellspring).
 - `ManaRestriction.CardTypeSpellsOrAbilitiesOnly(cardType: CardType, allowSpells: Boolean, allowAbilities: Boolean, negated: Boolean, permanentSourcesOnly: Boolean)` — "Spend this mana only to cast cardType spells or activate abilities of [cardType sources]." Parameterized over card type so the same restriction shape covers Steelswarm Operator (artifact), hypothe…
 - `ManaRestriction.CastFromExileOnly`
 - `ManaRestriction.CastFromGraveyardOnly` — "Spend this mana only to cast spells from your graveyard." Satisfied by casting a spell from the caster's **own** graveyard — by flashback, disturb, harmonize, escape, or a graveyard-cast permissio…

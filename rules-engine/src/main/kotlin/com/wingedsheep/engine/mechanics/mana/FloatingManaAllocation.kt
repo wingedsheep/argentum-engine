@@ -3,7 +3,6 @@ package com.wingedsheep.engine.mechanics.mana
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.ManaSymbol
-import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import com.wingedsheep.sdk.scripting.effects.ManaSpentAsAnyColor
 
 /** An entire pool payment: fixed pips and X compete for the same exact units. */
@@ -24,9 +23,9 @@ internal fun ManaPool.allocateFloating(
     xAmount: Int = 0,
     xColors: Set<Color> = emptySet(),
 ): FloatingManaAllocation? {
-    val available = total + if (context == null) restrictedMana.count { it.restriction == ManaRestriction.AnySpend }
-        else getTotalEligibleRestricted(context)
-    if (xAmount > available) return null
+    val available = total + getTotalEligibleRestricted(context)
+    // Only mana that may pay generic covers {X} (not ManaRestriction.CannotPayGenericCosts).
+    if (xAmount > total + getTotalEligibleRestricted(context, forGeneric = true)) return null
     val fixed = cost.symbols.filter { it !is ManaSymbol.X && it !is ManaSymbol.MonocolorHybrid }
     val hybrids = cost.symbols.filterIsInstance<ManaSymbol.MonocolorHybrid>().groupingBy { it }.eachCount()
     var best: FloatingManaAllocation? = null
@@ -67,6 +66,8 @@ private data class PoolUnits(
     val capacity: Int,
     val restrictedIndex: Int? = null,
     val obligations: Set<String> = emptySet(),
+    /** False for mana that can't pay a generic symbol (ManaRestriction.CannotPayGenericCosts). */
+    val paysGeneric: Boolean = true,
 )
 
 private fun ManaPool.matchFloating(
@@ -78,7 +79,8 @@ private fun ManaPool.matchFloating(
         restrictedMana.forEachIndexed { index, entry ->
             val eligible = entry.restriction.isEligibleForPayment(context)
             if (eligible) add(PoolUnits(entry.color,
-                entry.source?.isSnow == true, 1, index, entry.obligationIds - dischargedObligations))
+                entry.source?.isSnow == true, 1, index, entry.obligationIds - dischargedObligations,
+                entry.restriction.paysGeneric))
         }
         for (color in Color.entries.map { it as Color? } + null) {
             val count = if (color == null) colorless else get(color)
@@ -114,14 +116,14 @@ private fun ManaPool.matchFloating(
             null -> false
         }
     fun accepts(unit: PoolUnits, pip: PoolPip): Boolean {
-        if (pip.isX) return xColors.isEmpty() || unit.color in xColors
+        if (pip.isX) return unit.paysGeneric && (xColors.isEmpty() || unit.color in xColors)
         return when (val symbol = pip.symbol) {
             is ManaSymbol.Colored -> acceptsColor(unit, symbol.color)
             is ManaSymbol.Colorless -> unit.color == null
             is ManaSymbol.Hybrid, is ManaSymbol.HybridPhyrexian ->
                 acceptsColor(unit, symbol.color1) || acceptsColor(unit, symbol.color2)
             is ManaSymbol.Phyrexian -> acceptsColor(unit, symbol.color)
-            is ManaSymbol.Generic -> true
+            is ManaSymbol.Generic -> unit.paysGeneric
             ManaSymbol.Snow -> unit.snow
             is ManaSymbol.X, is ManaSymbol.MonocolorHybrid -> error("Unexpanded allocation pip")
         }

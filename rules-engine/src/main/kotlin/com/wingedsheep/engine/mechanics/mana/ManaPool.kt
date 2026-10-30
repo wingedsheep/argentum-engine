@@ -189,7 +189,22 @@ data class SpellPaymentContext(
 
 /** Contextless costs may spend tagged unrestricted mana, without admitting spell-only mana. */
 internal fun ManaRestriction.isEligibleForPayment(context: SpellPaymentContext?): Boolean =
-    if (context == null) this == ManaRestriction.AnySpend else isSatisfiedBy(context)
+    if (context == null) this == ManaRestriction.AnySpend || this == ManaRestriction.CannotPayGenericCosts
+    else isSatisfiedBy(context)
+
+/**
+ * Whether mana under this restriction may pay a generic symbol — `{1}`, `{X}`, or the generic half
+ * of a monocolored hybrid (CR 107.4b, 107.4e). False only for [ManaRestriction.CannotPayGenericCosts]
+ * (Jegantha, the Wellspring), alone or inside a conjunction; every other restriction gates the
+ * payment, not the symbol.
+ */
+val ManaRestriction.paysGeneric: Boolean
+    get() = when (this) {
+        is ManaRestriction.CannotPayGenericCosts -> false
+        is ManaRestriction.AllOf -> restrictions.all { it.paysGeneric }
+        is ManaRestriction.AnyOf -> restrictions.any { it.paysGeneric }
+        else -> true
+    }
 
 /**
  * Check whether a mana restriction is satisfied by the spell being cast or ability being activated.
@@ -247,6 +262,9 @@ fun ManaRestriction.isSatisfiedBy(context: SpellPaymentContext): Boolean = when 
         !context.isSpellCast || cardTypes.any { it in context.cardTypes }
     // Negative restriction: only a spell cast from hand violates it.
     is ManaRestriction.CannotCastSpellsFromHand -> !context.isSpellCast || !context.isFromHand
+    // A symbol-level restriction: every payment admits it, and the generic symbols it can't pay
+    // are refused by the spenders through [paysGeneric].
+    is ManaRestriction.CannotPayGenericCosts -> true
 }
 
 /**
@@ -469,8 +487,13 @@ data class ManaPool(
      * Spend one unit of restricted mana matching the given color and whose restriction is satisfied by the spell context.
      * Returns null if no matching restricted mana is available.
      */
-    fun spendRestricted(color: Color?, context: SpellPaymentContext?): ManaPool? {
-        val index = preferredRestrictedIndex { it.color == color && it.restriction.isEligibleForPayment(context) }
+    fun spendRestricted(color: Color?, context: SpellPaymentContext?, forGeneric: Boolean = false): ManaPool? {
+        fun matches(entry: RestrictedManaEntry) = entry.color == color && entry.restriction.isEligibleForPayment(context)
+        // A generic symbol takes only mana that may pay generic; any other symbol spends the mana
+        // that can't (Jegantha's) first, keeping the flexible units for the generic part.
+        val index = if (forGeneric) preferredRestrictedIndex { matches(it) && it.restriction.paysGeneric }
+            else preferredRestrictedIndex { matches(it) && !it.restriction.paysGeneric }.takeIf { it >= 0 }
+                ?: preferredRestrictedIndex(::matches)
         if (index < 0) return null
         return copy(
             restrictedMana = restrictedMana.toMutableList().apply { removeAt(index) },
@@ -497,10 +520,11 @@ data class ManaPool(
         restrictedMana.count { it.color == color && it.restriction.isEligibleForPayment(context) }
 
     /**
-     * Count all eligible restricted mana (any color) for a spell.
+     * Count all eligible restricted mana (any color) for a spell; [forGeneric] counts only the
+     * units that may pay a generic symbol.
      */
-    fun getTotalEligibleRestricted(context: SpellPaymentContext?): Int =
-        restrictedMana.count { it.restriction.isEligibleForPayment(context) }
+    fun getTotalEligibleRestricted(context: SpellPaymentContext?, forGeneric: Boolean = false): Int =
+        restrictedMana.count { it.restriction.isEligibleForPayment(context) && (!forGeneric || it.restriction.paysGeneric) }
 
     /**
      * Remove mana of a specific color — its non-snow units first, so a snow unit stays available
@@ -624,7 +648,7 @@ data class ManaPool(
     fun xCoverage(xAmount: Int, xManaRestriction: Set<Color>, spellContext: SpellPaymentContext?): Int {
         if (xAmount <= 0) return 0
         val eligibleRestricted = restrictedMana.count { entry ->
-            entry.restriction.isEligibleForPayment(spellContext) &&
+            entry.restriction.isEligibleForPayment(spellContext) && entry.restriction.paysGeneric &&
                 // A color-restricted X can't be paid with off-color or colorless restricted mana.
                 (xManaRestriction.isEmpty() || (entry.color != null && entry.color in xManaRestriction))
         }
@@ -692,7 +716,7 @@ data class ManaPool(
 
         // Then, pay generic costs with any remaining mana (restricted first, then unrestricted)
         val genericAmount = cost.genericAmount + monoHybridGeneric
-        val availableForGeneric = remaining.total + remaining.getTotalEligibleRestricted(spellContext)
+        val availableForGeneric = remaining.total + remaining.getTotalEligibleRestricted(spellContext, forGeneric = true)
         if (availableForGeneric < genericAmount) return false
 
         return true
@@ -777,8 +801,8 @@ data class ManaPool(
         // Spend eligible restricted mana for generic costs (any color)
         for (entry in remaining.restrictedMana.toList()) {
             if (genericRemaining <= 0) break
-            if (entry.restriction.isEligibleForPayment(spellContext)) {
-                remaining = remaining.spendRestricted(entry.color, spellContext)!!
+            if (entry.restriction.isEligibleForPayment(spellContext) && entry.restriction.paysGeneric) {
+                remaining = remaining.spendRestricted(entry.color, spellContext, forGeneric = true)!!
                 genericRemaining--
             }
         }
@@ -971,8 +995,8 @@ data class ManaPool(
         // Spend eligible restricted mana for generic costs first
         for (entry in remaining.restrictedMana.toList()) {
             if (genericRemaining <= 0) break
-            if (entry.restriction.isEligibleForPayment(spellContext)) {
-                val spent = remaining.spendRestricted(entry.color, spellContext)
+            if (entry.restriction.isEligibleForPayment(spellContext) && entry.restriction.paysGeneric) {
+                val spent = remaining.spendRestricted(entry.color, spellContext, forGeneric = true)
                 if (spent != null) {
                     remaining = spent
                     if (entry.color != null) trackColorSpent(entry.color) else colorlessSpent++
