@@ -53,9 +53,11 @@ enum class TapSymbolInCost { WITH, WITHOUT }
  *
  * - [ATTACK] — its source creature attacking ("whenever this creature attacks"; Firebender Ascension).
  * - [PERMANENT_ENTERING] — a permanent entering the battlefield (Strict Proctor).
+ * - [FINAL_SAGA_CHAPTER] — lore counters reaching a Saga's final chapter number: the triggered
+ *   ability is that Saga's final chapter ability (CR 714.2e; Historian's Boon).
  */
 @Serializable
-enum class AbilityTriggerCause { ATTACK, PERMANENT_ENTERING }
+enum class AbilityTriggerCause { ATTACK, PERMANENT_ENTERING, FINAL_SAGA_CHAPTER }
 
 /**
  * Represents a game event type used by both replacement effects and triggered abilities.
@@ -3066,6 +3068,9 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      *    triggered ability to trigger": an enters-the-battlefield shaped trigger (a [ZoneChangeEvent]
      *    to the battlefield, or a [PermanentsEnteredEvent] batch) — the entering permanent's own,
      *    another permanent's "whenever a [...] enters", or a graveyard card's landfall.
+     *  - [AbilityTriggerCause.FINAL_SAGA_CHAPTER] — Historian's Boon's "the final chapter ability of
+     *    a Saga you control triggers" (CR 714.2e): the Saga's final chapter ability, whether lore
+     *    counters arrived one at a time or several at once (read ahead, proliferate).
      * The triggering ability is exposed as the triggering entity, so a copy or counter effect
      * reaches it via [com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity].
      *
@@ -3091,6 +3096,10 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
                     append(" control ")
                 }
                 append("to trigger")
+            } else if (cause == AbilityTriggerCause.FINAL_SAGA_CHAPTER) {
+                append("the final chapter ability of a Saga ")
+                append(player.description)
+                append(" control triggers")
             } else {
                 append(player.description)
                 append(" put a triggered ability ")

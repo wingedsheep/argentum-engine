@@ -9189,6 +9189,12 @@ The shapes in this family, with their engine notes.
   CR 603.3b wave, above the ability they saw, so
   `Effects.CounterUnlessPays("{2}", target = CounterTarget.Ability, targetSource = CounterTargetSource.TriggeringEntity)`
   is "counter that ability unless its controller pays {2}".
+- `Triggers.you.finalSagaChapterTriggers()` — **the final chapter ability of a Saga you control triggers**
+  (Historian's Boon; CR 714.2e). `cause = AbilityTriggerCause.FINAL_SAGA_CHAPTER`: stamped on a Saga's final
+  chapter ability as it goes on the stack, however the lore counters arrived (the precombat-main counter, several at
+  once from read ahead or an effect, a one-chapter Saga's entry counter). It goes on the stack in the second
+  CR 603.3b wave, above the chapter, so it resolves first and still counts if the chapter is later countered —
+  compare `sagaChapterResolves(true)` (Tom Bombadil), which waits for the chapter to resolve.
 
 **Other casters.** The same shape, scoped to a different caster via the runtime
 `Player.Each` / `Player.EachOpponent` matching on `SpellCastEvent`. Bind the payoff to the
@@ -9903,6 +9909,9 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
   ability triggers only once each turn."
 - `Triggers.you.sagaChapterResolves()` — same, but matches *any* chapter ability's resolution
   (`finalChapterOnly = false`).
+- "Whenever the final chapter ability … **triggers**" (Historian's Boon) is a different moment — the
+  ability going on the stack, not resolving: `Triggers.you.finalSagaChapterTriggers()` (see the
+  `AbilityTriggeredEvent` meta-triggers).
 - Either way the Saga is the trigger's `EffectTarget.TriggeringEntity`, snapshotted as its chapter
   ability began resolving — so "where X is that Saga's mana value" is
   `DynamicAmounts.triggeringManaValue()` and still reads the Saga after CR 714.4 has sacrificed it

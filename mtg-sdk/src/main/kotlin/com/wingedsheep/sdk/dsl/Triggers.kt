@@ -1032,6 +1032,14 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
     fun permanentEnteringTriggersAbility(): TriggerSpec =
         spec(AbilityTriggeredEvent(player = player, cause = AbilityTriggerCause.PERMANENT_ENTERING))
 
+    /**
+     * "the final chapter ability of a Saga [player] controls triggers" (Historian's Boon) — fires as
+     * that chapter ability goes on the stack, even if it is later countered; compare
+     * [sagaChapterResolves]. The triggering ability is `EffectTarget.TriggeringEntity`.
+     */
+    fun finalSagaChapterTriggers(): TriggerSpec =
+        spec(AbilityTriggeredEvent(player = player, cause = AbilityTriggerCause.FINAL_SAGA_CHAPTER))
+
     // ---- Combat ------------------------------------------------------------------------------
 
     /**

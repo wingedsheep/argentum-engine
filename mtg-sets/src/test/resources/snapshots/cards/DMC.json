@@ -245,6 +245,78 @@
     ]
 }
 
+// Historian's Boon
+{
+    "name": "Historian's Boon",
+    "manaCost": "{3}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever this enchantment or another nontoken enchantment you control enters, create a 1/1 white Soldier creature token.\nWhenever the final chapter ability of a Saga you control triggers, create a 4/4 white Angel creature token with flying and vigilance.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Historian's Boon:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "enchantment nontoken ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Soldier"
+                    ]
+                },
+                "descriptionOverride": "Whenever this enchantment or another nontoken enchantment you control enters, create a 1/1 white Soldier creature token."
+            },
+            {
+                "id": "Historian's Boon:2",
+                "trigger": {
+                    "type": "AbilityTriggeredEvent",
+                    "cause": "FINAL_SAGA_CHAPTER"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Angel"
+                    ],
+                    "keywords": [
+                        "FLYING",
+                        "VIGILANCE"
+                    ]
+                },
+                "descriptionOverride": "Whenever the final chapter ability of a Saga you control triggers, create a 4/4 white Angel creature token with flying and vigilance."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "RARE",
+        "artist": "Irina Nordsol",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/d/0da48d1e-0dec-461a-9a1d-477408b297e6.jpg?1783921470",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "The final chapter ability of a Saga is the ability with the greatest chapter number among chapter abilities that Saga has."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Shanid, Sleepers' Scourge
 {
     "name": "Shanid, Sleepers' Scourge",

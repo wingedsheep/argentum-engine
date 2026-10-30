@@ -1111,8 +1111,11 @@ class TriggerProcessor(
      *  - [AbilityTriggerCause.PERMANENT_ENTERING] — a trigger an entry caused ([PendingTrigger.isEntryCaused],
      *    the same classification Torpor Orb's suppression uses — Strict Proctor). Wherever its source is: the
      *    current Oracle text counts a graveyard card's landfall ability too.
+     *  - [AbilityTriggerCause.FINAL_SAGA_CHAPTER] — a Saga's final chapter ability (CR 714.2e,
+     *    Historian's Boon), read off the [SagaChapterInfo] chapter detection stamped on it.
      */
     private fun triggerCauseOf(trigger: PendingTrigger): AbilityTriggerCause? = when {
+        trigger.sagaChapterInfo?.isFinalChapter == true -> AbilityTriggerCause.FINAL_SAGA_CHAPTER
         trigger.ability.trigger is com.wingedsheep.sdk.scripting.EventPattern.AttackEvent &&
             trigger.ability.binding == com.wingedsheep.sdk.scripting.TriggerBinding.SELF -> AbilityTriggerCause.ATTACK
         trigger.isEntryCaused() -> AbilityTriggerCause.PERMANENT_ENTERING
