@@ -139,6 +139,122 @@
     ]
 }
 
+// Spiked Corridor // Torture Pit
+{
+    "name": "Spiked Corridor // Torture Pit",
+    "manaCost": "",
+    "typeLine": "Enchantment — Room",
+    "oracleText": "When you unlock this door, create three 1/1 red Devil creature tokens with \"When this token dies, it deals 1 damage to any target.\"\n//\nIf a source you control would deal noncombat damage to an opponent, it deals that much damage plus 2 instead.",
+    "metadata": {
+        "collectorNumber": "28",
+        "rarity": "RARE",
+        "artist": "Arthur Yuan",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/9/b90164a1-8b0a-4445-a0ad-43e4c3324925.jpg?1783909656",
+        "rulings": [
+            {
+                "date": "2024-09-20",
+                "text": "The additional 2 damage is dealt by the same source as the original source of damage. The additional damage isn't dealt by Torture Pit unless Torture Pit is the original source of damage."
+            },
+            {
+                "date": "2024-09-20",
+                "text": "If another effect modifies how much noncombat damage the source would deal, including preventing some of it, the player being dealt damage chooses an order in which to apply those effects. If all of the damage is prevented, Torture Pit's effect no longer applies."
+            },
+            {
+                "date": "2024-09-20",
+                "text": "If noncombat damage dealt by a source you control is being divided or assigned among multiple players, divide the original amount before adding 2."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Spiked Corridor",
+            "manaCost": "{3}{R}",
+            "typeLine": "Enchantment — Room",
+            "oracleText": "When you unlock this door, create three 1/1 red Devil creature tokens with \"When this token dies, it deals 1 damage to any target.\"",
+            "script": {
+                "triggeredAbilities": [
+                    {
+                        "id": "Spiked Corridor // Torture Pit:2",
+                        "trigger": "DoorUnlockedEvent",
+                        "effect": {
+                            "type": "CreateToken",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "RED"
+                            ],
+                            "creatureTypes": [
+                                "Devil"
+                            ],
+                            "triggeredAbilities": [
+                                {
+                                    "id": "Spiked Corridor // Torture Pit:1",
+                                    "trigger": {
+                                        "type": "ZoneChangeEvent",
+                                        "from": "Battlefield",
+                                        "to": "Graveyard"
+                                    },
+                                    "effect": {
+                                        "type": "DealDamage",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    },
+                                    "targetRequirement": {
+                                        "type": "AnyTarget",
+                                        "id": "t0"
+                                    },
+                                    "descriptionOverride": "When this token dies, it deals 1 damage to any target."
+                                }
+                            ]
+                        },
+                        "descriptionOverride": "When you unlock this door, create three 1/1 red Devil creature tokens with \"When this token dies, it deals 1 damage to any target.\""
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Torture Pit",
+            "manaCost": "{3}{R}",
+            "typeLine": "Enchantment — Room",
+            "oracleText": "If a source you control would deal noncombat damage to an opponent, it deals that much damage plus 2 instead.",
+            "script": {
+                "replacementEffects": [
+                    {
+                        "type": "ModifyDamageAmount",
+                        "modifier": 2,
+                        "appliesTo": {
+                            "type": "DamageEvent",
+                            "recipient": {
+                                "type": "RecipientPlayer",
+                                "player": "EachOpponent"
+                            },
+                            "source": {
+                                "controllerPredicate": "ControlledByYou"
+                            },
+                            "damageType": "DamageNonCombat"
+                        }
+                    }
+                ]
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
 // Suspended Sentence
 {
     "name": "Suspended Sentence",

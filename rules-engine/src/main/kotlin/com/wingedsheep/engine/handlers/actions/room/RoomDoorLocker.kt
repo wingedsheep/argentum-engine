@@ -28,8 +28,9 @@ object RoomDoorLocker {
      * Locking a half turns its static abilities *off* (CR 709.5), the mirror of [RoomDoorUnlocker];
      * so we re-bake the Room's cached
      * [com.wingedsheep.engine.state.components.battlefield.ContinuousEffectSourceComponent] via
-     * [staticAbilityHandler], the same refresh unlocking and transforming do, to drop the now-locked
-     * half's continuous statics.
+     * [staticAbilityHandler] (with its replacement-effect component), the same refresh unlocking
+     * does, to drop the now-locked half's continuous statics and replacement effects — including
+     * when the locked half was the only one that had any.
      */
     fun lock(
         state: GameState,
@@ -46,7 +47,7 @@ object RoomDoorLocker {
         val roomName = container.get<CardComponent>()?.name ?: face.name
         val updatedRoom = room.copy(unlocked = room.unlocked - faceId)
         val newState = state.updateEntity(roomId) { c ->
-            staticAbilityHandler.addContinuousEffectComponent(c.with(updatedRoom))
+            staticAbilityHandler.rebakeRoomAbilityComponents(c.with(updatedRoom))
         }
 
         val event = DoorLockedEvent(

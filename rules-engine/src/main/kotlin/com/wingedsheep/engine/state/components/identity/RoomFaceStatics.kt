@@ -3,6 +3,7 @@ package com.wingedsheep.engine.state.components.identity
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
 import com.wingedsheep.sdk.model.CardDefinition
+import com.wingedsheep.sdk.scripting.ReplacementEffect
 import com.wingedsheep.sdk.scripting.StateTriggeredAbility
 import com.wingedsheep.sdk.scripting.StaticAbility
 
@@ -75,5 +76,24 @@ object RoomFaceStatics {
             .filter { RoomFaceId(it.name) in room.unlocked }
             .flatMap { it.script.stateTriggeredAbilities }
         return if (faceAbilities.isEmpty()) base else base + faceAbilities
+    }
+
+    /**
+     * Replacement effects printed on every currently-unlocked Room face of [container]'s permanent
+     * (empty for a non-Room, or a Room with no door unlocked). Unlike [activeStaticAbilities] this
+     * returns only the faces' share: the top-level script's replacement effects are collected by
+     * the caller, which also filters them to the runtime-relevant ones. A locked door's replacement
+     * effect doesn't exist (CR 709.5), so Torture Pit's "+2 noncombat damage" applies only once
+     * that door is unlocked.
+     */
+    fun unlockedFaceReplacementEffects(
+        container: ComponentContainer,
+        cardDef: CardDefinition,
+    ): List<ReplacementEffect> {
+        val room = container.get<RoomComponent>() ?: return emptyList()
+        if (room.unlocked.isEmpty() || cardDef.cardFaces.isEmpty()) return emptyList()
+        return cardDef.cardFaces
+            .filter { RoomFaceId(it.name) in room.unlocked }
+            .flatMap { it.script.replacementEffects }
     }
 }

@@ -1433,6 +1433,17 @@ class StaticAbilityHandler(
     }
 
     /**
+     * Re-bakes both ability components of a Room after one of its doors locks or unlocks
+     * (CR 709.5): the door's statics and replacement effects start or stop existing. Both
+     * components are stripped first because the add-helpers leave a container untouched when
+     * nothing remains, which would keep a just-locked door's abilities alive.
+     */
+    fun rebakeRoomAbilityComponents(container: ComponentContainer): ComponentContainer {
+        val bare = container.without<ContinuousEffectSourceComponent>().without<ReplacementEffectSourceComponent>()
+        return addReplacementEffectComponent(addContinuousEffectComponent(bare))
+    }
+
+    /**
      * Creates a ReplacementEffectSourceComponent for a permanent if it has any
      * runtime-relevant replacement effects (e.g., PreventDamage).
      * Zone-change replacement effects like EntersTapped are handled elsewhere.
@@ -1450,17 +1461,23 @@ class StaticAbilityHandler(
         container: ComponentContainer,
         cardDefinition: CardDefinition
     ): ComponentContainer {
-        val classLevel = container.get<ClassLevelComponent>()?.currentLevel
-        val runtimeEffects = collectRuntimeReplacementEffects(cardDefinition, classLevel)
+        val runtimeEffects = collectRuntimeReplacementEffects(container, cardDefinition)
         if (runtimeEffects.isEmpty()) return container
         return container.with(ReplacementEffectSourceComponent(runtimeEffects))
     }
 
+    /**
+     * Runtime replacement effects of the permanent: its top-level script's, its reached Class
+     * levels', and — for a Room (CR 709.5) — those of every unlocked door, via [RoomFaceStatics].
+     */
     private fun collectRuntimeReplacementEffects(
+        container: ComponentContainer,
         cardDefinition: CardDefinition,
-        classLevel: Int?
     ): List<com.wingedsheep.sdk.scripting.ReplacementEffect> {
+        val classLevel = container.get<ClassLevelComponent>()?.currentLevel
         val effects = cardDefinition.script.replacementEffects.filter { isRuntimeReplacementEffect(it) }.toMutableList()
+        RoomFaceStatics.unlockedFaceReplacementEffects(container, cardDefinition)
+            .filterTo(effects) { isRuntimeReplacementEffect(it) }
         if (classLevel != null) {
             for (level in cardDefinition.script.classLevels) {
                 if (level.level <= classLevel) {

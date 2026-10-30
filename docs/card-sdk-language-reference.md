@@ -356,9 +356,12 @@ carries the other side for the hover preview's flip toggle.
     every battlefield static-ability scan reads (continuous-effect projection, clickable granted abilities, the mana
     auto-payer, no-maximum-hand-size). So a static printed on a Room face (e.g. Greenhouse's "Lands you control have
     '{T}: Add one mana of any color.'") works exactly like the same static on a normal permanent, but only once its
-    door is unlocked. The baked continuous-effect component is refreshed when a door unlocks (via `RoomDoorUnlocker`),
-    the same way a transform re-bakes it. (Replacement effects on a Room face are not yet door-gated — no current card
-    needs one.)
+    door is unlocked. **Runtime replacement effects** declared on a face with `replacementEffect(...)` (damage, life,
+    draw, counter modifiers — Torture Pit's `ModifyDamageAmount`) are door-gated the same way, via
+    `RoomFaceStatics.unlockedFaceReplacementEffects`. Both baked components (continuous effects and replacement
+    effects) are re-baked whenever a door unlocks or locks (`RoomDoorUnlocker` / `RoomDoorLocker`), so locking a door
+    turns its statics and replacements off again. Self entry-time replacements (`EntersTapped`, …)
+    on a face are not read — a Room enters with only the cast door unlocked, and no printed door has one.
 - `ADVENTURE` — primary face is a permanent (usually a creature; **may also be a land** — FIN Towns), `cardFaces[0]`
   is an instant/sorcery Adventure (CR 715). Resolving the Adventure exiles the card and grants permission to play
   the primary face from exile — *cast* the creature, or *play* the land for a **land // spell** Adventure

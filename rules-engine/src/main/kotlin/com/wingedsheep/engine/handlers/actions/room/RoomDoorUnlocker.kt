@@ -38,7 +38,9 @@ object RoomDoorUnlocker {
      * via [staticAbilityHandler] — that component is computed once when characteristics change
      * (ETB, transform) rather than every projection, so unlocking a door that adds a continuous
      * static (e.g. Steaming Sauna's "You have no maximum hand size") must refresh it the same way a
-     * transform does. Granted activated/mana abilities are scanned live, so they need no re-bake.
+     * transform does. The [com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent]
+     * is baked the same way, so it is refreshed too (Torture Pit's damage replacement). Granted
+     * activated/mana abilities are scanned live, so they need no re-bake.
      */
     fun unlock(
         state: GameState,
@@ -55,7 +57,7 @@ object RoomDoorUnlocker {
         val roomName = container.get<CardComponent>()?.name ?: face.name
         val updatedRoom = room.copy(unlocked = room.unlocked + faceId)
         val newState = state.updateEntity(roomId) { c ->
-            staticAbilityHandler.addContinuousEffectComponent(c.with(updatedRoom))
+            staticAbilityHandler.rebakeRoomAbilityComponents(c.with(updatedRoom))
         }
 
         val events = mutableListOf<GameEvent>()

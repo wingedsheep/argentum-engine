@@ -2237,6 +2237,7 @@ class CardFaceBuilder(private val name: String) {
     private val stateTriggeredAbilities: MutableList<StateTriggeredAbility> = mutableListOf()
     private val activatedAbilities: MutableList<ActivatedAbility> = mutableListOf()
     private val staticAbilities: MutableList<StaticAbility> = mutableListOf()
+    private val replacementEffects: MutableList<ReplacementEffect> = mutableListOf()
     private val additionalCostsList: MutableList<AdditionalCost> = mutableListOf()
     private var spellBuilder: SpellBuilder? = null
 
@@ -2275,6 +2276,16 @@ class CardFaceBuilder(private val name: String) {
     }
 
     /**
+     * A replacement effect on this face. For a Room face it applies only while the door is unlocked
+     * (CR 709.5; the engine folds unlocked-face replacement effects via `RoomFaceStatics`) —
+     * Torture Pit: "If a source you control would deal noncombat damage to an opponent, it deals
+     * that much damage plus 2 instead."
+     */
+    fun replacementEffect(effect: ReplacementEffect) {
+        replacementEffects.add(effect)
+    }
+
+    /**
      * Define the spell effect for this face. Used by Adventure faces (instant/sorcery — Adventure)
      * and any future split layout that casts a face as a non-permanent spell.
      */
@@ -2308,6 +2319,7 @@ class CardFaceBuilder(private val name: String) {
             stateTriggeredAbilities = stateTriggeredAbilities.toList(),
             activatedAbilities = activatedAbilities.toList(),
             staticAbilities = staticAbilities.toList(),
+            replacementEffects = replacementEffects.toList(),
             additionalCosts = additionalCostsList.toList(),
             selfExileOnResolve = spellBuilder?.exilesOnResolve ?: false,
             selfShuffleIntoLibraryOnResolve = spellBuilder?.shufflesIntoLibraryOnResolve ?: false,
