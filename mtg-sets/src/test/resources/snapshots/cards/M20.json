@@ -628,6 +628,183 @@
     ]
 }
 
+// Chandra, Awakened Inferno
+{
+    "name": "Chandra, Awakened Inferno",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Legendary Planeswalker — Chandra",
+    "oracleText": "This spell can't be countered.\n+2: Each opponent gets an emblem with \"At the beginning of your upkeep, this emblem deals 1 damage to you.\"\n−3: Chandra deals 3 damage to each non-Elemental creature.\n−X: Chandra deals X damage to target creature or planeswalker. If a permanent dealt damage this way would die this turn, exile it instead.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Chandra, Awakened Inferno:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "CreateGlobalTriggeredAbility",
+                        "ability": {
+                            "id": "Chandra, Awakened Inferno:1",
+                            "trigger": {
+                                "type": "StepEvent",
+                                "step": "UPKEEP"
+                            },
+                            "binding": "ANY",
+                            "effect": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": "Controller"
+                            },
+                            "descriptionOverride": "At the beginning of your upkeep, this emblem deals 1 damage to you."
+                        },
+                        "descriptionOverride": "At the beginning of your upkeep, this emblem deals 1 damage to you.",
+                        "emblem": true
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Each opponent gets an emblem with \"At the beginning of your upkeep, this emblem deals 1 damage to you.\""
+            },
+            {
+                "id": "Chandra, Awakened Inferno:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "NotSubtype",
+                                        "subtype": "Elemental"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Chandra, Awakened Inferno:4",
+                "cost": "CostLoyaltyX",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": "XValue",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "damageDealtVariable": "storedNumber0"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "VariableReference",
+                                        "variableName": "storedNumber0"
+                                    },
+                                    "operator": "GT",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "MarkExileOnDeath",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetCreatureOrPlaneswalker",
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ],
+        "cantBeCountered": true
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/49d2a680-4f3b-4bfa-b77b-d2dfaced9f23.jpg?1783932983",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "A spell or ability that counters spells can still target Chandra. When that spell or ability resolves, Chandra won't be countered, but any additional effects of that spell or ability will still happen."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Emblems aren't permanents and can't be exiled or destroyed. Once you have an emblem, there's no way to remove it."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "The ability of Chandra's emblem triggers at the beginning of the upkeep of the player who gets the emblem, not the upkeep of Chandra's controller."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "A player may have more than one of Chandra's emblems. Each one's ability triggers separately."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "The replacement effect of Chandra's last ability will exile the target creature or planeswalker if it would die this turn for any reason, not just due to lethal damage."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If Chandra's last ability doesn't deal damage (most likely because the damage has been prevented in some way), the target won't be exiled if it would die."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If you leave a multiplayer game, your opponents keep any emblems Chandra gave them. Each opponent owns the emblem Chandra gives them. In multiplayer, your opponents continue to burn after you and Chandra leave the game."
+            }
+        ]
+    },
+    "startingLoyalty": 6,
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Chandra, Flame's Fury
 {
     "name": "Chandra, Flame's Fury",

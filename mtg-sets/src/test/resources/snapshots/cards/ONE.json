@@ -9266,7 +9266,8 @@
                         },
                         "descriptionOverride": "Whenever a Mountain you control enters, this emblem deals 4 damage to any target."
                     },
-                    "descriptionOverride": "Whenever a Mountain you control enters, this emblem deals 4 damage to any target."
+                    "descriptionOverride": "Whenever a Mountain you control enters, this emblem deals 4 damage to any target.",
+                    "emblem": true
                 },
                 "timing": "SorcerySpeed",
                 "isPlaneswalkerAbility": true,

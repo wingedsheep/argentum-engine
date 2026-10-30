@@ -1198,7 +1198,8 @@
                         },
                         "descriptionOverride": "Whenever you cast a spell, this emblem deals 5 damage to any target."
                     },
-                    "descriptionOverride": "Whenever you cast a spell, this emblem deals 5 damage to any target."
+                    "descriptionOverride": "Whenever you cast a spell, this emblem deals 5 damage to any target.",
+                    "emblem": true
                 },
                 "timing": "SorcerySpeed",
                 "isPlaneswalkerAbility": true,

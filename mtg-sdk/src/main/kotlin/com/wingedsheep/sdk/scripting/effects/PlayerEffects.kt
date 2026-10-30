@@ -539,13 +539,19 @@ data class PreventLandPlaysThisTurnEffect(
  * @property ability The triggered ability to create
  * @property duration How long the ability lasts
  * @property descriptionOverride Optional override for the auto-generated description (for emblem display)
+ * @property emblem True when the ability belongs to an emblem (CR 114) — "you get an emblem with
+ *   '…'". The emblem itself is then the ability's source: a colorless object with no other
+ *   characteristics (CR 114.3), so "this emblem deals 1 damage to you" is damage from a colorless
+ *   source named for the emblem, and the ability keeps working after the planeswalker that made it
+ *   is gone. False keeps the creating card as the source (Dimensional Breach, False Cure).
  */
 @SerialName("CreateGlobalTriggeredAbility")
 @Serializable
 data class CreateGlobalTriggeredAbilityEffect(
     val ability: TriggeredAbility,
     val duration: Duration = Duration.Permanent,
-    val descriptionOverride: String? = null
+    val descriptionOverride: String? = null,
+    val emblem: Boolean = false
 ) : Effect {
     override val description: String = descriptionOverride ?: when (duration) {
         Duration.Permanent -> ability.description

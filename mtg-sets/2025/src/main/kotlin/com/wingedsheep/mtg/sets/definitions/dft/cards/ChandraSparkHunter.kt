@@ -122,6 +122,7 @@ val ChandraSparkHunter = card("Chandra, Spark Hunter") {
                 description = "Whenever an artifact you control enters, this emblem deals " +
                     "3 damage to any target."
             },
+            emblem = true,
             descriptionOverride = "Whenever an artifact you control enters, this emblem deals 3 " +
                 "damage to any target."
         )

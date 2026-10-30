@@ -93,6 +93,7 @@ val ChandraTorchOfDefiance = card("Chandra, Torch of Defiance") {
                 effect = Effects.DealDamage(5, anyTarget)
                 description = "Whenever you cast a spell, this emblem deals 5 damage to any target."
             },
+            emblem = true,
             descriptionOverride = "Whenever you cast a spell, this emblem deals 5 damage to any target."
         )
         description = "You get an emblem with \"Whenever you cast a spell, this emblem deals 5 " +

@@ -67,6 +67,7 @@ val KothFireOfResistance = card("Koth, Fire of Resistance") {
                 description = "Whenever a Mountain you control enters, this emblem deals 4 damage " +
                     "to any target."
             },
+            emblem = true,
             descriptionOverride = "Whenever a Mountain you control enters, this emblem deals 4 " +
                 "damage to any target."
         )

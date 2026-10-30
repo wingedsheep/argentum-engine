@@ -858,8 +858,11 @@ internal class PlayerActiveEffectsProjector(
 
         // Check for global triggered abilities controlled by this player
         // Group by source name so abilities from the same source show as one badge
+        // An emblem's ability (sourced from a synthetic emblem entity) is shown once, by the
+        // emblem-entity loop below, so two emblems from one planeswalker stay two badges.
         val globalAbilitiesBySource = state.globalGrantedTriggeredAbilities
             .filter { it.controllerId == playerId }
+            .filterNot { state.getEntity(it.sourceId)?.has<EmblemSourceComponent>() == true }
             .groupBy { it.sourceName to it.duration }
 
         for ((key, abilities) in globalAbilitiesBySource) {

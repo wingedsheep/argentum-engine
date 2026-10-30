@@ -94,6 +94,7 @@ val ChandraDressedToKill = card("Chandra, Dressed to Kill") {
                     description = "Whenever you cast a red spell, this emblem deals X " +
                         "damage to any target, where X is the amount of mana spent to cast that spell."
                 },
+                emblem = true,
                 descriptionOverride = "Whenever you cast a red spell, this emblem deals X damage " +
                     "to any target, where X is the amount of mana spent to cast that spell."
             ))

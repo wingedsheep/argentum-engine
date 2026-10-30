@@ -1385,12 +1385,19 @@ object Effects {
      * [Duration.EndOfTurn] (False Cure, Death Frenzy), [Duration.UntilYourNextTurn]
      * (Season of the Bold), [Duration.EndOfCombat], [Duration.Permanent] (Dimensional Breach,
      * planeswalker emblems), etc. Pass [descriptionOverride] to set emblem display text.
+     *
+     * Pass [emblem] = true for "you get an emblem with '…'": the emblem — colorless, with no other
+     * characteristics — becomes the ability's source, so "this emblem deals N damage" comes from a
+     * colorless source rather than the planeswalker. Wrap it in
+     * `ForEachPlayer(Player.EachOpponent, …)` for "each opponent gets an emblem" (Chandra,
+     * Awakened Inferno): the iteration rebinds the controller, so each opponent owns their own.
      */
     fun CreateGlobalTriggeredAbility(
         ability: TriggeredAbility,
         duration: Duration = Duration.Permanent,
-        descriptionOverride: String? = null
-    ): Effect = CreateGlobalTriggeredAbilityEffect(ability, duration, descriptionOverride)
+        descriptionOverride: String? = null,
+        emblem: Boolean = false
+    ): Effect = CreateGlobalTriggeredAbilityEffect(ability, duration, descriptionOverride, emblem)
 
     /**
      * Create a permanent emblem that grants a static modification to permanents matching a filter.
