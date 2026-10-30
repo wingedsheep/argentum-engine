@@ -1,1 +1,142 @@
-
+// Scholar of New Horizons
+{
+    "name": "Scholar of New Horizons",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Scout",
+    "oracleText": "This creature enters with a +1/+1 counter on it.\n{T}, Remove a counter from a permanent you control: Search your library for a Plains card and reveal it. If an opponent controls more lands than you, you may put that card onto the battlefield tapped. If you don't put the card onto the battlefield, put it into your hand. Then shuffle.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Scholar of New Horizons:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": "AtomRemoveCounters"
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "land Plains"
+                            },
+                            "storeAs": "gathered0",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Search your library for a Plains card"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "selected1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "selected1",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Conditional",
+                                    "condition": {
+                                        "type": "Compare",
+                                        "left": {
+                                            "type": "GreatestAmongPlayers",
+                                            "players": "EachOpponent",
+                                            "inner": {
+                                                "type": "AggregateBattlefield",
+                                                "player": "You",
+                                                "filter": "land"
+                                            }
+                                        },
+                                        "operator": "GT",
+                                        "right": {
+                                            "type": "AggregateBattlefield",
+                                            "player": "You",
+                                            "filter": "land"
+                                        }
+                                    },
+                                    "ifTrue": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "ifFalse": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    }
+                                }
+                            },
+                            "storeSelected": "selected3",
+                            "storeRemainder": "remainder3",
+                            "selectedLabel": "Put onto the battlefield tapped",
+                            "remainderLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected3",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "Tapped"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder3",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                },
+                "descriptionOverride": "Search your library for a Plains card and reveal it. If an opponent controls more lands than you, you may put that card onto the battlefield tapped. If you don't put the card onto the battlefield, put it into your hand. Then shuffle."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "rarity": "RARE",
+        "artist": "Randy Vargas",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e83e50d0-7851-4608-8cfd-63c54d1a7544.jpg?1783919722",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "You may choose to put the card into your hand rather than onto the battlefield even if an opponent controls more lands than you."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}

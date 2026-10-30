@@ -4143,6 +4143,104 @@
     }
 }
 
+// Padeem, Consul of Innovation
+{
+    "name": "Padeem, Consul of Innovation",
+    "manaCost": "{3}{U}",
+    "typeLine": "Legendary Creature — Vedalken Artificer",
+    "oracleText": "Artifacts you control have hexproof. (They can't be the targets of spells or abilities your opponents control.)\nAt the beginning of your upkeep, if you control the artifact with the greatest mana value or tied for the greatest mana value, draw a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Padeem, Consul of Innovation:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "interveningIf": {
+                    "type": "All",
+                    "conditions": [
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "artifact"
+                        },
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "artifact",
+                                "aggregation": "MAX",
+                                "property": "MANA_VALUE"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "AggregateBattlefield",
+                                "player": "Each",
+                                "filter": "artifact",
+                                "aggregation": "MAX",
+                                "property": "MANA_VALUE"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your upkeep, if you control the artifact with the greatest mana value or tied for the greatest mana value, draw a card."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "HEXPROOF",
+                "filter": {
+                    "baseFilter": "artifact ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "rarity": "RARE",
+        "artist": "Matt Stewart",
+        "flavorText": "\"Impress me.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e31b30a7-13e8-408e-a758-60e6e9290808.jpg?1783937217",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "The artifact you control has to have the highest mana value only among artifacts on the battlefield, not among all permanents on the battlefield."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If an artifact has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If you don't control an artifact with the highest mana value as your upkeep begins, Padeem's second ability won't trigger. You can't cast an instant to destroy an opponent's artifact during your turn before your upkeep begins."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If you no longer control an artifact with the highest mana value as Padeem's triggered ability resolves, you don't draw a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Panharmonicon
 {
     "name": "Panharmonicon",

@@ -964,6 +964,119 @@
     ]
 }
 
+// Emry, Lurker of the Loch
+{
+    "name": "Emry, Lurker of the Loch",
+    "manaCost": "{2}{U}",
+    "typeLine": "Legendary Creature — Merfolk Wizard",
+    "oracleText": "Affinity for artifacts (This spell costs {1} less to cast for each artifact you control.)\nWhen Emry enters, mill four cards.\n{T}: Choose target artifact card in your graveyard. You may cast that card this turn. (You still pay its costs. Timing rules still apply.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "AFFINITY"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Affinity",
+            "forType": "ARTIFACT"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Emry, Lurker of the Loch:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Emry enters, mill four cards."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Emry, Lurker of the Loch:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "gathered0",
+                            "nonLandOnly": true
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Choose target artifact card in your graveyard. You may cast that card this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "rarity": "RARE",
+        "artist": "Livia Prima",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bf4b9a8a-b42a-46fb-b0d0-9cf800f63c8a.jpg?1783932660",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "Casting the target card causes it to leave your graveyard and become a new object. You can't cast it again if it returns to your graveyard this turn."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If Emry's last ability targets an artifact land card, you can't play it. Effects that allow you to \"cast\" a card don't allow you to play a land card."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "You must follow the normal timing permissions and restrictions for the target artifact card. Unless it has flash, you'll most likely only be able to cast it during your main phase while the stack is empty."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Faeburrow Elder
 {
     "name": "Faeburrow Elder",

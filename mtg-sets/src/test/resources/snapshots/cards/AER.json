@@ -338,6 +338,60 @@
     ]
 }
 
+// Efficient Construction
+{
+    "name": "Efficient Construction",
+    "manaCost": "{3}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you cast an artifact spell, create a 1/1 colorless Thopter artifact creature token with flying.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Efficient Construction:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsArtifact"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Thopter"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd03a2b9-bfd7-4e1d-b660-e9f945699b78.jpg?1783937238",
+                    "artifactToken": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "rarity": "UNCOMMON",
+        "artist": "Jonas De Ro",
+        "flavorText": "For some of Ghirapur's aerowrights, building thopters is a byproduct of larger construction efforts.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/abfbe1d5-beb7-49b8-a504-f1cc47ee4731.jpg?1783936773",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "Efficient Construction's triggered ability resolves before the spell that caused it to trigger. The ability will resolve even if that spell is countered."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Gifted Aetherborn
 {
     "name": "Gifted Aetherborn",
@@ -1215,6 +1269,78 @@
     "colorIdentityOverride": []
 }
 
+// Sram, Senior Edificer
+{
+    "name": "Sram, Senior Edificer",
+    "manaCost": "{1}{W}",
+    "typeLine": "Legendary Creature — Dwarf Advisor",
+    "oracleText": "Whenever you cast an Aura, Equipment, or Vehicle spell, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sram, Senior Edificer:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            {
+                                                "type": "HasSubtype",
+                                                "subtype": "Aura"
+                                            },
+                                            {
+                                                "type": "HasSubtype",
+                                                "subtype": "Equipment"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Vehicle"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "rarity": "RARE",
+        "artist": "Chris Rahn",
+        "flavorText": "\"As this conflict grows, it gets harder to prevent the city from breaking down. How much longer can we keep this machinery balanced?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1b323e2c-59dd-4d70-9a48-b10f807bb818.jpg?1783936777",
+        "rulings": [
+            {
+                "date": "2025-06-06",
+                "text": "Sram's ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered or otherwise leaves the stack."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Trophy Mage
 {
     "name": "Trophy Mage",
@@ -1422,6 +1548,91 @@
         "artist": "Daniel Ljunggren",
         "imageUri": "https://cards.scryfall.io/normal/front/3/2/329a8738-3e17-403a-857a-0ba529ce8cd1.jpg?1783936718"
     }
+}
+
+// Whir of Invention
+{
+    "name": "Whir of Invention",
+    "manaCost": "{X}{U}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Improvise (Your artifacts can help cast this spell. Each artifact you tap after you're done activating mana abilities pays for {1}.)\nSearch your library for an artifact card with mana value X or less, put it onto the battlefield, then shuffle.",
+    "keywords": [
+        "IMPROVISE"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsArtifact",
+                                {
+                                    "type": "CompareNumericProperty",
+                                    "property": "MANA_VALUE",
+                                    "operator": "LTE",
+                                    "amount": "XValue"
+                                }
+                            ]
+                        }
+                    },
+                    "storeAs": "searchable",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "found",
+                    "prompt": "Search your library for an artifact card with mana value at most X to put onto the battlefield",
+                    "selectedLabel": "Put onto the battlefield"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    }
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "rarity": "RARE",
+        "artist": "Christine Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/0279fd3c-9252-4958-9d7a-5f33aa25907e.jpg?1783936767",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "When using improvise to cast a spell with {X} in its mana cost, first choose the value for X. That choice, plus any cost increases or decreases, will determine the spell's total cost. Then you can tap artifacts you control to help pay that cost. For example, if you cast Whir of Invention (a spell with improvise and mana cost {X}{U}{U}{U}) and choose X to be 3, the total cost is {3}{U}{U}{U}. If you tap two artifacts, you'll have to pay {1}{U}{U}{U}."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Improvise can't pay for {W}, {U}, {B}, {R}, {G}, or {C} mana symbols in a spell's total cost."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Improvise doesn't change a spell's mana cost or mana value."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Winding Constrictor

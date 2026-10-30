@@ -5617,6 +5617,149 @@
     "colorIdentityOverride": []
 }
 
+// Urza, Lord High Artificer
+{
+    "name": "Urza, Lord High Artificer",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Legendary Creature — Human Artificer",
+    "oracleText": "When Urza enters, create a 0/0 colorless Construct artifact creature token with \"This token gets +1/+1 for each artifact you control.\"\nTap an untapped artifact you control: Add {U}.\n{5}: Shuffle your library, then exile the top card. Until end of turn, you may play that card without paying its mana cost.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Urza, Lord High Artificer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 0,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Construct"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/8/5/85f212cd-4fc6-42fe-b268-22d8e3b2b7eb.jpg?1783933219",
+                    "artifactToken": true,
+                    "staticAbilities": [
+                        {
+                            "type": "GrantDynamicStats",
+                            "filter": {
+                                "baseFilter": "permanent",
+                                "scope": "Self"
+                            },
+                            "powerBonus": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "artifact"
+                            },
+                            "toughnessBonus": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "artifact"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Urza enters, create a 0/0 colorless Construct artifact creature token with \"This token gets +1/+1 for each artifact you control.\""
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Urza, Lord High Artificer:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomTapPermanents",
+                        "filter": "artifact"
+                    }
+                },
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Urza, Lord High Artificer:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        "ShuffleLibrary",
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "exiledCard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "exiledCard",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "exiledCard"
+                        },
+                        {
+                            "type": "GrantPlayWithoutPayingCost",
+                            "from": "exiledCard"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Shuffle your library, then exile the top card. Until end of turn, you may play that card without paying its mana cost."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "rarity": "MYTHIC",
+        "artist": "Grzegorz Rutkowski",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9e7fb3c0-5159-4d1f-8490-ce4c9a60f567.jpg?1783933135",
+        "rulings": [
+            {
+                "date": "2022-12-08",
+                "text": "The token created by Urza's first ability will count itself, so it'll be at least 1/1."
+            },
+            {
+                "date": "2022-12-08",
+                "text": "You can tap any untapped artifact you control to pay the cost of the mana ability, including an artifact creature you haven't controlled continuously since the beginning of your most recent turn. Tapping an Equipment this way won't affect its abilities or the equipped creature."
+            },
+            {
+                "date": "2022-12-08",
+                "text": "If you don't play the card exiled with Urza's last ability, it remains in exile."
+            },
+            {
+                "date": "2022-12-08",
+                "text": "If a spell has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Venomous Changeling
 {
     "name": "Venomous Changeling",

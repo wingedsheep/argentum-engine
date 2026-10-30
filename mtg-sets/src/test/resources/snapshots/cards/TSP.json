@@ -1,3 +1,74 @@
+// Academy Ruins
+{
+    "name": "Academy Ruins",
+    "manaCost": "",
+    "typeLine": "Legendary Land",
+    "oracleText": "{T}: Add {C}.\n{1}{U}, {T}: Put target artifact card from your graveyard on top of your library.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Academy Ruins:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Academy Ruins:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{U}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Library",
+                    "placement": "Top"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Put target artifact card from your graveyard on top of your library."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "269",
+        "rarity": "RARE",
+        "artist": "Zoltan Boros & Gabor Szikszai",
+        "flavorText": "Its secrets once wrought the greatest artifice ever known. Now crabs loot the rubble to decorate their shells.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/af09af65-0a3b-42df-b0fd-372e2158beac.jpg?1783943196"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Amrou Scout
 {
     "name": "Amrou Scout",

@@ -6216,6 +6216,44 @@
     "colorIdentityOverride": []
 }
 
+// Static Orb
+{
+    "name": "Static Orb",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "As long as this artifact is untapped, players can't untap more than two permanents during their untap steps.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "UntapLimitPerStep",
+                    "filter": "permanent",
+                    "max": 2
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": "untapped"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "310",
+        "rarity": "RARE",
+        "artist": "Dermot Power",
+        "flavorText": "Time passes, time crawls;\nTime doesn't move at all.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/3574d758-9143-4a2b-9ebd-ed8dab238251.jpg?1783946599",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "If there are two of these on the battlefield, they do not add together. The result is that only two permanents can be untapped."
+            }
+        ]
+    }
+}
+
 // Staunch Defenders
 {
     "name": "Staunch Defenders",

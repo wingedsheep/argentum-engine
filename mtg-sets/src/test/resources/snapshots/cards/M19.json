@@ -3804,6 +3804,98 @@
     ]
 }
 
+// Sai, Master Thopterist
+{
+    "name": "Sai, Master Thopterist",
+    "manaCost": "{2}{U}",
+    "typeLine": "Legendary Creature — Human Artificer",
+    "oracleText": "Whenever you cast an artifact spell, create a 1/1 colorless Thopter artifact creature token with flying.\n{1}{U}, Sacrifice two artifacts: Draw a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sai, Master Thopterist:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsArtifact"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Thopter"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/d/0/d0044cd9-2136-423e-aa2a-829e8f007535.jpg?1783934464",
+                    "artifactToken": true
+                },
+                "descriptionOverride": "Whenever you cast an artifact spell, create a 1/1 colorless Thopter artifact creature token with flying."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Sai, Master Thopterist:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{U}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "artifact",
+                                "count": 2
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "rarity": "RARE",
+        "artist": "Adam Paquette",
+        "flavorText": "\"Industry without artistry is just a fancy way to fill the junkyard.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/19316cbb-d1af-4ab7-b588-78637503e986.jpg?1783934583",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "Sai's triggered ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Sarkhan's Whelp
 {
     "name": "Sarkhan's Whelp",
