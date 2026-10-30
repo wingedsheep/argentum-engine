@@ -7,7 +7,11 @@ import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.ChoiceValue
 import com.wingedsheep.engine.state.components.battlefield.NotedCreatureTypesComponent
+import com.wingedsheep.engine.state.components.battlefield.withCastChoice
+import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.handlers.effects.library.ChooseCreatureTypePipelineExecutor
 
@@ -156,7 +160,7 @@ class CreatureTypeChoiceContinuationResumer(
         val mirrorChosenCreatureType = continuation.storeAs ==
             ChooseCreatureTypePipelineExecutor.CHOSEN_CREATURE_TYPE_KEY
 
-        val newState = state.copy(
+        val newState = recordChoiceOnSource(state, continuation, chosenValue).copy(
             continuationStack = injectChosenValueIntoStack(
                 state.continuationStack,
                 continuation.storeAs,
@@ -166,6 +170,31 @@ class CreatureTypeChoiceContinuationResumer(
         )
 
         return checkForMore(newState, emptyList())
+    }
+
+    /**
+     * Record a [ChooseOptionPipelineContinuation.recordSlot] choice durably on the source permanent
+     * (replacing any prior value), the way the as-enters `EntersWithChoice` records it — a color as
+     * a [ChoiceValue.ColorChoice], everything else as a [ChoiceValue.TextChoice]. Nothing is
+     * recorded once the source is no longer the object that made the choice (CR 400.7).
+     */
+    private fun recordChoiceOnSource(
+        state: GameState,
+        continuation: ChooseOptionPipelineContinuation,
+        chosenValue: String
+    ): GameState {
+        val slot = continuation.recordSlot ?: return state
+        val sourceId = continuation.sourceId ?: return state
+        if (sourceId !in state.getBattlefield() ||
+            !continuation.objectReferences.isCurrent(continuation.objectReferences.source, state)) return state
+        val value = if (slot == ChoiceSlot.COLOR) {
+            val color = Color.entries.firstOrNull { it.displayName.equals(chosenValue, ignoreCase = true) }
+                ?: return state
+            ChoiceValue.ColorChoice(color)
+        } else {
+            ChoiceValue.TextChoice(chosenValue)
+        }
+        return state.updateEntity(sourceId) { it.withCastChoice(slot, value) }
     }
 
     /**

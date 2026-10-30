@@ -5470,7 +5470,7 @@ with cards):
 | `storeNumber(amount)` | `StoreNumberEffect` |
 | `runStoringNumber { Effects.ChooseSpellCastThisTurn(caster, spellFilter, it) }` → the damage dealt by the spell the controller picks among `caster`'s matching spells cast this turn (its cast record's total over every recipient while it was a spell; no prompt when they all dealt the same, 0 with none). Backdraft: `selectTarget(TargetPlayer(restriction = Conditions.candidateCastSpellsThisTurn(Sorcery)), nonTargeting = true)`, then this, then `DealDamage(damage.amount / 2, player.asTarget)` | `ChooseSpellCastThisTurnEffect` |
 | `storePlayer(player = You, onlyIf?)` → the players recorded (a `CollectionSlot`; with `onlyIf`, only when the condition holds then). Inside `forEachPlayerCollecting` it records the iterated player, so the aggregate is "each player who …" snapshotted before anyone acts — Plaguecrafter: `forEachPlayerCollecting(ActivePlayerFirst) { listOf(storePlayer(onlyIf = YouControl(CreatureOrPlaneswalker, negate = true))) }` then sacrifice, then `ForEachPlayer(cant.asPlayers, discard)` | `StorePlayerEffect` (wrapped in `Effects.If` for `onlyIf`) |
-| `chooseOption(optionType, …)` / `chooseCardName(prompt?, excludeBasicLandNames?, pool?, chooser?)` / `noteCreatureType(…)` | `ChooseOptionEffect` / `NoteCreatureTypeEffect` |
+| `chooseOption(optionType, …, recordOnSource?)` / `chooseCardName(prompt?, excludeBasicLandNames?, pool?, chooser?, recordOnSource?)` / `noteCreatureType(…)` | `ChooseOptionEffect` / `NoteCreatureTypeEffect` |
 | `choosePile(a, b, chooser?, …)` → `(chosen, other)` | `ChoosePileEffect` |
 | `selectTarget(requirement, nonTargeting?, prompt?, excluding?, atRandom?)` (resolution-time choice — never printed "target"; `excluding` drops earlier picks; `atRandom` lets the engine draw one candidate with no decision — Vial Smasher the Fierce's "choose an opponent at random") | `SelectTargetEffect` |
 | `ifNotEmpty(slot, filter?, minSize?) { … } orElse { … }` | `ConditionalOnCollectionEffect` |
@@ -7081,8 +7081,9 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   `CastChoicesComponent` under `slot` (case-insensitive). Unlike `.namedFromVariable` (transient pipeline variable,
   fails closed in projection), this is **static-projection / activation-legality safe**: it keys off the granting
   permanent's id, which the predicate context supplies as the source wherever a static ability's filter is
-  evaluated. Pair with `replacementEffect(EntersWithChoice(ChoiceType.CARD_NAME))`. Fails closed (no match) before
-  a name is chosen. Used by name-keyed static abilities (Petrified Hamlet — "sources with the chosen name … /
+  evaluated. Pair with `replacementEffect(EntersWithChoice(ChoiceType.CARD_NAME))` for a choice made as it enters,
+  or `Effects.ChooseCardName(recordOnSource = true)` for one made by a resolving ability (Medomai's Prophecy).
+  Fails closed (no match) before a name is chosen. Used by name-keyed static abilities (Petrified Hamlet — "sources with the chosen name … /
   Lands with the chosen name …").
 - `.ofChosenCardTypeComponent(slot = ChoiceSlot.CARD_TYPE)` — `CardPredicate.CardTypeEqualsChosenComponent`:
   the card-type analogue of `.namedFromChosenComponent`. Matches cards whose **card type** equals the type
@@ -10228,6 +10229,10 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
   still closes the window for that turn. Without a filter it is the flat total, the Hearthborn Battler shape.
   Like any triggered ability of a permanent card it functions only on the battlefield (CR 113.6): a card that
   is *itself* the Nth spell cast doesn't trigger off its own cast (Hearthborn Battler, Plan for All Outcomes).
+  Usable as a **delayed** trigger too: "when you cast a spell with the chosen name for the first time this
+  turn" is `CreateDelayedTrigger(trigger = Triggers.you.castsNth(1, GameObjectFilter.Any.namedFromChosenComponent()),
+  fireOnce = true, expiry = EndOfTurn)` (Medomai's Prophecy III). The count still reads the whole turn's
+  history, so a spell with that name cast *before* the delayed trigger existed means a later one isn't the first.
 - `Triggers.self.isCast()` — a "cast trigger" that fires on the spell's **own** cast while it is on
   the stack (`EventPattern.CastThisSpellEvent`, `binding = SELF`). Distinct from a battlefield
   `SpellCast`/`Triggers.<player>.castsNth(n, spell)` trigger that observes *other* spells: this one travels with the spell
@@ -18627,6 +18632,15 @@ staticAbility { ability = GrantLandwalkOfChosenType() }
 - `Effects.NoteCreatureType(storeAs = "notedType", prompt?)` — "note a creature type that hasn't been noted for this <source>" (LTR — Long List of the Ents). Same decision shape as `ChooseOption(OptionType.CREATURE_TYPE)`, but the source's *current* `NotedCreatureTypesComponent.types` are excluded from the option list (so the player can't pick a duplicate), and on resolution the chosen type is appended to that component on the source AND stored in `chosenValues[storeAs]` for any downstream pipeline step. The component lives on the source permanent's container, so it disappears when the source leaves play (CR 400.7 — a permanent that changes zones becomes a new object with no memory of its previous existence). Use this whenever a card's text says "note … for this permanent"; use plain `ChooseOption(OptionType.CREATURE_TYPE)` when the choice is one-shot and doesn't need to accumulate.
 - `Effects.SecretlyChooseCreatureType(options = emptyList(), storeAs = "notedType", prompt?)` — "Then secretly choose Human, Merfolk, or Goblin." (MKM — A Killer Among Us). The hidden-information sibling of `NoteCreatureType`, and the same `NoteCreatureTypeEffect` under the hood with `secret = true`: the type is noted on the source permanent exactly as above, but `NotedCreatureTypesComponent.secretTo` records *who* chose it, and two things key off that — the client view shows the note only to that player (badged "Chosen (secret)"; spectators never see it), and only that player can pay `Costs.RevealNotedCreatureType` (§ costs). This is CR 702.106a-b's hidden agenda — the piece of paper kept with the object — applied to a permanent, so a change of control neither hands the new controller the answer nor lets them reveal it. Pass `options` to narrow the choice to a named handful; the source's already-noted types are excluded from whichever set that is. Leave `options` empty for "secretly choose a creature type".
 - `Effects.ChooseCardName(storeAs, prompt?, excludeBasicLandNames?, pool?, chooser?)` — name a card (`ChooseOptionEffect(OptionType.CARD_NAME)`); the chosen name is stored in `chosenValues[storeAs]`. `chooser` (a `Chooser`, default `Controller`) routes the naming to another player through `ChooserResolution` — `Chooser.TargetPlayer` for "target player chooses a card name" (Petra Sphinx); the name still lands in the resolving pipeline, so the controller's later steps read it. `ChooseOptionEffect` carries the same `chooser` for every option type. Options are every registry card name (searchable list, not free text); `excludeBasicLandNames` drops the five basics; `pool = CardNamePool.NONLAND` / `.LAND` narrows the list to nonland / land names at resolution ("choose a nonland card name" — Cranial Extraction), the same pools `EntersWithChoice` offers. Match cards by it with `GameObjectFilter.namedFromVariable(storeAs)`. (Desperate Research)
+  - `recordOnSource = true` (an axis on `ChooseOptionEffect`, so every option type has it) **also records the
+    choice durably on the source permanent** under the option type's slot (`OptionType.recordSlot`: `CARD_NAME`,
+    `COLOR` as a color choice, `CREATURE_TYPE`, `LAND_TYPE`, `CARD_TYPE`) — the slot `EntersWithChoice` writes as
+    a permanent enters, replacing any prior value. It's the *on-resolution* form for a choice a **later**
+    resolution reads back: "II — Choose a card name. III — When you cast a spell with the chosen name …"
+    (Medomai's Prophecy) reads it with `GameObjectFilter.namedFromChosenComponent()`. Nothing is recorded when
+    the source is no longer the permanent that resolved the ability; the pipeline variable is stored either way.
+    A delayed trigger whose filter holds `namedFromChosenComponent()` has the recorded name **frozen in** as it is
+    created (the source as it last existed, if it has left); with no name recorded it never matches a cast.
 - `ChooseOption(OptionType.CARD_TYPE)` (pipeline: `chooseOption(OptionType.CARD_TYPE)`) — "choose a card type" at resolution; offers `CardType.CHOOSABLE_TYPE_NAMES` (artifact, battle, creature, enchantment, instant, kindred, land, planeswalker, sorcery — CR 205.2a, the types a library card can have) and stores the display name in `chosenValues[storeAs]`. Match cards by it with `GameObjectFilter.ofChosenCardTypeFromVariable(slot)`. For a choice that must persist on the permanent (a static reads it later), use `Effects.ChooseCardTypeForSource` instead. (Alrund, God of the Cosmos)
 - `Effects.StoreCardName(from, storeAs)` — capture the name of the first card in collection `from` into `chosenValues[storeAs]`. The "choose a card, then act on cards of that name" counterpart to `ChooseCardName`. (Lobotomy)
 - `SelectTargetEffect(...)` *(SDK-internal step; cards use `Effects.Pipeline { selectTarget }` — §5.5.)* — pick from a valid target set.

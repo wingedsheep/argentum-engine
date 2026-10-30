@@ -10,6 +10,9 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent
+import com.wingedsheep.engine.state.components.battlefield.ChoiceValue
+import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
@@ -116,7 +119,7 @@ class CreateDelayedTriggerExecutor(
         // the pipeline running this chapter, and that EffectContext is gone by the time the
         // trigger fires. Substitute the chosen value at creation time so the trigger spec is
         // self-contained.
-        val resolvedTrigger = effect.trigger?.let { bakeChosenValuesIntoTrigger(it, context) }
+        val resolvedTrigger = effect.trigger?.let { bakeChosenValuesIntoTrigger(it, context, state) }
 
         // For event-based delayed triggers, bake the watched target into a concrete
         // entity id so matching later is cheap and doesn't need the original context.
@@ -256,48 +259,51 @@ class CreateDelayedTriggerExecutor(
 
     /**
      * Substitute any chosen-value references in the trigger spec's filter with the concrete
-     * values from the current [EffectContext.pipeline.chosenValues]. After the delayed trigger
-     * is created, the originating EffectContext is gone — the trigger spec needs to be
-     * self-contained so the matcher can evaluate it on its own.
+     * values chosen so far. After the delayed trigger is created, the originating EffectContext is
+     * gone — and a value recorded on the source may be gone with the source — so the trigger spec
+     * needs to be self-contained for the matcher to evaluate it on its own (CR 603.7c).
      *
-     * Currently handles [CardPredicate.HasSubtypeFromVariable] inside a
-     * [EventPattern.SpellCastEvent]'s `spellFilter` — that's the predicate Long List of the
-     * Ents's chapter trigger needs. Extend this helper as further variable-based predicates
-     * appear in trigger filters (e.g., `HasSubtypeInStoredList`, `NameEqualsChosen` inside a
-     * cast trigger).
+     * Handles the spell filter of [EventPattern.SpellCastEvent] / [EventPattern.NthSpellCastEvent]
+     * and the source filter of [EventPattern.DealsDamageEvent]; see [bakeChosenValuesIntoFilter]
+     * for the predicates rewritten.
      */
-    private fun bakeChosenValuesIntoTrigger(trigger: TriggerSpec, context: EffectContext): TriggerSpec {
-        val chosen = context.pipeline.chosenValues
-        if (chosen.isEmpty()) return trigger
+    private fun bakeChosenValuesIntoTrigger(trigger: TriggerSpec, context: EffectContext, state: GameState): TriggerSpec {
+        val bake = { filter: GameObjectFilter -> bakeChosenValuesIntoFilter(filter, context, state) }
         return when (val event = trigger.event) {
-            is EventPattern.SpellCastEvent -> {
-                val newFilter = bakeChosenValuesIntoFilter(event.spellFilter, chosen) ?: return trigger
-                trigger.copy(event = event.copy(spellFilter = newFilter))
-            }
+            is EventPattern.SpellCastEvent ->
+                bake(event.spellFilter)?.let { trigger.copy(event = event.copy(spellFilter = it)) } ?: trigger
+            // Medomai's Prophecy III: "when you cast a spell with the chosen name for the first
+            // time this turn" — the name chapter II recorded on the Saga is frozen in now.
+            is EventPattern.NthSpellCastEvent ->
+                event.spellFilter?.let(bake)?.let { trigger.copy(event = event.copy(spellFilter = it)) } ?: trigger
             // The Clone Saga ch. III: "whenever a creature with the chosen name deals combat damage
             // to a player this turn, draw a card." The chosen name is baked into the damage source
             // filter now, so the delayed-trigger matcher can evaluate it without the (gone) pipeline.
-            is EventPattern.DealsDamageEvent -> {
-                val filter = event.sourceFilter ?: return trigger
-                val newFilter = bakeChosenValuesIntoFilter(filter, chosen) ?: return trigger
-                trigger.copy(event = event.copy(sourceFilter = newFilter))
-            }
+            is EventPattern.DealsDamageEvent ->
+                event.sourceFilter?.let(bake)?.let { trigger.copy(event = event.copy(sourceFilter = it)) } ?: trigger
             else -> trigger
         }
     }
 
     /**
-     * Rewrite chosen-value-dependent card predicates in [filter] into concrete ones using [chosen]
-     * (= `EffectContext.pipeline.chosenValues`). Returns null when nothing changed so the caller
-     * keeps the original TriggerSpec instance.
+     * Rewrite chosen-value-dependent card predicates in [filter] into concrete ones. Returns null
+     * when nothing changed so the caller keeps the original TriggerSpec instance.
      *
-     *  - `HasSubtypeFromVariable(v)` → `HasSubtype(Subtype(chosen[v]))` (Long List of the Ents)
-     *  - `NameEqualsChosen(v)`       → `NameEquals(chosen[v])`          (The Clone Saga ch. III)
+     *  - `HasSubtypeFromVariable(v)`      → `HasSubtype(Subtype(chosen[v]))` (Long List of the Ents)
+     *  - `NameEqualsChosen(v)`            → `NameEquals(chosen[v])`          (The Clone Saga ch. III)
+     *  - `NameEqualsChosenComponent(slot)` → `NameEquals(<the source's recorded name>)` — read off the
+     *    source as it last existed if it has left (CR 113.7a), else off its cast-choices bag
+     *    (Medomai's Prophecy III). With no name recorded the predicate is left as it is, and it never
+     *    matches a cast spell — per the card's ruling, the trigger then can't trigger.
+     *
+     * `chosen` is `EffectContext.pipeline.chosenValues`.
      */
     private fun bakeChosenValuesIntoFilter(
         filter: GameObjectFilter,
-        chosen: Map<String, String>
+        context: EffectContext,
+        state: GameState
     ): GameObjectFilter? {
+        val chosen = context.pipeline.chosenValues
         val newPredicates = filter.cardPredicates.map { predicate ->
             when (predicate) {
                 is CardPredicate.HasSubtypeFromVariable -> {
@@ -308,11 +314,22 @@ class CreateDelayedTriggerExecutor(
                     val value = chosen[predicate.variableName] ?: return@map predicate
                     CardPredicate.NameEquals(value)
                 }
+                is CardPredicate.NameEqualsChosenComponent -> {
+                    val value = sourceTextChoice(predicate.slot, context, state) ?: return@map predicate
+                    CardPredicate.NameEquals(value)
+                }
                 else -> predicate
             }
         }
         if (newPredicates == filter.cardPredicates) return null
         return filter.copy(cardPredicates = newPredicates)
+    }
+
+    /** The text the source recorded under [slot] — as it last existed once it has left (CR 113.7a). */
+    private fun sourceTextChoice(slot: ChoiceSlot, context: EffectContext, state: GameState): String? {
+        context.lastKnownSourceSnapshot?.let { return it.textChoices[slot] }
+        return (context.sourceId?.let { state.getEntity(it) }?.get<CastChoicesComponent>()
+            ?.chosen?.get(slot) as? ChoiceValue.TextChoice)?.text
     }
 
     /**

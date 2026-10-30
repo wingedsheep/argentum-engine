@@ -128,6 +128,8 @@ data class SelectTargetPipelineContinuation(
  * @property sourceName Name of the source for display
  * @property storeAs Key under which to store the chosen value
  * @property options The option strings (indexed by OptionChosenResponse.optionIndex)
+ * @property recordSlot When set ([com.wingedsheep.sdk.scripting.effects.ChooseOptionEffect.recordOnSource]),
+ *   the chosen value is also written durably to the source permanent's cast-choices bag under this slot.
  */
 @Serializable
 data class ChooseOptionPipelineContinuation(
@@ -136,6 +138,7 @@ data class ChooseOptionPipelineContinuation(
     val sourceName: String?,
     val storeAs: String,
     val options: List<String>,
+    val recordSlot: com.wingedsheep.sdk.scripting.ChoiceSlot? = null,
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : AnswerContinuation
 

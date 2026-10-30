@@ -92,7 +92,8 @@ class ChooseOptionPipelineExecutor(
             objectReferences = context.objectReferences,
             sourceName = sourceName,
             storeAs = effect.storeAs,
-            options = options
+            options = options,
+            recordSlot = if (effect.recordOnSource) effect.optionType.recordSlot else null
         )
 
         return EffectResult.from(state.suspendForDecision(decision, continuation))

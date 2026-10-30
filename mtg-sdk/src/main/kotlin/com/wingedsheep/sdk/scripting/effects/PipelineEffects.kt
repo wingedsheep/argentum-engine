@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.CardNamePool
+import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
@@ -1577,7 +1578,20 @@ enum class OptionType {
      * free text. Pair the stored name with [com.wingedsheep.sdk.scripting.predicates.CardPredicate.NameEqualsChosen]
      * to match cards by it. Used by "name a card" effects (Desperate Research, etc.).
      */
-    CARD_NAME
+    CARD_NAME;
+
+    /**
+     * The durable cast-choices slot a choice of this type is recorded under when
+     * [ChooseOptionEffect.recordOnSource] is set — the slot the matching `EntersWithChoice` writes.
+     */
+    val recordSlot: ChoiceSlot
+        get() = when (this) {
+            CREATURE_TYPE -> ChoiceSlot.CREATURE_TYPE
+            COLOR -> ChoiceSlot.COLOR
+            BASIC_LAND_TYPE -> ChoiceSlot.LAND_TYPE
+            CARD_TYPE -> ChoiceSlot.CARD_TYPE
+            CARD_NAME -> ChoiceSlot.CARD_NAME
+        }
 }
 
 /**
@@ -1596,6 +1610,13 @@ enum class OptionType {
  *   ("choose a nonland card name" — Cranial Extraction). Ignored for every other option type.
  * @property chooser Who makes the choice — the controller by default, or another player the text
  *   names: "target player chooses a card name" (Petra Sphinx) is [Chooser.TargetPlayer].
+ * @property recordOnSource Also record the choice **durably on the source permanent**, under the
+ *   option type's [ChoiceSlot] ([OptionType.recordSlot]) in its cast-choices bag — the same slot the
+ *   as-enters `EntersWithChoice` writes, replacing any prior value. For a choice made by a resolving
+ *   ability that a *later* resolution reads back ("II — Choose a card name. III — When you cast a
+ *   spell with the chosen name …", Medomai's Prophecy): read it with
+ *   `GameObjectFilter.namedFromChosenComponent()` / `.ofChosenCardTypeComponent()`. With no source
+ *   permanent on the battlefield nothing is recorded; the pipeline variable is stored either way.
  */
 @SerialName("ChooseOption")
 @Serializable
@@ -1605,7 +1626,8 @@ data class ChooseOptionEffect(
     val prompt: String? = null,
     val excludedOptions: List<String> = emptyList(),
     val cardNamePool: CardNamePool = CardNamePool.ANY,
-    val chooser: Chooser = Chooser.Controller
+    val chooser: Chooser = Chooser.Controller,
+    val recordOnSource: Boolean = false
 ) : Effect {
     override val description: String = buildString {
         append("Choose ")

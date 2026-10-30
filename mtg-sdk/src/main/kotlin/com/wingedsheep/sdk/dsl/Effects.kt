@@ -7779,14 +7779,16 @@ object Effects {
         prompt: String? = null,
         excludeBasicLandNames: Boolean = false,
         pool: CardNamePool = CardNamePool.ANY,
-        chooser: Chooser = Chooser.Controller
+        chooser: Chooser = Chooser.Controller,
+        recordOnSource: Boolean = false
     ): Effect = ChooseOptionEffect(
         optionType = OptionType.CARD_NAME,
         storeAs = storeAs,
         prompt = prompt,
         excludedOptions = if (excludeBasicLandNames) BASIC_LAND_CARD_NAMES else emptyList(),
         cardNamePool = pool,
-        chooser = chooser
+        chooser = chooser,
+        recordOnSource = recordOnSource
     )
 
     /**
