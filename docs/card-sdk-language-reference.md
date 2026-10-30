@@ -12306,6 +12306,13 @@ staticAbility {
   it adjusts whatever limit stands at its timestamp, a later set overrides it, and a player with no maximum
   hand size has nothing to modify. The result is clamped to ≥ 0. For the one-shot "reduced by N for the rest
   of the game" use the effect `Effects.ReduceMaximumHandSize` (§4).
+- `ModifyDevotion(amount = 1)` — "Your devotion to each color and each combination of colors is increased
+  by one" (Altar of the Pantheon). Every `DynamicAmount.DevotionTo` count of the holder's controller — one
+  color, a combination (raised once, not once per color — ruling), or the chosen color — rises by `amount`,
+  so god thresholds, Nykthos and "equal to your devotion" amounts all see it. Stamped as a marker when the
+  permanent enters (devotion is read mid-projection by the gods' Layer 4 type change, before Layer 6
+  assembles projected statics), so it is printed-only: not grantable and not behind an "as long as …"
+  gate. Per the Altar's ruling the bonus survives the holder losing its abilities; face down it does nothing.
 - `DampLandManaProduction` — a land tapped for 2+ mana produces `{C}` instead. (Damping Sphere)
 - `WinCoinFlips(firstFlipEachTurn = false)` — a coin-flip result replacement (CR 705.3): the
   controller's coin flips come up heads / are won. `firstFlipEachTurn = true` restricts it to the
@@ -16839,6 +16846,7 @@ forbids `DynamicAmount.X` in card definitions.
   plain colored, both halves of a two-color hybrid ({W/U} counts for white *and* blue), monocolored
   twobrid ({2/B} is black), and Phyrexian ({B/P} is black); generic/colorless/{X} never count.
   Face-down permanents have no mana cost and contribute 0. Controller read via projected state.
+  A `ModifyDevotion` static (Altar of the Pantheon) on a permanent the player controls adds its amount.
   Facade: `DynamicAmounts.devotionTo(color, …)`. Used by "draw cards equal to your devotion to red"
   (Clive, Ifrit's Dominant). For the pips inside **one object's** cost ("a spell with one or more
   blue mana symbols in its mana cost") use `DynamicAmounts.coloredManaSymbolsOf(entity, …)` — same

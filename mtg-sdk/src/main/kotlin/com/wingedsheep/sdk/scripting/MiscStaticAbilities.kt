@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.text.TextReplacer
+import com.wingedsheep.sdk.scripting.util.numberToWord
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -1598,6 +1599,29 @@ data class SetMaximumHandSize(
         val newAmount = amount.applyTextReplacement(replacer)
         return if (newAmount !== amount) copy(amount = newAmount) else this
     }
+}
+
+/**
+ * "Your devotion to each color and each combination of colors is increased by [amount]" (Altar of
+ * the Pantheon). Raises every devotion count (CR 700.5) its holder's controller has — devotion to
+ * one color, to a combination, and to a chosen color alike — by [amount], once per count however
+ * many colors it names, while the holder is on the battlefield face up. Per the Altar's ruling the
+ * bonus survives the holder losing its abilities. Read where devotion is counted
+ * (`DynamicAmountEvaluator`'s `DynamicAmount.DevotionTo` branch), so a Theros god's "isn't a
+ * creature" threshold, Nykthos's mana and every "equal to your devotion" amount see it.
+ *
+ * It isn't a Rule 613 effect: `StaticAbilityHandler` stamps it as a marker on the printed card as
+ * it enters, because devotion is read in the middle of projection (Layer 4, by the gods) — before
+ * Layer 6 has assembled projected static abilities. Printed only; it cannot sit behind an
+ * "as long as …" gate or be granted.
+ *
+ * @property amount How much each devotion count rises by (positive).
+ */
+@SerialName("ModifyDevotion")
+@Serializable
+data class ModifyDevotion(val amount: Int = 1) : StaticAbility {
+    override val description: String =
+        "Your devotion to each color and each combination of colors is increased by ${numberToWord(amount)}"
 }
 
 /**

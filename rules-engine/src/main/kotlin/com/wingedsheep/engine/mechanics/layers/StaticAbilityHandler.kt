@@ -388,6 +388,13 @@ class StaticAbilityHandler(
             result = result.with(com.wingedsheep.engine.state.components.battlefield.ControlsOpponentsLibrarySearchesComponent)
         }
 
+        // "Your devotion to each color … is increased by one" (Altar of the Pantheon) — read where
+        // devotion is counted. A marker, not a layer effect: the gods read devotion in Layer 4.
+        allStaticAbilities.filterIsInstance<com.wingedsheep.sdk.scripting.ModifyDevotion>()
+            .sumOf { it.amount }.takeIf { it != 0 }?.let {
+                result = result.with(com.wingedsheep.engine.state.components.battlefield.IncreasesDevotionComponent(it))
+            }
+
         // Global Layer 3 color-word change (Swirl the Mists): read by TextChanges, which scans the
         // battlefield for this marker and reads the source's chosen color live.
         if (allStaticAbilities.any { it is com.wingedsheep.sdk.scripting.ChangeAllColorWordsToChosenColor }) {
@@ -1415,6 +1422,7 @@ class StaticAbilityHandler(
             is com.wingedsheep.sdk.scripting.PlayersCantPayLifeForCosts,
             is com.wingedsheep.sdk.scripting.PlayersCantSearchLibraries,
             is com.wingedsheep.sdk.scripting.ControlOpponentsLibrarySearches,
+            is com.wingedsheep.sdk.scripting.ModifyDevotion,
             is com.wingedsheep.sdk.scripting.GrantCantLoseGameFromLife,
             is GrantHexproofToController,
             is GrantProtectionToController,

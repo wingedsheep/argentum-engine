@@ -479,6 +479,74 @@
     ]
 }
 
+// Altar of the Pantheon
+{
+    "name": "Altar of the Pantheon",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "Your devotion to each color and each combination of colors is increased by one.\n{T}: Add one mana of any color. If you control a God, a Demigod, or a legendary enchantment, you gain 1 life.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Altar of the Pantheon:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        "AddManaOfChoice",
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Any",
+                                    "conditions": [
+                                        {
+                                            "type": "Exists",
+                                            "player": "You",
+                                            "zone": "Battlefield",
+                                            "filter": "God|Demigod"
+                                        },
+                                        {
+                                            "type": "Exists",
+                                            "player": "You",
+                                            "zone": "Battlefield",
+                                            "filter": {
+                                                "cardPredicates": [
+                                                    "IsEnchantment",
+                                                    "IsLegendary"
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "then": {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "staticAbilities": [
+            "ModifyDevotion"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "231",
+        "artist": "Jonas De Ro",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/1/e1f2a587-443d-4626-a6f6-9a26838a42b1.jpg?1783931517"
+    },
+    "colorIdentityOverride": []
+}
+
 // Anax, Hardened in the Forge
 {
     "name": "Anax, Hardened in the Forge",

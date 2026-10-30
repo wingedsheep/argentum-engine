@@ -18,6 +18,7 @@ import com.wingedsheep.engine.state.components.battlefield.entitiesChoice
 import com.wingedsheep.engine.state.components.battlefield.chosenOpponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.GrantsStationUsingToughnessComponent
+import com.wingedsheep.engine.state.components.battlefield.IncreasesDevotionComponent
 import com.wingedsheep.engine.state.components.battlefield.LastKnownPermanentComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -624,7 +625,9 @@ class DynamicAmountEvaluator(
             // and Phyrexian ({B/P}) symbols each count toward their color(s); a symbol matching more
             // than one of the requested colors is still counted once. Controller is read from
             // projection so control-changing effects are honored (700.5a). Face-down permanents have
-            // no mana cost (CR 708.2a) and contribute nothing.
+            // no mana cost (CR 708.2a) and contribute nothing. A permanent with ModifyDevotion
+            // (Altar of the Pantheon) adds its amount to every devotion count of its controller's —
+            // even after it loses its abilities, per the Altar's ruling.
             is DynamicAmount.DevotionTo -> {
                 val playerIds = resolveUnifiedPlayerIds(state, amount.player, context, projectedState).toSet()
                 if (playerIds.isEmpty()) return 0
@@ -636,8 +639,9 @@ class DynamicAmountEvaluator(
                     if (controllerOf(state, projection, entityId) !in playerIds) return@sumOf 0
                     val entity = state.getEntity(entityId) ?: return@sumOf 0
                     if (entity.has<FaceDownComponent>()) return@sumOf 0
-                    val cost = entity.get<CardComponent>()?.manaCost ?: return@sumOf 0
-                    cost.coloredSymbolCount(wanted)
+                    val bonus = entity.get<IncreasesDevotionComponent>()?.amount ?: 0
+                    val cost = entity.get<CardComponent>()?.manaCost ?: return@sumOf bonus
+                    cost.coloredSymbolCount(wanted) + bonus
                 }
             }
 
