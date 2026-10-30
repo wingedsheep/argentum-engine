@@ -379,6 +379,7 @@ internal object AnyNumberForCostReductionCostKind : SpellCostKind<AdditionalCost
                 val (tappedState, tapEvents) = tap(ledger.state, permId)
                 ledger.state = tappedState
                 ledger.events.addAll(tapEvents)
+                ledger.tappedAsCostPermanents.add(permId)
             }
             PermanentCostAction.EXILE -> {
                 ledger.exiledAsCostCards.addAll(picks)

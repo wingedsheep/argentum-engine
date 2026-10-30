@@ -1142,7 +1142,7 @@ Families:
 - `EffectTarget.SacrificedAsCost(index: Int)` — SACRIFICED AS COST: a permanent sacrificed to pay this spell/ability's cost, by index — "the sacrificed creature".
 - `EffectTarget.Self` — The source of the resolving ability — the permanent (or spell) it belongs to.
 - `EffectTarget.SpecificEntity(entityId: EntityId)` — SPECIFIC ENTITY: Refers to a specific entity by ID.
-- `EffectTarget.TappedAsCost(index: Int)` — TAPPED AS COST: a permanent tapped to pay this activation's cost — the tap counterpart of SacrificedAsCost, reading `EffectContext.tappedPermanents`.
+- `EffectTarget.TappedAsCost(index: Int)` — TAPPED AS COST: a permanent tapped to pay this activation's cost, or this spell's additional cost — the tap counterpart of SacrificedAsCost, reading `EffectContext.tappedPermanents`.
 - `EffectTarget.TargetController` — The controller of the target (used for effects like "its controller gains 4 life").
 - `EffectTarget.TargetingSource` — TARGETING SOURCE: "that spell or ability" in a becomes-the-target trigger — the object on the stack that did the targeting, not the permanent it targeted (that one is TriggeringEntity).
 - `EffectTarget.TriggeringEntity` — TRIGGERING ENTITY: Refers to the entity that caused the trigger to fire.

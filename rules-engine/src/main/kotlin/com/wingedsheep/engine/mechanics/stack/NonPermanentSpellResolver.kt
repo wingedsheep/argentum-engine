@@ -273,6 +273,7 @@ internal class NonPermanentSpellResolver(
             revealedAsCostSnapshots = spellComponent.revealedAsCostSnapshots,
             exiledAsCostCards = spellComponent.exiledAsCostCards,
             exiledAsCostSnapshots = spellComponent.exiledAsCostSnapshots,
+            tappedPermanents = spellComponent.tappedPermanents,
             chosenEntitySnapshots = spellComponent.chosenEntitySnapshots,
             damageDistribution = spellComponent.damageDistribution,
             chosenModes = spellComponent.chosenModes,

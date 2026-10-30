@@ -6434,6 +6434,63 @@
     ]
 }
 
+// Swallow Whole
+{
+    "name": "Swallow Whole",
+    "manaCost": "{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "As an additional cost to cast this spell, tap an untapped creature you control.\nExile target tapped creature. Put a +1/+1 counter on the creature tapped to pay this spell's additional cost.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "TappedAsCost"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature tapped"
+                },
+                "id": "t0"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomTapPermanents",
+                    "filter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"World's better with one fewer poacher in it.\"\n—Winota, heartbonder",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c3b9140b-848f-4886-8c28-eccd3829a607.jpg?1783931081"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // The Ozolith
 {
     "name": "The Ozolith",

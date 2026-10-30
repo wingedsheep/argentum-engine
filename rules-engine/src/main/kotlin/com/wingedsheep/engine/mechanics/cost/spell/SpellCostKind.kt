@@ -228,6 +228,9 @@ class SpellCostLedger(
     val exiledAsCostCards = mutableListOf<EntityId>()
     val exiledAsCostSnapshots = mutableListOf<EntitySnapshot>()
 
+    /** Tapped to pay — named at resolution by `EffectTarget.TappedAsCost` ("the creature tapped to pay"). */
+    val tappedAsCostPermanents = mutableListOf<EntityId>()
+
     /**
      * LKI snapshots for entities chosen by [AdditionalCost.ChooseEntity] with `captureSnapshot`, so
      * "power as it last existed on the battlefield" still reads if the entity leaves before

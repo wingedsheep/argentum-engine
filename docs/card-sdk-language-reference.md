@@ -5815,12 +5815,16 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   frozen copiable values let `CreateTokenCopyOfTarget(SacrificedAsCost())` copy it once it's gone — a token
   included. A `ReflexiveTriggerEffect`'s reflexive half still reads what its action (or the resolving
   ability's cost) sacrificed, carried across the stack round-trip.
-- `EffectTarget.TappedAsCost(index = 0)` — a permanent **tapped to pay this activation's cost**, read
-  from `EffectContext.tappedPermanents`; the tap counterpart of `DiscardedAsCost`. Every printed use taps
+- `EffectTarget.TappedAsCost(index = 0)` — a permanent **tapped to pay this activation's cost, or this
+  spell's additional cost** (`Costs.additional` tap atoms, recorded at payment as
+  `SpellOnStackComponent.tappedPermanents`; convoke taps don't count), read from
+  `EffectContext.tappedPermanents`; the tap counterpart of `DiscardedAsCost`. Every printed use taps
   exactly one, hence the `index` default. Used by Vodalian War Machine (FEM), whose abilities each tap an
   untapped Merfolk and whose death trigger destroys the Merfolk that paid: each activation schedules its
   own delayed trigger naming *its* Merfolk, so the reference is baked into a concrete id when the trigger
-  is created, and the whole accumulated set dies with the War Machine. **Not to be confused with
+  is created, and the whole accumulated set dies with the War Machine. Swallow Whole (IKO) is the spell
+  use: `Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, 1, EffectTarget.TappedAsCost())` — "put a +1/+1
+  counter on the creature tapped to pay this spell's additional cost". **Not to be confused with
   `CardSource.TappedAsCost`** (§ dynamic values), which is the *value* role reading the same permanents —
   same name, different vocabulary: this one is a target, that one feeds `EntityProperty` reads and
   collection gathers.

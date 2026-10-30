@@ -770,6 +770,7 @@ class CastSpellHandler(
             revealedAsCostSnapshots = ledger.revealedAsCostSnapshots,
             exiledAsCostCards = ledger.exiledAsCostCards,
             exiledAsCostSnapshots = ledger.exiledAsCostSnapshots,
+            tappedPermanents = ledger.tappedAsCostPermanents,
             chosenEntitySnapshots = ledger.chosenEntitySnapshots,
             manaSpentWhite = manaSpentEvent?.white ?: 0,
             manaSpentBlue = manaSpentEvent?.blue ?: 0,

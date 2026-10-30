@@ -477,14 +477,17 @@ sealed interface EffectTarget {
     }
 
     /**
-     * TAPPED AS COST: a permanent tapped to pay this activation's cost — the tap counterpart of
-     * [SacrificedAsCost], reading `EffectContext.tappedPermanents`. A value read of it falls back
-     * to the snapshot taken as the cost was paid if it has since left the battlefield.
+     * TAPPED AS COST: a permanent tapped to pay this activation's cost, or this spell's additional
+     * cost — the tap counterpart of [SacrificedAsCost], reading `EffectContext.tappedPermanents`. A
+     * value read of it falls back to the snapshot taken as the cost was paid if it has since left
+     * the battlefield.
      *
      * Vodalian War Machine (FEM) is the card that needs it: each of its abilities taps an untapped
      * Merfolk, and its death trigger destroys the Merfolk that paid. Each activation schedules its
      * own delayed trigger naming *its* Merfolk, so the reference is baked into a concrete id when
-     * the trigger is created and the whole set is destroyed when the War Machine dies.
+     * the trigger is created and the whole set is destroyed when the War Machine dies. Swallow
+     * Whole (IKO) is the spell use: "Put a +1/+1 counter on the creature tapped to pay this spell's
+     * additional cost."
      *
      * @property index Which tapped permanent to reference; every printed use taps exactly one.
      */
