@@ -1,12 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.iko.cards
 
-import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Suffocating Fumes — Ikoria: Lair of Behemoths #100
@@ -15,8 +13,8 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * Creatures your opponents control get -1/-1 until end of turn.
  * Cycling {2} ({2}, Discard this card: Draw a card.)
  *
- * The mass debuff is a resolution-time [Effects.ForEachInGroup] over the opponents' creatures,
- * applying [Effects.ModifyStats] to each — creatures entering later are unaffected.
+ * The mass debuff is [Patterns.Group.modifyStatsForAll] over the opponents' creatures at resolution,
+ * so creatures entering later are unaffected.
  */
 val SuffocatingFumes = card("Suffocating Fumes") {
     manaCost = "{2}{B}"
@@ -26,10 +24,7 @@ val SuffocatingFumes = card("Suffocating Fumes") {
         "Cycling {2} ({2}, Discard this card: Draw a card.)"
 
     spell {
-        effect = Effects.ForEachInGroup(
-            GroupFilter(GameObjectFilter.Creature.opponentControls()),
-            Effects.ModifyStats(-1, -1, EffectTarget.IterationEntity)
-        )
+        effect = Patterns.Group.modifyStatsForAll(-1, -1, GroupFilter.AllCreaturesOpponentsControl)
     }
 
     keywordAbility(KeywordAbility.cycling("{2}"))

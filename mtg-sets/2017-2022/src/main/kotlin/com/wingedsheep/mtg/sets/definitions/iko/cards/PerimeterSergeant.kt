@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.iko.cards
 
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -29,7 +30,7 @@ val PerimeterSergeant = card("Perimeter Sergeant") {
         effect = Patterns.Group.modifyStatsForAll(
             power = 1,
             toughness = 0,
-            filter = GroupFilter(GameObjectFilter.Permanent.withSubtype("Human").youControl(), excludeSelf = true),
+            filter = GroupFilter(GameObjectFilter.Permanent.withSubtype(Subtype.HUMAN).youControl(), excludeSelf = true),
         )
     }
 

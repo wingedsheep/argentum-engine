@@ -49,14 +49,11 @@ class HornbashMentorScenarioTest : ScenarioTestBase() {
             game.castSpell(1, "Hornbash Mentor").error shouldBe null
             game.resolveStack()
 
-            val decision = game.getPendingDecision()
-            if (decision != null) {
-                val targeting = decision.shouldBeInstanceOf<ChooseTargetsDecision>()
-                withClue("Only the non-Human creature you control is a legal target") {
-                    targeting.legalTargets[0]!! shouldContainExactlyInAnyOrder listOf(bears)
-                }
-                game.selectTargets(listOf(bears))
+            val targeting = game.getPendingDecision().shouldBeInstanceOf<ChooseTargetsDecision>()
+            withClue("Only the non-Human creature you control is a legal target") {
+                targeting.legalTargets[0]!! shouldContainExactlyInAnyOrder listOf(bears)
             }
+            game.selectTargets(listOf(bears))
             game.resolveStack()
 
             withClue("Grizzly Bears gets a trample counter and has trample") {

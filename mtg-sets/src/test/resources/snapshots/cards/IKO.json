@@ -4491,12 +4491,10 @@
                     }
                 },
                 "targetRequirement": {
-                    "type": "TargetOther",
-                    "baseRequirement": {
-                        "type": "TargetObject",
-                        "filter": {
-                            "baseFilter": "creature attacking"
-                        }
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature attacking",
+                        "excludeSelf": true
                     },
                     "id": "t0"
                 }
