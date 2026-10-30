@@ -1112,6 +1112,7 @@ ManaRestriction.CardTypeSpellsOrAbilitiesOnly — ManaRestriction
 ManaRestriction.CastFromExileOnly — ManaRestriction
 ManaRestriction.CastFromGraveyardOnly — ManaRestriction
 ManaRestriction.CastFromNonHandOnly — ManaRestriction
+ManaRestriction.ColoredSpellsOnly — ManaRestriction
 ManaRestriction.ColorlessSpellsOnly — ManaRestriction
 ManaRestriction.CostsContainingXOnly — ManaRestriction
 ManaRestriction.CreatureSpellsOnly — ManaRestriction

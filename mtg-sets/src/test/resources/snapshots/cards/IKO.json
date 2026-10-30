@@ -6929,6 +6929,66 @@
     ]
 }
 
+// Titans' Nest
+{
+    "name": "Titans' Nest",
+    "manaCost": "{1}{B}{G}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your upkeep, surveil 1. (Look at the top card of your library. You may put that card into your graveyard.)\nExile a card from your graveyard: Add {C}. Spend this mana only to cast a spell that's one or more colors without {X} in its mana cost.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Titans' Nest:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Surveil",
+                    "count": 1
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Titans' Nest:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomExileFrom",
+                        "zone": "Graveyard"
+                    }
+                },
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "restriction": {
+                        "type": "ColoredSpellsOnly",
+                        "withoutXInCost": true
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "212",
+        "rarity": "RARE",
+        "artist": "Cliff Childs",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/5/75d4e6f3-73cb-4799-bcb9-c1f5bc234a02.jpg?1783931016"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Unpredictable Cyclone
 {
     "name": "Unpredictable Cyclone",

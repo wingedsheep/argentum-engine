@@ -322,6 +322,14 @@ object ManaSpending {
             "cast a colorless spell",
         ),
         atom(
+            "cast a spell that's one or more colors without {X} in its mana cost",
+            ManaRestriction.ColoredSpellsOnly(withoutXInCost = true),
+        ),
+        atom(
+            "cast a spell that's one or more colors",
+            ManaRestriction.ColoredSpellsOnly(),
+        ),
+        atom(
             "cast spells with exactly three colors",
             ManaRestriction.SpellsWithExactColorCount(3),
             "cast a spell with exactly three colors",

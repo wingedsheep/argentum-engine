@@ -206,6 +206,8 @@ fun ManaRestriction.isSatisfiedBy(context: SpellPaymentContext): Boolean = when 
     is ManaRestriction.LegendarySpellsOnly ->
         !context.isAbilityActivation && context.isLegendary && (!creatureOnly || context.isCreature)
     is ManaRestriction.ColorlessSpellsOnly -> context.isSpellCast && context.isColorless
+    is ManaRestriction.ColoredSpellsOnly ->
+        context.isSpellCast && (context.colorCount ?: 0) >= 1 && !(withoutXInCost && context.hasXInCost)
     is ManaRestriction.SpellsWithExactColorCount -> context.isSpellCast && context.colorCount == count
     is ManaRestriction.CostsContainingXOnly -> (context.isSpellCast || context.isAbilityActivation) && context.hasXInCost
     is ManaRestriction.SubtypeSpellsOrAbilitiesOnly ->

@@ -17721,6 +17721,10 @@ restriction matches the spell context.
 - `ManaRestriction.ColorlessSpellsOnly` — only colorless spells (CR 105.2c: devoid, colorless artifacts,
   face-down spells). Ability activations never satisfy it. Sage of the Unknowable:
   `AnyOf(ColorlessSpellsOnly, AbilityActivationOnly)` ("to cast a colorless spell or to activate an ability").
+- `ManaRestriction.ColoredSpellsOnly(withoutXInCost = false)` — only spells with one or more colors (the
+  complement of `ColorlessSpellsOnly`, read off `SpellPaymentContext.colorCount`; a context that doesn't set it
+  refuses the mana). `withoutXInCost = true` adds "without {X} in its mana cost". Ability activations never
+  satisfy it. Titans' Nest (`AddColorlessMana(1, restriction = ColoredSpellsOnly(withoutXInCost = true))`).
 - `ManaRestriction.CostsContainingXOnly` — "Spend this mana only on costs that contain {X}": a spell
   whose mana cost has {X}, **or** an activated ability whose mana cost has {X} (read off the ability by
   `buildAbilityPaymentContext`). Not `SpellsWithManaValueAtLeast(orXInCost = true)`, which is spell-only

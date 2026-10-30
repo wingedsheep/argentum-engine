@@ -97,6 +97,21 @@ sealed interface ManaRestriction {
     }
 
     /**
+     * "Spend this mana only to cast a spell that's one or more colors" — the complement of
+     * [ColorlessSpellsOnly]: a spell with at least one color (CR 105.2), read off the spell being
+     * cast, so a hybrid or devoid spell is judged by its actual colors. [withoutXInCost] adds the
+     * "without {X} in its mana cost" clause Titans' Nest prints. Ability activations never
+     * satisfy it, and a context that doesn't set `colorCount` refuses it.
+     */
+    @SerialName("ColoredSpellsOnly")
+    @Serializable
+    data class ColoredSpellsOnly(val withoutXInCost: Boolean = false) : ManaRestriction {
+        override val description: String =
+            "Spend this mana only to cast a spell that's one or more colors" +
+                if (withoutXInCost) " without {X} in its mana cost" else ""
+    }
+
+    /**
      * "Spend this mana only on costs that contain {X}." Satisfied by casting a spell whose mana
      * cost contains {X}, and by activating an ability whose mana cost contains {X} — both are
      * costs, so unlike [SpellsWithManaValueAtLeast]'s `orXInCost` this one is not spell-only.
