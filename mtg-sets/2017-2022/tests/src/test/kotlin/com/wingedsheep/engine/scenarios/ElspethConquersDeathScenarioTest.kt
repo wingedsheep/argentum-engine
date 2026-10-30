@@ -23,7 +23,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  *         Put a +1/+1 counter or a loyalty counter on it.
  *
  * Chapter II is the one worth pinning: the tax lands on the opponent, survives the opponent's own
- * untap step and the Saga leaving, and ends when the Saga controller's next turn begins.
+ * untap step, and ends when the Saga controller's next turn begins.
  */
 class ElspethConquersDeathScenarioTest : ScenarioTestBase() {
 
