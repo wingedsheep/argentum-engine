@@ -731,6 +731,47 @@
     ]
 }
 
+// Sprout Swarm
+{
+    "name": "Sprout Swarm",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Convoke (Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature's color.)\nBuyback {3} (You may pay an additional {3} as you cast this spell. If you do, put this card into your hand as it resolves.)\nCreate a 1/1 green Saproling creature token.",
+    "keywords": [
+        "CONVOKE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{3}",
+            "displayPrefix": "Buyback",
+            "branchesEffect": false,
+            "declaredSlot": "BOUGHT_BACK"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "power": 1,
+            "toughness": 1,
+            "colors": [
+                "GREEN"
+            ],
+            "creatureTypes": [
+                "Saproling"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "artist": "Chippy",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/b/0b915355-4e98-44df-81bd-961a3d3c86b8.jpg?1783943098"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Tarmogoyf
 {
     "name": "Tarmogoyf",

@@ -684,6 +684,7 @@ internal class CastValidator(
         if (action.declaredCostSlot != null && declaredOptionalCosts(action, optionalCosts(state, action, cardDef)).isEmpty()) {
             val mechanic = when (action.declaredCostSlot) {
                 ChoiceSlot.BARGAINED -> "bargain"
+                ChoiceSlot.BOUGHT_BACK -> "buyback"
                 ChoiceSlot.KICKED -> "kicker"
                 ChoiceSlot.ADDITIONAL_COST_PAID -> "an optional additional cost"
                 else -> action.declaredCostSlot.name.lowercase()

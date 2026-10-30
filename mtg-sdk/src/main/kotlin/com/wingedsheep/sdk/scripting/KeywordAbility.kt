@@ -404,7 +404,7 @@ sealed interface KeywordAbility {
 
     /**
      * **Optional additional cost paid at cast time.** Generalises Kicker, Multikicker,
-     * Offspring, Squad, Bargain, and the pre-kicker "pay {N} more to cast as though it had flash"
+     * Offspring, Squad, Bargain, Buyback, and the pre-kicker "pay {N} more to cast as though it had flash"
      * pattern (Ghitu Fire et al.). The card script gates effect variations on the durable
      * fact recorded in [declaredSlot] — read via [WasKicked] / `Conditions.WasBargained`,
      * or `wasKicked` in trigger filters — when [branchesEffect] is `true`.
@@ -421,6 +421,8 @@ sealed interface KeywordAbility {
      * - **Bargain** ([declaredSlot] = [ChoiceSlot.BARGAINED]) — same shape as
      *   kicker-with-a-sacrifice-cost, but a *different* fact (CR 702.166b), so bargaining
      *   never reads as kicking and vice versa.
+     * - **Buyback** ([declaredSlot] = [ChoiceSlot.BOUGHT_BACK]) — the payment changes where the
+     *   resolving spell goes (its owner's hand, CR 702.27a), not what it does.
      * - **FlashKicker** ([grantsFlashTiming] = `true`) — paying the cost lets the spell
      *   be cast as though it had flash. Effect is unchanged unless the card also opts
      *   into [branchesEffect] (rare — Ghitu Fire does not).
@@ -1769,6 +1771,30 @@ sealed interface KeywordAbility {
             additionalCost = additionalCost,
             displayPrefix = "Additional cost",
             declaredSlot = ChoiceSlot.ADDITIONAL_COST_PAID
+        )
+
+        /**
+         * Create Buyback (CR 702.27) — "Buyback {3}": an optional additional cost that, when paid,
+         * puts the resolving instant or sorcery into its owner's hand instead of their graveyard.
+         * Rides the optional-additional-cost rail under [ChoiceSlot.BOUGHT_BACK], so a bought-back
+         * spell never reads as kicked.
+         */
+        fun buyback(cost: String): KeywordAbility = OptionalAdditionalCost(
+            manaCost = ManaCost.parse(cost),
+            displayPrefix = "Buyback",
+            branchesEffect = false,
+            declaredSlot = ChoiceSlot.BOUGHT_BACK
+        )
+
+        /**
+         * Create Buyback with a non-mana cost — "Buyback—Sacrifice a land" (Constant Mists),
+         * "Buyback—Discard two cards" (Forbid).
+         */
+        fun buyback(additionalCost: AdditionalCost): KeywordAbility = OptionalAdditionalCost(
+            additionalCost = additionalCost,
+            displayPrefix = "Buyback",
+            branchesEffect = false,
+            declaredSlot = ChoiceSlot.BOUGHT_BACK
         )
 
         /**

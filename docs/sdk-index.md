@@ -1364,7 +1364,7 @@ Families:
 - `KeywordAbility.Mutate(cost: ManaCost)` — Mutate cost (CR 702.140).
 - `KeywordAbility.Ninjutsu(cost: ManaCost, commander: Boolean)` — Ninjutsu cost (CR 702.49).
 - `KeywordAbility.Numeric(keyword: Keyword, n: Int, onceEachTurn: Boolean)` — A keyword parameterized by a single integer.
-- `KeywordAbility.OptionalAdditionalCost(manaCost: ManaCost?, additionalCost: AdditionalCost?, multi: Boolean, displayPrefix: String, keyword: Keyword?, branchesEffect: Boolean, grantsFlashTiming: Boolean, declaredSlot: ChoiceSlot, minimumXValue: Int)` — **Optional additional cost paid at cast time.** Generalises Kicker, Multikicker, Offspring, Squad, Bargain, and the pre-kicker "pay {N} more to cast as though it had flash" pattern (Ghitu Fire et a…
+- `KeywordAbility.OptionalAdditionalCost(manaCost: ManaCost?, additionalCost: AdditionalCost?, multi: Boolean, displayPrefix: String, keyword: Keyword?, branchesEffect: Boolean, grantsFlashTiming: Boolean, declaredSlot: ChoiceSlot, minimumXValue: Int)` — **Optional additional cost paid at cast time.** Generalises Kicker, Multikicker, Offspring, Squad, Bargain, Buyback, and the pre-kicker "pay {N} more to cast as though it had flash" pattern (Ghitu…
 - `KeywordAbility.Overload(cost: ManaCost)` — Overload cost (CR 702.96).
 - `KeywordAbility.Partner(kind: PartnerKind)` — A partner ability (CR 702.124) — a deck-construction keyword for the Commander variant that lets a deck designate **two** commanders instead of one.
 - `KeywordAbility.Plot(cost: ManaCost)` — Plot (CR 718, Outlaws of Thunder Junction).

@@ -310,4 +310,18 @@ enum class ChoiceSlot {
      * spell" payoffs.
      */
     ADDITIONAL_COST_PAID,
+
+    /**
+     * Whether the spell's **buyback** cost was paid when cast (CR 702.27a — "You may pay an
+     * additional [cost] as you cast this spell" and "If the buyback cost was paid, put this spell
+     * into its owner's hand instead of into that player's graveyard as it resolves"). A present
+     * value means the spell was bought back; `NonPermanentSpellResolver` reads it off the resolving
+     * spell's declared slot and returns the card to its owner's hand. Declared through
+     * [com.wingedsheep.sdk.scripting.KeywordAbility.Companion.buyback].
+     *
+     * Deliberately distinct from [KICKED] even though both ride the same optional-additional-cost
+     * rail ([com.wingedsheep.sdk.scripting.KeywordAbility.OptionalAdditionalCost.declaredSlot]): a
+     * bought-back spell is not kicked, so it must not satisfy "whenever you cast a kicked spell".
+     */
+    BOUGHT_BACK,
 }
