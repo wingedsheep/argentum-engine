@@ -6428,6 +6428,66 @@
     ]
 }
 
+// Grasping Giant
+{
+    "name": "Grasping Giant",
+    "manaCost": "{5}{W}",
+    "typeLine": "Creature — Giant",
+    "oracleText": "Vigilance\nWhenever this creature becomes blocked by a creature, exile that creature until this creature leaves the battlefield.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 7
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Grasping Giant:1",
+                "trigger": {
+                    "type": "BecomesBlockedEvent",
+                    "filter": "creature"
+                },
+                "effect": {
+                    "type": "MoveUntilSourceLeaves",
+                    "target": "TriggeringEntity",
+                    "destination": "Exile"
+                },
+                "descriptionOverride": "Whenever this creature becomes blocked by a creature, exile that creature until this creature leaves the battlefield."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "288",
+        "rarity": "RARE",
+        "artist": "Jinho Bae",
+        "flavorText": "Mirinthes thought death was seconds away when the giant's fist closed around him. Two days later, he was praying for death's release.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a238aa9c-661e-449a-8f05-70b7954e544f.jpg?1783931492",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If more than one creature blocks Grasping Giant, its ability triggers once for each of those creatures."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "Grasping Giant doesn't become unblocked when the creatures blocking it are exiled. Unless it gains trample, it won't deal combat damage."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If Grasping Giant leaves the battlefield before its triggered ability resolves, the blocking creature won't be exiled."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If a token is exiled this way, it will cease to exist and won't return to the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Gravebreaker Lamia
 {
     "name": "Gravebreaker Lamia",
@@ -6779,6 +6839,432 @@
     ]
 }
 
+// Hero of the Games
+{
+    "name": "Hero of the Games",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Whenever you cast a spell that targets this creature, creatures you control get +1/+0 until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hero of the Games:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Whenever you cast a spell that targets this creature, creatures you control get +1/+0 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "artist": "Josh Hass",
+        "flavorText": "Winners of the Iroan Games are forever remembered as heroes of their people.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cdb7c7a6-4e9b-4300-a776-b7e7916950c8.jpg?1783931553",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "An ability that triggers when you cast a spell resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If you cast a spell that targets this creature multiple times, this ability triggers just once."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "This ability doesn't trigger if you copy a spell that targets it, or if a spell's targets are changed to target it."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "This effect affects only creatures you control at the time the ability resolves. Creatures you begin to control later in the turn won't get +1/+0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Hero of the Nyxborn
+{
+    "name": "Hero of the Nyxborn",
+    "manaCost": "{1}{R}{W}",
+    "typeLine": "Enchantment Creature — Human Soldier",
+    "oracleText": "When this creature enters, create a 1/1 white Human Soldier creature token.\nWhenever you cast a spell that targets this creature, creatures you control get +1/+0 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hero of the Nyxborn:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Human",
+                        "Soldier"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/e/1e76f0e3-9411-401d-ab38-9c3c64769483.jpg?1783931455"
+                },
+                "descriptionOverride": "When this creature enters, create a 1/1 white Human Soldier creature token."
+            },
+            {
+                "id": "Hero of the Nyxborn:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Whenever you cast a spell that targets this creature, creatures you control get +1/+0 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "219",
+        "rarity": "UNCOMMON",
+        "artist": "Victor Adame Minguez",
+        "flavorText": "Heroic deeds inspire new heroes.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/9854e673-1816-4a76-b9db-bb399ac7489f.jpg?1783931522",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "An ability that triggers when you cast a spell resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If you cast a spell that targets this creature multiple times, this ability triggers just once."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "This ability doesn't trigger if you copy a spell that targets it, or if a spell's targets are changed to target it."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "This effect affects only creatures you control at the time the ability resolves. Creatures you begin to control later in the turn won't get +1/+0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
+// Hero of the Pride
+{
+    "name": "Hero of the Pride",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Cat Soldier",
+    "oracleText": "Whenever you cast a spell that targets this creature, creatures you control get +1/+0 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hero of the Pride:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Whenever you cast a spell that targets this creature, creatures you control get +1/+0 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "artist": "Wisnu Tan",
+        "flavorText": "Leonin fight for neither god nor polis; their loyalty is to their pride.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/81b56863-a52a-4559-a662-f6d9145d5804.jpg?1783931596",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "An ability that triggers when you cast a spell resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If you cast a spell that targets this creature multiple times, this ability triggers just once."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "This ability doesn't trigger if you copy a spell that targets it, or if a spell's targets are changed to target it."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "This effect affects only creatures you control at the time the ability resolves. Creatures you begin to control later in the turn won't get +1/+0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Hero of the Winds
+{
+    "name": "Hero of the Winds",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Flying\nWhenever you cast a spell that targets this creature, creatures you control get +1/+0 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hero of the Winds:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Whenever you cast a spell that targets this creature, creatures you control get +1/+0 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "rarity": "UNCOMMON",
+        "artist": "Greg Staples",
+        "flavorText": "To tame a griffin is to ride into legend.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/d/7da95097-dbe7-416a-8571-6ab6d88a531a.jpg?1783931595",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "An ability that triggers when you cast a spell resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If you cast a spell that targets this creature multiple times, this ability triggers just once."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "This ability doesn't trigger if you copy a spell that targets it, or if a spell's targets are changed to target it."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "This effect affects only creatures you control at the time the ability resolves. Creatures you begin to control later in the turn won't get +1/+0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Heroes of the Revel
+{
+    "name": "Heroes of the Revel",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Satyr Soldier",
+    "oracleText": "When this creature enters, create a 1/1 red Satyr creature token with \"This token can't block.\"\nWhenever you cast a spell that targets this creature, creatures you control get +1/+0 until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Heroes of the Revel:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Satyr"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/9/0/903e30f3-580e-4a14-989b-ae0632363407.jpg?1783931453",
+                    "staticAbilities": [
+                        "CantBlock"
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, create a 1/1 red Satyr creature token with \"This token can't block.\""
+            },
+            {
+                "id": "Heroes of the Revel:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Whenever you cast a spell that targets this creature, creatures you control get +1/+0 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "rarity": "UNCOMMON",
+        "artist": "Zoltan Boros",
+        "flavorText": "Brashness is close enough to bravery.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/dfdfb481-3446-42f4-a1c3-a88b69f2189a.jpg?1783931550",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "An ability that triggers when you cast a spell resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If you cast a spell that targets this creature multiple times, this ability triggers just once."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "This ability doesn't trigger if you copy a spell that targets it, or if a spell's targets are changed to target it."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "This effect affects only creatures you control at the time the ability resolves. Creatures you begin to control later in the turn won't get +1/+0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Hydra's Growth
 {
     "name": "Hydra's Growth",
@@ -7014,6 +7500,83 @@
     ]
 }
 
+// Incendiary Oracle
+{
+    "name": "Incendiary Oracle",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "{1}{R}: This creature gets +1/+0 until end of turn.\nIf a creature dealt damage by this creature this turn would die, exile it instead.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Incendiary Oracle:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "{1}{R}: This creature gets +1/+0 until end of turn."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "RedirectZoneChange",
+                "newDestination": "Exile",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "WasDealtDamageBySourceThisTurn"
+                        ]
+                    },
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "140",
+        "artist": "Cynthia Sheppard",
+        "flavorText": "The flamespeakers of Akros live passionately, devoted to Purphoros and the cycle of destructive creation.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/eb6b9b5c-35ff-47ac-9b04-71257314b686.jpg?1783931550",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If a creature dealt damage by Incendiary Oracle would die at the same time as Incendiary Oracle, that creature is exiled instead."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If a creature dealt damage by Incendiary Oracle would die after Incendiary Oracle has left the battlefield, that creature dies and isn't exiled instead."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Inevitable End
 {
     "name": "Inevitable End",
@@ -7054,6 +7617,67 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Inspire Awe
+{
+    "name": "Inspire Awe",
+    "manaCost": "{3}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Prevent all combat damage that would be dealt this turn except combat damage that would be dealt by enchanted creatures and enchantment creatures. Scry 2.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "PreventDamageShield",
+                    "scope": "CombatOnly",
+                    "direction": "FromTarget",
+                    "sourceFilter": {
+                        "type": "PreventFromMatching",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "Not",
+                                    "predicate": "IsEnchantment"
+                                }
+                            ],
+                            "statePredicates": [
+                                {
+                                    "type": "StateNot",
+                                    "predicate": "IsEnchanted"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "type": "Scry",
+                    "count": 2
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "175",
+        "artist": "Ekaterina Burmak",
+        "flavorText": "Nylea appeared amid the howl of a hundred beasts.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/2/b23c8b5a-2e18-4dd8-b236-5b1fd356f867.jpg?1783931537",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "You scry 2 while Inspire Awe is resolving, not after damage is prevented."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "Inspire Awe doesn't modify the characteristics of creatures, so check immediately before damage would be dealt whether a creature is enchanted or also an enchantment in order to determine if its combat damage should be prevented."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -7113,6 +7737,68 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Ironscale Hydra
+{
+    "name": "Ironscale Hydra",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Hydra",
+    "oracleText": "If a creature would deal combat damage to this creature, prevent that damage and put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "PreventDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": {
+                            "statePredicates": [
+                                "IsSource"
+                            ]
+                        }
+                    },
+                    "source": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    },
+                    "damageType": "DamageCombat"
+                },
+                "onPrevented": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "296",
+        "rarity": "RARE",
+        "artist": "Brian Valeza",
+        "flavorText": "\"Put down your bows, you fools! Arrows only make it angry!\"\n—Callia, Hyrax Tower scout",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/0215cbbf-7bac-4ff7-bceb-23d728797848.jpg?1783931487",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "You put only one +1/+1 counter on Ironscale Hydra per creature whose combat damage is prevented, no matter how much damage would have been dealt."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If damage that can't be prevented is dealt to Ironscale Hydra, the damage is dealt and you'll simultaneously put a +1/+1 counter on it, before the game checks for lethal damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -7180,6 +7866,111 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Karametra's Blessing
+{
+    "name": "Karametra's Blessing",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +2/+2 until end of turn. If it's an enchanted creature or enchantment creature, it also gains hexproof and indestructible until end of turn. (It can't be the target of spells or abilities your opponents control. Damage and effects that say \"destroy\" don't destroy it.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
+                            "filter": {
+                                "anyOf": [
+                                    {
+                                        "cardPredicates": [
+                                            "IsCreature"
+                                        ],
+                                        "statePredicates": [
+                                            "IsEnchanted"
+                                        ]
+                                    },
+                                    {
+                                        "cardPredicates": [
+                                            "IsCreature",
+                                            "IsEnchantment"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "HEXPROOF",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "INDESTRUCTIBLE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "artist": "Wisnu Tan",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/88c8e4dc-5378-48d6-85b2-f5ea9ec7cf36.jpg?1783931592",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "Whether the target creature is enchanted or an enchantment is checked only while Karametra's Blessing is resolving. If it becomes enchanted or stops being enchanted later (or, in some unusual cases, becomes or ceases to be an enchantment later) it won't gain or lose hexproof and indestructible."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -7314,6 +8105,72 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Klothys's Design
+{
+    "name": "Klothys's Design",
+    "manaCost": "{5}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Creatures you control get +X/+X until end of turn, where X is your devotion to green. (Each {G} in the mana costs of permanents you control counts toward your devotion to green.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "StoreNumber",
+                    "name": "number0",
+                    "amount": {
+                        "type": "DevotionTo",
+                        "colors": [
+                            "GREEN"
+                        ]
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "VariableReference",
+                            "variableName": "number0"
+                        },
+                        "toughnessModifier": {
+                            "type": "VariableReference",
+                            "variableName": "number0"
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "176",
+        "rarity": "UNCOMMON",
+        "artist": "Lie Setiawan",
+        "flavorText": "The god of destiny grants her followers vision deeper than sight.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/1/b1b6b7a7-0ac8-470a-949b-4779ded95359.jpg?1783931537",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "Klothys's Design affects only creatures you control at the time it resolves. Creatures you begin to control later in the turn won't get +X/+X."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "The value of X is determined only as Klothys's Design resolves. Once that happens, the value of X won't change later in the turn even if your devotion to green changes."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -7466,6 +8323,336 @@
     "colorIdentityOverride": [
         "RED",
         "GREEN"
+    ]
+}
+
+// Kroxa, Titan of Death's Hunger
+{
+    "name": "Kroxa, Titan of Death's Hunger",
+    "manaCost": "{B}{R}",
+    "typeLine": "Legendary Creature — Elder Giant",
+    "oracleText": "When Kroxa enters, sacrifice it unless it escaped.\nWhenever Kroxa enters or attacks, each opponent discards a card, then each opponent who didn't discard a nonland card this way loses 3 life.\nEscape—{B}{B}{R}{R}, Exile five other cards from your graveyard. (You may cast this card from your graveyard for its escape cost.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "ESCAPE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Escape",
+            "cost": "{B}{B}{R}{R}",
+            "additionalCost": {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomExileFrom",
+                    "zone": "Graveyard",
+                    "count": 5,
+                    "excludeSelf": true
+                }
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kroxa, Titan of Death's Hunger:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": "Escaped"
+                        }
+                    },
+                    "then": "SacrificeSelf"
+                },
+                "descriptionOverride": "When Kroxa enters, sacrifice it unless it escaped."
+            },
+            {
+                "id": "Kroxa, Titan of Death's Hunger:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "EachOpponent"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "gathered1"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered1",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "selected2",
+                                        "prompt": "Choose a card to discard"
+                                    },
+                                    {
+                                        "type": "Gated",
+                                        "gate": {
+                                            "type": "Gate.WhenCondition",
+                                            "condition": {
+                                                "type": "Not",
+                                                "condition": {
+                                                    "type": "CollectionContainsMatch",
+                                                    "collection": "selected2",
+                                                    "filter": "nonland"
+                                                }
+                                            }
+                                        },
+                                        "then": {
+                                            "type": "StorePlayer",
+                                            "storeAs": "players3"
+                                        }
+                                    }
+                                ]
+                            },
+                            "collectCollections": {
+                                "selected2": "collected4",
+                                "players3": "collected5"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "collected4",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": {
+                                    "type": "InCollection",
+                                    "collection": "collected5"
+                                }
+                            },
+                            "body": {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "target": "Controller"
+                            }
+                        }
+                    ],
+                    "descriptionOverride": "Each opponent discards a card, then each opponent who didn't discard a nonland card this way loses 3 life."
+                },
+                "descriptionOverride": "Whenever Kroxa enters, each opponent discards a card, then each opponent who didn't discard a nonland card this way loses 3 life."
+            },
+            {
+                "id": "Kroxa, Titan of Death's Hunger:3",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "EachOpponent"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "gathered1"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered1",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "selected2",
+                                        "prompt": "Choose a card to discard"
+                                    },
+                                    {
+                                        "type": "Gated",
+                                        "gate": {
+                                            "type": "Gate.WhenCondition",
+                                            "condition": {
+                                                "type": "Not",
+                                                "condition": {
+                                                    "type": "CollectionContainsMatch",
+                                                    "collection": "selected2",
+                                                    "filter": "nonland"
+                                                }
+                                            }
+                                        },
+                                        "then": {
+                                            "type": "StorePlayer",
+                                            "storeAs": "players3"
+                                        }
+                                    }
+                                ]
+                            },
+                            "collectCollections": {
+                                "selected2": "collected4",
+                                "players3": "collected5"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "collected4",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": {
+                                    "type": "InCollection",
+                                    "collection": "collected5"
+                                }
+                            },
+                            "body": {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "target": "Controller"
+                            }
+                        }
+                    ],
+                    "descriptionOverride": "Each opponent discards a card, then each opponent who didn't discard a nonland card this way loses 3 life."
+                },
+                "descriptionOverride": "Whenever Kroxa attacks, each opponent discards a card, then each opponent who didn't discard a nonland card this way loses 3 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "221",
+        "rarity": "MYTHIC",
+        "artist": "Vincent Proce",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/cee0459b-9aac-4d2f-abe4-4d5fedde7eb8.jpg?1783931520",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "Kroxa's first ability causes you to sacrifice it if you didn't cast it, or if it was cast using any permission other than an escape ability."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "Kroxa's second ability triggers when it enters the battlefield, even if it didn't escape."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "As the second ability resolves, first the next opponent in turn order (or, if it's an opponent's turn, the opponent whose turn it is) chooses a card in hand without revealing it, then each other opponent in turn order does the same. All the chosen cards are discarded at the same time, and then the appropriate players lose 3 life each."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "An opponent loses 3 life if they discard a land card or if they can't discard a card at all."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
+// Kunoros, Hound of Athreos
+{
+    "name": "Kunoros, Hound of Athreos",
+    "manaCost": "{1}{W}{B}",
+    "typeLine": "Legendary Creature — Dog",
+    "oracleText": "Vigilance, menace, lifelink\nCreature cards in graveyards can't enter the battlefield.\nPlayers can't cast spells from graveyards.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE",
+        "MENACE",
+        "LIFELINK"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantEnterTheBattlefield",
+                "filter": "creature",
+                "fromZones": [
+                    "Graveyard"
+                ]
+            },
+            {
+                "type": "PlayersCantCastSpells",
+                "affected": "Each",
+                "fromZones": [
+                    "Graveyard"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "222",
+        "rarity": "RARE",
+        "artist": "Zezhou Chen",
+        "flavorText": "Three sharp barks announce an attempt to escape the Underworld. Three sharp bites end it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/b/dbc0d2c3-8060-4155-b10e-d641648a4e6b.jpg?1783931520",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "Players can still play lands from graveyards if an effect allows them to do so."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If an effect exiles a card from a graveyard and allows a player to cast it, that player may do so. The spell is cast from exile, not a graveyard."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "Look at the card as it exists in your graveyard to determine whether it can enter the battlefield. For example, Sculpting Steel (a noncreature card in the graveyard) can be put onto the battlefield as a copy of a creature, but Phyrexian Metamorph (a creature card in the graveyard) can't be put onto the battlefield, even if it would copy a noncreature artifact. A Theros Beyond Death God creature card can't be put onto the battlefield regardless of your devotion to its colors."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
     ]
 }
 
