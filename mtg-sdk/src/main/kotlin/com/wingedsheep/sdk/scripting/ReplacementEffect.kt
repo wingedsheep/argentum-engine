@@ -2927,8 +2927,8 @@ data class EntersWithChoice(
      * When true, nobody chooses: the number is picked **at random** from `[minValue, maxValue]` as
      * the permanent enters — "As Haktos the Unscarred enters, choose a number at random from 2,
      * 3, or 4." The engine draws it with the game's random generator on every entry path and
-     * writes it to [ChoiceSlot.CHOSEN_NUMBER] like a chosen one, with no decision; [chooser] is
-     * ignored. Only [ChoiceType.NUMBER] honours it.
+     * writes it to [ChoiceSlot.CHOSEN_NUMBER] like a chosen one, with no decision; [chooser] must
+     * stay the default. Only [ChoiceType.NUMBER] honours it.
      */
     val atRandom: Boolean = false,
     override val appliesTo: EventPattern = EventPattern.ZoneChangeEvent(
@@ -2940,8 +2940,8 @@ data class EntersWithChoice(
         require(choiceType == ChoiceType.CREATURE_ON_BATTLEFIELD || (permanentFilter == null && !mayChooseNothing && then == null)) {
             "permanentFilter, mayChooseNothing and then apply only to ChoiceType.CREATURE_ON_BATTLEFIELD"
         }
-        require(!atRandom || (choiceType == ChoiceType.NUMBER && minValue <= maxValue)) {
-            "atRandom applies only to ChoiceType.NUMBER with minValue <= maxValue"
+        require(!atRandom || (choiceType == ChoiceType.NUMBER && minValue <= maxValue && chooser == Player.You)) {
+            "atRandom applies only to ChoiceType.NUMBER with minValue <= maxValue and no chooser"
         }
     }
 

@@ -839,10 +839,10 @@ internal class CardProjector(
             cardName = container.chosenCardName(),
             // Get chosen card type for "choose a card type" permanents (e.g., Arachne, Psionic Weaver)
             cardType = container.chosenCardType(),
-            // An as-enters number (Shapeshifter, Haktos the Unscarred); a read-ahead Saga's is its
-            // starting chapter, which its lore counters already show.
+            // An as-enters number (Shapeshifter, Haktos the Unscarred); a Saga's is its read-ahead
+            // starting chapter (printed or granted), which its lore counters already show.
             number = container.numberChoice(com.wingedsheep.sdk.scripting.ChoiceSlot.CHOSEN_NUMBER)
-                ?.takeIf { frame.cardDef?.keywords?.contains(com.wingedsheep.sdk.core.Keyword.READ_AHEAD) != true },
+                ?.takeIf { frame.cardDef?.isSaga != true },
         )
     }
 

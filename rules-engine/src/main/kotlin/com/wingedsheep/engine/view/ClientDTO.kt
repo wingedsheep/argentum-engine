@@ -588,8 +588,8 @@ data class ClientCard(
 
     /**
      * Number chosen as the permanent entered (Shapeshifter's "choose a number between 0 and 7",
-     * Haktos the Unscarred's random 2, 3, or 4). Not sent for a read-ahead Saga, whose number is
-     * just the chapter it started on and is already shown by its lore counters.
+     * Haktos the Unscarred's random 2, 3, or 4). Not sent for a Saga, whose number is its
+     * read-ahead starting chapter and is already shown by its lore counters.
      */
     val chosenNumber: Int? = null,
 

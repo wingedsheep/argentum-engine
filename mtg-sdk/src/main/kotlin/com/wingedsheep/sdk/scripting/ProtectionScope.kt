@@ -195,8 +195,8 @@ sealed interface ProtectionScope {
      *
      * Its own type rather than an axis on [ManaValueParity]: a parity names half of all mana
      * values, this names all but one, and neither is a type-line word ([CardType], [Subtype]).
-     * Engine-wired for creature protection (printed or granted) and player protection; there is
-     * no hexproof from it.
+     * Granted statics only — `GrantProtectionFromToGroup` and `GrantProtectionToController`; a
+     * printed [KeywordAbility.Protection] and every hexproof spelling reject it.
      */
     @SerialName("ProtectionScope.ManaValueOtherThan")
     @Serializable

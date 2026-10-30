@@ -83,6 +83,28 @@ class HaktosTheUnscarredScenarioTest : ScenarioTestBase() {
             game.chosenNumber(id) shouldBeIn listOf(2, 3, 4)
         }
 
+        test("a Clone copying Haktos draws its own number, with no decision") {
+            val game = scenario()
+                .withPlayers("Player1", "Player2")
+                .withCardOnBattlefield(2, haktos)
+                .withCardInHand(1, "Clone")
+                .withLandsOnBattlefield(1, "Island", 4)
+                .withCardInLibrary(1, "Plains")
+                .withCardInLibrary(2, "Forest")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            game.castSpell(1, "Clone").error shouldBe null
+            game.resolveStack()
+            // Clone's "you may have it enter as a copy" — pick the opponent's Haktos.
+            game.selectCards(listOf(game.findPermanents(haktos).single())).error shouldBe null
+            game.resolveStack()
+            game.getPendingDecision() shouldBe null
+            val copy = game.findPermanents(haktos).single { game.state.getEntity(it)?.let { e ->
+                e.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()?.playerId == game.player1Id } == true }
+            game.chosenNumber(copy) shouldBeIn listOf(2, 3, 4)
+        }
+
         test("it attacks each combat, and a creature of another mana value can't block it") {
             val game = board().build()
             game.castSpell(1, haktos).error shouldBe null
