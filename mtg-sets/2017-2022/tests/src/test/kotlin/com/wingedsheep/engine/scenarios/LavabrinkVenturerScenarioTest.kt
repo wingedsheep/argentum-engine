@@ -99,7 +99,7 @@ class LavabrinkVenturerScenarioTest : ScenarioTestBase() {
             game.declareBlockers(mapOf(venturer to listOf("Grizzly Bears"))).error shouldBe null
             game.passUntilPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
             withClue("the Bears' damage was prevented; the Venturer's killed them") {
-                (game.state.getEntity(game.findPermanent(venturer))?.get<DamageComponent>()?.amount ?: 0).shouldBe(0)
+                (game.state.getEntity(game.findPermanent(venturer)!!)?.get<DamageComponent>()?.amount ?: 0).shouldBe(0)
                 game.isOnBattlefield("Grizzly Bears") shouldBe false
             }
 
