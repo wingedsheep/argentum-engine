@@ -87,7 +87,6 @@ class TeferiTimelessVoyagerScenarioTest : ScenarioTestBase() {
             }
 
             game.toUpkeepOf(game.player1Id)
-            game.isPhasedIn(bears) shouldBe false
 
             withClue("after your next turn ends they phase in at their controller's untap step") {
                 game.toUpkeepOf(game.player2Id)

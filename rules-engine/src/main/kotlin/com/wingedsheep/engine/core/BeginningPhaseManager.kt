@@ -419,8 +419,8 @@ class BeginningPhaseManager(
         val toPhaseIn = state.allBattlefieldEntities().filter { entityId ->
             val phased = state.getEntity(entityId)?.get<PhasedOutComponent>()
             // Permanents phased out "until source leaves" (Oubliette) don't phase in at untap —
-            // they wait for the source's leaves-battlefield trigger. A locked one (The Phasing of
-            // Zhalfir) waits for EndedDurationExpiryCheck to release the lock.
+            // they wait for the source's leaves-battlefield trigger. A locked one waits for its
+            // PhaseInLock to be released (see PhaseInLock's variants for who releases each).
             phased?.phasedOutByController == activePlayer &&
                 phased.phaseInOnSourceLeaves == null &&
                 phased.phaseInLock == null

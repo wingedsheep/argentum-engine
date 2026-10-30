@@ -103,8 +103,11 @@ class PhaseOutUntilEndOfYourNextTurnTest : ScenarioTestBase() {
             game.resolveStack()
             game.isPhasedIn(bears) shouldBe false
 
-            game.toUpkeepOf(game.player1Id)
-            game.isPhasedIn(bears) shouldBe false
+            withClue("your next turn is the one after this, so the lock outlasts this turn's cleanup") {
+                game.toUpkeepOf(game.player1Id)
+                game.state.getEntity(bears)!!.get<PhasedOutComponent>()!!.phaseInLock
+                    .shouldBeInstanceOf<PhaseInLock.UntilEndOfControllersNextTurn>()
+            }
 
             game.toUpkeepOf(game.player2Id)
             withClue("your next turn has ended, so its controller's untap step phases it in") {
