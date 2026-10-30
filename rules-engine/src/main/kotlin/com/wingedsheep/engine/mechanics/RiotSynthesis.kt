@@ -47,13 +47,27 @@ object RiotSynthesis {
         entityId: EntityId,
         cardRegistry: CardRegistry,
         predicateEvaluator: PredicateEvaluator,
+    ): Int = grantedKeywordInstanceCount(state, entityId, Keyword.RIOT, cardRegistry, predicateEvaluator)
+
+    /**
+     * The number of battlefield `GrantKeyword([keyword])` statics whose filter matches [entityId] —
+     * the shared scan behind granted riot and granted read ahead
+     * ([ReadAheadSynthesis]). Honors each granter's `excludeSelf` and reads its **projected**
+     * controller, so "you control" filters track control changes.
+     */
+    fun grantedKeywordInstanceCount(
+        state: GameState,
+        entityId: EntityId,
+        keyword: Keyword,
+        cardRegistry: CardRegistry,
+        predicateEvaluator: PredicateEvaluator,
     ): Int {
         var count = 0
         for (sourceId in state.getBattlefield()) {
             val def = state.getEntity(sourceId)?.faceUpCardDefinition(cardRegistry) ?: continue
             val srcController = state.projectedState.getController(sourceId) ?: continue
             for (ability in def.staticAbilities) {
-                if (ability !is GrantKeyword || ability.keyword != Keyword.RIOT.name) continue
+                if (ability !is GrantKeyword || ability.keyword != keyword.name) continue
                 if (ability.filter.excludeSelf && sourceId == entityId) continue
                 val context = PredicateContext(sourceId = sourceId, controllerId = srcController)
                 if (predicateEvaluator.matches(

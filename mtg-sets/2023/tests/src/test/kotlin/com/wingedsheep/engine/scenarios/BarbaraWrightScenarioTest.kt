@@ -33,6 +33,7 @@ class BarbaraWrightScenarioTest : ScenarioTestBase() {
 
             fun TestGame.chooseChapter(chapter: Int) {
                 val decision = getPendingDecision().shouldBeInstanceOf<ChooseNumberDecision>()
+                decision.playerId shouldBe player1Id
                 decision.maxValue shouldBe 3
                 submitDecision(NumberChosenResponse(decision.id, chapter)).error shouldBe null
             }

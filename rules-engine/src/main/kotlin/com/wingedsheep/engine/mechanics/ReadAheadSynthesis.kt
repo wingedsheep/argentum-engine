@@ -1,16 +1,13 @@
 package com.wingedsheep.engine.mechanics
 
-import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ChoiceType
 import com.wingedsheep.sdk.scripting.EntersWithChoice
-import com.wingedsheep.sdk.scripting.GrantKeyword
 
 /**
  * Granted-read-ahead synthesis. Read ahead (CR 702.155) is composed at authoring time into an
@@ -42,29 +39,14 @@ object ReadAheadSynthesis {
         predicateEvaluator: PredicateEvaluator,
     ): EntersWithChoice? {
         if (def == null || def.sagaChapters.isEmpty() || Keyword.READ_AHEAD in def.keywords) return null
-        if (!isGranted(state, entityId, cardRegistry, predicateEvaluator)) return null
+        if (RiotSynthesis.grantedKeywordInstanceCount(
+                state, entityId, Keyword.READ_AHEAD, cardRegistry, predicateEvaluator
+            ) == 0
+        ) return null
         return EntersWithChoice(
             choiceType = ChoiceType.NUMBER,
             minValue = 1,
             maxValue = def.sagaChapters.maxOf { it.chapter },
         )
-    }
-
-    private fun isGranted(
-        state: GameState,
-        entityId: EntityId,
-        cardRegistry: CardRegistry,
-        predicateEvaluator: PredicateEvaluator,
-    ): Boolean = state.getBattlefield().any { sourceId ->
-        val def = state.getEntity(sourceId)?.faceUpCardDefinition(cardRegistry) ?: return@any false
-        val srcController = state.projectedState.getController(sourceId) ?: return@any false
-        def.staticAbilities.any { ability ->
-            ability is GrantKeyword && ability.keyword == Keyword.READ_AHEAD.name &&
-                !(ability.filter.excludeSelf && sourceId == entityId) &&
-                predicateEvaluator.matches(
-                    state, state.projectedState, entityId, ability.filter.baseFilter,
-                    PredicateContext(sourceId = sourceId, controllerId = srcController),
-                )
-        }
     }
 }

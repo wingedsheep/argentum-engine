@@ -1,10 +1,13 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.ChooseNumberDecision
 import com.wingedsheep.engine.core.NumberChosenResponse
 import com.wingedsheep.engine.core.PlayLand
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
+import com.wingedsheep.mtg.sets.definitions.woe.cards.YennaRedtoothRegent
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -20,7 +23,9 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  *  - played as a land (Urza's Saga): the question comes before the lore counters, so it ends with
  *    exactly the chosen number, not the intrinsic one plus the choice;
  *  - put onto the battlefield by an effect (Open the Vaults): each of your Sagas asks, an
- *    opponent's returning under their control doesn't.
+ *    opponent's returning under their control doesn't;
+ *  - created as a token copy (Yenna, Redtooth Regent): the token asks as it arrives.
+ * A Saga with read ahead printed asks once, never again for the grant (redundant instances).
  */
 class GrantedReadAheadScenarioTest : ScenarioTestBase() {
 
@@ -82,6 +87,55 @@ class GrantedReadAheadScenarioTest : ScenarioTestBase() {
                 withClue("each made one Knight: my chapter II, their chapter I") {
                     game.findPermanents("Knight Token").size shouldBe 2
                 }
+            }
+
+            test("a token copy of a Saga chooses its chapter as it arrives") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Barbara Wright")
+                    .withCardOnBattlefield(1, "Yenna, Redtooth Regent")
+                    .withCardOnBattlefield(1, "History of Benalia")
+                    .withLandsOnBattlefield(1, "Plains", 2)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                val yenna = game.findPermanent("Yenna, Redtooth Regent")!!
+                val original = game.findPermanent("History of Benalia")!!
+                val copyAbilityId = YennaRedtoothRegent.activatedAbilities.first { !it.isManaAbility }.id
+
+                game.execute(
+                    ActivateAbility(game.player1Id, yenna, copyAbilityId, listOf(ChosenTarget.Permanent(original)))
+                ).error shouldBe null
+                game.resolveStack()
+                game.chooseChapter(2)
+                game.resolveStack()
+
+                val token = game.findPermanents("History of Benalia").single { it != original }
+                withClue("the token entered with the chosen two lore counters") { game.lore(token) shouldBe 2 }
+                withClue("only its chapter II triggered: one Knight") {
+                    game.findPermanents("Knight Token").size shouldBe 1
+                }
+            }
+
+            test("a Saga with read ahead printed is asked once, not again for the grant") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Barbara Wright")
+                    .withCardInHand(1, "Founding the Third Path")
+                    .withLandsOnBattlefield(1, "Island", 3)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpell(1, "Founding the Third Path").error shouldBe null
+                game.resolveStack()
+                game.chooseChapter(2)
+
+                withClue("no second chapter question") {
+                    (game.getPendingDecision() is ChooseNumberDecision) shouldBe false
+                }
+                val saga = game.findPermanent("Founding the Third Path")!!
+                game.lore(saga) shouldBe 2
             }
         }
     }

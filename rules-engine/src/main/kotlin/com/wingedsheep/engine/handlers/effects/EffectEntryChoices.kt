@@ -51,6 +51,10 @@ data class EntryChoiceAnswers(
  * [EffectCopyEntry], and it runs after it: an entrant that enters as a copy answers the *copied*
  * card's questions, never its own.
  *
+ * A Saga granted read ahead ("Sagas you control have read ahead") is asked its chapter alongside
+ * the printed questions, as if it were printed ([ReadAheadSynthesis]); the grant is matched under the
+ * controller it enters under, like Riot below.
+ *
  * After its printed questions, an entrant is asked one counter-or-haste question per instance of
  * Riot that a battlefield lord *grants* it ([RiotSynthesis]) — the same synthesis the spell, token
  * and land entry seams run. The lord's filter is read as the entrant would exist on the battlefield
@@ -76,10 +80,12 @@ object EffectEntryChoices {
                 ?: continue
             val enteringDef = registry.getCard(entering.cardDefinitionId)
             val printed = enteringDef?.script?.replacementEffects?.filterIsInstance<EntersWithChoice>().orEmpty()
-            val readAhead = ReadAheadSynthesis.grantedChoice(
+            // Granted read ahead, matched against the controller it enters under (only a Saga
+            // can have it, so nothing else pays for the re-controlled state).
+            val readAhead = if (enteringDef?.isSaga == true) ReadAheadSynthesis.grantedChoice(
                 state.updateEntity(id) { it.with(ControllerComponent(controller)) },
                 id, enteringDef, registry, predicateEvaluator,
-            )
+            ) else null
             val choices = (printed + listOfNotNull(readAhead)).sortedBy { it.choiceType.ordinal }
             var answers = context.entryChoices[id] ?: EntryChoiceAnswers()
             for (choice in choices) {

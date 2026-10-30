@@ -468,12 +468,23 @@ class PlayLandHandler(
             // A Saga land (Urza's Saga) enters with its lore counter like any Saga (CR 714.3a);
             // the land path bypasses ZoneTransitionService, so it's placed here — unless it has
             // read ahead granted: its count is the number asked below, and that choice's resumer
-            // places the counters once it is answered.
+            // places the counters once it is answered. An exit that never reaches that question
+            // places them itself ([placeWithheldSagaEntry]).
             if (grantedReadAhead != null) return@run emptyList()
             val (afterSaga, sagaEvents) = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
                 .applySagaEntryIfNeeded(newState, action.cardId, predicateEvaluator)
             newState = afterSaga
             sagaEvents
+        }
+
+        // A Saga land whose lore counters were withheld for a granted read-ahead question, leaving
+        // through a path that won't ask it: it enters with the intrinsic single counter.
+        fun placeWithheldSagaEntry(): List<com.wingedsheep.engine.core.GameEvent> {
+            if (grantedReadAhead == null) return emptyList()
+            val (afterSaga, sagaEvents) = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
+                .applySagaEntryIfNeeded(newState, action.cardId, predicateEvaluator)
+            newState = afterSaga
+            return sagaEvents
         }
 
         // OnEnterRun — generic "as ~ enters, run [effect]" replacement.
@@ -503,7 +514,7 @@ class PlayLandHandler(
                     newObject = enteredObject,
                 )
                 val onEnterEvents = mutableListOf<com.wingedsheep.engine.core.GameEvent>(zoneChangeEvent)
-                onEnterEvents.addAll(entersWithEvents)
+                onEnterEvents.addAll(entersWithEvents + placeWithheldSagaEntry())
                 riderPlayEvent?.let { onEnterEvents.add(it) }
                 onEnterEvents.add(landPlayedEvent)
                 newState = newState.tick()
@@ -607,7 +618,8 @@ class PlayLandHandler(
 
                     // The entry ZoneChangeEvent is emitted by the resumer once the life payment is
                     // settled, so the land's enters triggers are detected exactly once.
-                    val events = entersWithEvents + listOfNotNull(riderPlayEvent, landPlayedEvent)
+                    val events = entersWithEvents + placeWithheldSagaEntry() +
+                        listOfNotNull(riderPlayEvent, landPlayedEvent)
                     newState = newState.tick()
 
                     val continuation = com.wingedsheep.engine.core.PayLifeOrEnterTappedLandContinuation(

@@ -969,10 +969,15 @@ class ModalAndCloneContinuationResumer(
             ?: return ExecutionResult.error(state, "Spell has no CardComponent")
         val cardDef = services.cardRegistry.getCard(cardComponent.cardDefinitionId)
 
-        val nextChoice = cardDef?.script?.replacementEffects
-            ?.filterIsInstance<com.wingedsheep.sdk.scripting.EntersWithChoice>()
-            ?.sortedBy { it.choiceType.ordinal }
-            ?.firstOrNull { it.choiceType.ordinal > continuation.choiceType.ordinal }
+        // A granted read-ahead choice isn't printed, so it is synthesized here too in case an
+        // earlier choice (a printed one, or granted riot) paused first.
+        val nextChoice = (cardDef?.script?.replacementEffects
+            ?.filterIsInstance<com.wingedsheep.sdk.scripting.EntersWithChoice>().orEmpty() +
+            listOfNotNull(com.wingedsheep.engine.mechanics.ReadAheadSynthesis.grantedChoice(
+                newState, spellId, cardDef, services.cardRegistry, services.predicateEvaluator
+            )))
+            .sortedBy { it.choiceType.ordinal }
+            .firstOrNull { it.choiceType.ordinal > continuation.choiceType.ordinal }
 
         if (nextChoice != null) {
             val result = services.stackResolver.pauseForEntersWithChoice(
@@ -1096,11 +1101,13 @@ class ModalAndCloneContinuationResumer(
         val cardComponent = entityContainer?.get<CardComponent>()
         val cardDef = cardComponent?.let { services.cardRegistry.getCard(it.cardDefinitionId) }
 
-        val nextChoices = cardDef?.script?.replacementEffects
-            ?.filterIsInstance<com.wingedsheep.sdk.scripting.EntersWithChoice>()
-            ?.sortedBy { it.choiceType.ordinal }
-            ?.filter { it.choiceType.ordinal > continuation.choiceType.ordinal }
-            .orEmpty()
+        val nextChoices = (cardDef?.script?.replacementEffects
+            ?.filterIsInstance<com.wingedsheep.sdk.scripting.EntersWithChoice>().orEmpty() +
+            listOfNotNull(com.wingedsheep.engine.mechanics.ReadAheadSynthesis.grantedChoice(
+                newState, entityId, cardDef, services.cardRegistry, services.predicateEvaluator
+            )))
+            .sortedBy { it.choiceType.ordinal }
+            .filter { it.choiceType.ordinal > continuation.choiceType.ordinal }
 
         // A chained choice that can't be presented (null) is skipped for the next one.
         for (nextChoice in nextChoices) {
