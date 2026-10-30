@@ -1835,6 +1835,64 @@
     "colorIdentityOverride": []
 }
 
+// Cubwarden
+{
+    "name": "Cubwarden",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Cat",
+    "oracleText": "Mutate {2}{W}{W} (If you cast this spell for its mutate cost, put it over or under target non-Human creature you own. They mutate into the creature on top plus all abilities from under it.)\nLifelink\nWhenever this creature mutates, create two 1/1 white Cat creature tokens with lifelink.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "keywords": [
+        "LIFELINK",
+        "MUTATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Mutate",
+            "cost": "{2}{W}{W}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cubwarden:1",
+                "trigger": "MutateEvent",
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Cat"
+                    ],
+                    "keywords": [
+                        "LIFELINK"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/d/7/d754e09c-efc0-4536-9f2a-6bd7e2f860ab.jpg?1783930949"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "rarity": "RARE",
+        "artist": "Kekai Kotaki",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc322744-5d8f-448d-b868-381bb86b68f9.jpg?1783931091"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Daysquad Marshal
 {
     "name": "Daysquad Marshal",
@@ -1874,6 +1932,130 @@
         "artist": "Micah Epstein",
         "flavorText": "\"The night emboldens many monsters, but the mightiest will attack in broad daylight.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/1/7/17d566bd-f272-49d1-bffb-588f2a42046a.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Dire Tactics
+{
+    "name": "Dire Tactics",
+    "manaCost": "{W}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Exile target creature. If you don't control a Human, you lose life equal to that creature's toughness.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "Exists",
+                                "player": "You",
+                                "zone": "Battlefield",
+                                "filter": "permanent Human"
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "numericProperty": "Toughness"
+                        },
+                        "target": "Controller"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "183",
+        "rarity": "UNCOMMON",
+        "artist": "Daarken",
+        "flavorText": "\"I will preserve human life at all costs. I will stand alone against behemoths before I let them touch my city. I will hold the wall.\"\n—Oath of the Coppercoats",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e0e3974e-3753-4f25-8930-6d96b40332ce.jpg?1783931025",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Use the exiled creature’s toughness as it last existed on the battlefield to determine how much life you lose."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Whether you control a Human is checked only after exiling the target creature. If that creature had exiled a Human you controlled until that creature left the battlefield, that Human will return to the battlefield in time to be counted."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
+// Drannith Healer
+{
+    "name": "Drannith Healer",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "Whenever you cycle another card, you gain 1 life.\nCycling {1} ({1}, Discard this card: Draw a card.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{1}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Drannith Healer:1",
+                "trigger": "CycleEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Whenever you cycle another card, you gain 1 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "artist": "Scott Murphy",
+        "flavorText": "\"The glowstones shine and dinosaurs roar to the south. Business will be brisk tonight.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff5a821c-eaec-4f69-97c7-8299cdebc2f4.jpg?1783931092"
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -2560,6 +2742,50 @@
         "rarity": "UNCOMMON",
         "artist": "Bryan Sola",
         "imageUri": "https://cards.scryfall.io/normal/front/5/c/5c62ea13-9bd5-46ce-a861-68cf9a2c6f8c.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Flourishing Fox
+{
+    "name": "Flourishing Fox",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Fox",
+    "oracleText": "Whenever you cycle another card, put a +1/+1 counter on this creature.\nCycling {1} ({1}, Discard this card: Draw a card.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{1}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Flourishing Fox:1",
+                "trigger": "CycleEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever you cycle another card, put a +1/+1 counter on this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "rarity": "UNCOMMON",
+        "artist": "Ilse Gort",
+        "flavorText": "\"Day 1: These fox pups have really taken to me.\n\"Day 4: Big. So big. Need additional security.\"\n—Jonald, mission naturalist, research notes",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/78b81339-746d-4f71-9943-01c0f6a5683a.jpg?1783931091"
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -3282,6 +3508,65 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Helica Glider
+{
+    "name": "Helica Glider",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Nightmare Squirrel",
+    "oracleText": "This creature enters with your choice of a flying counter or a first strike counter on it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "modeOptions": [
+                    {
+                        "id": "flying",
+                        "label": "A flying counter"
+                    },
+                    {
+                        "id": "first_strike",
+                        "label": "A first strike counter"
+                    }
+                ]
+            },
+            {
+                "type": "EntersWithCounters",
+                "counterType": "FLYING",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "flying"
+                }
+            },
+            {
+                "type": "EntersWithCounters",
+                "counterType": "FIRST_STRIKE",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "first_strike"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "artist": "Jehan Choo",
+        "flavorText": "It could subsist on seeds but its preferred fare is your face.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8fc88fe0-2424-49a7-9abf-4773a547d010.jpg?1783931088"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -4560,6 +4845,52 @@
     ]
 }
 
+// Majestic Auricorn
+{
+    "name": "Majestic Auricorn",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Unicorn",
+    "oracleText": "Mutate {3}{W} (If you cast this spell for its mutate cost, put it over or under target non-Human creature you own. They mutate into the creature on top plus all abilities from under it.)\nVigilance\nWhenever this creature mutates, you gain 4 life.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE",
+        "MUTATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Mutate",
+            "cost": "{3}{W}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Majestic Auricorn:1",
+                "trigger": "MutateEvent",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "rarity": "UNCOMMON",
+        "artist": "Jonathan Kuo",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8df320c9-449a-457e-8688-f611aceb3352.jpg?1783931085"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Maned Serval
 {
     "name": "Maned Serval",
@@ -4721,6 +5052,62 @@
         "imageUri": "https://cards.scryfall.io/normal/front/8/5/85ac0b25-80bf-4871-a6f6-5cf4d5b9496e.jpg"
     },
     "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Necropanther
+{
+    "name": "Necropanther",
+    "manaCost": "{1}{W}{B}",
+    "typeLine": "Creature — Cat Nightmare",
+    "oracleText": "Mutate {2}{W/B}{W/B} (If you cast this spell for its mutate cost, put it over or under target non-Human creature you own. They mutate into the creature on top plus all abilities from under it.)\nWhenever this creature mutates, return target creature card with mana value 3 or less from your graveyard to the battlefield.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "MUTATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Mutate",
+            "cost": "{2}{W/B}{W/B}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Necropanther:1",
+                "trigger": "MutateEvent",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature mv<=3 own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "196",
+        "rarity": "UNCOMMON",
+        "artist": "Jason A. Engle",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2e1ed055-8988-4625-9d57-8ce8a4e04aea.jpg?1783931022"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
         "BLACK"
     ]
 }
@@ -6171,6 +6558,83 @@
     ]
 }
 
+// Skycat Sovereign
+{
+    "name": "Skycat Sovereign",
+    "manaCost": "{W}{U}",
+    "typeLine": "Creature — Elemental Cat",
+    "oracleText": "Flying\nThis creature gets +1/+1 for each other creature you control with flying.\n{2}{W}{U}: Create a 1/1 white Cat Bird creature token with flying.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Skycat Sovereign:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{W}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Cat",
+                        "Bird"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/8/1/816da759-e224-4960-b2b6-453cadc2faf1.jpg?1783930948"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "creature kw:flying",
+                    "excludeSelf": true
+                },
+                "toughnessBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "creature kw:flying",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "flavorText": "The bounty on its head is as old as Skysail, but no one has ever tried to collect.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/6209dbfd-b765-44c5-b3ad-94f6e0705926.jpg?1783931018"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Sleeper Dart
 {
     "name": "Sleeper Dart",
@@ -6233,6 +6697,113 @@
         "imageUri": "https://cards.scryfall.io/normal/front/3/1/311f827a-1585-483e-b0fd-3dc05969b485.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Snare Tactician
+{
+    "name": "Snare Tactician",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Whenever you cycle a card, tap target creature an opponent controls.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Snare Tactician:1",
+                "trigger": "CycleEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever you cycle a card, tap target creature an opponent controls."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "artist": "Micah Epstein",
+        "flavorText": "\"Our volleys don't aim to kill. Impair them and the ground will do the rest.\"\n—Alux, Skysail defender",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f640e0c-298d-4a5f-94d0-d839cf06ca86.jpg?1783931084",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Some cards with cycling have an ability that triggers when you cycle them, and some cards have an ability that triggers whenever you cycle any card. These triggered abilities resolve before you draw from the cycling ability."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "You can cycle a card even if it has a triggered ability from cycling that won't have a legal target. This is because the cycling ability and the triggered ability are separate. This also means that if either ability is countered (with Disallow, for example), the other ability will still resolve."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Solid Footing
+{
+    "name": "Solid Footing",
+    "manaCost": "{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Flash\nEnchant creature\nEnchanted creature gets +1/+1.\nAs long as enchanted creature has vigilance, it assigns combat damage equal to its toughness rather than its power.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "AssignDamageEqualToToughness",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasKeyword",
+                                "keyword": "VIGILANCE"
+                            }
+                        ],
+                        "statePredicates": [
+                            "IsAttachedToBySource"
+                        ]
+                    }
+                },
+                "onlyWhenToughnessGreaterThanPower": false
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "artist": "Wisnu Tan",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/9/0900a8d1-a1b1-48c9-8af1-726a623c7d74.jpg?1783931082"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Song of Creation
@@ -6619,6 +7190,73 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Stormwild Capridor
+{
+    "name": "Stormwild Capridor",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Bird Goat",
+    "oracleText": "Flying\nIf noncombat damage would be dealt to this creature, prevent that damage. Put a +1/+1 counter on this creature for each 1 damage prevented this way.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "PreventDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": {
+                            "statePredicates": [
+                                "IsSource"
+                            ]
+                        }
+                    },
+                    "damageType": "DamageNonCombat"
+                },
+                "onPrevented": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "PREVENTED_DAMAGE_AMOUNT"
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "rarity": "UNCOMMON",
+        "artist": "Dmitry Burmak",
+        "flavorText": "After a disastrous day of battle, Lavabrink's lightning mages were recalled.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/a/2afded81-2fc1-4285-bf48-d25f72e72138.jpg?1783931082",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "If damage that can’t be prevented is dealt to Stormwild Capridor, it doesn’t get +1/+1 counters for that damage."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If damage that can be prevented is dealt to Stormwild Capridor at the same time as damage that can’t be prevented, it gets +1/+1 counters for the prevented damage before checking to see if it dies from the damage that couldn’t be prevented."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If multiple replacement or prevention effects try to modify damage that would be dealt to a creature, the controller of the creature chooses the order in which they apply."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -7342,6 +7980,50 @@
     ]
 }
 
+// Vulpikeet
+{
+    "name": "Vulpikeet",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Fox Bird",
+    "oracleText": "Mutate {2}{W} (If you cast this spell for its mutate cost, put it over or under target non-Human creature you own. They mutate into the creature on top plus all abilities from under it.)\nFlying\nWhenever this creature mutates, put a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "MUTATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Mutate",
+            "cost": "{2}{W}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vulpikeet:1",
+                "trigger": "MutateEvent",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "artist": "Leesha Hannigan",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/07bce816-3d18-4ca1-b88f-7307ec7c345d.jpg?1783931082"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Weaponize the Monsters
 {
     "name": "Weaponize the Monsters",
@@ -7442,6 +8124,79 @@
     "colorIdentityOverride": [
         "RED",
         "BLUE",
+        "WHITE"
+    ]
+}
+
+// Will of the All-Hunter
+{
+    "name": "Will of the All-Hunter",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +2/+2 until end of turn. If it's blocking, instead put two +1/+1 counters on it.\nCycling {2} ({2}, Discard this card: Draw a card.)",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "filter": "creature blocking"
+                }
+            },
+            "then": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 2,
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            },
+            "otherwise": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "rarity": "UNCOMMON",
+        "artist": "Viktor Titov",
+        "flavorText": "\"It's Snapdax. You'd have a better chance of breaching a wall with a slice of bread.\"\n—Krek, daysquad captain",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aa7acbfa-ce3b-424d-886d-6865bc5fc085.jpg?1783931080"
+    },
+    "colorIdentityOverride": [
         "WHITE"
     ]
 }
@@ -7649,6 +8404,129 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Yorion, Sky Nomad
+{
+    "name": "Yorion, Sky Nomad",
+    "manaCost": "{3}{W/U}{W/U}",
+    "typeLine": "Legendary Creature — Bird Serpent",
+    "oracleText": "Companion — Your starting deck contains at least twenty cards more than the minimum deck size. (If this card is your chosen companion, you may put it into your hand from outside the game for {3} as a sorcery.)\nFlying\nWhen Yorion enters, exile any number of other nonland permanents you own and control. Return those cards to the battlefield at the beginning of the next end step.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Companion",
+            "condition": {
+                "type": "DeckSizeAboveMinimum",
+                "extra": 20
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Yorion, Sky Nomad:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsNonland",
+                                        "IsPermanent"
+                                    ],
+                                    "controllerPredicate": {
+                                        "type": "ControllerAnd",
+                                        "predicates": [
+                                            "OwnedByYou",
+                                            "ControlledByYou"
+                                        ]
+                                    }
+                                },
+                                "excludeSelf": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected1",
+                            "prompt": "Exile any number of other nonland permanents you own and control (they return at the beginning of the next end step)",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "storeMovedAs": "yorionExiled"
+                        },
+                        {
+                            "type": "CreateDelayedTrigger",
+                            "step": "END",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "yorionExiled",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Battlefield"
+                                        },
+                                        "underOwnersControl": true
+                                    }
+                                ]
+                            },
+                            "carryCollections": [
+                                "yorionExiled"
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "232",
+        "rarity": "RARE",
+        "artist": "Steven Belledin",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/275426c4-c14e-47d0-a9d4-24da7f6f6911.jpg?1783931007",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Your minimum deck size is forty cards for Limited events (such as Booster Draft and Sealed Deck) and sixty cards for Constructed events (such as Standard or casual freeform play). Certain variants may have other minimums. The Commander variant requires exactly one hundred cards, so Yorion can never be your chosen companion in a Commander game."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "You choose which permanents to exile as Yorion's triggered ability resolves. No player may take action between the time you choose the permanents and the time they're exiled."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "You can't exile permanents you control but don't own, or permanents that you own but don't control."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If a token is exiled this way, it will cease to exist and won't return to the battlefield."
+            }
+        ]
+    }
 }
 
 // Zagoth Crystal
