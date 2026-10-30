@@ -247,6 +247,7 @@ class ReplacementEffectProcessor(
                 controllerId = if (event is PendingGameEvent.LifeGainPending && gathered.effect is com.wingedsheep.sdk.scripting.ReplaceLifeGainWith)
                     gathered.sourceControllerId else event.affectedPlayerId,
                 triggeringPlayerId = event.affectedPlayerId,
+                triggeringEntityId = event.referencedEntityId,
                 sourceId = gathered.sourceEntityId(state),
                 objectReferences = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(captured = true,
                     origin = gathered.sourceEntityId(state)?.let(state::objectRef),
@@ -584,6 +585,18 @@ class ReplacementEffectProcessor(
         // Delegate to the polymorphic event match
         if (!event.matches(effect.appliesTo, sourceControllerId, state, context)) {
             return false
+        }
+
+        // "If a cycling ability of a <filter> card would cause you to draw" — the event matched the
+        // cause; the cycled card (now in a graveyard or exile) must also match the filter.
+        val cyclingOf = (effect.appliesTo as? com.wingedsheep.sdk.scripting.EventPattern.DrawEvent)?.cyclingOf
+        if (cyclingOf != null) {
+            val cycledCardId = event.referencedEntityId ?: return false
+            val matchesCycled = conditionEvaluator.predicates.matches(
+                state, state.projectedState, cycledCardId, cyclingOf,
+                com.wingedsheep.engine.handlers.PredicateContext(controllerId = sourceControllerId, sourceId = sourceId)
+            )
+            if (!matchesCycled) return false
         }
 
         // Evaluate the effect's restrictions (CR 614 — extra conditions).

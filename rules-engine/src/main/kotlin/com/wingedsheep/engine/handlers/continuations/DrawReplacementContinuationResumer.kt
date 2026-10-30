@@ -80,7 +80,8 @@ class DrawReplacementContinuationResumer(
                 drawingPlayerId = playerId,
                 remainingDraws = continuation.drawCount - 1,
                 isDrawStep = continuation.isDrawStep,
-                announcementApplied = true
+                announcementApplied = true,
+                cycledCardId = continuation.cycledCardId
             )
         )
         val events = mutableListOf<GameEvent>()
@@ -96,6 +97,7 @@ class DrawReplacementContinuationResumer(
             val effectContext = EffectContext(
                 controllerId = playerId,
                 sourceId = continuation.sourceId,
+                triggeringEntityId = continuation.cycledCardId,
             objectReferences = continuation.objectReferences,
                 targets = emptyList(),
                 programOrigin = com.wingedsheep.engine.handlers.effects.composite.EffectProgramInterpreter.startedBy(DrawReplacementContinuationResumer::class),
@@ -132,7 +134,7 @@ class DrawReplacementContinuationResumer(
             // announce = false: this is one card of a draw instruction that already went
             // through the CR 121.2a announcement before it paused on the prompt.
             val singleDrawResult = singleDrawExecutor.executeDraws(
-                stateWithDeclined, playerId, 1, announce = false
+                stateWithDeclined, playerId, 1, announce = false, cycledCardId = continuation.cycledCardId
             ).toExecutionResult()
             if (singleDrawResult.outcome is Outcome.Paused) {
                 return ExecutionResult.propagatePause(

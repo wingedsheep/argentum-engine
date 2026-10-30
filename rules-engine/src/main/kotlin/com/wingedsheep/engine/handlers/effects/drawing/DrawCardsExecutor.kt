@@ -89,7 +89,9 @@ class DrawCardsExecutor(
         isDrawStep: Boolean = false,
         emptyLibraryReason: String = "Empty library",
         context: EffectContext? = null,
-        announce: Boolean = true
+        announce: Boolean = true,
+        /** The card whose cycling ability causes this draw (`EventPattern.DrawEvent.cyclingOf`). */
+        cycledCardId: EntityId? = null
     ): EffectResult {
         // Pre-loop announcement check (CR 121.2a): static replacement effects like
         // ModifyDrawAmount (e.g., Quantum Riddler's "draw that many cards plus one")
@@ -97,7 +99,7 @@ class DrawCardsExecutor(
         var adjustedCount = count
         var currentState = state
         val announceResult = if (announce) {
-            dispatcher.checkDrawAmount(currentState, playerId, count, isDrawStep, context)
+            dispatcher.checkDrawAmount(currentState, playerId, count, isDrawStep, context, cycledCardId)
         } else {
             null
         }
@@ -131,7 +133,8 @@ class DrawCardsExecutor(
             dispatcher = dispatcher,
             isDrawStep = isDrawStep,
             emptyLibraryReason = emptyLibraryReason,
-            context = context
+            context = context,
+            cycledCardId = cycledCardId
         )
     }
 

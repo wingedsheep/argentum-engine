@@ -86,7 +86,8 @@ class CoreAutoResumerModule(
                         amountEvaluator = services.dynamicAmountEvaluator
                     )
                     val drawResult = drawExecutor.executeDraws(
-                        nextDrawState, continuation.drawingPlayerId, continuation.remainingDraws, announce = announce
+                        nextDrawState, continuation.drawingPlayerId, continuation.remainingDraws, announce = announce,
+                        cycledCardId = continuation.cycledCardId
                     ).toExecutionResult()
                     mergeAndContinue(drawResult, events, checkForMore)
                 }

@@ -297,7 +297,9 @@ class CycleCardHandler(
             replacementProcessor = replacementProcessor,
             amountEvaluator = amountEvaluator
         )
-        val drawResult = drawExecutor.executeDraws(currentState, action.playerId, 1)
+        // The draw carries the cycled card, so "if a cycling ability of a nonland card would cause
+        // you to draw" (Unpredictable Cyclone) can match it and refer to "the cycled card".
+        val drawResult = drawExecutor.executeDraws(currentState, action.playerId, 1, cycledCardId = action.cardId)
         if (drawResult.outcome is Outcome.Paused) {
             return ExecutionResult.propagatePause(
                 drawResult.state,

@@ -84,7 +84,8 @@ class DrawReplacementDispatcher(
         drawsLeftIncludingThis: Int,
         drawnCardsSoFar: List<EntityId>,
         isDrawStep: Boolean,
-        context: EffectContext? = null
+        context: EffectContext? = null,
+        cycledCardId: EntityId? = null
     ): DispatchResult {
         val remainingDraws = drawsLeftIncludingThis - 1
         val event = PendingGameEvent.DrawPending(
@@ -92,7 +93,8 @@ class DrawReplacementDispatcher(
             count = 1,
             remainingDraws = remainingDraws,
             isDrawStep = isDrawStep,
-            drawnCardsSoFar = drawnCardsSoFar
+            drawnCardsSoFar = drawnCardsSoFar,
+            cycledCardId = cycledCardId
         )
         when (val processorResult = processor.process(state, event, context)) {
             is ProcessorResult.Paused -> {
@@ -117,7 +119,7 @@ class DrawReplacementDispatcher(
                                 processorResult.state, playerId,
                                 outcome.newEffect, ctx,
                                 remainingDraws, isDrawStep,
-                                processorResult.identity, state.activeReplacementChain
+                                processorResult.identity, state.activeReplacementChain, cycledCardId
                             )
                         }
                         return DispatchResult.Replaced(processorResult.state, emptyList())
@@ -167,14 +169,16 @@ class DrawReplacementDispatcher(
         playerId: EntityId,
         totalCount: Int,
         isDrawStep: Boolean = false,
-        context: EffectContext? = null
+        context: EffectContext? = null,
+        cycledCardId: EntityId? = null
     ): DispatchResult? {
         if (totalCount <= 0) return null
 
         val event = PendingGameEvent.DrawAmountPending(
             playerId = playerId,
             totalCount = totalCount,
-            isDrawStep = isDrawStep
+            isDrawStep = isDrawStep,
+            cycledCardId = cycledCardId
         )
         when (val processorResult = processor.process(state, event, context)) {
             is ProcessorResult.Paused -> {
@@ -200,7 +204,7 @@ class DrawReplacementDispatcher(
                                 processorResult.state, playerId,
                                 outcome.newEffect, ctx,
                                 totalCount - 1, isDrawStep,
-                                processorResult.identity, state.activeReplacementChain
+                                processorResult.identity, state.activeReplacementChain, cycledCardId
                             )
                         }
                         return DispatchResult.Replaced(processorResult.state, emptyList())
@@ -249,7 +253,8 @@ class DrawReplacementDispatcher(
         remainingDraws: Int,
         isDrawStep: Boolean,
         identity: ReplacementEffectIdentity? = null,
-        previousChain: Set<ReplacementEffectIdentity>? = null
+        previousChain: Set<ReplacementEffectIdentity>? = null,
+        cycledCardId: EntityId? = null
     ): DispatchResult {
         val executor = effectExecutor ?: return DispatchResult.Replaced(processorState, emptyList())
 
@@ -264,7 +269,8 @@ class DrawReplacementDispatcher(
                     remainingDraws = remainingDraws,
                     isDrawStep = isDrawStep,
                     // Tail of an instruction already announced by executeDraws (CR 121.2a).
-                    announcementApplied = true
+                    announcementApplied = true,
+                    cycledCardId = cycledCardId
                 )
             )
         }

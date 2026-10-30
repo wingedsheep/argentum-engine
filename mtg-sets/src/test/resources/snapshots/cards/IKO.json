@@ -6690,6 +6690,119 @@
     ]
 }
 
+// Unpredictable Cyclone
+{
+    "name": "Unpredictable Cyclone",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "If a cycling ability of another nonland card would cause you to draw a card, instead exile cards from the top of your library until you exile a card that shares a card type with the cycled card. You may cast that card without paying its mana cost. Then put the exiled cards that weren't cast this way on the bottom of your library in a random order.\nCycling {2} ({2}, Discard this card: Draw a card.)",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}"
+        }
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "ReplaceDrawWith",
+                "replacementEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherUntilMatch",
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "SharesCardTypeWith",
+                                        "entity": "TriggeringEntity"
+                                    }
+                                ]
+                            },
+                            "storeMatch": "matched0",
+                            "storeRevealed": "revealed0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "revealed0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "matched0",
+                            "ifNotEmpty": {
+                                "type": "Gated",
+                                "gate": "Gate.MayDecide",
+                                "then": {
+                                    "type": "CastFromCollectionWithoutPayingCost",
+                                    "from": "matched0"
+                                }
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "revealed0",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "InZone",
+                                        "zone": "Exile"
+                                    }
+                                ]
+                            },
+                            "storeMatching": "matching4"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "matching4",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "appliesTo": {
+                    "type": "DrawEvent",
+                    "cyclingOf": {
+                        "cardPredicates": [
+                            "IsNonland"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "rarity": "RARE",
+        "artist": "Noah Bradley",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3a0462f6-a027-43c0-8e01-c0591d9a45d9.jpg?1783931041",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "If the cycled card has multiple card types, you stop when you exile a card that shares any of those types. You don't exile card to find one that shares all of its types, and you can't choose to keep going to find a different one of those types."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If you exile your entire library without exiling a card that shares a card type, you put the library back in a random order and continue. You won't draw a card."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If you wish to cast the last exiled card, you do so as part of the resolution of the cycling ability. You can't wait to cast it later. Timing permissions based on a card's type are ignored."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Valiant Rescuer
 {
     "name": "Valiant Rescuer",

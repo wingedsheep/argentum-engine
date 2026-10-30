@@ -97,7 +97,9 @@ data class DrawReplacementRemainingDrawsContinuation(
     val drawingPlayerId: EntityId,
     val remainingDraws: Int,
     val isDrawStep: Boolean,
-    val announcementApplied: Boolean = false
+    val announcementApplied: Boolean = false,
+    /** The card whose cycling ability caused these draws (`EventPattern.DrawEvent.cyclingOf`). */
+    val cycledCardId: EntityId? = null
 ) : AutomaticContinuation
 
 /**
@@ -128,6 +130,8 @@ data class StaticDrawReplacementContinuation(
     /** Prior applications and declines for this individual draw, retained across pauses. */
     val alreadyApplied: Set<ReplacementEffectIdentity> = emptySet(),
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
+    /** The card whose cycling ability caused this draw (`EventPattern.DrawEvent.cyclingOf`). */
+    val cycledCardId: EntityId? = null,
 ) : AnswerContinuation
 
 /**

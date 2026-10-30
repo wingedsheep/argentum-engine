@@ -1878,6 +1878,9 @@ data class CardsDrawnEvent(
     /** Additional players entitled to this identity at the moment of the draw. */
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
     val identityViewers: Set<EntityId> = emptySet(),
+    /** The card whose cycling ability caused these draws (`EventPattern.DrawEvent.cyclingOf`), else null. */
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val cycledCardId: EntityId? = null,
 ) : GameEvent
 
 /**

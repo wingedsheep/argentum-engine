@@ -1136,9 +1136,13 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
     /**
      * "draws a card" — once per card (CR 121.2). [firstInDrawStep] skips (Orcish Bowmasters) or
      * keeps only (Wiretapping) the first card drawn in each of the drawer's own draw steps (CR 504.1).
+     * [cyclingOf] keeps only draws a cycling ability of a card matching it causes (CR 702.29a).
      */
-    fun draws(firstInDrawStep: DrawStepFirstCard = DrawStepFirstCard.INCLUDED): TriggerSpec =
-        spec(DrawEvent(player, firstInDrawStep = firstInDrawStep))
+    fun draws(
+        firstInDrawStep: DrawStepFirstCard = DrawStepFirstCard.INCLUDED,
+        cyclingOf: GameObjectFilter? = null,
+    ): TriggerSpec =
+        spec(DrawEvent(player, firstInDrawStep = firstInDrawStep, cyclingOf = cyclingOf))
 
     /** "draws their [n]th card each turn" — once, even when one multi-card draw crosses it (CR 121.5: no "draw", no count). */
     fun drawsNth(n: Int): TriggerSpec = spec(NthCardDrawnEvent(nthCard = n, player = player))

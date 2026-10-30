@@ -39,6 +39,13 @@ sealed interface PendingGameEvent {
     val affectedPlayerId: EntityId
 
     /**
+     * The object this event is *about* beyond its affected player, which a replacement's effect
+     * reaches as `EffectTarget.TriggeringEntity` — "the cycled card" of a draw a cycling ability
+     * causes (`EventPattern.DrawEvent.cyclingOf`). Null for events with no such object.
+     */
+    val referencedEntityId: EntityId? get() = null
+
+    /**
      * Check whether the given [pattern] describes this event.
      *
      * @param pattern The [EventPattern] from a replacement effect's `appliesTo`
@@ -161,9 +168,12 @@ sealed interface PendingGameEvent {
         val count: Int,
         val remainingDraws: Int = 0,
         val isDrawStep: Boolean = false,
-        val drawnCardsSoFar: List<EntityId> = emptyList()
+        val drawnCardsSoFar: List<EntityId> = emptyList(),
+        /** The card whose cycling ability caused this draw (CR 702.29a), or null for any other draw. */
+        val cycledCardId: EntityId? = null
     ) : PendingGameEvent {
         override val affectedPlayerId: EntityId get() = playerId
+        override val referencedEntityId: EntityId? get() = cycledCardId
 
         /** Total draws remaining including this one (derived from remainingDraws + 1). */
         val drawsLeft: Int get() = remainingDraws + 1
@@ -180,6 +190,9 @@ sealed interface PendingGameEvent {
                 val wanted = drawEvent.firstInDrawStep == DrawStepFirstCard.ONLY
                 if (isFirst != wanted) return false
             }
+            // The cycled card's own filter is checked by the processor, which owns the predicate
+            // evaluator; here only the cause: a cycling-scoped pattern never matches another draw.
+            if (drawEvent.cyclingOf != null && cycledCardId == null) return false
             return matchesPlayerFilter(drawEvent.player, playerId, sourceControllerId, state)
         }
 
@@ -206,7 +219,8 @@ sealed interface PendingGameEvent {
                     isDrawStep = isDrawStep,
                     // Part of an instruction that was announced before the per-card
                     // loop started — re-announcing would apply ModifyDrawAmount twice.
-                    announcementApplied = true
+                    announcementApplied = true,
+                    cycledCardId = cycledCardId
                 )
             }
             return null
@@ -259,7 +273,8 @@ sealed interface PendingGameEvent {
                 isDrawStep = isDrawStep,
                 drawnCardsSoFar = drawnCardsSoFar,
                 declinedIdentity = gathered.identity,
-                alreadyApplied = state.activeReplacementChain ?: emptySet()
+                alreadyApplied = state.activeReplacementChain ?: emptySet(),
+                cycledCardId = cycledCardId
             )
 
             return OptionalPromptResult(
@@ -284,9 +299,12 @@ sealed interface PendingGameEvent {
     data class DrawAmountPending(
         val playerId: EntityId,
         val totalCount: Int,
-        val isDrawStep: Boolean = false
+        val isDrawStep: Boolean = false,
+        /** The card whose cycling ability announced this draw, carried to the per-card draws. */
+        val cycledCardId: EntityId? = null
     ) : PendingGameEvent {
         override val affectedPlayerId: EntityId get() = playerId
+        override val referencedEntityId: EntityId? get() = cycledCardId
 
         override fun matches(
             pattern: EventPattern,
@@ -324,7 +342,8 @@ sealed interface PendingGameEvent {
                 drawingPlayerId = playerId,
                 remainingDraws = totalCount,
                 isDrawStep = isDrawStep,
-                announcementApplied = true
+                announcementApplied = true,
+                cycledCardId = cycledCardId
             )
         }
     }

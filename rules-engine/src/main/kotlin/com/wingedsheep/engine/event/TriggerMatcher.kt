@@ -112,7 +112,15 @@ class TriggerMatcher(
             }
             is EventPattern.ZoneChangeEvent -> matchesZoneChangeTrigger(trigger, binding, event, sourceId, controllerId, state)
             is EventPattern.DrawEvent -> {
-                event is CardsDrawnEvent && matchesPlayer(state, trigger.player, event.playerId, controllerId, sourceId)
+                event is CardsDrawnEvent && matchesPlayer(state, trigger.player, event.playerId, controllerId, sourceId) &&
+                    trigger.cyclingOf.let { cyclingOf ->
+                        cyclingOf == null || event.cycledCardId?.let { cycled ->
+                            predicateEvaluator.matches(
+                                state, state.projectedState, cycled, cyclingOf,
+                                com.wingedsheep.engine.handlers.PredicateContext(controllerId = controllerId, sourceId = sourceId)
+                            )
+                        } == true
+                    }
             }
             // MillEvent is also the ModifyKeywordActionAmount announcement filter; as a trigger
             // it observes the cards a mill moved (CardsMilledEvent).

@@ -320,14 +320,31 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * is Orcish Bowmasters' "except the first card they draw in each of their draw steps";
      * [DrawStepFirstCard.ONLY] is Wiretapping's "whenever you draw your first card during each of
      * your draw steps".
+     *
+     * [cyclingOf] scopes the pattern by the draw's cause: non-null, only a draw a **cycling
+     * ability** causes (CR 702.29a, "[Cost], Discard this card: Draw a card") matches, and only
+     * when the cycled card matches the filter. The cycled card is the event's referenced object —
+     * a replacement's effect reaches it as [com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity]
+     * ("the cycled card"), read where it now is (its graveyard, or exile after madness).
+     * Unpredictable Cyclone: `DrawEvent(cyclingOf = GameObjectFilter.Nonland)` — "if a cycling
+     * ability of another nonland card would cause you to draw a card" (the Cyclone can't be cycled
+     * while it is on the battlefield, so "another" needs no filter). Null — the default — is every
+     * draw, whatever caused it.
      */
     @SerialName("DrawEvent")
     @Serializable
     data class DrawEvent(
         val player: Player = Player.You,
         val firstInDrawStep: DrawStepFirstCard = DrawStepFirstCard.INCLUDED,
+        val cyclingOf: GameObjectFilter? = null,
     ) : EventPattern {
         override val description: String = buildString {
+            if (cyclingOf != null) {
+                append("a cycling ability of ${articleFor(cyclingOf.description)} card would cause ")
+                append(if (player == Player.You) "you" else player.description)
+                append(" to draw a card")
+                return@buildString
+            }
             append(player.description)
             append(" would draw a card")
             when (firstInDrawStep) {
@@ -336,6 +353,16 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
                 DrawStepFirstCard.ONLY -> append(" (only the first each of their draw steps)")
             }
         }
+
+        override fun applyTextReplacement(replacer: TextReplacer): EventPattern {
+            val f = cyclingOf ?: return this
+            val newFilter = f.applyTextReplacement(replacer)
+            return if (newFilter !== f) copy(cyclingOf = newFilter) else this
+        }
+
+        private fun articleFor(filterDescription: String): String =
+            if (filterDescription.firstOrNull()?.lowercaseChar() in setOf('a', 'e', 'i', 'o', 'u'))
+                "an $filterDescription" else "a $filterDescription"
     }
 
     /**

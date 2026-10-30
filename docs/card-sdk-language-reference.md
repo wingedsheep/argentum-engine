@@ -8948,6 +8948,16 @@ in the repo today):
   DrawEvent(firstInDrawStep = EXCLUDED))` — Bard, King of Dale). The singled-out card is identified
   by a per-player draw-step-start snapshot (`GameState.drawStepStartDrawCountByPlayer`): it is the
   draw made while the player's cards-drawn-this-turn count still equals that snapshot.
+- `DrawEvent.cyclingOf: GameObjectFilter?` (facade `Triggers.you.draws(cyclingOf = …)`) scopes the
+  pattern by the draw's **cause**: non-null, only a draw a cycling ability causes (CR 702.29a,
+  "[Cost], Discard this card: Draw a card") matches, and only when the cycled card matches the
+  filter; null (the default) is every draw. Works on triggers and on draw replacements alike. The
+  cycled card rides the draw (`PendingGameEvent.DrawPending.cycledCardId`, `CardsDrawnEvent.cycledCardId`)
+  and is the replacement effect's `EffectTarget.TriggeringEntity` — "the cycled card", read where it
+  now is (graveyard, or exile after madness). **Unpredictable Cyclone**: `ReplaceDrawWith(Pipeline {
+  gatherUntilMatch(Any.sharingCardTypeWith(TriggeringEntity)) → exile → May(CastFromCollectionWithoutPayingCost)
+  → toLibraryBottom(still exiled, Random) }, appliesTo = DrawEvent(cyclingOf = GameObjectFilter.Nonland))`.
+  Typecycling searches rather than draws, so it never matches.
 - `Triggers.<player>.drawsNth(n)` — fires when the drawing player draws their Nth card each turn
   (CR 121.2). Draw analogue of `Triggers.<player>.castsNth(n, spell)`; backed by `CardsDrawnThisTurnComponent` (reset
   per turn). Fires exactly once per crossing — a single multi-card draw that spans the

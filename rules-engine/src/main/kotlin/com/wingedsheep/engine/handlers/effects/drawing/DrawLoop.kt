@@ -49,7 +49,9 @@ object DrawLoop {
         dispatcher: DrawReplacementDispatcher?,
         isDrawStep: Boolean,
         emptyLibraryReason: String = "Empty library",
-        context: EffectContext? = null
+        context: EffectContext? = null,
+        /** The card whose cycling ability causes these draws (`EventPattern.DrawEvent.cyclingOf`). */
+        cycledCardId: EntityId? = null
     ): EffectResult {
         var newState = state
         val drawnCards = mutableListOf<EntityId>()
@@ -87,12 +89,13 @@ object DrawLoop {
                     drawsLeftIncludingThis = remaining,
                     drawnCardsSoFar = drawnCards.toList(),
                     isDrawStep = isDrawStep,
-                    context = context
+                    context = context,
+                    cycledCardId = cycledCardId
                 )
                 when (dispatch) {
                     is DrawReplacementDispatcher.DispatchResult.Paused -> {
                         return buildPausedResult(
-                            newState, playerId, drawnCards, perCardEvents, dispatch.result
+                            newState, playerId, drawnCards, perCardEvents, dispatch.result, cycledCardId
                         )
                     }
                     is DrawReplacementDispatcher.DispatchResult.Replaced -> {
@@ -122,7 +125,7 @@ object DrawLoop {
 
             if (drawOneResult.failed) {
                 // Empty library — flush aggregate event for prior draws and stop here.
-                return buildSuccessResult(newState, playerId, drawnCards, perCardEvents)
+                return buildSuccessResult(newState, playerId, drawnCards, perCardEvents, cycledCardId)
             }
 
             drawnCards.add(drawOneResult.drawnCardId!!)
@@ -134,13 +137,13 @@ object DrawLoop {
             val miracle = drawOneResult.miracle
             if (miracle != null) {
                 val pause = askMiracleReveal(
-                    newState, playerId, drawOneResult.drawnCardId, miracle.cost, remaining, isDrawStep
+                    newState, playerId, drawOneResult.drawnCardId, miracle.cost, remaining, isDrawStep, cycledCardId
                 )
-                return buildPausedResult(newState, playerId, drawnCards, perCardEvents, pause)
+                return buildPausedResult(newState, playerId, drawnCards, perCardEvents, pause, cycledCardId)
             }
         }
 
-        return buildSuccessResult(newState, playerId, drawnCards, perCardEvents)
+        return buildSuccessResult(newState, playerId, drawnCards, perCardEvents, cycledCardId)
     }
 
     /**
@@ -156,7 +159,8 @@ object DrawLoop {
         cardId: EntityId,
         cost: com.wingedsheep.sdk.core.ManaCost,
         remainingDraws: Int,
-        isDrawStep: Boolean
+        isDrawStep: Boolean,
+        cycledCardId: EntityId?
     ): EffectResult {
         val cardName = state.getEntity(cardId)?.get<CardComponent>()?.name ?: "this card"
         val withTail = state.copy(activeReplacementChain = null).pushContinuation(
@@ -164,7 +168,8 @@ object DrawLoop {
                 drawingPlayerId = playerId,
                 remainingDraws = remainingDraws,
                 isDrawStep = isDrawStep,
-                announcementApplied = true
+                announcementApplied = true,
+                cycledCardId = cycledCardId
             )
         )
         return EffectResult.from(withTail.suspendForDecision(
@@ -211,13 +216,14 @@ object DrawLoop {
         state: GameState,
         playerId: EntityId,
         drawnCards: List<EntityId>,
-        perCardEvents: List<GameEvent>
+        perCardEvents: List<GameEvent>,
+        cycledCardId: EntityId?
     ): EffectResult {
         val events = mutableListOf<GameEvent>()
         var newState = state.copy(activeReplacementChain = null)
         if (drawnCards.isNotEmpty()) {
             val cardNames = drawnCards.map { newState.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
-            events.add(CardsDrawnEvent(playerId, drawnCards.size, drawnCards, cardNames, setOf(state.actorFor(playerId)) - playerId))
+            events.add(CardsDrawnEvent(playerId, drawnCards.size, drawnCards, cardNames, setOf(state.actorFor(playerId)) - playerId, cycledCardId))
             newState = stampDrawnThisTurn(newState.copy(
                 lastCardDrawnThisTurnByPlayer = newState.lastCardDrawnThisTurnByPlayer + (playerId to drawnCards.last())
             ), drawnCards)
@@ -237,13 +243,14 @@ object DrawLoop {
         playerId: EntityId,
         drawnCards: List<EntityId>,
         perCardEvents: List<GameEvent>,
-        pauseResult: EffectResult
+        pauseResult: EffectResult,
+        cycledCardId: EntityId?
     ): EffectResult {
         val allEvents = mutableListOf<GameEvent>()
         var pausedState = pauseResult.state.copy(activeReplacementChain = null)
         if (drawnCards.isNotEmpty()) {
             val cardNames = drawnCards.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
-            allEvents.add(CardsDrawnEvent(playerId, drawnCards.size, drawnCards.toList(), cardNames, setOf(state.actorFor(playerId)) - playerId))
+            allEvents.add(CardsDrawnEvent(playerId, drawnCards.size, drawnCards.toList(), cardNames, setOf(state.actorFor(playerId)) - playerId, cycledCardId))
             pausedState = stampDrawnThisTurn(pausedState.copy(
                 lastCardDrawnThisTurnByPlayer = pausedState.lastCardDrawnThisTurnByPlayer + (playerId to drawnCards.last())
             ), drawnCards)
