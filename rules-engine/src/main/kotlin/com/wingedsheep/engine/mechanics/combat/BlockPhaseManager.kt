@@ -35,6 +35,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.MustBeBlocked
 import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.engine.mechanics.durations.GrantDurationGate
+import com.wingedsheep.sdk.scripting.CantBeBlockedByFewerThan
 import com.wingedsheep.sdk.scripting.CantBeBlockedByMoreThan
 import com.wingedsheep.sdk.scripting.CantBlockUnless
 import com.wingedsheep.sdk.scripting.CantBlockUnlessCoBlocker
@@ -791,8 +792,11 @@ internal class BlockPhaseManager(
 
     /**
      * Validate "can't be blocked except by N or more creatures" ([CantBeBlockedByFewerThan]).
-     * Generalizes menace: an attacker carrying the static may be left unblocked, but if blocked it
-     * must have at least [CantBeBlockedByFewerThan.minBlockers] blockers.
+     * Generalizes menace: an attacker carrying the restriction may be left unblocked, but if blocked
+     * it must have at least [CantBeBlockedByFewerThan.minBlockers] blockers. The restriction is read
+     * from the attacker's own printed static, a granted copy of it, and a battlefield permanent's
+     * group clause (Sonorous Howlbonder: "each creature you control with menace can't be blocked
+     * except by three or more creatures") — the strictest one wins.
      */
     private fun validateMinBlockersRequirements(
         state: GameState,
@@ -804,21 +808,36 @@ internal class BlockPhaseManager(
                 attackerToBlockers.getOrPut(attackerId) { mutableListOf() }.add(blockerId)
             }
         }
+        val hostMinimums = hostScopedBlockerCounts<CantBeBlockedByFewerThan>(
+            state, attackerToBlockers.keys, count = { it.minBlockers }, tightest = ::maxOf
+        )
 
         for ((attackerId, blockerList) in attackerToBlockers) {
             if (blockerList.isEmpty()) continue
             val attackerContainer = state.getEntity(attackerId) ?: continue
-            if (attackerContainer.has<FaceDownComponent>()) continue
             val attackerCard = attackerContainer.get<CardComponent>() ?: continue
-            val cardDef = cardRegistry.getCard(attackerCard.cardDefinitionId) ?: continue
+            // A face-down attacker has no printed abilities (CR 708.2a), but a face-up host's
+            // group clause still covers it.
+            val cardDef = if (attackerContainer.has<FaceDownComponent>() ||
+                state.projectedState.hasLostAllAbilities(attackerId)) null
+                else cardRegistry.getCard(attackerCard.cardDefinitionId)
 
-            val minBlockers = cardDef.staticAbilities
-                .filterIsInstance<com.wingedsheep.sdk.scripting.CantBeBlockedByFewerThan>()
-                .filter { it.filter.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self }
-                .maxOfOrNull { it.minBlockers } ?: continue
+            val printedMinimum = cardDef?.staticAbilities
+                ?.filterIsInstance<CantBeBlockedByFewerThan>()
+                ?.filter { it.filter.scope is Scope.Self }
+                ?.maxOfOrNull { it.minBlockers }
+            val grantedMinimum = state.grantedStaticAbilities
+                .filter { it.entityId == attackerId }
+                .map { it.ability }
+                .filterIsInstance<CantBeBlockedByFewerThan>()
+                .filter { it.filter.scope is Scope.Self }
+                .maxOfOrNull { it.minBlockers }
+            val minBlockers = listOfNotNull(printedMinimum, grantedMinimum, hostMinimums[attackerId]).maxOrNull()
+                ?: continue
 
             if (blockerList.size < minBlockers) {
-                return "${attackerCard.name} can't be blocked except by $minBlockers or more creatures"
+                return "${nameVisibleToAll(state, attackerId, attackerCard.name)} can't be blocked except by " +
+                    "$minBlockers or more creatures"
             }
         }
 
@@ -829,7 +848,7 @@ internal class BlockPhaseManager(
      * Validate `CantBeBlockedByMoreThan` restrictions (CR 509.1b).
      * Each attacker with this static ability caps the number of creatures that may block it —
      * whether the ability is its own, granted to it, or projected onto it by a battlefield
-     * permanent's group clause ([hostScopedMaxBlockers]).
+     * permanent's group clause ([hostScopedBlockerCounts]).
      */
     private fun validateMaxBlockersRequirements(
         state: GameState,
@@ -841,7 +860,9 @@ internal class BlockPhaseManager(
                 attackerToBlockerCount.merge(attackerId, 1, Int::plus)
             }
         }
-        val hostLimits = hostScopedMaxBlockers(state, attackerToBlockerCount.keys)
+        val hostLimits = hostScopedBlockerCounts<CantBeBlockedByMoreThan>(
+            state, attackerToBlockerCount.keys, count = { it.maxBlockers }, tightest = ::minOf
+        )
 
         for ((attackerId, count) in attackerToBlockerCount) {
             val attackerContainer = state.getEntity(attackerId) ?: continue
@@ -906,37 +927,52 @@ internal class BlockPhaseManager(
     }
 
     /**
-     * The tightest `CantBeBlockedByMoreThan` cap each of [attackers] gets from a battlefield
+     * The tightest blocker-count restriction of type [T] each of [attackers] gets from a battlefield
      * permanent's group clause — Flopsie, Bumi's Buddy's and Challenger Troll's "each creature you
-     * control with power 4 or greater can't be blocked by more than one creature", Rocksteady's
-     * Boars. The filter is resolved relative to the permanent carrying the static and matched
-     * against projected state, so a creature pumped to power 4 after the host arrived is covered
-     * and one shrunk below it drops out. `Scope.Self` is left to the attacker's own read; a host
-     * that is itself an attacker is covered by its own group clause unless the filter says "other".
+     * control with power 4 or greater can't be blocked by more than one creature", Sonorous
+     * Howlbonder's "each creature you control with menace can't be blocked except by three or more
+     * creatures". The filter is resolved relative to the permanent carrying the static and matched
+     * against projected state, so a creature that gains the qualifying characteristic after the host
+     * arrived is covered and one that loses it drops out. `Scope.Self` is left to the attacker's own
+     * read; a host that is itself an attacker is covered by its own group clause unless the filter
+     * says "other". [tightest] combines two hosts' counts (min for a cap, max for a minimum).
      */
-    private fun hostScopedMaxBlockers(state: GameState, attackers: Set<EntityId>): Map<EntityId, Int> {
+    private inline fun <reified T : StaticAbility> hostScopedBlockerCounts(
+        state: GameState,
+        attackers: Set<EntityId>,
+        count: (T) -> Int,
+        noinline tightest: (Int, Int) -> Int,
+    ): Map<EntityId, Int> {
         if (attackers.isEmpty()) return emptyMap()
         val projected = state.projectedState
-        val limits = mutableMapOf<EntityId, Int>()
+        val counts = mutableMapOf<EntityId, Int>()
         for (hostId in state.getBattlefield()) {
             val container = state.getEntity(hostId) ?: continue
             if (container.has<FaceDownComponent>() || projected.hasLostAllAbilities(hostId)) continue
             val cardId = container.get<CardComponent>()?.cardDefinitionId ?: continue
             for (ability in cardRegistry.getCard(cardId)?.staticAbilities.orEmpty()) {
                 val unwrapped = if (ability is ConditionalStaticAbility) ability.ability else ability
-                if (unwrapped !is CantBeBlockedByMoreThan || unwrapped.filter.scope is Scope.Self) continue
+                if (unwrapped !is T) continue
+                val filter = blockerCountFilter(unwrapped) ?: continue
+                if (filter.scope is Scope.Self) continue
                 val controller = projected.getController(hostId) ?: continue
                 if (ability is ConditionalStaticAbility &&
                     !conditionEvaluator.evaluate(
                         state, ability.condition, EffectContext(sourceId = hostId, controllerId = controller)
                     )
                 ) continue
-                resolveFilteredAttackers(state, projected, hostId, controller, unwrapped.filter, attackers)
-                    .filterNot { it == hostId && unwrapped.filter.excludeSelf }
-                    .forEach { limits.merge(it, unwrapped.maxBlockers, ::minOf) }
+                resolveFilteredAttackers(state, projected, hostId, controller, filter, attackers)
+                    .filterNot { it == hostId && filter.excludeSelf }
+                    .forEach { counts.merge(it, count(unwrapped), tightest) }
             }
         }
-        return limits
+        return counts
+    }
+
+    private fun blockerCountFilter(ability: StaticAbility): GroupFilter? = when (ability) {
+        is CantBeBlockedByMoreThan -> ability.filter
+        is CantBeBlockedByFewerThan -> ability.filter
+        else -> null
     }
 
     /**

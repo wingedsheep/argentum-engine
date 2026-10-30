@@ -6226,6 +6226,42 @@
     ]
 }
 
+// Sonorous Howlbonder
+{
+    "name": "Sonorous Howlbonder",
+    "manaCost": "{1}{B/R}{B/R}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\nEach creature you control with menace can't be blocked except by three or more creatures.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedByFewerThan",
+                "minBlockers": 3,
+                "filter": {
+                    "baseFilter": "creature kw:menace ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "230",
+        "rarity": "UNCOMMON",
+        "artist": "Kimonas Theodossiou",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/595f0b25-6e6e-43c4-a4a0-903920067df1.jpg?1783931008"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Splendor Mare
 {
     "name": "Splendor Mare",

@@ -3716,7 +3716,13 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   except by N or more creatures," a generalization of menace (the N = 2 case). May be left unblocked;
   the restriction only applies once at least one creature blocks it. Enforced at block declaration in
   `BlockPhaseManager.validateMinBlockersRequirements`, mirroring the menace check. Used by Troll of
-  Khazad-dûm (`CantBeBlockedByFewerThan(3)`).
+  Khazad-dûm (`CantBeBlockedByFewerThan(3)`). Like `CantBeBlockedByMoreThan`, a **group** filter
+  projects the minimum from the host onto every attacker matching it on *projected* state (the host
+  covers itself unless `excludeSelf`; a face-down attacker is still covered by a face-up host) —
+  Sonorous Howlbonder's "each creature you control with menace can't be blocked except by three or
+  more creatures" = `CantBeBlockedByFewerThan(3, GroupFilter(GameObjectFilter.Creature.youControl()
+  .withKeyword(Keyword.MENACE)))`. A copy granted via `Effects.GrantStaticAbility` is read too; the
+  strictest minimum wins.
 - `CantCastSpellsEffect(target, duration = EndOfTurn, spellFilter = Any)` — target can't cast matching
   spells from any zone. Facade: `Effects.CantCastSpells(target, duration, spellFilter)`.
   `PlayerRef(Player.Each)` + `GameObjectFilter.Noncreature` models **Calamity's Wake**.
