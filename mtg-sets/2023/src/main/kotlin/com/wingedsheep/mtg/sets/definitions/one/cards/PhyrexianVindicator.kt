@@ -2,7 +2,9 @@ package com.wingedsheep.mtg.sets.definitions.one.cards
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.DynamicAmounts
+import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
@@ -18,7 +20,8 @@ import com.wingedsheep.sdk.scripting.targets.TargetOther
  * the prevention (CR 615.5) — is a reflexive triggered ability: "When damage is prevented this way" goes on the stack after the prevention,
  * with its "any other target" chosen then, and deals the amount that application prevented
  * ([DynamicAmounts.preventedDamage], inherited by the reflexive trigger). Damage that can't be
- * prevented is dealt, nothing is prevented, and the reflexive trigger never fires.
+ * prevented is dealt; the rider still runs with 0 prevented (CR 615.12), so it gates itself on a
+ * nonzero amount and the reflexive trigger never fires (CR 615.13).
  */
 val PhyrexianVindicator = card("Phyrexian Vindicator") {
     manaCost = "{W}{W}{W}{W}"
@@ -34,14 +37,19 @@ val PhyrexianVindicator = card("Phyrexian Vindicator") {
     replacementEffect(
         PreventDamage(
             appliesTo = EventPattern.DamageEvent(recipient = Recipient.Self),
-            onPrevented = Effects.ReflexiveTrigger(
-                action = Effects.Nothing,
-                optional = false,
-                descriptionOverride = "this creature deals that much damage to any other target"
-            ) {
-                val victim = target(TargetOther(Targets.Any))
-                effect = Effects.DealDamage(DynamicAmounts.preventedDamage(), victim)
-            }
+            // Unpreventable damage still runs the rider with 0 prevented (CR 615.12), but "when
+            // damage is prevented this way" only triggers when some was (CR 615.13).
+            onPrevented = Effects.If(
+                Conditions.CompareAmounts(DynamicAmounts.preventedDamage(), ComparisonOperator.GT, 0),
+                Effects.ReflexiveTrigger(
+                    action = Effects.Nothing,
+                    optional = false,
+                    descriptionOverride = "this creature deals that much damage to any other target"
+                ) {
+                    val victim = target(TargetOther(Targets.Any))
+                    effect = Effects.DealDamage(DynamicAmounts.preventedDamage(), victim)
+                }
+            )
         )
     )
 

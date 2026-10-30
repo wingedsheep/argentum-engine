@@ -92,5 +92,26 @@ class PhyrexianVindicatorScenarioTest : ScenarioTestBase() {
             game.getLifeTotal(1) shouldBe 20
             (game.state.getEntity(vindicator)?.get<DamageComponent>()?.amount ?: 0) shouldBe 0
         }
+
+        test("damage that can't be prevented is dealt and the reflexive trigger doesn't fire") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardOnBattlefield(1, "Phyrexian Vindicator")
+                .withCardOnBattlefield(2, "Sunspine Lynx")
+                .withCardInHand(1, "Lightning Bolt")
+                .withLandsOnBattlefield(1, "Mountain", 1)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            val vindicator = game.findPermanent("Phyrexian Vindicator")!!
+            game.castSpell(1, "Lightning Bolt", vindicator).error shouldBe null
+            game.resolveStack()
+
+            game.state.pendingDecision shouldBe null
+            game.state.stack.isEmpty() shouldBe true
+            (game.state.getEntity(vindicator)?.get<DamageComponent>()?.amount ?: 0) shouldBe 3
+            game.getLifeTotal(2) shouldBe 20
+        }
     }
 }

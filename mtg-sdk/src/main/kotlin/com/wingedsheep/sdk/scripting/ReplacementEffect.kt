@@ -1086,7 +1086,8 @@ data class EntersWithKeywords(
  * permanent, "you" its controller, and [com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity]
  * the permanent the damage would have been dealt to. Damage that can't be prevented is dealt, but
  * the prevention still applies to it (CR 615.12): the rider runs with 0 prevented — Purity gains
- * nothing, Nine Lives still gets its incarnation counter.
+ * nothing, Nine Lives still gets its incarnation counter. A reflexive "when damage is prevented
+ * this way" rider gates itself on a nonzero amount (CR 615.13; Phyrexian Vindicator).
  *
  * [half] prevents **half** of the damage that reaches this prevention instead of a fixed [amount],
  * rounded up by default ([roundUp]) — Gisela, Blade of Goldnight's "If a source would deal damage to

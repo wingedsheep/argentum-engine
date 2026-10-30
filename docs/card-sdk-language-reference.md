@@ -18473,7 +18473,10 @@ The priority groups are (CR 616.1a–f):
   additional effect still happens) with `preventedDamage()` = 0 — so Purity gains nothing, while
   **Nine Lives**' amount-free rider still lands: `PreventDamage(appliesTo = DamageEvent(recipient =
   Recipient.You), onPrevented = Effects.AddCounters(CounterType.INCARNATION, 1, EffectTarget.Self))`,
-  one counter per source's damage event.
+  one counter per source's damage event. A reflexive "when damage is prevented this way" rider must
+  gate itself on a nonzero amount (CR 615.13 — it triggers only when some damage was prevented):
+  Phyrexian Vindicator wraps its `ReflexiveTrigger` in `Effects.If(Conditions.CompareAmounts(
+  preventedDamage(), ComparisonOperator.GT, 0), …)`.
   `half = true` prevents **half** the damage that reaches it instead of a fixed `amount` (which must
   stay null), rounded up by default — `roundUp = false` for "rounded down". Gisela, Blade of
   Goldnight: `PreventDamage(half = true, appliesTo = DamageEvent(recipient = Recipient.AnyOf(listOf(

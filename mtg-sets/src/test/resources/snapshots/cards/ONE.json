@@ -12894,31 +12894,49 @@
                     }
                 },
                 "onPrevented": {
-                    "type": "ReflexiveTrigger",
-                    "action": {
-                        "type": "Composite",
-                        "effects": []
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "ContextProperty",
+                                "key": "PREVENTED_DAMAGE_AMOUNT"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 0
+                            }
+                        }
                     },
-                    "optional": false,
-                    "reflexiveEffect": {
-                        "type": "DealDamage",
-                        "amount": {
-                            "type": "ContextProperty",
-                            "key": "PREVENTED_DAMAGE_AMOUNT"
+                    "then": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": []
                         },
-                        "target": {
-                            "type": "BoundVariable",
-                            "name": "t0"
-                        }
-                    },
-                    "reflexiveTargetRequirements": [
-                        {
-                            "type": "TargetOther",
-                            "baseRequirement": "AnyTarget",
-                            "id": "t0"
-                        }
-                    ],
-                    "descriptionOverride": "this creature deals that much damage to any other target"
+                        "optional": false,
+                        "reflexiveEffect": {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "ContextProperty",
+                                "key": "PREVENTED_DAMAGE_AMOUNT"
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        "reflexiveTargetRequirements": [
+                            {
+                                "type": "TargetOther",
+                                "baseRequirement": "AnyTarget",
+                                "id": "t0"
+                            }
+                        ],
+                        "descriptionOverride": "this creature deals that much damage to any other target"
+                    }
                 }
             }
         ]
