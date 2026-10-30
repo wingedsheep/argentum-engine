@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers.effects.composite
 
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.event.DelayedTriggeredAbility
+import com.wingedsheep.engine.event.TRIGGER_SCOPED_COLLECTIONS
 import com.wingedsheep.engine.handlers.CapturedObjectBinding
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
@@ -366,8 +367,10 @@ class CreateDelayedTriggerExecutor(
         is DynamicAmount.DistinctEntitiesInCollections -> amount.collections.any { it in stored }
         is DynamicAmount.DistinctCardTypesInCollections -> amount.collections.any { it in stored }
         is DynamicAmount.ManaValueSumOfCollection -> amount.collectionName in stored
+        // "<collection>_count" is a collection read like the ones above; a plain name is a stored number.
+        is DynamicAmount.VariableReference ->
+            !amount.variableName.endsWith("_count") || amount.variableName.removeSuffix("_count") in stored
         is DynamicAmount.StoredCardManaValue,
-        is DynamicAmount.VariableReference,
         // Read off the spell on the stack, which is gone by the time a delayed trigger fires.
         is DynamicAmount.CapturedAtCast -> true
 
@@ -711,9 +714,3 @@ class CreateDelayedTriggerExecutor(
             is Gate.OnceEachTurn -> gate
         }
 }
-
-/** Pipeline collections a triggered ability's own firing seeds (see `triggerStoredCollections`). */
-private val TRIGGER_SCOPED_COLLECTIONS = setOf(
-    com.wingedsheep.engine.handlers.PipelineState.TRIGGER_CAPTURED_COLLECTION,
-    com.wingedsheep.sdk.scripting.effects.IterationSpace.TRIGGER_DAMAGED_PLAYERS
-)

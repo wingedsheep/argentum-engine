@@ -698,6 +698,12 @@ data class TriggerContext(
     }
 }
 
+/** The pipeline collections a triggered ability's own firing seeds ([triggerStoredCollections]). */
+internal val TRIGGER_SCOPED_COLLECTIONS: Set<String> = setOf(
+    com.wingedsheep.engine.handlers.PipelineState.TRIGGER_CAPTURED_COLLECTION,
+    com.wingedsheep.sdk.scripting.effects.IterationSpace.TRIGGER_DAMAGED_PLAYERS
+)
+
 /**
  * The named collections a triggered ability sees — when its targets are chosen (CR 603.3d), when
  * they are re-checked on resolution, and as it resolves: the batch its trigger captured under
