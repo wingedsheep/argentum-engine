@@ -42,6 +42,9 @@ class LavabrinkVenturerScenarioTest : ScenarioTestBase() {
         .withLandsOnBattlefield(1, "Mountain", 4)
         .withCardOnBattlefield(2, "Grizzly Bears", summoningSickness = false)
         .withCardOnBattlefield(2, "Savannah Lions", summoningSickness = false)
+        .withCardInLibrary(1, "Plains")
+        .withCardInLibrary(1, "Plains")
+        .withCardInLibrary(2, "Forest")
         .withActivePlayer(1)
         .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
 

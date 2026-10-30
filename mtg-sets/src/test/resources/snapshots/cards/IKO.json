@@ -4020,6 +4020,104 @@
     ]
 }
 
+// Lavabrink Venturer
+{
+    "name": "Lavabrink Venturer",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "As this creature enters, choose odd or even. (Zero is even.)\nThis creature has protection from each mana value of the chosen quality.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantProtectionFromToGroup",
+                    "scope": {
+                        "type": "ProtectionScope.ManaValueParity",
+                        "parity": "ODD"
+                    },
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "odd"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantProtectionFromToGroup",
+                    "scope": {
+                        "type": "ProtectionScope.ManaValueParity",
+                        "parity": "EVEN"
+                    },
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "even"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "modeOptions": [
+                    {
+                        "id": "odd",
+                        "label": "Odd",
+                        "description": "Protection from each odd mana value."
+                    },
+                    {
+                        "id": "even",
+                        "label": "Even",
+                        "description": "Protection from each even mana value."
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "rarity": "RARE",
+        "artist": "Zoltan Boros",
+        "flavorText": "\"Take one wrong step out here and you're dead. I take only right steps.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/8/38c0d9d6-c9c7-4169-8106-400445643a1a.jpg?1783931089",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "You choose odd or even for Lavabrink Venturer before it enters the battlefield. There's no point at which players can target it before it has gained the appropriate protection abilities."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If Lavabrink Venturer somehow has no choice made for its ability, its last ability grants it no protection abilities."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "For spells with {X} in their mana costs, use the value chosen for X to determine the spell's mana value. If a permanent or card in any other zone has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "The mana value of a token that isn't a copy of another object is 0. A token that is a copy of another object has the same mana value as that object."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Light of Hope
 {
     "name": "Light of Hope",

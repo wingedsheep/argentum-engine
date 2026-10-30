@@ -39,6 +39,7 @@ class HexproofFromScopeCoverageTest : FunSpec({
         ProtectionScope.TriggeredAbilities,
         ProtectionScope.ChosenCardType(),
         ProtectionScope.ChosenCardName(),
+        ProtectionScope.ManaValueParity(com.wingedsheep.sdk.scripting.Parity.ODD),
     )
 
     // A granting permanent that chose "Instant" as it entered — what a source-bound scope reads.
