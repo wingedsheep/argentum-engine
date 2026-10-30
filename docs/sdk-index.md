@@ -1531,6 +1531,7 @@ Families:
 
 - `ProtectionScope.ActivatedAbilities` — From activated abilities — only the targeting leg applies, since an ability never deals damage, blocks, or enchants on its own (its *source* does).
 - `ProtectionScope.CardType(cardType: String)` — Protection from a card type — "from creatures".
+- `ProtectionScope.ChosenCardName(slot: ChoiceSlot)` — Protection from the card name the **granting permanent chose as it entered** — "As Runed Halo enters, choose a card name.
 - `ProtectionScope.ChosenCardType(slot: ChoiceSlot)` — Protection from the card type the **granting permanent chose as it entered** — "As Serra's Emissary enters, choose a card type.
 - `ProtectionScope.Color(color: Color)` — Protection / hexproof from a single color.
 - `ProtectionScope.Colors(colors: Set<Color>)` — Protection from multiple colors — "from white and from blue".

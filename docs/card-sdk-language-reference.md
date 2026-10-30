@@ -12181,7 +12181,8 @@ staticAbility {
   `ConditionalStaticAbility`. `PlayerProtectionRules.isProtectedFromSource` unions
   these battlefield-sourced scopes with any one-shot `PlayerProtectionComponent` on the player, so the
   protection appears/disappears with the permanent (no cleanup). General over any `ProtectionScope`
-  (single color, `Everything`, `EachOpponent`, …), mirroring the controller-grant statics
+  (single color, `Everything`, `EachOpponent`, the entry choices `ChosenCardType` — Serra's Emissary — and
+  `ChosenCardName` — Runed Halo, …), mirroring the controller-grant statics
   `GrantHexproofToController` / `GrantShroudToController`.
 - `SetMaximumHandSize(player, amount)` — sets the maximum hand size of a `player` scope (`You` /
   `EachOpponent` / `Each`, resolved relative to the source's controller) to a `DynamicAmount`, read at
@@ -14021,6 +14022,15 @@ Blighted Agent, Ichor Rats, Plague Stinger, Skithiryx.
   Serra's Emissary pairs an `EntersWithChoice(ChoiceType.MODE)` over card-type ids (as Stenn, Paranoid
   Partisan does) with `GrantProtectionFromToGroup(ProtectionScope.ChosenCardType(ChoiceSlot.MODE),
   GroupFilter(Creature.youControl()))` + `GrantProtectionToController(ProtectionScope.ChosenCardType(ChoiceSlot.MODE))`.
+- `ProtectionScope.ChosenCardName(slot = ChoiceSlot.CARD_NAME)` — "protection from the chosen card name"
+  (Runed Halo): the name twin of `ChosenCardType`, late-bound to the card name the **granting permanent**
+  chose as it entered (`EntersWithChoice(ChoiceType.CARD_NAME)`, stored under `ChoiceSlot.CARD_NAME`).
+  Matches a source whose current name equals it — projected on the battlefield, printed elsewhere, so a
+  spell on the stack and a token named like a card both match — and never a face-down source (it has no
+  name). Protects from nothing until a name is chosen. Valid only in `GrantProtectionToController`
+  (damage, targeting and enchanting of the controller, via `PlayerProtectionRules`); there is no
+  creature-protection keyword for a name, so `Protection`/`Hexproof` keywords, `GrantPlayerProtection`
+  and the group grants reject it at construction.
 - `ProtectionScope.RingBearers` — "protection from Ring-bearers" (CR 701.54; the designation is a quality
   per CR 702.16a). Matches a battlefield source that is its controller's Ring-bearer — the same reading as
   `StatePredicate.IsRingBearer`, so a stolen bearer stops matching. Enforced like

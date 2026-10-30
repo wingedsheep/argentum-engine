@@ -2,9 +2,11 @@ package com.wingedsheep.engine.mechanics.targeting
 
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.mechanics.ControllerGrants
+import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.GrantsControllerProtectionComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.player.PlayerHexproofFromComponent
 import com.wingedsheep.engine.state.components.player.PlayerProtectionComponent
 import com.wingedsheep.sdk.model.EntityId
@@ -51,7 +53,7 @@ object PlayerProtectionRules {
                 ?.any {
                     val scope = ProtectionKeywords.resolveChosen(it.scope, container) ?: return@any false
                     ControllerGrants.isActive(state, entityId, it.condition, predicateEvaluator = predicateEvaluator) &&
-                        scopeMatchesSource(state, playerId, scope, sourceId, casterId)
+                        scopeMatchesSource(state, playerId, scope, sourceId, casterId, granter = container)
                 } == true
         }
     }
@@ -87,7 +89,8 @@ object PlayerProtectionRules {
         protectedPlayerId: EntityId,
         scope: ProtectionScope,
         sourceId: EntityId?,
-        casterId: EntityId?
+        casterId: EntityId?,
+        granter: ComponentContainer? = null
     ): Boolean {
         if (scope is ProtectionScope.Everything) return true
         if (sourceId == null) return false
@@ -132,6 +135,16 @@ object PlayerProtectionRules {
             // Bound to a granting permanent's choice — resolved by the caller; unbound it protects
             // from nothing (a one-shot grant has no permanent to read the choice from).
             is ProtectionScope.ChosenCardType -> false
+            // The name the granting permanent chose (Runed Halo). Matches the source's current
+            // name — projected on the battlefield (a copy or name-changing effect), printed
+            // elsewhere — and never a face-down source, which has no name (CR 708.2a).
+            is ProtectionScope.ChosenCardName -> {
+                val chosen = ProtectionKeywords.chosenCardName(granter, scope.slot) ?: return false
+                val faceDown = if (onBattlefield) projected.isFaceDown(sourceId)
+                    else state.getEntity(sourceId)?.has<FaceDownComponent>() == true
+                val name = (if (onBattlefield) projected.getName(sourceId) else null) ?: card?.name
+                !faceDown && name.equals(chosen, ignoreCase = true)
+            }
         }
     }
 }

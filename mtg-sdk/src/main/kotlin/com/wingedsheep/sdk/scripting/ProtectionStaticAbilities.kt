@@ -151,7 +151,7 @@ data class GrantHexproofFromToGroup(
             ProtectionScope.Spells, ProtectionScope.PermanentsCastThisTurn, ProtectionScope.RingBearers,
             ProtectionScope.ActivatedAbilities, ProtectionScope.TriggeredAbilities -> true
             is ProtectionScope.Subtype, is ProtectionScope.Supertype, is ProtectionScope.ChosenCardType,
-            ProtectionScope.Everything, ProtectionScope.EachOpponent -> false
+            is ProtectionScope.ChosenCardName, ProtectionScope.Everything, ProtectionScope.EachOpponent -> false
         }
     }
 }
@@ -202,7 +202,8 @@ data class GrantProtectionFromToGroup(
             ProtectionScope.Spells, ProtectionScope.PermanentsCastThisTurn, ProtectionScope.RingBearers,
             ProtectionScope.ActivatedAbilities, ProtectionScope.TriggeredAbilities -> true
             is ProtectionScope.Color, is ProtectionScope.CardType,
-            is ProtectionScope.NonColor, ProtectionScope.Monocolored, ProtectionScope.Everything -> false
+            is ProtectionScope.NonColor, ProtectionScope.Monocolored, ProtectionScope.Everything,
+            is ProtectionScope.ChosenCardName -> false
         }
     }
 }
@@ -409,7 +410,9 @@ data object OpponentsCantMakeYouSacrifice : StaticAbility {
  * the protection goes with it — no cleanup needed.
  *
  * General-purpose over any [ProtectionScope]: `EachOpponent` (Absolute Virtue —
- * "You have protection from each of your opponents."), a single color, `Everything`, etc.
+ * "You have protection from each of your opponents."), a single color, `Everything`, etc., and the
+ * choices the permanent made as it entered — `ChosenCardType` (Serra's Emissary) and
+ * `ChosenCardName` (Runed Halo — "You have protection from the chosen card name.").
  *
  * @property scope The quality the controller is protected from.
  */
@@ -427,6 +430,7 @@ data class GrantProtectionToController(
             ProtectionScope.Monocolored -> "monocolored"
             is ProtectionScope.CardType -> s.cardType.lowercase() + "s"
             is ProtectionScope.ChosenCardType -> "the chosen card type"
+            is ProtectionScope.ChosenCardName -> "the chosen card name"
             is ProtectionScope.Subtype -> s.subtype + "s"
             is ProtectionScope.Supertype -> s.supertype.lowercase() + " permanents"
             ProtectionScope.Everything -> "everything"

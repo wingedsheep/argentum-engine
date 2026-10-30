@@ -37,6 +37,7 @@ object ProtectionKeywords {
             setOf(SourceKindProtection.protectionKeyword(checkNotNull(SourceKind.of(scope))))
         is ProtectionScope.NonColor,
         is ProtectionScope.ChosenCardType,
+        is ProtectionScope.ChosenCardName,
         ProtectionScope.Monocolored,
         ProtectionScope.Everything -> emptySet()
     }
@@ -55,6 +56,11 @@ object ProtectionKeywords {
     fun chosenCardTypeKeyword(source: ComponentContainer?, slot: ChoiceSlot): String? =
         chosenCardType(source, slot)?.let { "PROTECTION_FROM_CARDTYPE_${it.uppercase()}" }
 
-    private fun chosenCardType(source: ComponentContainer?, slot: ChoiceSlot): String? =
+    /** The card name [source] chose under [slot] as it entered, or null while nothing is chosen. */
+    fun chosenCardName(source: ComponentContainer?, slot: ChoiceSlot): String? = chosenText(source, slot)
+
+    private fun chosenCardType(source: ComponentContainer?, slot: ChoiceSlot): String? = chosenText(source, slot)
+
+    private fun chosenText(source: ComponentContainer?, slot: ChoiceSlot): String? =
         (source?.get<CastChoicesComponent>()?.chosen?.get(slot) as? ChoiceValue.TextChoice)?.text
 }

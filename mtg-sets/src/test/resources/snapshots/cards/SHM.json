@@ -3545,6 +3545,38 @@
     }
 }
 
+// Runed Halo
+{
+    "name": "Runed Halo",
+    "manaCost": "{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "As this enchantment enters, choose a card name.\nYou have protection from the chosen card name. (You can't be targeted, dealt damage, or enchanted by anything with that name.)",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantProtectionToController",
+                "scope": "ProtectionScope.ChosenCardName"
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CARD_NAME",
+                "cardNamePool": "ANY"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "RARE",
+        "artist": "Steve Prescott",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/2/92b45f79-f23e-4eef-8cac-91780dc2a044.jpg?1783942765"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Rustrazor Butcher
 {
     "name": "Rustrazor Butcher",

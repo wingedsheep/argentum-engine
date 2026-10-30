@@ -52,6 +52,7 @@ object HexproofFromRules {
         is ProtectionScope.Subtype,
         is ProtectionScope.Supertype,
         is ProtectionScope.ChosenCardType,
+        is ProtectionScope.ChosenCardName,
         ProtectionScope.Everything,
         ProtectionScope.EachOpponent -> emptySet()
     }

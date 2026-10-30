@@ -77,6 +77,26 @@ sealed interface ProtectionScope {
     data class ChosenCardType(val slot: ChoiceSlot = ChoiceSlot.CARD_TYPE) : ProtectionScope
 
     /**
+     * Protection from the card name the **granting permanent chose as it entered** — "As Runed
+     * Halo enters, choose a card name. You have protection from the chosen card name." The name
+     * twin of [ChosenCardType]: late-bound, the engine reads the source's durable choice under
+     * [slot] wherever the protection is applied and matches a source whose (projected) name equals
+     * it — a token only when it carries that name, a face-down permanent never (it has no name),
+     * and a split, adventurer or double-faced card only by the face name it currently has. With no
+     * name chosen it protects from nothing.
+     *
+     * Engine-wired for player protection only — [GrantProtectionToController]; there is no
+     * creature-protection keyword for a name, so the printed keywords, the one-shot grants and the
+     * group grants reject it.
+     *
+     * @property slot The source's cast-choices slot holding the chosen name;
+     *   `EntersWithChoice(ChoiceType.CARD_NAME)` writes [ChoiceSlot.CARD_NAME].
+     */
+    @SerialName("ProtectionScope.ChosenCardName")
+    @Serializable
+    data class ChosenCardName(val slot: ChoiceSlot = ChoiceSlot.CARD_NAME) : ProtectionScope
+
+    /**
      * Protection from a subtype — "from Goblins". [cardType] narrows the quality to objects that
      * are also of that card type — "from God creatures" (Sigrid, God-Favored): a God that isn't
      * currently a creature (a Theros God below its devotion) doesn't match. Null matches the

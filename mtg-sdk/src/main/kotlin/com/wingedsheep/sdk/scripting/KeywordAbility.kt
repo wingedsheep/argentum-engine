@@ -121,6 +121,7 @@ sealed interface KeywordAbility {
             // A chosen card type is read off the permanent that grants it — a static grant, not a
             // printed keyword (GrantProtectionFromToGroup / GrantProtectionToController).
             require(scope !is ProtectionScope.ChosenCardType) { "Protection from the chosen card type is a granted static" }
+            require(scope !is ProtectionScope.ChosenCardName) { "Protection from the chosen card name is a granted static" }
         }
 
         override val keyword: Keyword? = when (scope) {
@@ -136,6 +137,7 @@ sealed interface KeywordAbility {
             is ProtectionScope.Monocolored -> "Protection from monocolored"
             is ProtectionScope.CardType -> "Protection from ${scope.cardType.lowercase()}"
             is ProtectionScope.ChosenCardType -> "Protection from the chosen card type"
+            is ProtectionScope.ChosenCardName -> "Protection from the chosen card name"
             is ProtectionScope.Subtype -> "Protection from ${scope.subtype}${scope.cardType?.let { " ${it.lowercase()}s" } ?: "s"}"
             is ProtectionScope.Supertype -> "Protection from ${scope.supertype.lowercase()}${scope.cardType?.let { " ${it.lowercase()}s" } ?: ""}"
             is ProtectionScope.Everything -> "Protection from everything"
@@ -168,6 +170,7 @@ sealed interface KeywordAbility {
     data class Hexproof(val scope: ProtectionScope) : KeywordAbility {
         init {
             require(scope !is ProtectionScope.ChosenCardType) { "Hexproof from the chosen card type is not supported" }
+            require(scope !is ProtectionScope.ChosenCardName) { "Hexproof from the chosen card name is not supported" }
         }
 
         override val description: String = when (scope) {
@@ -179,6 +182,7 @@ sealed interface KeywordAbility {
             is ProtectionScope.Monocolored -> "Hexproof from monocolored"
             is ProtectionScope.CardType -> "Hexproof from ${scope.cardType.lowercase()}"
             is ProtectionScope.ChosenCardType -> "Hexproof from the chosen card type"
+            is ProtectionScope.ChosenCardName -> "Hexproof from the chosen card name"
             is ProtectionScope.Subtype -> "Hexproof from ${scope.subtype}${scope.cardType?.let { " ${it.lowercase()}s" } ?: "s"}"
             is ProtectionScope.Supertype -> "Hexproof from ${scope.supertype.lowercase()}${scope.cardType?.let { " ${it.lowercase()}s" } ?: ""}"
             is ProtectionScope.Everything -> "Hexproof from everything"

@@ -38,6 +38,7 @@ class HexproofFromScopeCoverageTest : FunSpec({
         ProtectionScope.ActivatedAbilities,
         ProtectionScope.TriggeredAbilities,
         ProtectionScope.ChosenCardType(),
+        ProtectionScope.ChosenCardName(),
     )
 
     // A granting permanent that chose "Instant" as it entered — what a source-bound scope reads.
