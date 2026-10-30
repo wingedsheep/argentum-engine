@@ -312,6 +312,35 @@ class PlayLandHandler(
         if (fromZone == Zone.EXILE || fromZone == Zone.GRAVEYARD || fromZone == Zone.SIDEBOARD) {
             newState = newState.spendCappedMayPlayFor(action.cardId, action.playerId)
         }
+        // A replacement that sends the entering land elsewhere instead — Containment Priest's "if a
+        // nontoken creature would enter and it wasn't cast, exile it instead" catches a played land
+        // creature (Dryad Arbor), since playing a land isn't casting it. Judged after the face is
+        // chosen (CR 614.12: as it would exist on the battlefield). The land was still played: the
+        // drop is spent and "whenever you play a land" still sees it.
+        val entryRedirect = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.checkZoneChangeRedirect(
+            newState, action.cardId, fromZone, Zone.BATTLEFIELD, predicateEvaluator = predicateEvaluator
+        )
+        if (entryRedirect.destinationZone != Zone.BATTLEFIELD) {
+            val ownerId = printedCardComponent.ownerId ?: action.playerId
+            val destination = entryRedirect.destinationZone
+            newState = newState
+                .updateEntity(action.cardId) { c -> c.without<ControllerComponent>() }
+                .addToZone(ZoneKey(ownerId, destination), action.cardId)
+                .updateEntity(action.playerId) { c ->
+                    c.with((c.get<LandDropsComponent>() ?: LandDropsComponent()).use())
+                }
+            val redirectedEvent = com.wingedsheep.engine.core.ZoneChangeEvent(
+                action.cardId,
+                newState.getEntity(action.cardId)?.get<CardComponent>()?.name ?: printedCardComponent.name,
+                fromZone,
+                destination,
+                ownerId,
+                oldObject = state.objectRef(action.cardId),
+                newObject = newState.objectRef(action.cardId),
+            )
+            return ExecutionResult.success(newState.tick(), listOf(redirectedEvent, landPlayedEvent))
+        }
+
         // A land creature (Dryad Arbor) is a creature entering: a granted "enters as a copy"
         // applies before it is placed, and everything below reads the copied identity.
         newState = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy

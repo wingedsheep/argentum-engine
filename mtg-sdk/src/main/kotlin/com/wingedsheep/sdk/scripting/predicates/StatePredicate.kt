@@ -1579,6 +1579,10 @@ sealed interface StatePredicate {
      *  - Errant, Street Artist's "copy target spell you control that wasn't cast" is
      *    `Not(WasCast())`.
      *
+     *  - Containment Priest's "if a nontoken creature would enter and it wasn't cast" is
+     *    `Not(WasCast())` on a battlefield-entry `RedirectZoneChange`: the entering object is still
+     *    the resolving spell when it was cast, and carries no cast origin otherwise.
+     *
      * Stack-only: a permanent's "was cast" history is the `WasCast` / `WasCastFromZone`
      * [com.wingedsheep.sdk.scripting.conditions] family instead.
      */

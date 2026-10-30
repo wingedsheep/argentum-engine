@@ -396,7 +396,10 @@ class ZoneTransitionService(
 
         // 3. Check zone change redirect (unless skipped)
         val redirectResult = if (!options.skipZoneChangeRedirect) {
-            ZoneMovementUtils.checkZoneChangeRedirect(state, entityId, fromZone, destinationZone, predicateEvaluator = predicateEvaluator)
+            ZoneMovementUtils.checkZoneChangeRedirect(
+                state, entityId, fromZone, destinationZone, predicateEvaluator = predicateEvaluator,
+                enteringFaceDown = options.faceDown && destinationZone == Zone.BATTLEFIELD
+            )
         } else {
             ZoneChangeRedirectResult(destinationZone)
         }

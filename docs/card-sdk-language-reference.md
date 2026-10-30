@@ -6189,7 +6189,15 @@ reading `SpellOnStackComponent.castFromZone`, which a copy put onto the stack ne
 a cast copy does (CR 707.12); e.g. `TargetFilter.SpellOnStack.notCast(Zone.HAND)` for "target spell that
 wasn't cast from its owner's hand" — Wash Away, since a card in a hand is owned by that hand's player,
 CR 108.3 — and `TargetFilter.SpellOnStack.youControl().notCast()` for "target spell you control that
-wasn't cast" — Errant, Street Artist);
+wasn't cast" — Errant, Street Artist). Also honoured by the zone-change redirect path on a **battlefield
+entry**: only a spell resolving off the stack carries a cast origin, so anything reanimated, flickered,
+put onto the battlefield or played as a land "wasn't cast" — Containment Priest's "if a nontoken creature
+would enter and it wasn't cast, exile it instead" is `replacementEffect(RedirectZoneChange(newDestination =
+Zone.EXILE, appliesTo = EventPattern.ZoneChangeEvent(filter = GameObjectFilter.Creature.nontoken().notCast(),
+to = Zone.BATTLEFIELD)))`. A battlefield-entry redirect is asked by every non-spell entry path — effect
+moves (single and collection, which skip the entry prompts — Aura host, "as this enters" choices — of a
+card that won't enter), and land plays (the land drop is still spent) — and a face-down entry (manifest,
+cloak) counts as a creature entering (CR 708.2);
 `.withSingleTarget()` (a spell or ability on the stack with exactly one *chosen* target — `StatePredicate.HasSingleTarget`;
 `TargetFilter.InstantOrSorcerySpellOnStack.withSingleTarget()` is "target instant or sorcery spell with a single
 target", Hydroelectric Specimen. It counts chosen targets, legal or not, so a spell with two targets never

@@ -1196,7 +1196,9 @@ interface ObjectFilterBuilder<out Self> {
      * Must be a spell on the stack that was *not* cast — not from [fromZone] when set, not at all
      * (a copy) when null. Backs Wash Away's "counter target spell that wasn't cast from its
      * owner's hand" (`Zone.HAND`) and Errant, Street Artist's "copy target spell you control that
-     * wasn't cast" (no zone).
+     * wasn't cast" (no zone). On a battlefield-entry `RedirectZoneChange` it is the entering
+     * object that wasn't cast — Containment Priest's "if a nontoken creature would enter and it
+     * wasn't cast, exile it instead".
      */
     fun notCast(fromZone: Zone? = null) =
         withStatePredicate(StatePredicate.Not(StatePredicate.WasCast(fromZone)))

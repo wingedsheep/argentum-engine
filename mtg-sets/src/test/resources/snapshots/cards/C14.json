@@ -137,6 +137,55 @@
     "colorIdentityOverride": []
 }
 
+// Containment Priest
+{
+    "name": "Containment Priest",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "Flash\nIf a nontoken creature would enter and it wasn't cast, exile it instead.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "RedirectZoneChange",
+                "newDestination": "Exile",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsNontoken"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "StateNot",
+                                "predicate": "WasCast"
+                            }
+                        ]
+                    },
+                    "to": "Battlefield"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "rarity": "RARE",
+        "artist": "John Stanko",
+        "flavorText": "Some protection requires a bit of finesse.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c2c794b9-09da-49be-b258-b0e21f1663e3.jpg?1783938874"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Creeperhulk
 {
     "name": "Creeperhulk",

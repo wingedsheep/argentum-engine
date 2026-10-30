@@ -146,6 +146,10 @@ class MoveCollectionExecutor(
                     is CardDestination.ToZone -> destination.zone == Zone.BATTLEFIELD
                     is CardDestination.ToZoneExiledFrom -> originZoneOf(state, id, destination.fallback) == Zone.BATTLEFIELD
                 }
+            }.filterNot { id ->
+                // Sent elsewhere instead (Containment Priest's exile): it never enters, so it asks
+                // no entry question; the move itself applies the redirect.
+                ZoneMovementUtils.entryRedirected(state, id, state.logicalZone(id)?.zoneType, predicateEvaluator)
             }.associateWith { id ->
                 val owner = state.getEntity(id)?.get<OwnerComponent>()?.playerId
                     ?: state.getEntity(id)?.get<CardComponent>()?.ownerId ?: context.controllerId

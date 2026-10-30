@@ -159,7 +159,12 @@ class MoveToZoneEffectExecutor(
             return EffectResult.success(state)
         }
 
-        if (effect.destination == Zone.BATTLEFIELD && effect.faceDown == null) {
+        // A card a replacement sends elsewhere instead (Containment Priest's exile) never enters,
+        // so it asks none of the entry questions below; the move itself applies the redirect.
+        val entersHere = effect.destination == Zone.BATTLEFIELD && effect.faceDown == null &&
+            !ZoneMovementUtils.entryRedirected(state, targetId, currentZone.zoneType, zones.predicateEvaluator)
+
+        if (entersHere) {
             com.wingedsheep.engine.handlers.effects.copy.EffectCopyEntry.prepare(
                 state, effect, context, mapOf(targetId to controllerId), cardRegistry, zones.predicateEvaluator
             )?.let { return it }
@@ -171,7 +176,7 @@ class MoveToZoneEffectExecutor(
             )?.let { return it }
         }
 
-        if (effect.destination == Zone.BATTLEFIELD && effect.faceDown == null) {
+        if (entersHere) {
             val prepared = com.wingedsheep.engine.handlers.effects.copy.CopyAuraEntry.prepare(
                 state, effect, context, mapOf(targetId to controllerId), cardRegistry, targetFinder, zones.predicateEvaluator)
             prepared.pause?.let { return it }
@@ -188,13 +193,13 @@ class MoveToZoneEffectExecutor(
         // during stack resolution and never reach this executor, and the explicit
         // "attached to ..." effect has its own executor, so a generic move-to-battlefield of an
         // Aura is always the choose-as-it-enters case.
-        if (effect.destination == Zone.BATTLEFIELD && effect.faceDown == null && cardComponent.typeLine.isAura && targetId !in context.entryAuraHosts && context.entryCopies[targetId]?.copiedCard == null) {
+        if (entersHere && cardComponent.typeLine.isAura && targetId !in context.entryAuraHosts && context.entryCopies[targetId]?.copiedCard == null) {
             return attachAuraOnEnter(state, targetId, cardComponent, controllerId, context)
         }
 
         // "As this enters, choose …" (CR 614.12a) — asked before the move, of the copied card when
         // the entrant enters as a copy; the transition stamps the answers on arrival.
-        if (effect.destination == Zone.BATTLEFIELD && effect.faceDown == null) {
+        if (entersHere) {
             com.wingedsheep.engine.handlers.effects.EffectEntryChoices.prepare(
                 state, effect, context, mapOf(targetId to controllerId), cardRegistry, zones.predicateEvaluator
             )?.let { return it }
