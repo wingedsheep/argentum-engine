@@ -1759,16 +1759,8 @@ class PredicateEvaluator(
             // don't control" (Sadistic Shell Game) is `Not(ControlledByReferencedPlayer(this))`
             // evaluated with each chooser as `Player.You`. A spell or ability on the stack answers
             // with its caster / controller, a permanent with its projected controller.
-            Player.ControllerOfSource -> context.sourceId?.let { sourceId ->
-                state.getEntity(sourceId)?.let {
-                    it.get<SpellOnStackComponent>()?.casterId
-                        ?: it.get<ActivatedAbilityOnStackComponent>()?.controllerId
-                        ?: it.get<TriggeredAbilityOnStackComponent>()?.controllerId
-                        ?: projected.getController(sourceId)
-                        ?: it.get<ControllerComponent>()?.playerId
-                        ?: it.get<LastKnownPermanentComponent>()?.snapshot?.controllerId
-                }
-            }
+            Player.ControllerOfSource -> context.sourceId
+                ?.let { TargetResolutionUtils.controllerOf(state, it, projected) }
             // "the same owner as this" — the source card's immutable owner, in any zone.
             Player.OwnerOfSource -> context.sourceId?.let { state.getEntity(it) }?.let {
                 it.get<com.wingedsheep.engine.state.components.identity.OwnerComponent>()?.playerId
