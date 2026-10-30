@@ -10726,7 +10726,7 @@ staticAbility {
   protection leg — targeting, damage, enchanting/equipping, blocking — honours it with no extra wiring.
   Accepts `Colors`, `Multicolored`, `Subtype`, `Supertype`, `EachOpponent`, `ChosenCardType`, and the source kinds
   (`Spells`, `PermanentsCastThisTurn`, `RingBearers`, `ActivatedAbilities`, `TriggeredAbilities`) and
-  `ManaValueParity`; `NonColor`, `Monocolored` and `Everything` (no keyword) and `Color` / `CardType` (one spelling per
+  `ManaValueParity`, `ManaValueOtherThan`; `NonColor`, `Monocolored` and `Everything` (no keyword) and `Color` / `CardType` (one spelling per
   concept) are rejected at construction. Lord of
   the Nazgûl: `GrantProtectionFromToGroup(ProtectionScope.RingBearers,
   GroupFilter(GameObjectFilter.Permanent.withSubtype("Wraith").youControl()))`. A single color or card type
@@ -14181,6 +14181,14 @@ Blighted Agent, Ichor Rats, Plague Stinger, Skithiryx.
   with options "odd"/"even" plus one `SourceChosenModeIs(parity.displayName)`-gated
   `GrantProtectionFromToGroup(ManaValueParity(parity), GroupFilter.source())` per parity (Ashling's Prerogative's
   shape).
+- `ProtectionScope.ManaValueOtherThan(value)` — "protection from each mana value other than N": every mana value but
+  [value], enforced on the same legs as `ManaValueParity` (projected `PROTECTION_FROM_MANAVALUE_OTHER_THAN_<N>`, matched
+  against the source's mana value in `SourceKindProtection`; an X spell counts its announced X, an unannounced X and a
+  source with no mana value match nothing). Granted statics only — `GrantProtectionFromToGroup` and player protection
+  (`GrantProtectionToController`); a printed `KeywordAbility.Protection` and every hexproof spelling reject it, since the
+  only card that says it hangs it off a choice. Haktos the Unscarred: `EntersWithChoice(ChoiceType.NUMBER, minValue = 2,
+  maxValue = 4, atRandom = true)` plus one `Conditions.CastChoiceIs(ChoiceSlot.CHOSEN_NUMBER, "n")`-gated
+  `GrantProtectionFromToGroup(ManaValueOtherThan(n), GroupFilter.source())` per number.
 - `Protection(ProtectionScope.Supertype("Legendary", cardType = "Creature"))` / `KeywordAbility.protectionFromSupertype("Legendary", "Creature")` — protection from a supertype, optionally narrowed to a card type: "protection from legendary creatures" (Tsabo Tavoc) doesn't stop a legendary artifact or land.
 - `Protection(ProtectionScope.Subtype("God", cardType = "Creature"))` / `KeywordAbility.protectionFromSubtype("God", "Creature")` — "protection from God creatures" (Sigrid, God-Favored): a subtype narrowed to a card type, so a Theros God that isn't currently a creature doesn't match. Without `cardType` it's the plain "protection from Goblins".
   Both type scopes are enforced across targeting, enchanting/equipping, blocking and damage through `TypeQualityProtection` (projected `PROTECTION_FROM_SUBTYPE_<X>[@<TYPE>]` / `PROTECTION_FROM_SUPERTYPE_<X>[@<TYPE>]` keywords).
@@ -18558,7 +18566,10 @@ cardNamePool = CardNamePool.ANY, lookAtOpponentHand = true)` +
 by a CDA via `DynamicAmount.CastChoice(CHOSEN_NUMBER)`. This is the *as-enters replacement* (CR
 614.1c) form of a number choice — chosen before the permanent is on the battlefield, no priority
 window at the default — versus `Effects.ChooseNumberForSource` (on resolution, e.g. from an upkeep
-trigger) writing the same slot. Shapeshifter uses the replacement at entry and the effect each
+trigger) writing the same slot. `atRandom = true` ("choose 2, 3, or 4 at random", Haktos the Unscarred) asks no
+one: the engine draws the number uniformly from `[minValue, maxValue]` with the game RNG as the permanent enters, on
+every entry path (`EntersWithReplacements.applyFromDefinition`), and records it in the same slot; only
+`ChoiceType.NUMBER` accepts it. Shapeshifter uses the replacement at entry and the effect each
 upkeep: `replacementEffect(EntersWithChoice(ChoiceType.NUMBER, minValue = 0, maxValue = 7))` +
 `SetBasePowerToughnessDynamicStatic(power = CastChoice(CHOSEN_NUMBER), toughness = Subtract(Fixed(7),
 CastChoice(CHOSEN_NUMBER)))`. Example — Phantasmal Terrain

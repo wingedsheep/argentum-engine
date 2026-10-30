@@ -502,6 +502,8 @@ object PermanentEntryReplacements {
         syntheticRiot: Boolean = false,
         syntheticRiotRemaining: Int = 0,
     ): EntersChoicePrompt? {
+        // Drawn on entry, not asked (see EntersWithReplacements.applyFromDefinition).
+        if (choice.atRandom) return null
         val chooserId = when (choice.chooser) {
             Player.AnOpponent -> state.getOpponents(controllerId).firstOrNull() ?: controllerId
             else -> controllerId

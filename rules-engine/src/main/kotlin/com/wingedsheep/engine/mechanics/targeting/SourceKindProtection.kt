@@ -64,6 +64,28 @@ object SourceKindProtection {
 
     fun hexproofKeyword(kind: SourceKind): String = "HEXPROOF_FROM_SOURCEKIND_${kind.name}"
 
+    private const val MANA_VALUE_OTHER_THAN_PREFIX = "PROTECTION_FROM_MANAVALUE_OTHER_THAN_"
+
+    /**
+     * The projected keyword for "protection from each mana value other than [value]"
+     * ([ProtectionScope.ManaValueOtherThan]). Not a [SourceKind]: it names all mana values but
+     * one, so it is matched against the source's mana value rather than looked up by kind.
+     */
+    fun manaValueOtherThanKeyword(value: Int): String = MANA_VALUE_OTHER_THAN_PREFIX + value
+
+    /**
+     * True when [protectedId] has protection from each mana value other than some number that
+     * [manaValue] isn't. A source with no mana value (an emblem, or a spell whose {X} is still
+     * unchosen) matches nothing.
+     */
+    private fun protectedFromManaValue(state: GameState, protectedId: EntityId, manaValue: Int?): Boolean {
+        if (manaValue == null) return false
+        return state.projectedState.getKeywords(protectedId).any { keyword ->
+            keyword.startsWith(MANA_VALUE_OTHER_THAN_PREFIX) &&
+                keyword.substring(MANA_VALUE_OTHER_THAN_PREFIX.length).toIntOrNull()?.let { it != manaValue } == true
+        }
+    }
+
     /** A spell: a card on the stack as a spell (CR 112.1), or a copy of one. */
     fun isSpell(state: GameState, entityId: EntityId): Boolean =
         state.getEntity(entityId)?.has<SpellOnStackComponent>() == true
@@ -104,6 +126,23 @@ object SourceKindProtection {
             card.manaValueOverride == null && card.manaCost.hasX
         ) announcedX * card.manaCost.xCount else 0
         return ManaValues.of(state, sourceId, card) + pendingX
+    }
+
+    /**
+     * The mana value a spell or ability from [sourceId] carries as a targeting source: a spell's
+     * own (null while its {X} is unchosen — see [spellManaValueKind]), an ability its source's.
+     */
+    private fun targetingManaValue(
+        state: GameState,
+        sourceId: EntityId,
+        targetingSourceType: TargetingSourceType,
+        announcedX: Int?
+    ): Int? {
+        if (targetingSourceType != TargetingSourceType.SPELL) return manaValue(state, sourceId)
+        val card = state.getEntity(sourceId)?.get<CardComponent>() ?: return null
+        val xUnchosen = announcedX == null && sourceId !in state.stack &&
+            card.manaValueOverride == null && card.manaCost.hasX
+        return if (xUnchosen) null else manaValue(state, sourceId, announcedX)
     }
 
     /** The mana-value parity kind of [sourceId], or null when it has no mana value. */
@@ -170,10 +209,16 @@ object SourceKindProtection {
         announcedX: Int? = null
     ): String? {
         if (targetId !in state.getBattlefield()) return null
+        val name = state.getEntity(targetId)?.get<CardComponent>()?.name ?: "target"
+        if (sourceId != null) {
+            val manaValue = targetingManaValue(state, sourceId, targetingSourceType, announcedX)
+            if (protectedFromManaValue(state, targetId, manaValue)) {
+                return "$name has protection from mana value $manaValue"
+            }
+        }
         val kinds = targetingKinds(state, sourceId, targetingSourceType, announcedX)
         if (kinds.isEmpty()) return null
         val projected = state.projectedState
-        val name = state.getEntity(targetId)?.get<CardComponent>()?.name ?: "target"
         kinds.firstOrNull { projected.hasKeyword(targetId, protectionKeyword(it)) }
             ?.let { return "$name has protection from ${it.phrase}" }
         val hexproof = kinds.firstOrNull { projected.hasKeyword(targetId, hexproofKeyword(it)) } ?: return null
@@ -194,6 +239,7 @@ object SourceKindProtection {
         if (sourceId == null) return false
         val projected = state.projectedState
         if (projected.hasKeyword(protectedId, protectionKeyword(SourceKind.SPELL)) && isSpell(state, sourceId)) return true
+        if (protectedFromManaValue(state, protectedId, manaValue(state, sourceId))) return true
         return objectKinds(state, sourceId).any { projected.hasKeyword(protectedId, protectionKeyword(it)) }
     }
 }

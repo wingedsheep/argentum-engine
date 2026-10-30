@@ -1540,6 +1540,7 @@ Families:
 - `ProtectionScope.Colors(colors: Set<Color>)` — Protection from multiple colors — "from white and from blue".
 - `ProtectionScope.EachOpponent` — Protection from each of the controller's opponents (Rule 702.16e).
 - `ProtectionScope.Everything` — Protection from everything (Rule 702.16i).
+- `ProtectionScope.ManaValueOtherThan(value: Int)` — From each mana value other than value — "protection from each mana value other than the chosen number" (Haktos the Unscarred, with one conditional grant per number it can choose).
 - `ProtectionScope.ManaValueParity(parity: Parity)` — From each mana value of a parity — "protection from each mana value of the chosen quality" (Lavabrink Venturer, with one conditional grant per choice).
 - `ProtectionScope.Monocolored` — From monocolored — matches a source with exactly one color (CR 105.2a), the twin of Multicolored.
 - `ProtectionScope.Multicolored` — From multicolored — matches a source with two or more colors (CR 105.2b: a multicolored object has two or more colors).
@@ -1576,7 +1577,7 @@ Families:
 - `EntersOnlyIfPaid(cost: PayCost, appliesTo: EventPattern)` — Pay-or-graveyard self-replacement on this card's own entry (Mox Diamond).
 - `EntersTapped(unlessCondition: Condition?, payLifeCost: Int?, appliesTo: EventPattern)`
 - `EntersUntapped(appliesTo: EventPattern)` — "Permanents matching appliesTo enter the battlefield untapped" — the inverse of EntersTapped.
-- `EntersWithChoice(choiceType: ChoiceType, chooser: Player, allowedCreatureTypes: List<String>?, modeOptions: List<ModeOption>, minValue: Int, maxValue: Int, cardNamePool: CardNamePool, lookAtOpponentHand: Boolean, excludedColors: Set<Color>, permanentFilter: GameObjectFilter?, mayChooseNothing: Boolean, then: Effect?, appliesTo: EventPattern)` — As this permanent enters, make a choice.
+- `EntersWithChoice(choiceType: ChoiceType, chooser: Player, allowedCreatureTypes: List<String>?, modeOptions: List<ModeOption>, minValue: Int, maxValue: Int, cardNamePool: CardNamePool, lookAtOpponentHand: Boolean, excludedColors: Set<Color>, permanentFilter: GameObjectFilter?, mayChooseNothing: Boolean, then: Effect?, atRandom: Boolean, appliesTo: EventPattern)` — As this permanent enters, make a choice.
 - `EntersWithCounters(counterType: CounterType, count: Int, selfOnly: Boolean, condition: Condition?, otherOnly: Boolean, appliesTo: EventPattern)` — Permanent/creature enters with counters.
 - `EntersWithDevour(multiplier: Int, sacrificeFilter: GameObjectFilter, counterType: CounterType, variant: String, appliesTo: EventPattern)` — Devour (CR 702.82) and its variants.
 - `EntersWithDynamicCounters(counterType: CounterType, count: DynamicAmount, otherOnly: Boolean, appliesTo: EventPattern, activeZones: Set<Zone>)` — Permanent/creature enters with a dynamic number of counters.

@@ -601,6 +601,7 @@ internal class CardProjector(
             chosenMode = choices.mode,
             chosenCardName = choices.cardName,
             chosenCardType = choices.cardType,
+            chosenNumber = choices.number,
             sacrificedCreatureTypes = spell.sacrificedCreatureTypes,
             playableFromExile = zoneStatus.playableFromExile,
             copyOf = container.get<CopyOfComponent>()?.let { copyComp ->
@@ -820,6 +821,7 @@ internal class CardProjector(
         val mode: String?,
         val cardName: String?,
         val cardType: String?,
+        val number: Int?,
     )
 
     private fun chosenValues(frame: CardFrame): ChosenValues {
@@ -837,6 +839,10 @@ internal class CardProjector(
             cardName = container.chosenCardName(),
             // Get chosen card type for "choose a card type" permanents (e.g., Arachne, Psionic Weaver)
             cardType = container.chosenCardType(),
+            // An as-enters number (Shapeshifter, Haktos the Unscarred); a read-ahead Saga's is its
+            // starting chapter, which its lore counters already show.
+            number = container.numberChoice(com.wingedsheep.sdk.scripting.ChoiceSlot.CHOSEN_NUMBER)
+                ?.takeIf { frame.cardDef?.keywords?.contains(com.wingedsheep.sdk.core.Keyword.READ_AHEAD) != true },
         )
     }
 

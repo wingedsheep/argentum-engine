@@ -2923,6 +2923,14 @@ data class EntersWithChoice(
      * default — just records the pick for other abilities to read.
      */
     val then: Effect? = null,
+    /**
+     * When true, nobody chooses: the number is picked **at random** from `[minValue, maxValue]` as
+     * the permanent enters — "As Haktos the Unscarred enters, choose a number at random from 2,
+     * 3, or 4." The engine draws it with the game's random generator on every entry path and
+     * writes it to [ChoiceSlot.CHOSEN_NUMBER] like a chosen one, with no decision; [chooser] is
+     * ignored. Only [ChoiceType.NUMBER] honours it.
+     */
+    val atRandom: Boolean = false,
     override val appliesTo: EventPattern = EventPattern.ZoneChangeEvent(
         filter = GameObjectFilter.Any,
         to = Zone.BATTLEFIELD
@@ -2931,6 +2939,9 @@ data class EntersWithChoice(
     init {
         require(choiceType == ChoiceType.CREATURE_ON_BATTLEFIELD || (permanentFilter == null && !mayChooseNothing && then == null)) {
             "permanentFilter, mayChooseNothing and then apply only to ChoiceType.CREATURE_ON_BATTLEFIELD"
+        }
+        require(!atRandom || (choiceType == ChoiceType.NUMBER && minValue <= maxValue)) {
+            "atRandom applies only to ChoiceType.NUMBER with minValue <= maxValue"
         }
     }
 
@@ -2988,7 +2999,9 @@ data class EntersWithChoice(
             val verb = if (chooser == Player.AnOpponent) "an opponent chooses" else "choose"
             "As this permanent enters, $lookPrefix$verb $nameKind"
         }
-        ChoiceType.NUMBER -> if (chooser == Player.AnOpponent) {
+        ChoiceType.NUMBER -> if (atRandom) {
+            "As this permanent enters, choose a number at random from $minValue to $maxValue"
+        } else if (chooser == Player.AnOpponent) {
             "As this permanent enters, an opponent chooses a number between $minValue and $maxValue"
         } else {
             "As this permanent enters, choose a number between $minValue and $maxValue"

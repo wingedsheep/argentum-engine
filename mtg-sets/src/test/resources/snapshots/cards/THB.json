@@ -7089,6 +7089,126 @@
     ]
 }
 
+// Haktos the Unscarred
+{
+    "name": "Haktos the Unscarred",
+    "manaCost": "{R}{R}{W}{W}",
+    "typeLine": "Legendary Creature — Human Warrior",
+    "oracleText": "Haktos attacks each combat if able.\nAs Haktos enters, choose 2, 3, or 4 at random.\nHaktos has protection from each mana value other than the chosen number.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            "MustAttack",
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantProtectionFromToGroup",
+                    "scope": {
+                        "type": "ProtectionScope.ManaValueOtherThan",
+                        "value": 2
+                    },
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "CastChoiceIs",
+                    "slot": "CHOSEN_NUMBER",
+                    "value": "2"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantProtectionFromToGroup",
+                    "scope": {
+                        "type": "ProtectionScope.ManaValueOtherThan",
+                        "value": 3
+                    },
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "CastChoiceIs",
+                    "slot": "CHOSEN_NUMBER",
+                    "value": "3"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantProtectionFromToGroup",
+                    "scope": {
+                        "type": "ProtectionScope.ManaValueOtherThan",
+                        "value": 4
+                    },
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "CastChoiceIs",
+                    "slot": "CHOSEN_NUMBER",
+                    "value": "4"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "NUMBER",
+                "minValue": 2,
+                "maxValue": 4,
+                "atRandom": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "218",
+        "rarity": "RARE",
+        "artist": "Ryan Pancoast",
+        "flavorText": "\"Many have sought my weakness. All have failed.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/f/6fe5cbef-0f4e-4d05-9a94-4739e09d7a9c.jpg?1783931521",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If Haktos can't attack for any reason (such as being tapped or having come under that player's control that turn), then it doesn't attack. If there's a cost associated with having it attack, you aren't forced to pay that cost, so it doesn't have to attack in that case either."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "Haktos has protection from each possible mana value other than the chosen value, not just protection from the two options that weren't randomly chosen."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "For spells with {X} in their mana costs, use the value chosen for X to determine the spell's mana value. If a card or permanent in any other zone has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "The mana value of a token that isn't a copy of another object is 0. A token that is a copy of another object has the same mana value as that object."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "A number is chosen randomly for Haktos before it enters the battlefield. There's no point at which players can target it before it has gained the appropriate protection abilities."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If Haktos somehow has no choice made for its ability, its last ability grants it no protection abilities."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Hateful Eidolon
 {
     "name": "Hateful Eidolon",

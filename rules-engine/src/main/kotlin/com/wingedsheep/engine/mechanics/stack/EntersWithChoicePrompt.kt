@@ -33,6 +33,9 @@ internal class EntersWithChoicePrompt(
         syntheticRiot: Boolean = false,
         syntheticRiotRemaining: Int = 0
     ): ExecutionResult? {
+        // A number chosen at random has no chooser; it is drawn as the permanent enters
+        // (EntersWithReplacements.applyFromDefinition), so there is nothing to ask.
+        if (choice.atRandom) return null
         val chooserId = when (choice.chooser) {
             com.wingedsheep.sdk.scripting.references.Player.AnOpponent ->
                 state.getOpponents(controllerId).firstOrNull() ?: controllerId

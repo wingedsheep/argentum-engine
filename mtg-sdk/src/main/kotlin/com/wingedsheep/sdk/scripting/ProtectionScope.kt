@@ -184,6 +184,23 @@ sealed interface ProtectionScope {
     @SerialName("ProtectionScope.ManaValueParity")
     @Serializable
     data class ManaValueParity(val parity: Parity) : ProtectionScope
+
+    /**
+     * From each mana value other than [value] — "protection from each mana value other than the
+     * chosen number" (Haktos the Unscarred, with one conditional grant per number it can choose).
+     * Covers every leg of protection exactly as [ManaValueParity] does (CR 702.16b–f): a spell's
+     * {X} counts as the number chosen for it (CR 202.3e), and tokens that aren't copies and
+     * face-down permanents have mana value 0, so they match unless [value] is 0. A source with no
+     * mana value at all — an emblem — never matches.
+     *
+     * Its own type rather than an axis on [ManaValueParity]: a parity names half of all mana
+     * values, this names all but one, and neither is a type-line word ([CardType], [Subtype]).
+     * Engine-wired for creature protection (printed or granted) and player protection; there is
+     * no hexproof from it.
+     */
+    @SerialName("ProtectionScope.ManaValueOtherThan")
+    @Serializable
+    data class ManaValueOtherThan(val value: Int) : ProtectionScope
 }
 
 /** Odd or even — "choose odd or even. (Zero is even.)" */

@@ -29,6 +29,7 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.EntersWithChoice
 import com.wingedsheep.sdk.scripting.EntersWithCounters
 import com.wingedsheep.sdk.scripting.EntersWithDynamicCounters
 import com.wingedsheep.sdk.scripting.EntersWithKeywords
@@ -224,6 +225,15 @@ object EntersWithReplacements {
             // [applyGlobal] sweeps so no entry path can fire it against the source itself.
             if (Zone.BATTLEFIELD !in effect.activeZones) continue
             when (effect) {
+                // "Choose a number at random" (Haktos the Unscarred): no player decides, so no entry
+                // path prompts for it — the number is drawn here, on the path every entry shares,
+                // and recorded where a chosen number would be.
+                is EntersWithChoice -> if (effect.atRandom) {
+                    val (offset, advanced) = newState.nextRandom { nextInt(effect.maxValue - effect.minValue + 1) }
+                    newState = advanced.updateEntity(entityId) {
+                        it.withCastChoice(ChoiceSlot.CHOSEN_NUMBER, ChoiceValue.NumberChoice(effect.minValue + offset))
+                    }
+                }
                 is EntersWithCounters -> {
                     // Skip "other only" effects when applying to self (Metallic Mimic's "each other
                     // creature you control … enters with an additional +1/+1 counter" must not

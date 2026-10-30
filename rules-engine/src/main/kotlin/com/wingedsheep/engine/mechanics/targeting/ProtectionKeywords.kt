@@ -36,6 +36,7 @@ object ProtectionKeywords {
         ProtectionScope.TriggeredAbilities,
         is ProtectionScope.ManaValueParity ->
             setOf(SourceKindProtection.protectionKeyword(checkNotNull(SourceKind.of(scope))))
+        is ProtectionScope.ManaValueOtherThan -> setOf(SourceKindProtection.manaValueOtherThanKeyword(scope.value))
         is ProtectionScope.NonColor,
         is ProtectionScope.ChosenCardType,
         is ProtectionScope.ChosenCardName,

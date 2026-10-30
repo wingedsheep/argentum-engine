@@ -202,6 +202,7 @@ fun ProtectionScope.protectionDescription(): String = when (this) {
     ProtectionScope.ActivatedAbilities -> "activated abilities"
     ProtectionScope.TriggeredAbilities -> "triggered abilities"
     is ProtectionScope.ManaValueParity -> "each ${parity.displayName} mana value"
+    is ProtectionScope.ManaValueOtherThan -> "each mana value other than $value"
 }
 
 /**

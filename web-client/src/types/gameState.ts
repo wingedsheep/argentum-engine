@@ -489,6 +489,9 @@ export interface ClientCard {
   /** Chosen card type for "choose a card type" permanents (e.g., Arachne, Psionic Weaver) */
   readonly chosenCardType?: string | null
 
+  /** Number chosen as the permanent entered (Shapeshifter; Haktos the Unscarred's random 2, 3, or 4) */
+  readonly chosenNumber?: number | null
+
   /** Triggering entity ID for triggered abilities on the stack (for source arrows) */
   readonly triggeringEntityId?: EntityId | null
 
