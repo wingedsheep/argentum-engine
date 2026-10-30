@@ -3936,6 +3936,43 @@
     ]
 }
 
+// Sphere of Safety
+{
+    "name": "Sphere of Safety",
+    "manaCost": "{4}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Creatures can't attack you or planeswalkers you control unless their controller pays {X} for each of those creatures, where X is the number of enchantments you control.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "AttackTax",
+                "amountPerAttacker": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "enchantment"
+                },
+                "coversPlaneswalkers": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "rarity": "UNCOMMON",
+        "artist": "Slawomir Maniak",
+        "flavorText": "The Rakdos believe that all are eager to join their revels, even when told otherwise.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/ce3bd0d8-7e44-4cf2-9012-8ff0bc39417f.jpg?1783940373",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "If you control Sphere of Safety, your opponents can choose not to attack with a creature with an ability that says it attacks if able."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Sphinx's Revelation
 {
     "name": "Sphinx's Revelation",

@@ -290,6 +290,69 @@
     ]
 }
 
+// Doomwake Giant
+{
+    "name": "Doomwake Giant",
+    "manaCost": "{4}{B}",
+    "typeLine": "Enchantment Creature — Giant",
+    "oracleText": "Constellation — Whenever this creature or another enchantment you control enters, creatures your opponents control get -1/-1 until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Doomwake Giant:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "enchantment ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Constellation — Whenever this creature or another enchantment you control enters, creatures your opponents control get -1/-1 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "rarity": "RARE",
+        "artist": "Kev Walker",
+        "flavorText": "Crippling fear precedes it. A foul stench accompanies it. Death follows in its wake.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/2/b20eabfb-f086-45dd-97e2-b2ed5286bc3c.jpg?1783939437",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "A constellation ability triggers whenever an enchantment enters the battlefield under your control for any reason. Enchantments with other card types, such as enchantment creatures, will also cause constellation abilities to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Eagle of the Watch
 {
     "name": "Eagle of the Watch",
@@ -397,6 +460,53 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Extinguish All Hope
+{
+    "name": "Extinguish All Hope",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy all nonenchantment creatures.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                "IsNonenchantment"
+                            ]
+                        }
+                    },
+                    "storeAs": "destroyAll_gathered"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "destroyAll_gathered",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "rarity": "RARE",
+        "artist": "Chase Stone",
+        "flavorText": "Phenax offers the hope of life, while Pharika grants the solace of death. Between them stands Erebos, who promises nothing but eternity.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/8/6895024f-a04b-46cf-b020-df4487d0c758.jpg?1783939436"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

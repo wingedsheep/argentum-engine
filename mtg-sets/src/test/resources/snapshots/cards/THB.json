@@ -738,6 +738,95 @@
     ]
 }
 
+// Destiny Spinner
+{
+    "name": "Destiny Spinner",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment Creature — Human",
+    "oracleText": "Creature and enchantment spells you control can't be countered.\n{3}{G}: Target land you control becomes an X/X Elemental creature with trample and haste until end of turn, where X is the number of enchantments you control. It's still a land.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Destiny Spinner:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "power": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "enchantment"
+                    },
+                    "toughness": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "enchantment"
+                    },
+                    "keywords": [
+                        "TRAMPLE",
+                        "HASTE"
+                    ],
+                    "creatureTypes": [
+                        "Elemental"
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "land ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{3}{G}: Target land you control becomes an X/X Elemental creature with trample and haste until end of turn, where X is the number of enchantments you control. It's still a land."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantCantBeCountered",
+                "filter": "creature|enchantment ctrl:you"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "168",
+        "rarity": "UNCOMMON",
+        "artist": "Livia Prima",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/ba264166-948b-47d4-b302-64476acc1a55.jpg?1783931541",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "Destiny Spinner's first ability applies only while it's on the battlefield. While it's a spell, it can be countered."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "The value of X is determined only as Destiny Spinner's activated ability resolves. Once that happens, the creature's base power and toughness won't change later in the turn even if the number of enchantments you control changes."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If you control no enchantments at the time Destiny Spinner's activated ability resolves, the land becomes a 0/0 creature and is put into its owner's graveyard unless another effect is raising its toughness."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Discordant Piper
 {
     "name": "Discordant Piper",
@@ -2275,6 +2364,140 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Kiora Bests the Sea God
+{
+    "name": "Kiora Bests the Sea God",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — Create an 8/8 blue Kraken creature token with hexproof.\nII — Tap all nonland permanents target opponent controls. They don't untap during their controller's next untap step.\nIII — Gain control of target permanent an opponent controls. Untap it.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 8,
+                    "toughness": 8,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Kraken"
+                    ],
+                    "keywords": [
+                        "HEXPROOF"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/c/3/c3365aea-823d-44a9-94d3-ed2a31d85f34.jpg?1783931458"
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsNonland",
+                                    "IsPermanent"
+                                ],
+                                "controllerPredicate": {
+                                    "type": "ControlledByReferencedPlayer",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "TapUntap",
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "DOESNT_UNTAP",
+                                "target": "IterationEntity",
+                                "duration": "UntilAfterAffectedControllersNextUntap"
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainControl",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        },
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "tap": false
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent ctrl:opponent"
+                    },
+                    "id": "t1"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "rarity": "MYTHIC",
+        "artist": "Victor Adame Minguez",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2b604451-4f6c-4cfa-8d3a-01f18d01d88f.jpg?1783931583",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "Nonland permanents target opponent controls that are already tapped when the second chapter ability resolves won't be tapped again, but they won't untap during their controller's next untap step."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "The second chapter ability keeps the permanents tapped even if Kiora Bests the Sea God leaves the battlefield before that player's next untap step."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "Any nonland permanents that come under the target player's control after the second chapter ability resolves will untap as normal."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "The second chapter ability targets the player but not their permanents. Permanents with hexproof may be tapped this way."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "The control-change effect of the third chapter ability lasts indefinitely. It doesn't wear off during the cleanup step. In a multiplayer game, it does expire if you leave the game."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -5172,6 +5395,185 @@
         "imageUri": "https://cards.scryfall.io/normal/front/7/b/7b497153-69a8-480e-b02f-88afec9d5053.jpg?1783931515"
     },
     "colorIdentityOverride": []
+}
+
+// The Akroan War
+{
+    "name": "The Akroan War",
+    "manaCost": "{3}{R}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — Gain control of target creature for as long as this Saga remains on the battlefield.\nII — Until your next turn, creatures your opponents control attack each combat if able.\nIII — Each tapped creature deals damage to itself equal to its power.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": {
+                        "type": "WhileSourceOnBattlefield",
+                        "sourceDescription": "The Akroan War"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "MustAttackGroup",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "duration": "UntilYourNextTurn"
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature tapped"
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": "IterationEntity",
+                            "numericProperty": "Power"
+                        },
+                        "target": "IterationEntity",
+                        "damageSource": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "rarity": "RARE",
+        "artist": "Steven Belledin",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/28ea046b-1bbc-4430-a859-321602c9e928.jpg?1783931556",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If The Akroan War leaves the battlefield before its first ability resolves, you won't gain control of the creature at all."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If a creature can't attack for any reason (such as being tapped or having come under that player's control that turn), then it doesn't attack. If there's a cost associated with having it attack, the player isn't forced to pay that cost, so it doesn't have to attack in that case either."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "Because a Saga isn't sacrificed until after its last ability has resolved, you still control the creature you took with The Akroan War's first ability while the last ability is resolving."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// The First Iroan Games
+{
+    "name": "The First Iroan Games",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after IV.)\nI — Create a 1/1 white Human Soldier creature token.\nII — Put three +1/+1 counters on target creature you control.\nIII — If you control a creature with power 4 or greater, draw two cards.\nIV — Create a Gold token. (It's an artifact with \"Sacrifice this token: Add one mana of any color.\")",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Human",
+                        "Soldier"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/e/1e76f0e3-9411-401d-ab38-9c3c64769483.jpg?1783931455"
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 3,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "creature pow>=4"
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                }
+            },
+            {
+                "chapter": 4,
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Gold"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "170",
+        "rarity": "RARE",
+        "artist": "Noah Bradley",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4b05ada5-8e5f-4158-bd28-e6c24e4a2299.jpg?1783931539",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "A Gold token is a colorless Gold artifact token with \"Sacrifice this artifact: Add one mana of any color.\""
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Thryx, the Sudden Storm

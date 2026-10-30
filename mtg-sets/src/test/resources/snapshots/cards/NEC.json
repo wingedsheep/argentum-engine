@@ -1,3 +1,116 @@
+// Go-Shintai of Life's Origin
+{
+    "name": "Go-Shintai of Life's Origin",
+    "manaCost": "{3}{G}",
+    "typeLine": "Legendary Enchantment Creature — Shrine",
+    "oracleText": "{W}{U}{B}{R}{G}, {T}: Return target enchantment card from your graveyard to the battlefield.\nWhenever Go-Shintai of Life's Origin or another nontoken Shrine you control enters, create a 1/1 colorless Shrine enchantment creature token.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Go-Shintai of Life's Origin:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Shrine"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/9/0/900340a5-7517-4ec4-a51e-762e15a29470.jpg?1783923721",
+                    "enchantmentToken": true
+                },
+                "descriptionOverride": "Whenever Go-Shintai of Life's Origin or another nontoken Shrine you control enters, create a 1/1 colorless Shrine enchantment creature token."
+            },
+            {
+                "id": "Go-Shintai of Life's Origin:3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "Shrine nontoken ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Shrine"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/9/0/900340a5-7517-4ec4-a51e-762e15a29470.jpg?1783923721",
+                    "enchantmentToken": true
+                },
+                "descriptionOverride": "Whenever Go-Shintai of Life's Origin or another nontoken Shrine you control enters, create a 1/1 colorless Shrine enchantment creature token."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Go-Shintai of Life's Origin:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{W}{U}{B}{R}{G}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "enchantment own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{W}{U}{B}{R}{G}, {T}: Return target enchantment card from your graveyard to the battlefield."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "rarity": "MYTHIC",
+        "artist": "Alexander Mokhov",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/4/9476fe67-d2d3-4835-8ba6-2a17d18cc141.jpg?1783923985",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "If a token copy of Go-Shintai of Life's Origin enters the battlefield, it will cause its own triggered ability to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK",
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Kappa Cannoneer
 {
     "name": "Kappa Cannoneer",

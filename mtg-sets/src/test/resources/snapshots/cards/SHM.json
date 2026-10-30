@@ -1759,6 +1759,57 @@
     }
 }
 
+// Greater Auramancy
+{
+    "name": "Greater Auramancy",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Other enchantments you control have shroud. (A permanent with shroud can't be the target of spells or abilities.)\nEnchanted creatures you control have shroud.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "SHROUD",
+                "filter": {
+                    "baseFilter": "enchantment ctrl:you",
+                    "excludeSelf": true
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "SHROUD",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsEnchanted"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "rarity": "RARE",
+        "artist": "Chuck Lukacs",
+        "flavorText": "A delicate veil of glamers can prove as sturdy as iron.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/1177787f-bf1e-438b-9615-97d03b04128c.jpg?1783942768",
+        "rulings": [
+            {
+                "date": "2008-05-01",
+                "text": "If you have two on the battlefield, they’ll each grant the other one shroud."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Heap Doll
 {
     "name": "Heap Doll",
