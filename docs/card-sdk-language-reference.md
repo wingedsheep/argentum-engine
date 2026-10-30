@@ -17257,7 +17257,8 @@ read is available to other snapshot-backed entity references once their captured
   mutated": how many mutating creature spells have merged with the permanent (CR 702.140c), over or
   under alike. Read in a `Triggers.self.mutates()` trigger it already includes the merge that fired it,
   so the first mutate reads 1. A permanent that never mutated reads 0, and a mutated permanent that
-  changes zones is a new object at 0 (CR 400.7). Backed by the permanent's merged-pile record. As a
+  changes zones is a new object at 0 (CR 400.7); a source that left before its ability resolved is read
+  as it last existed (CR 608.2h). Backed by the permanent's merged-pile record. As a
   count — **Porcuparrot**: `Effects.DealDamage(DynamicAmounts.propertyOf(EffectTarget.Self, TimesMutated), target)`;
   sizing a group pump — **Huntmaster Liger**.
 - `EntityProperty(entity, EntityNumericProperty.KeywordValue(keyword))` — the total N across the entity's

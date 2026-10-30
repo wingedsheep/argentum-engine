@@ -335,6 +335,14 @@ data class EntitySnapshot(
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
     val manaValue: Int? = null,
     /**
+     * How many times the permanent had mutated (CR 702.140c) as it last existed on the battlefield,
+     * so "the number of times this creature has mutated" still reads it once it has left (CR 608.2h)
+     * Null when it never mutated.
+     */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val timesMutated: Int? = null,
+    /**
      * Base power at capture — the layer-7b value after copy effects, characteristic-defining
      * abilities and "base power is N" effects, before counters and modifiers (CR 613.4b). Frozen
      * because off the battlefield only the printed value is readable, yet "if its power was
@@ -374,6 +382,7 @@ data class EntitySnapshot(
                 battlefieldEntryTimestamp = state.getEntity(entityId)
                     ?.get<com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent>()?.timestamp,
                 manaValue = permanentManaValue(state, entityId),
+                timesMutated = timesMutatedOf(state, entityId).takeIf { it > 0 },
                 power = projected.getPower(entityId),
                 toughness = projected.getToughness(entityId),
                 basePower = projected.getBasePower(entityId),
@@ -417,6 +426,14 @@ val EntitySnapshot.chosenSubtype: String?
     get() = textChoices[com.wingedsheep.sdk.scripting.ChoiceSlot.CREATURE_TYPE]
         ?: textChoices[com.wingedsheep.sdk.scripting.ChoiceSlot.PLANESWALKER_TYPE]
 
+/**
+ * How many mutating spells have merged with [entityId] (CR 702.140c): each merge adds exactly one
+ * component to its pile, the host being the remaining one. Zero for a permanent that never mutated.
+ */
+fun timesMutatedOf(state: GameState, entityId: EntityId): Int =
+    state.getEntity(entityId)?.get<com.wingedsheep.engine.mechanics.MergedComponent>()
+        ?.let { it.componentIds.size - 1 } ?: 0
+
 /** The non-zero counters on [entityId]. */
 private fun countersOf(state: GameState, entityId: EntityId): Map<CounterType, Int> =
     state.getEntity(entityId)?.get<CountersComponent>()?.counters?.filterValues { it > 0 } ?: emptyMap()
@@ -437,6 +454,7 @@ fun captureEntitySnapshots(
         wasFaceDown = state?.getEntity(id)?.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>() == true,
         name = state?.getEntity(id)?.get<CardComponent>()?.name,
         manaValue = state?.let { permanentManaValue(it, id) },
+        timesMutated = state?.let { timesMutatedOf(it, id) }?.takeIf { it > 0 },
         power = projected.getPower(id),
         toughness = projected.getToughness(id),
         basePower = projected.getBasePower(id),

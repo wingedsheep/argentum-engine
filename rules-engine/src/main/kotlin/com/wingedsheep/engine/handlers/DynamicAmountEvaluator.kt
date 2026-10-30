@@ -756,6 +756,7 @@ class DynamicAmountEvaluator(
                             snapshot?.baseToughness?.let { return it }
                         }
                         is EntityNumericProperty.ManaValue -> snapshot?.manaValue?.let { return it }
+                        is EntityNumericProperty.TimesMutated -> snapshot?.timesMutated?.let { return it }
                         is EntityNumericProperty.ColorCount -> snapshot?.colors?.let { return it.size }
                         is EntityNumericProperty.CounterCount -> snapshot?.let {
                             return property.counterType?.let { type -> it.counters[type] ?: 0 } ?: it.totalCounters
@@ -1910,12 +1911,10 @@ class DynamicAmountEvaluator(
                 ?.get<com.wingedsheep.engine.state.components.combat.TimesAttackedThisTurnComponent>()
                 ?.countFor(state.turnNumber, state.objectRef(entityId)) ?: 0
 
-            // Each mutating spell that merged with this permanent added exactly one component to
-            // its pile (CR 702.140c); the host itself is the remaining one. The merge record is
-            // dropped as the permanent leaves, so a new object starts at zero (CR 400.7).
-            is EntityNumericProperty.TimesMutated -> state.getEntity(entityId)
-                ?.get<com.wingedsheep.engine.mechanics.MergedComponent>()
-                ?.let { it.componentIds.size - 1 } ?: 0
+            // The merge record is dropped as the permanent leaves, so a new object starts at zero
+            // (CR 400.7); a departed source is read from its snapshot above.
+            is EntityNumericProperty.TimesMutated ->
+                com.wingedsheep.engine.state.components.stack.timesMutatedOf(state, entityId)
 
             is EntityNumericProperty.DamageDealtThisTurn -> state.getEntity(entityId)
                 ?.get<com.wingedsheep.engine.state.components.battlefield.DamageDealtThisTurnComponent>()

@@ -562,6 +562,7 @@ class ZoneTransitionService(
                 name = state.projectedState.getName(entityId) ?: cardComponent.name,
                 battlefieldEntryTimestamp = container.get<BattlefieldEntryTimestampComponent>()?.timestamp,
                 manaValue = com.wingedsheep.engine.state.components.stack.permanentManaValue(state, entityId),
+                timesMutated = com.wingedsheep.engine.state.components.stack.timesMutatedOf(state, entityId).takeIf { it > 0 },
                 power = lastKnownPower,
                 toughness = lastKnownToughness,
                 basePower = state.projectedState.getBasePower(entityId),
