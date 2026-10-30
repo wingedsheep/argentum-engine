@@ -2426,8 +2426,9 @@ class CostCalculator(
         // An emblem's permission is always unlimited, so it covers this cast on its own and no
         // battlefield once-per-turn use should be consumed.
         if (hasEmblemFreeCastPermission(state, casterId, spellCardDef, castFromZone)) return null
-        // Same for a pending "next spell you cast" rider — it pays for this cast and is itself
-        // consumed by the cast, so a Zaffai-style once-per-turn use must not be burned as well.
+        // Same for a pending free-cast grant — it pays for this cast (a one-shot rider is itself
+        // consumed by the cast; a whole-turn grant never is), so a Zaffai-style once-per-turn use
+        // must not be burned as well.
         if (hasFreeCastRider(state, casterId, spellCardDef, castFromZone)) return null
         var oncePerTurnCandidate: EntityId? = null
         for (entityId in state.getBattlefield()) {

@@ -34,7 +34,7 @@ import com.wingedsheep.engine.core.Outcome
  * filter (red **or green**, and **creature**) and the "next spell" consumption rule are the parts
  * that can silently play wrong, so both are exercised here on the real card. The primitive's own
  * edge cases (turn expiry, source in the graveyard, the once-per-turn interaction) live in
- * [GrantNextSpellFreeCastTest].
+ * [GrantFreeCastThisTurnTest].
  */
 class WorldWarHulkScenarioTest : FunSpec({
 

@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
@@ -101,6 +102,9 @@ class ChandraFlamesCatalystScenarioTest : ScenarioTestBase() {
 
                 withClue("Pyretic Ritual resolved: {R}{R}{R} in the pool") {
                     game.state.getEntity(game.player1Id)?.get<ManaPoolComponent>()?.red shouldBe 3
+                }
+                withClue("its {1}{R} was paid: both Mountains are tapped") {
+                    game.findPermanents("Mountain").all { game.state.getEntity(it)?.has<TappedComponent>() == true } shouldBe true
                 }
                 withClue("it was exiled instead of going back to the graveyard") {
                     game.isInExile(1, "Pyretic Ritual") shouldBe true
