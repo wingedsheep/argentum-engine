@@ -2450,6 +2450,78 @@
     ]
 }
 
+// Harsh Mentor
+{
+    "name": "Harsh Mentor",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "Whenever an opponent activates an ability of an artifact, creature, or land on the battlefield, if it isn't a mana ability, this creature deals 2 damage to that player.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Harsh Mentor:1",
+                "trigger": {
+                    "type": "AbilityActivatedEvent",
+                    "player": "EachOpponent",
+                    "sourceFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsArtifact",
+                                            "IsCreature"
+                                        ]
+                                    },
+                                    "IsLand"
+                                ]
+                            }
+                        ],
+                        "statePredicates": [
+                            "IsOnBattlefield"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "descriptionOverride": "Whenever an opponent activates an ability of an artifact, creature, or land on the battlefield, if it isn't a mana ability, this creature deals 2 damage to that player."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "rarity": "RARE",
+        "artist": "Shreya Shetty",
+        "flavorText": "\"Fight through it.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/8936bf9d-c973-4bce-b5c2-2a01b7953638.jpg?1783936487",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "Harsh Mentor's ability doesn't trigger when an opponent activates an ability of a card in hand (such as cycling) or a card in a graveyard (such as embalm), even if that causes a card to be put onto the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Harvest Season
 {
     "name": "Harvest Season",

@@ -295,6 +295,7 @@ internal object StackPlacement {
         cantBeCopied: Boolean = false,
         isLoyalty: Boolean = false,
         loyaltyCountersRemoved: Int = 0,
+        sourceLastKnown: com.wingedsheep.engine.state.components.stack.EntitySnapshot? = null,
     ): ExecutionResult {
         val (abilityId, stateWithId) = state.newEntity()
 
@@ -331,6 +332,7 @@ internal object StackPlacement {
                     isLoyalty = isLoyalty,
                     loyaltyCountersRemoved = loyaltyCountersRemoved,
                     keyword = ability.activatedAbility?.keyword,
+                    sourceLastKnown = sourceLastKnown,
                 )
             )
         }

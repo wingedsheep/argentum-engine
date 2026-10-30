@@ -240,8 +240,11 @@ class PredicateEvaluator(
      * predicate makes the whole filter fail to match, which is the same answer the caller got before
      * any snapshot existed. Of the state predicates only the combat status the snapshot freezes —
      * attacking, blocking, tapped — is answered (see [matchesSnapshotState]): a blocker killed by the
-     * damage is still "a blocking creature" to the trigger that damage fired (CR 603.10). Every other
-     * state predicate describes a battlefield presence the object no longer has and is
+     * damage is still "a blocking creature" to the trigger that damage fired (CR 603.10). Pass
+     * [onBattlefield] when [snapshot] is known to be a permanent as it last existed on the
+     * battlefield: `onBattlefield()` then answers true rather than unknown (Harsh Mentor's "an
+     * ability of an artifact, creature, or land on the battlefield" read off a sacrificed source).
+     * Every other state predicate describes a battlefield presence the object no longer has and is
      * unanswerable.
      *
      * **Caller invariant: pass a snapshot captured with the state-aware
@@ -265,15 +268,16 @@ class PredicateEvaluator(
         state: GameState,
         snapshot: EntitySnapshot,
         filter: GameObjectFilter,
-        context: PredicateContext
+        context: PredicateContext,
+        onBattlefield: Boolean = false,
     ): Boolean {
         filter.controllerPredicate?.let { controllerPred ->
             if (!matchesSnapshotController(state, snapshot, controllerPred, context)) return false
         }
-        if (!filter.statePredicates.all { matchesSnapshotState(state, snapshot, it, context) == true }) return false
+        if (!filter.statePredicates.all { matchesSnapshotState(state, snapshot, it, context, onBattlefield) == true }) return false
         if (!filter.cardPredicates.all { matchesSnapshotPredicate(snapshot, it) == true }) return false
         if (filter.anyOf.isNotEmpty()) {
-            return filter.anyOf.any { matchesSnapshot(state, snapshot, it, context) }
+            return filter.anyOf.any { matchesSnapshot(state, snapshot, it, context, onBattlefield) }
         }
         return true
     }
@@ -359,6 +363,7 @@ class PredicateEvaluator(
         snapshot: EntitySnapshot,
         predicate: StatePredicate,
         context: PredicateContext,
+        onBattlefield: Boolean,
     ): Boolean? =
         when (predicate) {
             StatePredicate.IsAttacking -> snapshot.wasAttacking
@@ -368,6 +373,9 @@ class PredicateEvaluator(
             StatePredicate.IsModified -> snapshot.wasModified
             StatePredicate.IsFaceDown -> snapshot.wasFaceDown
             StatePredicate.IsFaceUp -> !snapshot.wasFaceDown
+            // Only the caller knows whether the snapshot is of a permanent: "an ability of a land on
+            // the battlefield" read off a fetch land its own cost sacrificed (Harsh Mentor).
+            StatePredicate.IsOnBattlefield -> if (onBattlefield) true else null
             // The under-your-control form reads the live entry log; the snapshot doesn't freeze it.
             is StatePredicate.EnteredThisTurn ->
                 if (predicate.underYourControl) null else snapshot.enteredOnTurn == state.turnNumber
@@ -379,13 +387,13 @@ class PredicateEvaluator(
             // A departed object is the effect's source only if it is that very object; with no
             // source context the question has no answer.
             StatePredicate.IsSource -> context.sourceId?.let { it == snapshot.entityId }
-            is StatePredicate.Not -> matchesSnapshotState(state, snapshot, predicate.predicate, context)?.not()
+            is StatePredicate.Not -> matchesSnapshotState(state, snapshot, predicate.predicate, context, onBattlefield)?.not()
             is StatePredicate.And -> {
-                val results = predicate.predicates.map { matchesSnapshotState(state, snapshot, it, context) }
+                val results = predicate.predicates.map { matchesSnapshotState(state, snapshot, it, context, onBattlefield) }
                 if (false in results) false else if (null in results) null else true
             }
             is StatePredicate.Or -> {
-                val results = predicate.predicates.map { matchesSnapshotState(state, snapshot, it, context) }
+                val results = predicate.predicates.map { matchesSnapshotState(state, snapshot, it, context, onBattlefield) }
                 if (true in results) true else if (null in results) null else false
             }
             else -> null

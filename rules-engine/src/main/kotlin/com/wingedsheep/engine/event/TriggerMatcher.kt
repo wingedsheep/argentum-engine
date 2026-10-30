@@ -366,17 +366,24 @@ class TriggerMatcher(
                 // matched by AttachmentTriggerDetector against the host.)
                 if (binding == TriggerBinding.SELF && event.sourceId != sourceId) return false
                 // sourceFilter: the permanent whose ability was activated must match (e.g. an
-                // artifact, or an artifact an opponent controls).
+                // artifact, or an artifact an opponent controls). A source its own cost sacrificed
+                // or exiled (a fetch land, a Clue) is matched as it last existed (CR 113.7a) — the
+                // live object is in the graveyard, or gone entirely if it was a token.
                 val sourceFilter = trigger.sourceFilter
                 if (sourceFilter != null) {
                     val predicateContext = com.wingedsheep.engine.handlers.PredicateContext(
                         controllerId = controllerId,
                         sourceId = sourceId
                     )
-                    if (!predicateEvaluator.matches(
+                    val lastKnown = event.sourceLastKnown
+                    val matched = if (lastKnown != null && event.sourceId !in state.getBattlefield()) {
+                        predicateEvaluator.matchesSnapshot(state, lastKnown, sourceFilter, predicateContext, onBattlefield = true)
+                    } else {
+                        predicateEvaluator.matches(
                             state, state.projectedState, event.sourceId, sourceFilter, predicateContext
                         )
-                    ) return false
+                    }
+                    if (!matched) return false
                 }
                 val targetMatch = trigger.targetMatch
                 if (targetMatch != null) {

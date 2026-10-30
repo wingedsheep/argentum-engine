@@ -3710,6 +3710,76 @@
     ]
 }
 
+// Runic Armasaur
+{
+    "name": "Runic Armasaur",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "Whenever an opponent activates an ability of a creature or land that isn't a mana ability, you may draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Runic Armasaur:1",
+                "trigger": {
+                    "type": "AbilityActivatedEvent",
+                    "player": "EachOpponent",
+                    "sourceFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsCreature",
+                                    "IsLand"
+                                ]
+                            }
+                        ],
+                        "statePredicates": [
+                            "IsOnBattlefield"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "descriptionOverride": "Whenever an opponent activates an ability of a creature or land that isn't a mana ability, you may draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "200",
+        "rarity": "RARE",
+        "artist": "Randy Vargas",
+        "flavorText": "The Sun Empire's most sacred sites are protected by more than prayers.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b445a0f0-2cca-4223-bd27-940d2cb6d29c.jpg?1783934527",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "Runic Armasaur's ability doesn't trigger when an opponent activates an ability of a card in hand (such as a cycling ability from the Amonkhet block) or a card in a graveyard (such as that of Bone Dragon), even if that causes a card to be put onto the battlefield."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Runic Armasaur's ability doesn't trigger when an opponent activates an ability of a noncreature, nonland permanent that causes it to become a creature (such as a crew ability of a Vehicle)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Rustwing Falcon
 {
     "name": "Rustwing Falcon",

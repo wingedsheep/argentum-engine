@@ -117,7 +117,12 @@ internal class ActivatedManaAbilityResolver(
             abilityEntityId = null,
             costsTap = costsTap,
             isManaAbility = true,
-            onceOnlyKind = ability.onceOnlyKind
+            onceOnlyKind = ability.onceOnlyKind,
+            // A Treasure sacrificed for its own mana is gone (CR 704.5d) before any trigger is
+            // matched; "an ability of an artifact" reads it as it last existed (CR 113.7a).
+            sourceLastKnown = if (action.sourceId !in state.getBattlefield() &&
+                action.sourceId in stateBeforeActivation.getBattlefield()
+            ) com.wingedsheep.engine.state.components.stack.captureLastKnown(stateBeforeActivation, action.sourceId) else null,
         )
         val activationEvents = events + manaAbilityActivatedEvent
 

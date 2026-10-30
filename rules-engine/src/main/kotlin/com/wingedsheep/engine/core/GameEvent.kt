@@ -968,6 +968,16 @@ data class AbilityActivatedEvent(
      * ninjutsu activation — for "whenever you activate a ninjutsu ability" (Satoru Umezawa).
      */
     val keyword: com.wingedsheep.sdk.core.Keyword? = null,
+    /**
+     * The source permanent as it last existed on the battlefield, when its own activation cost
+     * took it away — a self-sacrifice or self-exile cost (CR 113.7a): a cracked fetch land, a
+     * sacrificed Clue or Treasure. Null when the source stays on the battlefield, and when it was
+     * activated from another zone (cycling, a graveyard self-exile) — those were never "an ability
+     * of a permanent". "Whenever an opponent activates an ability of an artifact, creature, or land
+     * on the battlefield" (Harsh Mentor) matches its filter against this snapshot once the live
+     * object is in the graveyard, or gone entirely as a token.
+     */
+    val sourceLastKnown: com.wingedsheep.engine.state.components.stack.EntitySnapshot? = null,
 ) : GameEvent
 
 /**

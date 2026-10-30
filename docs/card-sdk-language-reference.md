@@ -9050,6 +9050,15 @@ The shapes in this family, with their engine notes.
   entirely. A trigger that sets `includeManaAbilities` must not itself be able to add mana, or CR 605.1b would make
   it a mana ability (and it would resolve off the stack).
 
+  **"On the battlefield."** A type filter alone reads a card's printed types in any zone, so a creature card's
+  graveyard ability (embalm) matches `GameObjectFilter.Creature`. Wordings that mean a *permanent* — "an ability of
+  an artifact, creature, or land on the battlefield" (Harsh Mentor), the bare "a creature or land" whose rulings
+  exclude hand and graveyard abilities (Runic Armasaur), the tribal "an Elemental" (Ceaseless Searblades) — add
+  `.onBattlefield()`: `activatesAbility(of = (GameObjectFilter.Artifact or GameObjectFilter.Creature or
+  GameObjectFilter.Land).onBattlefield())`. A source its own cost sacrifices or exiles (a fetch land, a Clue, a
+  Treasure tapped for mana) is gone by the time the trigger is matched; the engine matches it as it last existed on
+  the battlefield (CR 113.7a), types and `onBattlefield()` included.
+
   **Engine note.** The engine emits `AbilityActivatedEvent` for *every* activated mana ability, on the manual
   activation path and on the auto-tap fast path used to pay for spells and abilities, with `isManaAbility = true`
   and `costsTap` set from the cost. Mana-ability activations are deliberately kept out of the client game log.

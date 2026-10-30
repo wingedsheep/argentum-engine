@@ -591,6 +591,10 @@ class ActivateAbilityHandler(
                 AbilityCost.LoyaltyX -> activation.effectiveXValue ?: 0
                 else -> 0
             },
+            // A permanent its own cost took away (CR 113.7a), for "an ability of a land on the
+            // battlefield" (Harsh Mentor); a graveyard self-exile was never a permanent's ability.
+            sourceLastKnown = snapshots.lastKnownSourceSnapshot
+                ?.takeIf { action.sourceId in stateBeforeActivation.getBattlefield() },
         )
         var currentState = stackResult.newState
         events.addAll(stackResult.events)

@@ -243,10 +243,11 @@ class StackResolver(
         cantBeCopied: Boolean = false,
         isLoyalty: Boolean = false,
         loyaltyCountersRemoved: Int = 0,
+        sourceLastKnown: com.wingedsheep.engine.state.components.stack.EntitySnapshot? = null,
     ): ExecutionResult =
         StackPlacement.putActivatedAbility(
             state, ability, targets, targetRequirements, emitActivationEvent, costsTap, onceOnlyKind,
-            cantBeCopied, isLoyalty, loyaltyCountersRemoved
+            cantBeCopied, isLoyalty, loyaltyCountersRemoved, sourceLastKnown
         )
 
     // =========================================================================
