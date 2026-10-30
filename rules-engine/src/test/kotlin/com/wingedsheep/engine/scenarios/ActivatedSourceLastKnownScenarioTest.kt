@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.sdk.scripting.AdditionalCostPayment
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Step
@@ -67,6 +68,19 @@ class ActivatedSourceLastKnownScenarioTest : FunSpec({
         }
     }
 
+    // "Sacrifice a creature" — a generic sacrifice cost the source can pay with itself.
+    val fodderBeast = card("Fodder Beast") {
+        manaCost = "{1}{B}"
+        typeLine = "Creature — Beast"
+        power = 1
+        toughness = 1
+        oracleText = "Sacrifice a creature: Draw a card."
+        activatedAbility {
+            cost = Costs.Sacrifice(GameObjectFilter.Creature)
+            effect = Effects.DrawCards(1)
+        }
+    }
+
     val manaTrinket = card("Mana Trinket") {
         manaCost = "{1}"
         typeLine = "Artifact"
@@ -94,7 +108,7 @@ class ActivatedSourceLastKnownScenarioTest : FunSpec({
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
         driver.registerCards(TestCards.all)
-        listOf(landWatcher, artifactWatcher, creatureWatcher, crackLand, manaTrinket, graveBeast)
+        listOf(landWatcher, artifactWatcher, creatureWatcher, crackLand, fodderBeast, manaTrinket, graveBeast)
             .forEach { driver.registerCard(it) }
         driver.initMirrorMatch(deck = Deck.of("Mountain" to 40), skipMulligans = true, startingPlayer = 0)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
@@ -125,6 +139,25 @@ class ActivatedSourceLastKnownScenarioTest : FunSpec({
 
         driver.activate(trinket, "Mana Trinket")
 
+        driver.getLifeTotal(driver.player2) shouldBe 21
+    }
+
+    test("a creature that pays its own generic sacrifice cost is matched as it last existed") {
+        val driver = createDriver()
+        driver.putPermanentOnBattlefield(driver.player2, "Creature Watcher")
+        val beast = driver.putPermanentOnBattlefield(driver.player1, "Fodder Beast")
+
+        val abilityId = driver.cardRegistry.requireCard("Fodder Beast").activatedAbilities[0].id
+        driver.submitSuccess(
+            ActivateAbility(
+                playerId = driver.player1, sourceId = beast, abilityId = abilityId,
+                costPayment = AdditionalCostPayment(sacrificedPermanents = listOf(beast)),
+            )
+        )
+        var guard = 0
+        while (driver.state.stack.isNotEmpty() && guard < 30) { driver.bothPass(); guard++ }
+
+        driver.findPermanent(driver.player1, "Fodder Beast") shouldBe null
         driver.getLifeTotal(driver.player2) shouldBe 21
     }
 

@@ -591,10 +591,15 @@ class ActivateAbilityHandler(
                 AbilityCost.LoyaltyX -> activation.effectiveXValue ?: 0
                 else -> 0
             },
-            // A permanent its own cost took away (CR 113.7a), for "an ability of a land on the
-            // battlefield" (Harsh Mentor); a graveyard self-exile was never a permanent's ability.
-            sourceLastKnown = snapshots.lastKnownSourceSnapshot
-                ?.takeIf { action.sourceId in stateBeforeActivation.getBattlefield() },
+            // A permanent its own cost took away (CR 113.7a) — a self-sacrifice, or a "sacrifice a
+            // creature" cost that chose the source — for "an ability of a land on the battlefield"
+            // (Harsh Mentor); a graveyard self-exile was never a permanent's ability.
+            sourceLastKnown = if (action.sourceId in stateBeforeActivation.getBattlefield() &&
+                action.sourceId !in state.getBattlefield()
+            ) {
+                snapshots.lastKnownSourceSnapshot
+                    ?: com.wingedsheep.engine.state.components.stack.captureLastKnown(stateBeforeActivation, action.sourceId)
+            } else null,
         )
         var currentState = stackResult.newState
         events.addAll(stackResult.events)
