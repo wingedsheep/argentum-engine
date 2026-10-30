@@ -192,7 +192,7 @@ class AddCountersOfChosenKindScenarioTest : ScenarioTestBase() {
 
             count(game, game.player2Id, CounterType.POISON) shouldBe 3
         }
-            test("listed kinds: only the ones the permanent has none of are offered") {
+        test("listed kinds: only the ones the permanent has none of are offered") {
             val game = board("Test Pick")
             val bears = game.findPermanent("Grizzly Bears")!!
             seed(game, bears, CounterType.FLYING, 1)
