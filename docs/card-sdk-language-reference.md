@@ -9927,11 +9927,16 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
   `Keyword.READ_AHEAD` tag plus an `EntersWithChoice(ChoiceType.NUMBER, minValue = 1, maxValue = finalChapter)`, so
   the controller picks a chapter as the Saga enters, however it enters (CR 702.155b) — stored in
   `ChoiceSlot.CHOSEN_NUMBER` before entry on the cast and put-onto-battlefield paths, and on arrival for a token copy
-  (whose lore counters the as-enters choice resumer then places) or a permanent entering as a copy. The engine reads the keyword twice: Saga entry
-  (`ZoneMovementUtils.sagaEntryLoreCount`) places the chosen number of lore counters instead of one, and
-  `TriggerDetector.detectSagaChapterTriggers` lets a chapter trigger the turn the Saga entered only when its lore
+  (whose lore counters the as-enters choice resumer then places) or a permanent entering as a copy. Saga entry
+  (`ZoneMovementUtils.sagaEntryLoreCount`) places the chosen number of lore counters instead of one, and the projected
+  keyword gates `TriggerDetector.detectSagaChapterTriggers`, which lets a chapter trigger the turn the Saga entered only when its lore
   count is *exactly* that chapter number (CR 702.155a) — skipped chapters don't trigger, later lore counters
   (including a same-turn proliferate to exactly N) trigger normally. Founding the Third Path is the reference card.
+  **Granted read ahead** — `GrantKeyword(Keyword.READ_AHEAD, <group>)` (Barbara Wright's "Sagas you control have read
+  ahead": `GroupFilter(Permanent.withSubtype(Subtype.SAGA).youControl())`). A grant isn't printed on the entering
+  Saga, so `ReadAheadSynthesis` synthesizes the same `NUMBER` choice at every entry seam — cast, land play (Urza's
+  Saga: asked before its lore counters), token, an effect's put-onto-the-battlefield — matched against the controller
+  it enters under. One choice however many sources grant it; a Saga with printed read ahead keeps its own.
 
 ### Sacrifice & counters
 

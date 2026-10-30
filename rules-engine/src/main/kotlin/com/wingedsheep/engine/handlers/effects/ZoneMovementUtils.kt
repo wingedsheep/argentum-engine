@@ -191,10 +191,13 @@ object ZoneMovementUtils {
      * route: a cast, an effect's put-onto-the-battlefield (asked before entry), or a token or copy
      * (asked on arrival, with the counters placed by the choice resumer). A read-ahead Saga whose
      * choice couldn't be recorded falls back to one.
+     *
+     * Read ahead may be printed or granted ("Sagas you control have read ahead" — the choice is then
+     * synthesized by [com.wingedsheep.engine.mechanics.ReadAheadSynthesis]); either way it is the only
+     * NUMBER choice a Saga makes, so a recorded number is what this reads, not the keyword — a
+     * granted keyword isn't on the entering object's [CardComponent].
      */
     fun sagaEntryLoreCount(container: ComponentContainer): Int {
-        val cardComponent = container.get<CardComponent>() ?: return 1
-        if (com.wingedsheep.sdk.core.Keyword.READ_AHEAD !in cardComponent.baseKeywords) return 1
         return container.numberChoice(com.wingedsheep.sdk.scripting.ChoiceSlot.CHOSEN_NUMBER)
             ?.coerceAtLeast(1) ?: 1
     }

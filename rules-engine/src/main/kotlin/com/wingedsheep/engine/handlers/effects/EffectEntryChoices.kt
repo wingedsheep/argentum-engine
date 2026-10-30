@@ -6,6 +6,7 @@ import com.wingedsheep.engine.core.suspendForDecision
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.copy.EffectCopyEntry
+import com.wingedsheep.engine.mechanics.ReadAheadSynthesis
 import com.wingedsheep.engine.mechanics.RiotSynthesis
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
@@ -73,9 +74,13 @@ object EffectEntryChoices {
                 ?.let { EffectCopyEntry.apply(state, id, it).getEntity(id)?.get<CardComponent>() }
                 ?: state.getEntity(id)?.get<CardComponent>()
                 ?: continue
-            val choices = registry.getCard(entering.cardDefinitionId)?.script?.replacementEffects
-                ?.filterIsInstance<EntersWithChoice>()?.sortedBy { it.choiceType.ordinal }
-                .orEmpty()
+            val enteringDef = registry.getCard(entering.cardDefinitionId)
+            val printed = enteringDef?.script?.replacementEffects?.filterIsInstance<EntersWithChoice>().orEmpty()
+            val readAhead = ReadAheadSynthesis.grantedChoice(
+                state.updateEntity(id) { it.with(ControllerComponent(controller)) },
+                id, enteringDef, registry, predicateEvaluator,
+            )
+            val choices = (printed + listOfNotNull(readAhead)).sortedBy { it.choiceType.ordinal }
             var answers = context.entryChoices[id] ?: EntryChoiceAnswers()
             for (choice in choices) {
                 if (choice.choiceType in answers.asked) continue

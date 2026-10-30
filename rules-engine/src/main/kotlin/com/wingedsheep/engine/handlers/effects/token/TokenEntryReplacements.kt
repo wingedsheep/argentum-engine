@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers.effects.token
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.EntersWithReplacements
 import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
+import com.wingedsheep.engine.mechanics.ReadAheadSynthesis
 import com.wingedsheep.engine.mechanics.RiotSynthesis
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
@@ -125,7 +126,8 @@ object TokenEntryReplacements {
             state, tokenId, cardRegistry, predicateEvaluator
         )
         val syntheticRiotChoice = if (grantedRiotCount > 0) RiotSynthesis.RIOT_CHOICE else null
-        val firstChoice = (printedChoices + listOfNotNull(syntheticRiotChoice))
+        val readAheadChoice = ReadAheadSynthesis.grantedChoice(state, tokenId, cardDef, cardRegistry, predicateEvaluator)
+        val firstChoice = (printedChoices + listOfNotNull(syntheticRiotChoice, readAheadChoice))
             .sortedBy { it.choiceType.ordinal }
             .firstOrNull() ?: return null
         val isSynthetic = firstChoice === syntheticRiotChoice
