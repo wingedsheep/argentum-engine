@@ -8656,6 +8656,176 @@
     ]
 }
 
+// Labyrinth of Skophos
+{
+    "name": "Labyrinth of Skophos",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{4}, {T}: Remove target attacking or blocking creature from combat.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Labyrinth of Skophos:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Labyrinth of Skophos:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "RemoveFromCombat",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "StateOr",
+                                        "predicates": [
+                                            "IsAttacking",
+                                            "IsBlocking"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Remove target attacking or blocking creature from combat."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "243",
+        "rarity": "RARE",
+        "artist": "Jonas De Ro",
+        "flavorText": "For centuries, the minotaur polis of Skophos was unknown to humans. It remains unexplored.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff0dd221-2660-43f6-8e28-8000e3fe72a4.jpg?1783931509",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "A creature removed from combat by Labyrinth of Skophos remains tapped if it was tapped."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If a blocking creature is removed from combat, the creature it blocked remains blocked. Unless that creature has trample, it won't deal combat damage."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "Once creatures attack or block, they remain attacking or blocking creatures through the end of combat step unless removed from combat (by Labyrinth of Skophos or a similar effect)."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
+// Lagonna-Band Storyteller
+{
+    "name": "Lagonna-Band Storyteller",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Centaur Advisor",
+    "oracleText": "When this creature enters, you may put target enchantment card from your graveyard on top of your library. If you do, you gain life equal to its mana value.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lagonna-Band Storyteller:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Library",
+                                "placement": "Top"
+                            },
+                            {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "EntityProperty",
+                                    "entity": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "numericProperty": "ManaValue"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "enchantment own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, you may put target enchantment card from your graveyard on top of your library. If you do, you gain life equal to its mana value."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Seaman",
+        "flavorText": "\"Our stories are full of ancient wisdom; they tell us who we are.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c3a87498-2c2c-411a-aa71-d594b2c6cb26.jpg?1783931593",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If a card in a player's graveyard has {X} in its mana cost, X is considered to be 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Lampad of Death's Vigil
 {
     "name": "Lampad of Death's Vigil",
@@ -8726,6 +8896,181 @@
     ]
 }
 
+// Leonin of the Lost Pride
+{
+    "name": "Leonin of the Lost Pride",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Cat Warrior",
+    "oracleText": "When this creature dies, exile target card from an opponent's graveyard.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Leonin of the Lost Pride:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "own:opponent",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature dies, exile target card from an opponent's graveyard."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "artist": "Aaron Miller",
+        "flavorText": "Leonin band together in the Underworld, taking solace in their strength until, at last, both pride and self are forgotten.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/1/e1be3729-7970-45df-8c26-4fe09e56629d.jpg?1783931592"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Loathsome Chimera
+{
+    "name": "Loathsome Chimera",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Chimera",
+    "oracleText": "Escape—{4}{G}, Exile three other cards from your graveyard. (You may cast this card from your graveyard for its escape cost.)\nThis creature escapes with a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 1
+    },
+    "keywords": [
+        "ESCAPE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Escape",
+            "cost": "{4}{G}",
+            "additionalCost": {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomExileFrom",
+                    "zone": "Graveyard",
+                    "count": 3,
+                    "excludeSelf": true
+                }
+            }
+        }
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true,
+                "condition": "Escaped"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "177",
+        "artist": "Paul Scott Canavan",
+        "flavorText": "\"I see... elk? And lion? And... teeth! A lot of teeth!\"\n—Teraklos of Meletis",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3afe6283-3642-4883-ac6e-83ae3280af9c.jpg?1783931537",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "After an escaped spell resolves, it returns to its owner's graveyard if it's not a permanent spell. If it is a permanent spell, it enters the battlefield and will return to its owner's graveyard if it dies later. Perhaps it will escape again—good underworld security is so hard to come by these days."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If you cast a spell with its escape permission, you can't choose to apply any other alternative costs or to cast it without paying its mana cost. If it has any additional costs, you must pay those."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Mantle of the Wolf
+{
+    "name": "Mantle of the Wolf",
+    "manaCost": "{3}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +4/+4.\nWhen this Aura is put into a graveyard from the battlefield, create two 2/2 green Wolf creature tokens.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mantle of the Wolf:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Wolf"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/4/1/411f4bf6-7f09-4e24-b483-0068d2f974e5.jpg?1783931451"
+                },
+                "descriptionOverride": "When this Aura is put into a graveyard from the battlefield, create two 2/2 green Wolf creature tokens."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 4,
+                "toughnessBonus": 4
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "178",
+        "rarity": "RARE",
+        "artist": "Simon Dominic",
+        "flavorText": "\"Be fearless, for a furious rebirth awaits you.\"\n—Nylea, god of the hunt",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/3/83a786fa-4b86-40f7-ac58-1a05fb38fcdb.jpg?1783931536",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If the creature Mantle of the Wolf would enchant is an illegal target by the time the Aura spell resolves, the entire spell doesn't resolve. It's put into your graveyard from the stack, not the battlefield, so its ability won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Memory Drain
 {
     "name": "Memory Drain",
@@ -8762,6 +9107,128 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Mindwrack Harpy
+{
+    "name": "Mindwrack Harpy",
+    "manaCost": "{3}{B}",
+    "typeLine": "Enchantment Creature — Harpy",
+    "oracleText": "Flying\nAt the beginning of combat on your turn, each player mills three cards.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mindwrack Harpy:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "player": "Each",
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "Each"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of combat on your turn, each player mills three cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "276",
+        "artist": "Deruchenko Alexander",
+        "flavorText": "Harpies are among the most detested creatures in all of Theros... and they thoroughly deserve it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/c/6c5ce79a-fcbd-46ab-8911-480f967ca57f.jpg?1783931498"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Minion's Return
+{
+    "name": "Minion's Return",
+    "manaCost": "{2}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Flash\nEnchant creature\nWhen enchanted creature dies, return that card to the battlefield under your control.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Minion's Return:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "TriggeringEntity",
+                    "destination": "Battlefield",
+                    "controllerOverride": "Controller",
+                    "fromZone": "Graveyard"
+                },
+                "descriptionOverride": "When enchanted creature dies, return that card to the battlefield under your control."
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "rarity": "UNCOMMON",
+        "artist": "Billy Christian",
+        "flavorText": "As a mortal, Phenax was the first to escape the Underworld. As a god, he brings his pawns along the same dark path.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/ce763778-0a35-41d2-9286-fdf2302554f5.jpg?1783931564",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If Minion's Return enchants a token creature, that creature won't return to the battlefield when it dies. Choose your minions wisely."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "In a multiplayer game, if a player leaves the game, all cards that player owns leave as well. If you leave the game, the creature you control from Minion's Return is exiled if you don't own it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -8865,6 +9332,239 @@
     ]
 }
 
+// Mirror Shield
+{
+    "name": "Mirror Shield",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +0/+2 and has hexproof and \"Whenever a creature with deathtouch blocks or becomes blocked by this creature, destroy that creature.\"\nEquip {2} ({2}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Mirror Shield:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 0,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "HEXPROOF"
+            },
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Mirror Shield:1",
+                    "trigger": {
+                        "type": "BlocksOrBecomesBlockedByEvent",
+                        "partnerFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "HasKeyword",
+                                    "keyword": "DEATHTOUCH"
+                                }
+                            ]
+                        }
+                    },
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": "TriggeringEntity",
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "descriptionOverride": "Whenever a creature with deathtouch blocks or becomes blocked by this creature, destroy that creature."
+                }
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "234",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Murayama Scott",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e7624e84-93ce-4983-8624-ebc934cab67f.jpg?1783931516",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "The ability Mirror Shield grants triggers and resolves before combat damage is dealt. That creature won't deal combat damage to the equipped creature or be dealt damage by it."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If a creature with deathtouch blocks the equipped creature and is then destroyed, the equipped creature remains blocked. Unless the equipped creature has trample, it won't deal combat damage to the player or planeswalker it's attacking."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "Once a creature without deathtouch has blocked or become blocked by the equipped creature, causing the other creature to gain deathtouch won't cause the ability granted by Mirror Shield to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
+// Mischievous Chimera
+{
+    "name": "Mischievous Chimera",
+    "manaCost": "{U}{R}",
+    "typeLine": "Enchantment Creature — Chimera",
+    "oracleText": "Flying\nWhenever you cast your first spell during each opponent's turn, this creature deals 1 damage to each opponent. Scry 1.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mischievous Chimera:1",
+                "trigger": {
+                    "type": "NthSpellCastEvent",
+                    "nthSpell": 1,
+                    "player": "You"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "Scry",
+                            "count": 1
+                        }
+                    ]
+                },
+                "triggerRestriction": "IsOpponentsTurn",
+                "descriptionOverride": "Whenever you cast your first spell during each opponent's turn, this creature deals 1 damage to each opponent. Scry 1."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "223",
+        "rarity": "UNCOMMON",
+        "artist": "Antonio José Manzanedo",
+        "flavorText": "Some curiosities are best left alone.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/8/f8a3df0e-4ee8-458b-adf5-56aca20493e9.jpg?1783931521",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "You scry 1 just once, no matter how many opponents are dealt damage."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "An ability that triggers when you cast a spell resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "This ability triggers only on your very first spell during an opponent's turn, not the first spell after the card is on the battlefield. If you cast a spell before it's on the battlefield (including if you cast this card somehow during an opponent's turn), the ability won't trigger."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If you have more than one opponent, this ability can trigger once during each of those opponents' turns."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
+// Mogis's Favor
+{
+    "name": "Mogis's Favor",
+    "manaCost": "{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +2/-1.\nEscape—{2}{B}, Exile two other cards from your graveyard. (You may cast this card from your graveyard for its escape cost.)",
+    "keywords": [
+        "ESCAPE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Escape",
+            "cost": "{2}{B}",
+            "additionalCost": {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomExileFrom",
+                    "zone": "Graveyard",
+                    "count": 2,
+                    "excludeSelf": true
+                }
+            }
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": -1
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "107",
+        "artist": "Uriah Voth",
+        "flavorText": "Rage-crowned Mogis swiftly rewards the virtue of brutality.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/de6bf7fb-11ca-4878-8072-cebaa763a549.jpg?1783931562",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "After an escaped spell resolves, it returns to its owner's graveyard if it's not a permanent spell. If it is a permanent spell, it enters the battlefield and will return to its owner's graveyard if it dies later. Perhaps it will escape again—good underworld security is so hard to come by these days."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Moss Viper
 {
     "name": "Moss Viper",
@@ -8883,6 +9583,44 @@
         "artist": "Mike Bierek",
         "flavorText": "Nylea watches over all the creatures of the forest except for the snakes. Blessed by Pharika, they can take care of themselves.",
         "imageUri": "https://cards.scryfall.io/normal/front/a/4/a4d35ec4-0e0d-4611-8ad9-39d2c8a2ad6e.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Mystic Repeal
+{
+    "name": "Mystic Repeal",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Put target enchantment on the bottom of its owner's library.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Library",
+            "placement": "Bottom"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "enchantment"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "180",
+        "rarity": "UNCOMMON",
+        "artist": "Tyler Walpole",
+        "flavorText": "\"No power is too great to be undone.\"\n—Karametra, god of harvests",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/6797195a-508f-45b1-964d-da842dc46ca8.jpg?1783931537"
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -9006,6 +9744,72 @@
     ]
 }
 
+// Nessian Boar
+{
+    "name": "Nessian Boar",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Boar",
+    "oracleText": "All creatures able to block this creature do so.\nWhenever this creature becomes blocked by a creature, that creature's controller draws a card.",
+    "creatureStats": {
+        "power": 10,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nessian Boar:1",
+                "trigger": {
+                    "type": "BecomesBlockedEvent",
+                    "filter": "creature"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "ControllerOfTriggeringEntity"
+                },
+                "descriptionOverride": "Whenever this creature becomes blocked by a creature, that creature's controller draws a card."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "MustBeBlockedStatic",
+                "allCreatures": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "rarity": "RARE",
+        "artist": "Zoltan Boros",
+        "flavorText": "Renata led the best hunters in all of Theros on a quest to bring down the terror of the Setessan wilds.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aaf91fc2-7317-47e4-9e6c-d7d74cdf0153.jpg?1783931536",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If a creature can't block Nessian Boar for any reason (such as being tapped), then it doesn't block. If there's a cost associated with having it block, the player isn't forced to pay that cost, so it doesn't have to block in that case either. If there's a cost associated with having it block Nessian Boar, but not to block other attacking creatures, that creature is free to block one of those other creatures or to not block at all."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If a creature is required to block two or more different creatures, its controller chooses which one that creature blocks."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "Nessian Boar's second ability triggers for each creature blocking it."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "Nessian Boar's second ability resolves before combat damage is dealt, and players have priority to cast spells (such as the cards the defending player just drew) after the ability has resolved but before combat damage is dealt."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Nessian Hornbeetle
 {
     "name": "Nessian Hornbeetle",
@@ -9046,6 +9850,102 @@
         "artist": "Jason Felix",
         "flavorText": "\"The first rule of politics can be learned from a lowly hornbeetle: it is wise to cultivate powerful friends.\"\n—Pythamon, sage of Meletis",
         "imageUri": "https://cards.scryfall.io/normal/front/8/2/8200fcda-e30c-460f-9964-47e657b7c758.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Nessian Wanderer
+{
+    "name": "Nessian Wanderer",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Satyr Scout",
+    "oracleText": "Constellation — Whenever an enchantment you control enters, look at the top three cards of your library. You may reveal a land card from among them and put that card into your hand. Put the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nessian Wanderer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "enchantment ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "land",
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "prompt": "You may reveal a land card from among them and put it into your hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Constellation — Whenever an enchantment you control enters, look at the top three cards of your library. You may reveal a land card from among them and put that card into your hand. Put the rest on the bottom of your library in a random order."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "183",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/50d50576-c3ee-479a-8533-6c147f5cb1c4.jpg?1783931536",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "A constellation ability triggers whenever an enchantment enters the battlefield under your control for any reason. Enchantments with other card types, such as enchantment creatures, will also cause constellation abilities to trigger."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "An Aura spell that has an illegal target when it tries to resolve doesn't resolve and is instead put into its owner's graveyard. It doesn't enter the battlefield, so constellation abilities don't trigger."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -9097,6 +9997,113 @@
     ]
 }
 
+// Nightmare Shepherd
+{
+    "name": "Nightmare Shepherd",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Enchantment Creature — Demon",
+    "oracleText": "Flying\nWhenever another nontoken creature you control dies, you may exile it. If you do, create a token that's a copy of that creature, except it's 1/1 and it's a Nightmare in addition to its other types.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nightmare Shepherd:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "Entity",
+                                            "entity": "TriggeringEntity"
+                                        },
+                                        "storeAs": "gathered0"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "gathered0",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Exile"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "then": {
+                            "type": "CreateTokenCopyOfTarget",
+                            "target": "TriggeringEntity",
+                            "exceptions": {
+                                "addedSubtypes": [
+                                    "Nightmare"
+                                ],
+                                "powerOverride": 1,
+                                "toughnessOverride": 1
+                            }
+                        }
+                    }
+                },
+                "descriptionOverride": "Whenever another nontoken creature you control dies, you may exile it. If you do, create a token that's a copy of that creature, except it's 1/1 and it's a Nightmare in addition to its other types."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "rarity": "RARE",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/a/4a46eec7-bb79-441c-959f-eea599e5c341.jpg?1783931562",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "The token copies the creature as it last existed on the battlefield before it died, not as it existed in the graveyard before it was exiled."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "The token copies exactly what was printed on the original creature and nothing else (unless that creature is copying something else; see below). It doesn't copy whether that creature was tapped or untapped, whether it had any counters on it or Auras or Equipment attached to it, or any non-copy effects that had changed its power, toughness, types, color, or so on."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If the copied creature was copying something else, then the token enters the battlefield as whatever that creature copied."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If the copied creature had {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If the token is a copy of a creature whose power and toughness are defined by an ability (usually printed as */* or similar), the token doesn't copy the ability that defines its power and toughness. It remains a 1/1 creature."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If something becomes a copy of the token, the copy is also a 1/1 and a Nightmare."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Nylea's Forerunner
 {
     "name": "Nylea's Forerunner",
@@ -9127,6 +10134,73 @@
         "artist": "Christopher Burdett",
         "flavorText": "Where its feet tread, the thunder of many others will follow.",
         "imageUri": "https://cards.scryfall.io/normal/front/2/c/2cf2b6be-80a8-4464-a909-8cc658196a14.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Nylea's Huntmaster
+{
+    "name": "Nylea's Huntmaster",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Centaur Shaman",
+    "oracleText": "When this creature enters, target creature you control gets +X/+0 until end of turn, where X is your devotion to green. (Each {G} in the mana costs of permanents you control counts toward your devotion to green.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nylea's Huntmaster:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "DevotionTo",
+                        "colors": [
+                            "GREEN"
+                        ]
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, target creature you control gets +X/+0 until end of turn, where X is your devotion to green."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "187",
+        "artist": "Winona Nelson",
+        "flavorText": "Nature is stillness and savagery in equal measure.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/a/2a4fe89a-0d2b-493f-883e-a1e0b0918340.jpg?1783931533",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "The value of X is determined only as the triggered ability resolves. Once that happens, the value of X won't change later in the turn even if your devotion to green changes."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If an activated ability or triggered ability has an effect that depends on your devotion to a color, you count the number of mana symbols of that color among the mana costs of permanents you control as the ability resolves. The permanent with that ability will be counted if it's still on the battlefield at that time."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "GREEN"
