@@ -894,14 +894,17 @@ class PipelineBuilder private constructor(private val shared: Shared) {
      * printed "target" wording must use cast-time targeting instead. [prompt] replaces the
      * derived "Choose <requirement>" the player sees when the choice needs context to make sense.
      * [excluding] drops whatever earlier slots already hold, so "choose a second player … then a
-     * third player" picks someone different each time (Gluntch, the Bestower).
+     * third player" picks someone different each time (Gluntch, the Bestower). [atRandom] has the
+     * engine pick one legal candidate uniformly at random with no decision — "choose an opponent at
+     * random" (Vial Smasher the Fierce); the requirement must ask for exactly one.
      */
     fun selectTarget(
         requirement: TargetRequirement,
         nonTargeting: Boolean = false,
         name: String? = null,
         prompt: String? = null,
-        excluding: List<CollectionSlot> = emptyList()
+        excluding: List<CollectionSlot> = emptyList(),
+        atRandom: Boolean = false
     ): CollectionSlot {
         val slot = CollectionSlot(slotKey("target", nextIndex(), name))
         steps += SelectTargetEffect(
@@ -909,7 +912,8 @@ class PipelineBuilder private constructor(private val shared: Shared) {
             storeAs = slot.key,
             nonTargeting = nonTargeting,
             prompt = prompt,
-            excluding = excluding.map { it.key }
+            excluding = excluding.map { it.key },
+            atRandom = atRandom
         )
         return slot
     }

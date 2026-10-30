@@ -496,3 +496,129 @@
         "BLUE"
     ]
 }
+
+// Vial Smasher the Fierce
+{
+    "name": "Vial Smasher the Fierce",
+    "manaCost": "{1}{B}{R}",
+    "typeLine": "Legendary Creature — Goblin Berserker",
+    "oracleText": "Whenever you cast your first spell each turn, choose an opponent at random. Vial Smasher deals damage equal to that spell's mana value to that player or a planeswalker that player controls.\nPartner (You can have two commanders if both have partner.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywordAbilities": [
+        "Partner"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vial Smasher the Fierce:1",
+                "trigger": {
+                    "type": "NthSpellCastEvent",
+                    "nthSpell": 1,
+                    "player": "You"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "SelectTarget",
+                            "requirement": {
+                                "type": "TargetOpponent",
+                                "descriptionOverride": "an opponent"
+                            },
+                            "storeAs": "target0",
+                            "nonTargeting": true,
+                            "atRandom": true
+                        },
+                        {
+                            "type": "SelectTarget",
+                            "requirement": {
+                                "type": "TargetObject",
+                                "optional": true,
+                                "filter": {
+                                    "baseFilter": {
+                                        "cardPredicates": [
+                                            "IsPlaneswalker"
+                                        ],
+                                        "controllerPredicate": {
+                                            "type": "ControlledByReferencedPlayer",
+                                            "target": {
+                                                "type": "PipelineTarget",
+                                                "collectionName": "target0"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "storeAs": "target1",
+                            "nonTargeting": true,
+                            "prompt": "Choose a planeswalker that player controls to deal the damage to, or none to deal it to the player"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "target1",
+                            "ifNotEmpty": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "ContextProperty",
+                                    "key": "TRIGGERING_SPELL_MANA_VALUE"
+                                },
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "target1"
+                                }
+                            },
+                            "ifEmpty": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "ContextProperty",
+                                    "key": "TRIGGERING_SPELL_MANA_VALUE"
+                                },
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "target0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever you cast your first spell each turn, choose an opponent at random. Vial Smasher deals damage equal to that spell's mana value to that player or a planeswalker that player controls."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "rarity": "MYTHIC",
+        "artist": "Deruchenko Alexander",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/2/722b1e02-2268-4e02-8d09-9b337da2a844.jpg?1783937082",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "Vial Smasher's triggered ability triggers when you cast your first spell each turn, regardless of whose turn it is."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "Vial Smasher has to be on the battlefield at the moment you cast your first spell. If that spell causes Vial Smasher to leave the battlefield as an additional cost to cast it, Vial Smasher's ability can't trigger. If that spell is Vial Smasher itself, Vial Smasher's ability can't trigger."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "For spells with {X} in their mana costs, use the value chosen for X to determine the spell's mana value."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "Vial Smasher's triggered ability resolves before the spell that caused it to trigger. If Vial Smasher's ability resolves and the spell that caused it to trigger has been countered, use that spell's mana value as it last existed on the stack to determine how much damage is dealt."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "The opponent to be dealt damage is chosen at random while the triggered ability is resolving. After that opponent is chosen, you choose whether damage will be dealt to that player or to a planeswalker they control, and if so, which planeswalker. No player may take any actions between the damage recipient being chosen and the damage being dealt."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}

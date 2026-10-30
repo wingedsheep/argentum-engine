@@ -1768,6 +1768,11 @@ class PredicateEvaluator(
                 TargetResolutionUtils.enchantedPlayer(context.sourceId, state)
             else -> null
         }
+        // A player an earlier step of the same resolution chose ("choose an opponent at random …
+        // a planeswalker that player controls" — Vial Smasher the Fierce). Only a player id counts.
+        is EffectTarget.PipelineTarget ->
+            context.storedCollections[target.collectionName]?.getOrNull(target.index)
+                ?.takeIf { it in state.turnOrder }
         else -> null
     }
 

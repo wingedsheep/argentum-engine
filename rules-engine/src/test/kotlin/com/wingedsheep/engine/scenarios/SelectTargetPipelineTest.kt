@@ -20,6 +20,10 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import com.wingedsheep.engine.core.Outcome
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.scripting.targets.TargetOpponent
+import com.wingedsheep.sdk.model.GameRng
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 
 /**
  * Tests for SelectTargetEffect — mid-resolution pipeline targeting.
@@ -99,9 +103,52 @@ class SelectTargetPipelineTest : FunSpec({
         )
     )
 
+    // "Choose an opponent at random. Deal 3 damage to that player." — the engine picks, not the caster.
+    val RandomOpponentBolt = CardDefinition.sorcery(
+        name = "Random Opponent Bolt",
+        manaCost = ManaCost.parse("{0}"),
+        oracleText = "Choose an opponent at random. Deal 3 damage to that player.",
+        script = CardScript.spell(
+            effect = CompositeEffect(
+                listOf(
+                    SelectTargetEffect(
+                        requirement = TargetOpponent(),
+                        storeAs = "victim",
+                        nonTargeting = true,
+                        atRandom = true
+                    ),
+                    DealDamageEffect(amount = 3, target = EffectTarget.PipelineTarget("victim"))
+                )
+            )
+        )
+    )
+
+    val RandomCreatureBolt = CardDefinition.sorcery(
+        name = "Random Creature Bolt",
+        manaCost = ManaCost.parse("{0}"),
+        oracleText = "Choose a creature at random. Deal 3 damage to it.",
+        script = CardScript.spell(
+            effect = CompositeEffect(
+                listOf(
+                    SelectTargetEffect(
+                        requirement = TargetObject(filter = TargetFilter.Creature),
+                        storeAs = "victim",
+                        nonTargeting = true,
+                        atRandom = true
+                    ),
+                    DealDamageEffect(amount = 3, target = EffectTarget.PipelineTarget("victim"))
+                )
+            )
+        )
+    )
+
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(PipelineBolt, OptionalPipelineBolt, TwinPipelineBolt))
+        driver.registerCards(
+            TestCards.all + listOf(
+                PipelineBolt, OptionalPipelineBolt, TwinPipelineBolt, RandomOpponentBolt, RandomCreatureBolt
+            )
+        )
         return driver
     }
 
@@ -284,5 +331,75 @@ class SelectTargetPipelineTest : FunSpec({
         // One creature: the first pick is forced, the second finds nobody — 3 damage, not a lethal 6.
         driver.pendingDecision shouldBe null
         driver.getCreatures(opponent) shouldBe listOf(force)
+    }
+
+    /** Four-player game, reseeded, with the active player holding [spell]; returns (caster, opponents). */
+    fun castInPod(seed: Long, spell: String = "Random Opponent Bolt"): Pair<GameTestDriver, List<EntityId>> {
+        val driver = createDriver()
+        val players = driver.initMultiplayer(List(4) { Deck.of("Mountain" to 40) })
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        driver.replaceState(driver.state.copy(rng = GameRng.seeded(seed)))
+        val caster = driver.state.activePlayerId!!
+        driver.castSpell(caster, driver.putCardInHand(caster, spell)).outcome shouldBe Outcome.Done
+        var guard = 0
+        while (driver.state.stack.isNotEmpty() && driver.pendingDecision == null && guard++ < 20) {
+            driver.passPriority(driver.state.priorityPlayerId!!)
+        }
+        return driver to players
+    }
+
+    fun damagedOpponents(driver: GameTestDriver, players: List<EntityId>): List<EntityId> =
+        players.filter { driver.getLifeTotal(it) != 20 }
+
+    test("atRandom picks one opponent with no decision, never the caster") {
+        val (driver, players) = castInPod(seed = 7L)
+        driver.pendingDecision shouldBe null
+        driver.state.stack.isEmpty() shouldBe true
+        val hit = damagedOpponents(driver, players)
+        hit.size shouldBe 1
+        driver.getLifeTotal(hit.single()) shouldBe 17
+        (hit.single() == driver.state.activePlayerId) shouldBe false
+    }
+
+    test("atRandom is deterministic for a seed and draws across every legal candidate") {
+        fun victimIndex(seed: Long): Int {
+            val (driver, players) = castInPod(seed)
+            return players.indexOf(damagedOpponents(driver, players).single())
+        }
+        victimIndex(42L) shouldBe victimIndex(42L)
+        // Over enough seeds every opponent (seats 1–3; the caster is seat 0) gets picked.
+        (0L until 40L).map { victimIndex(it) }.toSet() shouldContainExactlyInAnyOrder listOf(1, 2, 3)
+    }
+
+    test("atRandom with no legal candidate stores an empty slot and asks nothing") {
+        val (driver, players) = castInPod(seed = 3L, spell = "Random Creature Bolt")
+        driver.pendingDecision shouldBe null
+        driver.state.stack.isEmpty() shouldBe true
+        damagedOpponents(driver, players) shouldBe emptyList()
+    }
+
+    test("atRandom only picks a candidate the requirement allows") {
+        val driver = createDriver()
+        driver.initMirrorMatch(deck = Deck.of("Mountain" to 40), startingLife = 20)
+        val (caster, opponent) = setupForCast(driver)
+        val bear = driver.putCreatureOnBattlefield(opponent, "Grizzly Bears")
+        val elves = driver.putCreatureOnBattlefield(caster, "Llanowar Elves")
+        driver.castSpell(caster, driver.putCardInHand(caster, "Random Creature Bolt"))
+        driver.bothPass()
+        driver.pendingDecision shouldBe null
+        // Exactly one of the two creatures (both 1- or 2-toughness) died; nothing else was touched.
+        (driver.getCreatures(opponent) + driver.getCreatures(caster)).size shouldBe 1
+        driver.assertLifeTotal(caster, 20)
+        driver.assertLifeTotal(opponent, 20)
+        listOf(bear, elves).count { it in driver.getCreatures(opponent) + driver.getCreatures(caster) } shouldBe 1
+    }
+
+    test("atRandom rejects a requirement that isn't a single mandatory pick") {
+        shouldThrow<IllegalArgumentException> {
+            SelectTargetEffect(TargetObject(filter = TargetFilter.Creature, optional = true), atRandom = true)
+        }
+        shouldThrow<IllegalArgumentException> {
+            SelectTargetEffect(TargetObject(filter = TargetFilter.Creature, count = 2), atRandom = true)
+        }
     }
 })

@@ -1711,6 +1711,7 @@ data class EachPlayerChoosesCreatureTypeEffect(
  * @property requirement The target requirement (reuses all existing TargetRequirement types)
  * @property storeAs Name of the collection to store the selected target IDs in
  * @property prompt Optional player-facing prompt overriding the derived "Choose <requirement>"
+ * @property atRandom The engine picks one legal candidate uniformly at random instead of a player
  */
 @SerialName("SelectTarget")
 @Serializable
@@ -1739,9 +1740,24 @@ data class SelectTargetEffect(
      * before the choice is offered or auto-picked. A missing collection excludes nothing. Empty
      * leaves the choice unrestricted, as before.
      */
-    val excluding: List<String> = emptyList()
+    val excluding: List<String> = emptyList(),
+    /**
+     * `true` for "choose … at random" (Vial Smasher the Fierce's "choose an opponent at random"):
+     * the engine, not a player, picks uniformly among the legal candidates with the game's seeded
+     * RNG, presents no decision, and stores the pick in [storeAs] exactly like a chosen one — an
+     * empty collection when there is no candidate. Only a single, mandatory pick can be random, so
+     * the requirement must ask for exactly one target. Usually paired with [nonTargeting].
+     */
+    val atRandom: Boolean = false
 ) : Effect {
-    override val description: String = prompt ?: "Choose ${requirement.description}"
+    init {
+        require(!atRandom || requirement.requiresExactlyOneTarget) {
+            "atRandom picks exactly one candidate: ${requirement.description} must ask for exactly one, not optional"
+        }
+    }
+
+    override val description: String =
+        prompt ?: if (atRandom) "Choose ${requirement.description} at random" else "Choose ${requirement.description}"
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
         val newRequirement = requirement.applyTextReplacement(replacer)
