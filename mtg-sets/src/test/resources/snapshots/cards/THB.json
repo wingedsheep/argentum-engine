@@ -16389,6 +16389,64 @@
     ]
 }
 
+// Treeshaker Chimera
+{
+    "name": "Treeshaker Chimera",
+    "manaCost": "{5}{G}{G}",
+    "typeLine": "Creature — Chimera",
+    "oracleText": "All creatures able to block this creature do so.\nWhen this creature dies, draw three cards.",
+    "creatureStats": {
+        "power": 8,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Treeshaker Chimera:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "descriptionOverride": "When this creature dies, draw three cards."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "MustBeBlockedStatic",
+                "allCreatures": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "297",
+        "rarity": "RARE",
+        "artist": "Vincent Proce",
+        "flavorText": "The wisdom of the past is written on the bones of ancients.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/456627ec-81a4-40db-91dc-d25a59cd2837.jpg?1783931489",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If a creature can't block Treeshaker Chimera for any reason (such as being tapped), then it doesn't block. If there's a cost associated with having it block, the player isn't forced to pay that cost, so it doesn't have to block in that case either. If there's a cost associated with having it block Treeshaker Chimera, but not to block other attacking creatures, that creature is free to block one of those other creatures or to not block at all."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If a creature is required to block two or more different creatures, its controller chooses which one that creature blocks."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Triton Waverider
 {
     "name": "Triton Waverider",
@@ -16478,6 +16536,400 @@
     ]
 }
 
+// Tymaret Calls the Dead
+{
+    "name": "Tymaret Calls the Dead",
+    "manaCost": "{2}{B}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI, II — Mill three cards. Then you may exile a creature or enchantment card from your graveyard. If you do, create a 2/2 black Zombie creature token.\nIII — You gain X life and scry X, where X is the number of Zombies you control.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.DoAction",
+                                    "action": {
+                                        "type": "Composite",
+                                        "effects": [
+                                            {
+                                                "type": "GatherCards",
+                                                "source": {
+                                                    "type": "FromZone",
+                                                    "zone": "Graveyard",
+                                                    "filter": "creature|enchantment"
+                                                },
+                                                "storeAs": "gathered0"
+                                            },
+                                            {
+                                                "type": "SelectFromCollection",
+                                                "from": "gathered0",
+                                                "selection": {
+                                                    "type": "ChooseExactly",
+                                                    "count": {
+                                                        "type": "Fixed",
+                                                        "amount": 1
+                                                    }
+                                                },
+                                                "storeSelected": "toExile",
+                                                "selectedLabel": "Exile"
+                                            },
+                                            {
+                                                "type": "MoveCollection",
+                                                "from": "toExile",
+                                                "destination": {
+                                                    "type": "ToZone",
+                                                    "zone": "Exile"
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    "successCriterion": {
+                                        "type": "SuccessCriterion.CollectionNonEmpty",
+                                        "name": "toExile"
+                                    }
+                                },
+                                "then": {
+                                    "type": "CreateToken",
+                                    "power": 2,
+                                    "toughness": 2,
+                                    "colors": [
+                                        "BLACK"
+                                    ],
+                                    "creatureTypes": [
+                                        "Zombie"
+                                    ],
+                                    "imageUri": "https://cards.scryfall.io/normal/front/6/b/6b3e6b4d-d798-4c6a-8a09-255be2a6df2c.jpg?1783931454"
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.DoAction",
+                                    "action": {
+                                        "type": "Composite",
+                                        "effects": [
+                                            {
+                                                "type": "GatherCards",
+                                                "source": {
+                                                    "type": "FromZone",
+                                                    "zone": "Graveyard",
+                                                    "filter": "creature|enchantment"
+                                                },
+                                                "storeAs": "gathered0"
+                                            },
+                                            {
+                                                "type": "SelectFromCollection",
+                                                "from": "gathered0",
+                                                "selection": {
+                                                    "type": "ChooseExactly",
+                                                    "count": {
+                                                        "type": "Fixed",
+                                                        "amount": 1
+                                                    }
+                                                },
+                                                "storeSelected": "toExile",
+                                                "selectedLabel": "Exile"
+                                            },
+                                            {
+                                                "type": "MoveCollection",
+                                                "from": "toExile",
+                                                "destination": {
+                                                    "type": "ToZone",
+                                                    "zone": "Exile"
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    "successCriterion": {
+                                        "type": "SuccessCriterion.CollectionNonEmpty",
+                                        "name": "toExile"
+                                    }
+                                },
+                                "then": {
+                                    "type": "CreateToken",
+                                    "power": 2,
+                                    "toughness": 2,
+                                    "colors": [
+                                        "BLACK"
+                                    ],
+                                    "creatureTypes": [
+                                        "Zombie"
+                                    ],
+                                    "imageUri": "https://cards.scryfall.io/normal/front/6/b/6b3e6b4d-d798-4c6a-8a09-255be2a6df2c.jpg?1783931454"
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "permanent Zombie"
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "AggregateBattlefield",
+                                            "player": "You",
+                                            "filter": "permanent Zombie"
+                                        },
+                                        "isScry": true
+                                    },
+                                    "storeAs": "scried"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "scried",
+                                    "selection": "ChooseAnyNumber",
+                                    "storeSelected": "toBottom",
+                                    "storeRemainder": "toTop",
+                                    "prompt": "Scry: choose cards to put on the bottom of your library",
+                                    "selectedLabel": "Put on bottom",
+                                    "remainderLabel": "Put on top"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "toBottom",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Library",
+                                        "placement": "Bottom"
+                                    }
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "toTop",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Library",
+                                        "placement": "Top"
+                                    },
+                                    "order": "ControllerChooses"
+                                },
+                                {
+                                    "type": "Gated",
+                                    "gate": {
+                                        "type": "Gate.WhenCondition",
+                                        "condition": {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "AggregateBattlefield",
+                                                "player": "You",
+                                                "filter": "permanent Zombie"
+                                            },
+                                            "operator": "GT",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 0
+                                            }
+                                        }
+                                    },
+                                    "then": "EmitScriedEvent"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "118",
+        "rarity": "RARE",
+        "artist": "Vincent Proce",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/8/68c0d087-540a-4249-9265-f13cc8e776ea.jpg?1783931559",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "The card that you exile for the first two chapter abilities may be one of the cards that you just put into your graveyard."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "While resolving the first two chapter abilities, you can't exile multiple cards to create multiple Zombies."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If X is greater than the number of cards in your library while resolving the third chapter ability, you look at your entire library and put it back in any order. You still gain life equal to the full value of X."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Tymaret, Chosen from Death
+{
+    "name": "Tymaret, Chosen from Death",
+    "manaCost": "{B}{B}",
+    "typeLine": "Legendary Enchantment Creature — Demigod",
+    "oracleText": "Tymaret's toughness is equal to your devotion to black. (Each {B} in the mana costs of permanents you control counts toward your devotion to black.)\n{1}{B}: Exile up to two target cards from graveyards. You gain 1 life for each creature card exiled this way.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "DevotionTo",
+                "colors": [
+                    "BLACK"
+                ]
+            }
+        }
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tymaret, Chosen from Death:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "storeMovedAs": "moved1"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "moved1",
+                            "filter": "creature",
+                            "storeMatching": "matching2"
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "VariableReference",
+                                "variableName": "matching2_count"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 2,
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": {},
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{1}{B}: Exile up to two target cards from graveyards. You gain 1 life for each creature card exiled this way."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "rarity": "UNCOMMON",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/4/14b28eae-e8ed-4b99-b6ec-86d0716ec473.jpg?1783931559",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "The ability that defines Tymaret's toughness works in all zones, not just the battlefield."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "Because damage remains marked on a creature until the damage is removed as the turn ends, nonlethal damage dealt to Tymaret may become lethal if your devotion to black decreases during that turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Underworld Breach
 {
     "name": "Underworld Breach",
@@ -16535,6 +16987,480 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Underworld Charger
+{
+    "name": "Underworld Charger",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Nightmare Horse",
+    "oracleText": "This creature can't block.\nEscape—{4}{B}, Exile three other cards from your graveyard. (You may cast this card from your graveyard for its escape cost.)\nThis creature escapes with two +1/+1 counters on it.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "ESCAPE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Escape",
+            "cost": "{4}{B}",
+            "additionalCost": {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomExileFrom",
+                    "zone": "Graveyard",
+                    "count": 3,
+                    "excludeSelf": true
+                }
+            }
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            "CantBlock"
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 2,
+                "selfOnly": true,
+                "condition": "Escaped"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "120",
+        "artist": "Johann Bodin",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f2dd847f-0db2-4f6a-bdfb-5c88ce7802f9.jpg?1783931558",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "After an escaped spell resolves, it returns to its owner's graveyard if it's not a permanent spell. If it is a permanent spell, it enters the battlefield and will return to its owner's graveyard if it dies later. Perhaps it will escape again—good underworld security is so hard to come by these days."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Underworld Fires
+{
+    "name": "Underworld Fires",
+    "manaCost": "{1}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Underworld Fires deals 1 damage to each creature and each planeswalker. If a permanent dealt damage this way would die this turn, exile it instead.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature|planeswalker"
+                }
+            },
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity",
+                        "damageDealtVariable": "storedNumber0"
+                    },
+                    {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.WhenCondition",
+                            "condition": {
+                                "type": "Compare",
+                                "left": {
+                                    "type": "VariableReference",
+                                    "variableName": "storedNumber0"
+                                },
+                                "operator": "GT",
+                                "right": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                }
+                            }
+                        },
+                        "then": {
+                            "type": "MarkExileOnDeath",
+                            "target": "IterationEntity"
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "UNCOMMON",
+        "artist": "Bayard Wu",
+        "flavorText": "The Underworld is anything but a resting place.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0fe616c4-dcb0-4284-ba10-6fbf7cecd217.jpg?1783931542",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "Creatures and planeswalkers don't necessarily have to be dealt lethal damage by Underworld Fires to be exiled. After being dealt damage, if they would die for any reason that turn, they'll be exiled instead."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Underworld Rage-Hound
+{
+    "name": "Underworld Rage-Hound",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Elemental Dog",
+    "oracleText": "This creature attacks each combat if able.\nEscape—{3}{R}, Exile three other cards from your graveyard. (You may cast this card from your graveyard for its escape cost.)\nThis creature escapes with a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "ESCAPE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Escape",
+            "cost": "{3}{R}",
+            "additionalCost": {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomExileFrom",
+                    "zone": "Graveyard",
+                    "count": 3,
+                    "excludeSelf": true
+                }
+            }
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            "MustAttack"
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true,
+                "condition": "Escaped"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "163",
+        "artist": "Tyler Walpole",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a04eef82-fd53-41f4-9c7e-28b9ac039032.jpg?1783931544",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If Underworld Rage-Hound can't attack for any reason (such as being tapped or having come under that player's control that turn), then it doesn't attack. If there's a cost associated with having it attack, the player isn't forced to pay that cost, so it doesn't have to attack in that case either."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "After an escaped spell resolves, it returns to its owner's graveyard if it's not a permanent spell. If it is a permanent spell, it enters the battlefield and will return to its owner's graveyard if it dies later. Perhaps it will escape again—good underworld security is so hard to come by these days."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Underworld Sentinel
+{
+    "name": "Underworld Sentinel",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Skeleton Soldier",
+    "oracleText": "Whenever this creature attacks, exile target creature card from your graveyard.\nWhen this creature dies, put all cards exiled with it onto the battlefield.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Underworld Sentinel:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile",
+                    "linkToSource": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this creature attacks, exile target creature card from your graveyard."
+            },
+            {
+                "id": "Underworld Sentinel:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "linked_return"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "linked_return",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature dies, put all cards exiled with it onto the battlefield."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "293",
+        "rarity": "RARE",
+        "artist": "Vincent Proce",
+        "flavorText": "Deathless soldiers called phylaskia guard the borders of the Underworld.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d8c7aa89-3777-49ec-a6d0-c568150864e8.jpg?1783931489",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "Underworld Sentinel can attack even if there's no creature card in your graveyard to exile."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If you gain control of another player's Underworld Sentinel and it then dies, you'll put the exiled cards onto the battlefield under your control."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If Underworld Sentinel leaves the battlefield without dying, the exiled creature cards are exiled for the rest of the game. If Underworld Sentinel returns to the battlefield later, it'll be a new object with no memory of the creatures it exiled previously."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Uro, Titan of Nature's Wrath
+{
+    "name": "Uro, Titan of Nature's Wrath",
+    "manaCost": "{1}{G}{U}",
+    "typeLine": "Legendary Creature — Elder Giant",
+    "oracleText": "When Uro enters, sacrifice it unless it escaped.\nWhenever Uro enters or attacks, you gain 3 life and draw a card, then you may put a land card from your hand onto the battlefield.\nEscape—{G}{G}{U}{U}, Exile five other cards from your graveyard. (You may cast this card from your graveyard for its escape cost.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "ESCAPE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Escape",
+            "cost": "{G}{G}{U}{U}",
+            "additionalCost": {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomExileFrom",
+                    "zone": "Graveyard",
+                    "count": 5,
+                    "excludeSelf": true
+                }
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Uro, Titan of Nature's Wrath:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": "Escaped"
+                        }
+                    },
+                    "then": "SacrificeSelf"
+                },
+                "descriptionOverride": "When Uro enters, sacrifice it unless it escaped."
+            },
+            {
+                "id": "Uro, Titan of Nature's Wrath:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand",
+                                        "filter": "land"
+                                    },
+                                    "storeAs": "put_candidates"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "put_candidates",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "putting"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "putting",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Battlefield"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever Uro enters, you gain 3 life and draw a card, then you may put a land card from your hand onto the battlefield."
+            },
+            {
+                "id": "Uro, Titan of Nature's Wrath:3",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand",
+                                        "filter": "land"
+                                    },
+                                    "storeAs": "put_candidates"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "put_candidates",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "putting"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "putting",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Battlefield"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever Uro attacks, you gain 3 life and draw a card, then you may put a land card from your hand onto the battlefield."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "229",
+        "rarity": "MYTHIC",
+        "artist": "Vincent Proce",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0b6a71e-56cb-4d25-8f2b-7a4f1b60900d.jpg?1783931516",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "Uro's first ability causes you to sacrifice it if you didn't cast it, or if it was cast using any permission other than an escape ability."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "Uro's second ability triggers when it enters the battlefield, even if it didn't escape."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "Uro's effect doesn't count as playing a land. It can put a land card onto the battlefield even if it's not your turn or if you've already played your land for the turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
     ]
 }
 
@@ -16623,6 +17549,112 @@
     ]
 }
 
+// Victory's Envoy
+{
+    "name": "Victory's Envoy",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "At the beginning of your upkeep, put a +1/+1 counter on each other creature you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Victory's Envoy:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, put a +1/+1 counter on each other creature you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "289",
+        "rarity": "RARE",
+        "artist": "Sara Winters",
+        "flavorText": "Her paean is the clash of spears, her prayer a battle cry.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7e7fa9e2-4c16-4e94-9b0e-09657303132c.jpg?1783931490"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Voracious Typhon
+{
+    "name": "Voracious Typhon",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Creature — Snake Beast",
+    "oracleText": "Escape—{5}{G}{G}, Exile four other cards from your graveyard. (You may cast this card from your graveyard for its escape cost.)\nThis creature escapes with three +1/+1 counters on it.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "ESCAPE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Escape",
+            "cost": "{5}{G}{G}",
+            "additionalCost": {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomExileFrom",
+                    "zone": "Graveyard",
+                    "count": 4,
+                    "excludeSelf": true
+                }
+            }
+        }
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 3,
+                "selfOnly": true,
+                "condition": "Escaped"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "203",
+        "artist": "Yongjae Choi",
+        "flavorText": "\"A typhon's escape from the Underworld makes armies flee and kingdoms fall.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/f/efa2bccb-0e01-4629-b9a8-5c0ea26239b3.jpg?1783931527",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If you cast a spell with its escape permission, you can't choose to apply any other alternative costs or to cast it without paying its mana cost. If it has any additional costs, you must pay those."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Warbriar Blessing
 {
     "name": "Warbriar Blessing",
@@ -16697,6 +17729,56 @@
     ]
 }
 
+// Warden of the Chained
+{
+    "name": "Warden of the Chained",
+    "manaCost": "{1}{R}{G}",
+    "typeLine": "Creature — Minotaur Warrior",
+    "oracleText": "Trample\nThis creature can't attack unless you control another creature with power 4 or greater.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnless",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "creature pow>=4",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "230",
+        "rarity": "UNCOMMON",
+        "artist": "Steve Prescott",
+        "flavorText": "\"Strength, skill, rage—all have their limits, but patience can be infinite.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff48d55e-aa8b-4061-9c77-fd7e696fd7ba.jpg?1783931518",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "Once Warden of the Chained is attacking, it will remain attacking even if you no longer control another creature with power 4 or greater."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If you control two Wardens of the Chained, each will fulfill the other's condition and both will be able to attack."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Wavebreak Hippocamp
 {
     "name": "Wavebreak Hippocamp",
@@ -16757,6 +17839,113 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Wings of Hubris
+{
+    "name": "Wings of Hubris",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature has flying.\nSacrifice this Equipment: Equipped creature can't be blocked this turn. Sacrifice it at the beginning of the next end step.\nEquip {1} ({1}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Wings of Hubris:1",
+                "cost": "CostSacrificeSelf",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "Entity",
+                                "entity": "EquippedCreature"
+                            },
+                            "storeAs": "wingedCreature"
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "wingedCreature"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "CANT_BE_BLOCKED",
+                                        "target": "IterationEntity"
+                                    },
+                                    {
+                                        "type": "CreateDelayedTrigger",
+                                        "step": "END",
+                                        "effect": {
+                                            "type": "SacrificeTarget",
+                                            "target": "IterationEntity"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Sacrifice this Equipment: Equipped creature can't be blocked this turn. Sacrifice it at the beginning of the next end step."
+            },
+            {
+                "id": "Wings of Hubris:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING"
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "241",
+        "artist": "Josh Hass",
+        "flavorText": "\"Dalakos's invention worked . . . until it didn't.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e3ef8f96-3e3c-4b1b-8180-3b38c7deaaff.jpg?1783931512",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If Wings of Hubris becomes attached to a creature you don't control, you can activate the ability to make that creature unblockable, but you won't be able to sacrifice the creature at the beginning of the next end step."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If you gain control of a creature \"until end of turn,\" you control it during your end step. If you use Wings of Hubris to make this creature fly too close to the sun, you'll sacrifice it."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Witness of Tomorrows

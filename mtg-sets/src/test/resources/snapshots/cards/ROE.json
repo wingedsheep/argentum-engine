@@ -3795,6 +3795,72 @@
     ]
 }
 
+// Wrap in Flames
+{
+    "name": "Wrap in Flames",
+    "manaCost": "{3}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Wrap in Flames deals 1 damage to each of up to three target creatures. Those creatures can't block this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    {
+                        "type": "CantBlockTargetCreatures",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 3,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "173",
+        "artist": "Véronique Meignaud",
+        "flavorText": "\"Our pyromancer's flames may not have killed them, but they bought us the time we needed.\"\n—*The War Diaries*",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/babdaf80-f9a3-42cb-9df6-10878301f335.jpg?1783941968",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "The \"can't block\" effect applies to each of the targeted creatures—and to only those creatures—even if Wrap in Flames deals no damage to one or more of them (due to a prevention effect, for example) or if Wrap in Flames deals damage to a different creature (due to a redirection effect)."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If any of the targeted creatures is an illegal target by the time Wrap in Flames resolves, it won't be dealt damage and will be able to block. The other targeted creatures will still be affected."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Zof Shade
 {
     "name": "Zof Shade",
