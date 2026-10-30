@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.stack
 
+import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.engine.state.components.identity.TextChanges
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
@@ -22,7 +23,6 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.AfterResolveDestinationComponent
-import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.CopyOfComponent
 import com.wingedsheep.engine.state.components.stack.CipherEncodeChoiceComponent
@@ -550,9 +550,10 @@ internal class NonPermanentSpellResolver(
         // the self-shuffle flag at all, so every clause here applies to them as usual.
         //
         // Buyback (CR 702.27a) replaces "into that player's graveyard" with its owner's hand. Against
-        // another graveyard-worded replacement (a rider, rebound) the spell's controller picks which
-        // applies (CR 616.1), and taking the card back is the pick buyback was paid for. Flashback's
-        // "anywhere else" still applies after buyback has, so a flashed-back spell is exiled either way.
+        // another graveyard-worded replacement (a rider, rebound) CR 616.1 lets the spell's controller
+        // choose; the engine doesn't ask and always applies buyback, the choice buyback was paid for
+        // (a rare pairing — e.g. a buyback spell cast through Kylox's Voltstrider). Flashback's "anywhere else" still applies
+        // after buyback has, so a flashed-back spell is exiled either way.
         val boughtBack = spellComponent.declaredCostSlot == ChoiceSlot.BOUGHT_BACK && !flashbackExile &&
             !cipherExile && !selfExile && !selfShuffleIntoLibrary
         val intendedDestination = when {

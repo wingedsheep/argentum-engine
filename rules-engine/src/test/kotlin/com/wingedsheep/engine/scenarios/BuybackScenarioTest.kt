@@ -40,6 +40,18 @@ class BuybackScenarioTest : ScenarioTestBase() {
         }
     }
 
+    // Buyback plus flashback (as Snapcaster Mage or Mystic Sanctuary would grant).
+    private val buybackFlare = card("Buyback Flare") {
+        manaCost = "{R}"
+        typeLine = "Instant"
+        oracleText = "Buyback {2}\nYou gain 1 life.\nFlashback {R}"
+        keywordAbility(KeywordAbility.buyback("{2}"))
+        keywordAbility(KeywordAbility.flashback("{R}"))
+        spell {
+            effect = Effects.GainLife(1)
+        }
+    }
+
     private val testCounterspell = card("Test Counterspell") {
         manaCost = "{U}"
         typeLine = "Instant"
@@ -86,6 +98,7 @@ class BuybackScenarioTest : ScenarioTestBase() {
         cardRegistry.register(buybackShock)
         cardRegistry.register(testCounterspell)
         cardRegistry.register(kickedWatcher)
+        cardRegistry.register(buybackFlare)
 
         test("paying buyback returns the resolved spell to its owner's hand") {
             val game = buybackGame(mountains = 3)
@@ -147,6 +160,32 @@ class BuybackScenarioTest : ScenarioTestBase() {
 
             game.isInGraveyard(1, "Buyback Balm") shouldBe true
             game.isInHand(1, "Buyback Balm") shouldBe false
+        }
+
+        test("a flashed-back spell is exiled even with buyback paid") {
+            // CR 702.34a's "exile it instead of putting it anywhere else" still applies after
+            // buyback has replaced the graveyard with the hand.
+            val game = scenario()
+                .withPlayers("Caster", "Opponent")
+                .withCardInGraveyard(1, "Buyback Flare")
+                .withLandsOnBattlefield(1, "Mountain", 3)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            val flare = game.state.getGraveyard(game.player1Id).single()
+
+            game.execute(
+                CastSpell(
+                    playerId = game.player1Id,
+                    cardId = flare,
+                    declaredCostSlot = ChoiceSlot.BOUGHT_BACK,
+                )
+            ).error shouldBe null
+            game.resolveStack()
+
+            game.isInHand(1, "Buyback Flare") shouldBe false
+            game.isInGraveyard(1, "Buyback Flare") shouldBe false
+            game.state.getExile(game.player1Id) shouldContain flare
         }
 
         test("a bought-back spell is not a kicked spell") {

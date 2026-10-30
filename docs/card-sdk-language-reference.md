@@ -14208,8 +14208,8 @@ Blighted Agent, Ichor Rats, Plague Stinger, Skithiryx.
   *resolves* with that slot declared, `NonPermanentSpellResolver` puts the card into its owner's hand instead
   of their graveyard. Countered or fizzled, it goes to the graveyard as usual (buyback only replaces the
   resolution move). Flashback's "exile it instead of putting it anywhere else" still wins; against another
-  graveyard-worded replacement (a cast-this-way rider, rebound) the hand is taken, the controller's pick
-  under CR 616.1. A rest-in-peace redirect sees a move to hand and leaves it alone. The spell's effect is
+  graveyard-worded replacement (a cast-this-way rider, rebound) the engine always applies buyback rather
+  than asking the controller to choose (CR 616.1) — a rare pairing, e.g. a buyback spell cast through Kylox's Voltstrider. A rest-in-peace redirect sees a move to hand and leaves it alone. The spell's effect is
   untouched — Sprout Swarm, Lab Rats.
 - `Bushido(n)` — **engine-live.** Declare it and nothing else: `keywordAbility(KeywordAbility.bushido(2))`
   (Numai Outcast). The engine supplies the CR 702.45a trigger from
