@@ -2149,6 +2149,83 @@
     ]
 }
 
+// Blight-Breath Catoblepas
+{
+    "name": "Blight-Breath Catoblepas",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "When this creature enters, target creature an opponent controls gets -X/-X until end of turn, where X is your devotion to black. (Each {B} in the mana costs of permanents you control counts toward your devotion to black.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Blight-Breath Catoblepas:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "DevotionTo",
+                            "colors": [
+                                "BLACK"
+                            ]
+                        },
+                        "multiplier": -1
+                    },
+                    "toughnessModifier": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "DevotionTo",
+                            "colors": [
+                                "BLACK"
+                            ]
+                        },
+                        "multiplier": -1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, target creature an opponent controls gets -X/-X until end of turn, where X is your devotion to black."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "86",
+        "artist": "Antonio José Manzanedo",
+        "flavorText": "Wherever it walks, famine follows behind.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/7865c079-1d91-48d4-852d-d104b6e0c157.jpg?1783931570",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "The value of X is determined only as the triggered ability resolves. Once that happens, the value of X won't change later in the turn even if your devotion to black changes."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If you put an Aura on an opponent's permanent, you still control the Aura, and mana symbols in its mana cost count towards your devotion."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Blood Aspirant
 {
     "name": "Blood Aspirant",
@@ -2332,6 +2409,104 @@
     "colorIdentityOverride": []
 }
 
+// Bronzehide Lion
+{
+    "name": "Bronzehide Lion",
+    "manaCost": "{G}{W}",
+    "typeLine": "Creature — Cat",
+    "oracleText": "{G}{W}: This creature gains indestructible until end of turn.\nWhen this creature dies, return it to the battlefield. It's an Aura enchantment with enchant creature you control and \"{G}{W}: Enchanted creature gains indestructible until end of turn,\" and it loses all other abilities.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bronzehide Lion:3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "PutOntoBattlefieldAsAura",
+                    "enchant": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "grantedAbilities": [
+                        {
+                            "id": "Bronzehide Lion:2",
+                            "cost": {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{G}{W}"
+                                }
+                            },
+                            "effect": {
+                                "type": "GrantKeyword",
+                                "keyword": "INDESTRUCTIBLE",
+                                "target": "EnchantedCreature"
+                            },
+                            "descriptionOverride": "{G}{W}: Enchanted creature gains indestructible until end of turn."
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature dies, return it to the battlefield as an Aura with enchant creature you control and \"{G}{W}: Enchanted creature gains indestructible until end of turn.\""
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Bronzehide Lion:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{G}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "target": "Self"
+                },
+                "descriptionOverride": "{G}{W}: This creature gains indestructible until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "210",
+        "rarity": "RARE",
+        "artist": "Alayna Danner",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8fdafadb-fa04-4282-b576-b85e79c242c9.jpg?1783931524",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If you control but don't own Bronzehide Lion, you'll return it to the battlefield when it dies, not its owner. It'll enchant a creature you control."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "You choose a creature you control for Bronzehide Lion to enchant as it returns to the battlefield. If there's nothing it can legally enchant, it remains in its owner's graveyard."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If a token is a copy of Bronzehide Lion, it won't return from its owner's graveyard."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If a nontoken permanent is a copy of Bronzehide Lion, it returns from its owner's graveyard as an Aura with the two abilities granted by Bronzehide Lion and none of its normal abilities. If it has any enters-the-battlefield replacement effects, those won't apply. The Aura keeps its name, colors, and any supertypes it may have."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Captivating Unicorn
 {
     "name": "Captivating Unicorn",
@@ -2496,6 +2671,351 @@
     ]
 }
 
+// Chainweb Aracnir
+{
+    "name": "Chainweb Aracnir",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Spider",
+    "oracleText": "Reach\nWhen this creature enters, it deals damage equal to its power to target creature with flying an opponent controls.\nEscape—{3}{G}{G}, Exile four other cards from your graveyard. (You may cast this card from your graveyard for its escape cost.)\nThis creature escapes with three +1/+1 counters on it.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "REACH",
+        "ESCAPE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Escape",
+            "cost": "{3}{G}{G}",
+            "additionalCost": {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomExileFrom",
+                    "zone": "Graveyard",
+                    "count": 4,
+                    "excludeSelf": true
+                }
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Chainweb Aracnir:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature kw:flying ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, it deals damage equal to its power to target creature with flying an opponent controls."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 3,
+                "selfOnly": true,
+                "condition": "Escaped"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "167",
+        "rarity": "UNCOMMON",
+        "artist": "Sam Rowan",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/874afaad-546a-4cb2-ad01-2b4a4862b219.jpg?1783931542",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If Chainweb Aracnir leaves the battlefield before its triggered ability resolves, use its power as it last existed on the battlefield to determine how much damage it deals."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "After an escaped spell resolves, it returns to its owner's graveyard if it's not a permanent spell. If it is a permanent spell, it enters the battlefield and will return to its owner's graveyard if it dies later. Perhaps it will escape again—good underworld security is so hard to come by these days."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If you cast a spell with its escape permission, you can't choose to apply any other alternative costs or to cast it without paying its mana cost. If it has any additional costs, you must pay those."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Cling to Dust
+{
+    "name": "Cling to Dust",
+    "manaCost": "{B}",
+    "typeLine": "Instant",
+    "oracleText": "Exile target card from a graveyard. If it was a creature card, you gain 3 life. Otherwise, you draw a card.\nEscape—{3}{B}, Exile five other cards from your graveyard. (You may cast this card from your graveyard for its escape cost.)",
+    "keywords": [
+        "ESCAPE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Escape",
+            "cost": "{3}{B}",
+            "additionalCost": {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomExileFrom",
+                    "zone": "Graveyard",
+                    "count": 5,
+                    "excludeSelf": true
+                }
+            }
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "TargetIsCreatureCard"
+                    },
+                    "then": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    },
+                    "otherwise": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "rarity": "UNCOMMON",
+        "artist": "Caio Monteiro",
+        "flavorText": "In bleak Tizerus, all hope crumbles in your grasp.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/52c2de5f-e486-4cfe-9fb6-be0078ce5f93.jpg?1783931570",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If the target card is an illegal target by the time Cling to Dust tries to resolve, the spell won't resolve. You won't gain 3 life or draw a card."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If the exiled card is a creature card that's also another card type (such as an enchantment creature), you gain 3 life. You don't also draw a card."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "Cling to Dust can target one of the five cards you'll exile to pay its escape cost. In this case, the spell won't resolve."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "After an escaped spell resolves, it returns to its owner's graveyard if it's not a permanent spell. If it is a permanent spell, it enters the battlefield and will return to its owner's graveyard if it dies later. Perhaps it will escape again—good underworld security is so hard to come by these days."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Commanding Presence
+{
+    "name": "Commanding Presence",
+    "manaCost": "{3}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +2/+2 and has first strike and \"Whenever this creature deals combat damage to a player, create a 1/1 white Human Soldier creature token.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "FIRST_STRIKE"
+            },
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Commanding Presence:1",
+                    "trigger": {
+                        "type": "DealsDamageEvent",
+                        "damageType": "DamageCombat",
+                        "recipient": {
+                            "type": "RecipientPlayer",
+                            "player": "Any"
+                        }
+                    },
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "WHITE"
+                        ],
+                        "creatureTypes": [
+                            "Human",
+                            "Soldier"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/1/e/1e76f0e3-9411-401d-ab38-9c3c64769483.jpg?1783931455"
+                    },
+                    "descriptionOverride": "Whenever this creature deals combat damage to a player, create a 1/1 white Human Soldier creature token."
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "rarity": "UNCOMMON",
+        "artist": "Milivoj Ćeran",
+        "flavorText": "\"In every one of you I see a hero's heart.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/24e2f681-918e-4f1f-afb1-0f9587c0d7bf.jpg?1783931602"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Dalakos, Crafter of Wonders
+{
+    "name": "Dalakos, Crafter of Wonders",
+    "manaCost": "{1}{U}{R}",
+    "typeLine": "Legendary Creature — Merfolk Artificer",
+    "oracleText": "{T}: Add {C}{C}. Spend this mana only to cast artifact spells or activate abilities of artifacts.\nEquipped creatures you control have flying and haste.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Dalakos, Crafter of Wonders:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "restriction": {
+                        "type": "CardTypeSpellsOrAbilitiesOnly",
+                        "cardType": "ARTIFACT",
+                        "allowAbilities": true
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsEquipped"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsEquipped"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "212",
+        "rarity": "RARE",
+        "artist": "Ryan Pancoast",
+        "flavorText": "His imagination soars from the depths of the sea to the heights of the heavens.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/7/57ea0ba2-3ccf-4313-ad1d-161272c48851.jpg?1783931524",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "You can't spend mana generated by Dalakos's first ability to activate abilities of artifact cards that aren't on the battlefield or to pay costs in triggered abilities of artifacts."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "An equipped creature is one with one or more Equipment attached. A creature that's also an Equipment isn't an equipped creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Daxos, Blessed by the Sun
 {
     "name": "Daxos, Blessed by the Sun",
@@ -2571,6 +3091,120 @@
     ]
 }
 
+// Daybreak Chimera
+{
+    "name": "Daybreak Chimera",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Creature — Chimera",
+    "oracleText": "This spell costs {X} less to cast, where X is your devotion to white. (Each {W} in the mana costs of permanents you control counts toward your devotion to white.)\nFlying",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "Dynamic",
+                        "amount": {
+                            "type": "DevotionTo",
+                            "colors": [
+                                "WHITE"
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "artist": "Lars Grant-West",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f9c1de31-73d4-4c32-9f99-e15df48638e9.jpg?1783931600",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "The cost reduction ability reduces only the generic mana in Daybreak Chimera's cost. The colored mana must still be paid."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "Once you announce that you're casting a spell, no player may take actions until the spell has been paid for. Notably, opponents can't try to change by how much Daybreak Chimera's cost is reduced."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Deathbellow War Cry
+{
+    "name": "Deathbellow War Cry",
+    "manaCost": "{5}{R}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for up to four Minotaur creature cards with different names, put them onto the battlefield, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "creature Minotaur"
+                    },
+                    "storeAs": "gathered0",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    },
+                    "storeSelected": "selected1",
+                    "prompt": "Search for up to four Minotaur creature cards with different names",
+                    "restrictions": [
+                        "OnePerCardName"
+                    ]
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    }
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "294",
+        "rarity": "RARE",
+        "artist": "Josh Hass",
+        "flavorText": "Deathbellow Canyon echoes with the roars of minotaurs calling each other to battle.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/f/cf0f58ac-88ef-445c-a12b-0bb1cf482298.jpg?1783931490"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Demon of Loathing
 {
     "name": "Demon of Loathing",
@@ -2623,6 +3257,39 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Deny the Divine
+{
+    "name": "Deny the Divine",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target creature or enchantment spell. If that spell is countered this way, exile it instead of putting it into its owner's graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Counter",
+            "counterDestination": "CounterDestination.Exile"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|enchantment",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "artist": "Yigit Koroglu",
+        "flavorText": "\"A great wave crashed, and a mighty wind blew out the stars.\"\n—The Cosmogony",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/2/1200f68a-a8ea-4777-b6b0-de48b2203fd1.jpg?1783931585"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -2715,6 +3382,107 @@
     ]
 }
 
+// Devourer of Memory
+{
+    "name": "Devourer of Memory",
+    "manaCost": "{U}{B}",
+    "typeLine": "Creature — Nightmare",
+    "oracleText": "Whenever one or more cards are put into your graveyard from your library, this creature gets +1/+1 until end of turn and can't be blocked this turn.\n{1}{U}{B}: Mill a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Devourer of Memory:1",
+                "trigger": "CardsPutIntoGraveyardFromLibraryEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "CANT_BE_BLOCKED",
+                            "target": "Self"
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Devourer of Memory:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{U}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "213",
+        "rarity": "UNCOMMON",
+        "artist": "Daarken",
+        "flavorText": "It slips silently through the still waters of the Labyrinth of Memories to feed.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/1/514a6206-c2e5-4a0f-8a20-7efd6628dd0a.jpg?1783931524",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "Devourer of Memory's triggered ability grants it just +1/+1 each time cards are put into your graveyard from your library, no matter how many cards are put there at once."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "Once Devourer of Memory has been blocked, resolving its triggered ability (perhaps by activating its activated ability) won't change or undo that block."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Discordant Piper
 {
     "name": "Discordant Piper",
@@ -2754,6 +3522,72 @@
         "artist": "John Stanko",
         "flavorText": "The death of the party.",
         "imageUri": "https://cards.scryfall.io/normal/front/a/8/a8cce294-f6ee-4b18-8b65-7d01d0317b00.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Drag to the Underworld
+{
+    "name": "Drag to the Underworld",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Instant",
+    "oracleText": "This spell costs {X} less to cast, where X is your devotion to black. (Each {B} in the mana costs of permanents you control counts toward your devotion to black.)\nDestroy target creature.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "Dynamic",
+                        "amount": {
+                            "type": "DevotionTo",
+                            "colors": [
+                                "BLACK"
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "89",
+        "rarity": "UNCOMMON",
+        "artist": "Victor Adame Minguez",
+        "flavorText": "The more you struggle against death, the tighter its grip becomes.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/1/91852444-9361-4588-a44f-fb90ba1b30e5.jpg?1783931570",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "The cost reduction ability reduces only the generic mana in Drag to the Underworld's cost. The colored mana must still be paid."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying, add any cost increases, then apply any cost reductions (such as that of Drag to the Underworld). The mana value of the spell remains unchanged, no matter what the total cost to cast it was."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -2816,6 +3650,275 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Dream Trawler
+{
+    "name": "Dream Trawler",
+    "manaCost": "{2}{W}{W}{U}{U}",
+    "typeLine": "Creature — Sphinx",
+    "oracleText": "Flying, lifelink\nWhenever you draw a card, this creature gets +1/+0 until end of turn.\nWhenever this creature attacks, draw a card.\nDiscard a card: This creature gains hexproof until end of turn. Tap it.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING",
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dream Trawler:1",
+                "trigger": "DrawEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Dream Trawler:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Dream Trawler:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": "AtomDiscard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "HEXPROOF",
+                            "target": "Self"
+                        },
+                        {
+                            "type": "TapUntap",
+                            "target": "Self"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "214",
+        "rarity": "RARE",
+        "artist": "Jesper Ejsing",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/d/7d3e97d8-92c7-43c4-bdaf-7b0a6ce7cb5f.jpg?1783931523",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "Dream Trawler's second triggered ability resolves before blockers are declared. This normally causes its first triggered ability to trigger, which also resolves before blockers are declared."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "You can activate Dream Trawler's last ability even if it's already tapped. It still gains hexproof until end of turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
+// Dreamshaper Shaman
+{
+    "name": "Dreamshaper Shaman",
+    "manaCost": "{5}{R}",
+    "typeLine": "Enchantment Creature — Minotaur Shaman",
+    "oracleText": "At the beginning of your end step, you may pay {2}{R} and sacrifice a nonland permanent. If you do, reveal cards from the top of your library until you reveal a nonland permanent card. Put that card onto the battlefield and the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dreamshaper Shaman:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "PayManaCost",
+                                    "cost": "{2}{R}"
+                                },
+                                {
+                                    "type": "Sacrifice",
+                                    "filter": "nonland permanent"
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherUntilMatch",
+                                "filter": "nonland permanent",
+                                "storeMatch": "matched0",
+                                "storeRevealed": "revealed0"
+                            },
+                            {
+                                "type": "RevealCollection",
+                                "from": "revealed0"
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "revealed0",
+                                "filter": "nonland permanent",
+                                "storeMatching": "matching2",
+                                "storeNonMatching": "rest2"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "matching2",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                }
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "rest2",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Library",
+                                    "placement": "Bottom"
+                                },
+                                "order": "Random"
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "You may pay {2}{R} and sacrifice a nonland permanent. If you do, reveal cards from the top of your library until you reveal a nonland permanent card. Put that card onto the battlefield and the rest on the bottom of your library in a random order."
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "130",
+        "rarity": "UNCOMMON",
+        "artist": "Steve Prescott",
+        "flavorText": "Magic is the true artist's medium.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f6b04ec8-68c9-468c-b137-707db994af68.jpg?1783931556",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "Dreamshaper Shaman can be sacrificed to pay for the cost of its own triggered ability."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "You can't pay {2}{R} and not sacrifice a nonland permanent, or vice versa. The cost must be paid in full or not at all."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If there are no nonland cards remaining in your library, you just randomize your library and continue playing."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Dreamstalker Manticore
+{
+    "name": "Dreamstalker Manticore",
+    "manaCost": "{2}{R}",
+    "typeLine": "Enchantment Creature — Manticore",
+    "oracleText": "Whenever you cast your first spell during each opponent's turn, this creature deals 1 damage to any target.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dreamstalker Manticore:1",
+                "trigger": {
+                    "type": "NthSpellCastEvent",
+                    "nthSpell": 1,
+                    "player": "You"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                },
+                "triggerRestriction": "IsOpponentsTurn",
+                "descriptionOverride": "Whenever you cast your first spell during each opponent's turn, this creature deals 1 damage to any target."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Rallis",
+        "flavorText": "Purphoros forged the manticore's tail from bronze, its teeth from silver, and its heart from hate.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/ee10eaa0-dbe0-45ee-9a7d-395ec5d27e08.jpg?1783931554",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "An ability that triggers when you cast a spell resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "This ability triggers only on your very first spell during an opponent's turn, not the first spell after the card is on the battlefield. If you cast a spell before it's on the battlefield (including if you cast this card somehow during an opponent's turn), the ability won't trigger."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If you have more than one opponent, this ability can trigger once during each of those opponents' turns."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "In a Two-Headed Giant game, this ability triggers no more than once during each opposing team's turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -3238,6 +4341,185 @@
                 "text": "You choose which kind of counter to put on the returned permanent after it has entered the battlefield. You may put a +1/+1 counter on a planeswalker or a loyalty counter on a creature, but this isn't normally going to have any effect."
             }
         ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Elspeth's Devotee
+{
+    "name": "Elspeth's Devotee",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "When this creature enters, you may search your library and/or graveyard for a card named Elspeth, Undaunted Hero, reveal it, and put it into your hand. If you search your library this way, shuffle.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Elspeth's Devotee:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "Search your library",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Library"
+                                            ],
+                                            "filter": "name:Elspeth, Undaunted Hero"
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library for a card named Elspeth, Undaunted Hero to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Search your graveyard",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Graveyard"
+                                            ],
+                                            "filter": "name:Elspeth, Undaunted Hero"
+                                        },
+                                        "storeAs": "searchable"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your graveyard for a card named Elspeth, Undaunted Hero to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Search your library and graveyard",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Library",
+                                                "Graveyard"
+                                            ],
+                                            "filter": "name:Elspeth, Undaunted Hero"
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library and/or graveyard for a card named Elspeth, Undaunted Hero to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Don't search",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": []
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, you may search your library and/or graveyard for a card named Elspeth, Undaunted Hero, reveal it, and put it into your hand. If you search your library this way, shuffle."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "272",
+        "rarity": "RARE",
+        "artist": "Caroline Gariba",
+        "flavorText": "\"For her, I would gladly die again.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0f82064c-b335-454c-9be6-9fbcb21aa8e5.jpg?1783931499"
     },
     "colorIdentityOverride": [
         "WHITE"
