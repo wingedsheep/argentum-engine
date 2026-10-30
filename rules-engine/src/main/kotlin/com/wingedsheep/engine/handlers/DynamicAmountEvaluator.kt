@@ -1932,8 +1932,8 @@ class DynamicAmountEvaluator(
                 val marked = state.getEntity(entityId)
                     ?.get<com.wingedsheep.engine.state.components.battlefield.DamageComponent>()
                     ?.amount ?: 0
-                val toughness = projection.getToughness(entityId) ?: return 0
-                (marked - toughness).coerceAtLeast(0)
+                // Past lethal: toughness, or power under a lethal-damage-by-power rule (Zilortha).
+                (marked - projection.lethalDamageThreshold(entityId)).coerceAtLeast(0)
             }
 
             is EntityNumericProperty.KeywordValue ->

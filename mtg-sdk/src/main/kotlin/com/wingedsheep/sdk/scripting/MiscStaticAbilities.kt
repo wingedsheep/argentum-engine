@@ -450,6 +450,38 @@ data class CreaturesDamagedBySourceAreDoomed(
 }
 
 /**
+ * "Lethal damage dealt to [filter] is determined by their power rather than their toughness"
+ * (Zilortha, Strength Incarnate) — a rule modification, not an ability the creatures gain.
+ *
+ * Every place the engine asks whether damage is lethal reads the matching creature's power instead
+ * of its toughness: the lethal-damage state-based action (CR 704.5g), lethal damage when assigning
+ * trample or multi-blocker combat damage (CR 702.19b), and excess damage (CR 120.4a — Flame Spill,
+ * Hell to Pay). A creature with 0 or less power still needs 1 damage marked on it (704.5g destroys
+ * only a creature with damage marked); the 0-toughness state-based action (704.5f) is not about
+ * damage and is untouched. Deathtouch still makes any damage lethal.
+ *
+ * Lowered to a projected flag ([GroupFilter] resolved on projected state, so the affected set is
+ * live) that a later "loses all abilities" on an affected creature does not remove — only the
+ * source losing its abilities or leaving ends it. Read through
+ * `ProjectedState.lethalDamageThreshold`. Closest neighbours: [AssignDamageEqualToToughness] swaps
+ * power for toughness on the *dealing* side (how much a creature assigns), not the receiving side;
+ * [CantBlock] is the same "group gets a rule flag" shape for a different rule.
+ */
+@SerialName("LethalDamageDeterminedByPower")
+@Serializable
+data class LethalDamageDeterminedByPower(
+    val filter: GroupFilter = GroupFilter.AllCreaturesYouControl
+) : StaticAbility {
+    override val description: String =
+        "Lethal damage dealt to ${filter.description} is determined by their power rather than their toughness"
+
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
  * Lands matching [filter] produce other mana instead of their normal mana — a replacement on the
  * land's mana ability's output (the land still taps as a mana ability). Three shapes:
  *

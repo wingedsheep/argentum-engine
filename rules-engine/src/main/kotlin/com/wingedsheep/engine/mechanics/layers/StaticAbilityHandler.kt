@@ -945,6 +945,12 @@ class StaticAbilityHandler(
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
+            is com.wingedsheep.sdk.scripting.LethalDamageDeterminedByPower -> {
+                ContinuousEffectData(
+                    modification = Modification.SetLethalDamageByPower,
+                    affectsFilter = convertGroupFilter(ability.filter)
+                )
+            }
             is MustBlock -> {
                 ContinuousEffectData(
                     modification = Modification.SetMustBlock,

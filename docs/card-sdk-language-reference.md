@@ -10974,6 +10974,16 @@ staticAbility {
   toughness rather than its power"), grant the `AbilityFlag.ASSIGNS_COMBAT_DAMAGE_AS_TOUGHNESS` flag via
   `Effects.GrantKeyword(AbilityFlag.ASSIGNS_COMBAT_DAMAGE_AS_TOUGHNESS, target, duration)`; the same combat
   util reads it from projected keywords (unconditional — no toughness > power gate).
+- `LethalDamageDeterminedByPower(filter = GroupFilter.AllCreaturesYouControl)` — static rule
+  modification: "lethal damage dealt to creatures you control is determined by their power rather than
+  their toughness" (Zilortha, Strength Incarnate). Lowered to a projected flag on the matching creatures
+  (`Modification.SetLethalDamageByPower`, which a later "loses all abilities" on an affected creature does
+  not strip — only the source losing its abilities ends it). Every lethal-damage read goes through
+  `ProjectedState.lethalDamageThreshold` — the lethal-damage SBA (CR 704.5g), lethal damage in combat
+  damage assignment (trample, CR 702.19b), and excess damage (CR 120.4a: `DamageUtils`, combat excess,
+  `EntityNumericProperty.ExcessMarkedDamage`, `TargetMarkedDamageExceedsToughness`). Under the rule a
+  creature with 0 or less power still needs 1 damage marked; deathtouch and the 0-toughness SBA are
+  unaffected.
 - `AssignCombatDamageAsUnblocked(filter = source())` — static: "you may have this creature assign its
   combat damage as though it weren't blocked" (Thorn Elemental, Deathcoil Wurm). A battlefield-scoped
   `filter` covers every creature it matches, evaluated with the source's controller as "you": Zilortha,

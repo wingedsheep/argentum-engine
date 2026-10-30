@@ -1694,7 +1694,7 @@ internal class CombatDamageManager(
             // 702.2). Trample is already removed by combat damage assignment, so any damage that
             // reaches this creature was assigned to it — the leftover above lethal is excess.
             val lethalNeeded = if (projected.hasKeyword(sourceId, Keyword.DEATHTOUCH)) 1
-            else ((projected.getToughness(targetId) ?: 0) -
+            else (projected.lethalDamageThreshold(targetId) -
                 (newState.getEntity(targetId)?.get<DamageComponent>()?.amount ?: 0)).coerceAtLeast(0)
             val excess = (amount - lethalNeeded).coerceAtLeast(0)
             if (hasWither) {

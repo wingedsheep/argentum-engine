@@ -745,6 +745,11 @@ sealed interface Modification {
     data object SetAttacksWithoutTapping : Modification {
         override val layer get() = Layer.ABILITY
     }
+    /** Lethal damage to it is judged by its power, not its toughness — a rule modification (Zilortha). */
+    @Serializable
+    data object SetLethalDamageByPower : Modification {
+        override val layer get() = Layer.ABILITY
+    }
 
     /**
      * Marks a permanent as suspected — the first-class named status for the suspect mechanic.
@@ -947,6 +952,7 @@ internal data class MutableProjectedValues(
     var isSuspected: Boolean = false,
     var cantAttack: Boolean = false,
     var attacksWithoutTapping: Boolean = false,
+    var lethalDamageByPower: Boolean = false,
     var canAttackAsThoughHasty: Boolean = false,
     var cantBlock: Boolean = false,
     var cantBeTurnedFaceUp: Boolean = false,

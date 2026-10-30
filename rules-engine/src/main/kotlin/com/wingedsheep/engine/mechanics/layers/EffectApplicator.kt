@@ -433,6 +433,9 @@ internal class EffectApplicator(
                 is Modification.SetAttacksWithoutTapping -> {
                     values.attacksWithoutTapping = true
                 }
+                is Modification.SetLethalDamageByPower -> {
+                    values.lethalDamageByPower = true
+                }
                 is Modification.SetSuspected -> {
                     values.isSuspected = true
                 }

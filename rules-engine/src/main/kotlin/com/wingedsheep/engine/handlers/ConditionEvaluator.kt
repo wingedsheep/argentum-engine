@@ -2362,8 +2362,8 @@ class ConditionEvaluator(
         val marked = state.getEntity(entityId)
             ?.get<com.wingedsheep.engine.state.components.battlefield.DamageComponent>()
             ?.amount ?: 0
-        val toughness = projected.getToughness(entityId) ?: return false
-        return marked > toughness
+        // Past lethal: toughness, or power under a lethal-damage-by-power rule (Zilortha).
+        return marked > projected.lethalDamageThreshold(entityId)
     }
 
     /**

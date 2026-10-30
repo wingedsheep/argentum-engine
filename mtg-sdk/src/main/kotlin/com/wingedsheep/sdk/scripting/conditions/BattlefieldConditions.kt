@@ -317,7 +317,8 @@ data class TargetIsSource(
  * Reads post-damage state, so chain it AFTER a [com.wingedsheep.sdk.scripting.effects.DealDamageEffect]
  * with `DealDamage(N, t) then Effects.If(IfTargetTookExcessDamage(0), ...)`.
  *
- * What this actually checks is `marked > toughness` on the target at evaluation time,
+ * What this actually checks is `marked > lethal threshold` (toughness, or power under a
+ * lethal-damage-by-power rule) on the target at evaluation time,
  * regardless of which preceding step in the chain dealt the damage. CompositeEffect
  * resolves sub-effects sequentially without an interleaved SBA pass or mid-chain trigger
  * processing, so for the canonical "deal N to a target, then check" pipeline this is

@@ -1942,6 +1942,7 @@ Families:
 - `IncreaseActivatedAbilityCost(filter: GroupFilter, amount: DynamicAmount, excludeManaAbilities: Boolean)` — The activated abilities of sources matching filter cost amount generic mana **more** to activate — the taxing mirror of ReduceActivatedAbilityCost, summed against it into a single net delta so a re…
 - `IsAllCreatureTypes(filter: GroupFilter, includeControlledSpells: Boolean, includeOwnedCardsOutsideBattlefield: Boolean)` — Grants every creature type to the target, in addition to its existing types, without granting the Changeling keyword.
 - `LegendRuleDoesNotApplyTo(filter: GameObjectFilter)` — The "legend rule" (CR 704.5j) doesn't apply to permanents matching filter that the controller of this permanent controls (Spider-Verse: "The 'legend rule' doesn't apply to Spiders you control").
+- `LethalDamageDeterminedByPower(filter: GroupFilter)` — "Lethal damage dealt to filter is determined by their power rather than their toughness" (Zilortha, Strength Incarnate) — a rule modification, not an ability the creatures gain.
 - `LookAtFaceDownCreatures` — You may look at face-down creatures you don't control any time.
 - `LookAtTopOfLibrary(libraryOwner: EffectTarget)` — You may look at the top card of a library any time — your own by default.
 - `LoseAllAbilities(filter: GroupFilter)` — Causes the target permanent to lose all abilities.

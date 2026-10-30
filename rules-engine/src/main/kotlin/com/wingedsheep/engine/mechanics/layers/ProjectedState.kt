@@ -87,6 +87,8 @@ data class ProjectedValues(
     val cantAttack: Boolean = false,
     /** Attacking doesn't cause it to tap — a rule modification, not vigilance (Johan). */
     val attacksWithoutTapping: Boolean = false,
+    /** Lethal damage to it is judged by its power rather than its toughness (Zilortha) — a rule modification. */
+    val lethalDamageByPower: Boolean = false,
     val canAttackAsThoughHasty: Boolean = false,
     val cantBlock: Boolean = false,
     val cantBeTurnedFaceUp: Boolean = false,
@@ -393,6 +395,18 @@ class ProjectedState(
 
     fun cantBlock(entityId: EntityId): Boolean = projectedValues[entityId]?.cantBlock == true
 
+    /**
+     * The total marked damage at which [entityId] has been dealt lethal damage (CR 120.6, 704.5g):
+     * its toughness — or its power, under a "lethal damage … is determined by their power rather
+     * than their toughness" rule modification (Zilortha, Strength Incarnate). Under that rule a
+     * creature with 0 or less power still needs at least 1 damage marked, since 704.5g only
+     * destroys a creature that has damage marked on it.
+     */
+    fun lethalDamageThreshold(entityId: EntityId): Int {
+        val values = projectedValues[entityId] ?: return 0
+        return if (values.lethalDamageByPower) maxOf(values.power ?: 0, 1) else values.toughness ?: 0
+    }
+
     fun cantBeTurnedFaceUp(entityId: EntityId): Boolean =
         projectedValues[entityId]?.cantBeTurnedFaceUp == true
 
@@ -491,6 +505,7 @@ internal fun buildIntermediateProjectedState(
             isSuspected = v.isSuspected,
             cantAttack = v.cantAttack,
             attacksWithoutTapping = v.attacksWithoutTapping,
+            lethalDamageByPower = v.lethalDamageByPower,
             canAttackAsThoughHasty = v.canAttackAsThoughHasty,
             cantBlock = v.cantBlock,
             cantBeTurnedFaceUp = v.cantBeTurnedFaceUp,

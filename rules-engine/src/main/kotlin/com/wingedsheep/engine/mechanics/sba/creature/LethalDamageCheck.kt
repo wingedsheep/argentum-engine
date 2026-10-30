@@ -12,7 +12,9 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Keyword
 
 /**
- * 704.5g - A creature that's been dealt lethal damage is destroyed.
+ * 704.5g - A creature that's been dealt lethal damage is destroyed. "Lethal" is judged against
+ *   [com.wingedsheep.engine.mechanics.layers.ProjectedState.lethalDamageThreshold] — toughness, or
+ *   power for a creature under a lethal-damage-by-power rule modification.
  * 704.5h - A creature that's been dealt damage by a source with deathtouch is destroyed.
  * Note: Indestructible creatures are not destroyed by lethal damage (Rule 702.12b).
  * Creatures with regeneration shields are regenerated instead of destroyed; umbra armor
@@ -47,9 +49,8 @@ class LethalDamageCheck(private val zones: ZoneTransitionService) : StateBasedAc
 
             if (projected.hasKeyword(entityId, Keyword.INDESTRUCTIBLE)) continue
 
-            val effectiveToughness = projected.getToughness(entityId) ?: 0
-
-            val hasLethalDamage = damageComponent.amount >= effectiveToughness
+            // Toughness, or power under a Zilortha-style rule modification (CR 120.6).
+            val hasLethalDamage = damageComponent.amount >= projected.lethalDamageThreshold(entityId)
             // CR 704.5h — destroyed if dealt damage by a deathtouch source, regardless of the
             // form that damage took. `deathtouchDamageReceived` is only ever set when a deathtouch
             // source actually dealt nonzero damage (marked, or as wither -1/-1 counters), so no
