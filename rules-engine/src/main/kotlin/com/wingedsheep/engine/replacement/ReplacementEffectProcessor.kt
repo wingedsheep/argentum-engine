@@ -63,10 +63,13 @@ sealed interface ProcessorResult {
  * - CR 616.1: Player choice between competing same-group effects
  * - CR 616.1f: Repeated application until no more effects match
  *
- * This processor is fully domain-agnostic. Each [PendingGameEvent] subtype
+ * The processor is domain-agnostic. Each [PendingGameEvent] subtype
  * implements [PendingGameEvent.matches] (event-pattern matching) and
  * [PendingGameEvent.applyReplacement] (outcome production), so the processor
- * never needs to know about draw, damage, life, or any other domain.
+ * never needs to know about draw, damage, life, or any other domain — the one
+ * exception is a pattern's filter over [PendingGameEvent.referencedEntityId]
+ * (`DrawEvent.cyclingOf`), checked in [matchesEvent] because only the processor
+ * holds a predicate evaluator.
  *
  * ## Source scanning
  * [gatherReplacements] scans four sources:
@@ -572,7 +575,8 @@ class ReplacementEffectProcessor(
      *
      * Delegates event-pattern matching to [PendingGameEvent.matches], then
      * evaluates the effect's [ReplacementEffect.restrictions] against the
-     * current state. This method is fully domain-agnostic.
+     * current state, plus a pattern's filter over the event's referenced object
+     * (`DrawEvent.cyclingOf`), which needs the predicate evaluator only this class holds.
      */
     private fun matchesEvent(
         effect: ReplacementEffect,

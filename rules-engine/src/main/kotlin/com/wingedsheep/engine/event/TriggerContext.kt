@@ -470,7 +470,8 @@ data class TriggerContext(
                     triggeringPlayerId = event.controllerId,
                     manaValueOfTriggeringSpell = event.manaValue.takeIf { it > 0 }
                 )
-                is CardsDrawnEvent -> TriggerContext(triggeringPlayerId = event.playerId)
+                // A cycling draw's cycled card is "the cycled card" a `DrawEvent.cyclingOf` trigger refers to.
+                is CardsDrawnEvent -> TriggerContext(triggeringPlayerId = event.playerId, triggeringEntityId = event.cycledCardId)
                 // A player losing the game: the loser is both the triggering player (so
                 // Player.TriggeringPlayer / a TriggeringPlayerIs condition resolves to them) and
                 // the triggering entity (players are entities). Shinryu, Transcendent Rival reads

@@ -23,8 +23,11 @@ class UnpredictableCycloneScenarioTest : ScenarioTestBase() {
         game.state.getZone(ZoneKey(game.player1Id, Zone.LIBRARY))
             .map { game.state.getEntity(it)?.get<CardComponent>()?.name ?: "?" }
 
-    /** Library, top first: Mountain, Shock, Grizzly Bears, Forest. */
-    private fun setup(vararg inHand: String): TestGame {
+    /** Library, top first: [library] (by default Mountain, Shock, Grizzly Bears, Forest). */
+    private fun setup(
+        vararg inHand: String,
+        library: List<String> = listOf("Mountain", "Shock", "Grizzly Bears", "Forest"),
+    ): TestGame {
         var builder = scenario()
             .withPlayers("Player1", "Player2")
             .withCardOnBattlefield(1, "Unpredictable Cyclone")
@@ -33,7 +36,7 @@ class UnpredictableCycloneScenarioTest : ScenarioTestBase() {
             .withActivePlayer(1)
             .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
         for (card in inHand) builder = builder.withCardInHand(1, card)
-        for (card in listOf("Mountain", "Shock", "Grizzly Bears", "Forest")) builder = builder.withCardInLibrary(1, card)
+        for (card in library) builder = builder.withCardInLibrary(1, card)
         repeat(4) { builder = builder.withCardInLibrary(2, "Forest") }
         return builder.build()
     }
@@ -68,6 +71,18 @@ class UnpredictableCycloneScenarioTest : ScenarioTestBase() {
                 val library = libraryNames(game)
                 library.first() shouldBe "Forest"
                 library.drop(1) shouldContainExactlyInAnyOrder listOf("Mountain", "Shock", "Grizzly Bears")
+            }
+
+            test("with no card sharing a type, the whole library is exiled and put back, and nothing is drawn") {
+                val game = setup("Lava Serpent", library = listOf("Mountain", "Shock", "Forest"))
+                val handBefore = game.handSize(1)
+
+                game.cycleCard(1, "Lava Serpent").error shouldBe null
+                game.resolveStack()
+
+                withClue("no creature to find, so no cast is offered") { game.hasPendingDecision() shouldBe false }
+                game.handSize(1) shouldBe handBefore - 1
+                libraryNames(game) shouldContainExactlyInAnyOrder listOf("Mountain", "Shock", "Forest")
             }
 
             test("cycling a land card draws normally") {
