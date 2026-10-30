@@ -7565,43 +7565,6 @@
     ]
 }
 
-// Epic Downfall
-{
-    "name": "Epic Downfall",
-    "manaCost": "{1}{B}",
-    "typeLine": "Sorcery",
-    "oracleText": "Exile target creature with mana value 3 or greater.",
-    "script": {
-        "spellEffect": {
-            "type": "MoveToZone",
-            "target": {
-                "type": "BoundVariable",
-                "name": "t0"
-            },
-            "destination": "Exile"
-        },
-        "targetRequirements": [
-            {
-                "type": "TargetObject",
-                "filter": {
-                    "baseFilter": "creature mv>=3"
-                },
-                "id": "t0"
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "96",
-        "rarity": "UNCOMMON",
-        "artist": "Hristo D. Chukov",
-        "flavorText": "With Azula's defeat, all of her nobility, grace, and confidence shattered into harrowing screams from the would-be Fire Lord.",
-        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3b4a6804-04f5-4467-bb1c-9466a47bc55f.jpg?1764120663"
-    },
-    "colorIdentityOverride": [
-        "BLACK"
-    ]
-}
-
 // Fancy Footwork
 {
     "name": "Fancy Footwork",

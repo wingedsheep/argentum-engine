@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.tla.cards
+package com.wingedsheep.mtg.sets.definitions.eld.cards
 
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
@@ -11,6 +11,9 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * Sorcery
  *
  * Exile target creature with mana value 3 or greater.
+ *
+ * Canonical earliest real printing is Throne of Eldraine (ELD, 2019); reprinted in
+ * Avatar: The Last Airbender (TLA) — see EpicDownfallReprint in the TLA package.
  */
 val EpicDownfall = card("Epic Downfall") {
     manaCost = "{1}{B}"
@@ -25,9 +28,9 @@ val EpicDownfall = card("Epic Downfall") {
 
     metadata {
         rarity = Rarity.UNCOMMON
-        collectorNumber = "96"
-        artist = "Hristo D. Chukov"
-        flavorText = "With Azula's defeat, all of her nobility, grace, and confidence shattered into harrowing screams from the would-be Fire Lord."
-        imageUri = "https://cards.scryfall.io/normal/front/3/b/3b4a6804-04f5-4467-bb1c-9466a47bc55f.jpg?1764120663"
+        collectorNumber = "85"
+        artist = "Eric Deschamps"
+        flavorText = "The dragon had a lot of things going through his mind that day. He didn't expect a sword to be one of them."
+        imageUri = "https://cards.scryfall.io/normal/front/6/3/63da83fe-fa59-40cb-a42e-e1b14b650bc8.jpg?1783932642"
     }
 }

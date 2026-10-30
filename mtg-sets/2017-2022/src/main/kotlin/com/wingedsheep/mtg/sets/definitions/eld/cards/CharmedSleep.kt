@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.blb.cards
+package com.wingedsheep.mtg.sets.definitions.eld.cards
 
 import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.dsl.Effects
@@ -18,6 +18,9 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * Enchant creature
  * When this Aura enters, tap enchanted creature.
  * Enchanted creature doesn't untap during its controller's untap step.
+ *
+ * Canonical earliest real printing is Throne of Eldraine (ELD, 2019); reprinted in
+ * Bloomburrow (BLB) — see CharmedSleepReprint in the BLB package.
  */
 val CharmedSleep = card("Charmed Sleep") {
     manaCost = "{1}{U}{U}"
@@ -38,9 +41,8 @@ val CharmedSleep = card("Charmed Sleep") {
 
     metadata {
         rarity = Rarity.COMMON
-        collectorNumber = "388"
+        collectorNumber = "40"
         artist = "Titus Lunter"
-        imageUri = "https://cards.scryfall.io/normal/front/7/d/7d171802-2604-45a5-a0f2-ab5afa1db5d5.jpg?1721428082"
-        inBooster = false
+        imageUri = "https://cards.scryfall.io/normal/front/f/1/f1f97d9e-650b-4b69-8733-d80c8e0f723f.jpg?1783932662"
     }
 }

@@ -3011,50 +3011,6 @@
     ]
 }
 
-// Charmed Sleep
-{
-    "name": "Charmed Sleep",
-    "manaCost": "{1}{U}{U}",
-    "typeLine": "Enchantment — Aura",
-    "oracleText": "Enchant creature\nWhen this Aura enters, tap enchanted creature.\nEnchanted creature doesn't untap during its controller's untap step.",
-    "script": {
-        "triggeredAbilities": [
-            {
-                "id": "Charmed Sleep:1",
-                "trigger": {
-                    "type": "ZoneChangeEvent",
-                    "to": "Battlefield"
-                },
-                "effect": {
-                    "type": "TapUntap",
-                    "target": "EnchantedCreature"
-                }
-            }
-        ],
-        "staticAbilities": [
-            {
-                "type": "GrantKeyword",
-                "keyword": "DOESNT_UNTAP"
-            }
-        ],
-        "auraTarget": {
-            "type": "TargetObject",
-            "filter": {
-                "baseFilter": "creature"
-            }
-        }
-    },
-    "metadata": {
-        "collectorNumber": "388",
-        "artist": "Titus Lunter",
-        "imageUri": "https://cards.scryfall.io/normal/front/7/d/7d171802-2604-45a5-a0f2-ab5afa1db5d5.jpg?1721428082",
-        "inBooster": false
-    },
-    "colorIdentityOverride": [
-        "BLUE"
-    ]
-}
-
 // Cindering Cutthroat
 {
     "name": "Cindering Cutthroat",
