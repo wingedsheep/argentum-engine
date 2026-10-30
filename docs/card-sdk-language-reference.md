@@ -14100,7 +14100,7 @@ Blighted Agent, Ichor Rats, Plague Stinger, Skithiryx.
   Mana value is a characteristic (CR 202.3), read off the source when protection is checked through
   `SourceKindProtection` (kinds `ODD_MANA_VALUE` / `EVEN_MANA_VALUE`), so every leg applies: spells of that
   parity (a spell's {X} counts as its announced value, CR 202.3e — checked at cast time too), abilities from
-  sources of it, damage, enchanting/equipping and blocking. Zero is even: non-copy tokens and face-down
+  sources of it, damage, enchanting/equipping and blocking (CR 702.16b–f). Zero is even: non-copy tokens and face-down
   permanents (mana value 0) are even; a source with no mana value (an emblem) matches neither. Printed, granted
   (`GrantProtectionFromToGroup`), as hexproof, or as player protection. "As this creature enters, choose odd or
   even … protection from each mana value of the chosen quality" (Lavabrink Venturer) is an `EntersWithChoice(MODE)`

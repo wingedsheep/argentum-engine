@@ -2,6 +2,7 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.OptionChosenResponse
+import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -98,7 +99,7 @@ class LavabrinkVenturerScenarioTest : ScenarioTestBase() {
             game.declareBlockers(mapOf(venturer to listOf("Grizzly Bears"))).error shouldBe null
             game.passUntilPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
             withClue("the Bears' damage was prevented; the Venturer's killed them") {
-                game.isOnBattlefield(venturer) shouldBe true
+                (game.state.getEntity(game.findPermanent(venturer))?.get<DamageComponent>()?.amount ?: 0).shouldBe(0)
                 game.isOnBattlefield("Grizzly Bears") shouldBe false
             }
 

@@ -93,7 +93,7 @@ object SourceKindProtection {
 
     /**
      * [sourceId]'s mana value (CR 202.3), or null for a source without one (an emblem, a vanished
-     * id). A face-down permanent's is 0 (CR 708.2). A spell's {X} counts as the number chosen for
+     * id). A face-down permanent's is 0 (CR 708.2a, 202.3a). A spell's {X} counts as the number chosen for
      * it (CR 202.3e): read off the stack object once it is there, or from [announcedX] while the
      * spell is still being cast and its targets are being checked.
      */
@@ -109,6 +109,18 @@ object SourceKindProtection {
     /** The mana-value parity kind of [sourceId], or null when it has no mana value. */
     private fun manaValueKind(state: GameState, sourceId: EntityId, announcedX: Int? = null): SourceKind? =
         manaValue(state, sourceId, announcedX)?.let { mv -> SourceKind.parity(if (mv % 2 == 0) Parity.EVEN else Parity.ODD) }
+
+    /**
+     * A spell's mana-value parity kind — or none while its {X} is still unchosen: legal-target
+     * enumeration runs before X is announced, so it stays permissive (as `PredicateEvaluator`
+     * does for an unbound X) and the cast's own validation re-checks with the announced value.
+     */
+    private fun spellManaValueKind(state: GameState, sourceId: EntityId, announcedX: Int?): SourceKind? {
+        val card = state.getEntity(sourceId)?.get<CardComponent>() ?: return null
+        val xUnchosen = announcedX == null && sourceId !in state.stack &&
+            card.manaValueOverride == null && card.manaCost.hasX
+        return if (xUnchosen) null else manaValueKind(state, sourceId, announcedX)
+    }
 
     /** The object kinds — those that describe [sourceId] itself rather than a spell-or-ability. */
     private fun objectKinds(state: GameState, sourceId: EntityId): Set<SourceKind> = buildSet {
@@ -139,7 +151,7 @@ object SourceKindProtection {
         }
         if (sourceId != null) {
             if (targetingSourceType != TargetingSourceType.SPELL) addAll(objectKinds(state, sourceId))
-            else manaValueKind(state, sourceId, announcedX)?.let(::add)
+            else spellManaValueKind(state, sourceId, announcedX)?.let(::add)
         }
     }
 

@@ -76,11 +76,27 @@ class ManaValueParityProtectionTest : FunSpec({
             effect = Effects.DealDamage(1, t)
         }
     }
+    val oddWarded = card("Test Odd-Warded Bear") {
+        manaCost = "{2}"
+        typeLine = "Creature — Bear"
+        power = 2
+        toughness = 2
+        keywordAbility(KeywordAbility.Protection(ProtectionScope.ManaValueParity(Parity.ODD)))
+    }
+    val xBlast = card("Test X Blast") {
+        manaCost = "{X}{R}"
+        typeLine = "Sorcery"
+        spell {
+            val t = target(Targets.Any)
+            effect = Effects.DealDamage(1, t)
+        }
+    }
+    val zeroPinger = pinger("Test Zero Pinger", "{0}")
     val evenSweeper = sweeper("Test Even Sweeper", "{2}")
     val oddSweeper = sweeper("Test Odd Sweeper", "{1}")
 
     fun driver() = GameTestDriver().also {
-        it.registerCards(TestCards.all + listOf(evenWarded, oddHexproof, evenBolt, evenPinger, oddPinger, evenSweeper, oddSweeper))
+        it.registerCards(TestCards.all + listOf(evenWarded, oddHexproof, evenBolt, oddWarded, xBlast, zeroPinger, evenPinger, oddPinger, evenSweeper, oddSweeper))
         it.initMirrorMatch(Deck.of("Forest" to 40), skipMulligans = true, startingPlayer = 0)
         it.passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -88,7 +104,7 @@ class ManaValueParityProtectionTest : FunSpec({
     fun GameTestDriver.ping(player: EntityId, source: EntityId, target: EntityId) = run {
         giveColorlessMana(player, 1)
         val abilityId = state.getEntity(source)!!.get<com.wingedsheep.engine.state.components.identity.CardComponent>()!!.let { c ->
-            (if (c.name == evenPinger.name) evenPinger else oddPinger).script.activatedAbilities.single().id
+            listOf(evenPinger, oddPinger, zeroPinger).first { it.name == c.name }.script.activatedAbilities.single().id
         }
         submit(ActivateAbility(player, source, abilityId, listOf(ChosenTarget.Permanent(target))))
     }
@@ -133,9 +149,33 @@ class ManaValueParityProtectionTest : FunSpec({
             d.damage(warded) shouldBe 1
         }
 
+        test("zero is even: an ability from a mana-value-0 source can't target it") {
+            val d = driver()
+            val warded = d.putCreatureOnBattlefield(d.player2, evenWarded.name)
+            val zero = d.putPermanentOnBattlefield(d.player1, zeroPinger.name)
+            d.ping(d.player1, zero, warded).error shouldNotBe null
+        }
+
         test("a source with no mana value at all matches neither parity") {
             val d = driver()
             SourceKindProtection.manaValue(d.state, d.player1) shouldBe null
+        }
+    }
+
+    context("an X spell against protection from each odd mana value") {
+        test("before X is announced it is offered; the announced X then decides") {
+            val d = driver()
+            val warded = d.putCreatureOnBattlefield(d.player2, oddWarded.name)
+            val blast = d.putCardInHand(d.player1, xBlast.name)
+            d.giveMana(d.player1, Color.RED, 3)
+            val offered = d.legalActions(d.player1).first { (it.action as? CastSpell)?.cardId == blast }
+                .let { la -> la.targetRequirements?.firstOrNull()?.validTargets ?: la.validTargets.orEmpty() }
+            offered.contains(warded) shouldBe true
+            // X=0: mana value 1, odd — protected. X=1: mana value 2, even — legal.
+            d.castXSpell(d.player1, blast, 0, listOf(warded)).error shouldNotBe null
+            d.castXSpell(d.player1, blast, 1, listOf(warded)).error shouldBe null
+            d.bothPass()
+            d.state.getEntity(warded)?.get<DamageComponent>()?.amount shouldBe 1
         }
     }
 

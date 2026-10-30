@@ -171,11 +171,11 @@ sealed interface ProtectionScope {
     /**
      * From each mana value of a [parity] — "protection from each mana value of the chosen
      * quality" (Lavabrink Venturer, with one conditional grant per choice). Mana value is a
-     * characteristic (CR 202.3), so this covers every leg of protection (CR 702.16b–e): spells
+     * characteristic (CR 202.3), so this covers every leg of protection (CR 702.16b–f): spells
      * whose mana value has the quality (a spell's {X} counts as the number chosen for it, CR
      * 202.3e), abilities from sources whose mana value does, and damage, enchanting/equipping and
      * blocking by such objects. Zero is even, so tokens that aren't copies and face-down
-     * permanents (CR 708.2: mana value 0) are even. A source with no mana value at all — an
+     * permanents (mana value 0, CR 708.2a and 202.3a) are even. A source with no mana value at all — an
      * emblem — never matches.
      *
      * Its own type rather than an axis on [CardType] or [Subtype], which name type-line words,
