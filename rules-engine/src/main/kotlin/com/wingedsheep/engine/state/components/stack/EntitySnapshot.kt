@@ -164,6 +164,16 @@ data class EntitySnapshot(
      */
     val attachmentIds: List<EntityId> = emptyList(),
     /**
+     * [attachmentIds] with each attachment's controller and subtypes frozen too, so "for each Aura
+     * **you controlled** that was attached to it" (Hateful Eidolon) counts the Auras as they were,
+     * not as their owners' graveyard cards — the last-known leg of
+     * [com.wingedsheep.sdk.scripting.values.EntityNumericProperty.AttachmentCount]. A separate field
+     * rather than a replacement because persisted snapshots carry [attachmentIds].
+     */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val attachments: List<AttachmentLki> = emptyList(),
+    /**
      * True if this permanent had at least one Aura attached when it left the battlefield (CR 303.4).
      * Last-known counterpart to [com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsEnchanted];
      * see [wasModified] for the last-known
@@ -561,11 +571,43 @@ fun captureLastKnown(state: GameState, entityId: EntityId): EntitySnapshot {
         wasCast = container?.has<com.wingedsheep.engine.state.components.battlefield.WasCastComponent>() == true,
         castFromZone = container?.let(::castFromZoneOf),
         attachmentIds = attachmentIdsOf(state, entityId),
+        attachments = attachmentLkiOf(state, entityId),
         // The cost strips the cast-choices bag too; "the last noted …" reads it from here.
         numberChoices = numberChoicesOf(state, entityId),
         textChoices = textChoicesOf(state, entityId),
     )
 }
+
+/**
+ * One attachment of a permanent as it last existed on the battlefield: which object it was, who
+ * controlled it, and its projected subtypes (Aura / Equipment / Curse). See
+ * [EntitySnapshot.attachments].
+ */
+@Serializable
+data class AttachmentLki(
+    val entityId: EntityId,
+    val controllerId: EntityId?,
+    val subtypes: Set<String>,
+) {
+    fun hasSubtype(subtype: Subtype): Boolean = subtypes.any { it.equals(subtype.value, ignoreCase = true) }
+}
+
+/**
+ * The attachments of [entityId] right now, each with its projected controller and subtypes
+ * (printed subtypes when unprojected) — the value frozen into [EntitySnapshot.attachments].
+ */
+fun attachmentLkiOf(state: GameState, entityId: EntityId?): List<AttachmentLki> =
+    attachmentIdsOf(state, entityId).map { id ->
+        val projectedSubtypes = state.projectedState.getSubtypes(id)
+        AttachmentLki(
+            entityId = id,
+            controllerId = state.projectedState.getController(id),
+            subtypes = projectedSubtypes.ifEmpty {
+                state.getEntity(id)?.get<CardComponent>()?.typeLine?.subtypes?.mapTo(mutableSetOf()) { it.value }
+                    ?: emptySet()
+            },
+        )
+    }
 
 /**
  * The Auras/Equipment attached to [entityId] right now, in attachment order — the value frozen into

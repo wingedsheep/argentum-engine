@@ -1273,6 +1273,19 @@ object DynamicAmounts {
         )
 
     /**
+     * Number of Auras attached to the triggering permanent, optionally only those [controller]
+     * controls — "draw a card for each Aura **you controlled** that was attached to it" (Hateful
+     * Eidolon), "if an Aura you controlled was attached to it" (Dawn Evangel, as `>= 1`). A dies
+     * trigger reads it from last-known information: the Auras and their controllers as the
+     * creature last existed on the battlefield.
+     */
+    fun aurasAttachedToTriggering(controller: Player = Player.Any): DynamicAmount =
+        DynamicAmount.EntityProperty(
+            EffectTarget.TriggeringEntity,
+            EntityNumericProperty.AttachmentCount(AttachmentKind.AURA, controller)
+        )
+
+    /**
      * Number of Curses attached to the player the source Curse enchants — "draw cards equal to the
      * number of Curses attached to that player" (Curse of Surveillance). Includes the source itself.
      * Players hold their Auras' attachment links like permanents do, and

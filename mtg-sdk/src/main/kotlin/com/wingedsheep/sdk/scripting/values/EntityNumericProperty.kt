@@ -3,6 +3,7 @@ package com.wingedsheep.sdk.scripting.values
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.scripting.references.Player
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -189,16 +190,26 @@ sealed interface EntityNumericProperty {
      * the Curses, the Auras that enchant players (Curse of Surveillance: "the number of
      * Curses attached to that player" — read off `EffectTarget.EnchantedPermanent`, the player the
      * source Curse is attached to, since players carry attachments too).
+     *
+     * [controller] narrows the count to attachments controlled by the named player(s) — "for each
+     * Aura **you controlled** that was attached to it" (Hateful Eidolon). [Player.Any] (the
+     * default) counts every attachment regardless of controller. On a permanent that has left the
+     * battlefield the count is read from last-known information (CR 608.2h): the attachments and
+     * their controllers as the permanent last existed there, since the unattached-Aura state-based
+     * action has usually swept them off before the trigger reads it.
      */
     @SerialName("AttachmentCount")
     @Serializable
-    data class AttachmentCount(val kind: AttachmentKind = AttachmentKind.ANY) : EntityNumericProperty {
+    data class AttachmentCount(
+        val kind: AttachmentKind = AttachmentKind.ANY,
+        val controller: Player = Player.Any,
+    ) : EntityNumericProperty {
         override val description: String = when (kind) {
-            AttachmentKind.ANY -> "the number of Auras and Equipment attached"
-            AttachmentKind.EQUIPMENT -> "the number of Equipment attached"
-            AttachmentKind.AURA -> "the number of Auras attached"
-            AttachmentKind.CURSE -> "the number of Curses attached"
-        }
+            AttachmentKind.ANY -> "the number of Auras and Equipment"
+            AttachmentKind.EQUIPMENT -> "the number of Equipment"
+            AttachmentKind.AURA -> "the number of Auras"
+            AttachmentKind.CURSE -> "the number of Curses"
+        } + (if (controller == Player.Any) "" else " ${controller.description} control") + " attached"
     }
 
     @SerialName("BlockerCount")

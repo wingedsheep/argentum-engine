@@ -3016,6 +3016,97 @@
     ]
 }
 
+// Dawn Evangel
+{
+    "name": "Dawn Evangel",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment Creature — Human Cleric",
+    "oracleText": "Whenever a creature dies, if an Aura you controlled was attached to it, return target creature card with mana value 2 or less from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dawn Evangel:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature mv<=2 own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "TriggeringEntity",
+                        "numericProperty": {
+                            "type": "AttachmentCount",
+                            "kind": "AURA",
+                            "controller": "You"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "rarity": "UNCOMMON",
+        "artist": "Livia Prima",
+        "flavorText": "Is there a greater promise than the glory of the sunrise?",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7e152ae-43ec-4b9d-a43f-786c2f6c7366.jpg?1783931601",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "Dawn Evangel's ability can target the card whose death caused the ability to trigger if that card's mana value is 2 or less."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "Dawn Evangel's ability triggers when any player's creature dies, so long as that creature had an Aura you controlled attached to it."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If Dawn Evangel dies while enchanted by an Aura you control, its ability triggers."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If Dawn Evangel dies at the same time as another creature enchanted by an Aura you control, its ability triggers."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If a card in a graveyard has {X} in its mana cost, X is considered to be 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Daxos, Blessed by the Sun
 {
     "name": "Daxos, Blessed by the Sun",
@@ -6632,6 +6723,74 @@
         "artist": "Mark Zug",
         "flavorText": "The Returned retain no memory of their identities, but sometimes they mindlessly attempt familiar tasks.",
         "imageUri": "https://cards.scryfall.io/normal/front/b/7/b7e92c82-840f-4c75-b617-7b58a07be5b4.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Hateful Eidolon
+{
+    "name": "Hateful Eidolon",
+    "manaCost": "{B}",
+    "typeLine": "Enchantment Creature — Spirit",
+    "oracleText": "Lifelink\nWhenever an enchanted creature dies, draw a card for each Aura you controlled that was attached to it.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hateful Eidolon:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsEnchanted"
+                        ]
+                    },
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "EntityProperty",
+                        "entity": "TriggeringEntity",
+                        "numericProperty": {
+                            "type": "AttachmentCount",
+                            "kind": "AURA",
+                            "controller": "You"
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "From the echoes of a violent life, a terrible foe is born.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/812d0f15-f738-4644-9d29-2589d7e66915.jpg?1783931565",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If an Aura you control is destroyed at the same time as the creature it enchants, Hateful Eidolon's triggered ability counts that Aura to determine whether it triggers and how many cards you'll draw."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If Hateful Eidolon dies at the same time as one or more enchanted creatures, its last ability triggers for each of those creatures. This includes Hateful Eidolon itself if it's enchanted."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLACK"

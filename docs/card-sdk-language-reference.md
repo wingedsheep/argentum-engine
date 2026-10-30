@@ -17449,9 +17449,22 @@ For "X = the number of [things] attached to this permanent":
   `EffectTarget.EnchantedPermanent` names whatever the source is attached to, so this desugars to
   `EntityProperty(EnchantedPermanent, AttachmentCount(AttachmentKind.CURSE))`.
 
-`AttachmentCount(kind)` takes an `AttachmentKind` (`ANY` / `EQUIPMENT` / `AURA` / `CURSE`); the
-evaluator counts the entity's `attachedIds` (a permanent's or a player's) whose projected subtypes
-include the kind.
+- `DynamicAmounts.aurasAttachedToTriggering(controller = Player.Any)` — the Auras attached to the
+  triggering permanent, narrowed to those `controller` controlled. A dies/leaves trigger reads it from
+  last-known information — the Auras and their controllers as the creature last existed on the
+  battlefield, even though the unattached-Aura state-based action has already put them in their
+  owners' graveyards, and including an Aura destroyed at the same time as the creature. Hateful
+  Eidolon: `Triggers.a(Creature.enchanted()).dies()` + `DrawCards(aurasAttachedToTriggering(Player.You))`
+  ("draw a card for each Aura you controlled that was attached to it"); Dawn Evangel's intervening
+  "if an Aura you controlled was attached to it" is `CompareAmounts(aurasAttachedToTriggering(Player.You),
+  GTE, 1)`. Desugars to `EntityProperty(TriggeringEntity, AttachmentCount(AttachmentKind.AURA, controller))`.
+
+`AttachmentCount(kind, controller = Player.Any)` takes an `AttachmentKind` (`ANY` / `EQUIPMENT` /
+`AURA` / `CURSE`) and the player(s) whose attachments count; the evaluator counts the entity's
+`attachedIds` (a permanent's or a player's) whose projected subtypes include the kind and whose
+projected controller is among `controller`'s players (`Player.Any` skips the controller check). On a
+permanent that has left the battlefield it reads the exit snapshot's `attachments` (id, controller,
+subtypes per attachment) instead.
 
 "Other than enchanted player" on a player target is
 `TargetPlayer(restriction = Conditions.Not(Conditions.PlayerIs(Player.Candidate, Player.EnchantedPlayer)))`

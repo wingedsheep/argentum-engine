@@ -1150,7 +1150,7 @@ Families:
 ## EntityNumericProperty
 
 - `EntityNumericProperty.AbilityResolutionsThisTurn` — How many times this object's counted abilities have resolved this turn — "where X is the number of times this ability has resolved this turn" (Bronze Cudgels), and, compared with `EQ`, "if this is…
-- `EntityNumericProperty.AttachmentCount(kind: AttachmentKind)` — The number of permanents attached to this entity, optionally narrowed to a single AttachmentKind.
+- `EntityNumericProperty.AttachmentCount(kind: AttachmentKind, controller: Player)` — The number of permanents attached to this entity, optionally narrowed to a single AttachmentKind.
 - `EntityNumericProperty.BasePower` — The entity's **base** power — its power after copy effects, characteristic-defining abilities and effects that set power (layers 1–7b), before counters, Auras, Equipment, anthems and any other modi…
 - `EntityNumericProperty.BaseToughness` — The entity's **base** toughness — the toughness sibling of BasePower, read the same way.
 - `EntityNumericProperty.BlockerCount`

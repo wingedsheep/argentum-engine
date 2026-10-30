@@ -538,12 +538,10 @@ class ZoneTransitionService(
         // Was this permanent equipped / enchanted as it left? The live attachment links are torn
         // down by the exit cleanup below (CR 704.5m/n), so "modified/equipped/enchanted creature
         // leaves the battlefield" triggers must freeze it here as last-known information (CR 608.2h).
-        val lastKnownAttachmentIds = if (leavingBattlefield) {
-            state.getEntity(entityId)
-                ?.get<com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent>()
-                ?.attachedIds
-                ?: emptyList()
+        val lastKnownAttachments = if (leavingBattlefield) {
+            com.wingedsheep.engine.state.components.stack.attachmentLkiOf(state, entityId)
         } else emptyList()
+        val lastKnownAttachmentIds = lastKnownAttachments.map { it.entityId }
         val lastKnownAttachedTypeLines = lastKnownAttachmentIds.mapNotNull { attachId ->
             state.getEntity(attachId)
                 ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()?.typeLine
@@ -589,6 +587,7 @@ class ZoneTransitionService(
                 attachedTo = lastKnownAttachedTo,
                 wasEquipped = lastKnownWasEquipped,
                 attachmentIds = lastKnownAttachmentIds,
+                attachments = lastKnownAttachments,
                 wasEnchanted = lastKnownWasEnchanted,
                 wasModified = lastKnownWasModified,
                 wasCast = container.has<com.wingedsheep.engine.state.components.battlefield.WasCastComponent>(),

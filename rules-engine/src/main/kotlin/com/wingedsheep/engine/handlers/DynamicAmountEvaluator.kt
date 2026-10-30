@@ -761,6 +761,16 @@ class DynamicAmountEvaluator(
                         is EntityNumericProperty.CounterCount -> snapshot?.let {
                             return property.counterType?.let { type -> it.counters[type] ?: 0 } ?: it.totalCounters
                         }
+                        // The attachments and their controllers as the permanent last existed —
+                        // the unattached-Aura SBA has usually swept the Auras off by now (Hateful Eidolon).
+                        is EntityNumericProperty.AttachmentCount -> snapshot?.let { lki ->
+                            val controllers = attachmentControllers(state, property, context, projectedState)
+                            val subtype = attachmentKindSubtype(property.kind)
+                            return lki.attachments.count { attachment ->
+                                (controllers == null || attachment.controllerId in controllers) &&
+                                    (subtype == null || attachment.hasSubtype(subtype))
+                            }
+                        }
                         else -> { /* fall through to base characteristics */ }
                     }
                 }
@@ -1800,6 +1810,24 @@ class DynamicAmountEvaluator(
     // Entity Numeric Property Resolution
     // =========================================================================
 
+    /** The subtype an [AttachmentKind] narrows to, or null for [AttachmentKind.ANY]. */
+    private fun attachmentKindSubtype(kind: AttachmentKind): Subtype? = when (kind) {
+        AttachmentKind.ANY -> null
+        AttachmentKind.EQUIPMENT -> Subtype.EQUIPMENT
+        AttachmentKind.AURA -> Subtype.AURA
+        AttachmentKind.CURSE -> Subtype.CURSE
+    }
+
+    /** The players whose attachments [property] counts, or null when it counts every controller's. */
+    private fun attachmentControllers(
+        state: GameState,
+        property: EntityNumericProperty.AttachmentCount,
+        context: EffectContext,
+        projectedState: ProjectedState?
+    ): Set<EntityId>? =
+        if (property.controller == Player.Any) null
+        else resolveUnifiedPlayerIds(state, property.controller, context, projectedState).toSet()
+
     /**
      * Resolve a numeric property from an entity. Unified handler for [DynamicAmount.EntityProperty].
      */
@@ -1864,11 +1892,10 @@ class DynamicAmountEvaluator(
                     if (projected.isNotEmpty()) return projected.any { it.equals(subtype.value, ignoreCase = true) }
                     return state.getEntity(id)?.get<CardComponent>()?.typeLine?.hasSubtype(subtype) == true
                 }
-                when (property.kind) {
-                    AttachmentKind.ANY -> attachedIds.size
-                    AttachmentKind.EQUIPMENT -> attachedIds.count { hasAttachmentSubtype(it, Subtype.EQUIPMENT) }
-                    AttachmentKind.AURA -> attachedIds.count { hasAttachmentSubtype(it, Subtype.AURA) }
-                    AttachmentKind.CURSE -> attachedIds.count { hasAttachmentSubtype(it, Subtype.CURSE) }
+                val controllers = attachmentControllers(state, property, context, projection)
+                attachedIds.count { id ->
+                    (controllers == null || projection.getController(id) in controllers) &&
+                        attachmentKindSubtype(property.kind).let { it == null || hasAttachmentSubtype(id, it) }
                 }
             }
 
