@@ -42,10 +42,10 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  */
 object Suspend {
 
-    /** Pipeline collection key the countdown uses to hand the exiled card to the free-cast step. */
+    /** Pipeline collection key the cast trigger uses to hand the exiled card to the free-cast step. */
     const val PLAY_COLLECTION: String = "suspend_play"
 
-    /** "this card has a time counter on it" — used as the intervening-if gate and the cast condition. */
+    /** "this card has a time counter on it" — the countdown's intervening-if ("if this card is suspended"). */
     private val hasTimeCounter = EntityMatches(
         EffectTarget.Self,
         GameObjectFilter.Any.copy(statePredicates = listOf(StatePredicate.HasCounter(CounterType.TIME)))

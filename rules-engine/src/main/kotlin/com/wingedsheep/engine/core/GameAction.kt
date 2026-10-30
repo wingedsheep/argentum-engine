@@ -604,7 +604,7 @@ data class PutCompanionIntoHand(
  * "does not use the stack once announced"; the card is never cast at all. The player pays
  * the card's printed suspend cost and exiles it from hand with a number of time counters
  * equal to its suspend value. The exiled card counts down at its owner's upkeep — driven by
- * the engine's synthesized [com.wingedsheep.sdk.scripting.Suspend.countdownAbility], granted
+ * the engine's synthesized [com.wingedsheep.sdk.scripting.Suspend.exileAbilities], granted
  * to any exiled card carrying the suspended marker — and when the last counter is removed,
  * its owner may play it for free (with haste, if it becomes a creature).
  *

@@ -6,6 +6,7 @@ import com.wingedsheep.engine.core.Outcome
 import com.wingedsheep.engine.core.SuspendCardFromHand
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.tsp.cards.AncestralVision
@@ -73,11 +74,13 @@ class ClockspinningScenarioTest : FunSpec({
 
         // Suspend's cast trigger is on the stack now — no waiting for the next upkeep.
         driver.state.stack.size shouldBe 1
+        driver.state.getEntity(driver.state.stack.single())
+            ?.get<TriggeredAbilityOnStackComponent>()?.sourceId shouldBe vision
         val handBefore = driver.getHand(me).size
         driver.bothPass()
         driver.submitYesNo(me, true)
         // Ancestral Vision's target ("target player draws three cards") is chosen as it's cast.
-        if (driver.state.pendingDecision != null) driver.submitTargetSelection(me, listOf(me))
+        driver.submitTargetSelection(me, listOf(me))
         driver.bothPass()
 
         driver.getExile(me).contains(vision) shouldBe false

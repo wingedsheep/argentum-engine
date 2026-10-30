@@ -1133,7 +1133,7 @@ class StateProjector {
                         // comes back if that reverses. Distinct from the latching Duration.While…
                         // gates above.
                         sourceCondition = floating.effect.sourceCondition,
-                        // "for as long as you control it" (e.g. suspend haste — CR 702.62g):
+                        // "for as long as you control it" (e.g. suspend haste — CR 702.62a):
                         // the gate is applied after Layer 2, against the projected controller,
                         // so the effect drops the instant another player gains control.
                         controllerGate = if (floating.duration is Duration.WhileControlledByController) {

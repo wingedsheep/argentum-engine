@@ -2042,7 +2042,7 @@ sealed interface KeywordAbility {
         fun modular(n: Int): KeywordAbility = Numeric(Keyword.MODULAR, n)
         fun fading(n: Int): KeywordAbility = Numeric(Keyword.FADING, n)
         /**
-         * Vanishing N (CR 702.62) — engine-live. Declaring this is the whole implementation;
+         * Vanishing N (CR 702.63) — engine-live. Declaring this is the whole implementation;
          * [Vanishing] supplies the enters-with-N-time-counters replacement and both triggers.
          * Do not also hand-write those three parts, or they will stack with the engine's.
          */

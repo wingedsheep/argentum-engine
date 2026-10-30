@@ -16,7 +16,7 @@ import com.wingedsheep.sdk.scripting.KeywordAbility
  * flash, sorcery speed otherwise — independent of whether the card's own mana cost could
  * ever actually be paid (Ancestral Vision has none). The exile-side countdown and eventual
  * free cast are driven entirely by the engine's synthesized
- * [com.wingedsheep.sdk.scripting.Suspend.countdownAbility] once [SuspendCardFromHandHandler]
+ * [com.wingedsheep.sdk.scripting.Suspend.exileAbilities] once [SuspendCardFromHandHandler]
  * marks the card suspended, so no cast-from-exile enumeration is needed here.
  */
 class SuspendEnumerator : ActionEnumerator {

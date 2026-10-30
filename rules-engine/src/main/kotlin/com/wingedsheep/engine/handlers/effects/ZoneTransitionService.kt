@@ -703,9 +703,9 @@ class ZoneTransitionService(
                 }
             }
             // A suspended card that leaves exile by any non-cast path (returned to hand,
-            // shuffled in, exiled elsewhere) is no longer suspended (CR 702.62). The cast
-            // path is guarded separately by the countdown's intervening-if, so a leftover
-            // marker is inert there.
+            // shuffled in, exiled elsewhere) is no longer suspended (CR 702.62b). The cast
+            // path is guarded separately: the countdown's intervening-if needs a time counter
+            // and the cast trigger needs the card still exiled, so a leftover marker is inert there.
             if (entityContainer != null &&
                 entityContainer.has<com.wingedsheep.engine.state.components.battlefield.SuspendedComponent>()
             ) {

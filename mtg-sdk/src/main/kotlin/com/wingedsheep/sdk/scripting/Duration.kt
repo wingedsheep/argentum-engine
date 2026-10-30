@@ -421,7 +421,7 @@ sealed interface Duration {
      * ends for good — `EndedDurationExpiryCheck` removes it, so regaining control does not
      * restart it.
      *
-     * Example: Suspend (CR 702.62g) — a creature played via suspend "gains haste until you
+     * Example: Suspend (CR 702.62a) — a creature played via suspend "gains haste until you
      * lose control of the spell or the permanent it becomes."
      */
     @SerialName("WhileControlledByController")

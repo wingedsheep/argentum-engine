@@ -357,8 +357,9 @@ data class PreparedSpellCopyComponent(
  * abilities — is what the engine keys on, so an arbitrary card with no printed suspend can
  * be suspended (e.g. Taigam, Master Opportunist exiles the spell you cast and grants it
  * suspend). While present on an exiled card, [com.wingedsheep.engine.event.TriggerAbilityResolver]
- * grants it [com.wingedsheep.sdk.scripting.Suspend.countdownAbility] — the owner's-upkeep
- * countdown that removes a time counter and plays the card for free when the last is gone.
+ * grants it [com.wingedsheep.sdk.scripting.Suspend.exileAbilities] — the owner's-upkeep
+ * countdown that removes a time counter, and the trigger that plays the card for free when the
+ * last is gone.
  *
  * Stripped when the card leaves exile by a non-cast path and when it leaves the battlefield.
  */

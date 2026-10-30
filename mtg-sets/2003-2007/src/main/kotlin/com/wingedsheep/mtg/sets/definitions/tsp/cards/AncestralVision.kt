@@ -23,7 +23,7 @@ import com.wingedsheep.sdk.dsl.Targets
  * Suspend itself is the new mechanic here (CR 702.62 / CR 116.2f special action): see
  * [KeywordAbility.Suspend] plus the engine's `SuspendCardFromHandHandler` / `SuspendEnumerator`,
  * which exile the card with time counters outside the stack. The countdown and eventual free
- * cast are handled by the engine's synthesized `Suspend.countdownAbility`, granted to any
+ * cast are handled by the engine's synthesized `Suspend.exileAbilities`, granted to any
  * exiled card carrying the suspended marker — shared with the runtime-grant path (Taigam,
  * Master Opportunist).
  */

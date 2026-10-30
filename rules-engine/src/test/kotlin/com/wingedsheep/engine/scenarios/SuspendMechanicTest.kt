@@ -99,7 +99,7 @@ class SuspendMechanicTest : FunSpec({
                         modification = SerializableModification.GrantKeyword(Keyword.HASTE.name),
                         affectedEntities = setOf(cardId),
                     ),
-                    // Mirrors GrantSuspendExecutor: haste lasts "until you lose control" (CR 702.62g),
+                    // Mirrors GrantSuspendExecutor: haste lasts "until you lose control" (CR 702.62a),
                     // gated by the projector against the owner who plays the suspended card.
                     duration = Duration.WhileControlledByController,
                     sourceId = cardId,
@@ -184,7 +184,7 @@ class SuspendMechanicTest : FunSpec({
         driver.getExile(player).contains(cardId) shouldBe false
         val perm = driver.findPermanent(player, "Suspended Bear")
         perm shouldNotBe null
-        // CR 702.62g — a creature played via suspend has haste.
+        // CR 702.62a — a creature played via suspend has haste.
         projector.project(driver.state).hasKeyword(perm!!, Keyword.HASTE) shouldBe true
         // The marker is gone once it leaves exile.
         driver.state.getEntity(perm)?.has<SuspendedComponent>() shouldBe false
@@ -209,7 +209,7 @@ class SuspendMechanicTest : FunSpec({
         perm shouldNotBe null
         projector.project(driver.state).hasKeyword(perm!!, Keyword.HASTE) shouldBe true
 
-        // An opponent steals it (CR 702.62g: haste lasts only "until you lose control of ...
+        // An opponent steals it (CR 702.62a: haste lasts only "until you lose control of ...
         // the permanent it becomes"). Model the steal exactly as GainControlExecutor does —
         // a Layer 2 control-changing floating effect.
         driver.replaceState(

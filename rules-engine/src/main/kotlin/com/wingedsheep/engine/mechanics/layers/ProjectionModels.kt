@@ -224,7 +224,7 @@ data class ContinuousEffect(
     val affectsFilter: AffectsFilter? = null,
     /**
      * When non-null, this effect applies only to affected entities whose *projected* controller
-     * is this player (a "for as long as you control it" gate, e.g. suspend haste — CR 702.62g).
+     * is this player (a "for as long as you control it" gate, e.g. suspend haste — CR 702.62a).
      * Evaluated after Layer 2 control is established, so it tracks control-changing effects.
      */
     val controllerGate: EntityId? = null,

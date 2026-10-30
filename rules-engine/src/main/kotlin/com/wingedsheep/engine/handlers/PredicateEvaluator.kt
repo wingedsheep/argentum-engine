@@ -2629,7 +2629,7 @@ class PredicateEvaluator(
             StatePredicate.IsSuspended ->
                 container.has<com.wingedsheep.engine.state.components.battlefield.SuspendedComponent>() &&
                     (container.get<CountersComponent>()?.getCount(com.wingedsheep.sdk.core.CounterType.TIME) ?: 0) > 0 &&
-                    state.turnOrder.any { entityId in state.getExile(it) }
+                    state.logicalZone(entityId)?.zoneType == Zone.EXILE
 
             // Battlefield marker — set when a warped spell resolves (CR 702.185).
             StatePredicate.WasCastForWarp ->

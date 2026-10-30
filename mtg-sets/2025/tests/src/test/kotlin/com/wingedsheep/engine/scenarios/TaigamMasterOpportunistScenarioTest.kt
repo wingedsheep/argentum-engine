@@ -64,7 +64,7 @@ class TaigamMasterOpportunistScenarioTest : ScenarioTestBase() {
                     game.state.getEntity(suspended)?.get<CountersComponent>()
                         ?.getCount(CounterType.TIME) shouldBe 4
                 }
-                withClue("Suspend pre-arms haste (CR 702.62g) as a dormant effect on the exiled card") {
+                withClue("Suspend pre-arms haste (CR 702.62a) as a dormant effect on the exiled card") {
                     val hasteArmed = game.state.floatingEffects.any { fx ->
                         suspended in fx.effect.affectedEntities &&
                             (fx.effect.modification as? SerializableModification.GrantKeyword)?.keyword == Keyword.HASTE.name
