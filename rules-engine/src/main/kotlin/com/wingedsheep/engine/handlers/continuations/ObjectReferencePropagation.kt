@@ -107,7 +107,7 @@ internal fun AnswerContinuation.objectReferences(): ObjectReferenceEnvironment? 
     is BudgetModalContinuation -> objectReferences
     is CreateTokenCopyOfChosenContinuation -> objectReferences
     is CreateTokenCopyAuraHostContinuation -> context.objectReferences
-    is ChooseActionContinuation -> objectReferences
+    is ChooseActionContinuation -> context.objectReferences
     is TriggeredAbilityContinuation -> objectReferences
     is TriggerDamageDistributionContinuation -> objectReferences
     is MayAbilityContinuation -> effectContext.objectReferences
@@ -240,7 +240,7 @@ internal fun AnswerContinuation.withObjectReferences(refs: ObjectReferenceEnviro
     is BudgetModalContinuation -> copy(objectReferences = refs)
     is CreateTokenCopyOfChosenContinuation -> copy(objectReferences = refs)
     is CreateTokenCopyAuraHostContinuation -> copy(context = context.copy(objectReferences = refs))
-    is ChooseActionContinuation -> copy(objectReferences = refs)
+    is ChooseActionContinuation -> copy(context = context.copy(objectReferences = refs))
     is TriggeredAbilityContinuation -> copy(objectReferences = refs)
     is TriggerDamageDistributionContinuation -> copy(objectReferences = refs)
     is MayAbilityContinuation -> copy(effectContext = effectContext.copy(objectReferences = refs))

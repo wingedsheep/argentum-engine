@@ -98,18 +98,10 @@ class ChooseActionEffectExecutor(
         ) }
 
         val continuation = ChooseActionContinuation(
-            programOrigin = context.programOrigin,
-            resolvingTriggeredAbility = context.resolvingTriggeredAbility,
             choosingPlayerId = choosingPlayerId,
-            controllerId = context.controllerId,
-            sourceId = context.sourceId,
-            objectReferences = context.objectReferences,
             sourceName = sourceName,
             choices = offered,
-            targets = context.targets,
-            pipeline = context.pipeline,
-            triggeringEntityId = context.triggeringEntityId,
-            chosenCounterType = context.chosenCounterType
+            context = context
         )
 
         return EffectResult.from(state.suspendForDecision(decision, continuation))

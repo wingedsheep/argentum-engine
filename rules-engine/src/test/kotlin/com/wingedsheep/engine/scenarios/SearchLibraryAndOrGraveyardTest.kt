@@ -48,11 +48,16 @@ class SearchLibraryAndOrGraveyardTest : FunSpec({
             }
         } }
 
+    // "Search your library and/or graveyard for a creature card with mana value X or less" (Finale
+    // of Devastation's shape): X is read only after the zone choice.
+    val xTutor = card("X Tutor") { manaCost = "{X}"; typeLine = "Sorcery"
+        spell { effect = Patterns.Library.searchLibraryAndOrGraveyard(GameObjectFilter.Creature.manaValueAtMostDynamic(DynamicAmount.XValue)) } }
+
     class Setup(val d: GameTestDriver, val me: EntityId, val inLibrary: EntityId, val inGraveyard: EntityId)
 
     fun setup(): Setup {
         val d = GameTestDriver().apply {
-            registerCards(TestCards.all + listOf(optionalTutor, mandatoryTutor, storedBoundTutor))
+            registerCards(TestCards.all + listOf(optionalTutor, mandatoryTutor, storedBoundTutor, xTutor))
             initMirrorMatch(Deck.of("Island" to 40)); passPriorityUntil(Step.PRECOMBAT_MAIN)
         }
         val me = d.activePlayer!!
@@ -163,5 +168,17 @@ class SearchLibraryAndOrGraveyardTest : FunSpec({
         }
         s.pick(s.inLibrary, events)
         s.d.getHand(s.me).contains(s.inLibrary) shouldBe true
+    }
+
+    test("the spell's X reaches the search chosen after the zone choice") {
+        val s = setup()
+        s.d.giveColorlessMana(s.me, 2)
+        s.d.castXSpell(s.me, s.d.putCardInHand(s.me, "X Tutor"), xValue = 2).error shouldBe null
+        val events = s.d.bothPass().events.toMutableList()
+        val choice = s.d.state.pendingDecision.shouldBeInstanceOf<ChooseOptionDecision>()
+        events += s.d.submitDecision(s.me, OptionChosenResponse(choice.id, choice.options.indexOf("Search your library"))).events
+        withClue("Grizzly Bears (MV 2) fit X = 2") {
+            s.d.state.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>().options shouldBe listOf(s.inLibrary)
+        }
     }
 })

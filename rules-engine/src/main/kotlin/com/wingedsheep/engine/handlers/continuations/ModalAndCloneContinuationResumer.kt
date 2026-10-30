@@ -1796,18 +1796,11 @@ class ModalAndCloneContinuationResumer(
 
         val chosenEffect = continuation.choices[choiceIndex].effect
 
-        // Build context preserving original targets so ContextTarget references still work
-        val context = EffectContext(
-            programOrigin = continuation.programOrigin ?: com.wingedsheep.engine.handlers.effects.composite.EffectProgramInterpreter.startedBy(com.wingedsheep.sdk.scripting.effects.ChooseActionEffect::class),
-            resolvingTriggeredAbility = continuation.resolvingTriggeredAbility,
-            sourceId = continuation.sourceId,
-            objectReferences = continuation.objectReferences,
-            controllerId = continuation.controllerId,
-            targets = continuation.targets,
-            triggeringEntityId = continuation.triggeringEntityId,
-            pipeline = continuation.pipeline,
-            chosenCounterType = continuation.chosenCounterType
-        )
+        // The context the choice paused in, whole — targets, X, pipeline state and all.
+        val context = continuation.context.let {
+            if (it.programOrigin != null) it
+            else it.copy(programOrigin = com.wingedsheep.engine.handlers.effects.composite.EffectProgramInterpreter.startedBy(com.wingedsheep.sdk.scripting.effects.ChooseActionEffect::class))
+        }
 
         val result = services.effectExecutorRegistry.execute(state, chosenEffect, context).toExecutionResult()
 
