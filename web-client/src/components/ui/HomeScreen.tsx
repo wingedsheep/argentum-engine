@@ -360,8 +360,15 @@ export function HomeScreen({
               Cards
             </button>
             <button type="button" className={home.navItem} onClick={() => setShowReplays(true)}>Replays</button>
-            {/* "Which cards of a set can I actually play with?" is a deckbuilding question. */}
-            <button type="button" className={home.navItem} onClick={() => navigate('/set-completion')}>Sets</button>
+            {/* "Which set should I play?" — the guide links on to implementation progress. */}
+            <button
+              type="button"
+              className={home.navItem}
+              onClick={() => navigate('/sets')}
+              title="Compare the playable sets and find one that suits you"
+            >
+              Sets
+            </button>
             <button type="button" className={home.navItem} onClick={() => navigate('/learn')}>Learn</button>
             <button
               type="button"
@@ -488,7 +495,7 @@ export function HomeScreen({
         <nav className={home.nav} aria-label="Main">
           <button type="button" className={home.navItem} onClick={() => navigate('/library')}>Decks &amp; Cubes</button>
           <button type="button" className={home.navItem} onClick={() => navigate('/cards')}>Cards</button>
-          <button type="button" className={home.navItem} onClick={() => navigate('/set-completion')}>Sets</button>
+          <button type="button" className={home.navItem} onClick={() => navigate('/sets')}>Sets</button>
           <button type="button" className={home.navItem} onClick={() => navigate('/learn')}>Learn</button>
           <button
             type="button"

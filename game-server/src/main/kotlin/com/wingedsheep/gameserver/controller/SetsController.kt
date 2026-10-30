@@ -48,6 +48,8 @@ class SetsController(
         val setName: String,
         val implementedCount: Int,
         val incomplete: Boolean,
+        val releaseDate: String? = null,
+        val extensionSet: Boolean = false,
     )
 
     data class ArchetypeDTO(
@@ -76,7 +78,9 @@ class SetsController(
                     setCode = config.setCode,
                     setName = config.setName,
                     implementedCount = config.distinctCardCount,
-                    incomplete = config.incomplete
+                    incomplete = config.incomplete,
+                    releaseDate = config.releaseDate,
+                    extensionSet = config.extensionSet,
                 )
             }
 

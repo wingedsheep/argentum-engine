@@ -30,6 +30,14 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'feature-set-guide',
+    date: '2026-10-30',
+    kind: 'feature',
+    title: 'The Set guide: find a set to play',
+    body:
+      'Sets in the top bar now opens a guide to every set you can draft or play sealed: what each is about, how its games play, and power, speed and complexity ratings. Filter for easy-to-learn or fast formats, see every set on one speed-by-complexity map, or put up to four side by side. The lobby’s set picker shows the same summary for whichever set you point at.',
+  },
+  {
     id: 'set-m21',
     date: '2026-10-30',
     kind: 'set',

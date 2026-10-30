@@ -2981,7 +2981,7 @@ const COLOR_HEX: Record<string, string> = {
  * A color-identity gradient used as the tile backdrop when no card art is
  * available (or the art crop fails to load). Mirrors the saved-deck banner look.
  */
-function getArchetypeGradient(colors: readonly string[]): string {
+export function getArchetypeGradient(colors: readonly string[]): string {
   if (colors.length === 0) return 'linear-gradient(135deg, #2c2c38, #17171f)'
   if (colors.length === 1 && colors[0]) {
     const c = COLOR_HEX[colors[0]] ?? '#555'

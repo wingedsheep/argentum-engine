@@ -45,6 +45,9 @@ const CubeBuilderPage = lazy(() =>
 const SharedCubePage = lazy(() =>
   import('./pages/SharedCubePage').then(({ SharedCubePage }) => ({ default: SharedCubePage }))
 )
+const SetGuidePage = lazy(() =>
+  import('./components/setGuide/SetGuidePage').then(({ SetGuidePage }) => ({ default: SetGuidePage }))
+)
 const SetCompletionPage = lazy(() =>
   import('./components/setCompletion/SetCompletionPage').then(({ SetCompletionPage }) => ({ default: SetCompletionPage }))
 )
@@ -110,6 +113,7 @@ createRoot(rootElement).render(
           <Route path="/cubes/edit/:cubeId" element={<CubeBuilderPage />} />
           <Route path="/cubes/shared/:code" element={<SharedCubePage />} />
           <Route path="/scenario" element={<ScenarioBuilderPage />} />
+          <Route path="/sets" element={<SetGuidePage />} />
           <Route path="/set-completion" element={<SetCompletionPage />} />
           <Route path="/login/verify" element={<LoginVerifyPage />} />
           <Route path="/profile" element={<ProfilePage />} />

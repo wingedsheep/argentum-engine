@@ -13,12 +13,20 @@
  * Extension sets (bonus sheets like The Big Score) carry an "extension" badge and are only
  * playable alongside a regular set, so single mode hides them entirely.
  *
+ * Beside the list, a preview pane shows the Set guide's profile of the set under the pointer (or
+ * the last one selected), so a player can pick by what a set plays like, not just its name. Narrow
+ * screens drop the pane and show each set's one-line pitch under its name instead.
+ *
  * Visuals come from `GameUI.module.css` (the shared lobby stylesheet — `LobbyScreen`
  * already reuses it) so both lobbies look identical.
  */
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import type { AvailableSet } from '@/types/messages'
 import { SetIcon } from './SetIcon'
+import { SetPickerPreview } from '@/components/setGuide/SetPickerPreview'
+import { setProfile } from '@/components/setGuide/setProfiles'
+import guide from '@/components/setGuide/SetGuide.module.css'
 import { visiblePickerSets } from './setPickerSets'
 import styles from './GameUI.module.css'
 
@@ -94,6 +102,8 @@ export function SetPickerModal({
   const [showPartialSets, setShowPartialSets] = useState(false)
   // Hide thin sets (lots of partial sets have only a handful of cards). Defaults to 30.
   const [minCards, setMinCards] = useState(30)
+  // The set the preview pane describes: the row under the pointer or keyboard focus.
+  const [previewCode, setPreviewCode] = useState<string | null>(null)
 
   const isSingle = mode === 'single'
   const isSelected = (code: string) => selectedCodes.includes(code)
@@ -122,17 +132,23 @@ export function SetPickerModal({
     const selected = isSelected(set.code)
     const released = formatReleaseDate(set.releaseDate)
     const products = set.products ?? []
+    const tagline = setProfile(set.code)?.tagline
     const selectedProductIds = selectedProducts[set.code] ?? []
     return (
       <div key={set.code}>
       <button
         type="button"
         onClick={() => handlePick(set.code)}
+        onMouseEnter={() => setPreviewCode(set.code)}
+        onFocus={() => setPreviewCode(set.code)}
         className={`${styles.setPickerRow} ${selected ? styles.setPickerRowActive : ''}`}
       >
         <span className={styles.setPickerCheck} aria-hidden>{selected ? '✓' : ''}</span>
         <SetIcon code={set.code} className={styles.setPickerIcon} />
-        <span className={styles.setPickerName}>{set.name}</span>
+        <span className={styles.setPickerName}>
+          {set.name}
+          {tagline && <span className={guide.pickerTagline}>{tagline}</span>}
+        </span>
         {set.partial && <span className={styles.setPartialBadge}>partial</span>}
         {set.extensionSet && <span className={styles.setExtensionBadge}>extension</span>}
         {released && <span className={styles.setReleaseDate}>{released}</span>}
@@ -220,12 +236,17 @@ export function SetPickerModal({
     )
   }
 
+  const previewSet =
+    sets.find((s) => s.code === previewCode) ?? sets.find((s) => s.code === selectedCodes[selectedCodes.length - 1])
+
   const showRandomRow = onSelectRandom != null
   const randomActive = isSingle && selectedCodes.length === 0
 
-  return (
+  // Portalled to the body: hosts like the Play hub's side sheet would otherwise confine the modal
+  // (and its preview pane) to their own width.
+  return createPortal(
     <div className={styles.deckViewerBackdrop} onClick={onClose}>
-      <div className={styles.deckViewerPanel} style={{ maxWidth: 560 }} onClick={(e) => e.stopPropagation()}>
+      <div className={styles.deckViewerPanel} style={{ maxWidth: 940 }} onClick={(e) => e.stopPropagation()}>
         <div className={styles.deckViewerHeader}>
           <h3 className={styles.deckViewerTitle}>{title}</h3>
           {!isSingle && (
@@ -235,7 +256,8 @@ export function SetPickerModal({
           )}
           <button className={styles.deckViewerClose} onClick={onClose}>×</button>
         </div>
-        <div className={styles.deckViewerBody}>
+        <div className={guide.pickerLayout}>
+        <div className={`${styles.deckViewerBody} ${guide.pickerMain}`}>
           <input
             type="text"
             className={styles.setPickerSearch}
@@ -317,7 +339,12 @@ export function SetPickerModal({
             )}
           </div>
         </div>
+        <aside className={guide.pickerPreview} aria-label="About this set">
+          <SetPickerPreview set={previewSet} />
+        </aside>
+        </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

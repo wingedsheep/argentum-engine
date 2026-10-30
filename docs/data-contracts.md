@@ -270,7 +270,7 @@ Set-level metadata for the deckbuilder, pickers, and the **Set Completion** view
 plain HTTP JSON.
 
 **List sets** — `GET /api/sets` → `[{ "code", "name", "releaseDate" }]` (every catalogued set).
-**Booster-ready** — `GET /api/sets/booster-ready` → `[{ "setCode", "setName", "implementedCount", "incomplete" }]`
+**Booster-ready** — `GET /api/sets/booster-ready` → `[{ "setCode", "setName", "implementedCount", "incomplete", "releaseDate", "extensionSet" }]` (the Set guide reads this list)
 (subset draftable for sealed/draft).
 
 **Set coverage** — `GET /api/sets/coverage` → per-set card-implementation coverage, newest release
