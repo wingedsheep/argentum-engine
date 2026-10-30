@@ -53,11 +53,9 @@ class SelectTargetPipelineExecutor(
             ignoreTargetingRestrictions = effect.nonTargeting,
             // Carry the resolving ability's granter so a target filter can exclude it via
             // StatePredicate.IsGrantingPermanent — e.g. Dire Blunderbuss's "an artifact other than
-            // Dire Blunderbuss" (CR 201.5a). Only granterId is threaded; other context fields keep
-            // their prior (null) defaults so no existing SelectTargetEffect changes behavior.
-            // The pipeline's earlier picks are threaded too, so a filter can scope to a player an
-            // earlier step chose — "a planeswalker that player controls" over
-            // ControlledByReferencedPlayer(PipelineTarget) (Vial Smasher the Fierce).
+            // Dire Blunderbuss" (CR 201.5a). The pipeline's earlier picks are threaded too, so a
+            // filter can scope to a player an earlier step chose — "a planeswalker that player
+            // controls" over ControlledByReferencedPlayer(PipelineTarget) (Vial Smasher the Fierce).
             pipelineContext = com.wingedsheep.engine.handlers.PredicateContext(
                 controllerId = controllerId,
                 granterId = context.granterId,

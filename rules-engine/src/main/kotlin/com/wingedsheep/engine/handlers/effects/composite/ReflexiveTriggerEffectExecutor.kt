@@ -180,11 +180,12 @@ class ReflexiveTriggerEffectExecutor(
             targetingSourceType = TargetingSourceType.TRIGGERED_ABILITY,
             // Carry granterId so the "may" feasibility check honors a granter-relative exclusion —
             // e.g. Dire Blunderbuss must NOT offer the sacrifice when the only artifact is the
-            // granting Equipment itself. Minimal context (granterId only) matches the actual
+            // granting Equipment itself. The same context (granterId + earlier picks) as the actual
             // selection path in SelectTargetPipelineExecutor, so feasibility and execution agree.
             pipelineContext = com.wingedsheep.engine.handlers.PredicateContext(
                 controllerId = context.controllerId,
-                granterId = context.granterId
+                granterId = context.granterId,
+                storedCollections = context.pipeline.storedCollections
             )
         ).any { candidate ->
             // Mirror the executor's earlier-pick exclusion, so feasibility and execution agree.

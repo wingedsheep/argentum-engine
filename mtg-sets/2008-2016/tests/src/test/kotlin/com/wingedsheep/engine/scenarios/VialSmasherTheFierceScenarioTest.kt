@@ -2,10 +2,13 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.ScenarioTestBase
+import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
@@ -124,6 +127,47 @@ class VialSmasherTheFierceScenarioTest : ScenarioTestBase() {
                 game.hasPendingDecision() shouldBe false
                 game.getLifeTotal(2) shouldBe 16
                 game.loyalty(liliana) shouldBe 5
+            }
+
+            test("multiplayer: only the randomly chosen opponent's planeswalker is offered, and declining hits that opponent") {
+                val d = GameTestDriver()
+                d.registerCards(TestCards.all)
+                val (me, oppA, oppB) = d.initMultiplayer(
+                    decks = List(3) { Deck.of("Mountain" to 40) },
+                    startingPlayer = 0,
+                )
+                d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+                d.putCreatureOnBattlefield(me, "Vial Smasher the Fierce")
+                val walkerA = d.putPermanentOnBattlefield(oppA, "Liliana Vess")
+                val walkerB = d.putPermanentOnBattlefield(oppB, "Liliana Vess")
+                for (walker in listOf(walkerA, walkerB)) {
+                    d.addComponent(walker, CountersComponent(mapOf(CounterType.LOYALTY to 5)))
+                }
+                repeat(4) { d.putLandOnBattlefield(me, "Mountain") }
+                val giant = d.putCardInHand(me, "Hill Giant")
+
+                d.castSpell(me, giant).error shouldBe null
+                var guard = 0
+                while (d.pendingDecision == null && d.stackSize > 0 && guard++ < 20) d.passPriority(d.state.priorityPlayerId!!)
+
+                val decision = d.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+                val offered = decision.legalTargets[0]!!
+                withClue("exactly one planeswalker — the drawn opponent's — is offered, never both") {
+                    offered.size shouldBe 1
+                }
+                val (chosen, other) = if (offered.single() == walkerA) oppA to oppB else oppB to oppA
+                offered.single() shouldBe (if (chosen == oppA) walkerA else walkerB)
+
+                d.submitTargetSelection(me, emptyList()).error shouldBe null
+                guard = 0
+                while (d.stackSize > 0 && guard++ < 20) d.passPriority(d.state.priorityPlayerId!!)
+
+                withClue("declining sends the damage to the opponent who was drawn") {
+                    d.getLifeTotal(chosen) shouldBe 16
+                    d.getLifeTotal(other) shouldBe 20
+                }
+                d.state.getEntity(walkerA)!!.get<CountersComponent>()!!.getCount(CounterType.LOYALTY) shouldBe 5
+                d.state.getEntity(walkerB)!!.get<CountersComponent>()!!.getCount(CounterType.LOYALTY) shouldBe 5
             }
 
             test("an X spell uses the chosen X for its mana value") {
