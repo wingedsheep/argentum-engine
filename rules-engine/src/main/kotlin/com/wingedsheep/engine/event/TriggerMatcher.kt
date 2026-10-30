@@ -1820,6 +1820,8 @@ class TriggerMatcher(
             com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasXInManaCost ->
                 // Printed cost's {X} symbol, not the computed CMC. Face-down has no mana cost.
                 if (isFaceDown) false else cardComponent.manaCost.hasX
+            com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasRepeatedManaSymbol ->
+                if (isFaceDown) false else cardComponent.manaCost.hasRepeatedSymbol
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaCostIs ->
                 if (isFaceDown) false else cardComponent.manaCost == predicate.manaCost
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ColoredManaSymbolsAtLeast ->

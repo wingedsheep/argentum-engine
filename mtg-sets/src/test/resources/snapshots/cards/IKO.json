@@ -3633,6 +3633,94 @@
     ]
 }
 
+// Jegantha, the Wellspring
+{
+    "name": "Jegantha, the Wellspring",
+    "manaCost": "{4}{R/G}",
+    "typeLine": "Legendary Creature — Elemental Elk",
+    "oracleText": "Companion — No card in your starting deck has more than one of the same mana symbol in its mana cost. (If this card is your chosen companion, you may put it into your hand from outside the game for {3} as a sorcery.)\n{T}: Add {W}{U}{B}{R}{G}. This mana can't be spent to pay generic mana costs.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywordAbilities": [
+        {
+            "type": "Companion",
+            "condition": {
+                "type": "EachCard",
+                "filter": {
+                    "cardPredicates": [
+                        {
+                            "type": "Not",
+                            "predicate": "HasRepeatedManaSymbol"
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Jegantha, the Wellspring:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "WHITE",
+                            "restriction": "CannotPayGenericCosts"
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "BLUE",
+                            "restriction": "CannotPayGenericCosts"
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "BLACK",
+                            "restriction": "CannotPayGenericCosts"
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "RED",
+                            "restriction": "CannotPayGenericCosts"
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "GREEN",
+                            "restriction": "CannotPayGenericCosts"
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "222",
+        "rarity": "RARE",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/d/1d52e527-3835-4350-8c01-0f2d5d623b9c.jpg?1783931011",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "You can spend mana from Jegantha's mana ability to pay for a hybrid symbol such as {2/W}, but only if you choose to pay the colored mana component, not the generic mana component."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "A generic mana cost is usually represented by numeric mana symbols ({1}, {2}, and so on) and also {X}. It is any cost requiring mana where that cost isn't {C}, {W}, {U}, {B}, {R}, or {G}."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Jegantha's companion ability compares the exact symbols in the mana costs of cards in your deck. If any one card has the same symbol twice, such as {X}{X}{R} or {(r/g)}{(r/g)}, the companion condition isn't satisfied."
+            }
+        ]
+    }
+}
+
 // Jubilant Skybonder
 {
     "name": "Jubilant Skybonder",

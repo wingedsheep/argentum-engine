@@ -7284,6 +7284,12 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   printed cost. Face-down objects (no mana cost) never match; the cast-record path returns `false`
   (a record stores the resolved mana value, not the printed cost). Used by *Paradox Surveyor*
   ("a card with {X} in its mana cost"). Underlying predicate: `CardPredicate.HasXInManaCost`.
+- `.hasRepeatedManaSymbol()` — the card's **printed** mana cost holds the same symbol more than once
+  (`{1}{G}{G}`, `{X}{X}{R}`, `{R/G}{R/G}`). Exact symbols compare, per Jegantha's ruling: hybrid
+  `{R/G}` is its own symbol (`{R}{R/G}` has no repeat) and `{4}` is one symbol. No mana cost and
+  face-down objects never match; the cast-record path returns `false`. Jegantha, the Wellspring's
+  companion condition negates it: `EachCard(Any.withCardPredicate(Not(HasRepeatedManaSymbol)))`.
+  Underlying predicate: `CardPredicate.HasRepeatedManaSymbol`.
 - `.manaCostIs(vararg costs)` — the card's **printed** mana cost is exactly one of `costs`
   (symbols, not mana value): *Urza's Saga*'s "an artifact card with mana cost {0} or {1}" is
   `GameObjectFilter.Artifact.manaCostIs("{0}", "{1}")` (an `Or` of two). Per its ruling `{U}` and
@@ -14431,13 +14437,11 @@ Blighted Agent, Ichor Rats, Plague Stinger, Skithiryx.
     - `EachCard(filter)` — every card of the starting deck matches it. Gyruda `Any.manaValueIsEven()`,
       Obosh `Land or Any.manaValueIsOdd()`, Keruga `Land or Any.manaValueAtLeast(3)`, Lurrus
       `Nonpermanent or Permanent.manaValueAtMost(2)`, Kaheera `Noncreature or Any.withAnyOfSubtypes(…)`,
-      Zirda `Nonpermanent or Any.withCardPredicate(CardPredicate.HasActivatedAbility)`.
+      Zirda `Nonpermanent or Any.withCardPredicate(CardPredicate.HasActivatedAbility)`, Jegantha
+      `Any.withCardPredicate(CardPredicate.Not(CardPredicate.HasRepeatedManaSymbol))`.
     - `DeckSizeAboveMinimum(extra)` — Yorion's 20 over the format minimum (never in 100-card Commander).
     - `ShareACardType(among)` — Umori, `among = Nonland`: one card type common to all of them.
     - `DistinctNames(among)` — Lutri, `among = Nonland`: no repeated name.
-
-    Jegantha ("more than one of the same mana symbol") reads a mana-cost symbol multiset no filter
-    expresses and is not modelled.
   - **Game setup and play.** `GameInitializer` marks the named sideboard copy as the player's
     `CompanionComponent` (on the player). It stays in `Zone.SIDEBOARD` — outside the game — but
     `Visibility` shows it to every player and spectator (103.2b), and `ClientPlayer.companionId` points at

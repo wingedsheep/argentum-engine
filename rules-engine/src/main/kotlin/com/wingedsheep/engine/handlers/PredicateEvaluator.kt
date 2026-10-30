@@ -492,6 +492,7 @@ class PredicateEvaluator(
             is CardPredicate.HasSubtypeInEachStoredGroup,
             is CardPredicate.HasSubtypeInStoredList,
             CardPredicate.HasXInManaCost,
+            CardPredicate.HasRepeatedManaSymbol,
             is CardPredicate.ManaCostIs,
             CardPredicate.IsActivatedAbility,
             CardPredicate.IsLoyaltyAbility,
@@ -1091,6 +1092,8 @@ class PredicateEvaluator(
                 // (Rule 708.2 — no mana cost) never match.
                 if (projectedValues?.isFaceDown == true) false else card.manaCost.hasX
             }
+            CardPredicate.HasRepeatedManaSymbol ->
+                if (projectedValues?.isFaceDown == true) false else card.manaCost.hasRepeatedSymbol
             is CardPredicate.ManaCostIs ->
                 // Printed symbols, not mana value: {U} is not {1}, and no mana cost is not {0}.
                 if (projectedValues?.isFaceDown == true) false else card.manaCost == predicate.manaCost
@@ -2850,6 +2853,7 @@ class PredicateEvaluator(
             // A cast-spell record stores the resolved mana value, not the printed cost, so we
             // cannot recover whether {X} was in the printed cost — nor its colored pips.
             CardPredicate.HasXInManaCost -> false
+            CardPredicate.HasRepeatedManaSymbol -> false
             is CardPredicate.ManaCostIs -> false
             is CardPredicate.ColoredManaSymbolsAtLeast -> false
 

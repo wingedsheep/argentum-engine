@@ -1261,6 +1261,7 @@ class CastZoneResolver(
                 is CardPredicate.ManaValueIsEven -> cmc % 2 == 0
                 is CardPredicate.ManaValueIsOdd -> cmc % 2 != 0
                 is CardPredicate.HasXInManaCost -> card.manaCost.hasX
+                is CardPredicate.HasRepeatedManaSymbol -> card.manaCost.hasRepeatedSymbol
                 is CardPredicate.ManaCostIs -> card.manaCost == predicate.manaCost
                 is CardPredicate.ColoredManaSymbolsAtLeast ->
                     card.manaCost.coloredSymbolCount(predicate.colors.toSet()) >= predicate.min

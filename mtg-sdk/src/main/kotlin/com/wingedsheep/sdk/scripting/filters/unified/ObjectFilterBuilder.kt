@@ -282,6 +282,9 @@ interface ObjectFilterBuilder<out Self> {
     /** Printed mana cost contains an {X} symbol (Paradox Surveyor). */
     fun hasXInManaCost() = withCardPredicate(CardPredicate.HasXInManaCost)
 
+    /** Printed mana cost has the same mana symbol more than once — `{X}{X}{R}`, `{G}{G}` (Jegantha). */
+    fun hasRepeatedManaSymbol() = withCardPredicate(CardPredicate.HasRepeatedManaSymbol)
+
     /**
      * Printed mana cost is exactly one of [costs] — "with mana cost {0} or {1}" (Urza's Saga) is
      * `manaCostIs("{0}", "{1}")`. Compares symbols, not mana value, so `{U}` and `{X}` never match

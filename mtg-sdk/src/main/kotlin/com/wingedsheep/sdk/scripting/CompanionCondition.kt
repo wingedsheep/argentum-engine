@@ -24,9 +24,7 @@ import kotlinx.serialization.Serializable
  * | Yorion  | `DeckSizeAboveMinimum(20)` |
  * | Umori   | `ShareACardType(Nonland)` |
  * | Lutri   | `DistinctNames(Nonland)` |
- *
- * Jegantha ("no card has more than one of the same mana symbol in its mana cost") reads the
- * mana cost's symbol multiset, which no filter predicate expresses; it is not modelled yet.
+ * | Jegantha | `EachCard(Any.withCardPredicate(Not(HasRepeatedManaSymbol)))` |
  */
 @Serializable
 sealed interface CompanionCondition {

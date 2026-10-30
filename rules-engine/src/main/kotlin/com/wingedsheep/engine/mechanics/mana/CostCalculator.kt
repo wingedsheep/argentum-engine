@@ -1967,6 +1967,7 @@ class CostCalculator(
             CardPredicate.ManaValueIsEven -> manaValue % 2 == 0
             CardPredicate.ManaValueIsOdd -> manaValue % 2 != 0
             CardPredicate.HasXInManaCost -> cardDef.manaCost.hasX
+            CardPredicate.HasRepeatedManaSymbol -> cardDef.manaCost.hasRepeatedSymbol
             is CardPredicate.ManaCostIs -> cardDef.manaCost == predicate.manaCost
             is CardPredicate.ColoredManaSymbolsAtLeast ->
                 cardDef.manaCost.coloredSymbolCount(predicate.colors.toSet()) >= predicate.min

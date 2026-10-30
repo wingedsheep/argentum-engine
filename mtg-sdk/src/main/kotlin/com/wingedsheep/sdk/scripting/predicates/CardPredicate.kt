@@ -672,6 +672,24 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     }
 
     /**
+     * Matches a card whose printed mana cost holds the same mana symbol more than once —
+     * `{1}{G}{G}`, `{X}{X}{R}`, `{R/G}{R/G}`. Exact symbols are compared (Jegantha, the
+     * Wellspring's ruling): a hybrid `{R/G}` is a symbol of its own, distinct from `{R}` and `{G}`,
+     * so `{R}{R/G}` has no repeat; each numeric generic symbol is one symbol, so `{4}{R}` has none.
+     * Face-down objects (no mana cost, CR 708.2) and cards with no mana cost never match; the
+     * cast-record path returns `false` (a record stores the mana value, not the printed cost).
+     *
+     * Jegantha's companion condition is `EachCard(Any.not(hasRepeatedManaSymbol))`. Closest
+     * neighbours: [HasXInManaCost] inspects one symbol; [ColoredManaSymbolsAtLeast] counts pips of
+     * a colour set without telling `{W}{U}` from `{U}{U}`; [ManaCostIs] compares one whole cost.
+     */
+    @SerialName("HasRepeatedManaSymbol")
+    @Serializable
+    data object HasRepeatedManaSymbol : CardPredicate {
+        override val description: String = "with a repeated mana symbol in its mana cost"
+    }
+
+    /**
      * Matches a card whose printed mana cost is exactly [manaCost] — "an artifact card with mana
      * cost {0} or {1}" (Urza's Saga, an [Or] of two). This compares the printed symbols, not the
      * mana value: per the Urza's Saga ruling a card costing `{U}` or `{X}` does not match `{1}` /

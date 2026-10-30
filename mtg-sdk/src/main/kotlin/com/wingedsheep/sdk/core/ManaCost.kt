@@ -51,6 +51,13 @@ data class ManaCost(val symbols: List<ManaSymbol>) {
     val xCount: Int
         get() = symbols.count { it is ManaSymbol.X }
 
+    /**
+     * True when the same symbol appears more than once — `{1}{G}{G}`, `{X}{X}{R}`, `{R/G}{R/G}`.
+     * Symbols compare exactly: `{R}{R/G}` has no repeat, and `{4}` is one symbol.
+     */
+    val hasRepeatedSymbol: Boolean
+        get() = symbols.size != symbols.toSet().size
+
     /** How many `{S}` pips this cost holds — each payable only with mana from a snow source (CR 107.4h). */
     val snowCount: Int
         get() = symbols.count { it is ManaSymbol.Snow }

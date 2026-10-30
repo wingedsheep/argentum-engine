@@ -109,6 +109,28 @@ class CompanionEligibilityTest : FunSpec({
         CompanionEligibility.conditionError(zirda, listOf(forest, bear), 40).shouldNotBeNull()
     }
 
+    test("EachCard: Jegantha — no card repeats a mana symbol; exact symbols compare (ruling)") {
+        val jegantha = companion(
+            CompanionCondition.EachCard(
+                GameObjectFilter.Any.withCardPredicate(CardPredicate.Not(CardPredicate.HasRepeatedManaSymbol))
+            )
+        )
+        val guildmage = creature("Guildmage", "{W}{U}", "Wizard")
+        val elk = creature("Elk", "{4}{R/G}", "Elk")
+        // {R/G} is a symbol of its own, distinct from {R}: no repeat.
+        val mixed = creature("Mixed", "{R}{R/G}", "Elemental")
+        // A land has no mana cost at all — nothing to repeat.
+        CompanionEligibility.conditionError(jegantha, listOf(forest, bear, giant, guildmage, elk, mixed, fireball), 40)
+            .shouldBeNull()
+
+        val ogre = creature("Ogre", "{1}{G}{G}", "Ogre")
+        val hydra = CardDefinition.sorcery("Double Blast", ManaCost.parse("{X}{X}{R}"), "Deal 2X.")
+        val hybridTwice = creature("Twin", "{R/G}{R/G}", "Elemental")
+        CompanionEligibility.conditionError(jegantha, listOf(forest, ogre), 40).shouldNotBeNull() shouldContain "Ogre"
+        CompanionEligibility.conditionError(jegantha, listOf(forest, hydra), 40).shouldNotBeNull() shouldContain "Double Blast"
+        CompanionEligibility.conditionError(jegantha, listOf(forest, hybridTwice), 40).shouldNotBeNull() shouldContain "Twin"
+    }
+
     test("DeckSizeAboveMinimum: Yorion — twenty over the minimum; never in a 100-card Commander deck") {
         val yorion = companion(CompanionCondition.DeckSizeAboveMinimum(20))
         CompanionEligibility.conditionError(yorion, List(60) { forest }, 40).shouldBeNull()
