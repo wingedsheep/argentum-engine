@@ -843,10 +843,19 @@ object ZoneMovementUtils {
         state: GameState,
         entityId: EntityId,
         fromZone: Zone?,
+        controllerId: EntityId?,
+        entryCopy: com.wingedsheep.engine.handlers.effects.copy.EntryCopyChoice?,
+        cardRegistry: com.wingedsheep.engine.registry.CardRegistry,
         predicateEvaluator: PredicateEvaluator
     ): Boolean = fromZone != Zone.BATTLEFIELD &&
-        checkZoneChangeRedirect(state, entityId, fromZone, Zone.BATTLEFIELD, predicateEvaluator = predicateEvaluator)
-            .destinationZone != Zone.BATTLEFIELD
+        checkZoneChangeRedirect(
+            state, entityId, fromZone, Zone.BATTLEFIELD, predicateEvaluator = predicateEvaluator,
+            entersAsCreature = {
+                EntryCharacteristics.wouldBeCreature(
+                    state, entityId, controllerId, entryCopy, faceDown = false, cardRegistry, predicateEvaluator
+                )
+            }
+        ).destinationZone != Zone.BATTLEFIELD
 
     /**
      * Resolve the destination of a zone change after replacement effects.
@@ -862,10 +871,10 @@ object ZoneMovementUtils {
      *        happened to iterate first would silently decide the outcome. The moving object's own
      *        replacements (finality counter, madness, commander, self-redirect) are still read off
      *        [state] — those travel with the card, not with a battlefield source.
-     * @param enteringFaceDown The card is being put onto the battlefield face down (manifest,
-     *        cloak, a face-down put-onto-battlefield). It enters as a 2/2 creature with no name or
-     *        types (CR 708.2), and a replacement on that entry judges the card as it would exist on
-     *        the battlefield (CR 614.12) — so a manifested noncreature card is a creature entering.
+     * @param entersAsCreature For a battlefield entry: whether the card would be a creature as it
+     *        would exist on the battlefield ([EntryCharacteristics.wouldBeCreature], CR 614.12) —
+     *        a manifested noncreature card is, a Heliod short of devotion isn't. Asked at most once,
+     *        and only by a replacement that filters on creature-ness; null reads the printed type line.
      */
     fun checkZoneChangeRedirect(
         state: GameState,
@@ -874,9 +883,10 @@ object ZoneMovementUtils {
         toZone: Zone,
         battlefieldSourceState: GameState = state,
         predicateEvaluator: PredicateEvaluator,
-        enteringFaceDown: Boolean = false
+        entersAsCreature: (() -> Boolean)? = null
     ): ZoneChangeRedirectResult {
         val container = state.getEntity(entityId) ?: return ZoneChangeRedirectResult(toZone)
+        val enteringIsCreature = entersAsCreature?.takeIf { toZone == Zone.BATTLEFIELD }?.let { lazy(it) }
 
         // A spell cast with flashback, aftermath or jump-start is exiled instead of going anywhere
         // else as it leaves the stack (CR 702.34a / 702.127a / 702.133a).
@@ -984,7 +994,7 @@ object ZoneMovementUtils {
                         if (event.from != null && event.from != fromZone) continue
 
                         // Check filter against the entity being moved
-                        if (!matchesZoneChangeFilter(state, entityId, container, event.filter, sourceControllerId, battlefieldSourceState, permanentId, enteringFaceDown)) continue
+                        if (!matchesZoneChangeFilter(state, entityId, container, event.filter, sourceControllerId, battlefieldSourceState, permanentId, enteringIsCreature)) continue
 
                         // Honour any cause qualifier (e.g. "only when discarded by an opponent's
                         // spell or ability") the same way the self-replacement path above does.
@@ -1005,7 +1015,7 @@ object ZoneMovementUtils {
 
                         if (event.to != null && event.to != toZone) continue
                         if (event.from != null && event.from != fromZone) continue
-                        if (!effect.selfOnly && !matchesZoneChangeFilter(state, entityId, container, event.filter, sourceControllerId, battlefieldSourceState, permanentId, enteringFaceDown)) continue
+                        if (!effect.selfOnly && !matchesZoneChangeFilter(state, entityId, container, event.filter, sourceControllerId, battlefieldSourceState, permanentId, enteringIsCreature)) continue
 
                         // Match found — redirect AND return additional effect. When the replacement
                         // links its exiled cards to the source (The Darkness Crystal), carry the
@@ -1041,7 +1051,7 @@ object ZoneMovementUtils {
 
             if (event.to != null && event.to != toZone) continue
             if (event.from != null && event.from != fromZone) continue
-            if (!matchesZoneChangeFilter(state, entityId, container, event.filter, grant.controllerId, enteringFaceDown = enteringFaceDown)) continue
+            if (!matchesZoneChangeFilter(state, entityId, container, event.filter, grant.controllerId, enteringIsCreature = enteringIsCreature)) continue
             if (!causeSatisfied(state, entityId, container, effect.requiredCause)) continue
 
             return ZoneChangeRedirectResult(effect.newDestination)
@@ -1060,8 +1070,8 @@ object ZoneMovementUtils {
      *   batch still answers source-relative predicates as it stood when the batch began.
      * @param sourceId The permanent hosting the replacement; null for granted (sourceless)
      *   replacements, where source-relative predicates never match.
-     * @param enteringFaceDown See [checkZoneChangeRedirect]: the card enters as a face-down 2/2
-     *   creature, so it is a creature (and not a noncreature) for the filter.
+     * @param enteringIsCreature For a battlefield entry, whether the card would be a creature on
+     *   the battlefield (see [checkZoneChangeRedirect]); null reads the printed type line.
      */
     private fun matchesZoneChangeFilter(
         state: GameState,
@@ -1071,15 +1081,17 @@ object ZoneMovementUtils {
         sourceControllerId: EntityId,
         sourceState: GameState = state,
         sourceId: EntityId? = null,
-        enteringFaceDown: Boolean = false
+        enteringIsCreature: Lazy<Boolean>? = null
     ): Boolean {
         if (filter == GameObjectFilter.Any) return true
 
         val cardComponent = container.get<CardComponent>() ?: return false
 
-        // "…and it wasn't cast" (Containment Priest). Only a spell resolving off the stack carries
-        // a cast origin (`SpellOnStackComponent.castFromZone`); a card put onto the battlefield from
-        // any other zone — or a copy put onto the stack (CR 707.10) — wasn't cast.
+        // "…and it wasn't cast" (Containment Priest). A spell carries its cast origin
+        // (`SpellOnStackComponent.castFromZone`) and a permanent the markers stamped as it resolved;
+        // a card put onto the battlefield from any other zone — or a copy put onto the stack (CR
+        // 707.10) — wasn't cast. Zone changes strip the markers (CR 400.7), so a card in a graveyard
+        // or library reads as not cast too.
         for (predicate in filter.statePredicates) {
             val wasCast = when (predicate) {
                 is StatePredicate.WasCast -> predicate
@@ -1088,7 +1100,11 @@ object ZoneMovementUtils {
             } ?: continue
             val castFrom = container
                 .get<com.wingedsheep.engine.state.components.stack.SpellOnStackComponent>()?.castFromZone
-            val cast = castFrom != null && (wasCast.fromZone == null || castFrom == wasCast.fromZone)
+                ?: com.wingedsheep.engine.state.components.stack.castFromZoneOf(container)
+            val cast = if (wasCast.fromZone == null) {
+                castFrom != null ||
+                    container.has<com.wingedsheep.engine.state.components.battlefield.WasCastComponent>()
+            } else castFrom == wasCast.fromZone
             if (cast == (predicate is StatePredicate.Not)) return false
         }
 
@@ -1113,14 +1129,14 @@ object ZoneMovementUtils {
         // Check card predicates
         for (predicate in filter.cardPredicates) {
             val matches = when (predicate) {
-                CardPredicate.IsCreature -> enteringFaceDown || cardComponent.typeLine.isCreature
+                CardPredicate.IsCreature -> enteringIsCreature?.value ?: cardComponent.typeLine.isCreature
                 CardPredicate.IsNontoken -> !container.has<TokenComponent>()
                 CardPredicate.IsToken -> container.has<TokenComponent>()
                 CardPredicate.IsLand -> cardComponent.typeLine.isLand
                 CardPredicate.IsArtifact -> cardComponent.typeLine.isArtifact
                 CardPredicate.IsEnchantment -> cardComponent.typeLine.isEnchantment
                 CardPredicate.IsNonland -> !cardComponent.typeLine.isLand
-                CardPredicate.IsNoncreature -> !enteringFaceDown && !cardComponent.typeLine.isCreature
+                CardPredicate.IsNoncreature -> !(enteringIsCreature?.value ?: cardComponent.typeLine.isCreature)
                 CardPredicate.IsNonenchantment -> !cardComponent.typeLine.isEnchantment
                 CardPredicate.IsNonartifact -> !cardComponent.typeLine.isArtifact
                 CardPredicate.IsPermanent -> cardComponent.typeLine.isPermanent

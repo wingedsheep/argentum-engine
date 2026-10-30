@@ -318,13 +318,22 @@ class PlayLandHandler(
         // chosen (CR 614.12: as it would exist on the battlefield). The land was still played: the
         // drop is spent and "whenever you play a land" still sees it.
         val entryRedirect = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.checkZoneChangeRedirect(
-            newState, action.cardId, fromZone, Zone.BATTLEFIELD, predicateEvaluator = predicateEvaluator
+            newState, action.cardId, fromZone, Zone.BATTLEFIELD, predicateEvaluator = predicateEvaluator,
+            entersAsCreature = {
+                com.wingedsheep.engine.handlers.effects.EntryCharacteristics.wouldBeCreature(
+                    newState, action.cardId, action.playerId, entryCopy = null, faceDown = false,
+                    cardRegistry, predicateEvaluator
+                )
+            }
         )
         if (entryRedirect.destinationZone != Zone.BATTLEFIELD) {
             val ownerId = printedCardComponent.ownerId ?: action.playerId
             val destination = entryRedirect.destinationZone
-            newState = newState
-                .updateEntity(action.cardId) { c -> c.without<ControllerComponent>() }
+            newState = spendExilePlayAllowances(state, newState, action, fromZone)
+                .updateEntity(action.cardId) { c ->
+                    c.without<ControllerComponent>()
+                        .without<com.wingedsheep.engine.state.components.battlefield.EnteredFromGraveyardComponent>()
+                }
                 .addToZone(ZoneKey(ownerId, destination), action.cardId)
                 .updateEntity(action.playerId) { c ->
                     c.with((c.get<LandDropsComponent>() ?: LandDropsComponent()).use())
@@ -338,7 +347,10 @@ class PlayLandHandler(
                 oldObject = state.objectRef(action.cardId),
                 newObject = newState.objectRef(action.cardId),
             )
-            return ExecutionResult.success(newState.tick(), listOf(redirectedEvent, landPlayedEvent))
+            return ExecutionResult.success(
+                newState.tick(),
+                listOfNotNull(redirectedEvent, riderPlayEventFor(state, action, fromZone), landPlayedEvent)
+            )
         }
 
         // A land creature (Dryad Arbor) is a creature entering: a granted "enters as a copy"
@@ -409,61 +421,13 @@ class PlayLandHandler(
         if (permissionForcesTapped && !landEntersUntapped) {
             newState = newState.updateEntity(action.cardId) { c -> c.with(TappedComponent) }
         }
-        // "When you play a card this way, …" rider (Fires of Mount Doom). If this land was
-        // played from exile via a may-play permission carrying a rider, capture the linked
-        // event BEFORE removing the permission so the rider's delayed triggered ability fires.
-        val riderPlayEvent: com.wingedsheep.engine.core.CardPlayedFromPermissionEvent? =
-            if (fromZone == Zone.EXILE) {
-                state.mayPlayPermissions.firstOrNull { permission ->
-                    permission.riderLinkId != null &&
-                        permission.controllerId == action.playerId &&
-                        action.cardId in permission.cardIds &&
-                        permission.sourceId != null
-                }?.let { permission ->
-                    com.wingedsheep.engine.core.CardPlayedFromPermissionEvent(
-                        cardId = action.cardId,
-                        controllerId = action.playerId,
-                        sourceId = permission.sourceId!!,
-                        linkId = permission.riderLinkId!!
-                    )
-                }
-            } else null
+        // "When you play a card this way, …" rider (Fires of Mount Doom), captured before the
+        // permission goes.
+        val riderPlayEvent = riderPlayEventFor(state, action, fromZone)
 
         // The land's may-play grants went as it entered the battlefield (a new object, CR 400.7);
         // what's left is the once-per-turn bookkeeping and the linked-exile pile.
-        if (fromZone == Zone.EXILE) {
-            // Record once-per-turn linked-exile permission usage (Hauken's Insight — "Once during
-            // each of your turns, you may play a land or cast a spell"). Resolved against the
-            // pre-play `state`: the unlink below removes the card from its granter's pile, after
-            // which nothing connects the two. The marker is the same one `CastSpellHandler`
-            // stamps, which is what makes the land and the spell share one allowance.
-            val linkedGranter = com.wingedsheep.engine.handlers.effects.linkedexile.LinkedExilePlayUtils
-                .landGranterFor(state, action.playerId, action.cardId, legality)
-            if (linkedGranter?.ability?.oncePerTurn == true) {
-                newState = newState.updateEntity(linkedGranter.sourceId) { c ->
-                    c.with(
-                        com.wingedsheep.engine.state.components.battlefield
-                            .MayCastFromLinkedExileUsedThisTurnComponent
-                    )
-                }
-            }
-            // The filter-defined sibling (Evelyn, the Covetous): a land play spends the same
-            // once-each-turn allowance a cast would.
-            state.oncePerTurnGranterToSpend(action.cardId, action.playerId, conditionEvaluator, cardRegistry)
-                ?.let { granter ->
-                    newState = newState.updateEntity(granter) { c ->
-                        c.with(
-                            com.wingedsheep.engine.state.components.battlefield
-                                .MayCastFromLinkedExileUsedThisTurnComponent
-                        )
-                    }
-                }
-            // Drop the card from any linked-exile granter (Valgavoth) now that it has left exile,
-            // so the granter no longer lists it. (Lands bypass ZoneTransitionService, which would
-            // otherwise unlink on the way out.)
-            newState = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
-                .unlinkFromAllLinkedExiles(newState, action.cardId)
-        }
+        newState = spendExilePlayAllowances(state, newState, action, fromZone)
         // CR 712.8f — a modal double-faced permanent has only the characteristics of the face
         // that's up. Everything below (the entry event's name, enters-tapped, the as-enters
         // replacements) has to read the face actually played, not the printed front.
@@ -895,6 +859,78 @@ class PlayLandHandler(
         return hasNonPermissionGraveyardLandPlay(state, playerId, cardId)
     }
 
+
+    /**
+     * "When you play a card this way, …" (Fires of Mount Doom): the event a land played from exile
+     * through a rider-carrying may-play permission raises. Read off the pre-play [state].
+     */
+    private fun riderPlayEventFor(
+        state: GameState,
+        action: PlayLand,
+        fromZone: Zone
+    ): com.wingedsheep.engine.core.CardPlayedFromPermissionEvent? {
+        if (fromZone != Zone.EXILE) return null
+        return state.mayPlayPermissions.firstOrNull { permission ->
+            permission.riderLinkId != null &&
+                permission.controllerId == action.playerId &&
+                action.cardId in permission.cardIds &&
+                permission.sourceId != null
+        }?.let { permission ->
+            com.wingedsheep.engine.core.CardPlayedFromPermissionEvent(
+                cardId = action.cardId,
+                controllerId = action.playerId,
+                sourceId = permission.sourceId!!,
+                linkId = permission.riderLinkId!!
+            )
+        }
+    }
+
+    /**
+     * A land played from exile spends the once-per-turn allowance it was played through (Hauken's
+     * Insight, Evelyn) and leaves any linked-exile pile. Granters are resolved against the pre-play
+     * [state]; the result builds on [newState].
+     */
+    private fun spendExilePlayAllowances(
+        state: GameState,
+        newState: GameState,
+        action: PlayLand,
+        fromZone: Zone
+    ): GameState {
+        if (fromZone != Zone.EXILE) return newState
+        var result = newState
+        // Record once-per-turn linked-exile permission usage (Hauken's Insight — "Once during
+        // each of your turns, you may play a land or cast a spell"). Resolved against the
+        // pre-play `state`: the unlink below removes the card from its granter's pile, after
+        // which nothing connects the two. The marker is the same one `CastSpellHandler`
+        // stamps, which is what makes the land and the spell share one allowance.
+        val linkedGranter = com.wingedsheep.engine.handlers.effects.linkedexile.LinkedExilePlayUtils
+            .landGranterFor(state, action.playerId, action.cardId, legality)
+        if (linkedGranter?.ability?.oncePerTurn == true) {
+            result = result.updateEntity(linkedGranter.sourceId) { c ->
+                c.with(
+                    com.wingedsheep.engine.state.components.battlefield
+                        .MayCastFromLinkedExileUsedThisTurnComponent
+                )
+            }
+        }
+        // The filter-defined sibling (Evelyn, the Covetous): a land play spends the same
+        // once-each-turn allowance a cast would.
+        state.oncePerTurnGranterToSpend(action.cardId, action.playerId, conditionEvaluator, cardRegistry)
+            ?.let { granter ->
+                result = result.updateEntity(granter) { c ->
+                    c.with(
+                        com.wingedsheep.engine.state.components.battlefield
+                            .MayCastFromLinkedExileUsedThisTurnComponent
+                    )
+                }
+            }
+        // Drop the card from any linked-exile granter (Valgavoth) now that it has left exile,
+        // so the granter no longer lists it. (Lands bypass ZoneTransitionService, which would
+        // otherwise unlink on the way out.)
+        result = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
+            .unlinkFromAllLinkedExiles(result, action.cardId)
+        return result
+    }
     /**
      * The graveyard land permissions that aren't a per-card may-play grant: Crucible-style
      * statics and emblems, Muldrotha's land allowance, and Mayhem.

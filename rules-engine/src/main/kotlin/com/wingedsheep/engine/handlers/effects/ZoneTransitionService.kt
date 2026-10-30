@@ -397,8 +397,18 @@ class ZoneTransitionService(
         // 3. Check zone change redirect (unless skipped)
         val redirectResult = if (!options.skipZoneChangeRedirect) {
             ZoneMovementUtils.checkZoneChangeRedirect(
-                state, entityId, fromZone, destinationZone, predicateEvaluator = predicateEvaluator,
-                enteringFaceDown = options.faceDown && destinationZone == Zone.BATTLEFIELD
+                state, entityId, fromZone, destinationZone,
+                // Cards entering in one instruction enter simultaneously: a permanent another of
+                // them brings in (Containment Priest returned alongside a creature) isn't on the
+                // battlefield yet to replace their entry.
+                battlefieldSourceState = options.entryCounterReplacementState ?: state,
+                predicateEvaluator = predicateEvaluator,
+                entersAsCreature = {
+                    EntryCharacteristics.wouldBeCreature(
+                        state, entityId, options.controllerId, options.entryCopy, options.faceDown,
+                        cardRegistry, predicateEvaluator
+                    )
+                }
             )
         } else {
             ZoneChangeRedirectResult(destinationZone)
@@ -1575,6 +1585,9 @@ class ZoneTransitionService(
         val (entryGroup, stateForMoves) = if (destinationZone == Zone.BATTLEFIELD && entityIds.size > 1) {
             state.newRoutingId()
         } else null to state
+        // One simultaneous entry event: every entrant's replacements are read off the board as it
+        // stood before any of them arrived.
+        val entryBoard = if (entryGroup != null) options.entryCounterReplacementState ?: stateForMoves else null
         var currentState = stateForMoves
         val allEvents = mutableListOf<EngineGameEvent>()
         val transitions = mutableListOf<ZoneTransitionOutcome>()
@@ -1596,7 +1609,8 @@ class ZoneTransitionService(
                 currentState, entityId, destinationZone,
                 perCardOptions.copy(
                     lookBackGrants = perCardOptions.lookBackGrants ?: lookBack[entityId] ?: LookBackGrants(),
-                    simultaneousEntryGroup = perCardOptions.simultaneousEntryGroup ?: entryGroup
+                    simultaneousEntryGroup = perCardOptions.simultaneousEntryGroup ?: entryGroup,
+                    entryCounterReplacementState = perCardOptions.entryCounterReplacementState ?: entryBoard
                 )
             )
             currentState = result.state

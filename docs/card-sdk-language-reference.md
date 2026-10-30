@@ -6194,10 +6194,15 @@ entry**: only a spell resolving off the stack carries a cast origin, so anything
 put onto the battlefield or played as a land "wasn't cast" — Containment Priest's "if a nontoken creature
 would enter and it wasn't cast, exile it instead" is `replacementEffect(RedirectZoneChange(newDestination =
 Zone.EXILE, appliesTo = EventPattern.ZoneChangeEvent(filter = GameObjectFilter.Creature.nontoken().notCast(),
-to = Zone.BATTLEFIELD)))`. A battlefield-entry redirect is asked by every non-spell entry path — effect
-moves (single and collection, which skip the entry prompts — Aura host, "as this enters" choices — of a
-card that won't enter), and land plays (the land drop is still spent) — and a face-down entry (manifest,
-cloak) counts as a creature entering (CR 708.2);
+to = Zone.BATTLEFIELD)))`. The zone-transition service asks a battlefield-entry redirect on every
+effect move (single and collection), and land plays (the land drop is still spent) and linked-exile returns
+ask it too. Movers skip the entry prompts — Aura host, "as this enters" choices, enters-only-if-paid — of
+a card that won't enter, after settling any "enters as a copy" choice first (CR 616.1c). A `Creature` /
+`Noncreature` predicate on such a redirect judges the card as it would exist on the battlefield (CR
+614.12, `EntryCharacteristics.wouldBeCreature`): March of the Machines makes an entering artifact a
+creature, a Heliod short of devotion isn't one, a Metamorph copying an artifact is what it copies, and a
+face-down entry (manifest, cloak) is a 2/2 creature (CR 708.2). Cards entering in one instruction enter
+simultaneously, so a Priest returned alongside them doesn't exile them;
 `.withSingleTarget()` (a spell or ability on the stack with exactly one *chosen* target — `StatePredicate.HasSingleTarget`;
 `TargetFilter.InstantOrSorcerySpellOnStack.withSingleTarget()` is "target instant or sorcery spell with a single
 target", Hydroelectric Specimen. It counts chosen targets, legal or not, so a spell with two targets never
