@@ -3436,52 +3436,6 @@
     ]
 }
 
-// Colossification
-{
-    "name": "Colossification",
-    "manaCost": "{5}{G}{G}",
-    "typeLine": "Enchantment — Aura",
-    "oracleText": "Enchant creature\nWhen this Aura enters, tap enchanted creature.\nEnchanted creature gets +20/+20.",
-    "script": {
-        "triggeredAbilities": [
-            {
-                "id": "Colossification:1",
-                "trigger": {
-                    "type": "ZoneChangeEvent",
-                    "to": "Battlefield"
-                },
-                "effect": {
-                    "type": "TapUntap",
-                    "target": "EnchantedCreature"
-                }
-            }
-        ],
-        "staticAbilities": [
-            {
-                "type": "ModifyStats",
-                "powerBonus": 20,
-                "toughnessBonus": 20
-            }
-        ],
-        "auraTarget": {
-            "type": "TargetObject",
-            "filter": {
-                "baseFilter": "creature"
-            }
-        }
-    },
-    "metadata": {
-        "collectorNumber": "392",
-        "rarity": "RARE",
-        "artist": "Johan Grenier",
-        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c2cad902-ffd2-4bab-b114-b4b6df2ac6b3.jpg?1721428099",
-        "inBooster": false
-    },
-    "colorIdentityOverride": [
-        "GREEN"
-    ]
-}
-
 // Conduct Electricity
 {
     "name": "Conduct Electricity",

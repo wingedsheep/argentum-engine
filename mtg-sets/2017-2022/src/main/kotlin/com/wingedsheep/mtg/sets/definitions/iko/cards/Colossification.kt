@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.blb.cards
+package com.wingedsheep.mtg.sets.definitions.iko.cards
 
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
@@ -37,9 +37,9 @@ val Colossification = card("Colossification") {
 
     metadata {
         rarity = Rarity.RARE
-        collectorNumber = "392"
+        collectorNumber = "148"
         artist = "Johan Grenier"
-        imageUri = "https://cards.scryfall.io/normal/front/c/2/c2cad902-ffd2-4bab-b114-b4b6df2ac6b3.jpg?1721428099"
-        inBooster = false
+        flavorText = "\"Turns out the case of the flattened outpost and the case of the missing kitten *were* related.\"\n—Endris, Drannith magistrate"
+        imageUri = "https://cards.scryfall.io/normal/front/7/b/7b6e6f2a-5015-44c6-aa8d-85188494d1a6.jpg"
     }
 }

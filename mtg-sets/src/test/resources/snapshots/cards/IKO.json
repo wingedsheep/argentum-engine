@@ -1607,6 +1607,52 @@
     ]
 }
 
+// Colossification
+{
+    "name": "Colossification",
+    "manaCost": "{5}{G}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen this Aura enters, tap enchanted creature.\nEnchanted creature gets +20/+20.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Colossification:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "EnchantedCreature"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 20,
+                "toughnessBonus": 20
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "rarity": "RARE",
+        "artist": "Johan Grenier",
+        "flavorText": "\"Turns out the case of the flattened outpost and the case of the missing kitten *were* related.\"\n—Endris, Drannith magistrate",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7b6e6f2a-5015-44c6-aa8d-85188494d1a6.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Coordinated Charge
 {
     "name": "Coordinated Charge",
@@ -1674,6 +1720,51 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Daysquad Marshal
+{
+    "name": "Daysquad Marshal",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "When this creature enters, create a 1/1 white Human Soldier creature token.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Daysquad Marshal:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Human",
+                        "Soldier"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/9/0/90de6d1e-e654-4f4a-8014-061ce69e540f.jpg?1783930948"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "artist": "Micah Epstein",
+        "flavorText": "\"The night emboldens many monsters, but the mightiest will attack in broad daylight.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/7/17d566bd-f272-49d1-bffb-588f2a42046a.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -1761,6 +1852,97 @@
         "artist": "Milivoj Ćeran",
         "flavorText": "\"I've seen them survive lava, trampling, and a moloch's digestive system. They just roll out and get on with their lives!\"\n—Gannet, Skysail zoologist",
         "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0cbdfb6-c029-440f-bc07-c95e03c20110.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Duskfang Mentor
+{
+    "name": "Duskfang Mentor",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "When this creature enters, put a lifelink counter on target non-Human creature you control.\n{1}{B}, {T}: Put a +1/+1 counter on each creature you control with lifelink.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Duskfang Mentor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "LIFELINK",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "Human"
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByYou"
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Duskfang Mentor:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature kw:lifelink ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "86",
+        "rarity": "UNCOMMON",
+        "artist": "Livia Prima",
+        "flavorText": "\"What she sees, I see. What she tastes, I taste.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/c/fc38fe5d-6c35-4fff-8f1b-726a0685c6f8.jpg"
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -1877,6 +2059,66 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLACK",
+        "GREEN"
+    ]
+}
+
+// Excavation Mole
+{
+    "name": "Excavation Mole",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Mole",
+    "oracleText": "Trample\nWhen this creature enters, mill three cards.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Excavation Mole:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "150",
+        "artist": "Lars Grant-West",
+        "flavorText": "It makes molehills out of mountains.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3a1712dc-8f4c-407f-83ea-3a1c59c437d1.jpg"
+    },
+    "colorIdentityOverride": [
         "GREEN"
     ]
 }
@@ -2161,6 +2403,97 @@
     ]
 }
 
+// Frillscare Mentor
+{
+    "name": "Frillscare Mentor",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "When this creature enters, put a menace counter on target non-Human creature you control. (It can't be blocked except by two or more creatures.)\n{2}{R}, {T}: Put a +1/+1 counter on each creature you control with menace.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Frillscare Mentor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "MENACE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "Human"
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByYou"
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Frillscare Mentor:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{R}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature kw:menace ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "rarity": "UNCOMMON",
+        "artist": "Jason A. Engle",
+        "flavorText": "Fortune favors the ferocious.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/24c7d034-6403-41e2-9e44-4d58ef54cf10.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Frondland Felidar
 {
     "name": "Frondland Felidar",
@@ -2283,6 +2616,52 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Garrison Cat
+{
+    "name": "Garrison Cat",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Cat",
+    "oracleText": "When this creature dies, create a 1/1 white Human Soldier creature token.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Garrison Cat:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Human",
+                        "Soldier"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/9/0/90de6d1e-e654-4f4a-8014-061ce69e540f.jpg?1783930948"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "artist": "Sidharth Chaturvedi",
+        "flavorText": "After much arguing, the soldiers decided to keep it, on the grounds that it killed enough mice to count as an honorary monster slayer.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e7ff8345-227c-43b4-bed5-af3a34c0a990.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -2452,6 +2831,71 @@
     ]
 }
 
+// Genesis Ultimatum
+{
+    "name": "Genesis Ultimatum",
+    "manaCost": "{G}{G}{U}{U}{U}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Look at the top five cards of your library. Put any number of permanent cards from among them onto the battlefield and the rest into your hand. Exile Genesis Ultimatum.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 5
+                        }
+                    },
+                    "storeAs": "looked"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "looked",
+                    "selection": "ChooseAnyNumber",
+                    "filter": "permanent",
+                    "storeSelected": "kept",
+                    "storeRemainder": "rest",
+                    "prompt": "You may put any number of permanent cards from among them onto the battlefield",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "kept",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "rest",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                }
+            ]
+        },
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "189",
+        "rarity": "RARE",
+        "artist": "Jason Rainville",
+        "flavorText": "No human eyes have ever witnessed the birth of an apex monster.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/5/556dfe7a-43e8-4801-ad79-89ab2148eca6.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "RED",
+        "BLUE"
+    ]
+}
+
 // Glimmerbell
 {
     "name": "Glimmerbell",
@@ -2575,6 +3019,52 @@
     ]
 }
 
+// Hampering Snare
+{
+    "name": "Hampering Snare",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Creatures your opponents control get -2/-0 until end of turn.\nCycling {2} ({2}, Discard this card: Draw a card.)",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                }
+            },
+            "body": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": -2
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": 0
+                },
+                "target": "IterationEntity"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"I want it to look me in the eyes and know the face of the man who put it down.\"\n—Kelsien, the Plague",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f7b331a-bd21-429b-a49f-88da9a31c98e.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Heightened Reflexes
 {
     "name": "Heightened Reflexes",
@@ -2665,6 +3155,97 @@
         "artist": "Lars Grant-West",
         "flavorText": "\"And I thought *I* had a big sweet tooth.\"\n—Gannet, Skysail zoologist",
         "imageUri": "https://cards.scryfall.io/normal/front/8/4/84b9bee2-b973-4de7-b72d-7f36f8e8153c.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Hornbash Mentor
+{
+    "name": "Hornbash Mentor",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "When this creature enters, put a trample counter on target non-Human creature you control.\n{2}{G}, {T}: Put a +1/+1 counter on each creature you control with trample.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hornbash Mentor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "TRAMPLE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "Human"
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByYou"
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Hornbash Mentor:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{G}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature kw:trample ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "rarity": "UNCOMMON",
+        "artist": "Wisnu Tan",
+        "flavorText": "\"We share the same nuanced opinion of hunters and military goons: smash them.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d47d2596-a321-44c0-a9f6-87bf80abc1c4.jpg"
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -2935,6 +3516,99 @@
             }
         ]
     }
+}
+
+// Keensight Mentor
+{
+    "name": "Keensight Mentor",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "When this creature enters, put a vigilance counter on target non-Human creature you control.\n{1}{W}, {T}: Put a +1/+1 counter on each creature you control with vigilance.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Keensight Mentor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "VIGILANCE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "Human"
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByYou"
+                        }
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, put a vigilance counter on target non-Human creature you control."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Keensight Mentor:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature kw:vigilance ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "{1}{W}, {T}: Put a +1/+1 counter on each creature you control with vigilance."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "rarity": "UNCOMMON",
+        "artist": "Yongjae Choi",
+        "flavorText": "Through the *eludha*, bonders share the powerful abilities of their chosen companions.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0583065-9a6c-4ea4-b6dd-2edfbaed1181.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Keruga, the Macrosage
@@ -3538,6 +4212,58 @@
     ]
 }
 
+// Mutual Destruction
+{
+    "name": "Mutual Destruction",
+    "manaCost": "{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "This spell has flash as long as you control a permanent with flash.\nAs an additional cost to cast this spell, sacrifice a creature.\nDestroy target creature.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "creature"
+                }
+            }
+        ],
+        "conditionalFlash": {
+            "type": "Exists",
+            "player": "You",
+            "zone": "Battlefield",
+            "filter": "permanent kw:flash"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "artist": "PINDURSKI",
+        "flavorText": "Hunter and hunted both died thinking they had outwitted the other.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/5/85ac0b25-80bf-4871-a6f6-5cf4d5b9496e.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Neutralize
 {
     "name": "Neutralize",
@@ -3572,6 +4298,64 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Nightsquad Commando
+{
+    "name": "Nightsquad Commando",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "When this creature enters, if you attacked this turn, create a 1/1 white Human Soldier creature token.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nightsquad Commando:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Human",
+                        "Soldier"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/9/0/90de6d1e-e654-4f4a-8014-061ce69e540f.jpg?1783930948"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "PLAYER_ATTACKED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "98",
+        "artist": "Evyn Fong",
+        "flavorText": "\"The big fella sounds hungry. Let's send him to bed without his supper.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/80306d10-0da7-4ee7-b975-ef6c9b535a2a.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -3629,6 +4413,104 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Perimeter Sergeant
+{
+    "name": "Perimeter Sergeant",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Whenever this creature attacks, other Humans you control get +1/+0 until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Perimeter Sergeant:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "permanent Human ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "artist": "Stepan Alekseev",
+        "flavorText": "\"Get in there, soldier! I want a pelt on my wall before lunch!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/a/2a174587-d964-48b3-8f69-fa576c1b8bba.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Phase Dolphin
+{
+    "name": "Phase Dolphin",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Elemental Whale",
+    "oracleText": "Whenever this creature attacks, another target attacking creature can't be blocked this turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Phase Dolphin:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "CANT_BE_BLOCKED",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOther",
+                    "baseRequirement": {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature attacking"
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "artist": "Lie Setiawan",
+        "flavorText": "\"You've never had to trust your breath to an inhuman creature who could crush you at its whim, and I truly feel sorry for you.\"\n—Eagan, seabonder",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/88fb4042-e9c1-4b0f-b1f6-4180b0d79663.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4684,6 +5566,70 @@
     ]
 }
 
+// Sleeper Dart
+{
+    "name": "Sleeper Dart",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "When this artifact enters, draw a card.\n{T}, Sacrifice this artifact: Target creature doesn't untap during its controller's next untap step.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sleeper Dart:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Sleeper Dart:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "DOESNT_UNTAP",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "UntilAfterAffectedControllersNextUntap"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}, Sacrifice this artifact: Target creature doesn't untap during its controller's next untap step."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "240",
+        "artist": "Sidharth Chaturvedi",
+        "flavorText": "\"Sleep now, you big brute.\"\n—Kelsien, the Plague",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/311f827a-1585-483e-b0fd-3dc05969b485.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
 // Song of Creation
 {
     "name": "Song of Creation",
@@ -5035,6 +5981,117 @@
     ]
 }
 
+// Sudden Spinnerets
+{
+    "name": "Sudden Spinnerets",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +1/+3 until end of turn. Put a reach counter on it. Untap it.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "AddCounters",
+                    "counterType": "REACH",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "171",
+        "artist": "Nicholas Gregory",
+        "flavorText": "\"What's natural on Ikoria continues to delight me.\"\n—Vivien Reid",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/3730996a-96d2-4311-a4dc-0045a2f8ccc9.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Suffocating Fumes
+{
+    "name": "Suffocating Fumes",
+    "manaCost": "{2}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Creatures your opponents control get -1/-1 until end of turn.\nCycling {2} ({2}, Discard this card: Draw a card.)",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                }
+            },
+            "body": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": -1
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": -1
+                },
+                "target": "IterationEntity"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "100",
+        "artist": "Anastasia Ovchinnikova",
+        "flavorText": "\"Yesterday it was flying tigers and crumbling bridges. Who knows what today will bring?\"\n—Dol, Lavabrink quartermaster",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/66b562e4-35df-4aee-848d-ceb4204bbe58.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Survivors' Bond
 {
     "name": "Survivors' Bond",
@@ -5179,6 +6236,33 @@
         "imageUri": "https://cards.scryfall.io/normal/front/9/3/9341ed06-53db-4604-b60a-3ea9129afbc2.jpg?1783931006"
     },
     "colorIdentityOverride": []
+}
+
+// Thwart the Enemy
+{
+    "name": "Thwart the Enemy",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Prevent all damage that would be dealt this turn by creatures your opponents control.",
+    "script": {
+        "spellEffect": {
+            "type": "PreventDamageShield",
+            "direction": "FromTarget",
+            "sourceFilter": {
+                "type": "PreventFromMatching",
+                "filter": "creature ctrl:opponent"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "173",
+        "artist": "Chris Rallis",
+        "flavorText": "\"Your prey is in my custody now. Withdraw.\"\n—Vivien Reid",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a7101f35-d8c9-4320-bffc-8bb25000d103.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Titanoth Rex
@@ -5478,6 +6562,97 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Wingspan Mentor
+{
+    "name": "Wingspan Mentor",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "When this creature enters, put a flying counter on target non-Human creature you control.\n{2}{U}, {T}: Put a +1/+1 counter on each creature you control with flying.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wingspan Mentor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "FLYING",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "Human"
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByYou"
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Wingspan Mentor:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{U}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature kw:flying ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "rarity": "UNCOMMON",
+        "artist": "Sidharth Chaturvedi",
+        "flavorText": "Their bond grew over time, as did the height of their jumps.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/89348a02-29f6-40b9-b39f-cb5f8c230a02.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
