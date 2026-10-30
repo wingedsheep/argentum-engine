@@ -2096,6 +2096,98 @@
     ]
 }
 
+// Jan Jansen, Chaos Crafter
+{
+    "name": "Jan Jansen, Chaos Crafter",
+    "manaCost": "{R}{W}{B}",
+    "typeLine": "Legendary Creature — Gnome Artificer",
+    "oracleText": "Haste\n{T}, Sacrifice an artifact creature: Create two Treasure tokens.\n{T}, Sacrifice a noncreature artifact: Create two 1/1 colorless Construct artifact creature tokens.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Jan Jansen, Chaos Crafter:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "artifact creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure",
+                    "count": 2
+                },
+                "descriptionOverride": "{T}, Sacrifice an artifact creature: Create two Treasure tokens."
+            },
+            {
+                "id": "Jan Jansen, Chaos Crafter:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsArtifact",
+                                        {
+                                            "type": "Not",
+                                            "predicate": "IsCreature"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Construct"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/0/f/0f5715cf-fbf6-4b13-af91-525edc7706ea.jpg?1783922318",
+                    "artifactToken": true
+                },
+                "descriptionOverride": "{T}, Sacrifice a noncreature artifact: Create two 1/1 colorless Construct artifact creature tokens."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "277",
+        "rarity": "RARE",
+        "artist": "Vladimir Krisetskiy",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6b215a08-41db-4440-8e33-34a84a33db50.jpg?1783922693"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Karlach, Fury of Avernus
 {
     "name": "Karlach, Fury of Avernus",

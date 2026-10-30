@@ -2987,6 +2987,118 @@
     "colorIdentityOverride": []
 }
 
+// Myr Battlesphere
+{
+    "name": "Myr Battlesphere",
+    "manaCost": "{7}",
+    "typeLine": "Artifact Creature — Myr Construct",
+    "oracleText": "When this creature enters, create four 1/1 colorless Myr artifact creature tokens.\nWhenever this creature attacks, you may tap X untapped Myr you control. If you do, this creature gets +X/+0 until end of turn and deals X damage to the player or planeswalker it's attacking.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 7
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Myr Battlesphere:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Myr"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/8/182308b3-86e0-46d8-9104-95576a3d3921.jpg?1783941681",
+                    "artifactToken": true
+                }
+            },
+            {
+                "id": "Myr Battlesphere:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "ControlledPermanents",
+                                "filter": "permanent Myr untapped ctrl:you"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected1",
+                            "prompt": "Tap any number of untapped Myr you control",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "TapUntapCollection",
+                            "collectionName": "selected1"
+                        },
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "VariableReference",
+                                "variableName": "selected1_count"
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "VariableReference",
+                                "variableName": "selected1_count"
+                            },
+                            "target": {
+                                "type": "AttackedBy",
+                                "attacker": "Self"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature attacks, you may tap X untapped Myr you control. If you do, this creature gets +X/+0 until end of turn and deals X damage to the player or planeswalker it's attacking."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "180",
+        "rarity": "RARE",
+        "artist": "Franz Vohwinkel",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b0ae94ed-7314-470b-baba-f2f58bbc894a.jpg?1783941703",
+        "rulings": [
+            {
+                "date": "2020-08-07",
+                "text": "You choose the value for X as the last ability resolves. You can't choose a value for X that's greater than the number of untapped Myr you control."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "You can tap any untapped Myr you control as the last ability resolves, not just the Myr tokens you created with the first ability. This includes Myr that haven't been under your control since your most recent turn began."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "As the last ability resolves, you can tap untapped Myr you control even if Myr Battlesphere is no longer on the battlefield by then. If that has happened, Myr Battlesphere won't be able to get the +X/+0 bonus, but it will still deal X damage to the appropriate player or planeswalker."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Necrogen Censer
 {
     "name": "Necrogen Censer",

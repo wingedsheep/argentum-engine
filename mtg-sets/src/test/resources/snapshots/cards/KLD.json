@@ -3846,6 +3846,81 @@
     ]
 }
 
+// Marionette Master
+{
+    "name": "Marionette Master",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "Fabricate 3 (When this creature enters, put three +1/+1 counters on it or create three 1/1 colorless Servo artifact creature tokens.)\nWhenever an artifact you control is put into a graveyard from the battlefield, target opponent loses life equal to this creature's power.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "FABRICATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "FABRICATE",
+            "n": 3
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Marionette Master:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "artifact ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "90",
+        "rarity": "RARE",
+        "artist": "James Ryman",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/358a87a3-c76e-4c7d-ac84-464894ed9a31.jpg?1783937205",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "The amount of life lost is determined as Marionette Master's last ability resolves. If Marionette Master is no longer on the battlefield, use its power as it last existed on the battlefield to determine how much life is lost."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If Marionette Master and an artifact you control are put into a graveyard at the same time, Marionette Master's ability triggers."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "Artifact tokens that are sacrificed or destroyed are put into their owner's graveyard before ceasing to exist. If you controlled the token, Marionette Master's last ability will trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Maulfist Squad
 {
     "name": "Maulfist Squad",
@@ -5313,6 +5388,156 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Smuggler's Copter
+{
+    "name": "Smuggler's Copter",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Flying\nWhenever this Vehicle attacks or blocks, you may draw a card. If you do, discard a card.\nCrew 1 (Tap any number of creatures you control with total power 1 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 1
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Smuggler's Copter:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "id": "Smuggler's Copter:2",
+                "trigger": "BlockEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "235",
+        "rarity": "RARE",
+        "artist": "Florian de Gesincourt",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/7832abb5-5107-4603-904e-491b221bd3e3.jpg?1783937147",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "You may activate a crew ability of a Vehicle even if it's already an artifact creature. Doing so has no effect on the Vehicle. It doesn't change its power and toughness."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Snare Thopter

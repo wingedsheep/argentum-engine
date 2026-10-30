@@ -5442,6 +5442,80 @@
     ]
 }
 
+// Parhelion II
+{
+    "name": "Parhelion II",
+    "manaCost": "{6}{W}{W}",
+    "typeLine": "Legendary Artifact — Vehicle",
+    "oracleText": "Flying, first strike, vigilance\nWhenever Parhelion II attacks, create two 4/4 white Angel creature tokens with flying and vigilance that are attacking.\nCrew 4 (Tap any number of creatures you control with total power 4 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING",
+        "FIRST_STRIKE",
+        "VIGILANCE",
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 4
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Parhelion II:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Angel"
+                    ],
+                    "keywords": [
+                        "FLYING",
+                        "VIGILANCE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/b/1/b16b81e0-5525-4be3-96db-807146fdc5b3.jpg?1783933355",
+                    "attacking": true,
+                    "attackDefender": "CONTROLLER_CHOOSES"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "rarity": "RARE",
+        "artist": "Adam Paquette",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/6/261ba80e-3aca-423e-a0b7-19c2d4b44dbf.jpg?1783933478",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "You choose which players or planeswalkers the two tokens are attacking. They don't have to be attacking the same player or planeswalker that Parhelion II is attacking, and they can each be attacking different players and/or planeswalkers."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Although the tokens are attacking, they were never declared as attacking creatures (for the purposes of abilities that trigger whenever a creature attacks, for example)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Pouncing Lynx
 {
     "name": "Pouncing Lynx",
@@ -6644,6 +6718,171 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Tezzeret, Master of the Bridge
+{
+    "name": "Tezzeret, Master of the Bridge",
+    "manaCost": "{4}{U}{B}",
+    "typeLine": "Legendary Planeswalker — Tezzeret",
+    "oracleText": "Creature and planeswalker spells you cast have affinity for artifacts. (They cost {1} less to cast for each artifact you control.)\n+2: Tezzeret deals X damage to each opponent, where X is the number of artifacts you control. You gain X life.\n−3: Return target artifact card from your graveyard to your hand.\n−8: Exile the top ten cards of your library. Put all artifact cards from among them onto the battlefield.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tezzeret, Master of the Bridge:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "artifact"
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "artifact"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Tezzeret deals X damage to each opponent, where X is the number of artifacts you control. You gain X life."
+            },
+            {
+                "id": "Tezzeret, Master of the Bridge:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Return target artifact card from your graveyard to your hand."
+            },
+            {
+                "id": "Tezzeret, Master of the Bridge:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -8
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 10
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": "artifact",
+                            "storeMatching": "matching2"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "matching2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Exile the top ten cards of your library. Put all artifact cards from among them onto the battlefield."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "creature|planeswalker"
+                },
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": "ArtifactsYouControl"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "275",
+        "rarity": "MYTHIC",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9ee1eea2-961f-445d-b035-6baed454f289.jpg?1783933355",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "Tezzeret himself doesn't have affinity for artifacts."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Affinity can reduce only generic mana in a spell's cost. It can't reduce color requirements."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If there are any additional costs or cost increases that would apply to a spell with affinity, apply those before applying any cost reductions."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "In a Two-Headed Giant game, Tezzeret's first loyalty ability causes the opposing team to lose twice X life and you gain X life."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 

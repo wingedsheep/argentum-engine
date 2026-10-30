@@ -1,3 +1,209 @@
+// Aerial Surveyor
+{
+    "name": "Aerial Surveyor",
+    "manaCost": "{2}{W}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Flying\nWhenever this Vehicle attacks, if defending player controls more lands than you, search your library for a basic Plains card, put it onto the battlefield tapped, then shuffle.\nCrew 2",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 2
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aerial Surveyor:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "basicland Plains"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a basic Plains card to put onto the battlefield tapped",
+                            "selectedLabel": "Put onto the battlefield tapped"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "Tapped"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "DefendingPlayer",
+                        "filter": "land"
+                    },
+                    "operator": "GT",
+                    "right": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "rarity": "RARE",
+        "artist": "Antonio José Manzanedo",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c474f31-336d-44df-a7da-27aefd220e22.jpg?1783923999",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "Aerial Surveyor's triggered ability has an intervening \"if\" clause. That means (1) the ability won't trigger at all unless the defending player controls more lands than you, and (2) the ability will do nothing if you control at least as many lands as the defending player by the time it resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Cyberdrive Awakener
+{
+    "name": "Cyberdrive Awakener",
+    "manaCost": "{5}{U}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "Flying\nOther artifact creatures you control have flying.\nWhen this creature enters, each noncreature artifact you control becomes a 4/4 artifact creature until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cyberdrive Awakener:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MassAnimate",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsArtifact",
+                            {
+                                "type": "Not",
+                                "predicate": "IsCreature"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "loseAllAbilities": false
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING",
+                "filter": {
+                    "baseFilter": "artifact creature ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "RARE",
+        "artist": "Zezhou Chen",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/a/2a2c0a2f-07fb-4cc0-9b99-e5ff4303028d.jpg?1783923995"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Drumbellower
+{
+    "name": "Drumbellower",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Flying\nUntap all creatures you control during each other player's untap step.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "UntapFilteredDuringOtherUntapSteps",
+                "filter": "creature"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "rarity": "RARE",
+        "artist": "Lie Setiawan",
+        "flavorText": "By the second night after the kami had drifted into town, the local general store was completely sold out of earplugs.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/1/718c7383-d2e0-449b-b5b5-378d7c6e1fcb.jpg?1783923998",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "Other effects can prevent a creature from untapping during an untap step. You do need to look carefully, however, as many effects say that the creature doesn't untap during its controller's untap step, and this card's ability applies during other players' untap steps. If a card does say this, then Drumbellower can untap it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Go-Shintai of Life's Origin
 {
     "name": "Go-Shintai of Life's Origin",
@@ -176,6 +382,226 @@
         ]
     },
     "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Katsumasa, the Animator
+{
+    "name": "Katsumasa, the Animator",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Legendary Creature — Moonfolk Artificer",
+    "oracleText": "Flying\n{2}{U}: Until end of turn, target noncreature artifact you control becomes an artifact creature and gains flying. If it's not a Vehicle, it has base power and toughness 1/1 until end of turn.\nAt the beginning of your upkeep, put a +1/+1 counter on each of up to three target noncreature artifacts.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Katsumasa, the Animator:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 3,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsArtifact",
+                                {
+                                    "type": "Not",
+                                    "predicate": "IsCreature"
+                                }
+                            ]
+                        }
+                    },
+                    "id": "t1"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Katsumasa, the Animator:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "EntityMatches",
+                                    "entity": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "filter": "permanent Vehicle"
+                                }
+                            },
+                            "then": {
+                                "type": "AddCardType",
+                                "cardType": "CREATURE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "duration": "EndOfTurn"
+                            },
+                            "otherwise": {
+                                "type": "BecomeCreature",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "power": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughness": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "FLYING",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsArtifact",
+                                    {
+                                        "type": "Not",
+                                        "predicate": "IsCreature"
+                                    }
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{2}{U}: Until end of turn, target noncreature artifact you control becomes an artifact creature and gains flying. If it's not a Vehicle, it has base power and toughness 1/1 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "rarity": "RARE",
+        "artist": "Heonhwa",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/ab4b5ff5-fd6a-4948-9c54-440bf6324bd1.jpg?1783923994"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Kotori, Pilot Prodigy
+{
+    "name": "Kotori, Pilot Prodigy",
+    "manaCost": "{1}{W}{U}",
+    "typeLine": "Legendary Creature — Moonfolk Pilot",
+    "oracleText": "Vehicles you control have crew 2.\nAt the beginning of combat on your turn, target artifact creature you control gains lifelink and vigilance until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kotori, Pilot Prodigy:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "LIFELINK",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "VIGILANCE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "artifact creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "CREW_2",
+                "filter": {
+                    "baseFilter": "artifact Vehicle ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "MYTHIC",
+        "artist": "Aaron J. Riley",
+        "flavorText": "\"Some people test limits. I prefer to demolish them.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/fea6c1c8-eff9-4b66-b96d-e23016f0bb62.jpg?1783924000"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
         "BLUE"
     ]
 }
@@ -488,6 +914,64 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLUE"
+    ]
+}
+
+// Swift Reconfiguration
+{
+    "name": "Swift Reconfiguration",
+    "manaCost": "{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Flash\nEnchant creature or Vehicle\nEnchanted permanent is a Vehicle artifact with crew 5 and it loses all other card types. (It's not a creature unless it's crewed.)",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "TransformPermanent",
+                "setCardTypes": [
+                    "ARTIFACT"
+                ],
+                "setSubtypes": [
+                    "Vehicle"
+                ]
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "CREW_5"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature|Vehicle"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "rarity": "RARE",
+        "artist": "Nicholas Gregory",
+        "flavorText": "On the bright side, the bear now had cupholders.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/975dcfab-0281-4fee-92aa-021ea6c524c7.jpg?1783923997",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "The permanent keeps all of its abilities. Notably, if Swift Reconfiguration enchants a Vehicle, that Vehicle gains crew 5 in addition to any crew abilities it already had."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "If the enchanted permanent was attacking or blocking (or being attacked if it's a planeswalker) when Swift Reconfiguration becomes attached to it, that permanent is removed from combat."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "If Swift Reconfiguration becomes attached to a creature that is also an Equipment, that permanent becomes a Vehicle and loses the Equipment subtype. If it is attached to a creature, it becomes unattached from that creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 

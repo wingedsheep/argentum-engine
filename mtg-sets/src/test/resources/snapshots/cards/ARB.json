@@ -534,6 +534,54 @@
     ]
 }
 
+// Time Sieve
+{
+    "name": "Time Sieve",
+    "manaCost": "{U}{B}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}, Sacrifice five artifacts: Take an extra turn after this one.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Time Sieve:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "artifact",
+                                "count": 5
+                            }
+                        }
+                    ]
+                },
+                "effect": "TakeExtraTurn",
+                "descriptionOverride": "{T}, Sacrifice five artifacts: Take an extra turn after this one."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "rarity": "RARE",
+        "artist": "Franz Vohwinkel",
+        "flavorText": "\"I pray that I am never considered useless or old.\"\n—Sharuum the Hegemon",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c620e565-f5e1-467c-a1d1-8d05228b2f37.jpg?1783942436",
+        "rulings": [
+            {
+                "date": "2020-08-07",
+                "text": "You may sacrifice Time Sieve as one of the artifacts to pay the cost of its own ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Trace of Abundance
 {
     "name": "Trace of Abundance",

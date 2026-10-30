@@ -1122,6 +1122,85 @@
     ]
 }
 
+// Scrap Trawler
+{
+    "name": "Scrap Trawler",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "Whenever this creature dies or another artifact you control is put into a graveyard from the battlefield, return to your hand target artifact card in your graveyard with lesser mana value.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Scrap Trawler:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "artifact ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsArtifact",
+                                {
+                                    "type": "ManaValueAtMostDynamic",
+                                    "amount": {
+                                        "type": "Subtract",
+                                        "left": {
+                                            "type": "EntityProperty",
+                                            "entity": "TriggeringEntity",
+                                            "numericProperty": "ManaValue"
+                                        },
+                                        "right": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    }
+                                }
+                            ],
+                            "controllerPredicate": "OwnedByYou"
+                        },
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "175",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/8/68abc75f-596f-4169-96fc-ada941ef47ed.jpg?1783936719",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "If Scrap Trawler and another artifact you control are put into a graveyard at the same time, Scrap Trawler's ability triggers for each of them."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "The target artifact card must have a lesser mana value than the artifact that caused Scrap Trawler's ability to trigger by being put into a graveyard. Use the artifact's mana value as it last existed on the battlefield to determine what may be returned."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Scrounging Bandar
 {
     "name": "Scrounging Bandar",
