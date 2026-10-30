@@ -40,10 +40,15 @@ class CallapheBelovedOfTheSeaScenarioTest : ScenarioTestBase() {
                 paid.isInGraveyard(2, "Glorious Anthem") shouldBe true
             }
 
-            test("Callaphe taxes spells targeting itself") {
+            test("Callaphe taxes spells targeting itself, once though it is both creature and enchantment") {
                 val short = board(lands = 2)
                 withClue("{1}{W} + {1} tax can't be paid with two Plains") {
                     short.castSpell(1, "Disenchant", short.findPermanent("Callaphe, Beloved of the Sea")!!).error shouldNotBe null
+                }
+
+                val paid = board(lands = 3)
+                withClue("a creature enchantment holds one copy of the grant, so the tax is only {1}") {
+                    paid.castSpell(1, "Disenchant", paid.findPermanent("Callaphe, Beloved of the Sea")!!).error shouldBe null
                 }
             }
         }
