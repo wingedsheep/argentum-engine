@@ -581,7 +581,7 @@ object DamageUtils {
                 // exactly as for marked damage, before the counters change the toughness.
                 val witherLethalNeeded =
                     if (sourceId != null && sourceHasDeathtouch(zones.cardRegistry, newState, projected, sourceId)) 1
-                    else ((projected.getToughness(targetId) ?: 0) -
+                    else (projected.lethalDamageThreshold(targetId) -
                         (newState.getEntity(targetId)?.get<DamageComponent>()?.amount ?: 0)).coerceAtLeast(0)
                 creatureExcessDamage = (effectiveAmount - witherLethalNeeded).coerceAtLeast(0)
                 // CR 702.80a / 122.6a: the -1/-1 counters are put on the creature by the wither
