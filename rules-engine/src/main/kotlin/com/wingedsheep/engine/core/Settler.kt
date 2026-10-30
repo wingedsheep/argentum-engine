@@ -48,7 +48,8 @@ import com.wingedsheep.sdk.scripting.EventPattern
  *
  * Detection is single-pass: the events of putting abilities on the stack aren't scanned again. The
  * exception is CR 603.3b's second part, abilities that trigger on an attack- or entry-caused
- * ability triggering (Firebender Ascension, Strict Proctor). That wave is scoped by
+ * ability or a Saga's final chapter ability triggering (Firebender Ascension, Strict Proctor,
+ * Historian's Boon). That wave is scoped by
  * `triggerCause`, which is what makes it terminate: the meta-triggers themselves carry no cause.
  *
  * Because every action's and every SBA's events pass through here, turn history that no single
@@ -257,8 +258,8 @@ class Settler(
             placedAny = true
             state = placed.state
 
-            // CR 603.3b, second part: abilities that trigger on an attack- or entry-caused ability
-            // triggering go on the stack after the first wave.
+            // CR 603.3b, second part: abilities that trigger on an attack- or entry-caused ability,
+            // or a final Saga chapter, triggering go on the stack after the first wave.
             val causeStamped = placed.events.filter { it is AbilityTriggeredEvent && it.triggerCause != null }
             if (causeStamped.isNotEmpty()) {
                 state = state.enqueue(triggerDetector.detectTriggers(state, causeStamped))

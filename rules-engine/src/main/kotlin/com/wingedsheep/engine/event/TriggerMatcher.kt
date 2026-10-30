@@ -396,7 +396,8 @@ class TriggerMatcher(
             is EventPattern.AbilityTriggeredEvent -> {
                 if (event !is AbilityTriggeredEvent) return false
                 if (!matchesPlayer(state, trigger.player, event.controllerId, controllerId, sourceId)) return false
-                // "attacking / a permanent entering causes a triggered ability to trigger": only fire
+                // "attacking / a permanent entering causes a triggered ability to trigger", "the final
+                // chapter ability of a Saga you control triggers": only fire
                 // for abilities the engine stamped with that cause (see TriggerProcessor.triggerCauseOf).
                 val cause = trigger.cause
                 if (cause != null && event.triggerCause != cause) return false
