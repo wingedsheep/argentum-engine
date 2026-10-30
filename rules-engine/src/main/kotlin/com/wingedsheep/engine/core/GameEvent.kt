@@ -2528,6 +2528,8 @@ data class BecomesTargetEvent(
  *   cost (Webstrike Elite's "Cycling {X}{G}{G}"). A "when you cycle this card" trigger reads it as
  *   `DynamicAmount.XValue` via `TriggerContext.xValue`, so "destroy … with mana value X" and
  *   "create X tokens" resolve against the X that was actually paid. Null for ordinary cycling.
+ * @property firstThisTurn true when this is [playerId]'s first cycle this turn — read before
+ *   the cycle marks `CycledThisTurnComponent`; backs `CycleEvent.firstTimeEachTurn`.
  */
 @Serializable
 @SerialName("CardCycledEvent")
@@ -2535,7 +2537,8 @@ data class CardCycledEvent(
     val playerId: EntityId,
     val cardId: EntityId,
     val cardName: String,
-    val xValue: Int? = null
+    val xValue: Int? = null,
+    val firstThisTurn: Boolean = true
 ) : GameEvent
 
 /**

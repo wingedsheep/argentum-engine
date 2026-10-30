@@ -1025,6 +1025,9 @@ class CleanupPhaseManager(
                 if (result.has<InvestigatedThisTurnComponent>()) {
                     result = result.without<InvestigatedThisTurnComponent>()
                 }
+                if (result.has<com.wingedsheep.engine.state.components.player.CycledThisTurnComponent>()) {
+                    result = result.without<com.wingedsheep.engine.state.components.player.CycledThisTurnComponent>()
+                }
                 if (result.has<LifeGainedThisTurnComponent>()) {
                     result = result.without<LifeGainedThisTurnComponent>()
                 }

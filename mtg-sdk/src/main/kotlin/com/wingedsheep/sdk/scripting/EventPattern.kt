@@ -2160,13 +2160,20 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
 
     /**
      * When a card is cycled.
+     *
+     * [firstTimeEachTurn] narrows it to that player's first cycle of the turn ("whenever you cycle
+     * another card for the first time each turn", Valiant Rescuer). The count is per player, not
+     * per observer: a card cycled earlier in the turn uses up the first time even if this
+     * permanent wasn't on the battlefield yet.
      */
     @SerialName("CycleEvent")
     @Serializable
     data class CycleEvent(
-        val player: Player = Player.You
+        val player: Player = Player.You,
+        val firstTimeEachTurn: Boolean = false
     ) : EventPattern {
-        override val description: String = "${player.description} cycles a card"
+        override val description: String = "${player.description} cycles a card" +
+            if (firstTimeEachTurn) " for the first time each turn" else ""
     }
 
     // ---- Gift Triggers ----

@@ -6641,6 +6641,59 @@
     ]
 }
 
+// Valiant Rescuer
+{
+    "name": "Valiant Rescuer",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Whenever you cycle another card for the first time each turn, create a 1/1 white Human Soldier creature token.\nCycling {2} ({2}, Discard this card: Draw a card.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Valiant Rescuer:1",
+                "trigger": {
+                    "type": "CycleEvent",
+                    "firstTimeEachTurn": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Human",
+                        "Soldier"
+                    ]
+                },
+                "descriptionOverride": "Whenever you cycle another card for the first time each turn, create a 1/1 white Human Soldier creature token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "rarity": "UNCOMMON",
+        "artist": "Bram Sels",
+        "flavorText": "The floating city of Skysail has two rules: don't leave your crewmates behind, and don't mess with the guardrails.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a2b13ff6-67e9-4760-aef4-a8548ea44344.jpg?1783931081"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Void Beckoner
 {
     "name": "Void Beckoner",

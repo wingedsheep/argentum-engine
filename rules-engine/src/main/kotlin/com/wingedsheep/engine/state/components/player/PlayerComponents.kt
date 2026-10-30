@@ -1636,6 +1636,15 @@ data class OpponentCreaturesExiledThisTurnComponent(
 ) : Component
 
 /**
+ * Marks that this player has cycled a card during the current turn. Set by the cycling handlers
+ * (plain and typecycling) and cleared at end of turn by CleanupPhaseManager; read to compute
+ * `CardCycledEvent.firstThisTurn` ("whenever you cycle another card for the first time each
+ * turn", Valiant Rescuer).
+ */
+@Serializable
+data object CycledThisTurnComponent : Component
+
+/**
  * Marks that this player has investigated (CR 701.16a) during the current turn. Set by the
  * `InvestigateExecutor` after each investigate and cleared at end of turn by CleanupPhaseManager;
  * read to compute `InvestigatedEvent.firstThisTurn` ("whenever you investigate for the first time

@@ -418,7 +418,8 @@ class TriggerMatcher(
             is EventPattern.CycleEvent -> {
                 event is CardCycledEvent &&
                     matchesPlayer(state, trigger.player, event.playerId, controllerId, sourceId) &&
-                    (binding != TriggerBinding.SELF || event.cardId == sourceId)
+                    (binding != TriggerBinding.SELF || event.cardId == sourceId) &&
+                    (!trigger.firstTimeEachTurn || event.firstThisTurn)
             }
             is EventPattern.GiftGivenEvent -> {
                 event is GiftGivenEvent &&

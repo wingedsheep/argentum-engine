@@ -8239,7 +8239,7 @@ minLoyaltyRemoved, exhaust, includeManaAbilities, excludeManaAbilities, tapInCos
 `isDealtDamage(by?, damageType?)`, `isDealtCombatDamage()`, `getsCounters(type?)` (`you` only — counters
 put on the player by anyone: "whenever you get one or more {E}", `CountersPlacedEvent.recipient`),
 `draws(firstInDrawStep?)`,
-`drawsNth(n)`, `revealsFirstDraw(card?)`, `discards(card?, batch?, firstTimeEachTurn?)`, `mills(card?, batch?)`, `cycles()`, `playsLand(…)`,
+`drawsNth(n)`, `revealsFirstDraw(card?)`, `discards(card?, batch?, firstTimeEachTurn?)`, `mills(card?, batch?)`, `cycles(firstTimeEachTurn?)`, `playsLand(…)`,
 `permanentTurnedFaceUp(filter)`, `searchesLibrary()`, `shufflesLibrary()`, `gainsLife(firstTimeEachTurn?)`,
 `losesLife(batch?, exactly?, firstTimeEachTurn?)`, `paysLife()`, `losesGame()`, `sacrifices(filter, batch?)`,
 `sacrificesAnother(filter)`, `taps(filter, batch?)`, `tapsLandForMana(land?)`, `createsToken(token?)`,
@@ -9548,6 +9548,9 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
 - `Triggers.anyPlayer.cycles()` — anyone cycles. `Triggers.you.cycles()` is also "whenever you cycle
   **another** card" (Drannith Stinger): the observer only functions on the battlefield and a card is cycled
   from hand, so the source can't see its own cycling — only a `self.isCycled()` trigger fires off that.
+  `Triggers.you.cycles(firstTimeEachTurn = true)` is "whenever you cycle another card **for the first time
+  each turn**" (Valiant Rescuer): only the player's first cycle of the turn (plain or typecycling) matches,
+  and a cycle made before the observer entered still uses it up (`CardCycledEvent.firstThisTurn`).
 - `Triggers.anyPlayer.tapsLandForMana()` / `Triggers.<player>.tapsLandForMana(land)` — "whenever
   [player] taps a [land] for mana" (`EventPattern.LandTappedForMana`). `Triggers.self.tappedForMana()`
   is "whenever you tap **this** land for mana" (Forbidden Orchard — no subject filter);

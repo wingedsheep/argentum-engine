@@ -29,6 +29,7 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.CardsCycledThisGameComponent
+import com.wingedsheep.engine.state.components.player.CycledThisTurnComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
@@ -274,13 +275,16 @@ class CycleCardHandler(
         events.addAll(discardResult.events)
 
         // "Cycled a card named X N times this game" (Yidaro, Wandering Monster) — counted before
-        // the event so a "when you cycle" trigger already sees this cycle.
+        // the event so a "when you cycle" trigger already sees this cycle. "For the first time each
+        // turn" (Valiant Rescuer) is read before this cycle marks the player.
+        val firstCycleThisTurn = currentState.getEntity(action.playerId)?.has<CycledThisTurnComponent>() != true
         currentState = currentState.updateEntity(action.playerId) { player ->
             player.with((player.get<CardsCycledThisGameComponent>() ?: CardsCycledThisGameComponent()).record(cardComponent.name))
+                .with(CycledThisTurnComponent)
         }
 
         // Emit cycling event (for cycling triggers like Astral Slide)
-        events.add(CardCycledEvent(action.playerId, action.cardId, cardComponent.name, announcedX))
+        events.add(CardCycledEvent(action.playerId, action.cardId, cardComponent.name, announcedX, firstThisTurn = firstCycleThisTurn))
 
         currentState = currentState.tick()
 

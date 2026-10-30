@@ -1213,7 +1213,7 @@ Families:
 - `EventPattern.CreaturesAttackYourOpponentEvent(minAttackers: Int)` — When one or more creatures attack a player who is an opponent of the trigger's controller.
 - `EventPattern.CreaturesYouControlDiedEvent(filter: GameObjectFilter, excludeSelf: Boolean)` — Whenever one or more creatures you control die.
 - `EventPattern.CrewsEvent` — Whenever this creature crews a Vehicle.
-- `EventPattern.CycleEvent(player: Player)` — When a card is cycled.
+- `EventPattern.CycleEvent(player: Player, firstTimeEachTurn: Boolean)` — When a card is cycled.
 - `EventPattern.DamageEvent(recipient: Recipient, source: GameObjectFilter, damageType: DamageType, amount: AmountFilter)` — When damage would be dealt (used by replacement effects).
 - `EventPattern.DamagePreventedEvent` — When a "prevent the next damage from a chosen source" shield prevents damage this way (Deflecting Palm, New Way Forward).
 - `EventPattern.DamageReceivedEvent(source: GameObjectFilter?, recipient: GameObjectFilter?)` — When a permanent is dealt damage.

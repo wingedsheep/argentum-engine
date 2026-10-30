@@ -817,6 +817,7 @@ val engineSerializersModule = SerializersModule {
         subclass(LifeGainedAmountThisTurnComponent::class)
         subclass(LifeGainedThisTurnComponent::class)
         subclass(InvestigatedThisTurnComponent::class)
+        subclass(com.wingedsheep.engine.state.components.player.CycledThisTurnComponent::class)
         subclass(LifeLostAmountThisTurnComponent::class)
         subclass(LifeLostThisTurnComponent::class)
         subclass(ManaSpentOnSpellsThisTurnComponent::class)

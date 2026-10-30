@@ -1170,8 +1170,12 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
     fun mills(card: GameObjectFilter? = null, batch: Boolean = false): TriggerSpec =
         spec(MillEvent(player = player, cardFilter = card, batch = batch))
 
-    /** "cycles a card". This card being cycled is [ObjectTriggerSubject.isCycled]. */
-    fun cycles(): TriggerSpec = spec(CycleEvent(player))
+    /**
+     * "cycles a card"; [firstTimeEachTurn] is "for the first time each turn" — the player's first
+     * cycle of the turn (Valiant Rescuer). This card being cycled is [ObjectTriggerSubject.isCycled].
+     */
+    fun cycles(firstTimeEachTurn: Boolean = false): TriggerSpec =
+        spec(CycleEvent(player, firstTimeEachTurn = firstTimeEachTurn))
 
     /**
      * "plays a land [from anywhere other than [fromZoneOtherThan]]" (CR 305.1) — the land-play action,
