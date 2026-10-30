@@ -455,6 +455,13 @@ object DamageUtils {
                 newState = gainedState
                 gainEvent?.let { preventionLifeEvents.add(it) }
             }
+        } else {
+            // CR 615.12: static prevention effects still apply to unpreventable damage — they
+            // prevent nothing, but their additional effect still happens (Nine Lives' counter).
+            newState = applyStaticDamageReduction(
+                newState, targetId, effectiveAmount, isCombatDamage, sourceId, zones.predicateEvaluator,
+                unpreventable = true
+            ).first
         }
         val perPoint = applyPerPointCounterPrevention(
             newState, targetId, effectiveAmount, sourceId, isCombatDamage, zones.predicateEvaluator,
@@ -1792,7 +1799,10 @@ object DamageUtils {
         // nothing. When any battlefield "damage can't be prevented" (Spider-Punk) or the "this turn"
         // one-shot (Fear, Fire, Foes!) is active, no shield applies and the damage passes through in full.
         if (isDamagePreventionDisabled(state, targetId, sourceId, predicateEvaluator = predicateEvaluator)) {
-            return PreventionShieldResult(state, amount)
+            val (riderState, _) = applyStaticDamageReduction(
+                state, targetId, amount, isCombatDamage, sourceId, predicateEvaluator, unpreventable = true
+            )
+            return PreventionShieldResult(riderState, amount)
         }
 
         var remainingDamage = amount
@@ -2605,6 +2615,9 @@ object DamageUtils {
      * [GameState.pendingReplacementRiders] with the amount that application prevented; see
      * [com.wingedsheep.engine.replacement.ReplacementRiders].
      *
+     * @param unpreventable The damage can't be prevented (CR 615.12): every applicable effect still
+     *   applies once but prevents nothing, and its [PreventDamage.onPrevented] still runs with a
+     *   prevented amount of 0 — Nine Lives still gets its incarnation counter, Purity gains no life
      * @return The state (with any owed prevention results queued) and the reduced damage amount
      *   (minimum 0)
      */
@@ -2614,7 +2627,8 @@ object DamageUtils {
         amount: Int,
         isCombatDamage: Boolean = false,
         sourceId: EntityId? = null,
-        predicateEvaluator: PredicateEvaluator
+        predicateEvaluator: PredicateEvaluator,
+        unpreventable: Boolean = false
     ): Pair<GameState, Int> {
         if (amount <= 0) return state to 0
 
@@ -2678,13 +2692,14 @@ object DamageUtils {
                 if (recipientMatches) {
                     val preventAmount = effect.amount
                     val prevented = when {
+                        unpreventable -> 0
                         effect.half -> if (effect.roundUp) (remainingDamage + 1) / 2 else remainingDamage / 2
                         preventAmount == null -> remainingDamage
                         else -> minOf(preventAmount, remainingDamage)
                     }
                     remainingDamage -= prevented
                     val onPrevented = effect.onPrevented
-                    if (onPrevented != null && prevented > 0) {
+                    if (onPrevented != null && (prevented > 0 || unpreventable)) {
                         riders += PendingReplacementRider(
                             effect = onPrevented,
                             hostId = entityId,

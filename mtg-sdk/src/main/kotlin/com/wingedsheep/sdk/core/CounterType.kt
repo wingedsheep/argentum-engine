@@ -290,6 +290,13 @@ value class CounterType(val name: String) {
         val MANNEQUIN = CounterType("MANNEQUIN")
 
         /**
+         * Incarnation counter (M21 — Nine Lives). A pure marker with no inherent rule: Nine Lives
+         * puts one on itself each time it prevents damage to you, and its state trigger exiles it at
+         * nine or more.
+         */
+        val INCARNATION = CounterType("INCARNATION")
+
+        /**
          * Rev counter (DSK — Chainsaw). Passive storage counter with no inherent rule; the card's own
          * abilities accumulate it (a "whenever one or more creatures die" trigger adds one) and read
          * the count to scale the equipped creature's power bonus (+X/+0). No inherent rule.
@@ -972,6 +979,7 @@ value class CounterType(val name: String) {
             PAGE,
             HOOFPRINT,
             MANNEQUIN,
+            INCARNATION,
             REV,
             BLOODSTAIN,
             BLOOD,

@@ -1084,8 +1084,9 @@ data class EntersWithKeywords(
  * state-based actions, and runs once per application with the amount *that* application actually
  * prevented, read by [com.wingedsheep.sdk.dsl.DynamicAmounts.preventedDamage]. `Self` is this
  * permanent, "you" its controller, and [com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity]
- * the permanent the damage would have been dealt to. Damage that can't be prevented is dealt, and
- * then nothing was prevented, so the rider doesn't run.
+ * the permanent the damage would have been dealt to. Damage that can't be prevented is dealt, but
+ * the prevention still applies to it (CR 615.12): the rider runs with 0 prevented — Purity gains
+ * nothing, Nine Lives still gets its incarnation counter.
  *
  * [half] prevents **half** of the damage that reaches this prevention instead of a fixed [amount],
  * rounded up by default ([roundUp]) — Gisela, Blade of Goldnight's "If a source would deal damage to

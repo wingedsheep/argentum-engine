@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
@@ -34,6 +35,17 @@ class PurityScenarioTest : ScenarioTestBase() {
             )).error shouldBe null
             game.resolveStack()
             game.getLifeTotal(1) shouldBe 21
+        }
+
+        test("damage that can't be prevented is dealt and gains no life") {
+            // CR 615.12: the prevention still applies, prevents 0, and so gains 0 life.
+            val game = base().withCardInHand(2, "Banefire")
+                .withLandsOnBattlefield(2, "Mountain", 6).build()
+            val banefire = game.findCardsInHand(2, "Banefire").single()
+            game.execute(CastSpell(game.player2Id, banefire, listOf(ChosenTarget.Player(game.player1Id)), 5))
+                .error shouldBe null
+            game.resolveStack()
+            game.getLifeTotal(1) shouldBe 15
         }
 
         test("combat damage is dealt normally") {

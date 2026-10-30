@@ -783,6 +783,7 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.PAGE,
   CounterType.HOOFPRINT,
   CounterType.MANNEQUIN,
+  CounterType.INCARNATION,
   CounterType.REV,
   CounterType.BLOODSTAIN,
   CounterType.BLOOD,

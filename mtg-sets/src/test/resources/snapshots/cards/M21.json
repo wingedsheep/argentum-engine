@@ -8579,6 +8579,105 @@
     ]
 }
 
+// Nine Lives
+{
+    "name": "Nine Lives",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Hexproof\nIf a source would deal damage to you, prevent that damage and put an incarnation counter on this enchantment.\nWhen there are nine or more incarnation counters on this enchantment, exile it.\nWhen this enchantment leaves the battlefield, you lose the game.",
+    "keywords": [
+        "HEXPROOF"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nine Lives:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": "LoseGame"
+            }
+        ],
+        "stateTriggeredAbilities": [
+            {
+                "id": "Nine Lives:1",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "INCARNATION"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 9
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Exile"
+                },
+                "descriptionOverride": "When there are nine or more incarnation counters on this enchantment, exile it."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "PreventDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "You"
+                    }
+                },
+                "onPrevented": {
+                    "type": "AddCounters",
+                    "counterType": "INCARNATION",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "rarity": "RARE",
+        "artist": "Paul Scott Canavan",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e70b7a73-484e-48f1-944c-3d38866cdc20.jpg?1783930737",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "If you counter the first triggered ability or otherwise remove it from the stack, it will just trigger again immediately if Nine Lives still has nine or more incarnation counters on it."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If more than one source deals damage to you at once, prevent the damage from each of them and put that many incarnation counters on Nine Lives, even if this causes more than nine incarnation counters to be on Nine Lives. Leave it to cats to abuse loopholes."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "The last ability of Nine Lives triggers no matter how it leaves the battlefield."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Once the first triggered ability is on the stack, it won't trigger again, even if more damage is prevented and more incarnation counters are put onto it."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If damage that a source would deal to you can't be prevented, you still put an incarnation counter on Nine Lives."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Obsessive Stitcher
 {
     "name": "Obsessive Stitcher",
