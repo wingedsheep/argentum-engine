@@ -551,13 +551,13 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
     }
 }
 
-/**
- * Zones that cards can be exiled from as an additional cost.
- */
 /** What [AdditionalCost.VariableCards] does with each card the caster chooses. */
 @Serializable
 enum class CardCostAction { EXILE, DISCARD }
 
+/**
+ * Zones that cards can be exiled from as an additional cost.
+ */
 @Serializable
 enum class CostZone(val description: String) {
     HAND("hand"),
