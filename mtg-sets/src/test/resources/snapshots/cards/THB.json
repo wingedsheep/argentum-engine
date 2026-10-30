@@ -10207,6 +10207,98 @@
     ]
 }
 
+// Nylea's Intervention
+{
+    "name": "Nylea's Intervention",
+    "manaCost": "{X}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Search your library for up to X land cards, reveal them, put them into your hand, then shuffle.\n• Nylea's Intervention deals twice X damage to each creature with flying.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "land"
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": "XValue"
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for land cards (up to X) to put into your hand",
+                                "selectedLabel": "Put into your hand"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                },
+                                "revealed": true
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    },
+                    "description": "Search your library for up to X land cards, reveal them, put them into your hand, then shuffle"
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature kw:flying"
+                            }
+                        },
+                        "body": {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Multiply",
+                                "amount": "XValue",
+                                "multiplier": 2
+                            },
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "description": "Nylea's Intervention deals twice X damage to each creature with flying"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "188",
+        "rarity": "RARE",
+        "artist": "Zezhou Chen",
+        "flavorText": "\"I bring a wilderness no law can tame.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/daa2f963-9d16-4224-b24e-b6a79f2b9d75.jpg?1783931532",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "The second mode of Nylea's Intervention has it deal damage to each creature with flying equal to twice X. It doesn't deal X damage to them then deal X damage again."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Nylea, Keen-Eyed
 {
     "name": "Nylea, Keen-Eyed",
@@ -10345,6 +10437,100 @@
             {
                 "date": "2020-01-24",
                 "text": "The type-changing ability that can make a God not be a creature functions only on the battlefield. It's always a creature card in other zones, regardless of your devotion to its color. It's always a creature spell while it's on the stack."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Nyx Herald
+{
+    "name": "Nyx Herald",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment Creature — Centaur Shaman",
+    "oracleText": "At the beginning of combat on your turn, target enchanted creature or enchantment creature you control gets +1/+1 and gains trample until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nyx Herald:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "TRAMPLE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "controllerPredicate": "ControlledByYou",
+                            "anyOf": [
+                                {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        "IsEnchanted"
+                                    ]
+                                },
+                                {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        "IsEnchantment"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "At the beginning of combat on your turn, target enchanted creature or enchantment creature you control gets +1/+1 and gains trample until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "189",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Zug",
+        "flavorText": "\"A piercing call, bright as the stars, rang out across the valley, calling the Pheres band to war, to blood and savagery.\"\n—Luphea of Setessa, *Histories*",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/866dcef0-8d3e-4126-963a-05598d8a9e79.jpg?1783931532",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "Once Nyx Herald's ability resolves, the creature keeps +1/+1 and trample even if it stops being enchanted later in the turn (or, in some unusual cases, stops being an enchantment)."
             }
         ]
     },
@@ -10661,6 +10847,103 @@
     ]
 }
 
+// Omen of the Hunt
+{
+    "name": "Omen of the Hunt",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Flash\nWhen this enchantment enters, you may search your library for a basic land card, put it onto the battlefield tapped, then shuffle.\n{2}{G}, Sacrifice this enchantment: Scry 2.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Omen of the Hunt:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "basicland"
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a basic land card to put onto the battlefield tapped",
+                                "selectedLabel": "Put onto the battlefield tapped"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield",
+                                    "placement": "Tapped"
+                                }
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Omen of the Hunt:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{G}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Scry",
+                    "count": 2
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "192",
+        "artist": "Piotr Dura",
+        "flavorText": "\"My time will come, when no road will divide the endless verdure of the trees.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/d/7d4ebdea-78d4-4034-921b-735bdb11a716.jpg?1783931531"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Omen of the Sea
 {
     "name": "Omen of the Sea",
@@ -10727,6 +11010,88 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Omen of the Sun
+{
+    "name": "Omen of the Sun",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Flash\nWhen this enchantment enters, create two 1/1 white Human Soldier creature tokens and you gain 2 life.\n{2}{W}, Sacrifice this enchantment: Scry 2.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Omen of the Sun:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "WHITE"
+                            ],
+                            "creatureTypes": [
+                                "Human",
+                                "Soldier"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/1/e/1e76f0e3-9411-401d-ab38-9c3c64769483.jpg?1783931455"
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Omen of the Sun:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{W}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Scry",
+                    "count": 2
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "artist": "Piotr Dura",
+        "flavorText": "\"My time will come, when every soul will bask in my glory and obey my law.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/86586fe3-1a6e-4648-b3ff-b0d9340e66ff.jpg?1783931592"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -11008,6 +11373,233 @@
     ]
 }
 
+// Pharika's Spawn
+{
+    "name": "Pharika's Spawn",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Gorgon",
+    "oracleText": "Escape—{5}{B}, Exile three other cards from your graveyard. (You may cast this card from your graveyard for its escape cost.)\nThis creature escapes with two +1/+1 counters on it. When it enters this way, each opponent sacrifices a non-Gorgon creature of their choice.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "ESCAPE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Escape",
+            "cost": "{5}{B}",
+            "additionalCost": {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomExileFrom",
+                    "zone": "Graveyard",
+                    "count": 3,
+                    "excludeSelf": true
+                }
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pharika's Spawn:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Gorgon"
+                            }
+                        ]
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "triggerRestriction": "Escaped",
+                "descriptionOverride": "When it enters this way, each opponent sacrifices a non-Gorgon creature of their choice."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 2,
+                "selfOnly": true,
+                "condition": "Escaped"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "rarity": "UNCOMMON",
+        "artist": "Vincent Proce",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a2c8244b-7d86-4dff-9419-3945beb2a7b7.jpg?1783931561",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "As the triggered ability resolves, first the next opponent in turn order (or, if it's an opponent's turn, the opponent whose turn it is) chooses a creature they control, then each other opponent in turn order does the same, knowing the choices made before them. Then all the chosen creatures are sacrificed at the same time."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "After an escaped spell resolves, it returns to its owner's graveyard if it's not a permanent spell. If it is a permanent spell, it enters the battlefield and will return to its owner's graveyard if it dies later. Perhaps it will escape again—good underworld security is so hard to come by these days."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Pheres-Band Brawler
+{
+    "name": "Pheres-Band Brawler",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Creature — Centaur Warrior",
+    "oracleText": "When this creature enters, it fights up to one target creature you don't control. (Each deals damage equal to its power to the other.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pheres-Band Brawler:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Fight",
+                    "target1": "Self",
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, it fights up to one target creature you don't control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "193",
+        "rarity": "UNCOMMON",
+        "artist": "John Stanko",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/0/10ac20a9-6b10-4165-ad81-a47587b64d1e.jpg?1783931531",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If the target creature is an illegal target when Pheres-Band Brawler's ability tries to resolve, the ability doesn't resolve. If Pheres-Band Brawler is no longer on the battlefield, the target creature won't deal or be dealt damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Phoenix of Ash
+{
+    "name": "Phoenix of Ash",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Creature — Phoenix",
+    "oracleText": "Flying, haste\n{2}{R}: This creature gets +2/+0 until end of turn.\nEscape—{2}{R}{R}, Exile three other cards from your graveyard. (You may cast this card from your graveyard for its escape cost.)\nThis creature escapes with a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "HASTE",
+        "ESCAPE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Escape",
+            "cost": "{2}{R}{R}",
+            "additionalCost": {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomExileFrom",
+                    "zone": "Graveyard",
+                    "count": 3,
+                    "excludeSelf": true
+                }
+            }
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Phoenix of Ash:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "This creature gets +2/+0 until end of turn."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true,
+                "condition": "Escaped"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/0/7010ce26-16de-44cb-ba7e-3d904175b429.jpg?1783931546",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "After an escaped spell resolves, it returns to its owner's graveyard if it's not a permanent spell. If it is a permanent spell, it enters the battlefield and will return to its owner's graveyard if it dies later. Perhaps it will escape again—good underworld security is so hard to come by these days."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If a card with escape is put into your graveyard during your turn, you'll be able to cast it right away if it's legal to do so, before an opponent can take any actions."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Pious Wayfarer
 {
     "name": "Pious Wayfarer",
@@ -11076,6 +11668,423 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Polukranos, Unchained
+{
+    "name": "Polukranos, Unchained",
+    "manaCost": "{2}{B}{G}",
+    "typeLine": "Legendary Creature — Zombie Hydra",
+    "oracleText": "Polukranos enters with six +1/+1 counters on it. It escapes with twelve +1/+1 counters on it instead.\nIf damage would be dealt to Polukranos while it has a +1/+1 counter on it, prevent that damage and remove that many +1/+1 counters from it.\n{1}{B}{G}: Polukranos fights another target creature.\nEscape—{4}{B}{G}, Exile six other cards from your graveyard.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "keywords": [
+        "ESCAPE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Escape",
+            "cost": "{4}{B}{G}",
+            "additionalCost": {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomExileFrom",
+                    "zone": "Graveyard",
+                    "count": 6,
+                    "excludeSelf": true
+                }
+            }
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Polukranos, Unchained:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{B}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Fight",
+                    "target1": "Self",
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Polukranos fights another target creature."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 6,
+                "selfOnly": true,
+                "condition": {
+                    "type": "Not",
+                    "condition": "Escaped"
+                }
+            },
+            {
+                "type": "EntersWithCounters",
+                "count": 12,
+                "selfOnly": true,
+                "condition": "Escaped"
+            },
+            {
+                "type": "PreventDamageByRemovingCounter",
+                "removalAmount": "EqualToDamage",
+                "requiresCounter": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "224",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/87858278-632c-4d82-b3a3-adfc6f2f4fc6.jpg?1783931519",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If an amount of damage would be dealt to Polukranos greater than the number of +1/+1 counters on it, all of that damage is prevented, and all of those counters are removed. In most cases, this will result in Polukranos having 0 toughness, so it will be put into its owner's graveyard."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If damage that can't be prevented is dealt to Polukranos, the damage is dealt and you'll simultaneously remove that many +1/+1 counters from it, all before the game checks for lethal damage."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If the target creature is an illegal target when Polukranos's activated ability tries to resolve, the ability doesn't resolve. If Polukranos is no longer on the battlefield, the target creature won't deal or be dealt damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
+// Protean Thaumaturge
+{
+    "name": "Protean Thaumaturge",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Constellation — Whenever an enchantment you control enters, you may have this creature become a copy of another target creature, except it has this ability.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Protean Thaumaturge:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "enchantment ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "sourceRequiredZone": "Battlefield"
+                    },
+                    "then": {
+                        "type": "EachPermanentBecomesCopyOfTarget",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "affected": "Self",
+                        "exceptions": {
+                            "retainResolvingTriggeredAbility": true
+                        }
+                    },
+                    "descriptionOverride": "Have Protean Thaumaturge become a copy of the target creature?"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Constellation — Whenever an enchantment you control enters, you may have this creature become a copy of another target creature, except it has this ability."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "rarity": "RARE",
+        "artist": "Izzy",
+        "flavorText": "\"Once you see past the veil we call 'reality,' altering your own shape is elementary.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/749bfd81-c61b-4901-8efb-72611fd08244.jpg?1783931580",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "Protean Thaumaturge copies the printed values of the target creature, plus any copy effects that have been applied to it. It won't copy counters on that creature or effects that have changed its power, toughness, types, color, or so on."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If something becomes a copy of Protean Thaumaturge, it also has the constellation ability."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "Protean Thaumaturge's ability causes it to become a copy indefinitely. It doesn't expire during the cleanup step or if the target creature leaves the battlefield after the ability has resolved."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Purphoros's Intervention
+{
+    "name": "Purphoros's Intervention",
+    "manaCost": "{X}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Create an X/1 red Elemental creature token with trample and haste. Sacrifice it at the beginning of the next end step.\n• Purphoros's Intervention deals twice X damage to target creature or planeswalker.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 0,
+                        "toughness": 1,
+                        "colors": [
+                            "RED"
+                        ],
+                        "creatureTypes": [
+                            "Elemental"
+                        ],
+                        "keywords": [
+                            "TRAMPLE",
+                            "HASTE"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/6/0/60466c78-155e-442b-8022-795e1e9de8df.jpg?1783931453",
+                        "dynamicPower": "XValue",
+                        "sacrificeAtStep": "END"
+                    },
+                    "description": "Create an X/1 red Elemental token with trample and haste; sacrifice it at the next end step"
+                },
+                {
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Multiply",
+                            "amount": "XValue",
+                            "multiplier": 2
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetCreatureOrPlaneswalker",
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Deal twice X damage to target creature or planeswalker"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "151",
+        "rarity": "RARE",
+        "artist": "Aleksi Briclot",
+        "flavorText": "\"I bring a fire to recast all the world.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/c/ecc911ee-0e12-4b10-add7-9a9d63c29443.jpg?1783931547",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "The second mode of Purphoros's Intervention has it deal damage to the target equal to twice X. It doesn't deal X damage then deal X damage again."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Purphoros, Bronze-Blooded
+{
+    "name": "Purphoros, Bronze-Blooded",
+    "manaCost": "{4}{R}",
+    "typeLine": "Legendary Enchantment Creature — God",
+    "oracleText": "Indestructible\nAs long as your devotion to red is less than five, Purphoros isn't a creature.\nOther creatures you control have haste.\n{2}{R}: You may put a red creature card or an artifact creature card from your hand onto the battlefield. Sacrifice it at the beginning of the next end step.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 6
+    },
+    "keywords": [
+        "INDESTRUCTIBLE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Purphoros, Bronze-Blooded:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "Or",
+                                            "predicates": [
+                                                {
+                                                    "type": "And",
+                                                    "predicates": [
+                                                        "IsCreature",
+                                                        {
+                                                            "type": "HasColor",
+                                                            "color": "RED"
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "And",
+                                                    "predicates": [
+                                                        "IsArtifact",
+                                                        "IsCreature"
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "selected1",
+                            "ifNotEmpty": {
+                                "type": "CreateDelayedTrigger",
+                                "step": "END",
+                                "effect": {
+                                    "type": "SacrificeTarget",
+                                    "target": {
+                                        "type": "PipelineTarget",
+                                        "collectionName": "selected1"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{2}{R}: You may put a red creature card or an artifact creature card from your hand onto the battlefield. Sacrifice it at the beginning of the next end step."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "RemoveCardType",
+                    "cardType": "CREATURE"
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "DevotionTo",
+                        "colors": [
+                            "RED"
+                        ]
+                    },
+                    "operator": "LT",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 5
+                    }
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE",
+                "filter": {
+                    "baseFilter": "creature ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "150",
+        "rarity": "MYTHIC",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/af3af5c4-0960-44a2-976e-abdf7803c436.jpg?1783931548",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "The type-changing ability that can make a God not be a creature functions only on the battlefield. It's always a creature card in other zones, regardless of your devotion to its color. It's always a creature spell while it's on the stack."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If a God stops being a creature, it loses the type creature and the creature type God. It continues to be a legendary enchantment."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "The abilities of Gods function as long as they're on the battlefield, regardless of whether they're creatures."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -11245,6 +12254,117 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Renata, Called to the Hunt
+{
+    "name": "Renata, Called to the Hunt",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Legendary Enchantment Creature — Demigod",
+    "oracleText": "Renata's power is equal to your devotion to green. (Each {G} in the mana costs of permanents you control counts toward your devotion to green.)\nEach other creature you control enters with an additional +1/+1 counter on it.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "DevotionTo",
+                "colors": [
+                    "GREEN"
+                ]
+            }
+        },
+        "toughness": 3
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "otherOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "196",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2b27e6b2-13ad-42b2-a121-70935913723d.jpg?1783931530",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "The ability that defines Renata's power works in all zones, not just the battlefield."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If a creature you control would normally enter the battlefield with no +1/+1 counters on it, Renata's second ability causes it to enter the battlefield with a +1/+1 counter on it."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "A creature entering the battlefield at the same time as Renata won't get an additional +1/+1 counter."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Reverent Hoplite
+{
+    "name": "Reverent Hoplite",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "When this creature enters, create a number of 1/1 white Human Soldier creature tokens equal to your devotion to white. (Each {W} in the mana costs of permanents you control counts toward your devotion to white.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Reverent Hoplite:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "DevotionTo",
+                        "colors": [
+                            "WHITE"
+                        ]
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Human",
+                        "Soldier"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/e/1e76f0e3-9411-401d-ab38-9c3c64769483.jpg?1783931455"
+                },
+                "descriptionOverride": "When this creature enters, create a number of 1/1 white Human Soldier creature tokens equal to your devotion to white."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "rarity": "UNCOMMON",
+        "artist": "Sidharth Chaturvedi",
+        "flavorText": "\"Zeal is the sharpest blade, and piety the strongest shield.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/54153b9c-483e-4e5c-a1ab-b1c8a7a657d4.jpg?1783931590",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If an activated ability or triggered ability has an effect that depends on your devotion to a color, you count the number of mana symbols of that color among the mana costs of permanents you control as the ability resolves. The permanent with that ability will be counted if it's still on the battlefield at that time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -11461,6 +12581,64 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Satyr's Cunning
+{
+    "name": "Satyr's Cunning",
+    "manaCost": "{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create a 1/1 red Satyr creature token with \"This token can't block.\"\nEscape—{2}{R}, Exile two other cards from your graveyard. (You may cast this card from your graveyard for its escape cost.)",
+    "keywords": [
+        "ESCAPE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Escape",
+            "cost": "{2}{R}",
+            "additionalCost": {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomExileFrom",
+                    "zone": "Graveyard",
+                    "count": 2,
+                    "excludeSelf": true
+                }
+            }
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "power": 1,
+            "toughness": 1,
+            "colors": [
+                "RED"
+            ],
+            "creatureTypes": [
+                "Satyr"
+            ],
+            "imageUri": "https://cards.scryfall.io/normal/front/9/0/903e30f3-580e-4a14-989b-ae0632363407.jpg?1783931453",
+            "staticAbilities": [
+                "CantBlock"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "artist": "Deruchenko Alexander",
+        "flavorText": "It's hard to keep a satyr down, even in the Underworld.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/646d8201-be68-42fa-bcfd-42d81a2ad195.jpg?1783931547",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "After an escaped spell resolves, it returns to its owner's graveyard if it's not a permanent spell. If it is a permanent spell, it enters the battlefield and will return to its owner's graveyard if it dies later. Perhaps it will escape again—good underworld security is so hard to come by these days."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

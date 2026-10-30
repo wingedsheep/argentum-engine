@@ -2408,6 +2408,76 @@
     ]
 }
 
+// Portent of Betrayal
+{
+    "name": "Portent of Betrayal",
+    "manaCost": "{3}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Gain control of target creature until end of turn. Untap that creature. It gains haste until end of turn. Scry 1. (Look at the top card of your library. You may put that card on the bottom.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Scry",
+                    "count": 1
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9fcdf4df-1900-427b-998f-957754ce1b75.jpg?1783939757",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "Portent of Betrayal can target any creature, even one that's untapped or one you already control."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "If the target creature is an illegal target by the time Portent of Betrayal tries to resolve, the spell won't resolve. You won't scry 1."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Prescient Chimera
 {
     "name": "Prescient Chimera",
