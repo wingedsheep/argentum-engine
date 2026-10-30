@@ -1632,6 +1632,30 @@
     ]
 }
 
+// Unwinding Clock
+{
+    "name": "Unwinding Clock",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "Untap all artifacts you control during each other player's untap step.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "UntapFilteredDuringOtherUntapSteps",
+                "filter": "artifact"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "164",
+        "rarity": "RARE",
+        "artist": "Mike Bierek",
+        "flavorText": "\"The partisans have unearthed a strange artifact. None know its origin, but it gives them hope of a life beyond.\"\n—Elspeth's journal",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/495d520b-7560-4ecb-ae62-143eeec5682f.jpg?1783941289"
+    },
+    "colorIdentityOverride": []
+}
+
 // Volt Charge
 {
     "name": "Volt Charge",

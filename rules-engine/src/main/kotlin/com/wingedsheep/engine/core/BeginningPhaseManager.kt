@@ -267,7 +267,12 @@ class BeginningPhaseManager(
         }
 
         // Untap permanents for non-active players with UntapDuringOtherUntapSteps (e.g., Seedborn Muse)
-        // or UntapFilteredDuringOtherUntapSteps (e.g., Ivorytusk Fortress)
+        // or UntapFilteredDuringOtherUntapSteps (e.g., Ivorytusk Fortress).
+        //
+        // DOESNT_UNTAP is deliberately not consulted here: every such clause reads "doesn't untap
+        // during its controller's (your) untap step", and this is another player's untap step
+        // (Seedborn Muse / Unwinding Clock rulings — Rust Tick's artifact still untaps). The
+        // stronger CANT_BECOME_UNTAPPED is enforced by untapOrConsumeStun itself.
         val projectedForSeedborn = newState.projectedState
         for (playerId in if (stepHappens) newState.turnOrder else emptyList()) {
             if (playerId in activeTeam) continue // active team already untapped above (CR 805.4)
@@ -299,8 +304,7 @@ class BeginningPhaseManager(
             if (untapAll) {
                 val tappedPermanents = newState.entities.filter { (entityId, container) ->
                     projectedForSeedborn.getController(entityId) == playerId &&
-                        container.has<TappedComponent>() &&
-                        !projectedForSeedborn.doesntUntapDuringUntapStep(entityId)
+                        container.has<TappedComponent>()
                 }.keys
                 for (entityId in tappedPermanents) {
                     // Another player's untap step (Seedborn Muse, etc.) — the
@@ -317,7 +321,6 @@ class BeginningPhaseManager(
                         entityId !in alreadyUntapped &&
                             projectedForSeedborn.getController(entityId) == playerId &&
                             container.has<TappedComponent>() &&
-                            !projectedForSeedborn.doesntUntapDuringUntapStep(entityId) &&
                             matchesFilterForUntap(newState, projectedForSeedborn, entityId, container, filter)
                     }.keys
                     for (entityId in tappedPermanents) {
@@ -336,7 +339,6 @@ class BeginningPhaseManager(
             for (entityId in selfUntapIds) {
                 val container = newState.getEntity(entityId) ?: continue
                 if (!container.has<TappedComponent>()) continue
-                if (projectedForSeedborn.doesntUntapDuringUntapStep(entityId)) continue
                 val (afterUntap, untapEvents) = untapOrConsumeStun(newState, entityId)
                 newState = afterUntap
                 events.addAll(untapEvents)

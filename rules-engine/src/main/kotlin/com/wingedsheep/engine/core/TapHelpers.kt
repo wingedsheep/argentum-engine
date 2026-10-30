@@ -336,9 +336,11 @@ typealias UntappedOrConsumeEvent = GameEvent
  * True if [entityId] must be skipped by an untap step (CR 502.3) — either the narrow
  * [AbilityFlag.DOESNT_UNTAP] ("doesn't untap during your untap step") or the stronger
  * [AbilityFlag.CANT_BECOME_UNTAPPED], which also blocks untap *effects* and therefore
- * subsumes the untap-step behavior. Use this at every untap-step gate in
- * [BeginningPhaseManager] so both restrictions drop the permanent from the untap list
- * (and from the MAY_NOT_UNTAP / untap-limit choice pools). Universal untap enforcement
+ * subsumes the untap-step behavior. Use this at every gate of the *active* player's own
+ * untap step in [BeginningPhaseManager] so both restrictions drop the permanent from the
+ * untap list (and from the MAY_NOT_UNTAP / untap-limit choice pools). Not for "during each
+ * other player's untap step" untaps (Seedborn Muse): DOESNT_UNTAP is controller-scoped and
+ * doesn't apply there. Universal untap enforcement
  * still lives in [untapOrConsumeStun]; this is the untap-step-only convenience.
  */
 fun ProjectedState.doesntUntapDuringUntapStep(entityId: EntityId): Boolean =

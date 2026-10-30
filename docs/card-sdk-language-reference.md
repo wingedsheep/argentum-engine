@@ -11013,7 +11013,10 @@ staticAbility {
     (Teferi, Who Slows the Sunset's emblem) — the two differ only for a Team vs. Team teammate's own turn.
     Also read off an emblem's own statics (`CreatePermanentEmblem(ownedStaticAbilities = …)`).
   - `UntapFilteredDuringOtherUntapSteps(filter)` — untap each permanent you control matching `filter`
-    (Ivorytusk Fortress).
+    (Ivorytusk Fortress; `Filters.Artifact` for Unwinding Clock).
+  - All three ignore `AbilityFlag.DOESNT_UNTAP` and "next untap step" skips: those are scoped to the
+    controller's own untap step, and this is another player's (Seedborn Muse / Unwinding Clock rulings —
+    a Rust Tick'd artifact still untaps). `CANT_BECOME_UNTAPPED` and stun counters still apply.
   - `UntapSelfDuringOtherUntapSteps` — untap **only the source permanent itself** ("Untap this artifact
     during each other player's untap step" — Bender's Waterskin). Guarded on the source still being tapped,
     so it never double-untaps / double-consumes a stun counter alongside the broad/filtered variants.
