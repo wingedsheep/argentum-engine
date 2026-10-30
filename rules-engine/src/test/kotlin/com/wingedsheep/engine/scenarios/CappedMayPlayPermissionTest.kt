@@ -193,6 +193,53 @@ class CappedMayPlayPermissionTest : ScenarioTestBase() {
                 canCast(game, second) shouldBe true
             }
         }
+
+        test("two single-use grants over the same group authorise two casts, one each") {
+            val game = setup("Test SingleUse Granter", "Grizzly Bears", "Grizzly Bears")
+            val (first, second) = exiledCardsNamed(game, "Grizzly Bears")
+            game.state = game.state.addMayPlayPermission(
+                MayPlayPermission(
+                    id = EntityId.generate(),
+                    cardIds = setOf(first, second),
+                    controllerId = game.player1Id,
+                    playsRemaining = 1,
+                    timestamp = game.state.timestamp
+                )
+            )
+
+            game.execute(CastSpell(playerId = game.player1Id, cardId = first)).error shouldBe null
+            game.resolveStack()
+
+            withClue("The cast spent only one of the two grants; the other still covers the second card") {
+                canCast(game, second) shouldBe true
+            }
+            game.execute(CastSpell(playerId = game.player1Id, cardId = second)).error shouldBe null
+            game.resolveStack()
+            withClue("Both grants are spent") {
+                game.state.mayPlayPermissions.none { second in it.cardIds || first in it.cardIds } shouldBe true
+            }
+        }
+
+        test("of two overlapping single-use grants, the cast spends the narrower one") {
+            val game = setup("Test SingleUse Granter", "Grizzly Bears", "Grizzly Bears")
+            val (first, second) = exiledCardsNamed(game, "Grizzly Bears")
+            game.state = game.state.addMayPlayPermission(
+                MayPlayPermission(
+                    id = EntityId.generate(),
+                    cardIds = setOf(first),
+                    controllerId = game.player1Id,
+                    playsRemaining = 1,
+                    timestamp = game.state.timestamp
+                )
+            )
+
+            game.execute(CastSpell(playerId = game.player1Id, cardId = first)).error shouldBe null
+            game.resolveStack()
+
+            withClue("The group-wide grant survives, so the second card is still castable") {
+                canCast(game, second) shouldBe true
+            }
+        }
     }
 
     private fun exiledCardsNamed(game: TestGame, name: String): List<EntityId> =

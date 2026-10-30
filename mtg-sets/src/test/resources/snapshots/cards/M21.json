@@ -5859,6 +5859,106 @@
     ]
 }
 
+// Idol of Endurance
+{
+    "name": "Idol of Endurance",
+    "manaCost": "{2}{W}",
+    "typeLine": "Artifact",
+    "oracleText": "When this artifact enters, exile all creature cards with mana value 3 or less from your graveyard until this artifact leaves the battlefield.\n{1}{W}, {T}: Until end of turn, you may cast a creature spell from among cards exiled with this artifact without paying its mana cost.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Idol of Endurance:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": "creature mv<=3"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "gathered0"
+                            },
+                            "body": {
+                                "type": "MoveUntilSourceLeaves",
+                                "target": "IterationEntity",
+                                "destination": "Exile"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this artifact enters, exile all creature cards with mana value 3 or less from your graveyard until this artifact leaves the battlefield."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Idol of Endurance:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": "creature",
+                            "storeMatching": "matching1"
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "matching1",
+                            "nonLandOnly": true,
+                            "maxPlays": 1
+                        },
+                        {
+                            "type": "GrantPlayWithoutPayingCost",
+                            "from": "matching1"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Until end of turn, you may cast a creature spell from among cards exiled with this artifact without paying its mana cost."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "rarity": "RARE",
+        "artist": "Kim Sokol",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4d60e84e-be05-49da-9720-4225abe9d003.jpg?1783930739"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Igneous Cur
 {
     "name": "Igneous Cur",

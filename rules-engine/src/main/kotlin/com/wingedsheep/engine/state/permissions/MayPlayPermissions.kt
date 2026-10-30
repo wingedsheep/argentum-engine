@@ -58,11 +58,16 @@ fun GameState.removeMayPlayPermissionsForCard(cardId: EntityId): GameState =
     )
 
 /**
- * Spend one play from every capped ([MayPlayPermission.playsRemaining]) permission [playerId] holds
+ * Spend one play from a capped ([MayPlayPermission.playsRemaining]) permission [playerId] holds
  * over [cardId]: the card was just cast or played through it. A grant left with plays drops the
  * card that was played; one whose last play this was is revoked for the rest of its group too
  * ("cast a spell from among those cards" — one spell, not one each). Call only at a play site,
  * never when a card merely leaves exile.
+ *
+ * A play is made through **one** permission, so only one capped grant pays for it even when
+ * several cover the card — two activations of Idol of Endurance's "you may cast a creature spell
+ * from among cards exiled with this" are two casts, not one. The player would spend the grant
+ * that costs them least: the one covering the fewest cards, then the oldest.
  *
  * When an ordinary, unconditional stored grant also covers the card, the play is attributed to
  * that one and the capped grant is left untouched — the player chooses which permission they use,
@@ -73,11 +78,14 @@ fun GameState.spendCappedMayPlayFor(cardId: EntityId, playerId: EntityId): GameS
     fun covers(permission: MayPlayPermission) = permission.controllerId == playerId && cardId in permission.cardIds
     if (mayPlayPermissions.none { it.playsRemaining != null && covers(it) }) return this
     if (mayPlayPermissions.any { it.playsRemaining == null && it.condition == null && covers(it) }) return this
+    val spent = mayPlayPermissions
+        .filter { it.playsRemaining != null && covers(it) }
+        .minWith(compareBy<MayPlayPermission>({ it.cardIds.size }, { it.timestamp }))
+    val plays = spent.playsRemaining!!
     return copy(
         mayPlayPermissions = mayPlayPermissions.mapNotNull { permission ->
-            val plays = permission.playsRemaining
             when {
-                plays == null || !covers(permission) -> permission
+                permission !== spent -> permission
                 plays <= 1 -> null
                 else -> permission.copy(playsRemaining = plays - 1, cardIds = permission.cardIds - cardId)
             }
