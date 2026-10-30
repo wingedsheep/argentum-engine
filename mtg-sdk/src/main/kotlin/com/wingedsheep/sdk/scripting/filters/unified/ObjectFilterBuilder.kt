@@ -289,7 +289,12 @@ interface ObjectFilterBuilder<out Self> {
      */
     fun manaCostIs(vararg costs: String): Self {
         require(costs.isNotEmpty()) { "manaCostIs needs at least one cost" }
-        val predicates = costs.map { CardPredicate.ManaCostIs(ManaCost.parse(it)) }
+        val predicates = costs.map { cost ->
+            val parsed = ManaCost.parse(cost)
+            // Matching compares symbols in order, so the cost must be written in canonical order.
+            require(parsed.toString() == cost) { "manaCostIs(\"$cost\") is not in canonical order: $parsed" }
+            CardPredicate.ManaCostIs(parsed)
+        }
         return withCardPredicate(predicates.singleOrNull() ?: CardPredicate.Or(predicates))
     }
 

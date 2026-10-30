@@ -51,6 +51,46 @@ class UrzasSagaScenarioTest : ScenarioTestBase() {
             }
         }
 
+        test("on the next turn chapter II adds the Construct ability and chapter I's stays") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardInHand(1, "Urza's Saga")
+                .withCardOnBattlefield(1, "Sol Ring")
+                .withLandsOnBattlefield(1, "Island", 2)
+                .apply { repeat(6) { withCardInLibrary(1, "Island"); withCardInLibrary(2, "Island") } }
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            val cardId = game.findCardsInHand(1, "Urza's Saga").single()
+            game.execute(PlayLand(game.player1Id, cardId)).error shouldBe null
+            game.resolveStack()
+            // Through the opponent's turn and back to ours: the precombat-main lore counter.
+            repeat(2) {
+                game.passUntilPhase(Phase.ENDING, Step.END)
+                game.passUntilPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+            }
+            game.state.activePlayerId shouldBe game.player1Id
+            game.resolveStack()
+
+            val saga = game.findPermanent("Urza's Saga")!!
+            game.state.getEntity(saga)!!.get<CountersComponent>()!!.getCount(CounterType.LORE) shouldBe 2
+            val abilities = game.getLegalActions(1)
+                .filter { (it.action as? ActivateAbility)?.sourceId == saga }
+            abilities.size shouldBe 2
+            val construct = abilities.single { !it.isManaAbility }
+
+            game.execute(construct.action).error shouldBe null
+            if (game.hasPendingDecision()) game.submitManaSourcesAutoPay()
+            game.resolveStack()
+
+            val token = game.findPermanents("Construct Token").single()
+            withClue("Sol Ring and the Construct itself: two artifacts") {
+                game.state.projectedState.getPower(token) shouldBe 2
+                game.state.projectedState.getToughness(token) shouldBe 2
+            }
+        }
+
         test("chapter III finds only an artifact with printed mana cost {0} or {1}") {
             val game = scenario()
                 .withPlayers("Player", "Opponent")

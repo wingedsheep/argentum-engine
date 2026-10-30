@@ -31,7 +31,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * Chapters I and II grant the Saga itself lasting abilities (Down in the Valley's
  * `Duration.Permanent` self-grant), kept until it leaves (ruling). Chapter III matches the printed
  * cost, not the mana value: `{U}`, `{X}` and no-cost artifacts can't be found (ruling) —
- * `manaCostIs("{0}", "{1}")`. The Construct is Urza, Lord High Artificer's token.
+ * `manaCostIs("{0}", "{1}")`.
  */
 val UrzasSaga = card("Urza's Saga") {
     typeLine = "Enchantment Land — Urza's Saga"
@@ -72,7 +72,7 @@ val UrzasSaga = card("Urza's Saga") {
                             toughnessBonus = DynamicAmounts.battlefield(Player.You, GameObjectFilter.Artifact).count()
                         )
                     ),
-                    imageUri = "https://cards.scryfall.io/normal/front/8/5/85f212cd-4fc6-42fe-b268-22d8e3b2b7eb.jpg?1783933219"
+                    imageUri = "https://cards.scryfall.io/normal/front/a/7/a7caaf39-8f16-4f1d-bee6-a45674306319.jpg?1783926587"
                 ),
                 descriptionOverride = "{2}, {T}: Create a 0/0 colorless Construct artifact creature token " +
                     "with \"This token gets +1/+1 for each artifact you control.\""
