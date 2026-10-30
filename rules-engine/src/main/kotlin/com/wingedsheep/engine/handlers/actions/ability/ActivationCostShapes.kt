@@ -155,6 +155,18 @@ internal fun AbilityCost.stripManaCost(): AbilityCost = when (this) {
 }
 
 /**
+ * Pull the loyalty sub-cost ([AbilityCost.Loyalty] or [AbilityCost.LoyaltyX]) out of an ability
+ * cost (top-level or inside a [AbilityCost.Composite]), or null if none. A loyalty ability's cost
+ * is a bare loyalty atom until a tax prepends mana to it (Eidolon of Obstruction's "{1}, +1:"), so
+ * the payment events and the X pause read the loyalty part wherever it sits.
+ */
+internal fun AbilityCost.extractLoyaltyCost(): AbilityCost? = when (this) {
+    is AbilityCost.Loyalty, AbilityCost.LoyaltyX -> this
+    is AbilityCost.Composite -> costs.firstOrNull { it is AbilityCost.Loyalty || it == AbilityCost.LoyaltyX }
+    else -> null
+}
+
+/**
  * Pull the [AbilityCost.TapXPermanents] sub-cost out of an ability cost (top-level or
  * inside a [AbilityCost.Composite]), or null if none. Used by the legal-actions submission
  * path to detect that an activation needs to pause for an X choice + tap-target selection.

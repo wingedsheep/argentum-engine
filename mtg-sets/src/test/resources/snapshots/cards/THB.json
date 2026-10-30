@@ -4499,6 +4499,56 @@
     ]
 }
 
+// Eidolon of Obstruction
+{
+    "name": "Eidolon of Obstruction",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment Creature — Spirit",
+    "oracleText": "First strike\nLoyalty abilities of planeswalkers your opponents control cost {1} more to activate.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "IncreaseActivatedAbilityCost",
+                "filter": {
+                    "baseFilter": "planeswalker ctrl:opponent"
+                },
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
+                "loyaltyAbilitiesOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "RARE",
+        "artist": "Jason Rainville",
+        "flavorText": "Death turned admirable conviction into pointless intransigence.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/f/2f48f802-df9d-45b2-afea-98699bcdf0d6.jpg?1783931599",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "Eidolon of Obstruction doesn't replace the loyalty cost of activating a loyalty ability or cause it to cost more loyalty to activate. It just adds a mana component to the ability's activation cost."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "Loyalty abilities cost just {1} more to activate, no matter how much loyalty they cost to activate."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Eidolon of Philosophy
 {
     "name": "Eidolon of Philosophy",

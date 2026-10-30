@@ -205,6 +205,7 @@ class ActivatedAbilityEnumerator(
                                 // optimistically for a "that target this creature" reduction.
                                 chosenTargetIds = if (ability.targetRequirements.isEmpty()) emptyList() else null,
                                 abilityKeyword = ability.keyword,
+                                isLoyaltyAbility = ability.isPlaneswalkerAbility,
                             ),
                             ability, state, playerId, abilitySourceId = entityId
                         ),
