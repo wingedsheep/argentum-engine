@@ -4029,7 +4029,8 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   (Balance).
   `destination = ToZone(zone, player, placement)` or `ToZoneExiledFrom(fallback = BATTLEFIELD)`
   (below); `ZonePlacement.Tapped` enters the battlefield
-  tapped, and `player` sets the controller for a battlefield destination (so a card can enter under
+  tapped — every card of the move, including an Aura that pauses to choose what it enchants
+  (Brought Back's "return them to the battlefield tapped") — and `player` sets the controller for a battlefield destination (so a card can enter under
   your control even when owned by an opponent — Sméagol). The optional `filter` moves only the cards
   in `from` matching it (the rest stay), letting one revealed pile be split by type in successive
   steps — e.g. revealed lands → battlefield tapped, the rest → graveyard/library (Sméagol, Galadriel

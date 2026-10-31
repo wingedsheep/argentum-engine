@@ -835,7 +835,10 @@ class MoveCollectionExecutor(
                     sourceName = context.sourceId?.let { newState.getEntity(it)?.get<CardComponent>()?.name },
                     underOwnersControl = underOwnersControl,
                     // The whole batch enters simultaneously: none of it can host these Auras.
-                    excludedHosts = cards
+                    excludedHosts = cards,
+                    // "Return them to the battlefield tapped" covers the Auras too (Brought Back).
+                    tapped = destination.placement == ZonePlacement.Tapped ||
+                        destination.placement == ZonePlacement.TappedAndAttacking
                 )
             }
         }
@@ -861,7 +864,9 @@ class MoveCollectionExecutor(
         sourceId: EntityId?,
         sourceName: String?,
         underOwnersControl: Boolean = false,
-        excludedHosts: List<EntityId> = emptyList()
+        excludedHosts: List<EntityId> = emptyList(),
+        tapped: Boolean = false,
+        objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment()
     ): EffectResult {
         val cardComponent = state.getEntity(auraId)?.get<CardComponent>()
         val cardDef = cardComponent?.let { cardRegistry.getCard(it.cardDefinitionId) }
@@ -871,7 +876,7 @@ class MoveCollectionExecutor(
             // No aura target defined — skip this aura (leave in current zone)
             return continueAuraProcessingOrFinish(
                 state, events, remainingAuras, controllerId, destPlayerId, sourceId, sourceName,
-                underOwnersControl, excludedHosts
+                underOwnersControl, excludedHosts, tapped, objectReferences
             )
         }
 
@@ -887,7 +892,7 @@ class MoveCollectionExecutor(
             // No legal targets — Aura stays in current zone per Rule 303.4g
             return continueAuraProcessingOrFinish(
                 state, events, remainingAuras, controllerId, destPlayerId, sourceId, sourceName,
-                underOwnersControl, excludedHosts
+                underOwnersControl, excludedHosts, tapped, objectReferences
             )
         }
 
@@ -919,16 +924,20 @@ class MoveCollectionExecutor(
             sourceId = sourceId,
             sourceName = sourceName,
             underOwnersControl = underOwnersControl,
-            excludedHosts = excludedHosts
+            excludedHosts = excludedHosts,
+            tapped = tapped,
+            objectReferences = objectReferences
         )
 
-        return EffectResult.from(state.suspendForDecision(decision, continuation, emptyList()))
+        return EffectResult.from(state.suspendForDecision(decision, continuation, events))
     }
 
     /**
-     * Continue processing remaining auras, or finish if no more.
+     * Continue processing remaining auras, or finish if no more. An Aura with no legal host stays
+     * where it is (CR 303.4g) and the next one is asked about; the resumer re-enters here after
+     * each answer.
      */
-    private fun continueAuraProcessingOrFinish(
+    internal fun continueAuraProcessingOrFinish(
         state: GameState,
         events: List<GameEvent>,
         remainingAuras: List<EntityId>,
@@ -937,7 +946,9 @@ class MoveCollectionExecutor(
         sourceId: EntityId?,
         sourceName: String?,
         underOwnersControl: Boolean = false,
-        excludedHosts: List<EntityId> = emptyList()
+        excludedHosts: List<EntityId> = emptyList(),
+        tapped: Boolean = false,
+        objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment()
     ): EffectResult {
         if (remainingAuras.isNotEmpty()) {
             val nextAuraId = remainingAuras.first()
@@ -955,7 +966,9 @@ class MoveCollectionExecutor(
                 sourceId = sourceId,
                 sourceName = sourceName,
                 underOwnersControl = underOwnersControl,
-                excludedHosts = excludedHosts
+                excludedHosts = excludedHosts,
+                tapped = tapped,
+                objectReferences = objectReferences
             )
         }
         return EffectResult.success(state, events)
@@ -973,10 +986,11 @@ class MoveCollectionExecutor(
         context: EffectContext? = null,
         replacementSourceState: GameState? = null,
         paidToEnter: Boolean = false,
+        tapped: Boolean = false,
     ): Pair<GameState, List<GameEvent>> {
         val transition = zones.moveToZone(state, auraId, Zone.BATTLEFIELD,
             com.wingedsheep.engine.handlers.effects.ZoneEntryOptions(
-                controllerId = destPlayerId, auraHostId = targetId,
+                controllerId = destPlayerId, auraHostId = targetId, tapped = tapped,
                 entryCounters = listOfNotNull(entryCounterType?.let { com.wingedsheep.engine.handlers.effects.SuppliedEntryCounter(it) }),
                 entryCounterReplacementState = replacementSourceState,
                 entryChoices = context?.entryChoices?.get(auraId)?.values.orEmpty(),
