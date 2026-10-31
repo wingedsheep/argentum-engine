@@ -519,6 +519,8 @@ data class WardTapPermanentsSubCostContinuation(
     val wardSourceId: EntityId? = null,
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
     val resolvingTriggeredAbility: com.wingedsheep.sdk.scripting.TriggeredAbility? = null,
+    /** See [CounterUnlessPaysContinuation.deferCounter]. */
+    val deferCounter: Boolean = false,
 ) : AnswerContinuation
 
 /**

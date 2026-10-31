@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.core.YesNoDecision
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -44,7 +46,10 @@ class WhirlwindDenialScenarioTest : ScenarioTestBase() {
                 game.passPriority()
                 game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
                 game.answerYesNo(true).error shouldBe null
-                if (game.hasPendingDecision()) game.submitManaSourcesAutoPay().error shouldBe null
+                game.getPendingDecision().shouldBeInstanceOf<SelectManaSourcesDecision>()
+                game.submitManaSourcesAutoPay().error shouldBe null
+                // All five Mountains are tapped: one for the Bolt, four for the tax.
+                game.findPermanents("Mountain").count { game.state.getEntity(it)?.has<TappedComponent>() == true } shouldBe 5
 
                 game.resolveStack()
                 game.getLifeTotal(2) shouldBe 17

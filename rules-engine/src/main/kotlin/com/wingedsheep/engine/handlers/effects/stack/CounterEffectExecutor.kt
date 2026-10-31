@@ -127,7 +127,8 @@ class CounterEffectExecutor(
         }
 
         val manaCost = when (val condition = effect.condition) {
-            CounterCondition.Always -> null
+            // Rejected by CounterEffect's init: unconditional is CounterAllOnStackEffect.
+            CounterCondition.Always -> return EffectResult.error(state, "EachOnStack needs an unless-pays condition")
             is CounterCondition.UnlessPaysMana -> condition.cost
             is CounterCondition.UnlessPaysDynamic -> {
                 val amount = amountEvaluator.evaluate(state, condition.amount, context)
@@ -138,9 +139,9 @@ class CounterEffectExecutor(
         }
         val controllerId = context.controllerId
         val frame = CounterEachUnlessPaysContinuation(
-            remaining = if (manaCost == null) emptyList() else objects,
-            unpaid = if (manaCost == null) objects else emptyList(),
-            manaCost = manaCost ?: ManaCost(emptyList()),
+            remaining = objects,
+            unpaid = emptyList(),
+            manaCost = manaCost,
             target = effect.target,
             counterDestination = effect.counterDestination,
             controllerId = controllerId,

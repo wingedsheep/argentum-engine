@@ -69,6 +69,7 @@ sealed interface CounterTargetSource {
      * unless its controller pays {4}" (Whirlwind Denial) is
      * `CounterEffect(target = SpellOrAbility, targetSource = EachOnStack(), condition = UnlessPaysMana("{4}"))`.
      * [CounterEffect.filter] narrows the set further; the resolving object itself is never included.
+ * Only the unless-pays shape: an unconditional "counter all …" is [CounterAllOnStackEffect].
      *
      * With an unless-pays condition the controllers decide in APNAP order (starting with the
      * active player), each choosing which of their objects to pay for and paying, and then every
@@ -199,6 +200,9 @@ data class CounterEffect(
 ) : Effect {
     init {
         if (targetSource is CounterTargetSource.EachOnStack) {
+            require(condition !is CounterCondition.Always) {
+                "Unconditional stack-wide counters are CounterAllOnStackEffect; EachOnStack is the unless-pays shape"
+            }
             val onPaid = when (condition) {
                 CounterCondition.Always -> null
                 is CounterCondition.UnlessPaysMana -> condition.onPaid
@@ -213,7 +217,7 @@ data class CounterEffect(
 
     override val description: String = buildString {
         if (targetSource is CounterTargetSource.EachOnStack) {
-            val kind = when (target) {
+            val kind = filter?.baseFilter?.description ?: when (target) {
                 CounterTarget.Spell -> "spell"
                 CounterTarget.Ability -> "activated or triggered ability"
                 CounterTarget.SpellOrAbility -> "spell and ability"

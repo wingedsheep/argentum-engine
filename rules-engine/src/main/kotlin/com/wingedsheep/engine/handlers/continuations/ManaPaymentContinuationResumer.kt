@@ -725,12 +725,13 @@ class ManaPaymentContinuationResumer(
     private fun deferUnpaidToBatch(
         state: GameState,
         objectId: EntityId,
-        checkForMore: CheckForMore
+        checkForMore: CheckForMore,
+        precedingEvents: List<GameEvent> = emptyList()
     ): ExecutionResult {
         val batch = state.peekContinuation() as? CounterEachUnlessPaysContinuation
             ?: return ExecutionResult.error(state, "Deferred counter has no batch frame beneath it")
         val (_, popped) = state.popContinuation()
-        return checkForMore(popped.pushContinuation(batch.copy(unpaid = batch.unpaid + objectId)), emptyList())
+        return checkForMore(popped.pushContinuation(batch.copy(unpaid = batch.unpaid + objectId)), precedingEvents)
     }
 
     /**
@@ -874,7 +875,8 @@ class ManaPaymentContinuationResumer(
                         resolvingTriggeredAbility = continuation.resolvingTriggeredAbility,
                         sourceId = continuation.sourceId,
                         remainingWardParts = continuation.remainingWardParts,
-                        wardSourceId = continuation.wardSourceId
+                        wardSourceId = continuation.wardSourceId,
+                        deferCounter = continuation.deferCounter
                     )
                 }
             }
@@ -1717,7 +1719,8 @@ class ManaPaymentContinuationResumer(
         sourceId: EntityId? = null,
         remainingWardParts: List<com.wingedsheep.sdk.scripting.effects.WardCost> = emptyList(),
         wardSourceId: EntityId? = null,
-        resolvingTriggeredAbility: com.wingedsheep.sdk.scripting.TriggeredAbility? = null
+        resolvingTriggeredAbility: com.wingedsheep.sdk.scripting.TriggeredAbility? = null,
+        deferCounter: Boolean = false
     ): ExecutionResult {
         val headSourceId = pendingSubCostSources.first()
         val sourceName = availableSources.firstOrNull { it.entityId == headSourceId }?.name
@@ -1768,7 +1771,8 @@ class ManaPaymentContinuationResumer(
             resolvingTriggeredAbility = resolvingTriggeredAbility,
             sourceId = sourceId,
             remainingWardParts = remainingWardParts,
-            wardSourceId = wardSourceId
+            wardSourceId = wardSourceId,
+            deferCounter = deferCounter
         )
 
         return state.suspendForDecision(
@@ -1885,13 +1889,17 @@ class ManaPaymentContinuationResumer(
                 resolvingTriggeredAbility = continuation.resolvingTriggeredAbility,
                 sourceId = continuation.sourceId,
                 remainingWardParts = continuation.remainingWardParts,
-                wardSourceId = continuation.wardSourceId
+                wardSourceId = continuation.wardSourceId,
+                deferCounter = continuation.deferCounter
             )
         }
 
         // No more sub-costs — attempt to pay the ward cost. On failure, counter the spell.
         val newPool = pool.pay(continuation.manaCost)
         if (newPool == null) {
+            if (continuation.deferCounter) {
+                return deferUnpaidToBatch(currentState, continuation.spellEntityId, checkForMore, precedingEvents = events)
+            }
             return counterForUnpaidCost(
                 currentState, continuation.spellEntityId, continuation.counterDestination,
                 continuation.controllerId ?: continuation.payingPlayerId, checkForMore,

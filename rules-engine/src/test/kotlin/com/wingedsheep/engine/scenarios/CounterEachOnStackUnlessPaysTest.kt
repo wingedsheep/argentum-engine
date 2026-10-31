@@ -16,9 +16,11 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.effects.CounterEffect
 import com.wingedsheep.sdk.scripting.effects.CounterTarget
 import com.wingedsheep.sdk.scripting.effects.CounterTargetSource
 import com.wingedsheep.sdk.scripting.references.Player
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -216,5 +218,11 @@ class CounterEachOnStackUnlessPaysTest : FunSpec({
         Effects.CounterUnlessPays(
             "{1}", targetSource = CounterTargetSource.EachOnStack(Player.Each)
         ).description shouldBe "For each spell on the stack, counter it unless its controller pays {1}"
+    }
+
+    test("an unconditional stack-wide counter is rejected in favour of CounterAllOnStackEffect") {
+        shouldThrow<IllegalArgumentException> {
+            CounterEffect(target = CounterTarget.SpellOrAbility, targetSource = CounterTargetSource.EachOnStack())
+        }
     }
 })
