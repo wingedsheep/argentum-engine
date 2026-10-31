@@ -5451,6 +5451,129 @@
     ]
 }
 
+// Steadfast Sentry
+{
+    "name": "Steadfast Sentry",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Vigilance (Attacking doesn't cause this creature to tap.)\nWhen this creature dies, put a +1/+1 counter on target creature you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Steadfast Sentry:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "artist": "Bram Sels",
+        "flavorText": "\"Get up, slugabeds! We've got company, and they're not dressed for a party!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8d92614e-05da-4b5c-a98b-addf8ab2de7b.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Thicket Crasher
+{
+    "name": "Thicket Crasher",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Elemental Rhino",
+    "oracleText": "Trample (This creature can deal excess combat damage to the player or planeswalker it's attacking.)\nOther Elementals you control have trample.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE",
+                "filter": {
+                    "baseFilter": "permanent Elemental ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "196",
+        "artist": "Mathias Kollros",
+        "flavorText": "\"Tread too hard in the forest and it will tread on you in return.\"\n—Vivien Reid",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/534eb449-3f1c-46ec-a965-0f5812e2c93e.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Thirsting Bloodlord
+{
+    "name": "Thirsting Bloodlord",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Creature — Vampire",
+    "oracleText": "Other Vampires you control get +1/+1.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "permanent Vampire ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "293",
+        "rarity": "UNCOMMON",
+        "artist": "Joseph Meehan",
+        "flavorText": "\"A whole life, full of memories and experience, love and sorrow, drained drop by drop into this bottle. Could any feast be more glorious?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/599e8ed3-4341-4373-8871-2768a90d98c1.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Twinblade Paladin
 {
     "name": "Twinblade Paladin",
@@ -5743,6 +5866,96 @@
     ]
 }
 
+// Vivien's Crocodile
+{
+    "name": "Vivien's Crocodile",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Crocodile Spirit",
+    "oracleText": "This creature gets +1/+1 as long as you control a Vivien planeswalker.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 1,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "planeswalker Vivien"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "301",
+        "artist": "Bayard Wu",
+        "flavorText": "\"Regardless of where they come from, crocs are usually able to find their way home. For this one, home is me.\"\n—Vivien Reid",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c51c6bd-2ecc-4d92-a406-fcb31e889b45.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Waterkin Shaman
+{
+    "name": "Waterkin Shaman",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Elemental Shaman",
+    "oracleText": "Whenever a creature you control with flying enters, this creature gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Waterkin Shaman:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature kw:flying ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "288",
+        "rarity": "UNCOMMON",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "\"They come to drink, to bathe, and—I believe—to play.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/8/184bfbc4-1c9b-44f7-b4a7-068290db3bac.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Wildfire Elemental
 {
     "name": "Wildfire Elemental",
@@ -5905,6 +6118,41 @@
                 "text": "The number of +1/+1 counters you put on Woodland Champion is the number of tokens that entered the battlefield under your control, even if some or all of them leave the battlefield before the triggered ability resolves."
             }
         ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Woodland Mystic
+{
+    "name": "Woodland Mystic",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Elf Druid",
+    "oracleText": "{T}: Add {G}.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Woodland Mystic:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "344",
+        "artist": "Uriah Voth",
+        "flavorText": "\"I sing to the branches, and they reach to the sky. I sing to the leaves, and they open to the sun. I sing to the roots, and they dig their fingers deep. I sing the song that creation sung.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2d6117cf-5cb3-41f3-8756-c01b5e9c760e.jpg"
     },
     "colorIdentityOverride": [
         "GREEN"

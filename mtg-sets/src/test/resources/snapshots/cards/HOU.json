@@ -427,6 +427,56 @@
     ]
 }
 
+// Frilled Sandwalla
+{
+    "name": "Frilled Sandwalla",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Lizard",
+    "oracleText": "{1}{G}: This creature gets +2/+2 until end of turn. Activate only once each turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Frilled Sandwalla:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Self"
+                },
+                "restrictions": [
+                    "OncePerTurn"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "116",
+        "artist": "Zezhou Chen",
+        "flavorText": "It basks atop the rubble of Rhonas's monument, which still pulses with latent power.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/07b1be52-5e54-4840-bb53-0b2512785e0b.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Gift of Strength
 {
     "name": "Gift of Strength",

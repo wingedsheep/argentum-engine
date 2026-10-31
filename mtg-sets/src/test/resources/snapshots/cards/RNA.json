@@ -4163,6 +4163,32 @@
     ]
 }
 
+// Rubblebelt Recluse
+{
+    "name": "Rubblebelt Recluse",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Ogre Berserker",
+    "oracleText": "This creature attacks each combat if able.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 5
+    },
+    "script": {
+        "staticAbilities": [
+            "MustAttack"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "artist": "Zoltan Boros",
+        "flavorText": "Joining a guild, even the Gruul, would mean giving up some of his independence. He'd rather smash what he wants to smash.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/f/2faac11b-4ece-4537-aa55-c2d0afa41786.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Sage's Row Savant
 {
     "name": "Sage's Row Savant",

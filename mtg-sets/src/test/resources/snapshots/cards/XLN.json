@@ -1347,6 +1347,62 @@
     ]
 }
 
+// Fathom Fleet Cutthroat
+{
+    "name": "Fathom Fleet Cutthroat",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Human Pirate",
+    "oracleText": "When this creature enters, destroy target creature an opponent controls that was dealt damage this turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fathom Fleet Cutthroat:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                "WasDealtDamageThisTurn"
+                            ],
+                            "controllerPredicate": "ControlledByOpponent"
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "107",
+        "artist": "Josu Hernaiz",
+        "flavorText": "\"It was a bad evening for you, mate. Now it's chow time for the sharks.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e83500ed-8c46-488e-bd8e-197bedb8f4bd.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Fathom Fleet Firebrand
 {
     "name": "Fathom Fleet Firebrand",

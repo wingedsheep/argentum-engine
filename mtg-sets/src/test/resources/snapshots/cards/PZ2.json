@@ -1,3 +1,45 @@
+// Immortal Phoenix
+{
+    "name": "Immortal Phoenix",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Creature — Phoenix",
+    "oracleText": "Flying (This creature can't be blocked except by creatures with flying or reach.)\nWhen this creature dies, return it to its owner's hand.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Immortal Phoenix:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "70773",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "flavorText": "Their fires burn quietly, allowing the phoenixes to glide silently through the canyon.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/8/3836560e-a64b-42af-93fa-3cf830c15845.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Path of Ancestry
 {
     "name": "Path of Ancestry",

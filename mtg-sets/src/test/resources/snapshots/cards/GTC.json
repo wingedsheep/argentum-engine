@@ -1392,6 +1392,56 @@
     ]
 }
 
+// Metropolis Sprite
+{
+    "name": "Metropolis Sprite",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Faerie Rogue",
+    "oracleText": "Flying\n{U}: This creature gets +1/-1 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Metropolis Sprite:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{U}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "artist": "Scott Chou",
+        "flavorText": "\"Well, if that goblin didn't want his tongue pierced, he shouldn't have stuck it out at me.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f349013-0846-4bec-bdf9-47a3706d9989.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Murder Investigation
 {
     "name": "Murder Investigation",
@@ -1739,6 +1789,77 @@
     "colorIdentityOverride": [
         "RED",
         "GREEN"
+    ]
+}
+
+// Sage's Row Denizen
+{
+    "name": "Sage's Row Denizen",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Vedalken Wizard",
+    "oracleText": "Whenever another blue creature you control enters, target player mills two cards.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sage's Row Denizen:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature blue ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"I offer you wisdom untainted by false loyalty, learning free of any guild's agenda.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/063e6df9-2287-485a-ab46-fa4a38783884.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

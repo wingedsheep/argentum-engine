@@ -853,6 +853,60 @@
     ]
 }
 
+// Master Splicer
+{
+    "name": "Master Splicer",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Phyrexian Human Artificer",
+    "oracleText": "When this creature enters, create a 3/3 colorless Phyrexian Golem artifact creature token.\nGolems you control get +1/+1.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Master Splicer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Phyrexian",
+                        "Golem"
+                    ],
+                    "artifactToken": true
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "permanent Golem ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "rarity": "UNCOMMON",
+        "artist": "Chippy",
+        "flavorText": "With Phyrexia's victory at hand, each sect began perfecting its vision.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/5/859d2b91-63af-4700-8ca5-b1756aa6639b.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Mental Misstep
 {
     "name": "Mental Misstep",

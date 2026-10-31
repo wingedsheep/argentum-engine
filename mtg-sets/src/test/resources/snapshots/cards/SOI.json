@@ -5637,6 +5637,57 @@
     ]
 }
 
+// Reduce to Ashes
+{
+    "name": "Reduce to Ashes",
+    "manaCost": "{4}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Reduce to Ashes deals 5 damage to target creature. If that creature would die this turn, exile it instead.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "MarkExileOnDeath",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "176",
+        "artist": "Jason A. Engle",
+        "flavorText": "Previously the training center for cathars, the Elgaud Grounds are now used by the Lunarch Inquisition to punish those considered to be heretics.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a2e23215-ced7-4c44-8595-dd9df3d8227b.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Relentless Dead
 {
     "name": "Relentless Dead",
@@ -6293,6 +6344,50 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Sleep Paralysis
+{
+    "name": "Sleep Paralysis",
+    "manaCost": "{3}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen this Aura enters, tap enchanted creature.\nEnchanted creature doesn't untap during its controller's untap step.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sleep Paralysis:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "EnchantedCreature"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOESNT_UNTAP"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "artist": "Josu Hernaiz",
+        "flavorText": "Sleep doesn't always mean rest.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f010e4f4-f1a3-4062-834c-eec5f1f443d6.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
