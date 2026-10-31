@@ -15,7 +15,6 @@ object IkoriaSet : MtgSet {
     override val code = "IKO"
     override val displayName = "Ikoria: Lair of Behemoths"
     override val releaseDate = "2020-04-24"
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)

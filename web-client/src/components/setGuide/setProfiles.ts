@@ -271,6 +271,15 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
     themes: ['graveyard', 'counters', 'bigThings'],
     mechanics: ['Escape', 'Devotion', 'Constellation', 'Sagas'],
   },
+  IKO: {
+    tagline: 'Giant monsters on Ikoria. A fast, swingy format where creatures mutate on top of each other into hulking threats, cycling keeps your draws flowing, and keyword counters stick to your best creature.',
+    about: 'Ikoria: Lair of Behemoths is a plane of kaiju and the humans who hunt or bond with them, split across shards of three colours.',
+    playstyle: 'Fast and swingy. Mutate stacks creatures into one towering threat (and a juicy removal target), cycling smooths every draw and feeds its payoffs, and three-colour wedges reward fixing.',
+    tryIf: 'monster-sized creatures, mutate stacking and multicolour decks',
+    power: 4, speed: 4, complexity: 4,
+    themes: ['multicolor', 'counters', 'bigThings'],
+    mechanics: ['Mutate', 'Cycling', 'Keyword counters', 'Companion'],
+  },
   M21: {
     tagline: 'A clean core set with simple, familiar cards and unusually big bombs. Classic two-colour Limited with plenty of removal, where games often swing on who draws their rare.',
     about: 'Core Set 2021 is headlined by Teferi, Basri, Chandra, Liliana and Garruk, with no single plane — just straightforward Magic.',
