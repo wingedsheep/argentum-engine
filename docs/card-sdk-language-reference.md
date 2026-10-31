@@ -3729,6 +3729,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   `moreAllowed = N` lets each target cast N more spells first, counted from resolution (spells cast earlier
   this turn, the restricting spell included, don't use it up) — **Irencrag Feat**: `AddMana(Color.RED, 7) then
   CantCastSpells(EffectTarget.Controller, moreAllowed = 1)` ("You can cast only one more spell this turn").
+  The allowance counts against the per-turn cast count, so it requires `spellFilter = Any` and `EndOfTurn`.
   `PlayerRef(Player.Each)` + `GameObjectFilter.Noncreature` models **Calamity's Wake**.
   The filter checks the spell's announced characteristics (including alternative faces, bestow and
   face-down casting), not a fixed list of cards at resolution. Independent bans accumulate and

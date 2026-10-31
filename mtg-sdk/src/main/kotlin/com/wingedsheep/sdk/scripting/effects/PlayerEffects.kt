@@ -718,7 +718,8 @@ enum class HijackScope {
  * @param spellFilter Which announced spells are prohibited; Any preserves the blanket ban.
  * @param moreAllowed How many more spells each target may still cast before the ban takes hold,
  *   counted from resolution — "You can cast only one more spell this turn" (Irencrag Feat) is
- *   `moreAllowed = 1`. 0 (the default) bans at once.
+ *   `moreAllowed = 1`. 0 (the default) bans at once. The allowance counts every spell against the
+ *   per-turn cast count, so it needs the blanket filter and an end-of-turn duration.
  */
 @SerialName("CantCastSpells")
 @Serializable
@@ -728,6 +729,13 @@ data class CantCastSpellsEffect(
     val spellFilter: GameObjectFilter = GameObjectFilter.Any,
     val moreAllowed: Int = 0
 ) : Effect {
+    init {
+        require(moreAllowed >= 0)
+        require(moreAllowed == 0 || (spellFilter == GameObjectFilter.Any && duration == Duration.EndOfTurn)) {
+            "moreAllowed counts every spell this turn: it needs spellFilter = Any and duration = EndOfTurn"
+        }
+    }
+
     override val description: String = buildString {
         if (moreAllowed > 0) {
             append("${target.description.replaceFirstChar { it.uppercase() }} can cast only ")
