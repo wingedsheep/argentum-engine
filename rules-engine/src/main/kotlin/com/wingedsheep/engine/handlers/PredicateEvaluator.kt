@@ -67,6 +67,8 @@ import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComp
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.sdk.model.CardLayout
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
@@ -130,16 +132,18 @@ class PredicateEvaluator(
      * definition because the card component carries a single cost; a Room on the battlefield has
      * only its unlocked halves' costs (CR 709.5).
      */
-    fun manaCostOf(state: GameState, entityId: EntityId): com.wingedsheep.sdk.core.ManaCost? {
+    fun manaCostOf(state: GameState, entityId: EntityId): ManaCost? {
         val entity = state.getEntity(entityId) ?: return null
-        if (entity.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>()) return null
-        val card = entity.get<com.wingedsheep.engine.state.components.identity.CardComponent>() ?: return null
-        val room = entity.get<com.wingedsheep.engine.state.components.identity.RoomComponent>()
+        if (entity.has<FaceDownComponent>()) return null
+        val card = entity.get<CardComponent>() ?: return null
+        // A Room keeps its RoomComponent after it leaves the battlefield, but CR 709.5 only
+        // hides a locked half's cost on a permanent; elsewhere both halves combine (709.4b).
+        val room = entity.get<RoomComponent>()?.takeIf { entityId in state.getBattlefield() }
         val cost = when {
-            room != null -> room.unlockedFaces.fold(com.wingedsheep.sdk.core.ManaCost.ZERO) { acc, face -> acc + face.manaCost }
+            room != null -> room.unlockedFaces.fold(ManaCost.ZERO) { acc, face -> acc + face.manaCost }
             entityId !in state.stack -> cardRegistry?.getCard(card.cardDefinitionId)
-                ?.takeIf { it.layout == com.wingedsheep.sdk.model.CardLayout.SPLIT && it.cardFaces.size >= 2 }
-                ?.cardFaces?.fold(com.wingedsheep.sdk.core.ManaCost.ZERO) { acc, face -> acc + face.manaCost }
+                ?.takeIf { it.layout == CardLayout.SPLIT && it.cardFaces.size >= 2 }
+                ?.cardFaces?.fold(ManaCost.ZERO) { acc, face -> acc + face.manaCost }
                 ?: card.manaCost
             else -> card.manaCost
         }

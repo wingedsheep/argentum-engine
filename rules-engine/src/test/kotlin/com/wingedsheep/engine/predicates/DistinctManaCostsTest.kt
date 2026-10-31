@@ -10,6 +10,9 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
+import com.wingedsheep.engine.state.components.identity.RoomComponent
+import com.wingedsheep.engine.state.components.identity.RoomFace
+import com.wingedsheep.engine.state.components.identity.RoomFaceId
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.TypeLine
@@ -103,6 +106,18 @@ class DistinctManaCostsTest : FunSpec({
             .distinctCosts() shouldBe 1
         graveyardOf(Card("{1}{R}", "Fire // Ice", CardType.INSTANT), Card("{1}{R}", "Shock"))
             .distinctCosts() shouldBe 2
+    }
+
+    test("a Room in the graveyard has both halves' costs, whatever was unlocked when it left") {
+        val state = graveyardOf(Card("{1}{R}", "Fire // Ice", CardType.ENCHANTMENT), Card("{1}{R}", "Shock"))
+        val roomId = state.getZone(ZoneKey(you, Zone.GRAVEYARD)).first()
+        val lockedRoom = RoomComponent(
+            faces = listOf(RoomFace(RoomFaceId("Fire"), "Fire", ManaCost.parse("{1}{R}")),
+                RoomFace(RoomFaceId("Ice"), "Ice", ManaCost.parse("{1}{U}"))),
+            unlocked = emptySet(),
+        )
+        // {2}{U}{R} and Shock's {1}{R}: a locked-room reading would see only Shock.
+        state.updateEntity(roomId) { it.with(lockedRoom) }.distinctCosts() shouldBe 2
     }
 
     test("a face-down card has no mana cost") {
