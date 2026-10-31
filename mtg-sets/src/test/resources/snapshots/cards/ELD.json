@@ -9165,7 +9165,7 @@
 // True Love's Kiss
 {
     "name": "True Love's Kiss",
-    "manaCost": "{2}{W}",
+    "manaCost": "{2}{W}{W}",
     "typeLine": "Instant",
     "oracleText": "Exile target artifact or enchantment.\nDraw a card.",
     "script": {

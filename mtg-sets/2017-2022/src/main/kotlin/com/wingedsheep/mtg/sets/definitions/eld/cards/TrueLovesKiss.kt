@@ -7,14 +7,14 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 
 /**
  * True Love's Kiss
- * {2}{W}
+ * {2}{W}{W}
  * Instant
  *
  * Exile target artifact or enchantment.
  * Draw a card.
  */
 val TrueLovesKiss = card("True Love's Kiss") {
-    manaCost = "{2}{W}"
+    manaCost = "{2}{W}{W}"
     colorIdentity = "W"
     typeLine = "Instant"
     oracleText = "Exile target artifact or enchantment.\nDraw a card."
