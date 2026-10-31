@@ -725,6 +725,85 @@
     ]
 }
 
+// Barge In
+{
+    "name": "Barge In",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "Target attacking creature gets +2/+2 until end of turn. Each attacking non-Human creature gains trample until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "NotSubtype",
+                                        "subtype": "Human"
+                                    }
+                                ],
+                                "statePredicates": [
+                                    "IsAttacking"
+                                ]
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "TRAMPLE",
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature attacking"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "artist": "Mark Behm",
+        "flavorText": "The giant had heard of locks, but he had yet to discover a door he couldn't open.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/b/9bfe337c-4b8c-42ce-8c43-4c95051d09ac.jpg?1783932628",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "If the target attacking creature is an illegal target by the time Barge In tries to resolve, the spell won't resolve. Your attacking non-Human creatures won't gain trample."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Barrow Witches
 {
     "name": "Barrow Witches",
@@ -995,6 +1074,74 @@
                 "text": "If a spell or ability causes you to put cards into your hand without specifically using the word \"draw,\" it's not a card drawn."
             }
         ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Blow Your House Down
+{
+    "name": "Blow Your House Down",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Up to three target creatures can't block this turn. Destroy any of them that are Walls.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "CantBlockTargetCreatures",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.WhenCondition",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "filter": "creature Wall"
+                            }
+                        },
+                        "then": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        }
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 3,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "artist": "Ravenna Tran",
+        "flavorText": "\"You think these walls will protect you? My, you have a dim view of the power of the wilds.\"\n—Marawen, barrow witch",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c04b85e7-a401-42d5-9629-8d4b8c8a46b0.jpg?1783932628"
     },
     "colorIdentityOverride": [
         "RED"
@@ -2899,6 +3046,51 @@
     ]
 }
 
+// Embereth Paladin
+{
+    "name": "Embereth Paladin",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Haste\nAdamant — If at least three red mana was spent to cast this spell, this creature enters with a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 1
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "ManaOfColorSpent",
+                        "color": "RED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "artist": "Randy Vargas",
+        "flavorText": "\"The king would die for the realm. I would not hesitate to do the same for him.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6bcfe06b-3bb5-434e-acf4-4bfa8a94141d.jpg?1783932626"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Emry, Lurker of the Loch
 {
     "name": "Emry, Lurker of the Loch",
@@ -3591,6 +3783,69 @@
     ]
 }
 
+// Festive Funeral
+{
+    "name": "Festive Funeral",
+    "manaCost": "{4}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets -X/-X until end of turn, where X is the number of cards in your graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "ModifyStats",
+            "powerModifier": {
+                "type": "Multiply",
+                "amount": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Graveyard"
+                },
+                "multiplier": -1
+            },
+            "toughnessModifier": {
+                "type": "Multiply",
+                "amount": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Graveyard"
+                },
+                "multiplier": -1
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "artist": "Zack Stella",
+        "flavorText": "\"Even as we mourn the last, we look to the next with joy. Hopefully, my new suitor will bring the Cauldron home.\"\n—Ayara, First of Locthwain",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/90a90af0-eb40-40da-bf4b-f0af687c6430.jpg?1783932641",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "The value of X is determined only as Festive Funeral begins to resolve. The target creature's power and toughness won't change if other cards are put into your graveyard later in the turn."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Festive Funeral is still on the stack while you determine the value of X. It doesn't contribute to the value of X."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Fierce Witchstalker
 {
     "name": "Fierce Witchstalker",
@@ -3904,6 +4159,77 @@
         "collectorNumber": "88",
         "artist": "Drew Baker",
         "imageUri": "https://cards.scryfall.io/normal/front/c/5/c5f79ec4-3722-4fda-824b-e80dc7608d01.jpg?1783932640"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Forever Young
+{
+    "name": "Forever Young",
+    "manaCost": "{1}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Put any number of target creature cards from your graveyard on top of your library.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Top"
+                    },
+                    "order": "ControllerChooses"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "89",
+        "artist": "Volkan Baǵa",
+        "flavorText": "Those who say you only live once have never been touched by the Cauldron of Eternity.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/7873c1f9-572c-4740-82f8-cf3cbc7318d0.jpg?1783932639",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "If you choose any target creature cards and they are all illegal targets by the time Forever Young tries to resolve, the spell won't resolve. You won't draw a card."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "You choose the order that the creature cards are put on top of your library. You don't have to reveal this order to other players. Whichever ends up on top will be the card you draw."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "You can cast Forever Young with no targets if you just want to draw a card."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -7192,6 +7518,87 @@
     ]
 }
 
+// Murderous Rider
+{
+    "name": "Murderous Rider",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Creature — Zombie Knight",
+    "oracleText": "Lifelink\nWhen this creature dies, put it on the bottom of its owner's library.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Murderous Rider:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Library",
+                    "placement": "Bottom"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "97",
+        "rarity": "RARE",
+        "artist": "Josh Hass",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e73d8a84-2c0d-423c-89c7-71de0af9e1ac.jpg?1783932635"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "Swift End",
+            "manaCost": "{1}{B}{B}",
+            "typeLine": "Instant — Adventure",
+            "oracleText": "Destroy target creature or planeswalker. You lose 2 life. (Then exile this card. You may cast the creature later from exile.)",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetCreatureOrPlaneswalker",
+                        "id": "t0"
+                    }
+                ]
+            }
+        }
+    ]
+}
+
 // Mysterious Pathlighter
 {
     "name": "Mysterious Pathlighter",
@@ -7391,6 +7798,102 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Oathsworn Knight
+{
+    "name": "Oathsworn Knight",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "This creature enters with four +1/+1 counters on it.\nThis creature attacks each combat if able.\nIf damage would be dealt to this creature while it has a +1/+1 counter on it, prevent that damage and remove a +1/+1 counter from it.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "staticAbilities": [
+            "MustAttack"
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 4,
+                "selfOnly": true
+            },
+            {
+                "type": "PreventDamageByRemovingCounter",
+                "requiresCounter": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "98",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/1/9173ffda-1d3b-4dab-8dcb-de44717de464.jpg?1783932637",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "Oathsworn Knight's last ability removes only one counter from it each time it would be dealt damage, not one counter per 1 damage prevented."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If multiple sources would deal damage to Oathsworn Knight simultaneously (for example, multiple creatures blocking it), its last ability applies once. All of that damage is prevented, and only one counter is removed."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If damage that can't be prevented is dealt to Oathsworn Knight, one counter is still removed from it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Ogre Errant
+{
+    "name": "Ogre Errant",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Ogre Knight",
+    "oracleText": "Whenever this creature attacks, another target attacking Knight gains menace until end of turn. (It can't be blocked except by two or more creatures.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ogre Errant:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "MENACE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature Knight attacking",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "artist": "Mitchell Malloy",
+        "flavorText": "Knights kept returning from Ogre's Pass wearing nothing but bruises, so they decided to just pretend it was on their side.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0e96f3dc-dc58-4034-8d3d-3ae74fa64562.jpg?1783932621"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -7832,6 +8335,115 @@
     ]
 }
 
+// Piper of the Swarm
+{
+    "name": "Piper of the Swarm",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Human Warlock",
+    "oracleText": "Rats you control have menace.\n{1}{B}, {T}: Create a 1/1 black Rat creature token.\n{2}{B}{B}, {T}, Sacrifice three Rats: Gain control of target creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Piper of the Swarm:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Rat"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/e/4/e43a205e-43ea-4b3e-92ab-c2ee2172a50a.jpg?1783932482"
+                }
+            },
+            {
+                "id": "Piper of the Swarm:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{B}{B}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "permanent Rat",
+                                "count": 3
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "MENACE",
+                "filter": {
+                    "baseFilter": "permanent Rat ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "100",
+        "rarity": "RARE",
+        "artist": "Irina Nordsol",
+        "flavorText": "\"If it has ears, it will dance to my tune.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0a7962fe-b715-4981-86c3-223bad9b1899.jpg?1783932636",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "The control-change effect of Piper of the Swarm's last ability lasts indefinitely. It doesn't wear off during the cleanup step, and it doesn't expire if Piper of the Swarm leaves the battlefield. In a multiplayer game, it does expire if you leave the game."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Prized Griffin
 {
     "name": "Prized Griffin",
@@ -8072,6 +8684,166 @@
     ]
 }
 
+// Rankle, Master of Pranks
+{
+    "name": "Rankle, Master of Pranks",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Legendary Creature — Faerie Rogue",
+    "oracleText": "Flying, haste\nWhenever Rankle deals combat damage to a player, choose any number —\n• Each player discards a card.\n• Each player loses 1 life and draws a card.\n• Each player sacrifices a creature of their choice.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rankle, Master of Pranks:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "ForEach",
+                                        "space": {
+                                            "type": "IterationSpace.Players",
+                                            "players": "ActivePlayerFirst"
+                                        },
+                                        "body": {
+                                            "type": "Composite",
+                                            "effects": [
+                                                {
+                                                    "type": "GatherCards",
+                                                    "source": {
+                                                        "type": "FromZone",
+                                                        "zone": "Hand"
+                                                    },
+                                                    "storeAs": "gathered1"
+                                                },
+                                                {
+                                                    "type": "SelectFromCollection",
+                                                    "from": "gathered1",
+                                                    "selection": {
+                                                        "type": "ChooseExactly",
+                                                        "count": {
+                                                            "type": "Fixed",
+                                                            "amount": 1
+                                                        }
+                                                    },
+                                                    "storeSelected": "selected2",
+                                                    "prompt": "Choose a card to discard"
+                                                }
+                                            ]
+                                        },
+                                        "collectCollections": {
+                                            "selected2": "collected3"
+                                        }
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "collected3",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ],
+                                "descriptionOverride": "Each player discards a card."
+                            },
+                            "description": "Each player discards a card"
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "LoseLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "target": {
+                                            "type": "PlayerRef",
+                                            "player": "Each"
+                                        }
+                                    },
+                                    {
+                                        "type": "DrawCards",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "target": {
+                                            "type": "PlayerRef",
+                                            "player": "Each"
+                                        }
+                                    }
+                                ]
+                            },
+                            "description": "Each player loses 1 life and draws a card"
+                        },
+                        {
+                            "effect": {
+                                "type": "ForceSacrifice",
+                                "filter": "creature",
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "Each"
+                                }
+                            },
+                            "description": "Each player sacrifices a creature of their choice"
+                        }
+                    ],
+                    "chooseCount": 3,
+                    "minChooseCount": 0
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "rarity": "MYTHIC",
+        "artist": "Dmitry Burmak",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/3/93c2c11d-dfc3-4ba9-8c0f-a98114090396.jpg?1783932634",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "You can choose a mode even if some or all players will be unaffected."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "For each chosen mode, perform that mode in its entirety before continuing on to the next chosen mode in the order printed."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "As the first mode is performed, first the player whose turn it is chooses a card in hand without revealing it, then each other player in turn order does the same. Then all the chosen cards are discarded at the same time."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "As the third mode is performed, first the player whose turn it chooses a creature they control, then each other player in turn order does the same, knowing the choices made before them. Then all the chosen creatures are sacrificed at the same time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Realm-Cloaked Giant
 {
     "name": "Realm-Cloaked Giant",
@@ -8306,6 +9078,117 @@
         "artist": "Chris Rallis",
         "flavorText": "At first, Syr Fenwick scoffed when he saw his opponents for the final match.",
         "imageUri": "https://cards.scryfall.io/normal/front/6/b/6bd1dd34-d480-4dfd-9f82-73c4e24a11fc.jpg?1783932619"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Redcap Raiders
+{
+    "name": "Redcap Raiders",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Goblin Warrior",
+    "oracleText": "Whenever this creature attacks, you may tap an untapped non-Human creature you control. If you do, this creature gets +1/+1 and gains trample until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Redcap Raiders:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "BattlefieldMatching",
+                                        "filter": {
+                                            "cardPredicates": [
+                                                "IsCreature",
+                                                {
+                                                    "type": "NotSubtype",
+                                                    "subtype": "Human"
+                                                }
+                                            ],
+                                            "statePredicates": [
+                                                "IsUntapped"
+                                            ]
+                                        },
+                                        "player": "You"
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "selected1",
+                                    "prompt": "Tap an untapped non-Human creature you control",
+                                    "useTargetingUI": true
+                                },
+                                {
+                                    "type": "TapUntapCollection",
+                                    "collectionName": "selected1"
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": "Self"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": "Self"
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "You may tap an untapped non-Human creature you control. If you do, this creature gets +1/+1 and gains trample until end of turn."
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "artist": "Lie Setiawan",
+        "flavorText": "\"I admire their courage as much as I despise their savagery.\"\n—Syr Carah, the Bold",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/8/686cf5c4-6ba3-4fa0-9732-0a350c637c7a.jpg?1783932619",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "Tapping an attacking creature with vigilance to pay the cost of Redcap Raiders's ability won't cause that creature to leave combat or to stop attacking."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Players can't take any actions between the time you choose whether to tap a creature and the time Redcap Raiders gets +1/+1 and gains trample."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "RED"
@@ -9544,6 +10427,74 @@
     ]
 }
 
+// Smitten Swordmaster
+{
+    "name": "Smitten Swordmaster",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Lifelink",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "metadata": {
+        "collectorNumber": "105",
+        "artist": "Taylor Ingvarsson",
+        "flavorText": "\"My quest? Why, to marry Ayara. Or die trying.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/8/f82541f2-b17c-45b4-87ff-f9b46d23578c.jpg?1783932631",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "In a Two-Headed Giant game, Curry Favor causes the opposing team to lose X life twice, after you gain X life once."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "Curry Favor",
+            "manaCost": "{B}",
+            "typeLine": "Sorcery — Adventure",
+            "oracleText": "You gain X life and each opponent loses X life, where X is the number of Knights you control. (Then exile this card. You may cast the creature later from exile.)",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Battlefield",
+                                "filter": "permanent Knight"
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Battlefield",
+                                "filter": "permanent Knight"
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}
+
 // So Tiny
 {
     "name": "So Tiny",
@@ -10466,6 +11417,59 @@
     ]
 }
 
+// Taste of Death
+{
+    "name": "Taste of Death",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each player sacrifices three creatures of their choice. You create three Food tokens. (They're artifacts with \"{2}, {T}, Sacrifice this token: You gain 3 life.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForceSacrifice",
+                    "filter": "creature",
+                    "count": 3,
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "Each"
+                    }
+                },
+                {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Food",
+                    "count": 3
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "320",
+        "rarity": "RARE",
+        "artist": "Chris Rallis",
+        "flavorText": "\"Hone the knife and mourn the least. Three chimes to sound the sweet, grim feast.\"\n—Barrow witch incantation",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/5/851066e5-d5f2-4e53-8b88-487441a77548.jpg?1783932550",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "As Taste of Death resolves, first the player whose turn it is chooses three creatures they control, then each other player in turn order does the same, knowing the choices made before them. Then all the chosen creatures are sacrificed at the same time."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If a player controls three or fewer creatures, that player sacrifices each creature they control."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "You create three Food tokens, no matter how many creatures were actually sacrificed, even if some or all players sacrificed no creatures."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Tempting Witch
 {
     "name": "Tempting Witch",
@@ -10538,6 +11542,118 @@
         "artist": "Mila Pesic",
         "flavorText": "\"Murder clad in crimson beauty,\nAn end to life and love and duty.\"\n—Barrow witch incantation",
         "imageUri": "https://cards.scryfall.io/normal/front/8/b/8b217e5a-3c18-48b4-8124-b8c4fd7b2df1.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// The Cauldron of Eternity
+{
+    "name": "The Cauldron of Eternity",
+    "manaCost": "{10}{B}{B}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "This spell costs {2} less to cast for each creature card in your graveyard.\nWhenever a creature you control dies, put it on the bottom of its owner's library.\n{2}{B}, {T}, Pay 2 life: Return target creature card from your graveyard to the battlefield. Activate only as a sorcery.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "The Cauldron of Eternity:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "TriggeringEntity",
+                    "destination": "Library",
+                    "placement": "Bottom",
+                    "fromZone": "Graveyard"
+                },
+                "descriptionOverride": "Whenever a creature you control dies, put it on the bottom of its owner's library."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "The Cauldron of Eternity:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{B}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Return target creature card from your graveyard to the battlefield."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "CardsInGraveyardMatchingFilter",
+                        "filter": "creature",
+                        "amountPerCard": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "rarity": "MYTHIC",
+        "artist": "Tomasz Jedruszek",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/eb69473f-de99-43a7-b094-429465ae735c.jpg?1783932642",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "The cost reduction ability reduces only the generic mana in the relic's cost. The colored mana must still be paid."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying, add any cost increases, then apply any cost reductions. The mana value of the spell remains unchanged, no matter what the total cost to cast it was."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLACK"

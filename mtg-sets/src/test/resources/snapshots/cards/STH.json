@@ -188,6 +188,62 @@
     ]
 }
 
+// Fling
+{
+    "name": "Fling",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "As an additional cost to cast this spell, sacrifice a creature.\nFling deals damage equal to the sacrificed creature's power to any target.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "EntityProperty",
+                "entity": "SacrificedAsCost",
+                "numericProperty": "Power"
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "artist": "Paolo Parente",
+        "flavorText": "It's raining rats and moggs.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6b144452-2e91-4e46-abe9-ed76b39f8314.jpg?1783946556",
+        "rulings": [
+            {
+                "date": "2024-04-12",
+                "text": "Use the sacrificed creature's power as it last existed on the battlefield to determine how much damage Fling deals."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "You must sacrifice exactly one creature to cast this spell; you can't cast it without sacrificing a creature, and you can't sacrifice additional creatures."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Grave Pact
 {
     "name": "Grave Pact",
