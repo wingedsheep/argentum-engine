@@ -544,7 +544,8 @@ object AiReadingAudit {
         // branches only grow its own source — "if you win the clash, put a +1/+1 counter on this
         // creature" — needs no more reading than the counter would on its own.
         if (leaf is GatedEffect) {
-            return listOfNotNull(leaf.then, leaf.otherwise).flatMap { EffectWalker.leaves(it) }.all(::needsNoIntent)
+            val branches = listOfNotNull(leaf.then, leaf.otherwise).flatMap { EffectWalker.leaves(it) }
+            return branches.isNotEmpty() && branches.all(::needsNoIntent)
         }
         val (counter, target) = when (leaf) {
             is AddCountersEffect -> leaf.counterType to leaf.target
