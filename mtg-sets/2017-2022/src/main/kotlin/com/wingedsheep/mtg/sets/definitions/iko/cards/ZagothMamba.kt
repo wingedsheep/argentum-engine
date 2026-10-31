@@ -31,6 +31,7 @@ val ZagothMamba = card("Zagoth Mamba") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "106"
         artist = "Yeong-Hao Han"
+        flavorText = "\"It's just a snake. A many-eyed snake with venom that turns your blood to smoke, but still, just a snake.\"\n—Kinnan, bonder prodigy"
         imageUri = "https://cards.scryfall.io/normal/front/c/e/ce945f7e-ded9-4819-9313-d50d3aad40fa.jpg?1783931054"
     }
 }

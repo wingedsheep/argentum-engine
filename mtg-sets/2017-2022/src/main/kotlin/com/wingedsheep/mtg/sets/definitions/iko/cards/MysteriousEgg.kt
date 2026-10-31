@@ -31,6 +31,7 @@ val MysteriousEgg = card("Mysterious Egg") {
         rarity = Rarity.COMMON
         collectorNumber = "3"
         artist = "Volkan Baǵa"
+        flavorText = "\"A good forage if you can find it, but eat it before you get back to sanctuary. The guards won't let you bring it through the gates.\"\n—Dennae, Savai hunter"
         imageUri = "https://cards.scryfall.io/normal/front/c/d/cdfac3c3-7f38-49d6-bd88-dc0f5001116f.jpg?1783931094"
     }
 }
