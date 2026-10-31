@@ -154,7 +154,10 @@ class MoveToZoneEffectExecutor(
         // doesn't enter and stays where it was. The transition service enforces this for every move;
         // asking here too keeps a locked card from prompting for an Aura host or an entry choice.
         if (effect.destination == Zone.BATTLEFIELD &&
-            EntryLocks.cantEnter(state, targetId, currentZone.zoneType, cardRegistry, zones.predicateEvaluator)
+            EntryLocks.cantEnter(
+                state, targetId, currentZone.zoneType, cardRegistry, zones.predicateEvaluator,
+                faceDown = effect.faceDown != null
+            )
         ) {
             return EffectResult.success(state)
         }

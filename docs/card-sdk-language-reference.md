@@ -11708,7 +11708,9 @@ in the declare-blockers step, even before the turn-based block action has comple
   Grafdigger's Cage = `CantEnterTheBattlefield(GameObjectFilter.Creature, fromZones =
   setOf(Zone.GRAVEYARD, Zone.LIBRARY))`. Checked by `EntryLocks.cantEnter` inside
   `ZoneTransitionService.moveToZone`, so every effect-driven entry (lone or batch) honours it; the card
-  is matched in the zone it is leaving and simply stays there. A permanent spell enters from the
+  is matched in the zone it is leaving and simply stays there. A face-down entry (manifest, cloak,
+  manifest dread) is matched as the nameless colorless 2/2 creature it would enter as (CR 708.2a), so
+  the Cage stops manifesting any card from a library. A permanent spell enters from the
   stack, so a zone-scoped lock never stops one cast from a graveyard.
 - `CantAttackUnless(condition, filter = GroupFilter.source(), coversPlaneswalkers = true)` — the
   creatures `filter` covers can't attack unless `condition` holds against the defender each one is

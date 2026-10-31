@@ -7,6 +7,7 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.copiableCardComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.CantEnterTheBattlefield
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
@@ -28,16 +29,28 @@ object EntryLocks {
      * True if a permanent on the battlefield forbids [entityId] from entering the battlefield out
      * of [fromZone]. The card is matched where it is — before it moves — so its own
      * characteristics decide (a permanent card in a graveyard, a land in a library).
+     *
+     * A [faceDown] entry (manifest, cloak, manifest dread) is the exception: the card would enter
+     * as a nameless, colorless 2/2 creature with no mana cost (CR 708.2a), so the lock is matched
+     * against those characteristics instead of the card's own — manifesting any card from a
+     * library while Grafdigger's Cage is out is an impossible action, per its ruling.
      */
     fun cantEnter(
         state: GameState,
         entityId: EntityId,
         fromZone: Zone,
         cardRegistry: CardRegistry,
-        predicateEvaluator: PredicateEvaluator
+        predicateEvaluator: PredicateEvaluator,
+        faceDown: Boolean = false
     ): Boolean {
         // A move that starts on the battlefield (a same-zone instruction) isn't an entry.
         if (fromZone == Zone.BATTLEFIELD) return false
+        // The entrant isn't on the battlefield, so the matchers read its base CardComponent off
+        // whichever state they are handed: give them one where it already wears its face-down values.
+        val probe = if (!faceDown) state else state.updateEntity(entityId) { container ->
+            val faceDownCard = container.with(FaceDownComponent).copiableCardComponent()
+            if (faceDownCard == null) container else container.with(faceDownCard)
+        }
         for (sourceId in state.getBattlefield()) {
             val container = state.getEntity(sourceId) ?: continue
             if (container.has<FaceDownComponent>()) continue
@@ -58,7 +71,7 @@ object EntryLocks {
                 if (lock.fromZones?.contains(fromZone) == false) continue
                 val controller = state.projectedState.getController(sourceId) ?: continue
                 if (predicateEvaluator.matches(
-                        state, state.projectedState, entityId, lock.filter,
+                        probe, state.projectedState, entityId, lock.filter,
                         PredicateContext(controllerId = controller, sourceId = sourceId)
                     )
                 ) return true

@@ -829,6 +829,60 @@
     ]
 }
 
+// Grafdigger's Cage
+{
+    "name": "Grafdigger's Cage",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "Creature cards in graveyards and libraries can't enter the battlefield.\nPlayers can't cast spells from graveyards or libraries.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantEnterTheBattlefield",
+                "filter": "creature",
+                "fromZones": [
+                    "Graveyard",
+                    "Library"
+                ]
+            },
+            {
+                "type": "PlayersCantCastSpells",
+                "affected": "Each",
+                "fromZones": [
+                    "Graveyard",
+                    "Library"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "149",
+        "rarity": "RARE",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "\"If you wind up in one of mine, you can be sure as silver it will be your last.\"\n—Grafdigger Wulmer",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/a/2a6240e7-d3aa-40e9-a627-58e7bf62525c.jpg?1783940792",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "Players can still play lands from graveyards or libraries if an effect allows them to do so."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If an effect exiles a card from a library and allows a player to cast it, that player may do so. The spell is cast from exile, not a library."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Look at the card as it exists in your graveyard to determine whether it can enter the battlefield. For example, Sculpting Steel can be put onto the battlefield as a copy of a creature, but Phyrexian Metamorph can't be put onto the battlefield, even if it would copy a noncreature artifact."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Manifesting a card from a graveyard or library is an impossible action while Grafdigger's Cage is on the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Gravecrawler
 {
     "name": "Gravecrawler",
