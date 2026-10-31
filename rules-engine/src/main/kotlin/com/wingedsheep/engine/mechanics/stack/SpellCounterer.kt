@@ -539,7 +539,13 @@ class SpellCounterer(
         // as well as the stack entry keeps that symmetry with the resolution paths, which all call
         // removeEntity — otherwise every countered ability lingers in `entities` for the rest of the
         // game and rides along in every serialized GameState.
-        val newState = state.removeEntity(abilityId)
+        // Its last-known information is kept for an effect that still names it ("copy that
+        // spell or ability" — Repeated Reverberation).
+        val lastKnown = state.objectRef(abilityId)?.let { com.wingedsheep.engine.state.DepartedAbility(it, container) }
+        val newState = state.removeEntity(abilityId).let { removed ->
+            if (lastKnown == null) removed
+            else removed.copy(departedAbilities = removed.departedAbilities + (abilityId to lastKnown))
+        }
 
         return ExecutionResult.success(
             newState,

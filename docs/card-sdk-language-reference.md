@@ -10463,6 +10463,9 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
     Reverberation**) = `CreateDelayedTrigger(trigger = Triggers.or(Triggers.you.casts(Instant),
     Triggers.you.casts(Sorcery), Triggers.you.activatesAbility(loyalty = true)), effect =
     CopyTargetSpellOrAbility(TriggeringEntity, DynamicAmounts.fixed(2)), fireOnce = true, expiry = EndOfTurn)`.
+    "Copy that spell or ability" reads the triggering object as it last existed on the stack when it
+    was countered first, so the copies are still made (`GameState.departedSpells` /
+    `departedAbilities`).
   - **Return a source exiled as its own cost when a made object dies** — no new vocabulary: an
     activated ability with `Costs.ExileSelf` makes the object, then arms
     `CreateDelayedTrigger(trigger = Triggers.self.dies(), watchedTarget = PipelineTarget(CREATED_TOKENS, 0),

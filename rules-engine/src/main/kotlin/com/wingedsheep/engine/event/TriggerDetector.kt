@@ -1215,20 +1215,16 @@ class TriggerDetector(
                 }
                 if (delayed.fireOnce && delayed.id in firedOnceIds) continue
                 val spec = delayed.trigger ?: continue
-                if (!matchesEventForWatchedEntity(spec, event, delayed.watchedEntityId, delayed.watchedRecipientId, delayed.id, delayed.sourceId, delayed.controllerId, state, delayed.watchedObject)) continue
+                // An any-of delayed trigger ("when you next cast an instant spell, cast a sorcery
+                // spell, or activate a loyalty ability this turn" — Repeated Reverberation) fires
+                // through the atom that matched, so the per-event shaping below reads that atom.
+                val specEvent = matchedDelayedAtom(spec, event, delayed, state) ?: continue
 
                 // A filter-scoped attack delayed trigger ("this turn, whenever a creature you control
                 // attacks alone, do X to it" — The Last Ronin III) must fan out one trigger per
                 // declared attacker so EffectTarget.TriggeringEntity resolves to each attacker.
                 // AttackersDeclaredEvent carries no single triggering entity (fromEvent returns none),
                 // so mirror the non-delayed per-attacker path (Rule 603.2c).
-                // An any-of delayed trigger ("when you next cast an instant spell, cast a sorcery
-                // spell, or activate a loyalty ability this turn" — Repeated Reverberation) fires
-                // through the atom that matched, so the per-event shaping below reads that atom.
-                val specEvent = (spec.event as? com.wingedsheep.sdk.scripting.EventPattern.AnyOf)?.events
-                    ?.firstOrNull { atom ->
-                        matchesEventForWatchedEntity(spec.copy(event = atom), event, delayed.watchedEntityId, delayed.watchedRecipientId, delayed.id, delayed.sourceId, delayed.controllerId, state, delayed.watchedObject)
-                    } ?: spec.event
                 if (specEvent is com.wingedsheep.sdk.scripting.EventPattern.AttackEvent &&
                     event is AttackersDeclaredEvent && delayed.watchedEntityId == null
                 ) {
@@ -1420,6 +1416,26 @@ class TriggerDetector(
      *    These delegate to the shared [TriggerMatcher] so they behave identically to battlefield
      *    triggers, honoring the filter (including its controller predicate) and binding.
      */
+    /**
+     * The event pattern of [delayed]'s trigger that [event] matches — the trigger's own pattern,
+     * or for a disjunction the first of its atoms that matches, each atom scoped exactly as it
+     * would be on its own. Null when nothing matches.
+     */
+    private fun matchedDelayedAtom(
+        spec: com.wingedsheep.sdk.scripting.TriggerSpec,
+        event: EngineGameEvent,
+        delayed: DelayedTriggeredAbility,
+        state: GameState
+    ): com.wingedsheep.sdk.scripting.EventPattern? {
+        val pattern = spec.event
+        if (pattern is com.wingedsheep.sdk.scripting.EventPattern.AnyOf) {
+            return pattern.events.firstNotNullOfOrNull { matchedDelayedAtom(spec.copy(event = it), event, delayed, state) }
+        }
+        return pattern.takeIf {
+            matchesEventForWatchedEntity(spec, event, delayed.watchedEntityId, delayed.watchedRecipientId, delayed.id, delayed.sourceId, delayed.controllerId, state, delayed.watchedObject)
+        }
+    }
+
     private fun matchesEventForWatchedEntity(
         spec: com.wingedsheep.sdk.scripting.TriggerSpec,
         event: EngineGameEvent,
@@ -1433,11 +1449,6 @@ class TriggerDetector(
     ): Boolean {
         val specEvent = spec.event
         return when (specEvent) {
-            // A disjunction matches when any of its atoms does, each atom scoped exactly as it
-            // would be on its own (CR 603.2: one trigger event, any of the listed occurrences).
-            is com.wingedsheep.sdk.scripting.EventPattern.AnyOf -> specEvent.events.any { atom ->
-                matchesEventForWatchedEntity(spec.copy(event = atom), event, watchedEntityId, watchedRecipientId, delayedId, sourceId, controllerId, state, watchedObject)
-            }
             // Attack-declaration triggers are player-/filter-scoped, not entity-scoped, so they
             // reuse the canonical matcher rather than the watched-entity narrowing above.
             // Powers "when you next attack this turn, …" (YouAttackEvent) and the general

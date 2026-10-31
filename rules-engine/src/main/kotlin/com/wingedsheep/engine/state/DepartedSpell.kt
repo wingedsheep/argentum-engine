@@ -9,3 +9,11 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class DepartedSpell(val objectRef: ObjectRef?, val spell: ComponentContainer)
+
+/**
+ * An activated or triggered ability as it last existed on the stack, kept after it was countered
+ * (CR 701.6a: it ceases to exist). [objectRef] is the stack object that left, so only a reference
+ * captured while it was on the stack — "copy that ability" in a trigger it caused — reads it.
+ */
+@Serializable
+data class DepartedAbility(val objectRef: ObjectRef, val ability: ComponentContainer)

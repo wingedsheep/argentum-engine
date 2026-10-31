@@ -482,6 +482,14 @@ data class GameState(
     val departedSpells: Map<EntityId, DepartedSpell> = emptyMap(),
 
     /**
+     * Last-known information of abilities countered on the stack, the ability counterpart of
+     * [departedSpells]: "copy that spell or ability" still copies a countered loyalty ability
+     * (Repeated Reverberation's ruling). Read through [departedAbility]; cleared at every turn
+     * boundary.
+     */
+    val departedAbilities: Map<EntityId, DepartedAbility> = emptyMap(),
+
+    /**
      * Game-mode configuration the engine reads for format-dependent behaviour (commander damage
      * threshold, command-zone redirect, etc.). Defaults to [Format.Standard] so existing
      * persisted states / tests need no migration.
@@ -1458,6 +1466,10 @@ data class GameState(
      */
     fun departedSpellEntity(ref: ObjectRef): EntityId? =
         departedSpells[ref.entityId]?.takeIf { it.objectRef == ref }?.let { ref.entityId }
+
+    /** The ability [ref] named while it was on the stack, as it last existed there once countered. */
+    fun departedAbility(ref: ObjectRef): ComponentContainer? =
+        departedAbilities[ref.entityId]?.takeIf { it.objectRef == ref }?.ability
 
     /**
      * Take an object off the stack without it resolving — countered, bounced, exiled, or moved by
