@@ -4176,8 +4176,14 @@ enum class DrawStepFirstCard {
     ONLY,
 }
 
-/** "first", "second", … "twelfth" for the ordinal trigger templates; "13th" and beyond as digits. */
+/** "first", "second", … "twelfth" for the ordinal trigger templates; "13th", "21st", … as digits. */
 internal fun ordinalWord(n: Int): String = listOf(
     "first", "second", "third", "fourth", "fifth", "sixth",
     "seventh", "eighth", "ninth", "tenth", "eleventh", "twelfth"
-).getOrNull(n - 1) ?: "${n}th"
+).getOrNull(n - 1) ?: (n.toString() + when {
+    n % 100 in 11..13 -> "th"
+    n % 10 == 1 -> "st"
+    n % 10 == 2 -> "nd"
+    n % 10 == 3 -> "rd"
+    else -> "th"
+})

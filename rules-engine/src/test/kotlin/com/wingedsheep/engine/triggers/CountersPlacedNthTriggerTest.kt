@@ -79,6 +79,12 @@ class CountersPlacedNthTriggerTest : FunSpec({
             clockId
         )
         triggers shouldHaveSize 1
+        // A batch where no placement crosses N fires nothing, merged or not.
+        triggersOf(
+            driver,
+            listOf(placed(clockId, 1, totalCount = 4), placed(clockId, 1, totalCount = 5)),
+            clockId
+        ) shouldHaveSize 0
     }
 
     test("another counter kind doesn't count toward N") {
@@ -102,6 +108,8 @@ class CountersPlacedNthTriggerTest : FunSpec({
     test("description and invariants") {
         EventPattern.CountersPlacedEvent(CounterType.HOUR, nth = 12).description shouldBe
             "the twelfth hour counter is put on a card or permanent"
+        EventPattern.CountersPlacedEvent(CounterType.HOUR, nth = 21).description shouldBe
+            "the 21st hour counter is put on a card or permanent"
         shouldThrow<IllegalArgumentException> { EventPattern.CountersPlacedEvent(null, nth = 12) }
         shouldThrow<IllegalArgumentException> { EventPattern.CountersPlacedEvent(CounterType.HOUR, nth = 0) }
         shouldThrow<IllegalArgumentException> { EventPattern.CountersPlacedEvent(CounterType.HOUR, perCounter = true, nth = 2) }
