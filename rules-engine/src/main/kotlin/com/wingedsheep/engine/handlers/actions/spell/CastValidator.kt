@@ -471,9 +471,17 @@ internal class CastValidator(
                 ?: cardComponent.manaCost.colors,
             action.cardId,
         )
-        if (permissions.none { it.authorizesSpellColors(castColors) }) {
+        // "Cast it if it's a creature spell" (Vivien, Champion of the Wilds): the card types of the
+        // face being cast, by the same rule.
+        val castTypes = ((if (modalBack) cardDef?.backFace?.typeLine else null)
+            ?: action.faceIndex?.let { cardDef?.cardFaces?.getOrNull(it)?.typeLine }
+            ?: cardDef?.typeLine
+            ?: cardComponent.typeLine).cardTypes
+        if (permissions.none { it.authorizesSpell(castColors, castTypes) }) {
             val required = permissions.firstNotNullOfOrNull { it.castColorRestriction }?.name?.lowercase()?.let { "$it spells" }
                 ?: permissions.firstNotNullOfOrNull { it.castColorCount }?.let { "spells with exactly $it colors" }
+                ?: permissions.firstNotNullOfOrNull { it.castSpellTypes }
+                    ?.joinToString(" or ") { it.displayName.lowercase() }?.let { "$it spells" }
             return "You may only cast $required from there"
         }
         return null

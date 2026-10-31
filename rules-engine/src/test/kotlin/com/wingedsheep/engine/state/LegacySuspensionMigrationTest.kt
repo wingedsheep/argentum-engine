@@ -363,7 +363,7 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
                 value - "playedThisTurn"
             } else if ("spendAsAnyColor" in value && "playsRemaining" in value) {
                 // MayPlayPermission's any-color, colorless-as-any-color, face-down, once-per-turn,
-                // color-count, play-cap and step-keyed expiry riders postdate the capture.
+                // color-count, spell-type, play-cap and step-keyed expiry riders postdate the capture.
                 value.getValue("playsRemaining") shouldBe JsonNull
                 value.getValue("expiresAtStep") shouldBe JsonNull
                 value.getValue("withAnyManaColor") shouldBe JsonPrimitive(false)
@@ -372,8 +372,9 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
                 value.getValue("turnsFaceUpInstead") shouldBe JsonPrimitive(false)
                 value.getValue("oncePerTurn") shouldBe JsonPrimitive(false)
                 value.getValue("castColorCount") shouldBe JsonNull
+                value.getValue("castSpellTypes") shouldBe JsonNull
                 value - "withAnyManaColor" - "spendAsAnyColor" - "castFaceDown" - "turnsFaceUpInstead" - "oncePerTurn" -
-                    "castColorCount" - "playsRemaining" - "expiresAtStep"
+                    "castColorCount" - "castSpellTypes" - "playsRemaining" - "expiresAtStep"
             } else if (value["type"] == JsonPrimitive(
                     "com.wingedsheep.engine.state.components.stack.SpellOnStackComponent"
                 )) {

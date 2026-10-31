@@ -1671,7 +1671,8 @@ object Effects {
      * grantee, and a turn-keyed [expiry] follows that owner's turns), and [castColorRestriction]
      * for "you may cast red spells from among them" — a cast-time check on the face being cast,
      * not a filter over the exiled cards ([castColorCount] is the same check for "spells with
-     * exactly three colors", Meeting of the Five). Set [maxPlays] to cap the plays the grant authorises
+     * exactly three colors", Meeting of the Five; [castSpellTypes] for "if it's a creature spell",
+     * Vivien, Champion of the Wilds). Set [maxPlays] to cap the plays the grant authorises
      * across the whole group: `1` for "you may cast **a** spell from among them" (Chandra, Hope's
      * Beacon), `2` for "you may play up to two of those cards" (March of Reckless Joy).
      *
@@ -1704,6 +1705,7 @@ object Effects {
         ownerControls: Boolean = false,
         castColorRestriction: Color? = null,
         castColorCount: Int? = null,
+        castSpellTypes: Set<com.wingedsheep.sdk.core.CardType>? = null,
         maxPlays: Int? = null,
         spendAsAnyColor: com.wingedsheep.sdk.scripting.effects.ManaSpentAsAnyColor? = null,
         withAnyManaColor: Boolean = false
@@ -1722,6 +1724,7 @@ object Effects {
         ownerControls = ownerControls,
         castColorRestriction = castColorRestriction,
         castColorCount = castColorCount,
+        castSpellTypes = castSpellTypes,
         maxPlays = maxPlays
     )
 
@@ -5048,6 +5051,7 @@ object Effects {
         ownerControls: Boolean = false,
         castColorRestriction: Color? = null,
         castColorCount: Int? = null,
+        castSpellTypes: Set<com.wingedsheep.sdk.core.CardType>? = null,
         recipient: EffectTarget = EffectTarget.Controller,
         asThoughFlash: Boolean = false,
         maxPlays: Int? = null,
@@ -5070,6 +5074,7 @@ object Effects {
         castFaceIndex = castFaceIndex,
         castColorRestriction = castColorRestriction,
         castColorCount = castColorCount,
+        castSpellTypes = castSpellTypes,
         maxPlays = maxPlays
     )
 

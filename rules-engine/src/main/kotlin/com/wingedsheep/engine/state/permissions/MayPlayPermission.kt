@@ -199,6 +199,13 @@ data class MayPlayPermission(
      */
     val castColorCount: Int? = null,
     /**
+     * When set, this permission authorizes casting only spells with at least one of these card
+     * types, checked against the face being cast like [castColorRestriction]. Mirrors
+     * [com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect.castSpellTypes]
+     * ("you may cast it if it's a creature spell" — Vivien, Champion of the Wilds).
+     */
+    val castSpellTypes: Set<com.wingedsheep.sdk.core.CardType>? = null,
+    /**
      * When true, a cast authorized by this permission puts the card on the stack **transformed** —
      * back face up (CR 712.8c), so the back face supplies the spell's characteristics, targets, and
      * the permanent it becomes. The front face still supplies nothing but the card's identity.
@@ -247,13 +254,18 @@ data class MayPlayPermission(
     val timestamp: Long
 ) {
     /**
-     * Whether this permission's spell-color riders ([castColorRestriction], [castColorCount])
-     * allow casting a face whose colors are [castColors]. Both the from-zone enumerator and the
-     * authoritative cast validator ask this, with the colors of the face actually being cast.
+     * Whether this permission's spell riders ([castColorRestriction], [castColorCount],
+     * [castSpellTypes]) allow casting a face whose colors are [castColors] and whose card types are
+     * [castTypes]. The from-zone enumerator, the authoritative cast validator and the cast-zone
+     * resolver all ask this, with the characteristics of the face actually being cast.
      */
-    fun authorizesSpellColors(castColors: Set<com.wingedsheep.sdk.core.Color>): Boolean =
+    fun authorizesSpell(
+        castColors: Set<com.wingedsheep.sdk.core.Color>,
+        castTypes: Set<com.wingedsheep.sdk.core.CardType>,
+    ): Boolean =
         (castColorRestriction == null || castColorRestriction in castColors) &&
-            (castColorCount == null || castColors.size == castColorCount)
+            (castColorCount == null || castColors.size == castColorCount) &&
+            (castSpellTypes == null || castSpellTypes.any { it in castTypes })
 
     /**
      * Whether this permission lets its holder cast [cardDef] as `cardFaces[faceIndex]` (null: the

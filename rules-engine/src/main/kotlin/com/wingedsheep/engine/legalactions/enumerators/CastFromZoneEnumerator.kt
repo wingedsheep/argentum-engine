@@ -620,12 +620,15 @@ class CastFromZoneEnumerator(
                             prepareFace?.manaCost?.colors ?: castDef?.colors ?: cardComponent.manaCost.colors,
                             cardId,
                         )
-                        if (permissions.none { it.authorizesSpellColors(castColors) }) {
-                            continue
-                        }
                         val castName = if (castDef != null && castDef !== cardDef) castDef.name else cardComponent.name
                         val effectiveScript = castDef?.script
                         val effectiveTypeLine = if (castDef != null && castDef !== cardDef) castDef.typeLine else cardComponent.typeLine
+                        // "Cast it if it's a creature spell" (Vivien, Champion of the Wilds) is the
+                        // same face-level check on card types: an Adventurer's sorcery half is not a
+                        // creature spell.
+                        if (permissions.none { it.authorizesSpell(castColors, effectiveTypeLine.cardTypes) }) {
+                            continue
+                        }
                         // The CastSpell this offer submits: the face index, or the modal-back selector.
                         fun castAction(free: Boolean = false): CastSpell =
                             if (option.modalBack != null) CastSpell(

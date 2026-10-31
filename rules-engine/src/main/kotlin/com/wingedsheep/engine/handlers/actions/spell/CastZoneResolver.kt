@@ -253,9 +253,13 @@ class CastZoneResolver(
                 ?: cardComponent.manaCost.colors,
             cardId,
         )
+        val castTypes = ((if (modalBack) cardDef?.backFace?.typeLine else null)
+            ?: action.faceIndex?.let { cardDef?.cardFaces?.getOrNull(it)?.typeLine }
+            ?: cardDef?.typeLine
+            ?: cardComponent.typeLine).cardTypes
         return state.mayPlayEntersTappedRiders(cardId, playerId, conditionEvaluator, cardRegistry) {
             (if (modalBack) it.authorizesModalBack else it.authorizesFace(action.faceIndex, cardDef)) &&
-                it.authorizesSpellColors(castColors)
+                it.authorizesSpell(castColors, castTypes)
         } ?: emptyList()
     }
 

@@ -1991,6 +1991,17 @@ data class GrantMayPlayFromExileEffect(
      */
     val castColorCount: Int? = null,
     /**
+     * When set, the permission authorizes casting only spells that have at least one of these
+     * **card types**, checked — like [castColorRestriction] — against the face actually being cast
+     * rather than the card in exile. Models "you may cast it if it's a creature spell" (Vivien,
+     * Champion of the Wilds −2: an exiled Adventurer card's instant or sorcery Adventure is not a
+     * creature spell, so only its creature half is castable) and "an instant or sorcery spell"
+     * wording. A cast-time check only: it never stops a land play, so pair it with
+     * `nonLandOnly = true` for "cast" wording. Distinct from a `FilterCollection` over the exiled
+     * cards, which decides which cards get a permission at all.
+     */
+    val castSpellTypes: Set<com.wingedsheep.sdk.core.CardType>? = null,
+    /**
      * Caps how many plays the permission over the whole collection authorises; null (the default)
      * is unlimited. Each cast (or land play) of a granted card spends one, and the last one revokes
      * the grant for every card still in the group. `1` models "you may cast **an** instant or sorcery
@@ -2009,6 +2020,7 @@ data class GrantMayPlayFromExileEffect(
             "withAnyManaColor already lets all mana stand in for a color; spendAsAnyColor narrows it — set one"
         }
         require(maxPlays == null || maxPlays >= 1) { "maxPlays must be at least 1, or null for unlimited" }
+        require(castSpellTypes == null || castSpellTypes.isNotEmpty()) { "castSpellTypes must name a type, or be null for any spell" }
     }
 
     override val description: String = buildString {
@@ -2030,6 +2042,10 @@ data class GrantMayPlayFromExileEffect(
             else -> "those cards"
         }
         append("${expiry.description.replaceFirstChar { it.uppercase() }}, $who may $verb $what from exile")
+        if (castSpellTypes != null) {
+            val types = castSpellTypes.joinToString(" or ") { it.displayName.lowercase() }
+            append(" if it's ${if (types.first() in "aeiou") "an" else "a"} $types spell")
+        }
         if (castFaceIndex != null) append(" as its alternative face")
         if (fixedAlternativeCostIsManaValue) {
             append(if (waterbend) " by waterbending {X} rather than paying their mana cost, where X is their mana value"

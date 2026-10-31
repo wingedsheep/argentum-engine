@@ -192,6 +192,7 @@ class GrantMayPlayFromExileExecutor : EffectExecutor<GrantMayPlayFromExileEffect
                     castFaceIndex = effect.castFaceIndex,
                     castColorRestriction = effect.castColorRestriction,
                     castColorCount = effect.castColorCount,
+                    castSpellTypes = effect.castSpellTypes,
                     playsRemaining = effect.maxPlays,
                     timestamp = state.timestamp,
                 )
