@@ -11,7 +11,7 @@ import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 
 /**
- * Scenario tests for Heartless Act (Avatar: The Last Airbender #103).
+ * Scenario tests for Heartless Act (Ikoria: Lair of Behemoths #91).
  *
  * Heartless Act ({1}{B} Instant), Choose one —
  *   • Destroy target creature with no counters on it.

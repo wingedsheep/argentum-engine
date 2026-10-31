@@ -1750,6 +1750,96 @@
     ]
 }
 
+// Cloudpiercer
+{
+    "name": "Cloudpiercer",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "Mutate {3}{R} (If you cast this spell for its mutate cost, put it over or under target non-Human creature you own. They mutate into the creature on top plus all abilities from under it.)\nReach\nWhenever this creature mutates, you may discard a card. If you do, draw a card.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "REACH",
+        "MUTATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Mutate",
+            "cost": "{3}{R}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cloudpiercer:1",
+                "trigger": "MutateEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        },
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "artist": "Dan Murayama Scott",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/e/3ec5f005-d8fb-48b8-8ac5-74445cc83273.jpg?1783931052"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Colossification
 {
     "name": "Colossification",
@@ -2094,6 +2184,62 @@
     },
     "colorIdentityOverride": [
         "WHITE",
+        "BLACK"
+    ]
+}
+
+// Dirge Bat
+{
+    "name": "Dirge Bat",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Creature — Bat",
+    "oracleText": "Mutate {4}{B}{B} (If you cast this spell for its mutate cost, put it over or under target non-Human creature you own. They mutate into the creature on top plus all abilities from under it.)\nFlash\nFlying\nWhenever this creature mutates, destroy target creature or planeswalker an opponent controls.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING",
+        "MUTATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Mutate",
+            "cost": "{4}{B}{B}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dirge Bat:1",
+                "trigger": "MutateEvent",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature|planeswalker ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "rarity": "RARE",
+        "artist": "Paul Scott Canavan",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/59677c76-8148-4b6f-95b0-0e3ccf137a3f.jpg?1783931062"
+    },
+    "colorIdentityOverride": [
         "BLACK"
     ]
 }
@@ -2650,6 +2796,49 @@
     ]
 }
 
+// Everquill Phoenix
+{
+    "name": "Everquill Phoenix",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Phoenix",
+    "oracleText": "Mutate {3}{R} (If you cast this spell for its mutate cost, put it over or under target non-Human creature you own. They mutate into the creature on top plus all abilities from under it.)\nFlying\nWhenever this creature mutates, create a red artifact token named Feather with \"{1}, Sacrifice this token: Return target Phoenix card from your graveyard to the battlefield tapped.\"",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "MUTATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Mutate",
+            "cost": "{3}{R}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Everquill Phoenix:1",
+                "trigger": "MutateEvent",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Feather"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "rarity": "RARE",
+        "artist": "Lie Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/3953157f-2deb-4ab7-b4b3-592ebb7c7a9c.jpg?1783931052"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Excavation Mole
 {
     "name": "Excavation Mole",
@@ -2707,6 +2896,103 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Extinction Event
+{
+    "name": "Extinction Event",
+    "manaCost": "{3}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose odd or even. Exile each creature with mana value of the chosen quality. (Zero is even.)",
+    "script": {
+        "spellEffect": {
+            "type": "ChooseAction",
+            "choices": [
+                {
+                    "label": "Odd — Exile each creature with an odd mana value",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsCreature",
+                                            "ManaValueIsOdd"
+                                        ]
+                                    }
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "label": "Even — Exile each creature with an even mana value",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsCreature",
+                                            "ManaValueIsEven"
+                                        ]
+                                    }
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "rarity": "RARE",
+        "artist": "Filip Burburan",
+        "flavorText": "\"Nature is more merciless than any hunter I've ever known.\"\n—Zai, nightsquad captain",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/8725a869-462b-4381-880a-b4bcc63a655b.jpg?1783931062",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "You choose odd or even while Extinction Event is resolving. Players can't take any actions between the time you make that choice and the time some creatures go extinct."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If a creature on the battlefield has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "The mana value of a token that isn't a copy of another object is 0. A token that is a copy of another object has the same mana cost as that object."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -2875,6 +3161,65 @@
     "colorIdentityOverride": []
 }
 
+// Ferocious Tigorilla
+{
+    "name": "Ferocious Tigorilla",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Cat Ape",
+    "oracleText": "This creature enters with your choice of a trample counter or a menace counter on it.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "modeOptions": [
+                    {
+                        "id": "trample",
+                        "label": "A trample counter"
+                    },
+                    {
+                        "id": "menace",
+                        "label": "A menace counter"
+                    }
+                ]
+            },
+            {
+                "type": "EntersWithCounters",
+                "counterType": "TRAMPLE",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "trample"
+                }
+            },
+            {
+                "type": "EntersWithCounters",
+                "counterType": "MENACE",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "menace"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "115",
+        "artist": "Antonio José Manzanedo",
+        "flavorText": "From a certain perspective, it's an inspiring story of overcoming obstacles.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/5976e8d8-5122-4423-b3eb-61170390ad7a.jpg?1783931051"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Fight as One
 {
     "name": "Fight as One",
@@ -2990,6 +3335,164 @@
     ]
 }
 
+// Fire Prophecy
+{
+    "name": "Fire Prophecy",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Fire Prophecy deals 3 damage to target creature. You may put a card from your hand on the bottom of your library. If you do, draw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.DoAction",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "selected1",
+                                    "prompt": "You may put a card from your hand on the bottom of your library"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "selected1",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Library",
+                                        "placement": "Bottom"
+                                    },
+                                    "order": "ControllerChooses"
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "116",
+        "artist": "Kieran Yanner",
+        "flavorText": "\"Water and bone tell many tales, but fire is fickle. It would rather consume than reveal.\"\n—Rielle, the Everwise",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/c/4c2029e5-cf7d-461f-b7b9-bf96399d8f49.jpg?1783931051",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "If the target creature is an illegal target by the time Fire Prophecy tries to resolve, the spell won't resolve. You won't have the option to put a card on the bottom of your library."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "While resolving Fire Prophecy, you can't put more than one card on the bottom of your library to draw more than one card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Flame Spill
+{
+    "name": "Flame Spill",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Flame Spill deals 4 damage to target creature. Excess damage is dealt to that creature's controller instead.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 4
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "excessToController": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "rarity": "UNCOMMON",
+        "artist": "Zoltan Boros",
+        "flavorText": "Fragile, floating Skysail suddenly seemed like an appealingly safe place to live.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b3090004-d7dd-47bc-92e5-977be4fd9ae5.jpg?1783931049",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Excess damage caused by a spell or ability is similar to how combat damage from a creature with trample is handled. Start with the amount of damage being dealt to the creature and determine what is “lethal.” This is the creature’s toughness minus the amount of damage that it already has marked on it, but ignoring any replacement or prevention effects that will modify this damage. Also ignore whether the creature has an ability such as indestructible that will result in it not being destroyed by this damage."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Once you’ve determined how much damage is excess, Flame Spill simultaneously deals damage to the creature and to its controller. This damage may be modified by replacement or prevention effects."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If the target creature is an illegal target by the time Flame Spill tries to resolve, the spell won’t resolve. It won’t deal damage to any player."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Flourishing Fox
 {
     "name": "Flourishing Fox",
@@ -3031,6 +3534,128 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Footfall Crater
+{
+    "name": "Footfall Crater",
+    "manaCost": "{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant land\nEnchanted land has \"{T}: Target creature gains trample and haste until end of turn.\"\nCycling {1} ({1}, Discard this card: Draw a card.)",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{1}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Footfall Crater:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "target"
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "target"
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "target"
+                        }
+                    ]
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "118",
+        "rarity": "UNCOMMON",
+        "artist": "Ravenna Tran",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f1b75aac-54e3-4181-bac5-5a142757ec05.jpg?1783931050"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Forbidden Friendship
+{
+    "name": "Forbidden Friendship",
+    "manaCost": "{1}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create a 1/1 red Dinosaur creature token with haste and a 1/1 white Human Soldier creature token.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Dinosaur"
+                    ],
+                    "keywords": [
+                        "HASTE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/f/9/f918b740-1984-4090-8886-9e290a698b95.jpg?1783930944"
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Human",
+                        "Soldier"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/e/4/e406949f-c629-48fa-9fb0-ba6191054d35.jpg?1783930945"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "artist": "Jakub Kasper",
+        "flavorText": "The two looked at each other, and neither fled. \"I see,\" the soldier murmured. \"We're both just fighting for survival out here, aren't we?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e634baa3-2cdd-412a-9407-c347fe46f9b8.jpg?1783931050"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -3833,6 +4458,107 @@
     ]
 }
 
+// Grimdancer
+{
+    "name": "Grimdancer",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Creature — Nightmare",
+    "oracleText": "This creature enters with your choice of two different counters on it from among menace, deathtouch, and lifelink.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "modeOptions": [
+                    {
+                        "id": "menace_deathtouch",
+                        "label": "Menace and deathtouch counters"
+                    },
+                    {
+                        "id": "menace_lifelink",
+                        "label": "Menace and lifelink counters"
+                    },
+                    {
+                        "id": "deathtouch_lifelink",
+                        "label": "Deathtouch and lifelink counters"
+                    }
+                ]
+            },
+            {
+                "type": "EntersWithCounters",
+                "counterType": "MENACE",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "SourceChosenModeIs",
+                            "modeId": "menace_deathtouch"
+                        },
+                        {
+                            "type": "SourceChosenModeIs",
+                            "modeId": "menace_lifelink"
+                        }
+                    ]
+                }
+            },
+            {
+                "type": "EntersWithCounters",
+                "counterType": "DEATHTOUCH",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "SourceChosenModeIs",
+                            "modeId": "menace_deathtouch"
+                        },
+                        {
+                            "type": "SourceChosenModeIs",
+                            "modeId": "deathtouch_lifelink"
+                        }
+                    ]
+                }
+            },
+            {
+                "type": "EntersWithCounters",
+                "counterType": "LIFELINK",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "SourceChosenModeIs",
+                            "modeId": "menace_lifelink"
+                        },
+                        {
+                            "type": "SourceChosenModeIs",
+                            "modeId": "deathtouch_lifelink"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "90",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Vargas",
+        "flavorText": "Most monsters are more frightening when they skitter unseen in the dark. Most.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/819257c8-9806-48bd-ba49-e117ca31de54.jpg?1783931060"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Gust of Wind
 {
     "name": "Gust of Wind",
@@ -3947,6 +4673,85 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Heartless Act
+{
+    "name": "Heartless Act",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Destroy target creature with no counters on it.\n• Remove up to three counters from target creature.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        {
+                                            "type": "StateNot",
+                                            "predicate": "HasAnyCounter"
+                                        }
+                                    ]
+                                }
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Destroy target creature with no counters on it"
+                },
+                {
+                    "effect": {
+                        "type": "RemoveAnyNumberOfCounters",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "maxTotal": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Remove up to three counters from target creature"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "91",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Pancoast",
+        "flavorText": "\"It's them or us.\"\n—General Kudro",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/4/e4e6794a-feeb-4fc8-a2ee-38c75c18aaae.jpg?1783931060"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -4228,6 +5033,94 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Hunted Nightmare
+{
+    "name": "Hunted Nightmare",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Creature — Nightmare",
+    "oracleText": "Menace\nWhen this creature enters, target opponent puts a deathtouch counter on a creature they control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hunted Nightmare:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "ControlledPermanents",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "filter": "creature"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "TargetPlayer",
+                            "storeSelected": "selected1",
+                            "prompt": "Choose a creature you control to put a deathtouch counter on",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "AddCountersToCollection",
+                            "collectionName": "selected1",
+                            "counterType": "DEATHTOUCH"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, target opponent puts a deathtouch counter on a creature they control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "rarity": "RARE",
+        "artist": "Antonio José Manzanedo",
+        "flavorText": "\"The cruelest monsters inspire the greatest tales. The greatest tales inspire the cruelest hunters.\"\n—Rielle, the Everwise",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f2dddce-583e-4af3-b144-a60dd268e84f.jpg?1783931060",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "The target opponent chooses which of their creatures receives a deathtouch counter."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If the target opponent controls no creatures, they won't put a deathtouch counter on any creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -4519,6 +5412,70 @@
         "BLACK",
         "GREEN",
         "WHITE"
+    ]
+}
+
+// Insatiable Hemophage
+{
+    "name": "Insatiable Hemophage",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Nightmare",
+    "oracleText": "Mutate {2}{B} (If you cast this spell for its mutate cost, put it over or under target non-Human creature you own. They mutate into the creature on top plus all abilities from under it.)\nDeathtouch\nWhenever this creature mutates, each opponent loses X life and you gain X life, where X is the number of times this creature has mutated.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEATHTOUCH",
+        "MUTATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Mutate",
+            "cost": "{2}{B}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Insatiable Hemophage:1",
+                "trigger": "MutateEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "TimesMutated"
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "TimesMutated"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "rarity": "UNCOMMON",
+        "artist": "Antonio José Manzanedo",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/0/70419590-2e0d-4232-b596-a5359b284647.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -5751,6 +6708,92 @@
     ]
 }
 
+// Memory Leak
+{
+    "name": "Memory Leak",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent reveals their hand. You choose a nonland card from that player's graveyard or hand and exile it.\nCycling {1} ({1}, Discard this card: Draw a card.)",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{1}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "RevealHand",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromMultipleZones",
+                        "zones": [
+                            "Hand",
+                            "Graveyard"
+                        ],
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "nonland",
+                    "storeSelected": "selected2",
+                    "prompt": "Choose a nonland card from their hand or graveyard to exile",
+                    "showAllCards": true,
+                    "alwaysPrompt": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "95",
+        "artist": "Karl Kopinski",
+        "flavorText": "\"By halves does youth depart. I remember halves of names, halves of years, halves of myself.\"\n—Ogaro, wandering sage",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3b45a493-a1c2-430e-a45c-abc1ba554877.jpg?1783931059"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Migration Path
 {
     "name": "Migration Path",
@@ -5813,6 +6856,63 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Momentum Rumbler
+{
+    "name": "Momentum Rumbler",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "Whenever this creature attacks, if it doesn't have first strike, put a first strike counter on it.\nWhenever this creature attacks, if it has first strike, it gains double strike until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Momentum Rumbler:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "FIRST_STRIKE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "interveningIf": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "EntityMatches",
+                        "entity": "Self",
+                        "filter": "kw:first_strike"
+                    }
+                }
+            },
+            {
+                "id": "Momentum Rumbler:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "DOUBLE_STRIKE",
+                    "target": "Self"
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": "kw:first_strike"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "126",
+        "rarity": "UNCOMMON",
+        "artist": "Andrey Kuzinskiy",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/3587f450-c1ba-4074-84bb-47978a2b6116.jpg?1783931046"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

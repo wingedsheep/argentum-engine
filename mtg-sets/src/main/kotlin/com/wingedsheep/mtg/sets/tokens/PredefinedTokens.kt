@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.DynamicAmounts
@@ -1336,6 +1337,30 @@ object PredefinedTokens {
     }
 
     /**
+     * Feather — a red artifact token with "{1}, Sacrifice Feather: Return target Phoenix card from
+     * your graveyard to the battlefield tapped." Created by Everquill Phoenix when it mutates.
+     * Red from its color indicator (CR 204), like [Frog].
+     */
+    val Feather = card("Feather") {
+        typeLine = "Artifact"
+        colorIdentity = "R"
+        oracleText = "{1}, Sacrifice Feather: Return target Phoenix card from your graveyard to the battlefield tapped."
+
+        activatedAbility {
+            val phoenix = target(
+                TargetFilter(GameObjectFilter.Any.withSubtype("Phoenix").ownedByYou(), zone = Zone.GRAVEYARD)
+            )
+            cost = Costs.Composite(Costs.Mana("{1}"), Costs.SacrificeSelf)
+            effect = Effects.PutOntoBattlefield(phoenix, tapped = true)
+        }
+
+        metadata {
+            imageUri = "https://cards.scryfall.io/normal/front/a/9/a9cc7c63-5d13-4fd6-af9d-4a26c2bab8e6.jpg?1783930943"
+            artist = "Lie Setiawan"
+        }
+    }
+
+    /**
      * Tamiyo's Notebook — a legendary colorless Book artifact token with
      * "Spells you cast cost {2} less to cast" and "{T}: Draw a card."
      * Created by Tamiyo, Compleated Sage's −7.
@@ -1433,6 +1458,7 @@ object PredefinedTokens {
         IcyManalith,
         ReplicatedRing,
         TamiyosNotebook,
+        Feather,
         Gold
     )
 }

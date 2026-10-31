@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.tla.cards
+package com.wingedsheep.mtg.sets.definitions.iko.cards
 
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
@@ -44,9 +44,9 @@ val HeartlessAct = card("Heartless Act") {
 
     metadata {
         rarity = Rarity.UNCOMMON
-        collectorNumber = "103"
-        artist = "Sylvain Sarrailh"
-        flavorText = "\"Put a muzzle on him!\"\n—Si Wong Sandbender"
-        imageUri = "https://cards.scryfall.io/normal/front/b/5/b57c57a8-d72b-4c6c-a2db-a7ef61190f42.jpg?1764120715"
+        collectorNumber = "91"
+        artist = "Ryan Pancoast"
+        flavorText = "\"It's them or us.\"\n—General Kudro"
+        imageUri = "https://cards.scryfall.io/normal/front/e/4/e4e6794a-feeb-4fc8-a2ee-38c75c18aaae.jpg?1783931060"
     }
 }
