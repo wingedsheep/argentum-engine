@@ -12835,7 +12835,7 @@
 // Wolfrider's Saddle
 {
     "name": "Wolfrider's Saddle",
-    "manaCost": "{3}{R}",
+    "manaCost": "{3}{G}",
     "typeLine": "Artifact — Equipment",
     "oracleText": "When this Equipment enters, create a 2/2 green Wolf creature token, then attach this Equipment to it.\nEquipped creature gets +1/+1 and can't be blocked by more than one creature.\nEquip {3} ({3}: Attach to target creature you control. Equip only as a sorcery.)",
     "script": {
@@ -12936,7 +12936,7 @@
         ]
     },
     "colorIdentityOverride": [
-        "RED"
+        "GREEN"
     ]
 }
 

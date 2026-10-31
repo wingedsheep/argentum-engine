@@ -12,7 +12,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Wolfrider's Saddle
- * {3}{R}
+ * {3}{G}
  * Artifact — Equipment
  * When this Equipment enters, create a 2/2 green Wolf creature token, then attach this Equipment to it.
  * Equipped creature gets +1/+1 and can't be blocked by more than one creature.
@@ -22,8 +22,8 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * published to [CREATED_TOKENS] and [Effects.AttachEquipment] reads it back in the same resolution.
  */
 val WolfridersSaddle = card("Wolfrider's Saddle") {
-    manaCost = "{3}{R}"
-    colorIdentity = "R"
+    manaCost = "{3}{G}"
+    colorIdentity = "G"
     typeLine = "Artifact — Equipment"
     oracleText = "When this Equipment enters, create a 2/2 green Wolf creature token, then attach this Equipment to it.\n" +
         "Equipped creature gets +1/+1 and can't be blocked by more than one creature.\n" +
