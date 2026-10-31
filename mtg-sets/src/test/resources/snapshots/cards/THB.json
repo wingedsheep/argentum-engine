@@ -14445,6 +14445,93 @@
     ]
 }
 
+// Skophos Maze-Warden
+{
+    "name": "Skophos Maze-Warden",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Minotaur Warrior",
+    "oracleText": "{1}: This creature gets +1/-1 until end of turn.\nWhenever another creature becomes the target of an ability of a land you control named Labyrinth of Skophos, you may have this creature fight that creature. (Each deals damage equal to its power to the other.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Skophos Maze-Warden:2",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "targetFilter": "creature",
+                    "abilitiesOnly": true,
+                    "sourceFilter": {
+                        "cardPredicates": [
+                            "IsLand",
+                            {
+                                "type": "NameEquals",
+                                "name": "Labyrinth of Skophos"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Fight",
+                        "target1": "Self",
+                        "target2": "TriggeringEntity"
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Skophos Maze-Warden:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Rainville",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0f470a7b-63ef-4efa-855e-f8a3ce1ab534.jpg?1783931546",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "An ability that triggers when a creature becomes the target of an ability resolves before the ability that caused it to trigger. It resolves even if that ability is countered or if the creature is no longer a legal target."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If either Skophos Maze-Warden or the creature targeted by Labyrinth of Skophos has left the battlefield, the other won't deal or be dealt damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Skophos Warleader
 {
     "name": "Skophos Warleader",

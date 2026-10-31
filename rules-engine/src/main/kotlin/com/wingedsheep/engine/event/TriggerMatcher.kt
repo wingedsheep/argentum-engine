@@ -2,6 +2,7 @@ package com.wingedsheep.engine.event
 
 import com.wingedsheep.engine.mechanics.ManaValues
 import com.wingedsheep.engine.mechanics.layers.containsKeyword
+import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.handlers.predicates.isModified
@@ -2145,18 +2146,15 @@ class TriggerMatcher(
         }
 
         // "becomes the target of an **Aura** spell" (Brine Comber) — narrow by the targeting
-        // object's own card data. The source is a spell on the stack (or the permanent whose
-        // ability targeted), so the same PredicateEvaluator call the targetFilter uses below reads
-        // it: projected types when it has a battlefield projection, base card data otherwise. A
-        // source with no card data (a spell that has already left the stack) fails closed.
+        // object's own card data. A spell is read off the stack; an ability on the stack has no
+        // card data, so it is read through the permanent whose ability it is — "an ability of a
+        // land you control named Labyrinth of Skophos" (Skophos Maze-Warden). That permanent is
+        // read live (projected types), or — when its own cost sacrificed it — as it last existed
+        // (CR 113.7a). A source with no card data left to read fails closed.
         val sourceFilter = trigger.sourceFilter
         if (sourceFilter != null) {
-            val sourceContainer = state.getEntity(event.sourceEntityId) ?: return false
-            if (!sourceContainer.has<CardComponent>()) return false
             val sourcePredicateContext = PredicateContext(controllerId = controllerId, sourceId = sourceId)
-            if (!predicateEvaluator.matches(
-                    state, state.projectedState, event.sourceEntityId, sourceFilter, sourcePredicateContext
-                )) return false
+            if (!matchesTargetingSource(state, event, sourceFilter, sourcePredicateContext)) return false
         }
 
         // Valiant: check if the targeting spell/ability is controlled by "you" (the trigger's controller)
@@ -2193,6 +2191,31 @@ class TriggerMatcher(
         }
 
         return true
+    }
+
+    /**
+     * [EventPattern.BecomesTargetEvent.sourceFilter] against what did the targeting: the spell
+     * itself, or the source permanent of the ability on the stack.
+     */
+    private fun matchesTargetingSource(
+        state: GameState,
+        event: BecomesTargetEvent,
+        sourceFilter: GameObjectFilter,
+        context: PredicateContext
+    ): Boolean {
+        val targeting = state.getEntity(event.sourceEntityId) ?: return false
+        val activated = targeting.get<ActivatedAbilityOnStackComponent>()
+        val abilitySourceId = activated?.sourceId
+            ?: targeting.get<TriggeredAbilityOnStackComponent>()?.sourceId
+        if (abilitySourceId == null) {
+            if (!targeting.has<CardComponent>()) return false
+            return predicateEvaluator.matches(state, state.projectedState, event.sourceEntityId, sourceFilter, context)
+        }
+        if (abilitySourceId in state.getBattlefield()) {
+            return predicateEvaluator.matches(state, state.projectedState, abilitySourceId, sourceFilter, context)
+        }
+        val lastKnown = activated?.sacrificedPermanents?.firstOrNull { it.entityId == abilitySourceId } ?: return false
+        return predicateEvaluator.matchesSnapshot(state, lastKnown, sourceFilter, context, onBattlefield = true)
     }
 
     fun matchesDealsDamageTrigger(

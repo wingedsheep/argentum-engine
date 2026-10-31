@@ -9551,6 +9551,13 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
   permanent is already enchanted by — only for a new one being cast at it. `sourceFilter` is
   general: any `EventPattern.BecomesTargetEvent` may carry one, and its `description` prints the
   filter's subtype alone when it has one ("an Aura spell", not "an Aura enchantment spell").
+- `Triggers.another(Creature).becomesTarget(of = Land.youControl().named("Labyrinth of Skophos"), abilitiesOnly = true)` —
+  "becomes the target of an **ability of** a land you control named Labyrinth of Skophos" (Skophos Maze-Warden).
+  An ability on the stack has no card data, so `sourceFilter` reads the **source permanent** of the
+  targeting ability instead — its projected types, name and controller while it is on the battlefield,
+  or its last-known snapshot when the ability's own cost sacrificed it (CR 113.7a). A source that left
+  any other way fails closed. Pair with `abilitiesOnly = true` so a spell matching the same filter
+  (a land can't be cast, but an artifact named in a filter can) doesn't count.
 - `Triggers.a(filter).becomesTarget(abilitiesOnly = true, byYou, players = Player.Any)` — the exact mirror of
   `Triggers.a(filter).becomesTarget(spellsOnly = true)`: something becomes the target of an **ability** (activated *or* triggered),
   never a spell. Sets `BecomesTargetEvent(abilitiesOnly = true)`, reading the same `sourceIsSpell`
