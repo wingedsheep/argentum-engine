@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- When removal ("destroy target land" and the like) would leave the board looking the same whichever side it hits, it hits the opponent's permanent, not its own
 - #4138 Counts a land in hand that no coming land drop needs (its other lands already cover next turn and no spell in hand wants more mana) as a tenth of a card, so it stops trading spells, fights or draws for lands it has no use for; replaces #4113's landcycling-only floor
 - #4136 Reconsiders a block that looks like a free kill on paper once the attacker's visible pump would win the fight (a 2/3 in front of a first-striking Skilled Battlecarver with {1}{R} open), instead of only second-guessing blocks by creatures worth more than the attacker
 - #4128 Kills an attacker with a free double block (two blockers it can't kill) before trading for it, and no longer attacks a creature into two blockers that can do that to it

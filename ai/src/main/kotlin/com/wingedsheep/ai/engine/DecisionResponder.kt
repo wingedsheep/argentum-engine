@@ -265,10 +265,10 @@ class DecisionResponder(
             emptyMap()
         }
         fun heuristicFor(req: TargetRequirementInfo): (EntityId) -> Double =
-            if (polarities[req.index] == TargetPolarity.BENEFICIAL) {
-                { id -> beneficialTargetHeuristic(state, id, playerId) }
-            } else {
-                { id -> targetHeuristic(state, id, playerId) }
+            when (polarities[req.index]) {
+                TargetPolarity.BENEFICIAL -> { id -> beneficialTargetHeuristic(state, id, playerId) }
+                TargetPolarity.HARMFUL -> { id -> harmfulTargetHeuristic(state, id, playerId) }
+                else -> { id -> targetHeuristic(state, id, playerId) }
             }
         if (decision.targetRequirements.size == 1) {
             val req = decision.targetRequirements.first()
@@ -498,6 +498,25 @@ class DecisionResponder(
         return legal.filter { TargetSelection.isOurs(state, it, playerId) }
             .ifEmpty { legal.filterNot { TargetSelection.isTheirs(state, it, playerId) } }
             .ifEmpty { legal }
+    }
+
+    /**
+     * [targetHeuristic] for a [TargetPolarity.HARMFUL] slot: the same ranking, plus a side term
+     * that also separates permanents [targetHeuristic] scores alike — every noncreature permanent
+     * reads 0 there, whoever controls it. The term is small enough to leave the creature ranking
+     * as it was; it decides only the ties the simulation cannot break. A triggered ability's
+     * target is scored with the ability still on the stack, and a "destroy target land" whose
+     * victim fetches a tapped basic leaves a board of tapped lands unchanged either way: Sandworm
+     * (2026-10-31 server review, game a28f7a90 turn 11) took the first legal land — the AI's own
+     * Plains.
+     */
+    private fun harmfulTargetHeuristic(state: GameState, targetId: EntityId, playerId: EntityId): Double {
+        val side = when {
+            TargetSelection.isTheirs(state, targetId, playerId) -> 1.0
+            TargetSelection.isOurs(state, targetId, playerId) -> -1.0
+            else -> 0.0
+        }
+        return targetHeuristic(state, targetId, playerId) + side
     }
 
     /**
