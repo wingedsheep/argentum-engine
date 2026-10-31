@@ -10455,6 +10455,14 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
     control on your next attack). With `fireOnce = false` (default) it fires on every matching event
     until expiry (double-strike combat damage). One-shot consumption happens when the trigger goes
     on the stack (`TriggerProcessor`), so a second matching event the same turn won't re-fire it.
+  - **Any-of events** — a `Triggers.or(a, b, …)` disjunction is a delayed trigger like any other:
+    each atom is matched with its own scoping (a cast atom scopes the caster, an activation atom the
+    activator), the atom that matched shapes the triggering entity, and a one-shot is consumed by
+    whichever atom fires first. "When you next cast an instant spell, cast a sorcery spell, or
+    activate a loyalty ability this turn, copy that spell or ability twice" (**Repeated
+    Reverberation**) = `CreateDelayedTrigger(trigger = Triggers.or(Triggers.you.casts(Instant),
+    Triggers.you.casts(Sorcery), Triggers.you.activatesAbility(loyalty = true)), effect =
+    CopyTargetSpellOrAbility(TriggeringEntity, DynamicAmounts.fixed(2)), fireOnce = true, expiry = EndOfTurn)`.
   - **Return a source exiled as its own cost when a made object dies** — no new vocabulary: an
     activated ability with `Costs.ExileSelf` makes the object, then arms
     `CreateDelayedTrigger(trigger = Triggers.self.dies(), watchedTarget = PipelineTarget(CREATED_TOKENS, 0),

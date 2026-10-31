@@ -271,6 +271,11 @@ class CreateDelayedTriggerExecutor(
     private fun bakeChosenValuesIntoTrigger(trigger: TriggerSpec, context: EffectContext, state: GameState): TriggerSpec {
         val bake = { filter: GameObjectFilter -> bakeChosenValuesIntoFilter(filter, context, state) }
         return when (val event = trigger.event) {
+            // Each atom of an any-of trigger is baked as it would be on its own.
+            is EventPattern.AnyOf -> {
+                val baked = event.events.map { bakeChosenValuesIntoTrigger(trigger.copy(event = it), context, state).event }
+                if (baked == event.events) trigger else trigger.copy(event = EventPattern.AnyOf(baked))
+            }
             is EventPattern.SpellCastEvent ->
                 bake(event.spellFilter)?.let { trigger.copy(event = event.copy(spellFilter = it)) } ?: trigger
             // Medomai's Prophecy III: "when you cast a spell with the chosen name for the first

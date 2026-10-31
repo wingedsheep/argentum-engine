@@ -5649,6 +5649,80 @@
     ]
 }
 
+// Repeated Reverberation
+{
+    "name": "Repeated Reverberation",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Instant",
+    "oracleText": "When you next cast an instant spell, cast a sorcery spell, or activate a loyalty ability this turn, copy that spell or ability twice. You may choose new targets for the copies.",
+    "script": {
+        "spellEffect": {
+            "type": "CreateDelayedTrigger",
+            "effect": {
+                "type": "CopyTargetSpellOrAbility",
+                "target": "TriggeringEntity",
+                "copies": {
+                    "type": "Fixed",
+                    "amount": 2
+                }
+            },
+            "trigger": {
+                "event": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    "IsInstant"
+                                ]
+                            }
+                        },
+                        {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    "IsSorcery"
+                                ]
+                            }
+                        },
+                        {
+                            "type": "AbilityActivatedEvent",
+                            "requireLoyalty": true
+                        }
+                    ]
+                },
+                "binding": "ANY"
+            },
+            "fireOnce": true
+        }
+    },
+    "metadata": {
+        "collectorNumber": "156",
+        "rarity": "RARE",
+        "artist": "Izzy",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/e/1e94c783-e474-4cbc-a38a-27ad8dd15a7b.jpg?1783932972",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "Repeated Reverberation's ability will copy any instant or sorcery spell or loyalty ability, not just one with targets."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Copies are created even if the spell or ability that caused Repeated Reverberation's ability to trigger has been countered by the time that ability resolves. The copies resolve before the original spell or ability."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "The copies made by Repeated Reverberation's ability are created on the stack, so they're not \"cast\" or \"activated.\" Abilities that trigger when a player casts a spell or activate an ability don't trigger."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Copying a loyalty ability doesn't add or remove loyalty counters from any object."
+            }
+        ]
+    }
+}
+
 // Retributive Wand
 {
     "name": "Retributive Wand",
