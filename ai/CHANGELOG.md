@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- Values a Treasure (and any permanent that sacrifices itself for mana: Gold, Eldrazi Spawn) as mana — half a land drop, a full one when it is the mana a spell in hand is one short of — so it takes the Treasure mode when that casts its next spell a turn early, and charges an opponent's Treasures the same
 - #4136 Reconsiders a block that looks like a free kill on paper once the attacker's visible pump would win the fight (a 2/3 in front of a first-striking Skilled Battlecarver with {1}{R} open), instead of only second-guessing blocks by creatures worth more than the attacker
 - #4128 Kills an attacker with a free double block (two blockers it can't kill) before trading for it, and no longer attacks a creature into two blockers that can do that to it
 - #4127 Stops in its own upkeep when its library is empty, so it can refill the library before the losing draw (Paradox Shaper putting a graveyard card on the bottom) instead of auto-passing into a decking loss

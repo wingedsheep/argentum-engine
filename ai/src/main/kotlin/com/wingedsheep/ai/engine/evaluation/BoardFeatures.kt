@@ -1451,3 +1451,122 @@ object Tempo : BoardFeature {
         else -> 9.6 + (count - 6) * 0.4  // diminishing returns for excess mana
     }
 }
+
+// ═════════════════════════════════════════════════════════════════════════════
+// One-shot mana
+// ═════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Mana banked in a permanent that **sacrifices itself to make it** — Treasure, Gold, a Banana, an
+ * Eldrazi Spawn, Lotus Petal. [com.wingedsheep.ai.engine.AiProfile.oneShotManaIsMana].
+ *
+ * [Tempo] counts lands and nothing else, and [BoardPresence] prices a non-land, non-creature
+ * permanent by its intent prior — which reads a Treasure's mana ability as `RAMP`, the tag of a mana
+ * rock, worth a flat 0.7 board points however many lands stand beside it and whatever the hand
+ * holds. Without card knowledge, or with no definition registered for the token, it is the flat 0.5
+ * of an unreadable permanent. Either way nothing scored a Treasure as *mana*: a 2026-10-31 review
+ * (#4116) found a choose-N mode that makes Treasure moving the score by nothing worth having, and
+ * Gala Greeters' "create a tapped Treasure" lost to "gain 2 life" at 20 life with a four-drop in
+ * hand one land short.
+ *
+ * Two parts, on [Tempo]'s scale (and [Tempo]'s weight), so they are measured in land drops:
+ *
+ *  - **One mana, once.** Each source is worth [ONE_SHOT_SHARE] of the next land drop on its
+ *    controller's land curve — the same marginal [Tempo] would pay for that land, capped at
+ *    [MARGINAL_CAP] so a Treasure beside no lands is not priced as the first land. A land makes
+ *    that mana every turn; a Treasure makes it once, so it is meaningfully less, and it shrinks as
+ *    the land count climbs exactly as a land drop does.
+ *  - **It closes a gap.** When a nonland spell in the controller's own hand costs more than the
+ *    lands (plus a land drop still in hand) can make, but no more than those lands plus every
+ *    one-shot source, the sources are the mana that casts it a turn early — worth one more
+ *    [ONE_SHOT_SHARE] of the marginal land, once. Mana value against a land count, the same
+ *    approximation [BoardPresence]'s land sequencing makes, and for the same reason: no solver run
+ *    per evaluated state. **Own seat only**: it reads the hand.
+ *
+ * Read off the printed abilities of the permanent's definition and off abilities granted to it
+ * (a `CreateTokenEffect` token's abilities are grants), so a token with no registered definition
+ * still counts when its ability was granted. A permanent that has lost all its abilities, and a
+ * land (which [Tempo] already counts), are not sources. Creatures are: an Eldrazi Spawn's 0/1 body
+ * is priced by [BoardPresence], the mana it banks is priced here.
+ *
+ * Clue, Food and Blood are not here. They also sacrifice themselves for a resource, but the
+ * resource is a card or life — priced by [CardAdvantage]'s and [LifeDifferential]'s curves, net of
+ * an activation cost in mana — and a term that put all three on one scale would be guessing an
+ * exchange rate between currencies the evaluator already prices separately.
+ */
+class OneShotMana(private val intents: IntentCatalog) : BoardFeature {
+
+    /** Whether the definition [id] prints a sacrifice-self mana ability. Definitions never change. */
+    private val printed = java.util.concurrent.ConcurrentHashMap<String, Boolean>()
+
+    override fun score(state: GameState, projected: ProjectedState, playerId: EntityId): Double {
+        val sides = state.sidesFor(playerId) ?: return 0.0
+        val granted = state.grantedActivatedAbilities
+            .filter { isOneShotMana(it.ability) }
+            .mapTo(HashSet()) { it.entityId }
+        val mine = sideValue(state, projected, sides.mine, playerId, granted)
+        return sides.against(OpponentAggregate.FIELD) { opponent ->
+            mine - sideValue(state, projected, opponent, null, granted)
+        }
+    }
+
+    private fun sideValue(
+        state: GameState,
+        projected: ProjectedState,
+        side: List<EntityId>,
+        ownSeat: EntityId?,
+        granted: Set<EntityId>,
+    ): Double = side.sumOf { player ->
+        val battlefield = projected.getBattlefieldControlledBy(player)
+        val lands = battlefield.count { projected.hasType(it, "LAND") }
+        val sources = battlefield.count { isSource(state, projected, it, granted) }
+        if (sources == 0) 0.0
+        else value(lands, sources) + if (player == ownSeat) gapValue(state, player, lands, sources) else 0.0
+    }
+
+    private fun isSource(state: GameState, projected: ProjectedState, id: EntityId, granted: Set<EntityId>): Boolean {
+        if (projected.hasType(id, "LAND") || projected.hasLostAllAbilities(id)) return false
+        if (id in granted) return true
+        val card = state.getEntity(id)?.get<CardComponent>() ?: return false
+        return printed.getOrPut(card.cardDefinitionId) {
+            intents.definition(card.cardDefinitionId)?.script?.activatedAbilities
+                ?.any(::isOneShotMana) == true
+        }
+    }
+
+    private fun gapValue(state: GameState, player: EntityId, lands: Int, sources: Int): Double {
+        val hand = state.getZone(player, Zone.HAND).mapNotNull { state.getEntity(it)?.get<CardComponent>() }
+        val reach = lands + if (hand.any { it.isLand }) 1 else 0
+        val closes = hand.any { !it.isLand && it.manaValue > reach && it.manaValue <= reach + sources }
+        return if (closes) ONE_SHOT_SHARE * marginal(lands) else 0.0
+    }
+
+    companion object {
+        /** A Treasure is this share of a land drop: the land's mana every turn against once. */
+        const val ONE_SHOT_SHARE = 0.5
+
+        /**
+         * The steepest land drop a source is priced against. [Tempo]'s curve charges seven points
+         * for the first land (no mana is "terrible"), which is the price of having no land, not
+         * of a mana you would spend once.
+         */
+        private const val MARGINAL_CAP = 2.0
+
+        /** [sources] one-shot mana sources beside [lands] lands, before any hand is read. */
+        fun value(lands: Int, sources: Int): Double =
+            (0 until sources).sumOf { ONE_SHOT_SHARE * marginal(lands + it) }
+
+        private fun marginal(lands: Int): Double =
+            (Tempo.landValueAt(lands + 1) - Tempo.landValueAt(lands)).coerceAtMost(MARGINAL_CAP)
+
+        /** A mana ability that sacrifices its own source: one mana, once. */
+        fun isOneShotMana(ability: com.wingedsheep.sdk.scripting.ActivatedAbility): Boolean =
+            ability.isManaAbility && sacrificesSelf(ability.cost)
+
+        private fun sacrificesSelf(cost: com.wingedsheep.sdk.scripting.AbilityCost): Boolean = when (cost) {
+            com.wingedsheep.sdk.scripting.AbilityCost.SacrificeSelf -> true
+            is com.wingedsheep.sdk.scripting.AbilityCost.Composite -> cost.costs.any(::sacrificesSelf)
+            else -> false
+        }
+    }
+}

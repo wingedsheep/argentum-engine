@@ -284,6 +284,7 @@ class AIPlayer(
                 pendingLandDropIsMana = profile.pendingLandDropIsMana,
                 surplusAwareLands = profile.surplusAwareLands,
                 libraryClock = profile.libraryClock,
+                oneShotManaIsMana = profile.oneShotManaIsMana,
             )
             val combatAdvisor = CombatAdvisor(
                 simulator, evaluator, cardRegistry, advisorRegistry,
