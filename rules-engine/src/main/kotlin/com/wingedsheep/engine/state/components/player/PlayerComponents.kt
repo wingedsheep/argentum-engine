@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.state.components.player
 
 import com.wingedsheep.engine.state.Component
+import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.core.BendType
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Color
@@ -1225,6 +1226,9 @@ data class CantCastSpellsComponent(
  * @property expiresAfterTurn For [PlayerEffectRemoval.EndOfYourNextTurn]: the ban ends at the
  *   cleanup of the first turn of [controllerId] numbered at or after this floor (the
  *   `Duration.EndOfYourNextTurn` mechanism). Null for every other removal.
+ * @property activeFromSpellCount The ban only binds once the player has cast this many spells this
+ *   turn ([GameState.playerSpellsCastThisTurn]) — "You can cast only one more spell this turn"
+ *   records the count at resolution plus one. Null binds at once.
  */
 @Serializable
 data class SpellCastRestriction(
@@ -1232,8 +1236,16 @@ data class SpellCastRestriction(
     val removeOn: PlayerEffectRemoval = PlayerEffectRemoval.EndOfTurn,
     val sourceId: EntityId? = null,
     val controllerId: EntityId? = null,
-    val expiresAfterTurn: Int? = null
-)
+    val expiresAfterTurn: Int? = null,
+    val activeFromSpellCount: Int? = null
+) {
+    fun bindsNow(state: GameState, playerId: EntityId): Boolean =
+        activeFromSpellCount == null || (state.playerSpellsCastThisTurn[playerId] ?: 0) >= activeFromSpellCount
+}
+
+/** The [CantCastSpellsComponent] bans on [playerId] that bind right now. */
+fun GameState.bindingCastBans(playerId: EntityId): List<SpellCastRestriction> =
+    getEntity(playerId)?.get<CantCastSpellsComponent>()?.restrictions.orEmpty().filter { it.bindsNow(this, playerId) }
 
 /**
  * Component indicating that a player can't search libraries — applied by

@@ -19,7 +19,7 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.forcedPlayFor
 import com.wingedsheep.engine.state.components.player.CantActivateLoyaltyAbilitiesComponent
-import com.wingedsheep.engine.state.components.player.CantCastSpellsComponent
+import com.wingedsheep.engine.state.components.player.bindingCastBans
 import com.wingedsheep.engine.state.components.player.CantCastFromNonHandZonesComponent
 import com.wingedsheep.engine.state.components.player.PlayerCantPlayFromHandComponent
 import com.wingedsheep.sdk.core.ManaCost
@@ -141,8 +141,8 @@ class EnumerationContext(
     // Cast restrictions — blanket, spell-independent locks (a Silence-style CantCastSpellsComponent
     // or a RestrictSpellsCastPerTurn per-turn limit). Cached once per enumeration pass.
     val cantCastSpells: Boolean by lazy {
-        state.getEntity(playerId)?.get<CantCastSpellsComponent>()?.restrictions
-            ?.any { it.spellFilter == com.wingedsheep.sdk.scripting.GameObjectFilter.Any } == true ||
+        state.bindingCastBans(playerId)
+            .any { it.spellFilter == com.wingedsheep.sdk.scripting.GameObjectFilter.Any } ||
             castPermissionUtils.hasReachedSpellCastLimit(state, playerId)
     }
 

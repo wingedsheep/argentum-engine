@@ -6440,13 +6440,15 @@ object Effects {
 
     /**
      * Target player can't cast spells this turn.
-     * Used for cards like Xantid Swarm.
+     * Used for cards like Xantid Swarm. [moreAllowed] lets that many more spells through first
+     * ("You can cast only one more spell this turn" — Irencrag Feat).
      */
     fun CantCastSpells(
         target: EffectTarget,
         duration: Duration = Duration.EndOfTurn,
-        spellFilter: GameObjectFilter = GameObjectFilter.Any
-    ): Effect = CantCastSpellsEffect(target, duration, spellFilter)
+        spellFilter: GameObjectFilter = GameObjectFilter.Any,
+        moreAllowed: Int = 0
+    ): Effect = CantCastSpellsEffect(target, duration, spellFilter, moreAllowed)
 
     /**
      * Target player(s) can't search libraries for the duration (default: this turn). Pass

@@ -36,6 +36,7 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.EmblemActivatedAbilityComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.player.CantCastSpellsComponent
+import com.wingedsheep.engine.state.components.player.bindingCastBans
 import com.wingedsheep.engine.state.components.player.CantCastFromNonHandZonesComponent
 import com.wingedsheep.engine.state.components.player.EquipActivationsThisTurnComponent
 import com.wingedsheep.sdk.core.ManaCost
@@ -258,7 +259,7 @@ class CastPermissionUtils(
         state: GameState, action: CastSpell,
         staticRestrictionPresent: Boolean = true,
     ): String? {
-        val bans = state.getEntity(action.playerId)?.get<CantCastSpellsComponent>()?.restrictions.orEmpty()
+        val bans = state.bindingCastBans(action.playerId)
         if (bans.any { it.spellFilter == GameObjectFilter.Any }) return BANNED
         val statics = if (staticRestrictionPresent) {
             applicablePlayersCantCastSpells(state, action.playerId, action.cardId)

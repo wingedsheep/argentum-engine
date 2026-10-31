@@ -716,15 +716,25 @@ enum class HijackScope {
  * @param duration EndOfTurn (default), EndOfYourNextTurn (the effect controller's next turn —
  *   Single Combat), or Permanent
  * @param spellFilter Which announced spells are prohibited; Any preserves the blanket ban.
+ * @param moreAllowed How many more spells each target may still cast before the ban takes hold,
+ *   counted from resolution — "You can cast only one more spell this turn" (Irencrag Feat) is
+ *   `moreAllowed = 1`. 0 (the default) bans at once.
  */
 @SerialName("CantCastSpells")
 @Serializable
 data class CantCastSpellsEffect(
     val target: EffectTarget,
     val duration: Duration = Duration.EndOfTurn,
-    val spellFilter: GameObjectFilter = GameObjectFilter.Any
+    val spellFilter: GameObjectFilter = GameObjectFilter.Any,
+    val moreAllowed: Int = 0
 ) : Effect {
     override val description: String = buildString {
+        if (moreAllowed > 0) {
+            append("${target.description.replaceFirstChar { it.uppercase() }} can cast only ")
+            append(if (moreAllowed == 1) "one more spell " else "$moreAllowed more spells ")
+            append(duration.description)
+            return@buildString
+        }
         append("${target.description.replaceFirstChar { it.uppercase() }} can't cast ")
         if (spellFilter != GameObjectFilter.Any) append("${spellFilter.description} ")
         append("spells ${duration.description}")

@@ -3939,6 +3939,44 @@
     ]
 }
 
+// Irencrag Feat
+{
+    "name": "Irencrag Feat",
+    "manaCost": "{1}{R}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Add seven {R}. You can cast only one more spell this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddMana",
+                    "color": "RED",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 7
+                    }
+                },
+                {
+                    "type": "CantCastSpells",
+                    "target": "Controller",
+                    "moreAllowed": 1
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "rarity": "RARE",
+        "artist": "Yongjae Choi",
+        "flavorText": "The greatest challenge isn't the stifling heat but the crushing weight of those who failed before.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5bcf822-e129-45f6-9403-310ce9410f3b.jpg?1783932622"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Irencrag Pyromancer
 {
     "name": "Irencrag Pyromancer",

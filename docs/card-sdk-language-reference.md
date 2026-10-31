@@ -3724,8 +3724,11 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   more creatures" = `CantBeBlockedByFewerThan(3, GroupFilter(GameObjectFilter.Creature.youControl()
   .withKeyword(Keyword.MENACE)))`. A copy granted via `Effects.GrantStaticAbility` is read too; the
   strictest minimum wins.
-- `CantCastSpellsEffect(target, duration = EndOfTurn, spellFilter = Any)` — target can't cast matching
-  spells from any zone. Facade: `Effects.CantCastSpells(target, duration, spellFilter)`.
+- `CantCastSpellsEffect(target, duration = EndOfTurn, spellFilter = Any, moreAllowed = 0)` — target can't cast matching
+  spells from any zone. Facade: `Effects.CantCastSpells(target, duration, spellFilter, moreAllowed)`.
+  `moreAllowed = N` lets each target cast N more spells first, counted from resolution (spells cast earlier
+  this turn, the restricting spell included, don't use it up) — **Irencrag Feat**: `AddMana(Color.RED, 7) then
+  CantCastSpells(EffectTarget.Controller, moreAllowed = 1)` ("You can cast only one more spell this turn").
   `PlayerRef(Player.Each)` + `GameObjectFilter.Noncreature` models **Calamity's Wake**.
   The filter checks the spell's announced characteristics (including alternative faces, bestow and
   face-down casting), not a fixed list of cards at resolution. Independent bans accumulate and
