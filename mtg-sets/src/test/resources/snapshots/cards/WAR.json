@@ -801,6 +801,39 @@
     "colorIdentityOverride": []
 }
 
+// Bloom Hulk
+{
+    "name": "Bloom Hulk",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Plant Elemental",
+    "oracleText": "When this creature enters, proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bloom Hulk:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": "Proliferate"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "artist": "Even Amundsen",
+        "flavorText": "\"Tread upon these flower beds at your own peril.\"\n—Emmara",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd1c9129-254d-4d1d-9d95-112292bd6bcc.jpg?1783933416"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Bolas's Citadel
 {
     "name": "Bolas's Citadel",
@@ -932,6 +965,58 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Bond of Discipline
+{
+    "name": "Bond of Discipline",
+    "manaCost": "{4}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Tap all creatures your opponents control. Creatures you control gain lifelink until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        }
+                    },
+                    "body": {
+                        "type": "TapUntap",
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "LIFELINK",
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "rarity": "UNCOMMON",
+        "artist": "Zezhou Chen",
+        "flavorText": "\"We agree that order benefits everyone, but not until you enforce it.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bb7c78bb-9f2a-47a4-adc4-b497bb38f46f.jpg?1783933486"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -1399,6 +1484,49 @@
     ]
 }
 
+// Courage in Crisis
+{
+    "name": "Courage in Crisis",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Put a +1/+1 counter on target creature, then proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "Proliferate"
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "158",
+        "artist": "Micah Epstein",
+        "flavorText": "\"Thanks to my father, I know how to fight. He also showed me why I must.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/67a22083-9ef9-4ff7-8502-3a77e69299df.jpg?1783933415"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Cruel Celebrant
 {
     "name": "Cruel Celebrant",
@@ -1519,6 +1647,90 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Deathsprout
+{
+    "name": "Deathsprout",
+    "manaCost": "{1}{B}{B}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target creature. Search your library for a basic land card, put it onto the battlefield tapped, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "basicland"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a basic land card to put onto the battlefield tapped",
+                            "selectedLabel": "Put onto the battlefield tapped"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "Tapped"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "189",
+        "rarity": "UNCOMMON",
+        "artist": "Seb McKinnon",
+        "flavorText": "\"They say nothing lasts forever. I say everything lasts forever, just not in the form you may be accustomed to.\"\n—Vraska",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6d615557-aea8-4057-9fbd-d62dd98edc13.jpg?1783933401"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
     ]
 }
 
@@ -3023,6 +3235,44 @@
     ]
 }
 
+// Huatli's Raptor
+{
+    "name": "Huatli's Raptor",
+    "manaCost": "{G}{W}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "Vigilance\nWhen this creature enters, proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Huatli's Raptor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": "Proliferate"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "200",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Vargas",
+        "flavorText": "The essence of Ixalan was never far from Huatli's heart.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/ba680ad0-6134-46e0-8fcb-532b2052eca7.jpg?1783933395"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "GREEN"
+    ]
+}
+
 // Ignite the Beacon
 {
     "name": "Ignite the Beacon",
@@ -3156,6 +3406,73 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Jace's Projection
+{
+    "name": "Jace's Projection",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Creature — Wizard Illusion",
+    "oracleText": "Whenever you draw a card, put a +1/+1 counter on this creature.\n{3}{U}: Put a loyalty counter on target Jace planeswalker.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Jace's Projection:1",
+                "trigger": "DrawEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Jace's Projection:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "LOYALTY",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "planeswalker Jace"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "272",
+        "rarity": "UNCOMMON",
+        "artist": "Darek Zabrocki",
+        "flavorText": "\"Pardon me if I seem distracted. Part of me is reconnoitering the Tenth District.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c4d35a34-01b7-41e1-8491-a6589175d027.jpg?1783933359"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3868,6 +4185,39 @@
     ]
 }
 
+// Kiora's Dambreaker
+{
+    "name": "Kiora's Dambreaker",
+    "manaCost": "{5}{U}",
+    "typeLine": "Creature — Leviathan",
+    "oracleText": "When this creature enters, proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kiora's Dambreaker:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": "Proliferate"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "58",
+        "artist": "Mathias Kollros",
+        "flavorText": "\"When your enemy flees, send the sea to pursue them.\"\n—Kiora",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/acd61fb0-a82b-4f46-8043-c6b89764720b.jpg?1783933460"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Kiora, Behemoth Beckoner
 {
     "name": "Kiora, Behemoth Beckoner",
@@ -4435,6 +4785,56 @@
     ]
 }
 
+// Loxodon Sergeant
+{
+    "name": "Loxodon Sergeant",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Elephant Soldier",
+    "oracleText": "Vigilance\nWhen this creature enters, other creatures you control gain vigilance until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Loxodon Sergeant:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "VIGILANCE",
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "artist": "Jesper Ejsing",
+        "flavorText": "His voice is both war horn and rallying cry, a trumpeting call that stirs even the faintest heart.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c57f873b-5fb2-4638-b66c-f6d1aec156ba.jpg?1783933480"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Makeshift Battalion
 {
     "name": "Makeshift Battalion",
@@ -4528,6 +4928,40 @@
     "colorIdentityOverride": []
 }
 
+// Martyr for the Cause
+{
+    "name": "Martyr for the Cause",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "When this creature dies, proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Martyr for the Cause:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": "Proliferate"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "artist": "Zoltan Boros",
+        "flavorText": "\"If I am to die in service, there is no more worthy fight than this.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/acfbc8ca-a574-461e-92ea-c6010daa8230.jpg?1783933480"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Mayhem Devil
 {
     "name": "Mayhem Devil",
@@ -4596,6 +5030,71 @@
     "colorIdentityOverride": [
         "BLACK",
         "RED"
+    ]
+}
+
+// Merfolk Skydiver
+{
+    "name": "Merfolk Skydiver",
+    "manaCost": "{G}{U}",
+    "typeLine": "Creature — Merfolk Mutant",
+    "oracleText": "Flying\nWhen this creature enters, put a +1/+1 counter on target creature you control.\n{3}{G}{U}: Proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Merfolk Skydiver:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Merfolk Skydiver:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{G}{U}"
+                    }
+                },
+                "effect": "Proliferate"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "rarity": "UNCOMMON",
+        "artist": "Sara Winters",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2bf211eb-837b-4c02-b02e-8d9e62f1abb1.jpg?1783933392"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "GREEN"
     ]
 }
 
@@ -5516,6 +6015,116 @@
     ]
 }
 
+// Pledge of Unity
+{
+    "name": "Pledge of Unity",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Put a +1/+1 counter on each creature you control. You gain 1 life for each creature you control.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "210",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Rallis",
+        "flavorText": "\"No one hero will save this day. Today we must all be heroes.\"\n—Gideon Jura",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/a/ca9b3518-7fcd-49e2-a4c4-e5daa8be6c21.jpg?1783933391"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "GREEN"
+    ]
+}
+
+// Pollenbright Druid
+{
+    "name": "Pollenbright Druid",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Elf Druid",
+    "oracleText": "When this creature enters, choose one —\n• Put a +1/+1 counter on target creature.\n• Proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pollenbright Druid:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Put a +1/+1 counter on target creature"
+                        },
+                        {
+                            "effect": "Proliferate",
+                            "description": "Proliferate"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "173",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4b0f478c-54f8-4087-ad52-d089e2049dda.jpg?1783933409"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Pouncing Lynx
 {
     "name": "Pouncing Lynx",
@@ -5587,6 +6196,86 @@
         "imageUri": "https://cards.scryfall.io/normal/front/4/0/40475e96-0283-445f-97fb-1da008707399.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Prison Realm
+{
+    "name": "Prison Realm",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, exile target creature or planeswalker an opponent controls until this enchantment leaves the battlefield.\nWhen this enchantment enters, scry 1.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Prison Realm:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ExileUntilLeaves",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature|planeswalker ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Prison Realm:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "linked_return"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "linked_return",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Prison Realm:3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Scry",
+                    "count": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "UNCOMMON",
+        "artist": "Daarken",
+        "flavorText": "After millennia to craft victory, Bolas had eternity to contemplate defeat.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d476e8e5-2377-464b-b2d5-a3cd66ee2e45.jpg?1783933476"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Ral's Outburst
@@ -5942,6 +6631,96 @@
         "imageUri": "https://cards.scryfall.io/normal/front/0/8/085e3129-591b-46ec-ac8b-cff428927c01.jpg"
     },
     "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Rising Populace
+{
+    "name": "Rising Populace",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human",
+    "oracleText": "Whenever another creature or planeswalker you control dies, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rising Populace:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature|planeswalker ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "artist": "Tomasz Jedruszek",
+        "flavorText": "Grief is a crucible where resolve is tempered.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/d/edcacc28-aacf-4d40-b8cc-f8c028380340.jpg?1783933474"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Rubblebelt Rioters
+{
+    "name": "Rubblebelt Rioters",
+    "manaCost": "{1}{R}{G}",
+    "typeLine": "Creature — Human Berserker",
+    "oracleText": "Haste\nWhenever this creature attacks, it gets +X/+0 until end of turn, where X is the greatest power among creatures you control.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rubblebelt Rioters:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature",
+                        "aggregation": "MAX",
+                        "property": "POWER"
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "215",
+        "rarity": "UNCOMMON",
+        "artist": "Tomasz Jedruszek",
+        "flavorText": "\"If the system is broken, break the system.\"\n—Domri Rade",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/b/9bf8df62-eca1-4a45-84af-fd7c88245a42.jpg?1783933388"
+    },
+    "colorIdentityOverride": [
+        "RED",
         "GREEN"
     ]
 }
@@ -6393,6 +7172,66 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Spellkeeper Weird
+{
+    "name": "Spellkeeper Weird",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Weird",
+    "oracleText": "{2}, {T}, Sacrifice this creature: Return target instant or sorcery card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Spellkeeper Weird:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "instant|sorcery own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "artist": "James Paick",
+        "flavorText": "They worked well as a team, but they knew it couldn't last forever.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/74e42dad-5958-443f-a196-12b3f3e44213.jpg?1783933456"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -6926,6 +7765,56 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Thundering Ceratok
+{
+    "name": "Thundering Ceratok",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Rhino",
+    "oracleText": "Trample\nWhen this creature enters, other creatures you control gain trample until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thundering Ceratok:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "TRAMPLE",
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "179",
+        "artist": "Izzy",
+        "flavorText": "\"I thought this was a civilized plane. How are there so many feral beasts?\"\n—Dovin Baan",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/9888d9a4-ad72-43f6-8031-1031877171a9.jpg?1783933404"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -7644,6 +8533,68 @@
     ]
 }
 
+// Vraska's Finisher
+{
+    "name": "Vraska's Finisher",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Gorgon Assassin",
+    "oracleText": "When this creature enters, destroy target creature or planeswalker an opponent controls that was dealt damage this turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vraska's Finisher:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "Or",
+                                    "predicates": [
+                                        "IsCreature",
+                                        "IsPlaneswalker"
+                                    ]
+                                }
+                            ],
+                            "statePredicates": [
+                                "WasDealtDamageThisTurn"
+                            ],
+                            "controllerPredicate": "ControlledByOpponent"
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "artist": "Igor Kieryluk",
+        "flavorText": "\"You might have pleaded your case with my queen earlier. Now I am here, and it is far too late.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/8/f89fa379-7fae-4fbf-8e31-0ef3645353c5.jpg?1783933435"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Wall of Runes
 {
     "name": "Wall of Runes",
@@ -7680,6 +8631,114 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Wanderer's Strike
+{
+    "name": "Wanderer's Strike",
+    "manaCost": "{4}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exile target creature, then proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                "Proliferate"
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "artist": "Sara Winters",
+        "flavorText": "\"Precise, clean cuts. No one saw anything. Again. Tag the report with my code and file it.\"\n—Lavinia",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/5/85e1d63e-9692-4988-bda2-7c2c9b42217b.jpg?1783933471"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// War Screecher
+{
+    "name": "War Screecher",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Bird",
+    "oracleText": "Flying\n{5}{W}, {T}: Other creatures you control get +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "War Screecher:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "Soaring over Vitu-Ghazi, New Prahv, and Orzhova, the Conclave's trained falcons provided critical intelligence.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d2ff7868-eeb9-4292-a2f4-cac18f9ba270.jpg?1783933471"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
