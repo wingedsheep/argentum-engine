@@ -1262,6 +1262,11 @@ internal class CombatDamageManager(
         preventionLifeGains: MutableMap<EntityId, Int>
     ): GameState {
         var newState = state
+        // CR 615.12: unpreventable damage (Questing Beast, Sunspine Lynx) skips every prevention
+        // shield below, mirroring DamageUtils.dealDamageToTarget's noncombat path.
+        val cantBePrevented = DamageUtils.isDamagePreventionDisabled(
+            state, targetId, sourceId, isCombatDamage = true, predicateEvaluator = predicateEvaluator
+        )
 
         // Replace with counters (Force Bubble)
         val counterResult = DamageUtils.applyReplaceDamageWithCounters(zones, newState, targetId, amplifiedAmount, sourceId, isCombatDamage = true)
@@ -1273,7 +1278,7 @@ internal class CombatDamageManager(
 
         // Replace combat damage to a player → prevent + mill (The Mindskinner's unblockable
         // attacker, Angel of Suffering). Unpreventable damage still mills, then is dealt below.
-        val millResult = DamageUtils.applyReplaceDamageWithMill(zones, newState, targetId, amplifiedAmount, sourceId)
+        val millResult = DamageUtils.applyReplaceDamageWithMill(zones, newState, targetId, amplifiedAmount, sourceId, cantBePrevented)
         if (millResult != null) {
             newState = millResult.state
             events.addAll(millResult.events)
@@ -1282,7 +1287,7 @@ internal class CombatDamageManager(
 
         // Deflection / reflection shields (Deflecting Palm prevents; Eye for an Eye reflects but
         // lets the damage proceed).
-        when (val deflect = DamageUtils.checkDeflectDamageShield(
+        if (!cantBePrevented) when (val deflect = DamageUtils.checkDeflectDamageShield(
             newState, targetId, amplifiedAmount, sourceId, isCombatDamage = true, isPlayerRecipient = true
         )) {
             is com.wingedsheep.engine.handlers.effects.DeflectOutcome.Prevented -> {
@@ -1299,7 +1304,8 @@ internal class CombatDamageManager(
         }
 
         // "Prevent all damage from chosen source" shields (Samite Ministration)
-        val preventFromSourceResult = DamageUtils.checkPreventFromSourceShield(newState, targetId, amplifiedAmount, sourceId, predicateEvaluator = predicateEvaluator)
+        val preventFromSourceResult = if (cantBePrevented) null
+            else DamageUtils.checkPreventFromSourceShield(newState, targetId, amplifiedAmount, sourceId, predicateEvaluator = predicateEvaluator)
         if (preventFromSourceResult != null) {
             newState = preventFromSourceResult.state
             events.addAll(preventFromSourceResult.events)

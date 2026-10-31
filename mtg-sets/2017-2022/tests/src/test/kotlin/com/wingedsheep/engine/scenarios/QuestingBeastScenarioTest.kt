@@ -28,10 +28,10 @@ class QuestingBeastScenarioTest : ScenarioTestBase() {
             .withCardInHand(2, opponentSpell)
             .withLandsOnBattlefield(2, "Forest", 3)
             .withCardInLibrary(1, "Forest")
-            .withCardInLibrary(2, "Forest")
             .withActivePlayer(1)
             .withPriorityPlayer(2)
             .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+        repeat(10) { b = b.withCardInLibrary(2, "Forest") }
         if (withJace) b = b.withCardOnBattlefield(2, "Jace Beleren")
         if (blocker != null) b = b.withCardOnBattlefield(2, blocker)
         return b.build()
@@ -84,6 +84,19 @@ class QuestingBeastScenarioTest : ScenarioTestBase() {
                 game.declareNoBlockers().error shouldBe null
                 game.passUntilPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
                 withClue("but not the Beast's combat damage") { game.getLifeTotal(2) shouldBe 16 }
+            }
+
+            test("Angel of Suffering can't prevent its combat damage: the opponent mills and still loses life") {
+                val game = board("Fog", blocker = "Angel of Suffering")
+                game.passPriority()
+                val libraryBefore = game.librarySize(2)
+                game.attackWithBeast()
+                game.declareNoBlockers().error shouldBe null
+                game.passUntilPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
+                withClue("the replacement still mills twice the damage") {
+                    game.librarySize(2) shouldBe libraryBefore - 8
+                }
+                withClue("but the damage isn't prevented") { game.getLifeTotal(2) shouldBe 16 }
             }
 
             test("can't be blocked by creatures with power 2 or less") {
