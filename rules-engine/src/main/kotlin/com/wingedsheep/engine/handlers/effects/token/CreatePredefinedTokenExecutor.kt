@@ -54,10 +54,12 @@ class CreatePredefinedTokenExecutor(
         val cardDef = cardRegistry.getCard(effect.tokenType)
             ?: return EffectResult.error(state, "No CardDefinition registered for predefined token '${effect.tokenType}'")
 
+        // A named controller that resolves to nobody ("its controller" after an "up to one
+        // target" chose none) creates nothing — it never falls back to the source's controller.
         val controller = effect.controller
         val tokenControllerId = if (controller != null) {
             context.resolvePlayerTarget(controller, state)
-                ?: context.controllerId
+                ?: return EffectResult.success(state)
         } else {
             context.controllerId
         }

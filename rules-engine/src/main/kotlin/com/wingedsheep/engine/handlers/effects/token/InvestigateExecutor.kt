@@ -38,7 +38,9 @@ class InvestigateExecutor(
         val times = amountEvaluator.evaluate(state, effect.count, context).coerceAtLeast(0)
         if (times == 0) return EffectResult.success(state)
 
-        val investigatorId = effect.controller?.let { context.resolvePlayerTarget(it, state) }
+        // A named investigator who resolves to nobody doesn't investigate (see CreateTokenExecutor).
+        val investigatorId = effect.controller
+            ?.let { context.resolvePlayerTarget(it, state) ?: return EffectResult.success(state) }
             ?: context.controllerId
 
         val created = createPredefinedToken.execute(

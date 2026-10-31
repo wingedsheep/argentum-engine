@@ -995,6 +995,105 @@
     ]
 }
 
+// Cavalier of Dawn
+{
+    "name": "Cavalier of Dawn",
+    "manaCost": "{2}{W}{W}{W}",
+    "typeLine": "Creature — Elemental Knight",
+    "oracleText": "Vigilance\nWhen this creature enters, destroy up to one target nonland permanent. Its controller creates a 3/3 colorless Golem artifact creature token.\nWhen this creature dies, return target artifact or enchantment card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 6
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cavalier of Dawn:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        },
+                        {
+                            "type": "CreateToken",
+                            "power": 3,
+                            "toughness": 3,
+                            "colors": [],
+                            "creatureTypes": [
+                                "Golem"
+                            ],
+                            "controller": "TargetController",
+                            "artifactToken": true
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "nonland permanent"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Cavalier of Dawn:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Hand",
+                    "fromZone": "Graveyard"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "artifact|enchantment own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t1"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "rarity": "MYTHIC",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7b1919e-c0c1-4ac7-9061-a337b6fe7273.jpg?1783933033",
+        "rulings": [
+            {
+                "date": "2025-02-07",
+                "text": "You may put this creature's enters ability onto the stack without choosing any target. It will resolve with no effect. However, if you do choose a target and the target permanent is an illegal target by the time that ability tries to resolve, the ability won't resolve. No player will create a Golem token. If the target is legal but not destroyed (most likely because it has indestructible), its controller will create a Golem token."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Celestial Messenger
 {
     "name": "Celestial Messenger",

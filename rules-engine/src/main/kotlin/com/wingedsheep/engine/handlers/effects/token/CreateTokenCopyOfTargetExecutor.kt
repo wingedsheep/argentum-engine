@@ -98,9 +98,9 @@ class CreateTokenCopyOfTargetExecutor(
 
         // Who creates (controls + owns) the token. Defaults to the effect's controller; a player
         // target (e.g. "Target player creates a token …" — Echocasting Symposium) puts the token
-        // under that player's control instead.
+        // under that player's control instead. A named player who resolves to nobody creates nothing.
         val controllerId = effect.controller
-            ?.let { context.resolvePlayerTargets(it, state).firstOrNull() }
+            ?.let { context.resolvePlayerTargets(it, state).firstOrNull() ?: return EffectResult.success(state) }
             ?: context.controllerId
 
         // Token-count replacements (Doubling Season, Parallel Lives, Mondrak) apply to token copies

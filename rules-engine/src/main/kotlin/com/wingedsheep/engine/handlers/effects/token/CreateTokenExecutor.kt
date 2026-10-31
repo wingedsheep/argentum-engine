@@ -70,11 +70,13 @@ class CreateTokenExecutor(
 
         // Resolve who receives the token — defaults to the spell/ability controller. A
         // multi-player reference ("each opponent creates ...") fans out: every resolved
-        // player creates their own token(s).
+        // player creates their own token(s). A named controller that resolves to nobody — "its
+        // controller" after an "up to one target" chose none (Cavalier of Dawn) — creates
+        // nothing: the effect names no player, so it never falls back to the source's controller.
         val tokenControllerIds = effect.controller
             ?.let { context.resolvePlayerTargets(it, state) }
-            ?.takeIf { it.isNotEmpty() }
             ?: listOf(context.controllerId)
+        if (tokenControllerIds.isEmpty()) return EffectResult.success(state)
 
         var currentState = state
         val allEvents = mutableListOf<com.wingedsheep.engine.core.GameEvent>()

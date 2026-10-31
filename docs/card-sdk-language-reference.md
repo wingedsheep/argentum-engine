@@ -3204,7 +3204,10 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   (the latter evaluated at resolution, e.g. `CreateTreasure(DynamicAmounts.sourcePower(), tapped = true)`
   for Goldvein Hydra's "create a number of tapped Treasure tokens equal to its power"). `controller`
   (Int overload) redirects the tokens, e.g. `EffectTarget.TargetController` for "its controller creates
-  two Treasure tokens" (An Offer You Can't Refuse). `imageUri` overrides the token art (see the
+  two Treasure tokens" (An Offer You Can't Refuse). A `controller` that resolves to no player —
+  `TargetController` after an "up to one target" chose none — creates no token (this holds for every
+  token-making effect, `CreateToken` and `Investigate` included); it never falls back to you (Cavalier
+  of Dawn). `imageUri` overrides the token art (see the
   set-specific-art note below).
 - `CreateFood(count?, controller?)` — Food tokens. `count` accepts an `Int` or a `DynamicAmount` (the latter evaluated at resolution, e.g. `CreateFood(DynamicAmount.Divide(DynamicAmount.CastX, DynamicAmount.Fixed(2), roundUp = true))` for The Goose Mother's "create half X Food tokens, rounded up").
 - `CreateEldraziSpawn(count?, controller?, imageUri?)` — 0/1 colorless Eldrazi Spawn creature tokens
