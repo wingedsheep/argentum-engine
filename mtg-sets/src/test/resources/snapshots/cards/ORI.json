@@ -1793,6 +1793,62 @@
     ]
 }
 
+// Faerie Miscreant
+{
+    "name": "Faerie Miscreant",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Faerie Wizard",
+    "oracleText": "Flying\nWhen this creature enters, if you control another creature named Faerie Miscreant, draw a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Faerie Miscreant:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature name:Faerie Miscreant",
+                        "excludeSelf": true
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "artist": "Steven Belledin",
+        "flavorText": "One faerie distracts the judge while a second steals the law.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1c487f1a-a51d-449c-827d-c7b9381acb34.jpg?1783938352"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Fetid Imp
 {
     "name": "Fetid Imp",

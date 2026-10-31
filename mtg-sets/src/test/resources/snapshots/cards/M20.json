@@ -1,3 +1,166 @@
+// Aether Gust
+{
+    "name": "Aether Gust",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Choose target spell or permanent that's red or green. Its owner puts it on their choice of the top or bottom of their library.",
+    "script": {
+        "spellEffect": {
+            "type": "PutOnLibraryPositionOfChoice",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetSpellOrPermanent",
+                "id": "t0",
+                "permanentFilter": {
+                    "cardPredicates": [
+                        "IsPermanent",
+                        {
+                            "type": "Or",
+                            "predicates": [
+                                {
+                                    "type": "HasColor",
+                                    "color": "RED"
+                                },
+                                {
+                                    "type": "HasColor",
+                                    "color": "GREEN"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "spellFilter": {
+                    "cardPredicates": [
+                        {
+                            "type": "Or",
+                            "predicates": [
+                                {
+                                    "type": "HasColor",
+                                    "color": "RED"
+                                },
+                                {
+                                    "type": "HasColor",
+                                    "color": "GREEN"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "target spell or permanent that's red or green"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "rarity": "UNCOMMON",
+        "artist": "Tomasz Jedruszek",
+        "flavorText": "The chill wind extinguishes flame, and frosts the leaf on the branch.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/783da808-6698-4e55-9fac-430a6effe2b1.jpg?1783933018",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "The owner of the target spell or permanent chooses to put it either on the top or bottom of their library."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If a spell is put into its owner's library, it's removed from the stack and thus will not resolve. The spell isn't countered; it no longer exists. This works against a spell that can't be countered."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Agent of Treachery
+{
+    "name": "Agent of Treachery",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "When this creature enters, gain control of target permanent.\nAt the beginning of your end step, if you control three or more permanents you don't own, draw three cards.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Agent of Treachery:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "gain control of target permanent."
+            },
+            {
+                "id": "Agent of Treachery:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsPermanent"
+                            ],
+                            "controllerPredicate": {
+                                "type": "ControllerNot",
+                                "predicate": "OwnedByYou"
+                            }
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "rarity": "RARE",
+        "artist": "Igor Kieryluk",
+        "flavorText": "\"The more secrets you have, the more easily you become my pawn.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc6686e6-4535-49be-b0b3-e76464656cd2.jpg?1783933017"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Agonizing Syphon
 {
     "name": "Agonizing Syphon",
@@ -322,6 +485,169 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Atemsis, All-Seeing
+{
+    "name": "Atemsis, All-Seeing",
+    "manaCost": "{3}{U}{U}{U}",
+    "typeLine": "Legendary Creature — Sphinx",
+    "oracleText": "Flying\n{2}{U}, {T}: Draw two cards, then discard a card.\nWhenever Atemsis deals damage to an opponent, you may reveal your hand. If cards with at least six different mana values are revealed this way, that player loses the game.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Atemsis, All-Seeing:2",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "EachOpponent"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "RevealHand",
+                                "target": "Controller"
+                            },
+                            {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.WhenCondition",
+                                    "condition": {
+                                        "type": "Compare",
+                                        "left": {
+                                            "type": "AggregateZone",
+                                            "player": "You",
+                                            "zone": "Hand",
+                                            "aggregation": "DISTINCT_VALUES",
+                                            "property": "MANA_VALUE"
+                                        },
+                                        "operator": "GTE",
+                                        "right": {
+                                            "type": "Fixed",
+                                            "amount": 6
+                                        }
+                                    }
+                                },
+                                "then": {
+                                    "type": "LoseGame",
+                                    "target": {
+                                        "type": "PlayerRef",
+                                        "player": "TriggeringPlayer"
+                                    },
+                                    "message": "Atemsis, All-Seeing revealed six different mana values"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Atemsis, All-Seeing:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{U}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "RARE",
+        "artist": "Ryan Pancoast",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/8/b8f527d1-25c0-49b9-83d5-1278ca72d009.jpg?1783933016",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "Every Magic card has exactly one mana value. A card with no mana cost has a mana value of 0, and 0 can be one of the six mana values that count toward Atemsis's ability."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If a card in your hand has {X} in its mana cost, the value of X is considered to be 0."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "The mana value of a split card is determined by combining its two halves. For example, the mana value of Fire//Ice in your hand is 4."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If an effect causes you to play with your hand revealed, you can still reveal your hand as Atemsis's last ability resolves. The ability works as normal."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -818,6 +1144,58 @@
     ]
 }
 
+// Boreal Elemental
+{
+    "name": "Boreal Elemental",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Flying\nSpells your opponents cast that target this creature cost {2} more to cast.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "OpponentsCastTargeting",
+                    "targetFilter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "modification": {
+                    "type": "IncreaseGeneric",
+                    "amount": 2
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "artist": "Victor Adame Minguez",
+        "flavorText": "Winter's breath given form.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/47996512-d547-491f-b481-a9c83dff04db.jpg?1783933014",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying, add any cost increases (such as that of Boreal Elemental), then apply any cost reductions. The mana value of the spell remains unchanged, no matter what the total cost to cast it was."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "An opponent's spell that targets Boreal Elemental more than once costs only {2} more to cast."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Brightwood Tracker
 {
     "name": "Brightwood Tracker",
@@ -1261,6 +1639,111 @@
     ]
 }
 
+// Cavalier of Gales
+{
+    "name": "Cavalier of Gales",
+    "manaCost": "{2}{U}{U}{U}",
+    "typeLine": "Creature — Elemental Knight",
+    "oracleText": "Flying\nWhen this creature enters, draw three cards, then put two cards from your hand on top of your library in any order.\nWhen this creature dies, shuffle it into its owner's library, then scry 2. (Look at the top two cards of your library, then put any number of them on the bottom and the rest on top in any order.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cavalier of Gales:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    },
+                                    "storeSelected": "selected1"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "selected1",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Library",
+                                        "placement": "Top"
+                                    },
+                                    "order": "ControllerChooses"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Cavalier of Gales:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Library",
+                            "placement": "Shuffled"
+                        },
+                        {
+                            "type": "Scry",
+                            "count": 2
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "rarity": "MYTHIC",
+        "artist": "Viktor Titov",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/5/a5356b11-e505-4838-aecb-327689eeead1.jpg?1783933012"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Celestial Messenger
 {
     "name": "Celestial Messenger",
@@ -1302,6 +1785,72 @@
         "artist": "Daniel Ljunggren",
         "flavorText": "\"It soars on the winds of dreams.\"\n—Mu Yanling",
         "imageUri": "https://cards.scryfall.io/normal/front/8/9/89e92e98-202f-4790-8411-17aebffe19fe.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Cerulean Drake
+{
+    "name": "Cerulean Drake",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Drake",
+    "oracleText": "Flying\nProtection from red (This creature can't be blocked, targeted, dealt damage, enchanted, or equipped by anything red.)\nSacrifice this creature: Counter target spell that targets you.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.Color",
+                "color": "RED"
+            }
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Cerulean Drake:1",
+                "cost": "CostSacrificeSelf",
+                "effect": "Counter",
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "TargetsPlayer",
+                                        "player": "You"
+                                    }
+                                ]
+                            },
+                            "zone": "Stack"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Counter target spell that targets you."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/1/b11f9e7d-3f56-4e28-9908-157735f6dfa9.jpg?1783933013",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "Cerulean Drake's activated ability can target a spell that has multiple targets if at least one of those targets is you."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -1367,6 +1916,224 @@
             {
                 "date": "2019-07-12",
                 "text": "A Chandra planeswalker spell is a planeswalker spell with the subtype Chandra. Cards that use Chandra's name in their title or her likeness in their illustration (such as Chandra's Regulator or Chandra's Outrage) aren't Chandra planeswalker spells."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Chandra's Flame Wave
+{
+    "name": "Chandra's Flame Wave",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Chandra's Flame Wave deals 2 damage to target player and each creature that player controls. Search your library and/or graveyard for a card named Chandra, Flame's Fury, reveal it, and put it into your hand. If you search your library this way, shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "controllerPredicate": {
+                                    "type": "ControlledByReferencedPlayer",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "Search your library",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Library"
+                                            ],
+                                            "filter": "name:Chandra, Flame's Fury"
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library for a card named Chandra, Flame's Fury to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Search your graveyard",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Graveyard"
+                                            ],
+                                            "filter": "name:Chandra, Flame's Fury"
+                                        },
+                                        "storeAs": "searchable"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your graveyard for a card named Chandra, Flame's Fury to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Search your library and graveyard",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Library",
+                                                "Graveyard"
+                                            ],
+                                            "filter": "name:Chandra, Flame's Fury"
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library and/or graveyard for a card named Chandra, Flame's Fury to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "295",
+        "rarity": "RARE",
+        "artist": "Paul Scott Canavan",
+        "flavorText": "\"It's high tide.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f13b6a7-fa62-4d94-a56c-f2e64c8c1666.jpg?1783932918",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "If the target player is an illegal target by the time Chandra's Flame Wave resolves, the spell doesn't resolve. No creatures or players are dealt damage, and you won't search for Chandra, Flame's Fury."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Chandra's Flame Wave targets the player, not their creatures. A creature with hexproof may be dealt damage this way."
             }
         ]
     },
@@ -3123,6 +3890,110 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Flood of Tears
+{
+    "name": "Flood of Tears",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return all nonland permanents to their owners' hands. If you return four or more nontoken permanents you control this way, you may put a permanent card from your hand onto the battlefield.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Battlefield",
+                        "player": "Each",
+                        "filter": "nonland permanent"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "gathered0",
+                    "filter": "nontoken ctrl:you",
+                    "storeMatching": "matching1"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                {
+                    "type": "ConditionalOnCollection",
+                    "collection": "matching1",
+                    "ifNotEmpty": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "filter": "permanent"
+                                },
+                                "storeAs": "put_candidates"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "put_candidates",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "putting",
+                                "prompt": "You may put a permanent card from your hand onto the battlefield"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "putting",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                }
+                            }
+                        ]
+                    },
+                    "minSize": 4
+                }
+            ],
+            "descriptionOverride": "Return all nonland permanents to their owners' hands. If you return four or more nontoken permanents you control this way, you may put a permanent card from your hand onto the battlefield."
+        }
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "rarity": "RARE",
+        "artist": "Adam Paquette",
+        "flavorText": "\"I have wept such a torrent as to scour the land clean.\"\n—Mu Yanling",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c3621820-4ab5-42bf-8a02-d5c066db4653.jpg?1783933010",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "If you return four or more nontoken permanents, the permanent card you put onto the battlefield may be one of the cards returned to your hand this way."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Any abilities that trigger as the nonland permanents are returned are put onto the stack at the same time as any abilities that trigger as the permanent card is put onto the battlefield (if applicable)."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If a permanent would be returned to your hand but ends up in another zone (most likely because an effect exiled it instead or because it's a player's commander in the Commander variant) Flood of Tears counts it when determining whether four or more of your nontoken permanents were returned."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4995,6 +5866,89 @@
     ]
 }
 
+// Masterful Replication
+{
+    "name": "Masterful Replication",
+    "manaCost": "{5}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Create two 3/3 colorless Golem artifact creature tokens.\n• Choose target artifact you control. Each other artifact you control becomes a copy of that artifact until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "CreateToken",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "power": 3,
+                        "toughness": 3,
+                        "colors": [],
+                        "creatureTypes": [
+                            "Golem"
+                        ],
+                        "artifactToken": true
+                    },
+                    "description": "Create two 3/3 colorless Golem artifact creature tokens"
+                },
+                {
+                    "effect": {
+                        "type": "EachPermanentBecomesCopyOfTarget",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "filter": {
+                            "baseFilter": "artifact ctrl:you"
+                        },
+                        "duration": "EndOfTurn",
+                        "excludeTarget": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact ctrl:you"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Choose target artifact you control. Each other artifact you control becomes a copy of that artifact until end of turn"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "rarity": "RARE",
+        "artist": "Victor Adame Minguez",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/63832647-bb4d-4380-8acb-cf11e8727672.jpg?1783933007",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "Masterful Replication copies the printed values of the target artifact. It won't copy counters on that artifact or effects that have changed its power, toughness, types, color, or so on. Notably, it won't copy effects that made the target artifact become an artifact creature if it isn't normally an artifact creature."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "An Equipment that becomes a copy of a creature becomes unattached if it was attached to a creature. An Equipment that becomes a copy of another Equipment remains attached if it was attached to a creature."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If the target artifact is copying something else, then your artifacts become copies of whatever the target artifact copied."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Becoming a copy won't change whether an artifact is a token."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Moat Piranhas
 {
     "name": "Moat Piranhas",
@@ -5068,6 +6022,289 @@
     "colorIdentityOverride": [
         "BLACK",
         "GREEN"
+    ]
+}
+
+// Mu Yanling, Celestial Wind
+{
+    "name": "Mu Yanling, Celestial Wind",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Legendary Planeswalker — Yanling",
+    "oracleText": "+1: Until your next turn, up to one target creature gets -5/-0.\n−3: Return up to two target creatures to their owners' hands.\n−7: Creatures you control with flying get +5/+5 until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Mu Yanling, Celestial Wind:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -5
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "UntilYourNextTurn"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Until your next turn, up to one target creature gets -5/-0."
+            },
+            {
+                "id": "Mu Yanling, Celestial Wind:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Hand"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 2,
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Return up to two target creatures to their owners' hands."
+            },
+            {
+                "id": "Mu Yanling, Celestial Wind:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature kw:flying ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 5
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 5
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Creatures you control with flying get +5/+5 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "286",
+        "rarity": "MYTHIC",
+        "artist": "Yongjae Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/84ae9595-8e76-4d8c-a08c-00434be75672.jpg?1783932921",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "Mu Yanling's last ability affects only creatures you control with flying at the time it resolves. Creatures you begin to control later in the turn (or creatures that gain flying later in the turn) won't get +5/+5."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "In a multiplayer game, if you leave the game after Mu Yanling's first ability resolves but before your next turn begins, its effect lasts until your next turn would have begun. It neither expires immediately nor lasts indefinitely."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Mu Yanling, Sky Dancer
+{
+    "name": "Mu Yanling, Sky Dancer",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Legendary Planeswalker — Yanling",
+    "oracleText": "+2: Until your next turn, up to one target creature gets -2/-0 and loses flying.\n−3: Create a 4/4 blue Elemental Bird creature token with flying.\n−8: You get an emblem with \"Islands you control have '{T}: Draw a card.'\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Mu Yanling, Sky Dancer:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": -2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        },
+                        {
+                            "type": "RemoveKeyword",
+                            "keyword": "FLYING",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Until your next turn, up to one target creature gets -2/-0 and loses flying."
+            },
+            {
+                "id": "Mu Yanling, Sky Dancer:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Elemental",
+                        "Bird"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/a/5/a5582cd9-97e7-426f-a084-c05e2113ad13.jpg?1783932855"
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Create a 4/4 blue Elemental Bird creature token with flying."
+            },
+            {
+                "id": "Mu Yanling, Sky Dancer:4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -8
+                },
+                "effect": {
+                    "type": "CreatePermanentEmblem",
+                    "groupFilter": {
+                        "baseFilter": "land Island ctrl:you"
+                    },
+                    "grantedActivatedAbilities": [
+                        {
+                            "id": "Mu Yanling, Sky Dancer:1",
+                            "cost": "CostTap",
+                            "effect": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "descriptionOverride": "{T}: Draw a card."
+                        }
+                    ],
+                    "emblemDescription": "Islands you control have '{T}: Draw a card.'"
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You get an emblem with \"Islands you control have '{T}: Draw a card.'\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "rarity": "MYTHIC",
+        "artist": "G-host Lee",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/0240f9eb-e1b2-4b41-94b0-b00ad2850825.jpg?1783933006",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "Mu Yanling's first ability can target a creature that doesn't have flying. The creature just gets -2/-0."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "After Mu Yanling's first ability has resolved, the target creature will have flying again if another effect grants it flying."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "An Island is a land with the subtype Island, not any land with a mana ability that produces blue mana."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Tapping an Island for mana is an activated ability. You can't activate that ability and also activate the ability it gains from Mu Yanling's emblem."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "In a multiplayer game, if you leave the game after Mu Yanling's first ability resolves but before your next turn begins, its effect lasts until your next turn would have begun. It neither expires immediately nor lasts indefinitely."
+            }
+        ]
+    },
+    "startingLoyalty": 2,
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -6225,6 +7462,61 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Scholar of the Ages
+{
+    "name": "Scholar of the Ages",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "When this creature enters, return up to two target instant and/or sorcery cards from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Scholar of the Ages:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Hand"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 2,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "instant|sorcery own:you",
+                        "zone": "Graveyard"
+                    }
+                },
+                "descriptionOverride": "When this creature enters, return up to two target instant and/or sorcery cards from your graveyard to your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "rarity": "UNCOMMON",
+        "artist": "Micah Epstein",
+        "flavorText": "\"I study the past to find hope for the future.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/80137c9a-ea56-4dc7-a503-43fe192c8fce.jpg?1783933005"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -7692,5 +8984,263 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Yanling's Harbinger
+{
+    "name": "Yanling's Harbinger",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Bird",
+    "oracleText": "Flying\nWhen this creature enters, you may search your library and/or graveyard for a card named Mu Yanling, Celestial Wind, reveal it, and put it into your hand. If you search your library this way, shuffle.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Yanling's Harbinger:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "Search your library",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Library"
+                                            ],
+                                            "filter": "name:Mu Yanling, Celestial Wind"
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library for a card named Mu Yanling, Celestial Wind to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Search your graveyard",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Graveyard"
+                                            ],
+                                            "filter": "name:Mu Yanling, Celestial Wind"
+                                        },
+                                        "storeAs": "searchable"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your graveyard for a card named Mu Yanling, Celestial Wind to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Search your library and graveyard",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Library",
+                                                "Graveyard"
+                                            ],
+                                            "filter": "name:Mu Yanling, Celestial Wind"
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library and/or graveyard for a card named Mu Yanling, Celestial Wind to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Don't search",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": []
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, you may search your library and/or graveyard for a card named Mu Yanling, Celestial Wind, reveal it, and put it into your hand. If you search your library this way, shuffle."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "289",
+        "rarity": "RARE",
+        "artist": "Zezhou Chen",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/3/93aca389-6830-4297-97bc-e3a2a1a1d41a.jpg?1783932920"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Yarok's Wavecrasher
+{
+    "name": "Yarok's Wavecrasher",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "When this creature enters, return another creature you control to its owner's hand.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Yarok's Wavecrasher:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "creature",
+                                "player": "You",
+                                "excludeSelf": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Return another creature you control to its owner's hand",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, return another creature you control to its owner's hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Vargas",
+        "flavorText": "\"Yarok's waters rush and rage\nWhere armies bled into the sand.\"\n—Lament for Bala Ged, stanza 2",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/8/c86a8974-df86-43ee-b07f-fd2837c08a6a.jpg?1783933002",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "If you control no other creatures when the triggered ability resolves, you simply don't return anything. There's no penalty for being unable to do so."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
