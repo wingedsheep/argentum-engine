@@ -50,8 +50,8 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  *  - "If the enchanted permanent is a land and has land types, it retains those types even
  *    though it loses any intrinsic mana abilities associated with them. For example, a Plains
  *    enchanted by Imprisoned in the Moon is still a Plains, but it can't tap for {W}, only for
- *    {C}." — this is why `setSubtypes`/`clearSubtypes` are left at their defaults: only card
- *    types and abilities are overwritten, not subtypes.
+ *    {C}." — this is why `setSubtypes`/`clearSubtypes` are left at their defaults: land types
+ *    survive because LAND is kept (CR 205.1a only drops the subtypes of lost card types).
  *  - "Becoming a land may cause other Auras to become illegally attached. These are put into
  *    their owner's graveyard, and any Equipment attached to the land become unattached and
  *    remain on the battlefield. Counters on the land remain on it even if they don't do

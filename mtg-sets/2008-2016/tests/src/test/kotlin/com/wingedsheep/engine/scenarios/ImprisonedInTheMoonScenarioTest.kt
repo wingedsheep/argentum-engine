@@ -42,7 +42,7 @@ class ImprisonedInTheMoonScenarioTest : FunSpec({
     }
 
     test("enchanting a nonland creature turns it into a colorless land, losing creature-ness, " +
-        "colors, and abilities — but keeping its creature subtypes and legendary supertype") {
+        "colors, abilities and creature types — but keeping its legendary supertype") {
         val driver = createDriver()
         driver.initMirrorMatch(deck = Deck.of("Island" to 40), startingLife = 20)
 
