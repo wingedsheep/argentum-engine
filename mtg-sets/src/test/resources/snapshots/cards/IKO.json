@@ -151,6 +151,86 @@
     ]
 }
 
+// Archipelagore
+{
+    "name": "Archipelagore",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Creature — Leviathan",
+    "oracleText": "Mutate {5}{U} (If you cast this spell for its mutate cost, put it over or under target non-Human creature you own. They mutate into the creature on top plus all abilities from under it.)\nWhenever this creature mutates, tap up to X target creatures, where X is the number of times this creature has mutated. Those creatures don't untap during their controller's next untap step.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "keywords": [
+        "MUTATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Mutate",
+            "cost": "{5}{U}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Archipelagore:1",
+                "trigger": "MutateEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": "IterationSpace.Targets",
+                            "body": {
+                                "type": "TapUntap",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": "IterationSpace.Targets",
+                            "body": {
+                                "type": "GrantKeyword",
+                                "keyword": "DOESNT_UNTAP",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "duration": "UntilAfterAffectedControllersNextUntap"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0",
+                    "dynamicMaxCount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "TimesMutated"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f24b1030-64d5-4c94-a04c-1d9520bfddab.jpg?1783931079"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Avian Oddity
 {
     "name": "Avian Oddity",
@@ -2163,6 +2243,51 @@
     ]
 }
 
+// Dreamtail Heron
+{
+    "name": "Dreamtail Heron",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Elemental Bird",
+    "oracleText": "Mutate {3}{U} (If you cast this spell for its mutate cost, put it over or under target non-Human creature you own. They mutate into the creature on top plus all abilities from under it.)\nFlying\nWhenever this creature mutates, draw a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "MUTATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Mutate",
+            "cost": "{3}{U}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dreamtail Heron:1",
+                "trigger": "MutateEvent",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "artist": "Caio Monteiro",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/a/ca777d40-736a-4cd6-85c4-5afd52f2fadd.jpg?1783931077"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Durable Coilbug
 {
     "name": "Durable Coilbug",
@@ -2407,6 +2532,70 @@
         "WHITE",
         "BLACK",
         "GREEN"
+    ]
+}
+
+// Escape Protocol
+{
+    "name": "Escape Protocol",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you cycle a card, you may pay {1}. When you do, exile target artifact or creature you control, then return it to the battlefield under its owner's control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Escape Protocol:1",
+                "trigger": "CycleEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "PayManaCost",
+                        "cost": "{1}"
+                    },
+                    "reflexiveEffect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Exile"
+                            },
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Battlefield"
+                            }
+                        ]
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature|artifact ctrl:you"
+                            },
+                            "id": "t0"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "rarity": "UNCOMMON",
+        "artist": "Deruchenko Alexander",
+        "flavorText": "Sanctuaries harnessed the glowstones' natural reaction to monsters to create a warning system.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2d3eeddd-c86d-4f35-ba57-3caa9565fcb0.jpg?1783931076"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3004,6 +3193,73 @@
     ]
 }
 
+// Frostveil Ambush
+{
+    "name": "Frostveil Ambush",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Tap up to two target creatures. Those creatures don't untap during their controller's next untap step.\nCycling {1} ({1}, Discard this card: Draw a card.)",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{1}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "TapUntap",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    {
+                        "type": "GrantKeyword",
+                        "keyword": "DOESNT_UNTAP",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "duration": "UntilAfterAffectedControllersNextUntap"
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "artist": "Johan Grenier",
+        "flavorText": "Hunters' methods vary from simple and brutal to elaborate and brutal.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/deef1197-e40a-4c9d-919a-213f1bdf3e3e.jpg?1783931075",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Frostveil Ambush can target a creature that's already tapped. That creature won't untap during its controller's next untap step."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Fully Grown
 {
     "name": "Fully Grown",
@@ -3574,6 +3830,77 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Gust of Wind
+{
+    "name": "Gust of Wind",
+    "manaCost": "{3}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "This spell costs {2} less to cast if you control a creature with flying.\nReturn target nonland permanent you don't control to its owner's hand.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsNonland",
+                            "IsPermanent"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControllerNot",
+                            "predicate": "ControlledByYou"
+                        }
+                    }
+                },
+                "id": "t0"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "FixedIfControlFilter",
+                        "amount": 2,
+                        "filter": "creature kw:flying"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "artist": "Adam Paquette",
+        "flavorText": "Skysail's strength was also its vulnerability.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/a/faabea92-d8cf-4591-b528-3e597d56b31f.jpg?1783931074"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4536,6 +4863,74 @@
     ]
 }
 
+// Keep Safe
+{
+    "name": "Keep Safe",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell that targets a permanent you control.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                "Counter",
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "TargetsMatching",
+                                "subfilter": {
+                                    "cardPredicates": [
+                                        "IsPermanent"
+                                    ],
+                                    "controllerPredicate": "ControlledByYou"
+                                }
+                            }
+                        ]
+                    },
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "artist": "Ekaterina Burmak",
+        "flavorText": "\"Coppercoats think they understand duty and loyalty, but they can't begin to fathom the depths of my bond.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/febfa682-76ae-4979-a40c-c1eae1121f3c.jpg?1783931075",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "A spell that can't be countered is a legal target for Keep Safe. That spell won't be countered when Keep Safe resolves, but you'll still draw a card."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Keep Safe can target a spell that has multiple targets, as long as at least one of those targets is a permanent you control."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If the permanent you control targeted by the target spell leaves the battlefield, that spell is no longer a legal target for Keep Safe. On the other hand, if that target permanent becomes an illegal target for the target spell but remains on the battlefield under your control, the target spell is still a legal target for Keep Safe."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Keruga, the Macrosage
 {
     "name": "Keruga, the Macrosage",
@@ -5494,6 +5889,42 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Mystic Subdual
+{
+    "name": "Mystic Subdual",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Flash\nEnchant creature\nEnchanted creature gets -2/-0 and loses all abilities. (Mutating onto the creature won't give it new abilities. It can gain abilities in other ways.)",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": -2,
+                "toughnessBonus": 0
+            },
+            "LoseAllAbilities"
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "rarity": "UNCOMMON",
+        "artist": "Filip Burburan",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/627c2111-b7d7-40bc-aa30-57d72338b32d.jpg?1783931073"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -6629,6 +7060,70 @@
     }
 }
 
+// Of One Mind
+{
+    "name": "Of One Mind",
+    "manaCost": "{2}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "This spell costs {2} less to cast if you control a Human creature and a non-Human creature.\nDraw two cards.",
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "Fixed",
+                "amount": 2
+            }
+        },
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 2
+                },
+                "gating": {
+                    "type": "OnlyIf",
+                    "condition": {
+                        "type": "All",
+                        "conditions": [
+                            {
+                                "type": "Exists",
+                                "player": "You",
+                                "zone": "Battlefield",
+                                "filter": "creature Human"
+                            },
+                            {
+                                "type": "Exists",
+                                "player": "You",
+                                "zone": "Battlefield",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "NotSubtype",
+                                            "subtype": "Human"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "artist": "Matt Stewart",
+        "flavorText": "\"The *eludha* is total communication, total understanding. It makes regular human speech feel like garbled grunting.\"\n—Winota, heartbonder",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c95fb136-f21d-4f3a-82b7-bcf490b7e90c.jpg?1783931071"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Patagia Tiger
 {
     "name": "Patagia Tiger",
@@ -6782,6 +7277,108 @@
     ]
 }
 
+// Pollywog Symbiote
+{
+    "name": "Pollywog Symbiote",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Frog",
+    "oracleText": "Each creature spell you cast costs {1} less to cast if it has mutate.\nWhenever you cast a creature spell, if it has mutate, draw a card, then discard a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pollywog Symbiote:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasKeyword",
+                                "keyword": "MUTATE"
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "creature kw:mutate"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "rarity": "UNCOMMON",
+        "artist": "Simon Dominic",
+        "flavorText": "It always knew it was destined to be more than a frog.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/7/77adf375-e7d7-4ebd-8c86-ad7e822a5483.jpg?1783931070"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Porcuparrot
 {
     "name": "Porcuparrot",
@@ -6835,6 +7432,64 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Pouncing Shoreshark
+{
+    "name": "Pouncing Shoreshark",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Shark Beast",
+    "oracleText": "Mutate {3}{U} (If you cast this spell for its mutate cost, put it over or under target non-Human creature you own. They mutate into the creature on top plus all abilities from under it.)\nFlash\nWhenever this creature mutates, you may return target creature an opponent controls to its owner's hand.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLASH",
+        "MUTATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Mutate",
+            "cost": "{3}{U}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pouncing Shoreshark:1",
+                "trigger": "MutateEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Hand"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Murayama Scott",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/8/c859b339-b55b-41fe-948c-27502e3b3ea8.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -7762,6 +8417,59 @@
     ]
 }
 
+// Sea-Dasher Octopus
+{
+    "name": "Sea-Dasher Octopus",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Creature — Octopus",
+    "oracleText": "Mutate {1}{U} (If you cast this spell for its mutate cost, put it over or under target non-Human creature you own. They mutate into the creature on top plus all abilities from under it.)\nFlash\nWhenever this creature deals combat damage to a player, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH",
+        "MUTATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Mutate",
+            "cost": "{1}{U}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sea-Dasher Octopus:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "rarity": "RARE",
+        "artist": "Chris Seaman",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a6f59d9e-6c1b-437a-934c-7c776c8dd1d5.jpg?1783931070"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Serrated Scorpion
 {
     "name": "Serrated Scorpion",
@@ -7815,6 +8523,101 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Shark Typhoon
+{
+    "name": "Shark Typhoon",
+    "manaCost": "{5}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you cast a noncreature spell, create an X/X blue Shark creature token with flying, where X is that spell's mana value.\nCycling {X}{1}{U} ({X}{1}{U}, Discard this card: Draw a card.)\nWhen you cycle this card, create an X/X blue Shark creature token with flying.",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{X}{1}{U}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shark Typhoon:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 0,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Shark"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/3/0/30d12226-6417-4b98-beb5-89a36c774141.jpg?1783930944",
+                    "dynamicPower": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGERING_SPELL_MANA_VALUE"
+                    },
+                    "dynamicToughness": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGERING_SPELL_MANA_VALUE"
+                    }
+                },
+                "descriptionOverride": "Whenever you cast a noncreature spell, create an X/X blue Shark creature token with flying, where X is that spell's mana value."
+            },
+            {
+                "id": "Shark Typhoon:2",
+                "trigger": "CycleEvent",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 0,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Shark"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/3/0/30d12226-6417-4b98-beb5-89a36c774141.jpg?1783930944",
+                    "dynamicPower": "XValue",
+                    "dynamicToughness": "XValue"
+                },
+                "descriptionOverride": "When you cycle this card, create an X/X blue Shark creature token with flying."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "rarity": "RARE",
+        "artist": "Caio Monteiro",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/d/1da4d4f3-b3cb-4b61-81b8-06ae441c41bf.jpg?1783931069",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "For spells with {X} in their mana costs, use the value chosen for X to determine the spell's mana value."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "You can choose 0 as the value of X in Shark Typhoon's cycling cost. The last ability will trigger, and you'll create a 0/0 blue Shark creature token with flying. Unless something else is raising its toughness, the Shark will then immediately die."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -9054,6 +9857,47 @@
     "colorIdentityOverride": []
 }
 
+// Thieving Otter
+{
+    "name": "Thieving Otter",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Otter",
+    "oracleText": "Whenever this creature deals damage to an opponent, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thieving Otter:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "EachOpponent"
+                    }
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "artist": "Jakub Kasper",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/07f84b0a-37d9-4b0f-8d75-1fab45a12d44.jpg?1783931068"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Thwart the Enemy
 {
     "name": "Thwart the Enemy",
@@ -9925,6 +10769,65 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Wingfold Pteron
+{
+    "name": "Wingfold Pteron",
+    "manaCost": "{5}{U}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "This creature enters with your choice of a flying counter or a hexproof counter on it. (A creature with hexproof can't be the target of spells or abilities your opponents control.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 6
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "modeOptions": [
+                    {
+                        "id": "flying",
+                        "label": "A flying counter"
+                    },
+                    {
+                        "id": "hexproof",
+                        "label": "A hexproof counter"
+                    }
+                ]
+            },
+            {
+                "type": "EntersWithCounters",
+                "counterType": "FLYING",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "flying"
+                }
+            },
+            {
+                "type": "EntersWithCounters",
+                "counterType": "HEXPROOF",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "hexproof"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "artist": "Johann Bodin",
+        "flavorText": "\"Its weak spot is easily spotted, but only if it's swooping down on you.\"\n—Jonald, mission naturalist",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/11e21a5f-fae7-4488-9463-f0af6e4c5233.jpg?1783931068"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

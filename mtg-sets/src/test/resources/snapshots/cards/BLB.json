@@ -19139,48 +19139,6 @@
     ]
 }
 
-// Thieving Otter
-{
-    "name": "Thieving Otter",
-    "manaCost": "{2}{U}",
-    "typeLine": "Creature — Otter",
-    "oracleText": "Whenever this creature deals damage to an opponent, draw a card.",
-    "creatureStats": {
-        "power": 2,
-        "toughness": 2
-    },
-    "script": {
-        "triggeredAbilities": [
-            {
-                "id": "Thieving Otter:1",
-                "trigger": {
-                    "type": "DealsDamageEvent",
-                    "recipient": {
-                        "type": "RecipientPlayer",
-                        "player": "EachOpponent"
-                    }
-                },
-                "effect": {
-                    "type": "DrawCards",
-                    "count": {
-                        "type": "Fixed",
-                        "amount": 1
-                    }
-                }
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "390",
-        "artist": "Jakub Kasper",
-        "imageUri": "https://cards.scryfall.io/normal/front/5/2/52a258be-39e3-4689-b2d0-7c353ce7d574.jpg?1721428090",
-        "inBooster": false
-    },
-    "colorIdentityOverride": [
-        "BLUE"
-    ]
-}
-
 // Thistledown Players
 {
     "name": "Thistledown Players",
