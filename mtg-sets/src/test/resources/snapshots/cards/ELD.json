@@ -125,6 +125,87 @@
     ]
 }
 
+// Alela, Artful Provocateur
+{
+    "name": "Alela, Artful Provocateur",
+    "manaCost": "{1}{W}{U}{B}",
+    "typeLine": "Legendary Creature — Faerie Warlock",
+    "oracleText": "Flying, deathtouch, lifelink\nOther creatures you control with flying get +1/+0.\nWhenever you cast an artifact or enchantment spell, create a 1/1 blue Faerie creature token with flying.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "DEATHTOUCH",
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Alela, Artful Provocateur:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsArtifact",
+                                    "IsEnchantment"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Faerie"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0,
+                "filter": {
+                    "baseFilter": "creature kw:flying ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "324",
+        "rarity": "MYTHIC",
+        "artist": "Grzegorz Rutkowski",
+        "flavorText": "\"Rankle's pranks are child's play. My games will topple kingdoms.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/2/726e7dc5-2089-4758-93e1-79212aedf75f.jpg?1783932550",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "Alela's last ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "A spell that's both an artifact and an enchantment spell causes Alela's last ability to trigger only once."
+            }
+        ]
+    }
+}
+
 // All That Glitters
 {
     "name": "All That Glitters",
@@ -722,6 +803,137 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Banish into Fable
+{
+    "name": "Banish into Fable",
+    "manaCost": "{4}{W}{U}",
+    "typeLine": "Instant",
+    "oracleText": "When you cast this spell from your hand, copy it if you control an artifact, then copy it if you control an enchantment. You may choose new targets for the copies.\nReturn target nonland permanent to its owner's hand. You create a 2/2 white Knight creature token with vigilance.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Knight"
+                    ],
+                    "keywords": [
+                        "VIGILANCE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/7/0/703e7ecf-3d73-40c1-8cfe-0758778817cf.jpg?1783932483"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "nonland permanent"
+                },
+                "id": "t0"
+            }
+        ],
+        "triggeredAbilities": [
+            {
+                "id": "Banish into Fable:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "artifact"
+                                }
+                            },
+                            "then": {
+                                "type": "CopyTargetSpell",
+                                "target": "TriggeringEntity"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "enchantment"
+                                }
+                            },
+                            "then": {
+                                "type": "CopyTargetSpell",
+                                "target": "TriggeringEntity"
+                            }
+                        }
+                    ]
+                },
+                "triggerRestriction": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "WasCast",
+                                "fromZone": "Hand"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "When you cast this spell from your hand, copy it if you control an artifact, then copy it if you control an enchantment. You may choose new targets for the copies."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "325",
+        "rarity": "RARE",
+        "artist": "Colin Boyer",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2b5e4c5d-7d1d-4426-8351-35c12e29d9c3.jpg?1783932548",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "The triggered ability that copies Banish into Fable resolves and creates copies of Banish into Fable even if Banish into Fable is countered. The ability and the copies resolve before Banish into Fable itself resolves."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Whether you control an artifact and/or an enchantment is checked only as the triggered ability resolves."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If you control one permanent that's an artifact and an enchantment, you'll copy Banish into Fable twice."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If the target nonland permanent is an illegal target by the time Banish into Fable tries to resolve, the spell won't resolve. You won't create a Knight token."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
     ]
 }
 
@@ -2994,6 +3206,108 @@
     ]
 }
 
+// Covetous Urge
+{
+    "name": "Covetous Urge",
+    "manaCost": "{U/B}{U/B}{U/B}{U/B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent reveals their hand. You choose a nonland card from that player's graveyard or hand and exile it. You may cast that card for as long as it remains exiled, and you may spend mana as though it were mana of any color to cast that spell.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "RevealHand",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromMultipleZones",
+                        "zones": [
+                            "Hand",
+                            "Graveyard"
+                        ],
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "nonland",
+                    "storeSelected": "selected2",
+                    "prompt": "Choose a nonland card from their hand or graveyard to exile — you may cast it",
+                    "showAllCards": true,
+                    "alwaysPrompt": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                {
+                    "type": "GrantMayPlayFromExile",
+                    "from": "selected2",
+                    "expiry": "Permanent",
+                    "withAnyManaColor": true,
+                    "nonLandOnly": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "UNCOMMON",
+        "artist": "Carmen Sinek",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/3/f3b4871d-4d74-411b-88e0-9a9d386cafe1.jpg?1783932592",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "If you cast an Adventure with Covetous Urge, it's you, not the card's owner, who may cast the creature later."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Covetous Urge's effect doesn't change when you can cast the exiled card. For example, if you exile a sorcery card, you can cast it only during your main phase when the stack is empty."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Casting an exiled card causes it to leave exile. You can't cast it multiple times."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Crashing Drawbridge
 {
     "name": "Crashing Drawbridge",
@@ -3314,6 +3628,63 @@
     ]
 }
 
+// Deathless Knight
+{
+    "name": "Deathless Knight",
+    "manaCost": "{B/G}{B/G}{B/G}{B/G}",
+    "typeLine": "Creature — Skeleton Knight",
+    "oracleText": "Haste\nWhen you gain life for the first time each turn, return this card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Deathless Knight:1",
+                "trigger": {
+                    "type": "LifeGainEvent",
+                    "firstTimeEachTurn": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand",
+                    "fromZone": "Graveyard"
+                },
+                "activeZones": [
+                    "Graveyard"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "208",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Kieryluk",
+        "flavorText": "\"Headed to the wilds? Beware the dead riders who serve the Shadow Queen.\"\n—Scalan, Edgewall innkeeper",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/39c6e952-97b5-435c-a7fd-6271ddc23200.jpg?1783932590",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "Deathless Knight must be in your graveyard immediately after you gain life for its last ability to trigger. If you gain life due to damage from a source with lifelink, and that damage is dealt at the same time that lethal damage is dealt to Deathless Knight, it won't be in your graveyard until state-based actions are performed a moment later, and so the ability can't trigger."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If Deathless Knight enters your graveyard after you've gained life in a turn, its last ability can't trigger during that turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Didn't Say Please
 {
     "name": "Didn't Say Please",
@@ -3385,6 +3756,166 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Doom Foretold
+{
+    "name": "Doom Foretold",
+    "manaCost": "{2}{W}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of each player's upkeep, that player sacrifices a nonland, nontoken permanent of their choice. If that player can't, they discard a card, they lose 2 life, you draw a card, you gain 2 life, you create a 2/2 white Knight creature token with vigilance, then you sacrifice this enchantment.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Doom Foretold:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForceSacrifice",
+                            "filter": "nonland permanent nontoken",
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "TriggeringPlayer"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": "PermanentsSacrificedThisWay",
+                                    "operator": "EQ",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand",
+                                            "player": "TriggeringPlayer"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "chooser": "TriggeringPlayer",
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard",
+                                            "player": "TriggeringPlayer"
+                                        },
+                                        "moveType": "Discard"
+                                    },
+                                    {
+                                        "type": "LoseLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        },
+                                        "target": {
+                                            "type": "PlayerRef",
+                                            "player": "TriggeringPlayer"
+                                        }
+                                    },
+                                    {
+                                        "type": "DrawCards",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    {
+                                        "type": "GainLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    },
+                                    {
+                                        "type": "CreateToken",
+                                        "power": 2,
+                                        "toughness": 2,
+                                        "colors": [
+                                            "WHITE"
+                                        ],
+                                        "creatureTypes": [
+                                            "Knight"
+                                        ],
+                                        "keywords": [
+                                            "VIGILANCE"
+                                        ],
+                                        "imageUri": "https://cards.scryfall.io/normal/front/7/0/703e7ecf-3d73-40c1-8cfe-0758778817cf.jpg?1783932483"
+                                    },
+                                    {
+                                        "type": "SacrificeTarget",
+                                        "target": "Self"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "187",
+        "rarity": "RARE",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "In the end, death usually has its way.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e76c0c83-3e87-474d-bc72-1677eed32cfa.jpg?1783932598",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "If Doom Foretold leaves the battlefield or changes control while its ability is on the stack, its effect still happens. You just won't be able to sacrifice it if instructed to do so."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If the player is unable to sacrifice a permanent and is unable to discard a card, they still lose 2 life, and the rest of Doom Foretold's effects happen."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If the player can sacrifice a nonland, nontoken permanent, that player must do so. They can't choose to rush toward their doom."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "During your upkeep, you can sacrifice Doom Foretold for its own ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
     ]
 }
 
@@ -3596,6 +4127,101 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Elite Headhunter
+{
+    "name": "Elite Headhunter",
+    "manaCost": "{B/R}{B/R}{B/R}{B/R}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\n{B/R}{B/R}{B/R}, Sacrifice another creature or an artifact: This creature deals 2 damage to target creature or planeswalker.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Elite Headhunter:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{B/R}{B/R}{B/R}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": {
+                                    "anyOf": [
+                                        {
+                                            "cardPredicates": [
+                                                "IsCreature"
+                                            ],
+                                            "statePredicates": [
+                                                {
+                                                    "type": "StateNot",
+                                                    "predicate": "IsSource"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "cardPredicates": [
+                                                "IsArtifact"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetCreatureOrPlaneswalker",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{B/R}{B/R}{B/R}, Sacrifice another creature or an artifact: This creature deals 2 damage to target creature or planeswalker."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "209",
+        "rarity": "UNCOMMON",
+        "artist": "Daarken",
+        "flavorText": "Nothing remains of his foes but the gripping story of their downfall.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aa9d0279-4fe0-4228-a82f-bc3cd91500df.jpg?1783932590",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "If Elite Headhunter somehow becomes an artifact, you can sacrifice it to pay the cost of its activated ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
     ]
 }
 
@@ -6694,6 +7320,94 @@
     ]
 }
 
+// Gluttonous Troll
+{
+    "name": "Gluttonous Troll",
+    "manaCost": "{2}{B}{G}",
+    "typeLine": "Creature — Troll",
+    "oracleText": "Trample\nWhen this creature enters, create a number of Food tokens equal to the number of opponents you have. (Food tokens are artifacts with \"{2}, {T}, Sacrifice this token: You gain 3 life.\")\n{1}{G}, Sacrifice another nonland permanent: This creature gets +2/+2 until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gluttonous Troll:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Food",
+                    "dynamicCount": "PlayerCount"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Gluttonous Troll:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{G}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "nonland permanent",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "327",
+        "rarity": "RARE",
+        "artist": "Joe Slucher",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/867e245b-6153-479c-9e09-682afb017ff3.jpg?1783932548",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "You can sacrifice a Food token created by Gluttonous Troll's triggered ability to pay for the cost of its activated ability."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "In a multiplayer game, opponents who have left the game aren't counted by Gluttonous Troll's triggered ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Golden Egg
 {
     "name": "Golden Egg",
@@ -8572,6 +9286,107 @@
     ]
 }
 
+// Knights' Charge
+{
+    "name": "Knights' Charge",
+    "manaCost": "{1}{W}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a Knight you control attacks, each opponent loses 1 life and you gain 1 life.\n{6}{W}{B}, Sacrifice this enchantment: Return all Knight creature cards from your graveyard to the battlefield.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Knights' Charge:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": "creature Knight ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Knights' Charge:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{6}{W}{B}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": "creature Knight"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{6}{W}{B}, Sacrifice this enchantment: Return all Knight creature cards from your graveyard to the battlefield."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "328",
+        "rarity": "RARE",
+        "artist": "Paul Scott Canavan",
+        "flavorText": "\"By hoof, wing, or paw. For the realm!\"\n—Syr Gwyn, Hero of Ashvale",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6b86f7db-ae1d-49fe-a9c5-488bbf3afac7.jpg?1783932547",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "In a Two-Headed Giant game, Knights' Charge's first ability causes the opposing team to lose 1 life twice, and you gain 1 life once."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Korvold, Fae-Cursed King
 {
     "name": "Korvold, Fae-Cursed King",
@@ -8911,6 +9726,168 @@
     "colorIdentityOverride": [
         "RED",
         "BLUE"
+    ]
+}
+
+// Lochmere Serpent
+{
+    "name": "Lochmere Serpent",
+    "manaCost": "{4}{U}{B}",
+    "typeLine": "Creature — Serpent",
+    "oracleText": "Flash\n{U}, Sacrifice an Island: This creature can't be blocked this turn.\n{B}, Sacrifice a Swamp: You gain 1 life and draw a card.\n{U}{B}: Exile five target cards from an opponent's graveyard. Return this card from your graveyard to your hand. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Lochmere Serpent:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{U}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "land Island"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "CANT_BE_BLOCKED",
+                    "target": "Self"
+                },
+                "descriptionOverride": "Can't be blocked this turn"
+            },
+            {
+                "id": "Lochmere Serpent:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "land Swamp"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Gain 1 life and draw a card"
+            },
+            {
+                "id": "Lochmere Serpent:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{U}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": "IterationSpace.Targets",
+                            "body": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "destination": "Exile"
+                            }
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Hand",
+                            "fromZone": "Graveyard"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 5,
+                        "filter": {
+                            "baseFilter": "own:opponent",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0",
+                        "sameOwner": true
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Exile five target cards from an opponent's graveyard and return this card to your hand"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "195",
+        "rarity": "RARE",
+        "artist": "Sam Burley",
+        "flavorText": "",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/3287beea-747c-4cb6-aea5-051e85c5de8d.jpg?1783932595",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "You can't activate Lochmere Serpent's last ability without targeting five cards in a single opponent's graveyard."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If up to four of the target cards are illegal targets by the time Lochmere Serpent's last ability resolves, the remaining legal targets are exiled and Lochmere Serpent is returned to your hand."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Activating Lochmere Serpent's first activated ability after it has become blocked won't cause it to become unblocked."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 
@@ -10469,6 +11446,57 @@
     ]
 }
 
+// Mystical Dispute
+{
+    "name": "Mystical Dispute",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "This spell costs {2} less to cast if it targets a blue spell.\nCounter target spell unless its controller pays {3}.",
+    "script": {
+        "spellEffect": {
+            "type": "Counter",
+            "condition": {
+                "type": "CounterCondition.UnlessPaysMana",
+                "cost": "{3}"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "FixedIfAnyTargetMatches",
+                        "amount": 2,
+                        "filter": "blue"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "58",
+        "rarity": "UNCOMMON",
+        "artist": "Ekaterina Burmak",
+        "flavorText": "\"Poor, lost mage. Your feet are on land, yet you're in over your head, aren't you?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/b/fbe04cb8-a8b9-4241-baae-b398a2509a3a.jpg?1783932655"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Oakhame Adversary
 {
     "name": "Oakhame Adversary",
@@ -10532,6 +11560,84 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Oakhame Ranger
+{
+    "name": "Oakhame Ranger",
+    "manaCost": "{G/W}{G/W}{G/W}{G/W}",
+    "typeLine": "Creature — Elf Knight Ranger",
+    "oracleText": "{T}: Creatures you control get +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Oakhame Ranger:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "212",
+        "rarity": "UNCOMMON",
+        "artist": "Mitchell Malloy & Maddie Julyk",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/a/8a665794-513f-4f78-92c9-1844ec27c79c.jpg?1783932589"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "Bring Back",
+            "manaCost": "{G/W}{G/W}{G/W}{G/W}",
+            "typeLine": "Sorcery — Adventure",
+            "oracleText": "Create two 1/1 white Human creature tokens. (Then exile this card. You may cast the creature later from exile.)",
+            "script": {
+                "spellEffect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Human"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/9/4/94057dc6-e589-4a29-9bda-90f5bece96c4.jpg?1783932485"
+                }
+            }
+        }
     ]
 }
 
@@ -15665,6 +16771,129 @@
     ]
 }
 
+// Syr Gwyn, Hero of Ashvale
+{
+    "name": "Syr Gwyn, Hero of Ashvale",
+    "manaCost": "{3}{R}{W}{B}",
+    "typeLine": "Legendary Creature — Human Knight",
+    "oracleText": "Vigilance, menace\nWhenever an equipped creature you control attacks, you draw a card and you lose 1 life.\nEquipment you control have equip Knight {0}.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "VIGILANCE",
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Syr Gwyn, Hero of Ashvale:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsEquipped"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Syr Gwyn, Hero of Ashvale:2",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{0}"
+                        }
+                    },
+                    "effect": {
+                        "type": "AttachEquipment",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "Knight creature you control"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature Knight ctrl:you"
+                            },
+                            "id": "Knight creature you control"
+                        }
+                    ],
+                    "timing": "SorcerySpeed",
+                    "isEquipAbility": true,
+                    "equipQuality": "Knight"
+                },
+                "filter": {
+                    "baseFilter": "artifact Equipment ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "330",
+        "rarity": "MYTHIC",
+        "artist": "Lie Setiawan",
+        "flavorText": "Squires throughout the realm aspire to her mix of panache and martial prowess.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a33add37-379d-4a90-9c04-529dff676986.jpg?1783932546",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "Syr Gwyn's triggered ability triggers once per attacking creature that's equipped, regardless of how many Equipment those creatures each carry."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Equipment you control still have their other equip abilities in addition to equip Knight {0}."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Whether the target creature is a Knight is checked only as the equip Knight ability is activated and as that ability resolves. If the creature somehow becomes a non-Knight creature later, the Equipment remains attached to it."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If Syr Gwyn leaves the battlefield after an equip Knight ability has been activated, that ability still resolves even though the Equipment has lost that ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Syr Konrad, the Grim
 {
     "name": "Syr Konrad, the Grim",
@@ -16417,6 +17646,240 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// The Royal Scions
+{
+    "name": "The Royal Scions",
+    "manaCost": "{1}{U}{R}",
+    "typeLine": "Legendary Planeswalker — Will Rowan",
+    "oracleText": "+1: Draw a card, then discard a card.\n+1: Target creature gets +2/+0 and gains first strike and trample until end of turn.\n−8: Draw four cards. When you do, The Royal Scions deals damage to any target equal to the number of cards in your hand.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "The Royal Scions:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "The Royal Scions:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "FIRST_STRIKE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "TRAMPLE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "The Royal Scions:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -8
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "StoreNumber",
+                            "name": "number0",
+                            "amount": {
+                                "type": "TurnTracking",
+                                "player": "You",
+                                "tracker": "CARDS_DRAWN"
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 4
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "Subtract",
+                                        "left": {
+                                            "type": "TurnTracking",
+                                            "player": "You",
+                                            "tracker": "CARDS_DRAWN"
+                                        },
+                                        "right": {
+                                            "type": "VariableReference",
+                                            "variableName": "number0"
+                                        }
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 4
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "ReflexiveTrigger",
+                                "action": {
+                                    "type": "Composite",
+                                    "effects": []
+                                },
+                                "optional": false,
+                                "reflexiveEffect": {
+                                    "type": "DealDamage",
+                                    "amount": {
+                                        "type": "Count",
+                                        "player": "You",
+                                        "zone": "Hand"
+                                    },
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t1"
+                                    }
+                                },
+                                "reflexiveTargetRequirements": [
+                                    {
+                                        "type": "AnyTarget",
+                                        "id": "t1"
+                                    }
+                                ],
+                                "descriptionOverride": "The Royal Scions deals damage to any target equal to the number of cards in your hand."
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "199",
+        "rarity": "MYTHIC",
+        "artist": "Paul Scott Canavan",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/a/6a7111f3-01a6-4311-bc08-036a1fba60f5.jpg?1783932595",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "You draw a card and discard a card all while The Royal Scions's first ability is resolving. Nothing can happen between the two, and no player may choose to take actions."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "The Royal Scions's last ability goes on the stack without a target. While that ability is resolving, you draw four cards. When you do, the reflexive triggered ability triggers and you pick a target to be dealt damage. This is different from effects that say “If you do . . .” in that you choose a target after looking at the cards you draw."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If you draw fewer than four cards while resolving the last ability of The Royal Scions, its reflexive triggered ability doesn't trigger."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If replacement effects cause you to draw five or more cards while resolving the last ability of The Royal Scions, its reflexive triggered ability still triggers only once, even if you draw eight cards."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
     ]
 }
 
@@ -17258,6 +18721,110 @@
     ]
 }
 
+// Vantress Gargoyle
+{
+    "name": "Vantress Gargoyle",
+    "manaCost": "{1}{U}",
+    "typeLine": "Artifact Creature — Gargoyle",
+    "oracleText": "Flying\nThis creature can't attack unless defending player has seven or more cards in their graveyard.\nThis creature can't block unless you have four or more cards in hand.\n{T}: Each player mills a card.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Vantress Gargoyle:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "player": "Each",
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "Each"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{T}: Each player mills a card."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnless",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateZone",
+                        "player": "DefendingPlayer",
+                        "zone": "Graveyard"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 7
+                    }
+                }
+            },
+            {
+                "type": "CantBlockUnless",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Hand"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "RARE",
+        "artist": "Cristi Balanescu",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/daff1c8d-0f25-4bec-bd50-208ae2ac0aac.jpg?1783932649",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "If Vantress Gargoyle attacks a planeswalker, the controller of that planeswalker is the defending player."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Vantress Gargoyle's attacking and blocking restrictions are checked only at the moment that you declare it as an attacking or blocking creature. If the defending player loses cards from their graveyard after Vantress Gargoyle attacks, or if you lose cards from your hand after it blocks, it remains in combat."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Vantress Paladin
 {
     "name": "Vantress Paladin",
@@ -17349,6 +18916,66 @@
         "imageUri": "https://cards.scryfall.io/normal/front/0/0/0001f1ef-b957-4a55-b47f-14839cdbab6f.jpg"
     },
     "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Wandermare
+{
+    "name": "Wandermare",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Creature — Horse",
+    "oracleText": "Whenever you cast a creature spell that has an Adventure, put a +1/+1 counter on this creature. (It doesn't need to have gone on the adventure first.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wandermare:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "HasAdventure"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "204",
+        "rarity": "UNCOMMON",
+        "artist": "Kari Christensen",
+        "flavorText": "\"A good steed will carry you home. A great steed will carry you to glory.\"\n—Syr Alin, the Lion's Claw",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/a/9a72fb5b-5c55-4ce9-b9d0-98f924d6f338.jpg?1783932592",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "Wandermare's ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "An effect may refer to a card, spell, or permanent that \"has an Adventure.\" This refers to a card, spell, or permanent that has an adventurer card's set of alternative characteristics, even if they're not being used and even if that card was never cast as an Adventure."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If an effect refers to a card, spell, or permanent that has an Adventure, it won't find an instant or sorcery spell on the stack that's been cast as an Adventure."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
         "WHITE"
     ]
 }
