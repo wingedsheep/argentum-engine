@@ -26,6 +26,7 @@ class CounterTypeTest : DescribeSpec({
         it("spells the kinds added since in the same shape") {
             CounterType.BLOODLINE.printed shouldBe "bloodline"
             CounterType.INCARNATION.printed shouldBe "incarnation"
+            CounterType.FORESHADOW.printed shouldBe "foreshadow"
             CounterType.INVITATION.printed shouldBe "invitation"
             CounterType.IMPOSTOR.printed shouldBe "impostor"
             CounterType.DEVOTION.printed shouldBe "devotion"
@@ -119,7 +120,7 @@ class CounterTypeTest : DescribeSpec({
 
     private companion object {
         /** Kinds named after `object Counters` was retired, so they have no legacy constant. */
-        val NEW_KINDS = setOf(CounterType.INCARNATION, CounterType.BLOODLINE, CounterType.INVITATION, CounterType.IMPOSTOR, CounterType.DEVOTION,
+        val NEW_KINDS = setOf(CounterType.INCARNATION, CounterType.FORESHADOW, CounterType.BLOODLINE, CounterType.INVITATION, CounterType.IMPOSTOR, CounterType.DEVOTION,
             CounterType.THEFT, CounterType.TRAINING, CounterType.MIRE, CounterType.COLLECTION,
             CounterType.REPRIEVE, CounterType.BOUNTY, CounterType.CORPSE, CounterType.BRICK,
             CounterType.VITALITY, CounterType.VOID, CounterType.HARMONY, CounterType.ENLIGHTENED, CounterType.AGE, CounterType.EXPERIENCE, CounterType.VOW,

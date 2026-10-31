@@ -2651,7 +2651,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   Add a new one as a `CounterType` constant (listed in `CounterType.KNOWN`) plus the client's passive-counter
   wiring (`PASSIVE_COUNTER_TYPES`, `passiveCounterBadgeStyle`, `counterManaClass`, `CounterTypeDisplayNames`);
   keep it out of `StateProjector.KEYWORD_COUNTER_MAP` since it grants no keyword. Recent examples:
-  `CounterType.LANDMARK` (Treasure Map — three flip it into Treasure Cove), `CounterType.FUSE` (Pumpkin Bombs — damage equal to its fuse counters, which stay on as it changes hands), `CounterType.LUCK` (Gemstone Caverns — begins the game with one and taps for any color while it has it), `CounterType.DREAD` (Grasping Shadows —
+  `CounterType.LANDMARK` (Treasure Map — three flip it into Treasure Cove), `CounterType.FUSE` (Pumpkin Bombs — damage equal to its fuse counters, which stay on as it changes hands), `CounterType.FORESHADOW` (Ominous Seas — one per card drawn; remove eight for an 8/8 Kraken), `CounterType.LUCK` (Gemstone Caverns — begins the game with one and taps for any color while it has it), `CounterType.DREAD` (Grasping Shadows —
   three flip it into Shadows' Lair), `CounterType.BORE` (Brass's Tunnel-Grinder — three flip it into Tecutlan),
   `CounterType.REVIVAL` (Nine-Lives Familiar — a "lives left" counter: it enters with eight if you cast it and its
   dies trigger reads the last-known count to come back with one fewer),

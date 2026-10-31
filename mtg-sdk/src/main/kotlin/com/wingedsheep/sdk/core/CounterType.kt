@@ -200,6 +200,12 @@ value class CounterType(val name: String) {
         val FUSE = CounterType("FUSE")
 
         /**
+         * Foreshadow counter (IKO — Ominous Seas). A pure tally: one goes on each time its controller
+         * draws a card, and removing eight of them pays for an 8/8 Kraken token.
+         */
+        val FORESHADOW = CounterType("FORESHADOW")
+
+        /**
          * Luck counter (TSP — Gemstone Caverns). A marker: the land begins the game with one when put
          * onto the battlefield from an opening hand, and taps for any color while it has one.
          */
@@ -960,6 +966,7 @@ value class CounterType(val name: String) {
             COIN,
             FLOOD,
             FUSE,
+            FORESHADOW,
             LUCK,
             CHORUS,
             DREAM,

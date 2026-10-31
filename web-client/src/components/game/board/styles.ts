@@ -2482,6 +2482,7 @@ const passiveCounterPalette: Record<string, CounterBadgePalette> = {
   WISH: { bg: 'rgba(35, 22, 48, 0.95)', border: 'rgba(170, 130, 210, 0.7)', color: '#c8a8e0', glow: 'rgba(170, 130, 210, 0.55)' },
   REVIVAL: { bg: 'rgba(22, 34, 30, 0.95)', border: 'rgba(120, 205, 165, 0.7)', color: '#9ee0c0', glow: 'rgba(120, 205, 165, 0.55)' },
   FUSE: { bg: 'rgba(58, 30, 12, 0.95)', border: 'rgba(240, 140, 50, 0.7)', color: '#f5b878', glow: 'rgba(240, 140, 50, 0.55)' },
+  FORESHADOW: { bg: 'rgba(14, 26, 52, 0.95)', border: 'rgba(90, 140, 220, 0.7)', color: '#a8c4f0', glow: 'rgba(90, 140, 220, 0.55)' },
   LUCK: { bg: 'rgba(16, 44, 26, 0.95)', border: 'rgba(90, 210, 120, 0.7)', color: '#a4ecb6', glow: 'rgba(90, 210, 120, 0.55)' },
   INGENUITY: { bg: 'rgba(52, 20, 42, 0.95)', border: 'rgba(230, 120, 190, 0.7)', color: '#f0a8d4', glow: 'rgba(230, 120, 190, 0.55)' },
   FILM: { bg: 'rgba(28, 28, 32, 0.95)', border: 'rgba(180, 185, 195, 0.7)', color: '#d0d4dc', glow: 'rgba(180, 185, 195, 0.5)' },

@@ -7124,6 +7124,74 @@
     ]
 }
 
+// Ominous Seas
+{
+    "name": "Ominous Seas",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you draw a card, put a foreshadow counter on this enchantment.\nRemove eight foreshadow counters from this enchantment: Create an 8/8 blue Kraken creature token.\nCycling {2} ({2}, Discard this card: Draw a card.)",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ominous Seas:1",
+                "trigger": "DrawEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "FORESHADOW",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Ominous Seas:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomRemoveCounters",
+                        "counterType": "FORESHADOW",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 8
+                        },
+                        "self": true
+                    }
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 8,
+                    "toughness": 8,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Kraken"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/c/a/ca17c7b2-180a-4bd1-9ab2-152f8f656dba.jpg?1783930947"
+                },
+                "descriptionOverride": "Remove eight foreshadow counters from this enchantment: Create an 8/8 blue Kraken creature token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "UNCOMMON",
+        "artist": "Vincent Proce",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/ce8965f2-756a-4461-a643-db024a11c2de.jpg?1783931072"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Patagia Tiger
 {
     "name": "Patagia Tiger",
