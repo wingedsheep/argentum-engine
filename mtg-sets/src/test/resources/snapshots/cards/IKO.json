@@ -231,6 +231,90 @@
     ]
 }
 
+// Auspicious Starrix
+{
+    "name": "Auspicious Starrix",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Elk Beast",
+    "oracleText": "Mutate {5}{G} (If you cast this spell for its mutate cost, put it over or under target non-Human creature you own. They mutate into the creature on top plus all abilities from under it.)\nWhenever this creature mutates, exile cards from the top of your library until you exile X permanent cards, where X is the number of times this creature has mutated. Put those permanent cards onto the battlefield.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "MUTATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Mutate",
+            "cost": "{5}{G}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Auspicious Starrix:1",
+                "trigger": "MutateEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherUntilMatch",
+                            "filter": "permanent",
+                            "storeMatch": "matched0",
+                            "storeRevealed": "revealed0",
+                            "count": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "TimesMutated"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "revealed0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "matched0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "144",
+        "rarity": "UNCOMMON",
+        "artist": "Lucas Graciano",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a39ae1e4-d4dd-4691-af5a-5fa25ace4ebe.jpg?1783931040",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Auspicious Starrix's effect doesn't count as playing lands. It can put land cards onto the battlefield even if it's not your turn or if you've already played your land for the turn."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If there are fewer than X permanent cards in your library, you exile your entire library and put the permanent cards in it onto the battlefield."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Any cards that you exile but don't put on the battlefield for any reason (for example, because the card is an instant card or an Aura that can't enchant anything) remain in exile."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Avian Oddity
 {
     "name": "Avian Oddity",
@@ -2996,6 +3080,79 @@
     ]
 }
 
+// Exuberant Wolfbear
+{
+    "name": "Exuberant Wolfbear",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Wolf Bear",
+    "oracleText": "Whenever this creature attacks, you may have the base power and toughness of target Human you control become equal to this creature's power and toughness until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Exuberant Wolfbear:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "SetBaseStats",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "power": {
+                            "type": "EntityProperty",
+                            "entity": "Self",
+                            "numericProperty": "Power"
+                        },
+                        "toughness": {
+                            "type": "EntityProperty",
+                            "entity": "Self",
+                            "numericProperty": "Toughness"
+                        },
+                        "duration": "EndOfTurn"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature Human ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "151",
+        "rarity": "UNCOMMON",
+        "artist": "Jesper Ejsing",
+        "flavorText": "Sometimes the *eludha* is a sacred harmony of souls. Sometimes the bonder grabs some fur and holds on tight.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8c8ff0da-fbe3-4c95-bc39-c975c55b6aea.jpg?1783931038",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "The Human's new base power and toughness are set to Exuberant Wolfbear's actual power and toughness, not just its base power and toughness. If Exuberant Wolfbear's power or toughness changes later in the turn, the Human isn't affected."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If Exuberant Wolfbear leaves the battlefield while its triggered ability is on the stack, use its power and toughness as it last existed on the battlefield to determine the Human's new base power and toughness."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Any effects that modify the Human's power and/or toughness without setting them to a specific number or value will apply after its base power and toughness are set, regardless of the order in which those effects were created. The same is true of counters that modify its power and toughness."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Facet Reader
 {
     "name": "Facet Reader",
@@ -3217,6 +3374,142 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Fiend Artisan
+{
+    "name": "Fiend Artisan",
+    "manaCost": "{B/G}{B/G}",
+    "typeLine": "Creature — Nightmare",
+    "oracleText": "This creature gets +1/+1 for each creature card in your graveyard.\n{X}{B/G}, {T}, Sacrifice another creature: Search your library for a creature card with mana value X or less, put it onto the battlefield, then shuffle. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Fiend Artisan:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{X}{B/G}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "CompareNumericProperty",
+                                            "property": "MANA_VALUE",
+                                            "operator": "LTE",
+                                            "amount": "XValue"
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a creature card with mana value at most X to put onto the battlefield",
+                            "selectedLabel": "Put onto the battlefield"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "{X}{B/G}, {T}, Sacrifice another creature: Search your library for a creature card with mana value X or less, put it onto the battlefield, then shuffle. Activate only as a sorcery."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Graveyard",
+                    "filter": "creature"
+                },
+                "toughnessBonus": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Graveyard",
+                    "filter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "220",
+        "rarity": "MYTHIC",
+        "artist": "Yigit Koroglu",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/c/6cd9d800-6d31-42e2-87d2-772db0ff95ed.jpg?1783931012",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "If a card in a player's library has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Fiend Artisan's first ability applies only while it's on the battlefield."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Because damage remains marked on a creature until the damage is removed as the turn ends, nonlethal damage dealt to Fiend Artisan may become lethal if creature cards leave your graveyard during that turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
     ]
 }
 
@@ -3534,6 +3827,65 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Flycatcher Giraffid
+{
+    "name": "Flycatcher Giraffid",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Antelope Lizard",
+    "oracleText": "This creature enters with your choice of a reach counter or a vigilance counter on it.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "modeOptions": [
+                    {
+                        "id": "reach",
+                        "label": "A reach counter"
+                    },
+                    {
+                        "id": "vigilance",
+                        "label": "A vigilance counter"
+                    }
+                ]
+            },
+            {
+                "type": "EntersWithCounters",
+                "counterType": "REACH",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "reach"
+                }
+            },
+            {
+                "type": "EntersWithCounters",
+                "counterType": "VIGILANCE",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "vigilance"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "Poachers use the harvested tongues to snare pests, plumb caves, and scale tall buildings.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/1988e220-d746-46e4-a534-164203e63c14.jpg?1783931036"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -4395,6 +4747,51 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Glowstone Recluse
+{
+    "name": "Glowstone Recluse",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Spider",
+    "oracleText": "Mutate {3}{G} (If you cast this spell for its mutate cost, put it over or under target non-Human creature you own. They mutate into the creature on top plus all abilities from under it.)\nReach\nWhenever this creature mutates, put two +1/+1 counters on it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "REACH",
+        "MUTATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Mutate",
+            "cost": "{3}{G}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Glowstone Recluse:1",
+                "trigger": "MutateEvent",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 2,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "156",
+        "rarity": "UNCOMMON",
+        "artist": "Yeong-Hao Han",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/06a9698d-400c-4c31-82cd-28d0897fe28c.jpg?1783931035"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -6154,6 +6551,149 @@
     ]
 }
 
+// Kogla, the Titan Ape
+{
+    "name": "Kogla, the Titan Ape",
+    "manaCost": "{3}{G}{G}{G}",
+    "typeLine": "Legendary Creature — Ape",
+    "oracleText": "When Kogla enters, it fights up to one target creature you don't control.\nWhenever Kogla attacks, destroy target artifact or enchantment defending player controls.\n{1}{G}: Return target Human you control to its owner's hand. Kogla gains indestructible until end of turn.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kogla, the Titan Ape:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Fight",
+                    "target1": "Self",
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "controllerPredicate": {
+                                "type": "ControllerNot",
+                                "predicate": "ControlledByYou"
+                            }
+                        }
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Kogla, the Titan Ape:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "Or",
+                                    "predicates": [
+                                        "IsArtifact",
+                                        "IsEnchantment"
+                                    ]
+                                }
+                            ],
+                            "controllerPredicate": {
+                                "type": "ControlledByReferencedPlayer",
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "DefendingPlayer"
+                                }
+                            }
+                        }
+                    },
+                    "id": "t1"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Kogla, the Titan Ape:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t2"
+                            },
+                            "destination": "Hand"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "INDESTRUCTIBLE",
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent Human ctrl:you"
+                        },
+                        "id": "t2"
+                    }
+                ],
+                "descriptionOverride": "{1}{G}: Return target Human you control to its owner's hand. Kogla gains indestructible until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "RARE",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/c/3c35ca79-eb72-427a-a8ed-404b2214389a.jpg?1783931034",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "If the target creature is an illegal target when Kogla's first ability tries to resolve, the ability doesn't resolve. If it's a legal target but Kogla is no longer on the battlefield when the ability resolves, the target creature won't deal or be dealt damage."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If the target Human is an illegal target by the time Kogla's last ability tries to resolve, the ability won't resolve. Kogla won't gain indestructible."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Lava Serpent
 {
     "name": "Lava Serpent",
@@ -6859,6 +7399,83 @@
     ]
 }
 
+// Migratory Greathorn
+{
+    "name": "Migratory Greathorn",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "Mutate {2}{G} (If you cast this spell for its mutate cost, put it over or under target non-Human creature you own. They mutate into the creature on top plus all abilities from under it.)\nWhenever this creature mutates, search your library for a basic land card, put it onto the battlefield tapped, then shuffle.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "MUTATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Mutate",
+            "cost": "{2}{G}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Migratory Greathorn:1",
+                "trigger": "MutateEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "basicland"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a basic land card to put onto the battlefield tapped",
+                            "selectedLabel": "Put onto the battlefield tapped"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "Tapped"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "165",
+        "artist": "Filip Burburan",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/a/6a2a287b-b83f-444f-84f7-e388beb616c2.jpg?1783931033"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Momentum Rumbler
 {
     "name": "Momentum Rumbler",
@@ -6913,6 +7530,97 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Monstrous Step
+{
+    "name": "Monstrous Step",
+    "manaCost": "{4}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature gets +7/+7 until end of turn. Up to one other target creature blocks it this turn if able.\nCycling {2} ({2}, Discard this card: Draw a card.)",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 7
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 7
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "ForceBlock",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "attacker": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetOther",
+                "baseRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature"
+                    }
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "166",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Seaman",
+        "flavorText": "Life is best taken one step at a time.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/893f300b-a823-4156-90f2-0636e9f499b0.jpg?1783931032",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "If the second target creature can’t block the first target creature for any reason (such as being tapped), then it doesn’t block. If there’s a cost associated with having it block the creature, the player isn’t forced to pay that cost, so it doesn’t have to block in that case either. That creature is free to block another creature or to not block at all."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If a creature is required to block a creature with menace, another creature must also block that creature if able. If none can, the creature that’s required to block can block another creature or not block at all."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Creatures other than the second target creature may still block the first target creature if able."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -8292,6 +9000,120 @@
     ]
 }
 
+// Parcelbeast
+{
+    "name": "Parcelbeast",
+    "manaCost": "{2}{G}{U}",
+    "typeLine": "Creature — Elemental Beast",
+    "oracleText": "Mutate {G}{U} (If you cast this spell for its mutate cost, put it over or under target non-Human creature you own. They mutate into the creature on top plus all abilities from under it.)\n{1}, {T}: Look at the top card of your library. If it's a land card, you may put it onto the battlefield. If you don't put the card onto the battlefield, put it into your hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "MUTATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Mutate",
+            "cost": "{G}{U}"
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Parcelbeast:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": "land",
+                            "storeMatching": "matching1",
+                            "storeNonMatching": "rest1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "matching1",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected2",
+                            "storeRemainder": "remainder2",
+                            "selectedLabel": "Put onto the battlefield",
+                            "remainderLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Look at the top card of your library. If it's a land card, you may put it onto the battlefield. If you don't put the card onto the battlefield, put it into your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "199",
+        "rarity": "UNCOMMON",
+        "artist": "Milivoj Ćeran",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/610bb98c-d66a-44cc-92e2-a80d700b59e4.jpg?1783931019"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Patagia Tiger
 {
     "name": "Patagia Tiger",
@@ -8713,6 +9535,147 @@
     ]
 }
 
+// Primal Empathy
+{
+    "name": "Primal Empathy",
+    "manaCost": "{1}{G}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your upkeep, draw a card if you control a creature with the greatest power among creatures on the battlefield. Otherwise, put a +1/+1 counter on a creature you control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Primal Empathy:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "All",
+                            "conditions": [
+                                {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "creature"
+                                },
+                                {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": "creature",
+                                        "aggregation": "MAX",
+                                        "property": "POWER"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "Each",
+                                        "filter": "creature",
+                                        "aggregation": "MAX",
+                                        "property": "POWER"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "otherwise": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SelectTarget",
+                                "requirement": {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "storeAs": "target0",
+                                "nonTargeting": true,
+                                "prompt": "Choose a creature you control to get a +1/+1 counter"
+                            },
+                            {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "target0"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "200",
+        "rarity": "UNCOMMON",
+        "artist": "Micah Epstein",
+        "flavorText": "\"From this day forward, we confront this world together, lifting each other up.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/034e0afb-7787-4cb8-8bb4-cf6997dbf7e4.jpg?1783931019"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
+// Proud Wildbonder
+{
+    "name": "Proud Wildbonder",
+    "manaCost": "{2}{R/G}{R/G}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Trample\nCreatures you control with trample have \"You may have this creature assign its combat damage as though it weren't blocked.\"",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "AssignCombatDamageAsUnblocked",
+                "filter": {
+                    "baseFilter": "creature kw:trample ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "229",
+        "rarity": "UNCOMMON",
+        "artist": "Dmitry Burmak",
+        "flavorText": "\"You're little now, yes, but one day your footsteps will make mountains tremble.\"\n—Gustin, wildbonder",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/4/f4876e17-a206-4351-9c0b-0845db4569a3.jpg?1783931008",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Proud Wildbonder's last ability applies to itself as long as it still has trample."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "When assigning combat damage, you choose whether you want to assign all damage to blocking creatures and assign trample damage from that as normal, or if you want to assign all of it to the player or planeswalker the creature is attacking. You can't assign some damage to one blocker then skip other blockers."
+            }
+        ]
+    }
+}
+
 // Pyroceratops
 {
     "name": "Pyroceratops",
@@ -8757,6 +9720,73 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Quartzwood Crasher
+{
+    "name": "Quartzwood Crasher",
+    "manaCost": "{2}{R}{R}{G}",
+    "typeLine": "Creature — Dinosaur Beast",
+    "oracleText": "Trample\nWhenever one or more creatures you control with trample deal combat damage to a player, create an X/X green Dinosaur Beast creature token with trample, where X is the amount of damage those creatures dealt to that player.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Quartzwood Crasher:1",
+                "trigger": {
+                    "type": "OneOrMoreDealCombatDamageToPlayerEvent",
+                    "sourceFilter": "creature kw:trample"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 0,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Dinosaur",
+                        "Beast"
+                    ],
+                    "keywords": [
+                        "TRAMPLE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/9/d/9d447365-3aca-4996-9098-efcbe6f28f57.jpg?1783930943",
+                    "dynamicPower": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    },
+                    "dynamicToughness": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "201",
+        "rarity": "RARE",
+        "artist": "Antonio José Manzanedo",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/8/c8e4c609-19c9-433b-a852-7999e375ee4f.jpg?1783931019",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Quartzwood Crasher's second ability includes damage dealt by Quartzwood Crasher itself as long as it still has trample."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If a creature you control with trample is unblocked, the full amount of combat damage it deals to the defending player is counted by Quartzwood Crasher's last ability."
+            }
+        ]
+    }
 }
 
 // Raking Claws
@@ -11207,6 +12237,57 @@
     ]
 }
 
+// Trumpeting Gnarr
+{
+    "name": "Trumpeting Gnarr",
+    "manaCost": "{1}{G}{U}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "Mutate {3}{G/U}{G/U} (If you cast this spell for its mutate cost, put it over or under target non-Human creature you own. They mutate into the creature on top plus all abilities from under it.)\nWhenever this creature mutates, create a 3/3 green Beast creature token.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "MUTATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Mutate",
+            "cost": "{3}{G/U}{G/U}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Trumpeting Gnarr:1",
+                "trigger": "MutateEvent",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Beast"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/f/1f2c9241-9cba-4c99-85cc-7e74286d1dc1.jpg?1783930944"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "213",
+        "rarity": "UNCOMMON",
+        "artist": "Aaron Miller",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/063a95ee-3fda-436f-9ff8-de80cc874dde.jpg?1783931014"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Umori, the Collector
 {
     "name": "Umori, the Collector",
@@ -11574,6 +12655,220 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Vivien, Monsters' Advocate
+{
+    "name": "Vivien, Monsters' Advocate",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Legendary Planeswalker — Vivien",
+    "oracleText": "You may look at the top card of your library any time.\nYou may cast creature spells from the top of your library.\n+1: Create a 3/3 green Beast creature token. Put your choice of a reach counter, a vigilance counter, or a trample counter on it.\n−2: When you next cast a creature spell this turn, search your library for a creature card with lesser mana value, put it onto the battlefield, then shuffle.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Vivien, Monsters' Advocate:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 3,
+                            "toughness": 3,
+                            "colors": [
+                                "GREEN"
+                            ],
+                            "creatureTypes": [
+                                "Beast"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/1/f/1f2c9241-9cba-4c99-85cc-7e74286d1dc1.jpg?1783930944"
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "createdTokens"
+                            },
+                            "body": {
+                                "type": "ChooseAction",
+                                "choices": [
+                                    {
+                                        "label": "Reach counter",
+                                        "effect": {
+                                            "type": "AddCounters",
+                                            "counterType": "REACH",
+                                            "count": 1,
+                                            "target": "IterationEntity"
+                                        }
+                                    },
+                                    {
+                                        "label": "Vigilance counter",
+                                        "effect": {
+                                            "type": "AddCounters",
+                                            "counterType": "VIGILANCE",
+                                            "count": 1,
+                                            "target": "IterationEntity"
+                                        }
+                                    },
+                                    {
+                                        "label": "Trample counter",
+                                        "effect": {
+                                            "type": "AddCounters",
+                                            "counterType": "TRAMPLE",
+                                            "count": 1,
+                                            "target": "IterationEntity"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Vivien, Monsters' Advocate:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsCreature",
+                                            {
+                                                "type": "ManaValueAtMostDynamic",
+                                                "amount": {
+                                                    "type": "Subtract",
+                                                    "left": {
+                                                        "type": "EntityProperty",
+                                                        "entity": "TriggeringEntity",
+                                                        "numericProperty": "ManaValue"
+                                                    },
+                                                    "right": {
+                                                        "type": "Fixed",
+                                                        "amount": 1
+                                                    }
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a creature card with mana value (that creature's mana value - 1) or less to put onto the battlefield",
+                                "selectedLabel": "Put onto the battlefield"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                }
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    },
+                    "trigger": {
+                        "event": {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ]
+                            }
+                        },
+                        "binding": "ANY"
+                    },
+                    "fireOnce": true
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ],
+        "staticAbilities": [
+            "LookAtTopOfLibrary",
+            {
+                "type": "CastSpellTypesFromTopOfLibrary",
+                "filter": "creature"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "175",
+        "rarity": "MYTHIC",
+        "artist": "Lius Lasahido",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/504ebb84-7e7b-4119-a128-a9c183c5d9de.jpg?1783931029",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Vivien lets you look at the top card of your library whenever you want (with one restriction; see below), even if you don't have priority. This action doesn't use the stack. Knowing what that card is becomes part of the information you have access to, just like you can look at the cards in your hand."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If the top card of your library changes while you're casting a spell, playing a land, or activating an ability, you can't look at the new top card until you finish doing so. This means that if you cast the top card of your library, you can't look at the next one until you're done paying for that spell."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Normally, Vivien allows you to cast the top card of your library if it's a creature card, it's your main phase, and the stack is empty. If that creature card has flash, you'll be able to cast it any time you could cast an instant, even on an opponent's turn."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "You'll still pay all costs for that spell, including additional costs. You may also pay alternative costs such as mutate costs."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "The top card of your library isn't in your hand, so you can't cycle it, discard it, or activate any of its activated abilities."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "After activating Vivien's last loyalty ability, the delayed triggered ability it creates will put a creature card onto the battlefield before the creature spell that caused the ability to trigger resolves."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "For spells with {X} in their mana costs, use the value chosen for X to determine the spell's mana value."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If a card in a player's library has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If you cast a mutating creature spell, you must choose a target for it before the triggered ability from Vivien's last ability puts a creature onto the battlefield. The creature you find can't be the target of the mutating creature spell."
+            }
+        ]
+    },
+    "startingLoyalty": 3,
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
