@@ -3868,6 +3868,78 @@
     ]
 }
 
+// Creeping Trailblazer
+{
+    "name": "Creeping Trailblazer",
+    "manaCost": "{R}{G}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Other Elementals you control get +1/+0.\n{2}{R}{G}: This creature gets +1/+1 until end of turn for each Elemental you control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Creeping Trailblazer:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{R}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "permanent Elemental"
+                    },
+                    "toughnessModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "permanent Elemental"
+                    },
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0,
+                "filter": {
+                    "baseFilter": "permanent Elemental ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "UNCOMMON",
+        "artist": "Johan Grenier",
+        "flavorText": "The destruction of a wildfire with the tenacity of a jungle vine.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f0b96e41-caae-4e22-82f9-df5a054ea3b7.jpg?1783932951",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "The size of the bonus is determined as Creeping Trailblazer's last ability begins to resolve; it won't change later in the turn if the number of Elementals you control changes."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Because Creeping Trailblazer is itself an Elemental, its last ability will usually give it at least +1/+1."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Cryptic Caves
 {
     "name": "Cryptic Caves",
@@ -3942,6 +4014,43 @@
         "imageUri": "https://cards.scryfall.io/normal/front/f/d/fde9e9cb-68ab-4856-8ad6-30f66666dd93.jpg?1783932938"
     },
     "colorIdentityOverride": []
+}
+
+// Daggersail Aeronaut
+{
+    "name": "Daggersail Aeronaut",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Goblin",
+    "oracleText": "During your turn, this creature has flying.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "IsYourTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "artist": "Zoltan Boros",
+        "flavorText": "\"Coming down is the best part!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/a/5a46b090-8b03-4498-840e-cf130510892c.jpg?1783932980"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Dark Remedy
@@ -4177,6 +4286,98 @@
         "rarity": "UNCOMMON",
         "artist": "Alayna Danner",
         "imageUri": "https://cards.scryfall.io/normal/front/e/e/eeab4819-dd26-4f5c-8538-50f2caca292d.jpg?1783932945"
+    }
+}
+
+// Diviner's Lockbox
+{
+    "name": "Diviner's Lockbox",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "{1}, {T}: Choose a card name, then reveal the top card of your library. If that card has the chosen name, sacrifice this artifact and draw three cards. Activate only as a sorcery.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Diviner's Lockbox:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ChooseOption",
+                            "optionType": "CARD_NAME",
+                            "storeAs": "cardName0"
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered1",
+                            "revealed": true
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "gathered1",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            {
+                                                "type": "NameEqualsChosen",
+                                                "variableName": "cardName0"
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "SacrificeTarget",
+                                        "target": "Self"
+                                    },
+                                    {
+                                        "type": "DrawCards",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 3
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "225",
+        "rarity": "UNCOMMON",
+        "artist": "Lake Hurwitz",
+        "flavorText": "\"I see it taunting me whenever I close my eyes.\"\n—Nayrex Slipfinger, master thief",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/da55c6a1-1f26-4254-ac62-fdbe94278de5.jpg?1783932944"
     }
 }
 
@@ -5045,6 +5246,99 @@
     ]
 }
 
+// Gargos, Vicious Watcher
+{
+    "name": "Gargos, Vicious Watcher",
+    "manaCost": "{3}{G}{G}{G}",
+    "typeLine": "Legendary Creature — Hydra",
+    "oracleText": "Vigilance\nHydra spells you cast cost {4} less to cast.\nWhenever a creature you control becomes the target of a spell, Gargos fights up to one target creature you don't control.",
+    "creatureStats": {
+        "power": 8,
+        "toughness": 7
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gargos, Vicious Watcher:1",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "targetFilter": "creature ctrl:you",
+                    "spellsOnly": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Fight",
+                    "target1": "Self",
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever a creature you control becomes the target of a spell, Gargos fights up to one target creature you don't control."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "Hydra"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 4
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "172",
+        "rarity": "RARE",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4e446e90-6e31-43ed-bcb1-a01422b503c0.jpg?1783932967",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "Gargos's cost-reduction ability affects only generic mana in a Hydra's cost. For example, if you cast a Hydra spell with mana cost {2}{G}{G}{G}, it will cost {G}{G}{G} to cast, not {G}."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If a spell has {X} in its mana cost, you choose the value for X before applying cost reductions. For example, if you cast a Hydra spell with mana cost {X}{G}{G} and choose for X to be 6, you pay {2}{G}{G}. Any of that Hydra's abilities that refer to X still uses 6 as the value for X regardless of what you actually paid."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Gargos's controller chooses which creature (if any) Gargos will fight, not the controller of the spell."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If a spell targets one creature you control multiple times, Gargos's ability triggers once. If that spell targets multiple creatures you control, Gargos's ability triggers once for each of those creatures."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Gargos's triggered ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If the target creature is an illegal target when Gargos's last ability tries to resolve, the ability doesn't resolve. If Gargos is no longer on the battlefield, the target creature won't deal or be dealt damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Gauntlets of Light
 {
     "name": "Gauntlets of Light",
@@ -5525,6 +5819,148 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Golos, Tireless Pilgrim
+{
+    "name": "Golos, Tireless Pilgrim",
+    "manaCost": "{5}",
+    "typeLine": "Legendary Artifact Creature — Scout",
+    "oracleText": "When Golos enters, you may search your library for a land card, put that card onto the battlefield tapped, then shuffle.\n{2}{W}{U}{B}{R}{G}: Exile the top three cards of your library. You may play them this turn without paying their mana costs.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Golos, Tireless Pilgrim:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "land"
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a land card to put onto the battlefield tapped",
+                                "selectedLabel": "Put onto the battlefield tapped"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield",
+                                    "placement": "Tapped"
+                                }
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Golos, Tireless Pilgrim:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{W}{U}{B}{R}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "gathered0"
+                        },
+                        {
+                            "type": "GrantPlayWithoutPayingCost",
+                            "from": "gathered0"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "226",
+        "rarity": "RARE",
+        "artist": "Joseph Meehan",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/f/1fa48620-4c3d-4f75-be1f-c12c4aa59f51.jpg?1783932945",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "If you don't play some or all of the cards exiled with Golos's last ability, those cards remain in exile."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Golos's last ability doesn't change when you can play the exiled cards. For example, if you exile a sorcery card, you can cast it only during your main phase when the stack is empty. If you exile a land card, you can play it only during your main phase and only if you have an available land play remaining."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If a spell has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If you cast a card \"without paying its mana cost,\" you can't choose to cast it for any alternative costs. You can, however, pay additional costs. If the card has any mandatory additional costs (such as that of Bone Splinters), you must pay those to cast the card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK",
+        "RED",
+        "GREEN"
     ]
 }
 
@@ -7121,6 +7557,64 @@
     ]
 }
 
+// Lotus Field
+{
+    "name": "Lotus Field",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "Hexproof\nThis land enters tapped.\nWhen this land enters, sacrifice two lands.\n{T}: Add three mana of any one color.",
+    "keywords": [
+        "HEXPROOF"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lotus Field:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Sacrifice",
+                    "filter": "land",
+                    "count": 2
+                },
+                "descriptionOverride": "When this land enters, sacrifice two lands."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Lotus Field:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "249",
+        "rarity": "RARE",
+        "artist": "John Avon",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0e013033-3995-4ba8-b0c3-0614c79aaaab.jpg?1783932935",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "If Lotus Field enters the battlefield while you control fewer than two other lands, you must sacrifice each land you control, including Lotus Field."
+            }
+        ]
+    }
+}
+
 // Loxodon Lifechanter
 {
     "name": "Loxodon Lifechanter",
@@ -8512,6 +9006,62 @@
     }
 }
 
+// Pack Mastiff
+{
+    "name": "Pack Mastiff",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Dog",
+    "oracleText": "{1}{R}: Each creature you control named Pack Mastiff gets +1/+0 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Pack Mastiff:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature name:Pack Mastiff ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "artist": "Svetlin Velinov",
+        "flavorText": "Their loyalty is not to any master, but to the pack.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/39934090-36a6-4183-9176-97ea932d2685.jpg?1783932973"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Pattern Matcher
 {
     "name": "Pattern Matcher",
@@ -8612,6 +9162,89 @@
         ]
     },
     "colorIdentityOverride": []
+}
+
+// Portal of Sanctuary
+{
+    "name": "Portal of Sanctuary",
+    "manaCost": "{2}{U}",
+    "typeLine": "Artifact",
+    "oracleText": "{1}, {T}: Return target creature you control and each Aura attached to it to their owners' hands. Activate only during your turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Portal of Sanctuary:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "AttachedToTarget",
+                                "host": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "filter": "permanent Aura"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "restrictions": [
+                    "OnlyDuringYourTurn"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Vargas",
+        "flavorText": "\"If you need to disappear for a while, I know a place.\"\n—Bilivus, master archivist",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/37c66692-2880-4ea2-abaf-8926c6950826.jpg?1783933005"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Pyroclastic Elemental
@@ -9194,6 +9827,61 @@
     ]
 }
 
+// Salvager of Ruin
+{
+    "name": "Salvager of Ruin",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "Sacrifice this creature: Choose target permanent card in your graveyard that was put there from the battlefield this turn. Return it to your hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Salvager of Ruin:1",
+                "cost": "CostSacrificeSelf",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand",
+                    "fromZone": "Graveyard"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsPermanent"
+                                ],
+                                "statePredicates": [
+                                    "PutIntoGraveyardFromBattlefieldThisTurn"
+                                ],
+                                "controllerPredicate": "OwnedByYou"
+                            },
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Sacrifice this creature: Return target permanent card in your graveyard that was put there from the battlefield this turn to your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "237",
+        "rarity": "UNCOMMON",
+        "artist": "James Paick",
+        "flavorText": "\"The next model should be able to achieve a rescue without self-destruction.\"\n—Sargis Haz, artificer",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8dd2ebbe-71c6-405b-bad0-5680f0ff575c.jpg?1783932941"
+    }
+}
+
 // Savage Gorger
 {
     "name": "Savage Gorger",
@@ -9353,6 +10041,79 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Scheming Symmetry
+{
+    "name": "Scheming Symmetry",
+    "manaCost": "{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose two target players. Each of them searches their library for a card, then shuffles and puts that card on top.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Players",
+                "players": "EachTargetedPlayer"
+            },
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "FromZone",
+                            "zone": "Library"
+                        },
+                        "storeAs": "searchable",
+                        "search": true
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "searchable",
+                        "selection": {
+                            "type": "ChooseUpTo",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        "storeSelected": "found",
+                        "prompt": "Search your library for a card to put on top of your library",
+                        "selectedLabel": "Put on top of your library"
+                    },
+                    "ShuffleLibrary",
+                    {
+                        "type": "MoveCollection",
+                        "from": "found",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Library",
+                            "placement": "Top"
+                        }
+                    },
+                    "EmitLibrarySearchedEvent"
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "count": 2,
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "rarity": "RARE",
+        "artist": "Seb McKinnon",
+        "flavorText": "\"One for you, one for me. What could be more fair?\"\n—Kethis, the Hidden Hand",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/01acc50b-856d-442d-9880-1a892b40643b.jpg?1783932988"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -10578,6 +11339,64 @@
     ]
 }
 
+// Tale's End
+{
+    "name": "Tale's End",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target activated ability, triggered ability, or legendary spell.",
+    "script": {
+        "spellEffect": {
+            "type": "Counter",
+            "target": "CounterTarget.SpellOrAbility"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsActivatedOrTriggeredAbility",
+                                    "IsLegendary"
+                                ]
+                            }
+                        ]
+                    },
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "77",
+        "rarity": "RARE",
+        "artist": "Randy Vargas",
+        "flavorText": "\"When you are gone, will anyone remember your story?\"\n—Unknown",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/4/1421115b-9a98-4ab2-bcb2-7d8899ce12db.jpg?1783933002",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "Tale's End can't target an activated or triggered mana ability. An activated mana ability is one that could add mana as it resolves, doesn't have a target, and isn't a loyalty ability. A triggered mana ability is one that could add mana as it resolves and triggers on an activated mana ability."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Abilities that create replacement effects, such as a permanent entering the battlefield tapped or with counters on it, can't be targeted. Abilities that apply \"as [this creature] enters the battlefield\" are also replacement effects and can't be targeted."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If you counter a delayed triggered ability that triggered at the beginning of the \"next\" occurrence of a specified step or phase, that ability won't trigger again the following time that step or phase occurs."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Thicket Crasher
 {
     "name": "Thicket Crasher",
@@ -10850,6 +11669,150 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Tomebound Lich
+{
+    "name": "Tomebound Lich",
+    "manaCost": "{1}{U}{B}",
+    "typeLine": "Creature — Zombie Wizard",
+    "oracleText": "Deathtouch\nLifelink\nWhenever this creature enters or deals combat damage to a player, draw a card, then discard a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEATHTOUCH",
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tomebound Lich:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, draw a card, then discard a card."
+            },
+            {
+                "id": "Tomebound Lich:2",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature deals combat damage to a player, draw a card, then discard a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "219",
+        "rarity": "UNCOMMON",
+        "artist": "Cristi Balanescu",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f305027-dfd2-4b17-a6af-6b0576389623.jpg?1783932947"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 
@@ -11157,6 +12120,46 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Vengeful Warchief
+{
+    "name": "Vengeful Warchief",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Orc Warrior",
+    "oracleText": "Whenever you lose life for the first time each turn, put a +1/+1 counter on this creature. (Damage causes loss of life.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vengeful Warchief:1",
+                "trigger": {
+                    "type": "LifeLossEvent",
+                    "firstTimeEachTurn": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "rarity": "UNCOMMON",
+        "artist": "Karl Kopinski",
+        "flavorText": "\"Try to steal from me and I'll add your skull to my collection.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d405e1bc-bf58-4cce-8abe-57fb40ef0996.jpg?1783932986"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -11829,6 +12832,114 @@
     ]
 }
 
+// Wolfrider's Saddle
+{
+    "name": "Wolfrider's Saddle",
+    "manaCost": "{3}{R}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "When this Equipment enters, create a 2/2 green Wolf creature token, then attach this Equipment to it.\nEquipped creature gets +1/+1 and can't be blocked by more than one creature.\nEquip {3} ({3}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wolfrider's Saddle:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 2,
+                            "toughness": 2,
+                            "colors": [
+                                "GREEN"
+                            ],
+                            "creatureTypes": [
+                                "Wolf"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/b/d/bd05e304-1a16-436d-a05c-4a38a839759b.jpg?1783932856"
+                        },
+                        {
+                            "type": "AttachEquipment",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Wolfrider's Saddle:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "CantBeBlockedByMoreThan",
+                "maxBlockers": 1
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "204",
+        "rarity": "UNCOMMON",
+        "artist": "Raoul Vitale",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/ba18cc9a-411d-45c6-bcc3-9e02ef5e2d92.jpg?1783932953",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "The Wolf token that you create enters the battlefield as a 2/2 creature. Any abilities that trigger when a creature with a certain power enters the battlefield will see the token enter as a 2/2 creature before Wolfrider's Saddle becomes attached."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "No player may take any actions between the time you create the Wolf token and the time Wolfrider's Saddle becomes attached to it."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If the equipped creature has menace, it can't be blocked at all."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Woodland Champion
 {
     "name": "Woodland Champion",
@@ -12267,6 +13378,74 @@
         ]
     },
     "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Yarok, the Desecrated
+{
+    "name": "Yarok, the Desecrated",
+    "manaCost": "{2}{B}{G}{U}",
+    "typeLine": "Legendary Creature — Elemental Horror",
+    "oracleText": "Deathtouch, lifelink\nIf a permanent entering causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "keywords": [
+        "DEATHTOUCH",
+        "LIFELINK"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "AdditionalETBOrLTBTriggers",
+                "filter": {},
+                "mustBeYouControl": false,
+                "description": "If a permanent entering causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "220",
+        "rarity": "MYTHIC",
+        "artist": "Daarken",
+        "flavorText": "\"Yarok grieves within the waste\nOf Bala Ged's corrupted land.\"\n—Lament for Bala Ged, stanza 1",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a1001d43-e11b-4e5e-acd4-4a50ef89977f.jpg?1783932948",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "Yarok affects a permanent's own enters-the-battlefield triggered abilities as well as other triggered abilities that trigger when that permanent enters the battlefield. Such triggered abilities start with \"when\" or \"whenever.\""
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Yarok's effect doesn't copy the triggered ability; it just causes the ability to trigger twice. Any choices made as you put the ability onto the stack, such as modes and targets, are made separately for each instance of the ability. Any choices made on resolution, such as whether to put counters on a permanent, are also made individually."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If a permanent entering the battlefield at the same time as Yarok (including Yarok itself) causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Abilities that apply \"as [this creature] enters the battlefield,\" such as choosing a color with Diamond Knight, are also unaffected."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If you somehow control two Yaroks, a permanent entering the battlefield causes abilities to trigger three times, not four. A third Yarok causes abilities to trigger four times, a fourth causes abilities to trigger five times, and so on."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Replacement effects are unaffected by Yarok's ability. For example, a creature that enters the battlefield with one +1/+1 counter on it won't receive an additional +1/+1 counter."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "You don't need to control the permanent entering the battlefield, only the permanent that has the triggered ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN",
         "BLUE"
     ]
 }
