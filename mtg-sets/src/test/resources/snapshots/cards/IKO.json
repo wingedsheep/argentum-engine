@@ -2147,6 +2147,84 @@
     ]
 }
 
+// Cunning Nightbonder
+{
+    "name": "Cunning Nightbonder",
+    "manaCost": "{U/B}{U/B}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "Flash\nSpells with flash you cast cost {1} less to cast and can't be countered.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "kw:flash"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            },
+            {
+                "type": "GrantCantBeCountered",
+                "filter": {
+                    "cardPredicates": [
+                        {
+                            "type": "HasKeyword",
+                            "keyword": "FLASH"
+                        }
+                    ],
+                    "statePredicates": [
+                        "WasCast"
+                    ],
+                    "controllerPredicate": "ControlledByYou"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "219",
+        "rarity": "UNCOMMON",
+        "artist": "Ekaterina Burmak",
+        "flavorText": "\"We are each other's shadow, fleeting yet always present.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/d/adb202e7-f9a4-4785-840d-18aa6aa663b4.jpg?1783931012",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Spells with flash that you control but didn't cast (perhaps because they're copies of a spell or because you took control of them from another player) can be countered."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Cunning Nightbonder's last ability doesn't apply to itself while it's a spell."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Cunning Nightbonder's cost reduction applies only to generic mana in a spell's cost. It can't reduce a spell's colored mana requirements. For example, your first Cunning Nightbonder won't normally reduce the cost of your second since it has no generic mana in its cost."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "A spell or ability that counters spells can still target spells with flash you cast. When that spell or ability resolves, your spell won't be countered, but any additional effects of the countering spell or ability will still happen."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If Cunning Nightbonder enters the battlefield while a spell with flash that you cast is on the stack, that spell can't be countered, even though you don't get the {1} discount."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Daysquad Marshal
 {
     "name": "Daysquad Marshal",
@@ -5876,6 +5954,82 @@
     ]
 }
 
+// Inspired Ultimatum
+{
+    "name": "Inspired Ultimatum",
+    "manaCost": "{U}{U}{R}{R}{R}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player gains 5 life, Inspired Ultimatum deals 5 damage to any target, then you draw five cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 5
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            },
+            {
+                "type": "AnyTarget",
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "191",
+        "rarity": "RARE",
+        "artist": "Tyler Jacobson",
+        "flavorText": "\"Inner peace is wonderful, and worth striving for. Outer peace is much less important.\"\n—Taelya, Lavabrink pyromage",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd64f064-8f05-41ef-b95b-1b723137f846.jpg?1783931024",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "You can target yourself as the player to gain 5 life."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If either target becomes illegal before Inspired Ultimatum resolves, the other will be affected as appropriate and you'll draw five cards. If both targets become illegal, the spell won't resolve and you won't draw five cards."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "BLUE",
+        "WHITE"
+    ]
+}
+
 // Jegantha, the Wellspring
 {
     "name": "Jegantha, the Wellspring",
@@ -6694,6 +6848,138 @@
     ]
 }
 
+// Labyrinth Raptor
+{
+    "name": "Labyrinth Raptor",
+    "manaCost": "{B}{R}",
+    "typeLine": "Creature — Nightmare Dinosaur",
+    "oracleText": "Menace\nWhenever a creature you control with menace becomes blocked, defending player sacrifices a creature of their choice that's blocking it.\n{B}{R}: Creatures you control with menace get +1/+0 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Labyrinth Raptor:1",
+                "trigger": {
+                    "type": "BecomesBlockedEvent",
+                    "filter": "creature kw:menace ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        {
+                                            "type": "IsBlockingEntity",
+                                            "reference": "TriggeringEntity"
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "ControllerOfSelection",
+                            "storeSelected": "selected1",
+                            "prompt": "Choose a creature blocking it to sacrifice",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Sacrifice"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever a creature you control with menace becomes blocked, defending player sacrifices a creature of their choice that's blocking it."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Labyrinth Raptor:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{B}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature kw:menace ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "193",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c608543d-cb60-44c3-a437-e4a18c311420.jpg?1783931023",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Labyrinth Raptor's second and third abilities apply to itself as long as it still has menace."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "The defending player sacrifices a blocking creature before combat damage is dealt. This may cause a single creature to be blocking the creature with menace; the blocking creature remains blocking. It will still deal and be dealt combat damage as normal."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If a creature is attacking a planeswalker, the planeswalker's controller is the defending player."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Lava Serpent
 {
     "name": "Lava Serpent",
@@ -6894,6 +7180,61 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Lore Drakkis
+{
+    "name": "Lore Drakkis",
+    "manaCost": "{1}{U}{R}",
+    "typeLine": "Creature — Lizard Beast",
+    "oracleText": "Mutate {U/R}{U/R} (If you cast this spell for its mutate cost, put it over or under target non-Human creature you own. They mutate into the creature on top plus all abilities from under it.)\nWhenever this creature mutates, return target instant or sorcery card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "MUTATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Mutate",
+            "cost": "{U/R}{U/R}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lore Drakkis:1",
+                "trigger": "MutateEvent",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "instant|sorcery own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "194",
+        "rarity": "UNCOMMON",
+        "artist": "Lucas Graciano",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/3/83e035ca-eccd-4b63-817c-f2c676b9c98d.jpg?1783931022"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
     ]
 }
 
@@ -7698,6 +8039,38 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Mysterious Egg
+{
+    "name": "Mysterious Egg",
+    "manaCost": "{1}",
+    "typeLine": "Creature — Egg",
+    "oracleText": "Whenever this creature mutates, put a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mysterious Egg:1",
+                "trigger": "MutateEvent",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "artist": "Volkan Baǵa",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cdfac3c3-7f38-49d6-bd88-dc0f5001116f.jpg?1783931094"
+    },
+    "colorIdentityOverride": []
 }
 
 // Mystic Subdual
@@ -10080,6 +10453,67 @@
     ]
 }
 
+// Regal Leosaur
+{
+    "name": "Regal Leosaur",
+    "manaCost": "{R}{W}",
+    "typeLine": "Creature — Dinosaur Cat",
+    "oracleText": "Mutate {1}{R/W}{R/W} (If you cast this spell for its mutate cost, put it over or under target non-Human creature you own. They mutate into the creature on top plus all abilities from under it.)\nWhenever this creature mutates, other creatures you control get +2/+1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "MUTATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Mutate",
+            "cost": "{1}{R/W}{R/W}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Regal Leosaur:1",
+                "trigger": "MutateEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "202",
+        "rarity": "UNCOMMON",
+        "artist": "Ilse Gort",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/6/b6fdf313-740b-4976-911f-9fb5eb54afce.jpg?1783931018"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Reptilian Reflection
 {
     "name": "Reptilian Reflection",
@@ -10580,6 +11014,77 @@
         "imageUri": "https://cards.scryfall.io/normal/front/d/4/d46702b0-7e10-462a-9aac-7564efe91804.jpg?1783931085"
     },
     "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Savai Thundermane
+{
+    "name": "Savai Thundermane",
+    "manaCost": "{R}{W}",
+    "typeLine": "Creature — Elemental Cat",
+    "oracleText": "Whenever you cycle a card, you may pay {2}. When you do, this creature deals 2 damage to target creature and you gain 2 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Savai Thundermane:1",
+                "trigger": "CycleEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "PayManaCost",
+                        "cost": "{2}"
+                    },
+                    "reflexiveEffect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            }
+                        ]
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "A crackling roar is the last sound many hunters hear.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/3/73d3925c-cf7d-4546-bc70-33f04d4b7566.jpg?1783931018"
+    },
+    "colorIdentityOverride": [
+        "RED",
         "WHITE"
     ]
 }
@@ -11109,6 +11614,93 @@
     "colorIdentityOverride": []
 }
 
+// Slitherwisp
+{
+    "name": "Slitherwisp",
+    "manaCost": "{U}{B}{B}",
+    "typeLine": "Creature — Elemental Nightmare",
+    "oracleText": "Flash\nWhenever you cast another spell that has flash, you draw a card and each opponent loses 1 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Slitherwisp:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "HasKeyword",
+                                "keyword": "FLASH"
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever you cast another spell that has flash, you draw a card and each opponent loses 1 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "208",
+        "rarity": "RARE",
+        "artist": "Yigit Koroglu",
+        "flavorText": "Fear is its habitat, sanity its prey.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/8067f195-8b6e-4329-a34e-43e52f67c571.jpg?1783931018",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "If an effect allows you to cast a spell “as though” it has flash, Slitherwisp’s last ability won’t trigger."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "An ability that triggers when a player casts a spell resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Players can cast spells and activate abilities after the triggered ability resolves but before the spell that caused it to trigger does."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "In a Two-Headed Giant game, Slitherwisp’s last ability causes the opposing team to lose 2 life and you to draw one card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Snapdax, Apex of the Hunt
 {
     "name": "Snapdax, Apex of the Hunt",
@@ -11398,6 +11990,56 @@
     },
     "colorIdentityOverride": [
         "BLACK",
+        "RED"
+    ]
+}
+
+// Spelleater Wolverine
+{
+    "name": "Spelleater Wolverine",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Wolverine",
+    "oracleText": "This creature has double strike as long as there are three or more instant and/or sorcery cards in your graveyard.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "DOUBLE_STRIKE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": "instant|sorcery"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "artist": "Uriah Voth",
+        "flavorText": "\"The monster that scares me the most isn't the biggest.\"\n—Taelya, Lavabrink pyromage",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/5/a5f03ffd-dcdb-441c-8dfc-4fe06a289b22.jpg?1783931042"
+    },
+    "colorIdentityOverride": [
         "RED"
     ]
 }
@@ -11986,6 +12628,77 @@
     ]
 }
 
+// Tentative Connection
+{
+    "name": "Tentative Connection",
+    "manaCost": "{3}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "This spell costs {3} less to cast if you control a creature with menace.\nGain control of target creature until end of turn. Untap that creature. It gains haste until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "FixedIfControlFilter",
+                        "amount": 3,
+                        "filter": "creature kw:menace"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "artist": "Kieran Yanner",
+        "flavorText": "Lukka was ordered to kill a threat. He chose to make a friend.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5c40fd33-bb95-48f3-a10f-a33eb27c48f1.jpg?1783931042"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // The Ozolith
 {
     "name": "The Ozolith",
@@ -12406,6 +13119,101 @@
             }
         ]
     }
+}
+
+// Unbreakable Bond
+{
+    "name": "Unbreakable Bond",
+    "manaCost": "{4}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return target creature card from your graveyard to the battlefield with a lifelink counter on it.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Battlefield",
+            "fromZone": "Graveyard",
+            "entryCounters": [
+                {
+                    "counterType": "LIFELINK"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Vargas",
+        "flavorText": "From now until the crystals stop glowing\n—Ketria oath meaning \"forever\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c9da02a1-7b39-4a0e-8466-6512a02f3e3b.jpg?1783931056"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Unexpected Fangs
+{
+    "name": "Unexpected Fangs",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Put a +1/+1 counter and a lifelink counter on target creature.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "AddCounters",
+                    "counterType": "LIFELINK",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "102",
+        "artist": "Jesper Ejsing",
+        "flavorText": "\"With the frequent mutations, predator-prey relationships seem to change every moment. I already like it here.\"\n—Vivien Reid",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aa6494ad-a35e-4b09-8623-7740f3c20b0b.jpg?1783931057"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Unpredictable Cyclone
@@ -13119,6 +13927,81 @@
     ]
 }
 
+// Whisper Squad
+{
+    "name": "Whisper Squad",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "{1}{B}: Search your library for a card named Whisper Squad, put it onto the battlefield tapped, then shuffle.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Whisper Squad:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "name:Whisper Squad"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a card named Whisper Squad to put onto the battlefield tapped",
+                            "selectedLabel": "Put onto the battlefield tapped"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "Tapped"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "105",
+        "artist": "Stepan Alekseev",
+        "flavorText": "Ears can't hear them. Eyes see too many of them.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/9/097eeb32-cfd5-4adb-ac30-d7762e6ea48f.jpg?1783931056"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Will of the All-Hunter
 {
     "name": "Will of the All-Hunter",
@@ -13763,6 +14646,57 @@
     ]
 }
 
+// Zagoth Mamba
+{
+    "name": "Zagoth Mamba",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Nightmare Snake",
+    "oracleText": "Whenever this creature mutates, target creature an opponent controls gets -2/-2 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Zagoth Mamba:1",
+                "trigger": "MutateEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "rarity": "UNCOMMON",
+        "artist": "Yeong-Hao Han",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/ce945f7e-ded9-4819-9313-d50d3aad40fa.jpg?1783931054"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Zagoth Triome
 {
     "name": "Zagoth Triome",
@@ -13791,6 +14725,74 @@
         "BLACK",
         "GREEN",
         "BLUE"
+    ]
+}
+
+// Zenith Flare
+{
+    "name": "Zenith Flare",
+    "manaCost": "{2}{R}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Zenith Flare deals X damage to any target and you gain X life, where X is the number of cards with a cycling ability in your graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": {
+                            "cardPredicates": [
+                                "HasCycling"
+                            ]
+                        }
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": {
+                            "cardPredicates": [
+                                "HasCycling"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "217",
+        "rarity": "UNCOMMON",
+        "artist": "Jonas De Ro",
+        "flavorText": "\"I defy this world to try our defenses now. Send pterons and skycats. Send Vadrok!\"\n—Janae, Coppercoat architect",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0efac1ed-3f01-487c-86be-8239568b4425.jpg?1783931012",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "If the chosen target is an illegal target by the time Zenith Flare tries to resolve, the spell won't resolve. You won't gain X life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
     ]
 }
 
