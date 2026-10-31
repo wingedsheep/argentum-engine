@@ -1219,7 +1219,11 @@ class MiscContinuationResumer(
             colorless = 0
         )
 
-        val remaining = continuation.remainingPips - 1
+        // "Of different colors": the color just made is off the next pip's palette.
+        val nextColors = if (continuation.differentColors) continuation.allowedColors - color
+            else continuation.allowedColors
+        val remaining = if (continuation.differentColors) minOf(continuation.remainingPips - 1, nextColors.size)
+            else continuation.remainingPips - 1
         if (remaining <= 0) {
             return checkForMore(newState, listOf(event))
         }
@@ -1232,10 +1236,11 @@ class MiscContinuationResumer(
             sourceId = continuation.sourceId,
             sourceName = continuation.sourceName,
             remainingPips = remaining,
-            allowedColors = continuation.allowedColors,
+            allowedColors = nextColors,
             restriction = continuation.restriction,
             expiry = continuation.expiry,
             unitMultiplier = unit,
+            differentColors = continuation.differentColors,
         )
 
         return ExecutionResult.propagatePause(

@@ -2835,6 +2835,49 @@
     ]
 }
 
+// Firemind Vessel
+{
+    "name": "Firemind Vessel",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "This artifact enters tapped.\n{T}: Add two mana of different colors.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Firemind Vessel:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddDynamicMana",
+                    "amountSource": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "allowedColors": [
+                        "WHITE",
+                        "BLUE",
+                        "BLACK",
+                        "RED",
+                        "GREEN"
+                    ],
+                    "differentColors": true
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "237",
+        "rarity": "UNCOMMON",
+        "artist": "Ravenna Tran",
+        "flavorText": "The city mourned Niv-Mizzet's death, but he left behind the components for his rebirth.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/c/ec0ebb6b-d35a-47db-8071-7fef2a46c17b.jpg?1783933373"
+    }
+}
+
 // Flux Channeler
 {
     "name": "Flux Channeler",
@@ -3190,6 +3233,74 @@
     ]
 }
 
+// Guild Globe
+{
+    "name": "Guild Globe",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "When this artifact enters, draw a card.\n{2}, {T}, Sacrifice this artifact: Add two mana of different colors.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Guild Globe:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Guild Globe:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "AddDynamicMana",
+                    "amountSource": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "allowedColors": [
+                        "WHITE",
+                        "BLUE",
+                        "BLACK",
+                        "RED",
+                        "GREEN"
+                    ],
+                    "differentColors": true
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "239",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "\"Hopefully Ravnica will prove harder to break.\"\n—Karn",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a7faf99e-f61f-46cb-a275-2e12c41f1e31.jpg?1783933374"
+    }
+}
+
 // Heartfire
 {
     "name": "Heartfire",
@@ -3331,6 +3442,95 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Interplanar Beacon
+{
+    "name": "Interplanar Beacon",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "Whenever you cast a planeswalker spell, you gain 1 life.\n{T}: Add {C}.\n{1}, {T}: Add two mana of different colors. Spend this mana only to cast planeswalker spells.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Interplanar Beacon:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsPlaneswalker"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Interplanar Beacon:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Interplanar Beacon:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AddDynamicMana",
+                    "amountSource": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "allowedColors": [
+                        "WHITE",
+                        "BLUE",
+                        "BLACK",
+                        "RED",
+                        "GREEN"
+                    ],
+                    "restriction": {
+                        "type": "CardTypeSpellsOrAbilitiesOnly",
+                        "cardType": "PLANESWALKER"
+                    },
+                    "differentColors": true
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "247",
+        "rarity": "UNCOMMON",
+        "artist": "Adam Paquette",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/132d8e2a-e1dd-4867-8e8c-e48b9450b350.jpg?1783933367"
+    }
 }
 
 // Iron Bully

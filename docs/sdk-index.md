@@ -719,7 +719,7 @@ Families:
 - `AddCountersWithLimitEffect(counterType: CounterType, amount: DynamicAmount, totalLimit: DynamicAmount, target: EffectTarget)` — Place amount counters without this instruction raising their total above totalLimit.
 - `AddCreatureTypeEffect(subtype: String, target: EffectTarget, duration: Duration, fromChosenValueKey: String?)` — Add a creature subtype to a target in addition to its other types.
 - `AddDynamicCountersEffect(counterType: CounterType, amount: DynamicAmount, target: EffectTarget)` — Add counters with a dynamic amount.
-- `AddDynamicManaEffect(amountSource: DynamicAmount, allowedColors: Set<Color>, restriction: ManaRestriction?, expiry: ManaExpiry)` — Add dynamic mana effect where the amount is determined at resolution time.
+- `AddDynamicManaEffect(amountSource: DynamicAmount, allowedColors: Set<Color>, restriction: ManaRestriction?, expiry: ManaExpiry, differentColors: Boolean)` — Add dynamic mana effect where the amount is determined at resolution time.
 - `AddMainPhaseEffect` — Insert a single additional (postcombat) main phase into the current turn.
 - `AddManaEffect(color: Color, amount: DynamicAmount, restriction: ManaRestriction?, expiry: ManaExpiry, riders: Set<ManaSpellRider>)` — Add mana effect.
 - `AddManaOfChoiceEffect(colorSet: ManaColorSet, amount: DynamicAmount, restriction: ManaRestriction?, riders: Set<ManaSpellRider>, recipient: EffectTarget, colorChosenByRecipient: Boolean)` — Add mana of a color the player chooses from a ManaColorSet resolved at resolution time.

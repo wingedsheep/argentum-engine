@@ -3223,6 +3223,19 @@ object Effects {
     ): Effect = AddDynamicManaEffect(DynamicAmount.Fixed(amount), allowedColors, restriction, expiry)
 
     /**
+     * "Add [amount] mana of different colors" (Firemind Vessel, Guild Globe, Interplanar Beacon):
+     * the player picks each unit's color at resolution, and no two units may share a color. Each
+     * pip prompt excludes the colors already chosen by this resolution, and the auto-payer never
+     * uses one activation to pay two pips of the same color ({U}{R} yes, {G}{G} no).
+     */
+    fun AddManaOfDifferentColors(
+        amount: Int = 2,
+        restriction: ManaRestriction? = null,
+    ): Effect = AddDynamicManaEffect(
+        DynamicAmount.Fixed(amount), Color.entries.toSet(), restriction, differentColors = true
+    )
+
+    /**
      * [expiry] covers "Until end of turn, you don't lose this mana as steps and phases end"
      * ([com.wingedsheep.sdk.scripting.effects.ManaExpiry.KEPT_UNTIL_END_OF_TURN] — Klauth, Unrivaled Ancient).
      */

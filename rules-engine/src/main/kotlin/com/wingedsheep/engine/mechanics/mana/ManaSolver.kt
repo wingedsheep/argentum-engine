@@ -222,7 +222,14 @@ data class ManaSource(
      */
     val tapPermanentsSubCost: TapPermanentsSubCost? = null,
     /** Fixed-output {T} choices eligible in an independent planning environment. */
-    val exactIndependentTap: Boolean = false
+    val exactIndependentTap: Boolean = false,
+    /**
+     * The colored units one tap makes are each a *different* color ("Add two mana of different
+     * colors" — Firemind Vessel, [AddDynamicManaEffect.differentColors]). A tap for color C makes
+     * one C; the other `amountFor(C) - 1` units float as any-color bonus mana that excludes C and
+     * each other ([BonusManaEntry.excludedColors]), so one tap never pays {G}{G}.
+     */
+    val differentColors: Boolean = false,
 ) {
     /**
      * Returns the set of colors this source can produce for a given spell context.
@@ -371,6 +378,13 @@ data class BonusManaEntry(
     val sourceId: EntityId? = null,
     /** Mana from a snow source (CR 107.4h): it is marked snow when it floats, and counts as `{S}` spent. */
     val snow: Boolean = false,
+    /**
+     * Colors an [anyColor] entry may *not* become — the units of a "different colors" tap
+     * ([ManaSource.differentColors]) exclude the colors that tap already made, plus any color the
+     * ability can't make at all. Each unit spent as a color adds that color here, so the
+     * remaining units stay distinct. [color] is always a color outside this set (the fallback).
+     */
+    val excludedColors: Set<Color> = emptySet(),
 )
 
 /**
@@ -381,13 +395,24 @@ data class ManaProduction(
     val amount: Int = 1,
     val colorless: Int = 0,
     /** The source is a snow permanent, so this mana pays `{S}` once it floats (CR 107.4h). */
-    val snow: Boolean = false
+    val snow: Boolean = false,
+    /**
+     * Further colored units the same activation made beside [amount] of [color] — the other
+     * colors of a "two mana of different colors" tap ([ManaSource.differentColors]).
+     */
+    val extraColors: Map<Color, Int> = emptyMap(),
 ) {
     /** The colors of this mana — empty for colorless. "The mana that land produced" (C.A.M.P.). */
-    val producedColors: Set<Color> get() = setOfNotNull(color)
+    val producedColors: Set<Color> get() = setOfNotNull(color) + extraColors.keys
 
     /** How much mana this is — [amount] of [color], or [colorless] when it has no color. */
-    val total: Int get() = if (color != null) amount else colorless
+    val total: Int get() = (if (color != null) amount else colorless) + extraColors.values.sum()
+
+    /** Every colored unit by color: [amount] of [color] plus [extraColors]. */
+    val coloredAmounts: Map<Color, Int> get() {
+        val primary = color ?: return extraColors
+        return extraColors + (primary to (extraColors[primary] ?: 0) + amount)
+    }
 }
 
 /**
@@ -581,6 +606,25 @@ class ManaSolver private constructor(
             bonusManaPool.addAll(auraBonusEntries(source, source.bonusManaPerTap))
         }
 
+        // Colors each "different colors" tap committed beyond its primary unit, per source —
+        // folded into that source's ManaProduction.extraColors when the solution is built.
+        val differentColorPicks = mutableMapOf<EntityId, MutableList<Color>>()
+        fun floatDifferentColorUnits(source: ManaSource, primary: Color, units: Int) {
+            val excluded = (Color.entries.toSet() - source.producesColors) + primary
+            val fallback = Color.entries.firstOrNull { it !in excluded } ?: return
+            bonusManaPool.add(BonusManaEntry(fallback, units, source.colorRestrictions[primary] ?: source.restriction,
+                anyColor = true, sourceId = source.entityId, snow = source.isSnow, excludedColors = excluded))
+        }
+        // Commit one unit of a "different colors" entry as [color]: the rest of the entry may no
+        // longer become it. Returns the entry with one fewer unit.
+        fun commitDifferentColorUnit(entry: BonusManaEntry, color: Color): BonusManaEntry {
+            entry.sourceId?.let { differentColorPicks.getOrPut(it) { mutableListOf() }.add(color) }
+            val excluded = entry.excludedColors + color
+            val fallback = Color.entries.firstOrNull { it !in excluded }
+            return if (fallback == null) entry.copy(amount = 0, excludedColors = excluded)
+                else entry.copy(amount = entry.amount - 1, color = fallback, excludedColors = excluded)
+        }
+
         // Helper to update available counts when a source is used
         fun useSource(source: ManaSource, colorUsed: Color?) {
             usedSources.add(source)
@@ -595,7 +639,11 @@ class ManaSolver private constructor(
             // The amount is the produced kind's own (ManaSource.amountFor): a Forest with a granted
             // "{T}: Add {C}{C}" leaves one {C} over when tapped for colorless, none when tapped for {G}.
             val producedAmount = source.amountFor(colorUsed)
-            if (producedAmount > 1) {
+            if (producedAmount > 1 && colorUsed != null && source.differentColors) {
+                // "Two mana of different colors": the tap made one [colorUsed]; the rest are any
+                // other colors, decided when spent (or at the end, if they float).
+                floatDifferentColorUnits(source, colorUsed, producedAmount - 1)
+            } else if (producedAmount > 1) {
                 if (colorUsed != null) {
                     val restrictionForExcess = source.colorRestrictions[colorUsed] ?: source.restriction
                     bonusManaPool.add(BonusManaEntry(colorUsed, producedAmount - 1, restrictionForExcess, sourceId = source.entityId, snow = source.isSnow))
@@ -638,12 +686,15 @@ class ManaSolver private constructor(
             // An any-color bonus entry (Fertile Ground) can pay a cost of any color; prefer an exact
             // color match first so fixed-color bonuses aren't wasted on flexible demand. Colorless
             // excess is excluded — it can never satisfy a colored pip.
-            val idx = bonusManaPool.indexOfFirst { it.color == color && !it.colorless && it.amount > 0 }
+            val idx = bonusManaPool.indexOfFirst {
+                it.color == color && !it.colorless && it.amount > 0 && it.excludedColors.isEmpty()
+            }
                 .takeIf { it >= 0 }
-                ?: bonusManaPool.indexOfFirst { it.anyColor && it.amount > 0 }
+                ?: bonusManaPool.indexOfFirst { it.anyColor && it.amount > 0 && color !in it.excludedColors }
             if (idx < 0) return false
             val entry = bonusManaPool[idx]
-            bonusManaPool[idx] = entry.copy(amount = entry.amount - 1)
+            bonusManaPool[idx] = if (entry.excludedColors.isNotEmpty()) commitDifferentColorUnit(entry, color)
+                else entry.copy(amount = entry.amount - 1)
             // A colored pip paid from genuinely-extra aura bonus mana contributes its color to the
             // mana-spent tally. The mana produced is exactly `color` (a fixed-color entry matches it;
             // an any-color entry produces the demanded color).
@@ -662,7 +713,9 @@ class ManaSolver private constructor(
             }
             if (idx < 0) return false
             val entry = bonusManaPool[idx]
-            bonusManaPool[idx] = entry.copy(amount = entry.amount - 1)
+            // A "different colors" unit paying generic still has to be some color; commit its fallback.
+            bonusManaPool[idx] = if (entry.excludedColors.isNotEmpty()) commitDifferentColorUnit(entry, entry.color)
+                else entry.copy(amount = entry.amount - 1)
             // Generic paid from extra aura bonus mana counts its fixed color (mirroring
             // ManaPool.payPartial, where colored mana spent on generic still tracks as that color).
             // An any-color bonus has no color committed at solve time, so it stays uncounted here.
@@ -698,7 +751,12 @@ class ManaSolver private constructor(
             // Printed mana → recorded as produced (mana-spent tally) and routed into the bonus pool
             // so the generic pass can consume it (or it floats back to the player's pool).
             val primaryColor = source.availableColorsFor(spellContext).firstOrNull()
-            if (primaryColor != null) {
+            if (primaryColor != null && source.differentColors && source.amountFor(primaryColor) > 1) {
+                manaProduced[source.entityId] = ManaProduction(color = primaryColor, amount = 1)
+                bonusManaPool.add(BonusManaEntry(primaryColor, 1,
+                    source.colorRestrictions[primaryColor] ?: source.restriction, sourceId = source.entityId, snow = source.isSnow))
+                floatDifferentColorUnits(source, primaryColor, source.amountFor(primaryColor) - 1)
+            } else if (primaryColor != null) {
                 manaProduced[source.entityId] = ManaProduction(color = primaryColor, amount = source.amountFor(primaryColor))
                 bonusManaPool.add(BonusManaEntry(primaryColor, source.amountFor(primaryColor),
                     source.colorRestrictions[primaryColor] ?: source.restriction, sourceId = source.entityId, snow = source.isSnow))
@@ -1087,12 +1145,15 @@ class ManaSolver private constructor(
             // Spend bonus mana of an allowed color (or an any-color bonus) toward X.
             fun spendBonusManaOnX(): Color? {
                 val idx = bonusManaPool.indexOfFirst {
-                    it.amount > 0 && (it.color in xManaRestriction || it.anyColor) && it.restriction?.paysGeneric != false
+                    it.amount > 0 && it.restriction?.paysGeneric != false &&
+                        (it.color in xManaRestriction || (it.anyColor && xManaRestriction.any { c -> c !in it.excludedColors }))
                 }
                 if (idx < 0) return null
                 val entry = bonusManaPool[idx]
-                val color = if (entry.color in xManaRestriction) entry.color else xManaRestriction.first()
-                bonusManaPool[idx] = entry.copy(amount = entry.amount - 1)
+                val color = if (entry.color in xManaRestriction) entry.color
+                    else xManaRestriction.first { it !in entry.excludedColors }
+                bonusManaPool[idx] = if (entry.excludedColors.isNotEmpty()) commitDifferentColorUnit(entry, color)
+                    else entry.copy(amount = entry.amount - 1)
                 return color
             }
             var xRemaining = xValue
@@ -1219,10 +1280,31 @@ class ManaSolver private constructor(
         for (source in usedSources) {
             if (source.isSnow) manaProduced.computeIfPresent(source.entityId) { _, p -> p.copy(snow = true) }
         }
+        // A "different colors" tap: its primary unit plus every other unit it made — the ones a
+        // pip committed, then the floating rest, each given its own distinct fallback color.
+        val floatingBonus = mutableListOf<BonusManaEntry>()
+        for (entry in bonusManaPool) {
+            if (entry.amount <= 0) continue
+            if (entry.excludedColors.isEmpty()) { floatingBonus += entry; continue }
+            var unit = entry
+            while (unit.amount > 0) {
+                floatingBonus += unit.copy(amount = 1, anyColor = false, excludedColors = emptySet())
+                unit = commitDifferentColorUnit(unit, unit.color)
+            }
+        }
+        for (source in usedSources) {
+            if (!source.differentColors) continue
+            val production = manaProduced[source.entityId] ?: continue
+            val primary = production.color ?: continue
+            val picks = differentColorPicks[source.entityId].orEmpty()
+            if (production.amount <= 1 && picks.isEmpty()) continue
+            manaProduced[source.entityId] = production.copy(amount = 1,
+                extraColors = picks.groupingBy { it }.eachCount())
+        }
         return ManaSolution(
             usedSources,
             manaProduced,
-            bonusManaPool.filter { it.amount > 0 },
+            floatingBonus,
             consumedRiders,
             xRestrictedManaSpent = xRestrictedSpent,
             bonusManaSpentByColor = bonusManaSpentByColor,
@@ -1675,6 +1757,8 @@ class ManaSolver private constructor(
             // is wrongly reported unaffordable, so the client never highlights it.
             val extraBonusByColor = mutableMapOf<Color, Int>()
             var extraColorlessBonus = 0
+            // An ability on this source adds "mana of different colors" (ManaSource.differentColors).
+            var producesDifferentColors = false
             var anyAbilityHasNoPainCost = false
             var minPainAmount = Int.MAX_VALUE
             // Track which accepted abilities required sacrificing the source (e.g. Treasure).
@@ -1983,7 +2067,9 @@ class ManaSolver private constructor(
                     is AddDynamicManaEffect -> {
                         combinedColors.addAll(effect.allowedColors)
                         effectColors.addAll(effect.allowedColors)
+                        if (effect.differentColors) producesDifferentColors = true
                         val manaAmount = evaluateManaAmount(effect.amountSource, state, entityId, playerId)
+                            .let { if (effect.differentColors) minOf(it, effect.allowedColors.size) else it }
                         maxManaAmount = maxOf(maxManaAmount, manaAmount)
                         recordAmount(effect.allowedColors, colorless = false, amount = manaAmount)
                         effect.restriction
@@ -2122,6 +2208,7 @@ class ManaSolver private constructor(
                     colorlessAmount = colorlessAmountMax.takeIf { producesColorless && it in 1 until maxManaAmount },
                     bonusManaColorlessPerTap = extraColorlessBonus,
                     compositeBonusMana = extraBonusByColor.filterValues { it > 0 },
+                    differentColors = producesDifferentColors,
                     restriction = sourceRestriction,
                     colorRiders = perColorRiders.mapValues { (_, v) -> v.toSet() },
                     colorlessRiders = colorlessRiders.toSet(),
@@ -2641,6 +2728,18 @@ class ManaSolver private constructor(
             multiplier *= entry.static.multiplier
         }
 
+        // A multiplied "different colors" tap makes [multiplier] of each of several colors — groups
+        // the distinct-unit model can't hold. Plan it conservatively as [multiplier] of the color
+        // chosen (never more than the tap really makes, never two pips from one same-color unit).
+        if (multiplier > 1 && source.differentColors) {
+            return source.copy(
+                exactIndependentTap = false,
+                differentColors = false,
+                manaAmount = multiplier,
+                colorAmounts = emptyMap(),
+                colorlessAmount = source.colorlessAmount?.let { it * multiplier },
+            )
+        }
         return if (multiplier > 1) {
             source.copy(
                 exactIndependentTap = false,

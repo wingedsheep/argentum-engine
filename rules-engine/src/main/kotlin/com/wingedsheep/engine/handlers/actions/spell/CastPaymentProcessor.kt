@@ -129,7 +129,7 @@ class CastPaymentProcessor(
         var snow = 0
         val snowColors = mutableSetOf<Color>()
         for ((sourceId, production) in manaProduced) {
-            val amount = production.amount + production.colorless
+            val amount = production.amount + production.colorless + production.extraColors.values.sum()
             if (amount <= 0) continue
             sourceIds.add(sourceId)
             if (production.snow) { snow += amount; production.color?.let(snowColors::add) }
@@ -530,13 +530,13 @@ class CastPaymentProcessor(
             events.addAll(tapEvents)
 
             for ((_, production) in solution.manaProduced) {
-                when (production.color) {
-                    Color.WHITE -> whiteSpent += production.amount
-                    Color.BLUE -> blueSpent += production.amount
-                    Color.BLACK -> blackSpent += production.amount
-                    Color.RED -> redSpent += production.amount
-                    Color.GREEN -> greenSpent += production.amount
-                    null -> colorlessSpent += production.colorless
+                if (production.color == null) colorlessSpent += production.colorless
+                for ((color, amount) in production.coloredAmounts) when (color) {
+                    Color.WHITE -> whiteSpent += amount
+                    Color.BLUE -> blueSpent += amount
+                    Color.BLACK -> blackSpent += amount
+                    Color.RED -> redSpent += amount
+                    Color.GREEN -> greenSpent += amount
                 }
             }
 

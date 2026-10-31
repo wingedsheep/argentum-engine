@@ -566,8 +566,13 @@ data class ManaPool(
     fun addProduction(production: ManaProduction, coloredAmount: Int = production.amount): ManaPool {
         val color = production.color
         val amount = if (color != null) coloredAmount else production.colorless
-        val added = if (color != null) add(color, amount) else addColorless(amount)
-        return if (production.snow) added.markSnow(color, amount) else added
+        var added = if (color != null) add(color, amount) else addColorless(amount)
+        if (production.snow) added = added.markSnow(color, amount)
+        // The other colors of a "two mana of different colors" tap (ManaProduction.extraColors).
+        for ((extra, extraAmount) in production.extraColors) {
+            added = added.add(extra, extraAmount).let { if (production.snow) it.markSnow(extra, extraAmount) else it }
+        }
+        return added
     }
 
     /** Total floating units that came from a snow source. */

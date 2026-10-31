@@ -566,6 +566,11 @@ data class AddManaPipsContinuation(
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
     /** Mana each chosen pip becomes — see [com.wingedsheep.engine.handlers.EffectContext.manaUnitMultiplier]. */
     val unitMultiplier: Int = 1,
+    /**
+     * "Add two mana of different colors": each chosen color leaves [allowedColors] for the next
+     * pip — see [com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect.differentColors].
+     */
+    val differentColors: Boolean = false,
 ) : AnswerContinuation
 
 /**

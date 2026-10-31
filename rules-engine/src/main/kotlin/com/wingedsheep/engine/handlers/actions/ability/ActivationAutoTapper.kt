@@ -141,14 +141,17 @@ internal class ActivationAutoTapper(
             } else source.restriction
             currentPool = when {
                 color != null && restriction != null ->
-                    currentPool.addRestricted(color, production.amount, restriction).let { tagged ->
-                        tagged.copy(restrictedMana = tagged.restrictedMana.dropLast(production.amount) +
-                            tagged.restrictedMana.takeLast(production.amount).map { it.copy(source = sourceTags.getValue(source.entityId)) })
+                    production.coloredAmounts.entries.fold(currentPool) { pool, (unitColor, amount) ->
+                        pool.addRestricted(unitColor, amount, restriction).let { tagged ->
+                            tagged.copy(restrictedMana = tagged.restrictedMana.dropLast(amount) +
+                                tagged.restrictedMana.takeLast(amount).map { it.copy(source = sourceTags.getValue(source.entityId)) })
+                        }
                     }
                 else -> currentPool.addProduction(production).let { produced ->
                     val tag = sourceTags.getValue(source.entityId)
                     produced.copy(manaUnits = produced.manaUnits +
                         List(if (color == null) 0 else production.amount) { com.wingedsheep.engine.mechanics.mana.ManaUnit(color, tag) } +
+                        production.extraColors.flatMap { (extra, n) -> List(n) { com.wingedsheep.engine.mechanics.mana.ManaUnit(extra, tag) } } +
                         List(production.colorless) { com.wingedsheep.engine.mechanics.mana.ManaUnit(null, tag) })
                 }
             }

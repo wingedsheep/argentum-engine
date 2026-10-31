@@ -319,6 +319,12 @@ data class AddManaOfChoiceEffect(
  * @property expiry When the produced mana leaves the pool — [ManaExpiry.KEPT_UNTIL_END_OF_TURN] for
  *   "Until end of turn, you don't lose this mana as steps and phases end" (Klauth, Unrivaled Ancient).
  *   Mirrors [AddManaEffect.expiry].
+ * @property differentColors "Add two mana of different colors" (Firemind Vessel, Guild Globe,
+ *   Interplanar Beacon): every unit must be a different color from [allowedColors], so one
+ *   resolution can never add two of the same color. The executor prompts pip-by-pip and drops each
+ *   chosen color from the next prompt; the auto-payer treats the excess units as "any color not
+ *   already made by this activation". Requires `amount <= allowedColors.size` to produce the full
+ *   amount; any units past that are lost (no colors remain to choose).
  */
 @SerialName("AddDynamicMana")
 @Serializable
@@ -326,9 +332,21 @@ data class AddDynamicManaEffect(
     val amountSource: DynamicAmount,
     val allowedColors: Set<Color>,
     val restriction: ManaRestriction? = null,
-    val expiry: ManaExpiry = ManaExpiry.END_OF_TURN
+    val expiry: ManaExpiry = ManaExpiry.END_OF_TURN,
+    val differentColors: Boolean = false,
 ) : Effect {
     override val description: String = buildString {
+        if (differentColors) {
+            val amountText = (amountSource as? DynamicAmount.Fixed)?.let { com.wingedsheep.sdk.scripting.util.numberToWord(it.amount) }
+                ?: amountSource.description
+            append("Add $amountText mana of different colors")
+            if (allowedColors.size < Color.entries.size) {
+                append(" among ")
+                append(allowedColors.sorted().joinToString(", ") { "{${it.symbol}}" })
+            }
+            if (restriction != null) append(". ${restriction.description}")
+            return@buildString
+        }
         append("Add X mana in any combination of ")
         append(allowedColors.joinToString(" and/or ") { "{${it.symbol}}" })
         append(", where X is ${amountSource.description}")

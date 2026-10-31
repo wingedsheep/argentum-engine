@@ -26,6 +26,8 @@ import kotlin.reflect.KClass
  *  - 3+ colors ("any combination of colors"): pip-by-pip [ChooseColorDecision] sequence.
  *    Pushes [AddManaPipsContinuation]; each resume adds one pip and re-pauses if more
  *    pips remain.
+ *  - [AddDynamicManaEffect.differentColors] ("two mana of different colors"): the pip-by-pip
+ *    sequence regardless of palette size, each chosen color removed from the next prompt.
  */
 class AddDynamicManaExecutor(
     private val decisionHandler: DecisionHandler = DecisionHandler(),
@@ -51,7 +53,7 @@ class AddDynamicManaExecutor(
         // Single color — just add it all
         if (colors.size <= 1) {
             val color = colors.firstOrNull() ?: return EffectResult.success(state)
-            val newState = addMana(state, context.controllerId, mapOf(color to amount * unit), restriction, effect.expiry)
+            val newState = addMana(state, context.controllerId, mapOf(color to (if (effect.differentColors) 1 else amount) * unit), restriction, effect.expiry)
             return EffectResult.success(newState)
         }
 
@@ -59,19 +61,22 @@ class AddDynamicManaExecutor(
             state.getEntity(sourceId)?.get<CardComponent>()?.name
         }
 
-        // 3+ colors — pip-by-pip color choice ("any combination of colors")
-        if (colors.size >= 3) {
+        // 3+ colors — pip-by-pip color choice ("any combination of colors"). "Of different
+        // colors" always goes pip-by-pip too, each pick leaving the next prompt's palette; it can
+        // make at most one unit per allowed color.
+        if (colors.size >= 3 || effect.differentColors) {
             return pausePipDecision(
                 state = state,
                 playerId = context.controllerId,
                 sourceId = context.sourceId,
                 sourceName = sourceName,
-                remainingPips = amount,
+                remainingPips = if (effect.differentColors) minOf(amount, colors.size) else amount,
                 allowedColors = effect.allowedColors,
                 restriction = restriction,
                 expiry = effect.expiry,
                 decisionHandler = decisionHandler,
                 unitMultiplier = unit,
+                differentColors = effect.differentColors,
             )
         }
 
@@ -129,6 +134,7 @@ class AddDynamicManaExecutor(
             expiry: ManaExpiry = ManaExpiry.END_OF_TURN,
             decisionHandler: DecisionHandler = DecisionHandler(),
             unitMultiplier: Int = 1,
+            differentColors: Boolean = false,
         ): EffectResult {
             val continuation = AddManaPipsContinuation(
                 playerId = playerId,
@@ -139,6 +145,7 @@ class AddDynamicManaExecutor(
                 restriction = restriction,
                 expiry = expiry,
                 unitMultiplier = unitMultiplier,
+                differentColors = differentColors,
             )
 
             val decisionResult = decisionHandler.createColorDecision(
