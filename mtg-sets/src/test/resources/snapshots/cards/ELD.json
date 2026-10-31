@@ -1228,6 +1228,103 @@
     ]
 }
 
+// Bonecrusher Giant
+{
+    "name": "Bonecrusher Giant",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Giant",
+    "oracleText": "Whenever this creature becomes the target of a spell, this creature deals 2 damage to that spell's controller.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bonecrusher Giant:1",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "spellsOnly": true
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "ControllerOfCause"
+                    }
+                },
+                "descriptionOverride": "Whenever this creature becomes the target of a spell, this creature deals 2 damage to that spell's controller."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "115",
+        "rarity": "RARE",
+        "artist": "Victor Adame Minguez",
+        "flavorText": "Not every tale ends in glory.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/9/09fd2d9c-1793-4beb-a3fb-7a869f660cd4.jpg?1783932628",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "Bonecrusher Giant's ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If a spell targets Bonecrusher Giant more than once, its ability triggers only once."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Stomp only stops damage from being prevented by effects that specifically use the word \"prevent.\""
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If the chosen target is an illegal target by the time Stomp tries to resolve, the spell won't resolve. Damage can be prevented as usual."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "Stomp",
+            "manaCost": "{1}{R}",
+            "typeLine": "Instant — Adventure",
+            "oracleText": "Damage can't be prevented this turn. Stomp deals 2 damage to any target. (Then exile this card. You may cast the creature later from exile.)",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        "DamageCantBePreventedThisTurn",
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ]
+            }
+        }
+    ]
+}
+
 // Bramblefort Fink
 {
     "name": "Bramblefort Fink",
@@ -2455,6 +2552,64 @@
     ]
 }
 
+// Claim the Firstborn
+{
+    "name": "Claim the Firstborn",
+    "manaCost": "{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Gain control of target creature with mana value 3 or less until end of turn. Untap that creature. It gains haste until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature mv<=3"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "118",
+        "rarity": "UNCOMMON",
+        "artist": "Iain McCaig",
+        "flavorText": "\"The deal was struck and the favor had been done. And so, under the cover of night, the debt was paid.\"\n—Tales of the Fae",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/feaf1e6c-c7d9-4ac7-9aeb-c4b5d61548ec.jpg?1783932626"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Corridor Monitor
 {
     "name": "Corridor Monitor",
@@ -2944,6 +3099,74 @@
     ]
 }
 
+// Dwarven Mine
+{
+    "name": "Dwarven Mine",
+    "manaCost": "",
+    "typeLine": "Land — Mountain",
+    "oracleText": "({T}: Add {R}.)\nThis land enters tapped unless you control three or more other Mountains.\nWhen this land enters untapped, create a 1/1 red Dwarf creature token.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dwarven Mine:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "untapped",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Dwarf"
+                    ]
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersTapped",
+                "unlessCondition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land Mountain",
+                        "excludeSelf": true
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "243",
+        "artist": "Alexander Forssberg",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5c83074d-0c9b-4b58-94ca-d75240485579.jpg?1783932578",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "As these lands are entering the battlefield, they check for lands that are already on the battlefield. They won't see lands that are entering the battlefield at the same time (due to Scapeshift, for example)."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If another effect puts these lands onto the battlefield tapped, they enter tapped, even if you control enough lands with the appropriate basic land type."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Embercleave
 {
     "name": "Embercleave",
@@ -3085,6 +3308,141 @@
         "artist": "Randy Vargas",
         "flavorText": "\"The king would die for the realm. I would not hesitate to do the same for him.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/6/b/6bcfe06b-3bb5-434e-acf4-4bfa8a94141d.jpg?1783932626"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Embereth Shieldbreaker
+{
+    "name": "Embereth Shieldbreaker",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Knight",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Vargas",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/c/6cc73d16-5ed7-4104-91f6-0997a2080e2e.jpg?1783932628"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "Battle Display",
+            "manaCost": "{R}",
+            "typeLine": "Sorcery — Adventure",
+            "oracleText": "Destroy target artifact. (Then exile this card. You may cast the creature later from exile.)",
+            "script": {
+                "spellEffect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        }
+    ]
+}
+
+// Embereth Skyblazer
+{
+    "name": "Embereth Skyblazer",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "During your turn, this creature has flying.\nWhenever this creature attacks, you may pay {2}{R}. If you do, creatures you control get +X/+0 until end of turn, where X is the number of opponents you have.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Embereth Skyblazer:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{2}{R}"
+                        }
+                    },
+                    "then": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        "body": {
+                            "type": "ModifyStats",
+                            "powerModifier": "PlayerCount",
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": "IterationEntity"
+                        }
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "IsYourTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "321",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "flavorText": "\"We fight with valor in our hearts and fire in our veins!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/166ee7fc-a0f7-49af-85bf-d5b36bb2bff4.jpg?1783932551",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "While resolving Embereth Skyblazer's triggered ability, you can't pay {2}{R} multiple times to increase the bonus."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "The value of X is determined only as Embereth Skyblazer's triggered ability resolves. It doesn't change later in the turn if opponents leave the game."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "In a multiplayer game, opponents who have left the game before the ability resolves aren't counted by Embereth Skyblazer's triggered ability."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "RED"
@@ -3780,6 +4138,74 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Fervent Champion
+{
+    "name": "Fervent Champion",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "First strike, haste\nWhenever this creature attacks, another target attacking Knight you control gets +1/+0 until end of turn.\nEquip abilities you activate that target this creature cost {3} less to activate.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FIRST_STRIKE",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fervent Champion:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature Knight attacking ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ReduceEquipCost",
+                "amount": 3,
+                "targetFilter": {
+                    "statePredicates": [
+                        "IsSource"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "rarity": "RARE",
+        "artist": "Steve Argyle",
+        "flavorText": "2018 World Champion Javier Domínguez",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c52d66db-5570-48a1-99cf-e0417517747b.jpg?1783932624"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -8155,6 +8581,103 @@
     ]
 }
 
+// Opportunistic Dragon
+{
+    "name": "Opportunistic Dragon",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nWhen this creature enters, choose target Human or artifact an opponent controls. For as long as this creature remains on the battlefield, gain control of that permanent, it loses all abilities, and it can't attack or block.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Opportunistic Dragon:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainControl",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": {
+                                "type": "WhileSourceOnBattlefield",
+                                "sourceDescription": "this creature"
+                            }
+                        },
+                        {
+                            "type": "RemoveAllAbilities",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": {
+                                "type": "WhileSourceOnBattlefield",
+                                "sourceDescription": "this creature"
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "CantAttack",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "duration": {
+                                        "type": "WhileSourceOnBattlefield",
+                                        "sourceDescription": "this creature"
+                                    }
+                                },
+                                {
+                                    "type": "CantBlockTargetCreatures",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "duration": {
+                                        "type": "WhileSourceOnBattlefield",
+                                        "sourceDescription": "this creature"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "artifact|Human ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, choose target Human or artifact an opponent controls. For as long as this creature remains on the battlefield, gain control of that permanent, it loses all abilities, and it can't attack or block."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "rarity": "RARE",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/f/3fa16922-3583-4f5b-8805-509b95a8da49.jpg?1783932621"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Order of Midnight
 {
     "name": "Order of Midnight",
@@ -9394,6 +9917,66 @@
     ]
 }
 
+// Rimrock Knight
+{
+    "name": "Rimrock Knight",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Dwarf Knight",
+    "oracleText": "This creature can't block.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            "CantBlock"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "artist": "Chris Rallis",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a3d13d84-01e4-4429-93db-e5afff811527.jpg?1783932619"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "Boulder Rush",
+            "manaCost": "{R}",
+            "typeLine": "Instant — Adventure",
+            "oracleText": "Target creature gets +2/+0 until end of turn. (Then exile this card. You may cast the creature later from exile.)",
+            "script": {
+                "spellEffect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        }
+    ]
+}
+
 // Rosethorn Halberd
 {
     "name": "Rosethorn Halberd",
@@ -9524,6 +10107,196 @@
         "flavorText": "\"This sword is Sunrise. The other is Dawn. They mark the beginning of my days but the end of yours.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/9/c/9c8a3119-ce9b-4fe5-aea3-871a7eee216e.jpg"
     },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Rowan, Fearless Sparkmage
+{
+    "name": "Rowan, Fearless Sparkmage",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Legendary Planeswalker — Rowan",
+    "oracleText": "+1: Up to one target creature gets +3/+0 and gains first strike until end of turn.\n−2: Rowan deals 1 damage to each of up to two target creatures. Those creatures can't block this turn.\n−9: Gain control of all creatures until end of turn. Untap them. They gain haste until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Rowan, Fearless Sparkmage:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "FIRST_STRIKE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Rowan, Fearless Sparkmage:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            },
+                            {
+                                "type": "CantBlockTargetCreatures",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            }
+                        ]
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 2,
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Rowan, Fearless Sparkmage:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -9
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature"
+                                }
+                            },
+                            "body": {
+                                "type": "GainControl",
+                                "target": "IterationEntity",
+                                "duration": "EndOfTurn"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature"
+                                }
+                            },
+                            "body": {
+                                "type": "TapUntap",
+                                "target": "IterationEntity",
+                                "tap": false
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature"
+                                }
+                            },
+                            "body": {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE",
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "304",
+        "rarity": "MYTHIC",
+        "artist": "Zack Stella",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/030f4058-54e5-4333-bd6c-2789c334bf12.jpg?1783932556",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "Rowan's second ability can't target the same creature twice to deal 2 damage to it."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If a target of Rowan's second ability is a legal target but an effect prevents the damage that would be dealt to it, that creature still can't block this turn."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Rowan's third ability can affect creatures you already control or ones that are already untapped. It will untap them if applicable and give them haste."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Gaining control of a creature doesn't cause you to gain control of any Auras or Equipment attached to it."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
     "colorIdentityOverride": [
         "RED"
     ]
@@ -9855,6 +10628,75 @@
         "artist": "Eric Velhagen",
         "flavorText": "As the blaze raced toward her, Syr Ameril closed her eyes and pictured Castle Ardenvale so her last thoughts would be of home.",
         "imageUri": "https://cards.scryfall.io/normal/front/3/b/3b74a806-ed74-458e-8903-d3d084e9f507.jpg?1636491470"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Searing Barrage
+{
+    "name": "Searing Barrage",
+    "manaCost": "{4}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Searing Barrage deals 5 damage to target creature.\nAdamant — If at least three red mana was spent to cast this spell, Searing Barrage deals 3 damage to that creature's controller.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "ManaOfColorSpent",
+                                "color": "RED"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": "TargetController"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "140",
+        "artist": "Allen Williams",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d2f11135-e9ce-4e4c-bea7-72a46d326e40.jpg?1783932619"
     },
     "colorIdentityOverride": [
         "RED"
@@ -10424,6 +11266,156 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Skullknocker Ogre
+{
+    "name": "Skullknocker Ogre",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Ogre",
+    "oracleText": "Whenever this creature deals damage to an opponent, that player discards a card at random. If the player does, they draw a card.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Skullknocker Ogre:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "EachOpponent"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.DoAction",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand",
+                                        "player": "TriggeringPlayer"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "Random",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard",
+                                        "player": "TriggeringPlayer"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "TriggeringPlayer"
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "The ogre crashed through the massive door. The winged folios scattered like frightened birds.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/dfa89e28-c0a9-4b76-b0d5-8dcaa75bfd59.jpg?1783932617",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "If that player has one card in hand, it's discarded at random (even though that's not very random). The player draws a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Slaying Fire
+{
+    "name": "Slaying Fire",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Slaying Fire deals 3 damage to any target.\nAdamant — If at least three red mana was spent to cast this spell, it deals 4 damage instead.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Conditional",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "ManaOfColorSpent",
+                        "color": "RED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "ifTrue": {
+                    "type": "Fixed",
+                    "amount": 4
+                },
+                "ifFalse": {
+                    "type": "Fixed",
+                    "amount": 3
+                }
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "143",
+        "rarity": "UNCOMMON",
+        "artist": "Heonhwa",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/3/83b5b110-c430-4ffe-9fc1-8e6987f52d1e.jpg?1783932616"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -11137,6 +12129,85 @@
     ]
 }
 
+// Sundering Stroke
+{
+    "name": "Sundering Stroke",
+    "manaCost": "{6}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Sundering Stroke deals 7 damage divided as you choose among one, two, or three targets. If at least seven red mana was spent to cast this spell, instead Sundering Stroke deals 7 damage to each of those permanents and/or players.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "ManaOfColorSpent",
+                        "color": "RED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 7
+                    }
+                }
+            },
+            "then": {
+                "type": "ForEach",
+                "space": "IterationSpace.Targets",
+                "body": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 7
+                    },
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    }
+                }
+            },
+            "otherwise": {
+                "type": "DividedDamage",
+                "totalDamage": 7,
+                "among": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "count": 3,
+                "minCount": 1,
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "144",
+        "rarity": "RARE",
+        "artist": "Stanton Feng",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/24b7a774-ca49-4291-8a19-cb5e475b10d5.jpg?1783932615",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "You must divide the damage as you announce Sundering Stroke, even if you intend to pay seven red mana to cast it. If you copy Sundering Stroke, no mana was spent to cast the copy at all, so the copy will deal the damage as divided."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Each chosen target must receive at least 1 damage."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If some of the targets become illegal for Sundering Stroke, the original division of damage still applies, but the damage that would have been dealt to illegal targets isn't dealt at all."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Syr Alin, the Lion's Claw
 {
     "name": "Syr Alin, the Lion's Claw",
@@ -11189,6 +12260,155 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Syr Carah, the Bold
+{
+    "name": "Syr Carah, the Bold",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Legendary Creature — Human Knight",
+    "oracleText": "Whenever Syr Carah or an instant or sorcery spell you control deals damage to a player, exile the top card of your library. You may play that card this turn.\n{T}: Syr Carah deals 1 damage to any target.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Syr Carah, the Bold:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "gathered0"
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Syr Carah, the Bold:2",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    },
+                    "sourceFilter": "instant|sorcery ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "gathered0"
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Syr Carah, the Bold:3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "rarity": "UNCOMMON",
+        "artist": "Wisnu Tan",
+        "flavorText": "\"Duty and honor are reasons enough, but beating you will also be a pleasure.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/080a249a-df47-4769-bb63-0d8ab3f2467c.jpg?1783932615",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "If Syr Carah or an instant or sorcery spell you control deals damage to two or more players at the same time, Syr Carah's first ability triggers for each of those players."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Syr Carah's first ability triggers even if Syr Carah is dealt lethal damage at the same time that it or an instant or sorcery spell you control deals damage to a player."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Syr Carah doesn't change when you can cast the exiled card. For example, if you exile a sorcery card, you can cast it only during your main phase when the stack is empty. If you exile a land card, you can play it only during your main phase and only if you have an available land play remaining."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Playing an exiled card causes it to leave exile. You can't play it multiple times."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If you don't play the exiled card, it remains in exile."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -12066,6 +13286,75 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Torbran, Thane of Red Fell
+{
+    "name": "Torbran, Thane of Red Fell",
+    "manaCost": "{1}{R}{R}{R}",
+    "typeLine": "Legendary Creature — Dwarf Noble",
+    "oracleText": "If a red source you control would deal damage to an opponent or a permanent an opponent controls, it deals that much damage plus 2 instead.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "ModifyDamageAmount",
+                "modifier": 2,
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientAnyOf",
+                        "options": [
+                            {
+                                "type": "RecipientPlayer",
+                                "player": "EachOpponent"
+                            },
+                            {
+                                "type": "RecipientObject",
+                                "filter": "permanent ctrl:opponent"
+                            }
+                        ]
+                    },
+                    "source": {
+                        "cardPredicates": [
+                            {
+                                "type": "HasColor",
+                                "color": "RED"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "147",
+        "rarity": "RARE",
+        "artist": "Grzegorz Rutkowski",
+        "flavorText": "A dwarf's grudge runs deeper than the mountains' roots.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/9/79f591cd-d277-4ba5-b1bf-1c09cac9cb8a.jpg?1783932614",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "The additional 2 damage is dealt by the same source as the original source of damage. The damage isn't dealt by Torbran unless Torbran is the original source of damage."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If another effect modifies how much damage your red source would deal, including preventing some of it, the player being dealt damage or the controller of the permanent being dealt damage chooses an order in which to apply those effects. If all of the damage is prevented, Torbran's effect no longer applies."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If damage dealt by a source you control is being divided or assigned among multiple permanents an opponent controls or among an opponent and one or more permanents they control, divide the original amount before adding 2. For example, if you attack with a 5/5 red creature with trample and your opponent blocks with a 2/2 creature, you can assign 2 damage to the blocker and 3 damage to the defending player. These amounts are then modified to 4 and 5, respectively."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
