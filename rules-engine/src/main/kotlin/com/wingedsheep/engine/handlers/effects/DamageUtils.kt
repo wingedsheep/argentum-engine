@@ -5,6 +5,7 @@ import com.wingedsheep.engine.mechanics.FaceUpInstead
 import com.wingedsheep.engine.mechanics.targeting.ColorProtection
 import com.wingedsheep.engine.mechanics.targeting.SourceKindProtection
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.engine.core.CountersRemovedEvent
 import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.DamageDealtEvent
 import com.wingedsheep.engine.core.applyPreventByRemovingCounterToDamage
@@ -13,7 +14,6 @@ import com.wingedsheep.engine.core.DamagePreventedEvent
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.LifeChangedEvent
 import com.wingedsheep.engine.core.LifeChangeReason
-import com.wingedsheep.engine.core.LoyaltyChangedEvent
 import com.wingedsheep.engine.core.PermanentsSacrificedEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
@@ -536,7 +536,13 @@ object DamageUtils {
                 container.with(counters.withRemoved(CounterType.LOYALTY, loyaltyRemoved))
             }
             val targetName = newState.getEntity(targetId)?.get<CardComponent>()?.name ?: "Planeswalker"
-            if (loyaltyRemoved > 0) events.add(LoyaltyChangedEvent(targetId, targetName, -loyaltyRemoved))
+            // CR 120.3c — the damage *removes* loyalty counters, so it is an ordinary counter removal.
+            if (loyaltyRemoved > 0) events.add(
+                CountersRemovedEvent(
+                    targetId, CounterType.LOYALTY, loyaltyRemoved, targetName,
+                    remainingCount = currentLoyalty - loyaltyRemoved
+                )
+            )
         } else if (projected.isBattle(targetId)) {
             // CR 120.3h — damage dealt to a battle removes that many defense counters from it. The
             // battle isn't destroyed by the damage; state-based actions bin it once its defense

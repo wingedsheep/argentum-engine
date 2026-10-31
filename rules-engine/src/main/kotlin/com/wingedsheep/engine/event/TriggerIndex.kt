@@ -535,7 +535,6 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.GraveyardOrderedEvent,
             is com.wingedsheep.engine.core.LibraryReorderedEvent,
             is com.wingedsheep.engine.core.LookedAtCardsEvent,
-            is com.wingedsheep.engine.core.LoyaltyChangedEvent,
             is com.wingedsheep.engine.core.ManaAddedEvent,
             is com.wingedsheep.engine.core.ManaSpentEvent,
             is com.wingedsheep.engine.core.ManaPoolChangedEvent,

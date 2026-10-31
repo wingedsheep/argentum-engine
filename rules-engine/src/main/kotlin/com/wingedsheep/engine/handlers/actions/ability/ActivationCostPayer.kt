@@ -14,7 +14,6 @@ import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.ManaSpentEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.engine.core.LoyaltyChangedEvent
 import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.handlers.CostHandler
 import com.wingedsheep.engine.handlers.CostPaymentChoices
@@ -314,7 +313,7 @@ internal class ActivationCostPayer(
 
         // Emit events for cost types. Tap/TapAttachedCreature/TapXPermanents taps are emitted by
         // the tap atom inside costHandler.payAbilityCost (folded in via costResult.events above), so
-        // only the loyalty change — which payAbilityCost mutates without an event — is emitted here.
+        // only the loyalty counters — which payAbilityCost moves without an event — are reported here.
         // The totalled cost: a surcharged [−3] (Carth the Lion) removed two counters, and a [−X]
         // with a surcharge was paid as a fixed [−X+N].
         val abilityCost = effectiveCost.extractLoyaltyCost()
@@ -340,10 +339,22 @@ internal class ActivationCostPayer(
                     )
                 )
             }
-        } else if (abilityCost is AbilityCost.Loyalty) {
-            events.add(LoyaltyChangedEvent(action.sourceId, activation.sourceName, abilityCost.change))
-        } else if (abilityCost == AbilityCost.LoyaltyX) {
-            events.add(LoyaltyChangedEvent(action.sourceId, activation.sourceName, -xValue))
+        } else if (abilityCost is AbilityCost.Loyalty || abilityCost == AbilityCost.LoyaltyX) {
+            // A [−N] / [−X] cost *removes* loyalty counters (CR 606.4), paid by the activating
+            // player — the ordinary counters-removed event, so "whenever one or more loyalty
+            // counters are removed from ~" (Chandra, Fire Artisan) sees it. A [0] cost removes none.
+            val remaining = currentState.getEntity(action.sourceId)
+                ?.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
+                ?.getCount(CounterType.LOYALTY) ?: 0
+            val removed = loyaltyBeforeCost - remaining
+            if (removed > 0) {
+                events.add(
+                    com.wingedsheep.engine.core.CountersRemovedEvent(
+                        action.sourceId, CounterType.LOYALTY, removed, activation.sourceName,
+                        remainingCount = remaining, removedBy = action.playerId
+                    )
+                )
+            }
         }
 
         return ActivationPaymentOutcome.Paid(

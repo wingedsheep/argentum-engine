@@ -1872,17 +1872,6 @@ data class CountersRemovedEvent(
     val removedBy: EntityId? = null
 ) : GameEvent
 
-/**
- * Loyalty on a planeswalker changed (due to ability activation).
- */
-@Serializable
-@SerialName("LoyaltyChangedEvent")
-data class LoyaltyChangedEvent(
-    val entityId: EntityId,
-    val entityName: String,
-    val change: Int
-) : GameEvent
-
 // =============================================================================
 // Card Events
 // =============================================================================

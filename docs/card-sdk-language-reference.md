@@ -10151,8 +10151,8 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
   .getsCounters(CounterType.LORE, by = Player.You)` and sees all three; combat
   poison from toxic is placed by the toxic creature's controller (CR 702.164c). Default `null` matches any placer. A planeswalker's **[+N] loyalty cost** is
   a placement too (CR 606.4): paying it emits `CountersAddedEvent(loyalty, N, placedBy = activator)`
-  (a cost, so counter-placement replacements such as Doubling Season don't apply), while [−N]/[0]
-  costs still emit `LoyaltyChangedEvent`. Inspired Tethermage's "Whenever you put one or more
+  (a cost, so counter-placement replacements such as Doubling Season don't apply), and a [−N]/[−X]
+  cost is a *removal* — see `losesCounters` below; a [0] cost moves no counters and emits neither. Inspired Tethermage's "Whenever you put one or more
   loyalty counters on a planeswalker" is `Triggers.<subject>.getsCounters(type, by, firstTimeEachTurn, batch)` — it sees [+N] costs,
   planeswalkers entering with loyalty, and empower Jace. Triggering permanent is
   `EffectTarget.TriggeringEntity`. Stalwart Successor shape.
@@ -10236,6 +10236,15 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
   a removal no player made (a state-based action, damage to a battle, a shield counter) never matches
   a non-null `by`. Divine Intervention:
   `Triggers.self.losesCounters(CounterType.INTERVENTION, lastRemoved = true, by = Player.You)`.
+  **Loyalty.** Every way loyalty counters leave a planeswalker is this event: damage dealt to it
+  (CR 120.3c — `removedBy = null`), a [−N]/[−X] loyalty cost (CR 606.4 — `removedBy` = the activator),
+  and any effect that removes loyalty counters. Combat damage from several sources to one planeswalker
+  or battle in the same step is **one** removal (CR 510.2): the per-assignment removals are merged into
+  a single event carrying the total and the final `remainingCount`, so "whenever one or more loyalty
+  counters are removed" fires once. Merely leaving the battlefield removes nothing. Chandra, Fire
+  Artisan: `Triggers.self.losesCounters(CounterType.LOYALTY)` +
+  `Effects.DealDamage(DynamicAmounts.triggerCountersRemoved(), target(Targets.OpponentOrPlaneswalker))`
+  — it still resolves (source last-known) when the removal killed her.
 - `EventPattern.EnlistedEvent` (facade: `Triggers.self.enlists()`, SELF only) — fires once
   per paid enlist instance, binding the enlisted creature as `EffectTarget.TriggeringEntity`.
   This is distinct from an ordinary tap and from the keyword's separately generated linked boost.

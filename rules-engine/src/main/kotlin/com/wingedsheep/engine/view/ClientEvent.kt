@@ -1,6 +1,5 @@
 package com.wingedsheep.engine.view
 
-import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.engine.core.*
@@ -1648,13 +1647,6 @@ object ClientEventTransformer {
                     toZone = event.toZone
                 )
             }
-
-            is LoyaltyChangedEvent -> ClientEvent.CounterAdded(
-                permanentId = event.entityId,
-                permanentName = event.entityName,
-                counterType = CounterType.LOYALTY.printed,
-                count = event.change
-            )
 
             // The per-die events animate the roll; the instruction summary only feeds triggers.
             is DiceRolledEvent -> null

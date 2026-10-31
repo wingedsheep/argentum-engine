@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.mechanics
 
-import com.wingedsheep.engine.core.LoyaltyChangedEvent
+import com.wingedsheep.engine.core.CountersRemovedEvent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
@@ -85,7 +85,7 @@ class LoyaltyDamageFloorTest : FunSpec({
 
         d.loyalty(pw) shouldBe 1
         d.state.getBattlefield().contains(pw) shouldBe true
-        d.events.filterIsInstance<LoyaltyChangedEvent>().last().change shouldBe -2
+        d.events.filterIsInstance<CountersRemovedEvent>().last().amount shouldBe 2
     }
 
     test("a higher floor keeps more counters, and a planeswalker already at the floor loses none") {

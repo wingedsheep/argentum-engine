@@ -1460,6 +1460,143 @@
     ]
 }
 
+// Chandra, Fire Artisan
+{
+    "name": "Chandra, Fire Artisan",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Legendary Planeswalker — Chandra",
+    "oracleText": "Whenever one or more loyalty counters are removed from Chandra, she deals that much damage to target opponent or planeswalker.\n+1: Exile the top card of your library. You may play it this turn.\n−7: Exile the top seven cards of your library. You may play them this turn.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Chandra, Fire Artisan:1",
+                "trigger": {
+                    "type": "CountersRemovedEvent",
+                    "counterType": "LOYALTY"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_COUNTERS_REMOVED_AMOUNT"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponentOrPlaneswalker",
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever one or more loyalty counters are removed from Chandra, she deals that much damage to target opponent or planeswalker."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Chandra, Fire Artisan:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "impulseExiled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "impulseExiled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "impulseExiled"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Exile the top card of your library. You may play it this turn."
+            },
+            {
+                "id": "Chandra, Fire Artisan:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 7
+                                }
+                            },
+                            "storeAs": "impulseExiled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "impulseExiled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "impulseExiled"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Exile the top seven cards of your library. You may play them this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "rarity": "RARE",
+        "artist": "Yongjae Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d21a7b23-8827-49f2-ade4-75a602d17743.jpg?1783933433",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "Chandra's first ability triggers if she loses loyalty from being dealt damage, from her last loyalty ability being activated, or because an effect removes loyalty counters from her. If an effect simply causes Chandra to leave the battlefield, no counters were removed and so her ability doesn't trigger."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If multiple creatures deal combat damage to Chandra at the same time, those counters are all removed at once, and her first ability triggers only once."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If all of Chandra's loyalty counters are removed, her first ability has her deal damage even though she's left the battlefield."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Charity Extractor
 {
     "name": "Charity Extractor",

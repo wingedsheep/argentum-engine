@@ -1,7 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
-import com.wingedsheep.engine.core.LoyaltyChangedEvent
+import com.wingedsheep.engine.core.CountersRemovedEvent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
@@ -72,7 +72,7 @@ class ChandraNalaarScenarioTest : FunSpec({
             val result = d.submitSuccess(ActivateAbility(me, chandra, abilities[1].id,
                 targets = listOf(ChosenTarget.Permanent(creature)), xValue = x))
             loyalty(d, chandra) shouldBe 6 - x
-            result.events.filterIsInstance<LoyaltyChangedEvent>().single().change shouldBe -x
+            result.events.filterIsInstance<CountersRemovedEvent>().sumOf { it.amount } shouldBe x
             d.bothPass()
             if (x == 0) {
                 d.state.getEntity(creature)?.get<DamageComponent>()?.amount.orZero() shouldBe 0

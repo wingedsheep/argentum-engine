@@ -444,6 +444,7 @@ internal class CombatDamageManager(
             newState = applySingleAssignment(newState, assignment, events, healProcessedTargets, preventionLifeGains)
         }
         newState = replaceWholeStepLifeReduction(newState, lifeBeforeStep, ridersBeforeStep, events, eventsBeforeStep)
+        coalesceCounterRemovals(events, eventsBeforeStep)
         for ((controllerId, gained) in preventionLifeGains) {
             val (gainedState, gainEvent) = DamageUtils.gainLife(newState, controllerId, gained, predicateEvaluator = predicateEvaluator)
             newState = gainedState
@@ -518,6 +519,33 @@ internal class CombatDamageManager(
         events.subList(eventsBeforeStep, events.size)
             .removeAll { it is LifeChangedEvent && newState.teamLifeOwnerOf(it.playerId) in replaced }
         return newState
+    }
+
+    /**
+     * All combat damage in a step is dealt at once (CR 510.2), so the counters several sources' damage
+     * removes from one planeswalker or battle come off in one simultaneous removal — "if multiple
+     * creatures deal combat damage to Chandra at the same time, those counters are all removed at once,
+     * and her first ability triggers only once" (Chandra, Fire Artisan ruling). Merges the per-assignment
+     * [CountersRemovedEvent]s emitted from [fromIndex] on into one per recipient and removal kind, kept
+     * at the position of the last one, summing the amount and keeping the final remaining count (so a
+     * "last counter removed" trigger still sees zero exactly once).
+     */
+    private fun coalesceCounterRemovals(events: MutableList<GameEvent>, fromIndex: Int) {
+        data class Key(val entity: EntityId, val type: com.wingedsheep.sdk.core.CounterType, val byPrevention: Boolean, val by: EntityId?)
+        val tail = events.subList(fromIndex, events.size)
+        val removals = tail.filterIsInstance<com.wingedsheep.engine.core.CountersRemovedEvent>()
+            .groupBy { Key(it.entityId, it.counterType, it.byDamagePrevention, it.removedBy) }
+            .filterValues { it.size > 1 }
+        if (removals.isEmpty()) return
+        val lastOf = removals.mapValues { (_, group) -> group.last() }
+        val merged = tail.mapNotNull { event ->
+            if (event !is com.wingedsheep.engine.core.CountersRemovedEvent) return@mapNotNull event
+            val key = Key(event.entityId, event.counterType, event.byDamagePrevention, event.removedBy)
+            val group = removals[key] ?: return@mapNotNull event
+            if (event !== lastOf[key]) null else event.copy(amount = group.sumOf { it.amount })
+        }
+        tail.clear()
+        events.addAll(merged)
     }
 
     private fun edgeId(sourceId: EntityId, targetId: EntityId): String = "$sourceId->$targetId"
@@ -1522,9 +1550,11 @@ internal class CombatDamageManager(
             excessAmount = excess,
             sourceAttachmentIds = attachmentIdsOf(state, sourceId),
             sourceLastKnown = captureLastKnown(state, sourceId)))
-        if (counterType == com.wingedsheep.sdk.core.CounterType.LOYALTY) {
-            if (removed > 0) events.add(LoyaltyChangedEvent(targetId, targetName, -removed))
-        } else if (removed > 0) {
+        // Loyalty and defense alike: damage *removes* counters (CR 120.3c / 120.3h), so the ordinary
+        // counters-removed event is emitted and "whenever one or more loyalty counters are removed"
+        // (Chandra, Fire Artisan) sees it. [coalesceCounterRemovals] merges one recipient's removals
+        // across the step into one event.
+        if (removed > 0) {
             events.add(
                 com.wingedsheep.engine.core.CountersRemovedEvent(
                     targetId, counterType, removed, targetName,
