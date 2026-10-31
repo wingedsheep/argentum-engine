@@ -267,15 +267,24 @@ data class GrantProtectionFromLinkedExiledCardTypes(
 }
 
 /**
- * Prevents a permanent from having counters put on it.
- * Used for Auras like Blossombind.
+ * Prevents matching permanents from having counters put on them — every kind (Blossombind,
+ * Solemnity), or only [counterType] when it is set ("Creatures your opponents control can't have
+ * +1/+1 counters put on them" — Blightbeetle; Melira's "-1/-1 counters").
+ *
+ * A typed prohibition stops only placements of that kind: a creature that would enter with
+ * +1/+1 counters enters without them, other kinds still go on, and counters it already has stay
+ * (unlike [MaxCounters] at zero, there is no state-based removal). A cost that would put that kind
+ * on it can't be paid (CR 614.17b).
  */
 @SerialName("CantReceiveCounters")
 @Serializable
 data class CantReceiveCounters(
-    val filter: GroupFilter = GroupFilter.attachedCreature()
+    val filter: GroupFilter = GroupFilter.attachedCreature(),
+    val counterType: CounterType? = null
 ) : StaticAbility {
-    override val description: String = "${filter.description} can't have counters put on it"
+    override val description: String =
+        if (counterType == null) "${filter.description} can't have counters put on it"
+        else "${filter.description} can't have ${counterType.printed} counters put on it"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
         return if (newFilter !== filter) copy(filter = newFilter) else this

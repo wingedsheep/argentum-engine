@@ -119,6 +119,8 @@ class DistributeCountersAmongTargetsExecutor(
                 currentState, targetId, counterType, countersForTarget, placerId = context.controllerId,
                 predicateEvaluator = amountEvaluator.predicates, byEffect = true
             )
+            // Replaced away, or a kind this recipient can't have: nothing is placed or announced.
+            if (modifiedCount <= 0) continue
 
             val current = currentState.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
             val firstThisTurn = DamageUtils.isFirstCounterThisTurn(currentState, targetId)

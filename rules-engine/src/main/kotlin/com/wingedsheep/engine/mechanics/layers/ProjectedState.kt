@@ -334,6 +334,20 @@ class ProjectedState(
         !hasKeyword(entityId, com.wingedsheep.sdk.core.AbilityFlag.CANT_RECEIVE_COUNTERS)
 
     /**
+     * Whether counters of [counterType] can be put on this object: neither the all-kinds
+     * prohibition above nor a kind-scoped one ("can't have +1/+1 counters put on them" —
+     * Blightbeetle) applies. Every path that places a known kind asks this one.
+     */
+    fun canReceiveCounters(entityId: EntityId, counterType: com.wingedsheep.sdk.core.CounterType): Boolean =
+        canReceiveCounters(entityId) && !hasKeyword(entityId, cantReceiveCountersKeyword(counterType))
+
+    companion object {
+        /** The projected keyword a kind-scoped `CantReceiveCounters` grants: `CANT_RECEIVE_COUNTERS_<KIND>`. */
+        fun cantReceiveCountersKeyword(counterType: com.wingedsheep.sdk.core.CounterType): String =
+            "${com.wingedsheep.sdk.core.AbilityFlag.CANT_RECEIVE_COUNTERS.name}_${counterType.name}"
+    }
+
+    /**
      * Whether this permanent can become suspected, per "can't become suspected" effects (Airtight
      * Alibi). Read by the one shared suspect implementation (`SuspectExecutor`), so it gates the
      * whole designation — status, menace and can't-block together — from every source that could

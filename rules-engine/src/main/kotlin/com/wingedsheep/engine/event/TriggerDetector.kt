@@ -3665,15 +3665,10 @@ class TriggerDetector(
      * per-permanent path uses, so the two multiplicities can never disagree about which placements
      * count (the shape [DamageTriggerDetector.detectDamageObserverBatchTriggers] uses).
      *
-     * A permanent that can't have counters put on it (`ProjectedState.canReceiveCounters`) stays out
-     * of the batch only when the executor doing the placing checks that prohibition before emitting:
-     * [com.wingedsheep.engine.handlers.effects.permanent.counters.AddCountersExecutor] and its
-     * single-target siblings do, but `AddCountersToCollectionExecutor` and
-     * `DistributeCountersAmongTargetsExecutor` — the multi-recipient paths this batch template most
-     * often observes — do not, and a no-op placement from those would enter the batch. That gap is
-     * per-executor and pre-dates this pass (the counters are wrongly added to the component too, not
-     * just reported), so this is not the place to fix it; it is recorded here so no one reads a
-     * guarantee into the batch that the engine doesn't provide.
+     * A permanent that can't have counters put on it (`ProjectedState.canReceiveCounters`, all kinds
+     * or the placed kind) stays out of the batch: every placing executor runs the placement through
+     * `ReplacementEffectUtils.applyCounterPlacementModifiers`, which refuses a prohibited placement,
+     * and emits nothing for a placement that came to zero.
      *
      * Separate resolutions are separate detection passes and so separate batches: two effects each
      * placing counters in the same turn fire the trigger twice.

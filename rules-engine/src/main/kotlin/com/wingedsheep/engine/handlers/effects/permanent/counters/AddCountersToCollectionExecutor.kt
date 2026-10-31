@@ -51,6 +51,8 @@ class AddCountersToCollectionExecutor(
                 currentState, entityId, counterType, baseCount, placerId = context.controllerId,
                 predicateEvaluator = amountEvaluator.predicates, byEffect = true
             )
+            // Replaced away, or a kind this recipient can't have: nothing is placed or announced.
+            if (modifiedCount <= 0) continue
 
             val firstThisTurn = DamageUtils.isFirstCounterThisTurn(currentState, entityId)
             val firstOfTypeThisTurn = DamageUtils.isFirstCounterOfTypeThisTurn(currentState, entityId, counterType)

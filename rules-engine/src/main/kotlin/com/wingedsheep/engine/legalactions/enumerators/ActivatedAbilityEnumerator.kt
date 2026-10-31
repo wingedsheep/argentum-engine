@@ -426,7 +426,7 @@ class ActivatedAbilityEnumerator(
                         // a source that can't have counters put on it (Solemnity) can't pay it
                         // (CR 614.17b).
                         is CostAtom.PutCountersOnSelf -> {
-                            if (!state.projectedState.canReceiveCounters(entityId)) continue
+                            if (!state.projectedState.canReceiveCounters(entityId, atom.counterType)) continue
                         }
                         // Reveal carries no enumeration-time gate here (validated at payment time).
                         is CostAtom.RevealFromHand,
@@ -503,7 +503,7 @@ class ActivatedAbilityEnumerator(
                     is AbilityCost.Blight -> {
                         blightCost = effectiveCost
                         blightCreatures = projected.getBattlefieldControlledBy(playerId)
-                            .filter { projected.isCreature(it) && projected.canReceiveCounters(it) }
+                            .filter { projected.isCreature(it) && projected.canReceiveCounters(it, com.wingedsheep.sdk.core.CounterType.MINUS_ONE_MINUS_ONE) }
                         if (blightCreatures.isEmpty()) continue
                     }
                     is AbilityCost.DiscardLastDrawnThisTurn -> {
@@ -700,7 +700,7 @@ class ActivatedAbilityEnumerator(
                                     }
                                     // See the top-level branch: a source that can't have counters put on it.
                                     is CostAtom.PutCountersOnSelf -> {
-                                        if (!state.projectedState.canReceiveCounters(entityId)) {
+                                        if (!state.projectedState.canReceiveCounters(entityId, atom.counterType)) {
                                             costCanBePaid = false
                                             break
                                         }
@@ -854,7 +854,7 @@ class ActivatedAbilityEnumerator(
                                 is AbilityCost.Blight -> {
                                     blightCost = subCost
                                     blightCreatures = projected.getBattlefieldControlledBy(playerId)
-                                        .filter { projected.isCreature(it) && projected.canReceiveCounters(it) }
+                                        .filter { projected.isCreature(it) && projected.canReceiveCounters(it, com.wingedsheep.sdk.core.CounterType.MINUS_ONE_MINUS_ONE) }
                                     if (blightCreatures.isEmpty()) {
                                         costCanBePaid = false
                                         break

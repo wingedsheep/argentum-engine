@@ -10985,8 +10985,14 @@ staticAbility {
   permanent is face down (a face-up permanent can't be "turned face up"), so it's applied
   unconditionally. Unable to Scream: "As long as enchanted creature is face down, it can't be turned
   face up."
-- `CantReceiveCounters(filter)` — matching permanents can't have counters put on them (projects the
-  `AbilityFlag.CANT_RECEIVE_COUNTERS` flag).
+- `CantReceiveCounters(filter, counterType = null)` — matching permanents can't have counters put on
+  them (projects the `AbilityFlag.CANT_RECEIVE_COUNTERS` flag). Set `counterType` to scope it to one
+  kind — "Creatures your opponents control can't have +1/+1 counters put on them" (Blightbeetle):
+  `CantReceiveCounters(GroupFilter.AllCreaturesOpponentsControl, CounterType.PLUS_ONE_PLUS_ONE)`.
+  Every placement path asks `ProjectedState.canReceiveCounters(id, kind)` through the placement
+  chokepoint, so only that kind is refused: other kinds still go on, a creature entering with that
+  kind enters without it, a cost that would put that kind on it can't be paid (CR 614.17b), and
+  counters already on it stay (unlike `MaxCounters(kind, 0)`, no state-based removal).
 - `MaxCounters(counterType, max)` — "This permanent can't have more than `max` `counterType` counters
   on it" (Rasputin Dreamweaver). A `ProjectedStaticAbility` on the holder, read by the
   counter-placement chokepoint (`ReplacementEffectUtils.applyCounterPlacementModifiers`) after every

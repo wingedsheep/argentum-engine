@@ -179,7 +179,7 @@ class ExploreEffectExecutor(
         creatureId: EntityId,
         context: EffectContext
     ): Pair<GameState, List<GameEvent>> {
-        if (!state.projectedState.canReceiveCounters(creatureId)) {
+        if (!state.projectedState.canReceiveCounters(creatureId, com.wingedsheep.sdk.core.CounterType.PLUS_ONE_PLUS_ONE)) {
             return state to emptyList()
         }
         val current = state.getEntity(creatureId)?.get<CountersComponent>() ?: CountersComponent()

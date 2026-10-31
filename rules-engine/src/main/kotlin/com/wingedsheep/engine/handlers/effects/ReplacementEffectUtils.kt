@@ -96,6 +96,8 @@ object ReplacementEffectUtils {
         if (count <= 0) return count
         // A capped recipient can't get more of this kind this turn: the placement doesn't happen.
         if (isCounterPlacementLocked(state, targetId, counterType)) return 0
+        // A kind-scoped "can't have +1/+1 counters put on it" (Blightbeetle): that kind doesn't go on.
+        if (!state.projectedState.canReceiveCounters(targetId, counterType)) return 0
 
         val additions = mutableListOf<Int>()
         var doublings = 0

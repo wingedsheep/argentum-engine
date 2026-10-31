@@ -178,7 +178,7 @@ class ZoneActivatedAbilityEnumerator(
                     is AbilityCost.Blight -> {
                         blightCost = effectiveCost
                         blightCreatures = context.projected.getBattlefieldControlledBy(playerId)
-                            .filter { context.projected.isCreature(it) && context.projected.canReceiveCounters(it) }
+                            .filter { context.projected.isCreature(it) && context.projected.canReceiveCounters(it, com.wingedsheep.sdk.core.CounterType.MINUS_ONE_MINUS_ONE) }
                         if (blightCreatures.isEmpty()) costCanBePaid = false
                     }
                     is AbilityCost.Composite -> {
@@ -217,7 +217,7 @@ class ZoneActivatedAbilityEnumerator(
                                 is AbilityCost.Blight -> {
                                     blightCost = subCost
                                     blightCreatures = context.projected.getBattlefieldControlledBy(playerId)
-                                        .filter { context.projected.isCreature(it) && context.projected.canReceiveCounters(it) }
+                                        .filter { context.projected.isCreature(it) && context.projected.canReceiveCounters(it, com.wingedsheep.sdk.core.CounterType.MINUS_ONE_MINUS_ONE) }
                                     if (blightCreatures.isEmpty()) {
                                         costCanBePaid = false; break
                                     }

@@ -1122,7 +1122,10 @@ class StaticAbilityHandler(
             }
             is CantReceiveCounters -> {
                 ContinuousEffectData(
-                    modification = Modification.GrantKeyword(com.wingedsheep.sdk.core.AbilityFlag.CANT_RECEIVE_COUNTERS.name),
+                    modification = Modification.GrantKeyword(
+                        ability.counterType?.let(ProjectedState::cantReceiveCountersKeyword)
+                            ?: com.wingedsheep.sdk.core.AbilityFlag.CANT_RECEIVE_COUNTERS.name
+                    ),
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }

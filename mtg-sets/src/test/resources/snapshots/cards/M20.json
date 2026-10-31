@@ -669,6 +669,48 @@
     ]
 }
 
+// Blightbeetle
+{
+    "name": "Blightbeetle",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Insect",
+    "oracleText": "Protection from green (This creature can't be blocked, targeted, dealt damage, enchanted, or equipped by anything green.)\nCreatures your opponents control can't have +1/+1 counters put on them.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.Color",
+                "color": "GREEN"
+            }
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantReceiveCounters",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "counterType": "PLUS_ONE_PLUS_ONE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Kang",
+        "flavorText": "Leaf and soul alike wither at its touch.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/d/bd43d44b-de27-4139-9cb8-b1f4c04fb87e.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Bloodsoaked Altar
 {
     "name": "Bloodsoaked Altar",

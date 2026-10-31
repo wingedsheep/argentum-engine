@@ -510,7 +510,7 @@ class SacrificeAndPayContinuationResumer(
         val events = mutableListOf<GameEvent>()
         for (permanentId in selected) {
             val container = newState.getEntity(permanentId) ?: continue
-            if (!newState.projectedState.canReceiveCounters(permanentId)) continue
+            if (!newState.projectedState.canReceiveCounters(permanentId, counterType)) continue
             val counters = container.get<CountersComponent>() ?: CountersComponent()
             val modifiedCount = ReplacementEffectUtils.applyCounterPlacementModifiers(
                 newState, permanentId, counterType, continuation.requiredCounters, placerId = placerId,
