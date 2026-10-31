@@ -3178,6 +3178,404 @@
     "colorIdentityOverride": []
 }
 
+// Happily Ever After
+{
+    "name": "Happily Ever After",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, each player gains 5 life and draws a card.\nAt the beginning of your upkeep, if there are five colors among permanents you control, there are six or more card types among permanents you control and/or cards in your graveyard, and your life total is greater than or equal to your starting life total, you win the game.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Happily Ever After:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 5
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "Each"
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "Each"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Happily Ever After:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": "WinGame",
+                "interveningIf": {
+                    "type": "All",
+                    "conditions": [
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "permanent",
+                                "aggregation": "DISTINCT_COLORS"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 5
+                            }
+                        },
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "Add",
+                                "left": {
+                                    "type": "Add",
+                                    "left": {
+                                        "type": "Add",
+                                        "left": {
+                                            "type": "Add",
+                                            "left": {
+                                                "type": "Add",
+                                                "left": {
+                                                    "type": "Add",
+                                                    "left": {
+                                                        "type": "Add",
+                                                        "left": {
+                                                            "type": "Add",
+                                                            "left": {
+                                                                "type": "Conditional",
+                                                                "condition": {
+                                                                    "type": "Any",
+                                                                    "conditions": [
+                                                                        {
+                                                                            "type": "Exists",
+                                                                            "player": "You",
+                                                                            "zone": "Battlefield",
+                                                                            "filter": "artifact"
+                                                                        },
+                                                                        {
+                                                                            "type": "Exists",
+                                                                            "player": "You",
+                                                                            "zone": "Graveyard",
+                                                                            "filter": "artifact"
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                "ifTrue": {
+                                                                    "type": "Fixed",
+                                                                    "amount": 1
+                                                                },
+                                                                "ifFalse": {
+                                                                    "type": "Fixed",
+                                                                    "amount": 0
+                                                                }
+                                                            },
+                                                            "right": {
+                                                                "type": "Conditional",
+                                                                "condition": {
+                                                                    "type": "Any",
+                                                                    "conditions": [
+                                                                        {
+                                                                            "type": "Exists",
+                                                                            "player": "You",
+                                                                            "zone": "Battlefield",
+                                                                            "filter": "battle"
+                                                                        },
+                                                                        {
+                                                                            "type": "Exists",
+                                                                            "player": "You",
+                                                                            "zone": "Graveyard",
+                                                                            "filter": "battle"
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                "ifTrue": {
+                                                                    "type": "Fixed",
+                                                                    "amount": 1
+                                                                },
+                                                                "ifFalse": {
+                                                                    "type": "Fixed",
+                                                                    "amount": 0
+                                                                }
+                                                            }
+                                                        },
+                                                        "right": {
+                                                            "type": "Conditional",
+                                                            "condition": {
+                                                                "type": "Any",
+                                                                "conditions": [
+                                                                    {
+                                                                        "type": "Exists",
+                                                                        "player": "You",
+                                                                        "zone": "Battlefield",
+                                                                        "filter": "creature"
+                                                                    },
+                                                                    {
+                                                                        "type": "Exists",
+                                                                        "player": "You",
+                                                                        "zone": "Graveyard",
+                                                                        "filter": "creature"
+                                                                    }
+                                                                ]
+                                                            },
+                                                            "ifTrue": {
+                                                                "type": "Fixed",
+                                                                "amount": 1
+                                                            },
+                                                            "ifFalse": {
+                                                                "type": "Fixed",
+                                                                "amount": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "right": {
+                                                        "type": "Conditional",
+                                                        "condition": {
+                                                            "type": "Any",
+                                                            "conditions": [
+                                                                {
+                                                                    "type": "Exists",
+                                                                    "player": "You",
+                                                                    "zone": "Battlefield",
+                                                                    "filter": "enchantment"
+                                                                },
+                                                                {
+                                                                    "type": "Exists",
+                                                                    "player": "You",
+                                                                    "zone": "Graveyard",
+                                                                    "filter": "enchantment"
+                                                                }
+                                                            ]
+                                                        },
+                                                        "ifTrue": {
+                                                            "type": "Fixed",
+                                                            "amount": 1
+                                                        },
+                                                        "ifFalse": {
+                                                            "type": "Fixed",
+                                                            "amount": 0
+                                                        }
+                                                    }
+                                                },
+                                                "right": {
+                                                    "type": "Conditional",
+                                                    "condition": {
+                                                        "type": "Any",
+                                                        "conditions": [
+                                                            {
+                                                                "type": "Exists",
+                                                                "player": "You",
+                                                                "zone": "Battlefield",
+                                                                "filter": "instant"
+                                                            },
+                                                            {
+                                                                "type": "Exists",
+                                                                "player": "You",
+                                                                "zone": "Graveyard",
+                                                                "filter": "instant"
+                                                            }
+                                                        ]
+                                                    },
+                                                    "ifTrue": {
+                                                        "type": "Fixed",
+                                                        "amount": 1
+                                                    },
+                                                    "ifFalse": {
+                                                        "type": "Fixed",
+                                                        "amount": 0
+                                                    }
+                                                }
+                                            },
+                                            "right": {
+                                                "type": "Conditional",
+                                                "condition": {
+                                                    "type": "Any",
+                                                    "conditions": [
+                                                        {
+                                                            "type": "Exists",
+                                                            "player": "You",
+                                                            "zone": "Battlefield",
+                                                            "filter": "kindred"
+                                                        },
+                                                        {
+                                                            "type": "Exists",
+                                                            "player": "You",
+                                                            "zone": "Graveyard",
+                                                            "filter": "kindred"
+                                                        }
+                                                    ]
+                                                },
+                                                "ifTrue": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                },
+                                                "ifFalse": {
+                                                    "type": "Fixed",
+                                                    "amount": 0
+                                                }
+                                            }
+                                        },
+                                        "right": {
+                                            "type": "Conditional",
+                                            "condition": {
+                                                "type": "Any",
+                                                "conditions": [
+                                                    {
+                                                        "type": "Exists",
+                                                        "player": "You",
+                                                        "zone": "Battlefield",
+                                                        "filter": "land"
+                                                    },
+                                                    {
+                                                        "type": "Exists",
+                                                        "player": "You",
+                                                        "zone": "Graveyard",
+                                                        "filter": "land"
+                                                    }
+                                                ]
+                                            },
+                                            "ifTrue": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            },
+                                            "ifFalse": {
+                                                "type": "Fixed",
+                                                "amount": 0
+                                            }
+                                        }
+                                    },
+                                    "right": {
+                                        "type": "Conditional",
+                                        "condition": {
+                                            "type": "Any",
+                                            "conditions": [
+                                                {
+                                                    "type": "Exists",
+                                                    "player": "You",
+                                                    "zone": "Battlefield",
+                                                    "filter": "planeswalker"
+                                                },
+                                                {
+                                                    "type": "Exists",
+                                                    "player": "You",
+                                                    "zone": "Graveyard",
+                                                    "filter": "planeswalker"
+                                                }
+                                            ]
+                                        },
+                                        "ifTrue": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "ifFalse": {
+                                            "type": "Fixed",
+                                            "amount": 0
+                                        }
+                                    }
+                                },
+                                "right": {
+                                    "type": "Conditional",
+                                    "condition": {
+                                        "type": "Any",
+                                        "conditions": [
+                                            {
+                                                "type": "Exists",
+                                                "player": "You",
+                                                "zone": "Battlefield",
+                                                "filter": "sorcery"
+                                            },
+                                            {
+                                                "type": "Exists",
+                                                "player": "You",
+                                                "zone": "Graveyard",
+                                                "filter": "sorcery"
+                                            }
+                                        ]
+                                    },
+                                    "ifTrue": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "ifFalse": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    }
+                                }
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 6
+                            }
+                        },
+                        {
+                            "type": "Compare",
+                            "left": "YourLifeTotal",
+                            "operator": "GTE",
+                            "right": {
+                                "type": "StartingLifeTotal",
+                                "player": "You"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "rarity": "RARE",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/3/d32d85d5-a6f0-4cc5-9fd6-6b329aae2e5b.jpg?1783932672",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "The second triggered ability of Happily Ever After has one very long intervening \"if\" clause. This means that all of the conditions must be true as your upkeep begins—you must control permanents with all five colors, your permanents and graveyard must contain six or more card types, and your life total must be high enough—or the ability won't trigger at all. If they're not all true as the ability resolves, you won't win the game."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "You could have one permanent that's all five colors, or the five colors could be spread out among any number of permanents."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Lands are normally colorless permanents, even if they tap for mana of a certain color."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "The card types that could appear among your permanents and cards in your graveyard are artifact, battle, creature, enchantment, instant, kindred, land, planeswalker, and sorcery. Supertypes, such as legendary and basic, aren't card types."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Ignore the alternative characteristics of an adventurer card in your graveyard. Its alternative card type won't be counted among the card types of cards in your graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Heraldic Banner
 {
     "name": "Heraldic Banner",
