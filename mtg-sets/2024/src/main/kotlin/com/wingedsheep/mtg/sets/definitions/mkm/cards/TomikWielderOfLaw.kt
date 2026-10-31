@@ -32,7 +32,7 @@ import com.wingedsheep.sdk.scripting.AttackedDefenders
  * learn the spelling.
  *
  * **The trigger is the defender-side batch trigger widened to planeswalkers.**
- * [EventPattern.CreaturesAttackYouEvent] deliberately implements CR 509.1b the narrow way — an
+ * [EventPattern.CreaturesAttackYouEvent] deliberately implements CR 508.3b the narrow way — an
  * attacker aimed at *your planeswalker* does not count as attacking *you* — because that is what
  * Orim's Prayer needs. Tomik prints the wider reading explicitly ("you and/or planeswalkers you
  * control"), so it opts in via `AttackedDefenders.YOU_AND_PLANESWALKERS_YOU_CONTROL`. Battles stay out: a battle you

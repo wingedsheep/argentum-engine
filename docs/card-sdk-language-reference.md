@@ -8706,7 +8706,7 @@ The shapes in this family, with their engine notes.
   Decree) is `Triggers.anyPlayer.attacks()` → `DrawCards(1, PlayerRef(Player.TriggeringPlayer))`.
 - `Triggers.you.isAttacked()` — defender side; fires once per `AttackersDeclaredEvent`,
   not per attacker. Excludes creatures attacking a planeswalker you control
-  (CR 509.1b). Pair with `DynamicAmounts.creaturesAttackingYou()` for
+  (CR 508.3b). Pair with `DynamicAmounts.creaturesAttackingYou()` for
   attacker-count payoffs read live at resolution (e.g., Orim's Prayer). Every firing also
   **captures the attackers behind it** as its captured collection — the creatures *declared*
   attacking you (CR 508.1) — so "that many" fixed at declaration is
@@ -8719,7 +8719,7 @@ The shapes in this family, with their engine notes.
   The underlying `EventPattern.CreaturesAttackYouEvent(minAttackers, defenders)` exposes both knobs
   for cards that print them (`Triggers.you.isAttacked(minAttackers, defenders = …)`): `minAttackers`
   raises the batch threshold, and `defenders: AttackedDefenders` names which defenders count —
-  `YOU` (default; CR 509.1b's narrow reading), `YOU_AND_PLANESWALKERS_YOU_CONTROL` ("you **and/or
+  `YOU` (default; CR 508.3b's narrow reading), `YOU_AND_PLANESWALKERS_YOU_CONTROL` ("you **and/or
   planeswalkers you control**" — Tomik, Wielder of Law, Mangara, the Diplomat; it changes only which
   attackers *count*, the trigger still fires once per combat), or `EACH_PLANESWALKER_YOU_CONTROL`.
   Battles are never included.

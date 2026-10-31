@@ -1270,7 +1270,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * Defender side of [YouAttackEvent]: fires once per [com.wingedsheep.engine.core.AttackersDeclaredEvent]
      * when at least [minAttackers] declared attackers have the trigger's controller as their defender.
      *
-     * Per CR 509.1b and the Orim's Prayer ruling, creatures attacking a planeswalker controlled
+     * Per CR 508.3b and the Orim's Prayer ruling, creatures attacking a planeswalker controlled
      * by the trigger's controller do **not** count toward this trigger — only attackers
      * declared against the player themself. That is the default, and it is what "creatures attack
      * you" prints.
@@ -4222,7 +4222,7 @@ internal fun ordinalWord(n: Int): String = listOf(
 })
 
 /**
- * Which defenders a [EventPattern.CreaturesAttackYouEvent] watches (CR 508.1 — each attacker is
+ * Which defenders a [EventPattern.CreaturesAttackYouEvent] watches (CR 508.1b — each attacker is
  * declared attacking a player, planeswalker or battle).
  */
 @Serializable

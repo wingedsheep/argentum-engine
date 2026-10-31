@@ -1085,7 +1085,7 @@ class TriggerMatcher(
 
     /**
      * Which defender an attacker must be aimed at to count, per [EventPattern.CreaturesAttackYouEvent.defenders]:
-     * by default only the player themself, not a planeswalker they control (CR 509.1b / Orim's
+     * by default only the player themself, not a planeswalker they control (CR 508.3b / Orim's
      * Prayer ruling); "you and/or planeswalkers you control" (Tomik, Wielder of Law) adds the
      * controller's planeswalkers; "a planeswalker you control" (Oath of Kaya) counts only those.
      */

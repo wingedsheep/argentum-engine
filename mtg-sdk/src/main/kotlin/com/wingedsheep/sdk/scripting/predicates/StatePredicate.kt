@@ -220,7 +220,7 @@ sealed interface StatePredicate {
      *
      * Deliberately wider than the player-only scoping of
      * [com.wingedsheep.sdk.scripting.EventPattern.CreaturesAttackYouEvent]'s default: that trigger
-     * implements CR 509.1b for Orim's Prayer, where an attacker pointed at your planeswalker does
+     * implements CR 508.3b for Orim's Prayer, where an attacker pointed at your planeswalker does
      * *not* count. Cards that print "you and/or planeswalkers you control" want both, and this is
      * the predicate that says so. A creature attacking a *battle* you protect is not included —
      * "planeswalkers you control" is literal.

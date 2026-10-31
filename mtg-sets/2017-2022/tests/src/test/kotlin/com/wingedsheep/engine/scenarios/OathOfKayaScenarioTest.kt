@@ -36,27 +36,37 @@ class OathOfKayaScenarioTest : ScenarioTestBase() {
             game.getLifeTotal(1) shouldBe 23
         }
 
-        test("an opponent attacking your planeswalker takes 2 and you gain 2; attacking you does nothing") {
-            val game = scenario()
-                .withPlayers("Kaya", "Attacker")
-                .withCardOnBattlefield(1, "Oath of Kaya")
-                .withCardOnBattlefield(1, "Chandra, Flameshaper")
-                .withCardOnBattlefield(2, "Grizzly Bears", summoningSickness = false)
-                .withCardOnBattlefield(2, "Centaur Courser", summoningSickness = false)
-                .withActivePlayer(2)
-                .inPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
-                .build()
+        test("an opponent attacking your planeswalker takes 2 and you gain 2") {
+            val game = board()
 
             game.declareAttackersWithPermanentTargets(
-                playerAttackers = mapOf("Grizzly Bears" to 1),
                 permanentAttackers = mapOf("Centaur Courser" to "Chandra, Flameshaper"),
             ).error shouldBe null
             game.resolveStack()
 
-            withClue("one planeswalker attacked — one firing; the attacker at Kaya's controller adds nothing") {
-                game.getLifeTotal(2) shouldBe 18
-                game.getLifeTotal(1) shouldBe 22
+            game.getLifeTotal(2) shouldBe 18
+            game.getLifeTotal(1) shouldBe 22
+        }
+
+        test("attacking you, not a planeswalker, does not trigger it") {
+            val game = board()
+
+            game.declareAttackers(mapOf("Centaur Courser" to 1)).error shouldBe null
+            game.resolveStack()
+
+            withClue("the attacker is aimed at Kaya's controller, so nothing triggers") {
+                game.getLifeTotal(2) shouldBe 20
+                game.getLifeTotal(1) shouldBe 20
             }
         }
     }
+
+    private fun board() = scenario()
+        .withPlayers("Kaya", "Attacker")
+        .withCardOnBattlefield(1, "Oath of Kaya")
+        .withCardOnBattlefield(1, "Chandra, Flameshaper")
+        .withCardOnBattlefield(2, "Centaur Courser", summoningSickness = false)
+        .withActivePlayer(2)
+        .inPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+        .build()
 }
