@@ -1094,6 +1094,173 @@
     ]
 }
 
+// Cavalier of Flame
+{
+    "name": "Cavalier of Flame",
+    "manaCost": "{2}{R}{R}{R}",
+    "typeLine": "Creature — Elemental Knight",
+    "oracleText": "{1}{R}: Creatures you control get +1/+0 and gain haste until end of turn.\nWhen this creature enters, discard any number of cards, then draw that many cards.\nWhen this creature dies, it deals X damage to each opponent and each planeswalker they control, where X is the number of land cards in your graveyard.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cavalier of Flame:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "stored0_candidates"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "stored0_candidates",
+                                    "selection": "ChooseAnyNumber",
+                                    "storeSelected": "stored0",
+                                    "prompt": "Choose any number of cards to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "stored0",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "VariableReference",
+                                "variableName": "stored0_count"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Cavalier of Flame:3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Graveyard",
+                                "filter": "land"
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "planeswalker ctrl:opponent"
+                                }
+                            },
+                            "body": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Count",
+                                    "player": "You",
+                                    "zone": "Graveyard",
+                                    "filter": "land"
+                                },
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Cavalier of Flame:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE",
+                                "target": "IterationEntity"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "125",
+        "rarity": "MYTHIC",
+        "artist": "Wesley Burt",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/c/0c18c541-758b-4237-9961-9637e996e8a5.jpg?1783932984",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "As Cavalier of Flame's enters-the-battlefield ability resolves, you may choose to discard zero cards. You just won't draw any cards."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Celestial Messenger
 {
     "name": "Celestial Messenger",
@@ -1138,6 +1305,357 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Chandra's Embercat
+{
+    "name": "Chandra's Embercat",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Elemental Cat",
+    "oracleText": "{T}: Add {R}. Spend this mana only to cast an Elemental spell or a Chandra planeswalker spell.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Chandra's Embercat:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED",
+                    "restriction": {
+                        "type": "AnyOf",
+                        "restrictions": [
+                            {
+                                "type": "SubtypeSpellsOnly",
+                                "subtypes": [
+                                    "Elemental"
+                                ]
+                            },
+                            {
+                                "type": "AllOf",
+                                "restrictions": [
+                                    {
+                                        "type": "CardTypeSpellsOrAbilitiesOnly",
+                                        "cardType": "PLANESWALKER"
+                                    },
+                                    {
+                                        "type": "SubtypeSpellsOnly",
+                                        "subtypes": [
+                                            "Chandra"
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "129",
+        "artist": "Johan Grenier",
+        "flavorText": "\"Furballs? Try dealing with fireballs.\"\n—Chandra Nalaar",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/0/30f9c266-f32e-4483-9709-f83675331688.jpg?1783932982",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "A Chandra planeswalker spell is a planeswalker spell with the subtype Chandra. Cards that use Chandra's name in their title or her likeness in their illustration (such as Chandra's Regulator or Chandra's Outrage) aren't Chandra planeswalker spells."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Chandra's Regulator
+{
+    "name": "Chandra's Regulator",
+    "manaCost": "{1}{R}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "Whenever you activate a loyalty ability of a Chandra planeswalker, you may pay {1}. If you do, copy that ability. You may choose new targets for the copy.\n{1}, {T}, Discard a Mountain card or a red card: Draw a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Chandra's Regulator:1",
+                "trigger": {
+                    "type": "AbilityActivatedEvent",
+                    "sourceFilter": {
+                        "cardPredicates": [
+                            "IsPlaneswalker",
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Chandra"
+                            }
+                        ],
+                        "statePredicates": [
+                            "IsOnBattlefield"
+                        ]
+                    },
+                    "requireLoyalty": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}"
+                        }
+                    },
+                    "then": {
+                        "type": "CopyTargetSpellOrAbility",
+                        "target": "TriggeringEntity"
+                    },
+                    "descriptionOverride": "Pay {1}? If you do, copy that ability. You may choose new targets for the copy."
+                },
+                "descriptionOverride": "Whenever you activate a loyalty ability of a Chandra planeswalker, you may pay {1}. If you do, copy that ability. You may choose new targets for the copy."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Chandra's Regulator:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomDiscard",
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "Or",
+                                            "predicates": [
+                                                {
+                                                    "type": "And",
+                                                    "predicates": [
+                                                        "IsLand",
+                                                        {
+                                                            "type": "HasSubtype",
+                                                            "subtype": "Mountain"
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "HasColor",
+                                                    "color": "RED"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "rarity": "RARE",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8f1b1d5c-f71e-4c68-8baf-c134e42ed6f2.jpg?1783932981",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "You can't pay {1} more than once for each time the triggered ability of Chandra's Regulator resolves."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Copying a loyalty ability doesn't add or remove loyalty counters from any object."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If the loyalty ability has −X in its cost, the copy uses the same value of X."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "The triggered ability of Chandra's Regulator and the copy it creates both resolve before the loyalty ability that caused it to trigger. They resolve even if that loyalty ability is countered."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "A Mountain card is a land card with the subtype Mountain, not any land card with a mana ability that produces red mana. Land cards are normally colorless, even if they produce red mana."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Chandra, Acolyte of Flame
+{
+    "name": "Chandra, Acolyte of Flame",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Legendary Planeswalker — Chandra",
+    "oracleText": "0: Put a loyalty counter on each red planeswalker you control.\n0: Create two 1/1 red Elemental creature tokens. They gain haste. Sacrifice them at the beginning of the next end step.\n−2: You may cast target instant or sorcery card with mana value 3 or less from your graveyard. If that spell would be put into your graveyard, exile it instead.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Chandra, Acolyte of Flame:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 0
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "planeswalker red ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "LOYALTY",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Put a loyalty counter on each red planeswalker you control."
+            },
+            {
+                "id": "Chandra, Acolyte of Flame:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 0
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "RED"
+                            ],
+                            "creatureTypes": [
+                                "Elemental"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/0/5/0574973b-a0d1-4e17-9ed7-42a98d25bb8d.jpg?1783932855",
+                            "sacrificeAtStep": "END"
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "createdTokens"
+                            },
+                            "body": {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE",
+                                "target": "IterationEntity",
+                                "duration": "Permanent"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Create two 1/1 red Elemental creature tokens. They gain haste. Sacrifice them at the beginning of the next end step."
+            },
+            {
+                "id": "Chandra, Acolyte of Flame:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "CastFromCollectionWithoutPayingCost",
+                                "from": "gathered0",
+                                "payManaCost": true,
+                                "insteadOfGraveyard": "EXILE"
+                            },
+                            "descriptionOverride": "You may cast target instant or sorcery card with mana value 3 or less from your graveyard."
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "instant|sorcery mv<=3 own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You may cast target instant or sorcery card with mana value 3 or less from your graveyard. If that spell would be put into your graveyard, exile it instead."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "126",
+        "rarity": "RARE",
+        "artist": "Anna Steinbauer",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2cabfcfe-012e-4cab-bba2-24052eac0946.jpg?1783932984",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "Chandra's first ability will put a counter on herself as well as any other red planeswalkers you control. This doesn't cause any other planeswalkers' loyalty abilities to be activated."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "You must pay the costs for the spell you wish to cast with Chandra's last ability. If that spell has any alternative costs, you may pay those."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If a card in your graveyard has {X} in its mana cost, X is considered to be 0 while you target it with Chandra's last ability; however, once you begin to cast it, you choose a value for X. If this causes the mana value to become greater than 3, you can still cast the spell."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If you wish to cast the target card, you must cast it while Chandra's last ability is resolving. You can't cast it later in the turn."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -1472,6 +1990,114 @@
         ]
     },
     "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Chandra, Novice Pyromancer
+{
+    "name": "Chandra, Novice Pyromancer",
+    "manaCost": "{3}{R}",
+    "typeLine": "Legendary Planeswalker — Chandra",
+    "oracleText": "+1: Elementals you control get +2/+0 until end of turn.\n−1: Add {R}{R}.\n−2: Chandra deals 2 damage to any target.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Chandra, Novice Pyromancer:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature Elemental ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Elementals you control get +2/+0 until end of turn."
+            },
+            {
+                "id": "Chandra, Novice Pyromancer:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -1
+                },
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Add {R}{R}."
+            },
+            {
+                "id": "Chandra, Novice Pyromancer:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Chandra deals 2 damage to any target."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "128",
+        "rarity": "UNCOMMON",
+        "artist": "Anna Steinbauer",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d678cf4c-60e3-40a1-a9cc-b0bd157bcf36.jpg?1783932982",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "Chandra's first ability affects only Elementals you control at the time it resolves. Elementals you begin to control later in the turn won't get +2/+0."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Because it's a loyalty ability, Chandra's second ability isn't a mana ability. It can be activated only any time you could cast a sorcery. It uses the stack and can be responded to."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
     "colorIdentityOverride": [
         "RED"
     ]
@@ -2443,6 +3069,112 @@
             }
         ]
     }
+}
+
+// Flame Sweep
+{
+    "name": "Flame Sweep",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Flame Sweep deals 2 damage to each creature except for creatures you control with flying.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": {
+                        "anyOf": [
+                            {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "NotKeyword",
+                                        "keyword": "FLYING"
+                                    }
+                                ]
+                            },
+                            {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "controllerPredicate": "ControlledByOpponent"
+                            }
+                        ]
+                    }
+                }
+            },
+            "body": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "target": "IterationEntity"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "rarity": "UNCOMMON",
+        "artist": "Viktor Titov",
+        "flavorText": "\"I have calculated that a dragon in flight, in a single strafing run, can cover an area of—\"\n—Thaedus the Clever, last words",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/4702a838-8577-49b6-8b7a-f9b6d2929481.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Fry
+{
+    "name": "Fry",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "This spell can't be countered.\nFry deals 5 damage to target creature or planeswalker that's white or blue.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 5
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|planeswalker white|blue"
+                },
+                "id": "t0"
+            }
+        ],
+        "cantBeCountered": true
+    },
+    "metadata": {
+        "collectorNumber": "140",
+        "rarity": "UNCOMMON",
+        "artist": "Tomasz Jedruszek",
+        "flavorText": "\"I'm afraid your dinner got a little . . . overcooked.\"\n—Marlan Farthwald, innkeeper",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/070d7766-a662-443c-93c5-811dbdac2480.jpg?1783932978",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "A spell or ability that counters spells can still target Fry. When that spell or ability resolves, Fry won't be countered, but any additional effects of that spell or ability will still happen."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If the target creature or planeswalker is an illegal target by the time Fry tries to resolve, the spell won't resolve and will be put into its owner's graveyard with no effect. This is true even though it can't be countered."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Glint-Horn Buccaneer
@@ -3800,6 +4532,59 @@
     ]
 }
 
+// Lavakin Brawler
+{
+    "name": "Lavakin Brawler",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Elemental Warrior",
+    "oracleText": "Whenever this creature attacks, it gets +1/+0 until end of turn for each Elemental you control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lavakin Brawler:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "permanent Elemental"
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever this creature attacks, it gets +1/+0 until end of turn for each Elemental you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "147",
+        "artist": "Victor Adame Minguez",
+        "flavorText": "She swings with the ease of flowing lava and hits with the force of a meteor.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/e/3eeea9e5-3041-4439-bc52-fd00ec83c7a1.jpg?1783932974",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "The size of the bonus is determined as Lavakin Brawler's ability begins to resolve; it won't change later in the turn if the number of Elementals you control changes."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Because Lavakin Brawler is itself an Elemental, its ability will usually give it at least +1/+0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Leyline of Combustion
 {
     "name": "Leyline of Combustion",
@@ -3973,6 +4758,241 @@
             }
         ]
     }
+}
+
+// Marauding Raptor
+{
+    "name": "Marauding Raptor",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "Creature spells you cast cost {1} less to cast.\nWhenever another creature you control enters, this creature deals 2 damage to it. If a Dinosaur is dealt damage this way, this creature gets +2/+0 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Marauding Raptor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": "TriggeringEntity",
+                            "damageDealtVariable": "storedNumber0"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "All",
+                                    "conditions": [
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "VariableReference",
+                                                "variableName": "storedNumber0"
+                                            },
+                                            "operator": "GTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        {
+                                            "type": "EntityMatches",
+                                            "entity": "TriggeringEntity",
+                                            "filter": "creature Dinosaur"
+                                        }
+                                    ]
+                                }
+                            },
+                            "then": {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever another creature you control enters, this creature deals 2 damage to it. If a Dinosaur is dealt damage this way, this creature gets +2/+0 until end of turn."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "creature"
+                },
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "150",
+        "rarity": "RARE",
+        "artist": "Bayard Wu",
+        "flavorText": "\"Stand still and try not to look like prey!\"\n—Skerk Hobnett, wilderness guide",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/64e4d2ee-e5e5-48e6-a7b8-9045dc8b10a7.jpg?1783932975",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "Effects that reduce the generic mana cost of a spell (such as that of Marauding Raptor) can't reduce that spell's colored mana requirements."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Marauding Raptor's cost reduction doesn't affect itself."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Mask of Immolation
+{
+    "name": "Mask of Immolation",
+    "manaCost": "{1}{R}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "When this Equipment enters, create a 1/1 red Elemental creature token, then attach this Equipment to it.\nEquipped creature has \"Sacrifice this creature: It deals 1 damage to any target.\"\nEquip {2} ({2}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mask of Immolation:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "RED"
+                            ],
+                            "creatureTypes": [
+                                "Elemental"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/0/5/0574973b-a0d1-4e17-9ed7-42a98d25bb8d.jpg?1783932855"
+                        },
+                        {
+                            "type": "AttachEquipment",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Mask of Immolation:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Mask of Immolation:2",
+                    "cost": "CostSacrificeSelf",
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "AnyTarget",
+                            "id": "t0"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "151",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/e/be2f4165-f87f-454b-b955-e4477c864e95.jpg?1783932975",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "No player may take any actions between the time you create the Elemental token and the time Mask of Immolation becomes attached to it."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "The equipped creature is the source of the activated ability and the source of the damage, not Mask of Immolation. This means that a green creature equipped by Mask of Immolation may deal damage to a creature with protection from red but may not deal damage to a creature with protection from green."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Moat Piranhas
@@ -5134,6 +6154,46 @@
     ]
 }
 
+// Scorch Spitter
+{
+    "name": "Scorch Spitter",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Elemental Lizard",
+    "oracleText": "Whenever this creature attacks, it deals 1 damage to the player or planeswalker it's attacking.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Scorch Spitter:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "AttackedBy",
+                        "attacker": "Self"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "artist": "Johan Grenier",
+        "flavorText": "\"Yes, she can be a nuisance. But at least my tea never gets cold.\"\n—Marlan Farthwald, innkeeper",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bb701a84-24bd-41ed-9f06-25c8338902a5.jpg?1783932970"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Sephara, Sky's Blade
 {
     "name": "Sephara, Sky's Blade",
@@ -5809,6 +6869,121 @@
     ]
 }
 
+// Thunderkin Awakener
+{
+    "name": "Thunderkin Awakener",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Elemental Shaman",
+    "oracleText": "Haste\nWhenever this creature attacks, choose target Elemental creature card in your graveyard with toughness less than this creature's toughness. Return that card to the battlefield tapped and attacking. Sacrifice it at the beginning of the next end step.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thunderkin Awakener:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "TappedAndAttacking"
+                            },
+                            "attackDefender": "CONTROLLER_CHOOSES"
+                        },
+                        {
+                            "type": "CreateDelayedTrigger",
+                            "step": "END",
+                            "effect": {
+                                "type": "SacrificeTarget",
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "gathered0"
+                                }
+                            },
+                            "carryCollections": [
+                                "gathered0"
+                            ]
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "HasSubtype",
+                                    "subtype": "Elemental"
+                                },
+                                {
+                                    "type": "CompareNumericProperty",
+                                    "property": "TOUGHNESS",
+                                    "operator": "LT",
+                                    "amount": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": "Toughness"
+                                    }
+                                }
+                            ],
+                            "controllerPredicate": "OwnedByYou"
+                        },
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "RARE",
+        "artist": "Yongjae Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/289b649b-c93a-44ad-bdd6-866f8b2f1bc2.jpg?1783932968",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "The target card must have lesser toughness both as Thunderkin Awakener attacks and as its triggered ability resolves. Other abilities that trigger whenever Thunderkin Awakener attacks can’t raise its toughness in time to allow the ability to target cards with greater toughness."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If Thunderkin Awakener leaves the battlefield after it has attacked but before its triggered ability resolves, use its toughness as it last existed on the battlefield to determine whether the card is still a legal target."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "You choose which player or planeswalker the returned creature is attacking. It doesn’t have to be attacking the same player or planeswalker that Thunderkin Awakener is attacking."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Although the returned creature is an attacking creature, it was never declared as an attacking creature. This means that abilities that trigger whenever a creature attacks (such as that of Thunderkin Awakener itself) won’t trigger when it enters the battlefield attacking."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If the new creature leaves the battlefield before the end step, that card remains in its current zone. It won’t be sacrificed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Twinblade Paladin
 {
     "name": "Twinblade Paladin",
@@ -5868,6 +7043,58 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Unchained Berserker
+{
+    "name": "Unchained Berserker",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Berserker",
+    "oracleText": "Protection from white\nThis creature gets +2/+0 as long as it's attacking.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.Color",
+                "color": "WHITE"
+            }
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 0,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": "attacking"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "164",
+        "rarity": "UNCOMMON",
+        "artist": "Bram Sels",
+        "flavorText": "Sathros turned his restraints to revenge.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/b/db5879c5-4b0a-42fa-a44f-580e0221a32b.jpg?1783932968"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

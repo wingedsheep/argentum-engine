@@ -951,7 +951,16 @@ class CostHandler(private val zones: ZoneTransitionService) {
                 if (choices.discardChoices.size < atom.count) {
                     return CostPaymentResult.failure("Must choose ${atom.count} card(s) to discard")
                 }
-                choices.discardChoices.take(atom.count)
+                // A GameAction is client-supplied: the discards must be distinct cards in the
+                // payer's hand that match the cost's filter ("Discard a Mountain card or a red card").
+                val chosen = choices.discardChoices.take(atom.count)
+                val eligible = findMatchingCardsUnified(
+                    state, state.getZone(ZoneKey(controllerId, Zone.HAND)), atom.filter, controllerId, sourceId
+                ).toSet()
+                if (chosen.distinct().size != chosen.size || chosen.any { it !in eligible }) {
+                    return CostPaymentResult.failure("Must choose ${atom.count} matching card(s) in hand to discard")
+                }
+                chosen
             }
             val result = zones.discardCards(workState, controllerId, toDiscard)
             CostPaymentResult.success(result.state, manaPool, result.events)

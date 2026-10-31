@@ -1200,6 +1200,73 @@
     "colorIdentityOverride": []
 }
 
+// Tectonic Rift
+{
+    "name": "Tectonic Rift",
+    "manaCost": "{3}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target land. Creatures without flying can't block this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "CantBlockGroup",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "NotKeyword",
+                                    "keyword": "FLYING"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "land"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "157",
+        "rarity": "UNCOMMON",
+        "artist": "John Avon",
+        "flavorText": "\"You will kneel before me, even if I have to split the earth under your feet!\"\n—Ash Kronor, Keldon warlord",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/9/e9838784-8c6d-4e64-bc34-e21efde99093.jpg?1783941064",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "If the target land is an illegal target by the time Tectonic Rift tries to resolve, the spell doesn't resolve. Creatures without flying will be able to block as normal. If the target is legal but not destroyed (most likely because it has indestructible), creatures without flying will be unable to block."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Because it doesn't modify the characteristics of creatures, Tectonic Rift can affect creatures that enter the battlefield or lose flying after the spell resolves, and it will stop affecting creatures that gain flying."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Titanic Growth
 {
     "name": "Titanic Growth",

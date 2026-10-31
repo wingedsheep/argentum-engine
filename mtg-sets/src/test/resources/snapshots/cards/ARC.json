@@ -1,3 +1,61 @@
+// Chandra's Outrage
+{
+    "name": "Chandra's Outrage",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Chandra's Outrage deals 4 damage to target creature and 2 damage to that creature's controller.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "TargetController"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "artist": "Christopher Moeller",
+        "flavorText": "\"Her mind is an incredible mix of emotion and power. Even if I could grasp it, I couldn't hold it for long.\"\n—Jace Beleren, on Chandra Nalaar",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/3282db18-8564-418e-8c26-62e610b160f2.jpg?1783941910",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "If the target creature is an illegal target by the time Chandra's Outrage tries to resolve, the spell doesn't resolve. No player is dealt damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Plummet
 {
     "name": "Plummet",
