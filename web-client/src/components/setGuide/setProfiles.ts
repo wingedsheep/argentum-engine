@@ -510,6 +510,24 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
       { name: 'Heroic', inPlay: 'Targeting your own creature with Auras and tricks grows it, rewarding aggression but leaving you exposed to removal in response.' },
     ],
   },
+  M20: {
+    tagline: 'A classic core-set format with an Elemental twist: solid two-colour decks, cheap removal and a handful of rare bombs, with Elementals tying blue, red and green together.',
+    setting: 'A core set with no plane, headlined by Chandra, the five Cavaliers and an Elemental subtheme.',
+    gameplay: 'Most games are decided on the board: creatures trade, fliers race and the deck with more removal pulls ahead. Elementals give red-green an aggressive tribal plan and green-blue a ramp plan around Risen Reef, while white-blue goes to the air, black-white drains with every creature that enters and black-green turns creatures dying into cards. A common land slot of gain lands and Evolving Wilds makes splashing cheap.',
+    tips: [
+      'Pick removal early: Disfigure, Shock, Murder and Pacifism are what break board stalls.',
+      'Elemental decks want the tribe: Creeping Trailblazer and Risen Reef get much better with every other Elemental you draft.',
+      'Gain lands and Evolving Wilds come in the land slot, so a light splash for a bomb rare costs little.',
+    ],
+    tryIf: 'clean, classic Limited and Elemental tribal decks',
+    power: 3, speed: 3, complexity: 2,
+    themes: ['tribal', 'flyers', 'lifegain'],
+    mechanics: [
+      { name: 'Elementals', inPlay: 'Blue, red and green Elementals reward each other, from Risen Reef digging lands to Creeping Trailblazer pumping the team.' },
+      { name: 'Evergreen keywords', inPlay: 'Flying, deathtouch, lifelink and friends do most of the work; reading combat well matters more than any set mechanic.' },
+      { name: 'Planeswalkers', inPlay: 'Rare walkers take over an unattended board; attack them early or they generate value every turn.' },
+    ],
+  },
   ELD: {
     tagline: 'A fast, two-for-one format: Adventure cards give two spells for one card, Food buys time, and aggressive Knight decks punish slow starts.',
     setting: 'Eldraine, a fairy-tale plane of five courtly castles and the wild, enchanted realm beyond them.',

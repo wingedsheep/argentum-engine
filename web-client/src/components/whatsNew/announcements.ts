@@ -30,6 +30,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-m20',
+    date: '2026-10-31',
+    kind: 'set',
+    setCode: 'M20',
+    title: 'Core Set 2020 is complete',
+    body:
+      "Core Set 2020 is a classic core set with a tribal twist: Elementals swarm in blue, red and green, ramping lands onto the battlefield with Risen Reef or trampling in behind Creeping Trailblazer. Every colour pair has a straightforward plan, from white-blue fliers and black-white life drain to black-green value from creatures dying, while the Cavaliers and Chandra headline the bombs.",
+    tryIf: 'clean, classic Limited and Elemental tribal decks',
+  },
+  {
     id: 'set-eld',
     date: '2026-10-31',
     kind: 'set',
