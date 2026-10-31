@@ -2153,6 +2153,65 @@
     ]
 }
 
+// Gravewaker
+{
+    "name": "Gravewaker",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Creature — Bird Spirit",
+    "oracleText": "Flying\n{5}{B}{B}: Return target creature card from your graveyard to the battlefield tapped.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Gravewaker:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{B}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield",
+                    "placement": "Tapped",
+                    "fromZone": "Graveyard"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "293",
+        "rarity": "RARE",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "Once every seven years it flies on spectral wings over the moors of ancient battlefields.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/ee347d62-867e-40c2-bf4a-0ac2f627e24c.jpg?1783934483"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Greenwood Sentinel
 {
     "name": "Greenwood Sentinel",
