@@ -3163,6 +3163,122 @@
     ]
 }
 
+// General Kudro of Drannith
+{
+    "name": "General Kudro of Drannith",
+    "manaCost": "{1}{W}{B}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "Other Humans you control get +1/+1.\nWhenever General Kudro or another Human you control enters, exile target card from an opponent's graveyard.\n{2}, Sacrifice two Humans: Destroy target creature with power 4 or greater.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "General Kudro of Drannith:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature Human ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "own:opponent",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "General Kudro of Drannith:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature Human",
+                                "count": 2
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature pow>=4"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "descriptionOverride": "{2}, Sacrifice two Humans: Destroy target creature with power 4 or greater."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature Human ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "187",
+        "rarity": "MYTHIC",
+        "artist": "Ryan Pancoast",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2c3227ae-0c72-478a-a6dd-661aaf718038.jpg?1783931024",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Only creatures are Humans. Planeswalkers such as Lukka and Narset who represent human characters won't cause General Kudro's middle ability to trigger."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "General Kudro can be sacrificed to pay the cost of its own last ability. How noble."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // General's Enforcer
 {
     "name": "General's Enforcer",
@@ -3847,6 +3963,114 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Illuna, Apex of Wishes
+{
+    "name": "Illuna, Apex of Wishes",
+    "manaCost": "{2}{G}{U}{R}",
+    "typeLine": "Legendary Creature — Beast Elemental Dinosaur",
+    "oracleText": "Mutate {3}{R/G}{U}{U} (If you cast this spell for its mutate cost, put it over or under target non-Human creature you own. They mutate into the creature on top plus all abilities from under it.)\nFlying, trample\nWhenever this creature mutates, exile cards from the top of your library until you exile a nonland permanent card. Put that card onto the battlefield or into your hand.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING",
+        "TRAMPLE",
+        "MUTATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Mutate",
+            "cost": "{3}{R/G}{U}{U}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Illuna, Apex of Wishes:1",
+                "trigger": "MutateEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherUntilMatch",
+                            "filter": "nonland permanent",
+                            "storeMatch": "matched0",
+                            "storeRevealed": "revealed0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "revealed0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "matched0",
+                            "ifNotEmpty": {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.MayDecide",
+                                    "prompt": "Put the exiled card onto the battlefield? (Otherwise, into your hand.)"
+                                },
+                                "then": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "matched0",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Battlefield"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "otherwise": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "matched0",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Hand"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "190",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9fc99c81-d112-4811-9bba-77a14d904692.jpg?1783931024",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "You choose whether to put the card into your hand or onto the battlefield after seeing what the card is."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Any land, instant, and sorcery cards exiled this way remain in exile."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "RED",
+        "BLUE"
     ]
 }
 
@@ -4898,6 +5122,170 @@
     ]
 }
 
+// Lurrus of the Dream-Den
+{
+    "name": "Lurrus of the Dream-Den",
+    "manaCost": "{1}{W/B}{W/B}",
+    "typeLine": "Legendary Creature — Cat Nightmare",
+    "oracleText": "Companion — Each permanent card in your starting deck has mana value 2 or less. (If this card is your chosen companion, you may put it into your hand from outside the game for {3} as a sorcery.)\nLifelink\nOnce during each of your turns, you may cast a permanent spell with mana value 2 or less from your graveyard.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Companion",
+            "condition": {
+                "type": "EachCard",
+                "filter": {
+                    "cardPredicates": [
+                        {
+                            "type": "Or",
+                            "predicates": [
+                                {
+                                    "type": "Not",
+                                    "predicate": "IsPermanent"
+                                },
+                                {
+                                    "type": "And",
+                                    "predicates": [
+                                        "IsPermanent",
+                                        {
+                                            "type": "ManaValueAtMost",
+                                            "max": 2
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "MayCastFromGraveyard",
+                "filter": "permanent mv<=2",
+                "duringYourTurnOnly": true,
+                "oncePerTurn": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "226",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/a/5ad36fb2-c44e-4085-ba0d-54277841ad3a.jpg?1783931010",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Lurrus doesn't care about instant and sorcery cards in your starting deck. They may have any mana value."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "For spells with {X} in their mana costs, use the value chosen for X to determine the spell's mana value. For example, if a permanent spell costs {X}{W}, you could cast it with X as 1 but not as 2."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If you cast a spell from your graveyard using another permission, Lurrus's effect doesn't apply. You can cast another permanent spell from your graveyard."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If you cast one permanent spell from your graveyard and then have a new Lurrus come under your control in the same turn, you may cast another permanent spell from your graveyard that turn."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Lurrus doesn't let you play lands from your graveyard."
+            }
+        ]
+    }
+}
+
+// Lutri, the Spellchaser
+{
+    "name": "Lutri, the Spellchaser",
+    "manaCost": "{1}{U/R}{U/R}",
+    "typeLine": "Legendary Creature — Elemental Otter",
+    "oracleText": "Companion — Each nonland card in your starting deck has a different name. (If this card is your chosen companion, you may put it into your hand from outside the game for {3} as a sorcery.)\nFlash\nWhen Lutri enters, if you cast it, copy target instant or sorcery spell you control. You may choose new targets for the copy.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Companion",
+            "condition": {
+                "type": "DistinctNames",
+                "among": {
+                    "cardPredicates": [
+                        "IsNonland"
+                    ]
+                }
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lutri, the Spellchaser:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CopyTargetSpell",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "instant|sorcery ctrl:you",
+                        "zone": "Stack"
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": "WasCast",
+                "descriptionOverride": "When Lutri enters, if you cast it, copy target instant or sorcery spell you control. You may choose new targets for the copy."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "227",
+        "rarity": "RARE",
+        "artist": "Lie Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/b/fb1189c9-7842-466e-8238-1e02677d8494.jpg?1783931010",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Lutri's ability can copy any instant or sorcery spell you control, not just one with targets."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "The copy is created on the stack, so it's not \"cast.\" Abilities that trigger when a player casts a spell won't trigger. It will resolve before the original spell does."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If the spell that's copied is modal (that is, it says \"Choose one —\" or the like), the copy will have the same mode. A different mode can't be chosen."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If the spell that's copied has an X whose value was determined as it was cast, the copy will have the same value of X."
+            }
+        ]
+    }
+}
+
 // Majestic Auricorn
 {
     "name": "Majestic Auricorn",
@@ -5106,6 +5494,822 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Mythos of Brokkos
+{
+    "name": "Mythos of Brokkos",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "If {U}{B} was spent to cast this spell, search your library for a card, put that card into your graveyard, then shuffle.\nReturn up to two permanent cards from your graveyard to your hand.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "ManaSpentToCastIncludes",
+                            "requiredBlue": 1,
+                            "requiredBlack": 1
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library"
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a card to put into your graveyard",
+                                "selectedLabel": "Put into your graveyard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                }
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard",
+                        "filter": "permanent"
+                    },
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "storeSelected": "selected2",
+                    "prompt": "Return up to two permanent cards from your graveyard to your hand",
+                    "selectedLabel": "Return to hand",
+                    "remainderLabel": "Leave in graveyard",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "168",
+        "rarity": "RARE",
+        "artist": "Seb McKinnon",
+        "flavorText": "\"The most unexpected weapon that a monster can wield is kindness.\"\n—Tales of the Ozolith",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/a/fa4fc5b1-6666-4c60-898f-f927212c7923.jpg?1783931031",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Because Mythos of Brokkos doesn't target the permanent cards in your graveyard, you may choose the card you searched for."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "A permanent card is an artifact, creature, enchantment, land, or planeswalker card."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If an effect copies the Mythos spell, no mana was spent to cast the copy, so the copy won't receive the bonus."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "The ability checks what mana was actually spent to cast a spell. If an effect allows you to spend mana \"as though it were mana\" of any color or type, that allows you to spend mana you couldn't otherwise spend, but it doesn't change what mana you spent to cast the spell."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN",
+        "BLUE"
+    ]
+}
+
+// Mythos of Illuna
+{
+    "name": "Mythos of Illuna",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create a token that's a copy of target permanent. If {R}{G} was spent to cast this spell, instead create a token that's a copy of that permanent, except the token has \"When this token enters, if it's a creature, it fights up to one target creature you don't control.\"",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "ManaSpentToCastIncludes",
+                    "requiredRed": 1,
+                    "requiredGreen": 1
+                }
+            },
+            "then": {
+                "type": "CreateTokenCopyOfTarget",
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "triggeredAbilities": [
+                    {
+                        "id": "Mythos of Illuna:1",
+                        "trigger": {
+                            "type": "ZoneChangeEvent",
+                            "to": "Battlefield"
+                        },
+                        "effect": {
+                            "type": "Fight",
+                            "target1": "Self",
+                            "target2": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        },
+                        "targetRequirement": {
+                            "type": "TargetObject",
+                            "optional": true,
+                            "filter": {
+                                "baseFilter": "creature ctrl:opponent"
+                            },
+                            "id": "t1"
+                        },
+                        "interveningIf": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": "creature"
+                        },
+                        "descriptionOverride": "When this token enters, if it's a creature, it fights up to one target creature you don't control."
+                    }
+                ]
+            },
+            "otherwise": {
+                "type": "CreateTokenCopyOfTarget",
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "permanent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "58",
+        "rarity": "RARE",
+        "artist": "Seb McKinnon",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f1b07082-c5a5-4283-a2f5-5b1e0120d752.jpg?1783931072",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "If {R}{G} was spent to cast the spell, the token has the extra ability. If something copies the token later, the copy will also have that ability."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If the token isn't a creature immediately after it enters the battlefield, the granted ability won't trigger. You can't take actions to make that token into a creature after it has entered the battlefield."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If the target creature is an illegal target or if the token is no longer a creature when the token's granted ability tries to resolve, the ability doesn't resolve. If it's a legal target but the token is no longer on the battlefield when the ability resolves, the target creature won't deal or be dealt damage."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If an effect copies the Mythos spell, no mana was spent to cast the copy, so the copy won't receive the bonus."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "RED",
+        "BLUE"
+    ]
+}
+
+// Mythos of Nethroi
+{
+    "name": "Mythos of Nethroi",
+    "manaCost": "{2}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target nonland permanent if it's a creature or if {G}{W} was spent to cast this spell.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "filter": "creature"
+                        },
+                        {
+                            "type": "ManaSpentToCastIncludes",
+                            "requiredWhite": 1,
+                            "requiredGreen": 1
+                        }
+                    ]
+                }
+            },
+            "then": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "destination": "Graveyard",
+                "byDestruction": true
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "nonland permanent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "97",
+        "rarity": "RARE",
+        "artist": "Seb McKinnon",
+        "flavorText": "\"And then the shadow took living form, and the shadow devoured the man whole—body, mind, and soul.\"\n—Tales of the Ozolith",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/a/6abc24e1-e721-471a-9efd-547f320675b0.jpg?1783931058",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "If an effect copies the Mythos spell, no mana was spent to cast the copy, so the copy won't receive the bonus."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Mythos of Nethroi can target any nonland permanent. Determine as the spell resolves whether the permanent is destroyed, either because it's a creature at that time or because {G}{W} was spent to cast the spell."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "The ability checks what mana was actually spent to cast a spell. If an effect allows you to spend mana \"as though it were mana\" of any color or type, that allows you to spend mana you couldn't otherwise spend, but it doesn't change what mana you spent to cast the spell."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN",
+        "WHITE"
+    ]
+}
+
+// Mythos of Snapdax
+{
+    "name": "Mythos of Snapdax",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each player chooses an artifact, a creature, an enchantment, and a planeswalker from among the nonland permanents they control, then sacrifices the rest. If {B}{R} was spent to cast this spell, you choose the permanents for each player instead.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "ManaSpentToCastIncludes",
+                    "requiredBlack": 1,
+                    "requiredRed": 1
+                }
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Players",
+                            "players": "EachStartingWithYou"
+                        },
+                        "body": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "ControlledPermanents",
+                                        "filter": "nonland permanent"
+                                    },
+                                    "storeAs": "gathered1"
+                                },
+                                {
+                                    "type": "FilterCollection",
+                                    "from": "gathered1",
+                                    "filter": "artifact",
+                                    "storeMatching": "matching2"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "matching2",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "chooser": "SourceController",
+                                    "storeSelected": "selected3",
+                                    "prompt": "Choose an artifact to keep. Unchosen nonland permanents are sacrificed.",
+                                    "selectedLabel": "Keep",
+                                    "remainderLabel": "Sacrifice",
+                                    "useTargetingUI": true
+                                },
+                                {
+                                    "type": "FilterCollection",
+                                    "from": "gathered1",
+                                    "filter": "creature",
+                                    "storeMatching": "matching4"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "matching4",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "chooser": "SourceController",
+                                    "storeSelected": "selected5",
+                                    "prompt": "Choose a creature to keep. Unchosen nonland permanents are sacrificed.",
+                                    "selectedLabel": "Keep",
+                                    "remainderLabel": "Sacrifice",
+                                    "useTargetingUI": true
+                                },
+                                {
+                                    "type": "FilterCollection",
+                                    "from": "gathered1",
+                                    "filter": "enchantment",
+                                    "storeMatching": "matching6"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "matching6",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "chooser": "SourceController",
+                                    "storeSelected": "selected7",
+                                    "prompt": "Choose an enchantment to keep. Unchosen nonland permanents are sacrificed.",
+                                    "selectedLabel": "Keep",
+                                    "remainderLabel": "Sacrifice",
+                                    "useTargetingUI": true
+                                },
+                                {
+                                    "type": "FilterCollection",
+                                    "from": "gathered1",
+                                    "filter": "planeswalker",
+                                    "storeMatching": "matching8"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "matching8",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "chooser": "SourceController",
+                                    "storeSelected": "selected9",
+                                    "prompt": "Choose a planeswalker to keep. Unchosen nonland permanents are sacrificed.",
+                                    "selectedLabel": "Keep",
+                                    "remainderLabel": "Sacrifice",
+                                    "useTargetingUI": true
+                                }
+                            ]
+                        },
+                        "collectCollections": {
+                            "gathered1": "collected10",
+                            "selected3": "collected11",
+                            "selected5": "collected12",
+                            "selected7": "collected13",
+                            "selected9": "collected14"
+                        }
+                    },
+                    {
+                        "type": "FilterCollection",
+                        "from": "collected10",
+                        "collectionFilter": {
+                            "type": "ExcludeOtherCollection",
+                            "otherCollectionName": "collected11"
+                        },
+                        "storeMatching": "matching15"
+                    },
+                    {
+                        "type": "FilterCollection",
+                        "from": "matching15",
+                        "collectionFilter": {
+                            "type": "ExcludeOtherCollection",
+                            "otherCollectionName": "collected12"
+                        },
+                        "storeMatching": "matching16"
+                    },
+                    {
+                        "type": "FilterCollection",
+                        "from": "matching16",
+                        "collectionFilter": {
+                            "type": "ExcludeOtherCollection",
+                            "otherCollectionName": "collected13"
+                        },
+                        "storeMatching": "matching17"
+                    },
+                    {
+                        "type": "FilterCollection",
+                        "from": "matching17",
+                        "collectionFilter": {
+                            "type": "ExcludeOtherCollection",
+                            "otherCollectionName": "collected14"
+                        },
+                        "storeMatching": "matching18"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "matching18",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Graveyard"
+                        },
+                        "moveType": "Sacrifice"
+                    }
+                ]
+            },
+            "otherwise": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Players",
+                            "players": "EachStartingWithYou"
+                        },
+                        "body": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "ControlledPermanents",
+                                        "filter": "nonland permanent"
+                                    },
+                                    "storeAs": "gathered1"
+                                },
+                                {
+                                    "type": "FilterCollection",
+                                    "from": "gathered1",
+                                    "filter": "artifact",
+                                    "storeMatching": "matching2"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "matching2",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "selected3",
+                                    "prompt": "Choose an artifact to keep. Unchosen nonland permanents are sacrificed.",
+                                    "selectedLabel": "Keep",
+                                    "remainderLabel": "Sacrifice",
+                                    "useTargetingUI": true
+                                },
+                                {
+                                    "type": "FilterCollection",
+                                    "from": "gathered1",
+                                    "filter": "creature",
+                                    "storeMatching": "matching4"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "matching4",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "selected5",
+                                    "prompt": "Choose a creature to keep. Unchosen nonland permanents are sacrificed.",
+                                    "selectedLabel": "Keep",
+                                    "remainderLabel": "Sacrifice",
+                                    "useTargetingUI": true
+                                },
+                                {
+                                    "type": "FilterCollection",
+                                    "from": "gathered1",
+                                    "filter": "enchantment",
+                                    "storeMatching": "matching6"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "matching6",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "selected7",
+                                    "prompt": "Choose an enchantment to keep. Unchosen nonland permanents are sacrificed.",
+                                    "selectedLabel": "Keep",
+                                    "remainderLabel": "Sacrifice",
+                                    "useTargetingUI": true
+                                },
+                                {
+                                    "type": "FilterCollection",
+                                    "from": "gathered1",
+                                    "filter": "planeswalker",
+                                    "storeMatching": "matching8"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "matching8",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "selected9",
+                                    "prompt": "Choose a planeswalker to keep. Unchosen nonland permanents are sacrificed.",
+                                    "selectedLabel": "Keep",
+                                    "remainderLabel": "Sacrifice",
+                                    "useTargetingUI": true
+                                }
+                            ]
+                        },
+                        "collectCollections": {
+                            "gathered1": "collected10",
+                            "selected3": "collected11",
+                            "selected5": "collected12",
+                            "selected7": "collected13",
+                            "selected9": "collected14"
+                        }
+                    },
+                    {
+                        "type": "FilterCollection",
+                        "from": "collected10",
+                        "collectionFilter": {
+                            "type": "ExcludeOtherCollection",
+                            "otherCollectionName": "collected11"
+                        },
+                        "storeMatching": "matching15"
+                    },
+                    {
+                        "type": "FilterCollection",
+                        "from": "matching15",
+                        "collectionFilter": {
+                            "type": "ExcludeOtherCollection",
+                            "otherCollectionName": "collected12"
+                        },
+                        "storeMatching": "matching16"
+                    },
+                    {
+                        "type": "FilterCollection",
+                        "from": "matching16",
+                        "collectionFilter": {
+                            "type": "ExcludeOtherCollection",
+                            "otherCollectionName": "collected13"
+                        },
+                        "storeMatching": "matching17"
+                    },
+                    {
+                        "type": "FilterCollection",
+                        "from": "matching17",
+                        "collectionFilter": {
+                            "type": "ExcludeOtherCollection",
+                            "otherCollectionName": "collected14"
+                        },
+                        "storeMatching": "matching18"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "matching18",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Graveyard"
+                        },
+                        "moveType": "Sacrifice"
+                    }
+                ]
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "rarity": "RARE",
+        "artist": "Seb McKinnon",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/2712a1a3-dd28-44c8-a661-5bcf68d3acaa.jpg?1783931085",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "If you control a permanent with more than one type, you may choose it for each of those types. For example, you could choose an artifact creature as the artifact you keep and also as the creature you keep."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If you're choosing the permanents for each player, your choices must still be legal. For example, you can't decline to choose a creature a player will keep if that player controls a creature."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "As Mythos of Snapdax resolves, first you choose which permanents you control won't be sacrificed, then each other player in turn order does the same, knowing the choices made before them. Then each nonland permanent not chosen is sacrificed at the same time."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Lands with another permanent type can't be chosen and won't be sacrificed."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "The abilities of the Mythos check what colors of mana were spent to cast the spell. It's not an alternative cost to cast the spell."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If an effect copies the Mythos spell, no mana was spent to cast the copy, so the copy won't receive the bonus."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "The ability checks what mana was actually spent to cast a spell. If an effect allows you to spend mana \"as though it were mana\" of any color or type, that allows you to spend mana you couldn't otherwise spend, but it doesn't change what mana you spent to cast the spell."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED",
+        "WHITE"
+    ]
+}
+
+// Mythos of Vadrok
+{
+    "name": "Mythos of Vadrok",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Mythos of Vadrok deals 5 damage divided as you choose among any number of target creatures and/or planeswalkers. If {W}{U} was spent to cast this spell, until your next turn, those permanents can't attack or block and their activated abilities can't be activated.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DividedDamage",
+                    "totalDamage": 5,
+                    "maxTargets": 5,
+                    "among": "t0"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "ManaSpentToCastIncludes",
+                            "requiredWhite": 1,
+                            "requiredBlue": 1
+                        }
+                    },
+                    "then": {
+                        "type": "ForEach",
+                        "space": "IterationSpace.Targets",
+                        "body": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "CantAttack",
+                                    "target": {
+                                        "type": "ContextTarget",
+                                        "index": 0
+                                    },
+                                    "duration": "UntilYourNextTurn"
+                                },
+                                {
+                                    "type": "CantBlockTargetCreatures",
+                                    "target": {
+                                        "type": "ContextTarget",
+                                        "index": 0
+                                    },
+                                    "duration": "UntilYourNextTurn"
+                                },
+                                {
+                                    "type": "GrantStaticAbility",
+                                    "ability": {
+                                        "type": "PreventActivatedAbilities",
+                                        "filter": {
+                                            "cardPredicates": [
+                                                "IsPermanent"
+                                            ],
+                                            "statePredicates": [
+                                                "IsSource"
+                                            ]
+                                        }
+                                    },
+                                    "target": {
+                                        "type": "ContextTarget",
+                                        "index": 0
+                                    },
+                                    "duration": "UntilYourNextTurn"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": "creature|planeswalker"
+                },
+                "id": "t0",
+                "dynamicMaxCount": {
+                    "type": "Fixed",
+                    "amount": 5
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "rarity": "RARE",
+        "artist": "Seb McKinnon",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2bbe99a7-3b58-4f23-bf86-e1e35b0bec2e.jpg",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "If an effect copies the Mythos spell, no mana was spent to cast the copy, so the copy won't receive the bonus."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "The ability checks what mana was actually spent to cast a spell. If an effect allows you to spend mana \"as though it were mana\" of any color or type, that allows you to spend mana you couldn't otherwise spend, but it doesn't change what mana you spent to cast the spell."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "BLUE",
+        "WHITE"
     ]
 }
 
@@ -5348,6 +6552,81 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Obosh, the Preypiercer
+{
+    "name": "Obosh, the Preypiercer",
+    "manaCost": "{3}{B/R}{B/R}",
+    "typeLine": "Legendary Creature — Hellion Horror",
+    "oracleText": "Companion — Your starting deck contains only cards with odd mana values and land cards. (If this card is your chosen companion, you may put it into your hand from outside the game for {3} as a sorcery.)\nIf a source you control with an odd mana value would deal damage to a permanent or player, it deals double that damage to that permanent or player instead.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "keywordAbilities": [
+        {
+            "type": "Companion",
+            "condition": {
+                "type": "EachCard",
+                "filter": {
+                    "cardPredicates": [
+                        {
+                            "type": "Or",
+                            "predicates": [
+                                "IsLand",
+                                "ManaValueIsOdd"
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "DoubleDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "source": {
+                        "cardPredicates": [
+                            "ManaValueIsOdd"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "228",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/451507de-9c42-43ee-b9ba-1f69e9aa29d2.jpg?1783931009",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "The damage is dealt by the same source as the original source of damage. The doubled damage isn't dealt by Obosh unless it was the original source of damage."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "For spells with {X} in their mana costs, use the value chosen for X to determine the spell's mana value. If a permanent or card in any other zone has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If a creature with trample you control would deal combat damage to a blocking creature while you control Obosh, you must assign its unmodified damage. For example, a 3/3 creature with trample blocked by a 2/2 creature can have 1 damage assigned to the defending player. It will then deal 4 damage to the blocking creature and 2 damage to the defending player."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If an effect such as that of Ravenous Gigantotherium asks you to divide damage among targets, you must divide the unmodified damage before doubling it."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If multiple replacement or prevention effects try to modify damage that would be dealt to a permanent or player, the player or the controller of the permanent chooses the order in which they apply."
+            }
+        ]
+    }
 }
 
 // Patagia Tiger
@@ -6001,6 +7280,83 @@
         ]
     },
     "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Rielle, the Everwise
+{
+    "name": "Rielle, the Everwise",
+    "manaCost": "{1}{U}{R}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "Rielle gets +1/+0 for each instant and sorcery card in your graveyard.\nWhenever you discard one or more cards for the first time each turn, draw that many cards.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rielle, the Everwise:1",
+                "trigger": {
+                    "type": "DiscardEvent",
+                    "batch": true,
+                    "firstTimeEachTurn": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DISCARD_COUNT"
+                    }
+                },
+                "descriptionOverride": "Whenever you discard one or more cards for the first time each turn, draw that many cards."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "AggregateZone",
+                    "player": "You",
+                    "zone": "Graveyard",
+                    "filter": "instant|sorcery"
+                },
+                "toughnessBonus": {
+                    "type": "Fixed",
+                    "amount": 0
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "203",
+        "rarity": "MYTHIC",
+        "artist": "Yongjae Choi",
+        "flavorText": "\"Being all-knowing is a matter of remembering which things it is crucial to forget.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f03c944-1929-4cb2-a373-d57eefa29ed1.jpg?1783931018",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Rielle's first ability applies only while it's on the battlefield."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If you discard a card as a cost to cast a spell or activate an ability, Rielle's triggered ability resolves before that spell or ability but after you've chosen targets for it. If you discard a card while a spell or ability is resolving, that spell or ability finishes resolving before Rielle's triggered ability does."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If the first time you discard cards during your turn is due to having too many cards in hand during your cleanup step, you'll draw that many cards. Players will receive priority during the cleanup step in this case, and a new cleanup step will happen after that one, during which you may have to discard cards again."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
         "RED"
     ]
 }
@@ -6750,6 +8106,77 @@
         "imageUri": "https://cards.scryfall.io/normal/front/3/1/311f827a-1585-483e-b0fd-3dc05969b485.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Snapdax, Apex of the Hunt
+{
+    "name": "Snapdax, Apex of the Hunt",
+    "manaCost": "{1}{R}{W}{B}",
+    "typeLine": "Legendary Creature — Dinosaur Cat Nightmare",
+    "oracleText": "Mutate {2}{B/R}{W}{W} (If you cast this spell for its mutate cost, put it over or under target non-Human creature you own. They mutate into the creature on top plus all abilities from under it.)\nDouble strike\nWhenever this creature mutates, it deals 4 damage to target creature or planeswalker an opponent controls and you gain 4 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "keywords": [
+        "DOUBLE_STRIKE",
+        "MUTATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Mutate",
+            "cost": "{2}{B/R}{W}{W}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Snapdax, Apex of the Hunt:1",
+                "trigger": "MutateEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 4
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 4
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature|planeswalker ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "209",
+        "rarity": "MYTHIC",
+        "artist": "Viktor Titov",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/1/51fdeeb7-9868-4fc2-9c53-806244cd5488.jpg?1783931016"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED",
+        "WHITE"
+    ]
 }
 
 // Snare Tactician
@@ -7768,6 +9195,126 @@
     ]
 }
 
+// Umori, the Collector
+{
+    "name": "Umori, the Collector",
+    "manaCost": "{2}{B/G}{B/G}",
+    "typeLine": "Legendary Creature — Ooze",
+    "oracleText": "Companion — Each nonland card in your starting deck shares a card type. (If this card is your chosen companion, you may put it into your hand from outside the game for {3} as a sorcery.)\nAs Umori enters, choose a card type.\nSpells you cast of the chosen type cost {1} less to cast.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywordAbilities": [
+        {
+            "type": "Companion",
+            "condition": {
+                "type": "ShareACardType",
+                "among": {
+                    "cardPredicates": [
+                        "IsNonland"
+                    ]
+                }
+            }
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": {
+                        "cardPredicates": [
+                            {
+                                "type": "CardTypeEqualsChosenComponent",
+                                "slot": "MODE"
+                            }
+                        ]
+                    }
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "modeOptions": [
+                    {
+                        "id": "Artifact",
+                        "label": "Artifact",
+                        "description": "Artifact spells you cast cost {1} less to cast."
+                    },
+                    {
+                        "id": "Battle",
+                        "label": "Battle",
+                        "description": "Battle spells you cast cost {1} less to cast."
+                    },
+                    {
+                        "id": "Creature",
+                        "label": "Creature",
+                        "description": "Creature spells you cast cost {1} less to cast."
+                    },
+                    {
+                        "id": "Enchantment",
+                        "label": "Enchantment",
+                        "description": "Enchantment spells you cast cost {1} less to cast."
+                    },
+                    {
+                        "id": "Instant",
+                        "label": "Instant",
+                        "description": "Instant spells you cast cost {1} less to cast."
+                    },
+                    {
+                        "id": "Kindred",
+                        "label": "Kindred",
+                        "description": "Kindred spells you cast cost {1} less to cast."
+                    },
+                    {
+                        "id": "Land",
+                        "label": "Land",
+                        "description": "Land spells you cast cost {1} less to cast."
+                    },
+                    {
+                        "id": "Planeswalker",
+                        "label": "Planeswalker",
+                        "description": "Planeswalker spells you cast cost {1} less to cast."
+                    },
+                    {
+                        "id": "Sorcery",
+                        "label": "Sorcery",
+                        "description": "Sorcery spells you cast cost {1} less to cast."
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "231",
+        "rarity": "RARE",
+        "artist": "Jehan Choo",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/5/75ac31e0-ac70-4ee6-b2b1-cc445ffa1da9.jpg?1783931008",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Land cards in your deck may have any number of additional types that may be shared with other cards or not."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Effects that reduce the generic mana cost of a spell (such as that of Umori) can't reduce that spell's colored mana requirements."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "To satisfy Umori's companion requirement, there must be one card type that each nonland card in your starting deck has. For example, if every nonland card is an artifact creature, enchantment creature, or creature, it is satisfied; but if you have an artifact creature, an artifact, and a creature, it is not satisfied."
+            }
+        ]
+    }
+}
+
 // Unpredictable Cyclone
 {
     "name": "Unpredictable Cyclone",
@@ -7878,6 +9425,90 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Vadrok, Apex of Thunder
+{
+    "name": "Vadrok, Apex of Thunder",
+    "manaCost": "{U}{R}{W}",
+    "typeLine": "Legendary Creature — Elemental Dinosaur Cat",
+    "oracleText": "Mutate {1}{W/U}{R}{R} (If you cast this spell for its mutate cost, put it over or under target non-Human creature you own. They mutate into the creature on top plus all abilities from under it.)\nFlying, first strike\nWhenever this creature mutates, you may cast target noncreature card with mana value 3 or less from your graveyard without paying its mana cost.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "FIRST_STRIKE",
+        "MUTATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Mutate",
+            "cost": "{1}{W/U}{R}{R}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vadrok, Apex of Thunder:1",
+                "trigger": "MutateEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": "nonland",
+                            "storeMatching": "matching1"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "CastFromCollectionWithoutPayingCost",
+                                "from": "matching1"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "noncreature mv<=3 own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "214",
+        "rarity": "MYTHIC",
+        "artist": "Zack Stella",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/d/ed7b0256-d342-4523-9516-6a007bf51825.jpg?1783931014",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "If you wish to cast the target card, you do so as part of the resolution of Vadrok's ability. You can't wait to cast it later. Timing permissions based on a card's type are ignored."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If a spell has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED",
+        "WHITE"
     ]
 }
 
@@ -8385,6 +10016,130 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Winota, Joiner of Forces
+{
+    "name": "Winota, Joiner of Forces",
+    "manaCost": "{2}{R}{W}",
+    "typeLine": "Legendary Creature — Human Warrior",
+    "oracleText": "Whenever a non-Human creature you control attacks, look at the top six cards of your library. You may put a Human creature card from among them onto the battlefield tapped and attacking. It gains indestructible until end of turn. Put the rest of the cards on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Winota, Joiner of Forces:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Human"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 6
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "creature Human",
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "You may put a Human creature card onto the battlefield tapped and attacking",
+                            "selectedLabel": "Put onto the battlefield tapped and attacking",
+                            "remainderLabel": "Put on the bottom of your library",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "TappedAndAttacking"
+                            },
+                            "storeMovedAs": "moved2"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "INDESTRUCTIBLE",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "moved2"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever a non-Human creature you control attacks, look at the top six cards of your library. You may put a Human creature card from among them onto the battlefield tapped and attacking. It gains indestructible until end of turn. Put the rest of the cards on the bottom of your library in a random order."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "216",
+        "rarity": "MYTHIC",
+        "artist": "Magali Villeneuve",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5dd13a6c-23d3-44ce-a628-cb1c19d777c4.jpg?1783931014",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "If more than one non-Human creature you control attacks, Winota's ability triggers separately for each of them. For example, if three non-Human creatures attack, you won't look at the top eighteen cards of your library at once; you'll look at six, finish resolving the ability, and then repeat the process twice more as the other instances of the ability resolve."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "You choose which player or planeswalker the Human is attacking. It doesn't have to be attacking the same player or planeswalker that the non-Human creature is attacking."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Although the Human is an attacking creature, it was never declared as an attacking creature. This means that abilities that trigger whenever a creature attacks won't trigger when it enters the battlefield attacking."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Any effects that say that the Human can't attack (such as that of Propaganda, or if you get a Human with defender) affect only the declaration of attackers. They won't stop the Human you find from entering the battlefield attacking."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
     ]
 }
 
