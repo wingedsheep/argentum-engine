@@ -3841,7 +3841,7 @@
 {
     "name": "Foreboding Fruit",
     "manaCost": "{2}{B}",
-    "typeLine": "Instant",
+    "typeLine": "Sorcery",
     "oracleText": "Target player draws two cards and loses 2 life.\nAdamant — If at least three black mana was spent to cast this spell, create a Food token. (It's an artifact with \"{2}, {T}, Sacrifice this token: You gain 3 life.\")",
     "script": {
         "spellEffect": {

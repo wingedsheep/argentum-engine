@@ -12,7 +12,7 @@ import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 /**
  * Foreboding Fruit
  * {2}{B}
- * Instant
+ * Sorcery
  * Target player draws two cards and loses 2 life.
  * Adamant — If at least three black mana was spent to cast this spell, create a Food token.
  *
@@ -23,7 +23,7 @@ import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 val ForebodingFruit = card("Foreboding Fruit") {
     manaCost = "{2}{B}"
     colorIdentity = "B"
-    typeLine = "Instant"
+    typeLine = "Sorcery"
     oracleText = "Target player draws two cards and loses 2 life.\n" +
         "Adamant — If at least three black mana was spent to cast this spell, create a Food token. " +
         "(It's an artifact with \"{2}, {T}, Sacrifice this token: You gain 3 life.\")"
