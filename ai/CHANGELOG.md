@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- #4162 Equips the creature an Equipment helps most: equip, fortify, reconfigure and "attach it to target creature" triggers read what the Equipment does to the creature it equips, so the cheap target pick and the simulated shortlist start from our best creature instead of our worst
 - #4159 Values a payoff by the fuel beside it — Blood Artist next to a sacrifice outlet and bodies, Ajani's Pridemate beside lifelinkers, a prowess creature with instants in hand — so it kills a fed engine over the 1/1s feeding it, counts the engine toward whether a removal spell is worth spending, and values its own engine the same way; Commander decks find their theme cards by what they feed or cash in rather than by matching rules-text words
 - #4157 Reads the payoff behind "you may pay/discard/sacrifice … If you do, …": aims those pumps and counters at its own creatures, and sees the tutors, draws and removal they unlock; reads a base-0/0 shrink as removal and a loyalty counter as a gift
 - #4155 Generated 60-card constructed decks are built the constructed way — playsets of the best two-colour cards on a low curve (6/12/9/6/2/1 by mana value), eight interaction and sixteen creature copies first, tilted towards a build-around's tribe or theme when the top cards share one — and a format-matched AI seat plays a format-legal built-in starter when one qualifies instead of a generated deck

@@ -40,6 +40,7 @@ import com.wingedsheep.sdk.scripting.effects.AdaptAsThoughNoCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AdaptEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
+import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
 import com.wingedsheep.sdk.scripting.effects.BecomePreparedEffect
 import com.wingedsheep.sdk.scripting.effects.UnprepareEffect
 import com.wingedsheep.sdk.scripting.effects.CantBeRegeneratedEffect
@@ -140,6 +141,14 @@ enum class TargetPolarity {
  * Undeath's "{B}: Regenerate enchanted creature" can only be paid by the Aura's controller, so it
  * is a reason to enchant a creature of ours.
  *
+ * ## Equipment
+ *
+ * Equip (and fortify, and reconfigure) is "attach this permanent to target creature you control",
+ * so its slot reads exactly like an Aura's enchant target: whatever the Equipment does to the
+ * creature it equips — +2 Mace's "+2/+2" is a gift. The attach names no effect of its own, so the
+ * reading needs the card the ability is printed on, which [forAbility] has and a bare effect does
+ * not. Unread, the slot took the removal ranking, which orders our own creatures worst first.
+ *
  * ## Role tokens
  *
  * "Create a Young Hero Role token attached to target creature" does to that creature whatever the
@@ -171,7 +180,7 @@ object TargetPolarityAnalyzer {
             val script = card.script
             val aura = script.auraTarget
             when {
-                aura != null && script.targetRequirements.isEmpty() -> listOf(auraPolarity(card, definitions))
+                aura != null && script.targetRequirements.isEmpty() -> listOf(attachmentPolarity(card, definitions))
                 script.targetRequirements.isNotEmpty() ->
                     forRequirements(script.spellEffect, script.targetRequirements, definitions)
                 else -> emptyList()
@@ -206,7 +215,7 @@ object TargetPolarityAnalyzer {
         definitions: CardLookup = NO_DEFINITIONS,
     ): List<TargetPolarity> =
         abilityCache.getOrPut(Triple(card.name, ability.id.value, definitions !== NO_DEFINITIONS)) {
-            forRequirements(ability.effect, ability.targetRequirements, definitions)
+            forRequirements(ability.effect, ability.targetRequirements, definitions, source = card)
         }
 
     /**
@@ -221,11 +230,18 @@ object TargetPolarityAnalyzer {
         return combine(readings)
     }
 
-    /** Polarity of each of [requirements], read off [effect]. Not memoized — see the callers. */
+    /**
+     * Polarity of each of [requirements], read off [effect]. Not memoized — see the callers.
+     *
+     * [source] is the card the effect is printed on, when the caller knows it: "attach this
+     * Equipment to target creature" is read off what that card does to the creature it equips, so
+     * without it the attach's slot stays unread.
+     */
     fun forRequirements(
         effect: Effect?,
         requirements: List<TargetRequirement>,
         definitions: CardLookup = NO_DEFINITIONS,
+        source: CardDefinition? = null,
     ): List<TargetPolarity> {
         if (requirements.isEmpty()) return emptyList()
         if (effect == null) return requirements.map { TargetPolarity.UNKNOWN }
@@ -237,7 +253,7 @@ object TargetPolarityAnalyzer {
             // that is every target of that slot, so the body reads as the slot's; with several,
             // `ContextTarget(0)` walks all of them and names no one slot.
             if (leaf is ForEachEffect && leaf.space == IterationSpace.Targets) {
-                if (requirements.size == 1) perSlot[0] += forRequirements(leaf.body, requirements, definitions)
+                if (requirements.size == 1) perSlot[0] += forRequirements(leaf.body, requirements, definitions, source)
                 continue
             }
             // "… to each of X target creatures" (Spinning Wheel Kick) visits one declaration's
@@ -246,7 +262,7 @@ object TargetPolarityAnalyzer {
             if (space is IterationSpace.TargetsOf) {
                 val iterated = requirements.indexOfFirst { it.id == space.group }
                 for (inner in EffectWalker.payoffLeaves(leaf.body)) {
-                    for ((target, polarity) in classify(inner, definitions)) {
+                    for ((target, polarity) in classify(inner, definitions, source)) {
                         val slot = if (target == EffectTarget.IterationEntity) iterated.takeIf { it >= 0 }
                             else slotOf(target, requirements)
                         slot?.let { perSlot[it] += polarity }
@@ -258,7 +274,7 @@ object TargetPolarityAnalyzer {
             if (recursion != null) {
                 recursions += recursion
             } else {
-                for ((target, polarity) in classify(leaf, definitions)) {
+                for ((target, polarity) in classify(leaf, definitions, source)) {
                     val slot = slotOf(target, requirements) ?: continue
                     perSlot[slot] += polarity
                 }
@@ -321,6 +337,7 @@ object TargetPolarityAnalyzer {
     private fun classify(
         leaf: Effect,
         definitions: CardLookup = NO_DEFINITIONS,
+        source: CardDefinition? = null,
     ): List<Pair<EffectTarget, TargetPolarity>> {
         val polarity: Pair<EffectTarget, TargetPolarity?> = when (leaf) {
             // Off the battlefield to a graveyard or exile is removal. To hand or library is *not*
@@ -366,9 +383,17 @@ object TargetPolarityAnalyzer {
             is AdaptEffect -> leaf.target to TargetPolarity.BENEFICIAL
             is AdaptAsThoughNoCountersEffect -> leaf.target to TargetPolarity.BENEFICIAL
             is AddDynamicCountersEffect -> leaf.target to counterPolarity(leaf.counterType)
+            // Equip, fortify, reconfigure: "attach this permanent to target creature" does to that
+            // creature whatever this Equipment does to the creature it equips — the same reading an
+            // Aura's enchant target gets. When that can't be read (no source card, see
+            // [forRequirements], or an Equipment whose bonus is mixed) the attach names nothing, so
+            // a sibling leaf can still read the slot — The Aetherspark's "+1/+1 counter on that creature".
+            is AttachEquipmentEffect -> source?.let { attachmentPolarity(it, definitions) }
+                ?.takeIf { it != TargetPolarity.UNKNOWN }
+                ?.let { leaf.target to it } ?: return emptyList()
             // The Aura token does to its object what any Aura does to the one it enchants.
             is CreateAuraTokenEffect -> leaf.target to definitions(leaf.tokenName)
-                ?.let { auraPolarity(it, definitions) }
+                ?.let { attachmentPolarity(it, definitions) }
                 ?.takeIf { it != TargetPolarity.UNKNOWN }
             // "Target creature gains '<trigger>' until end of turn" (Sygg, Wanderwine Wisdom): the
             // granted ability is controlled by the creature's controller, so it reads exactly like
@@ -478,11 +503,12 @@ object TargetPolarityAnalyzer {
     }
 
     /**
-     * What an Aura does to the creature it enchants: its [Scope.AttachedTo] statics plus every
-     * triggered or activated effect aimed at [EffectTarget.EnchantedCreature], combined like any
-     * other slot. An activated one counts because the Aura's controller is who can activate it.
+     * What an Aura or Equipment does to the permanent it is attached to: its [Scope.AttachedTo]
+     * statics plus every triggered or activated effect aimed at its host ([HOST_TARGETS] —
+     * "enchanted creature", "equipped creature"), combined like any other slot. An activated one
+     * counts because the attachment's controller is who can activate it.
      */
-    private fun auraPolarity(card: CardDefinition, definitions: CardLookup): TargetPolarity {
+    private fun attachmentPolarity(card: CardDefinition, definitions: CardLookup): TargetPolarity {
         val readings = mutableListOf<TargetPolarity>()
         for (static in card.script.staticAbilities) staticPolarity(static)?.let(readings::add)
         val abilityEffects = card.script.triggeredAbilities.map { it.effect } +

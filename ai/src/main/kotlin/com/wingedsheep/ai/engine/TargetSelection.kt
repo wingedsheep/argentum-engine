@@ -264,7 +264,7 @@ object TargetSelection {
         val read = when (val answer = suspension.answer) {
             is TriggeredAbilityContinuation ->
                 if (answer.sequentialTargets != null) emptyList()
-                else intents.effectTargetPolarities(answer.effect, answer.targetRequirements)
+                else intents.effectTargetPolarities(answer.effect, answer.targetRequirements, answer.sourceName)
             is TriggerModalTargetSelectionContinuation -> {
                 val mode = answer.chosenModeIndices.getOrNull(answer.currentOrdinal)
                     ?.let(answer.modes::getOrNull)

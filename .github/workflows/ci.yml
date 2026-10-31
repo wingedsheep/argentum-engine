@@ -95,10 +95,10 @@ jobs:
             gradle-build-cache-${{ runner.os }}-${{ matrix.name }}-
             gradle-build-cache-${{ runner.os }}-
 
+      # Resets the restored entries' access times so the prune step below can tell which ones this
+      # run read. See .github/scripts/gradle-build-cache.sh.
       - name: Mark cache entries in use
-        run: |
-          mkdir -p "${GRADLE_BUILD_CACHE_DIR}"
-          touch "${RUNNER_TEMP}/cache-marker"
+        run: .github/scripts/gradle-build-cache.sh mark
 
       # FlywayMigrationTest starts postgres:16-alpine through Testcontainers, whose image pull gives up
       # after a fixed timeout (ContainerFetchException). A slow Docker Hub pull mid-suite failed the
@@ -145,15 +145,13 @@ jobs:
           kill "${WATCHDOG_PID}" 2>/dev/null || true
           exit "${STATUS}"
 
-      # Gradle bumps an entry's mtime whenever it reads or writes it, so anything older than the marker
-      # is an entry this group neither used nor produced — carried along from older restores. Without
+      # Drops entries this group neither read nor wrote — carried along from older restores. Without
       # this the saved cache only ever grows (PR entries reached 1.1 GB per group), which is what blew
-      # the 10 GB cap. What is left is exactly what the next run of this group can reuse.
+      # the 10 GB cap. What is left is exactly what the next run of this group can reuse. Reads are
+      # tracked by access time: Gradle doesn't bump mtime on a cache hit, and an mtime-only prune
+      # threw every hit away (see .github/scripts/gradle-build-cache.sh).
       - name: Prune unused cache entries
-        run: |
-          du -sh "${GRADLE_BUILD_CACHE_DIR}" || true
-          find "${GRADLE_BUILD_CACHE_DIR}" -type f ! -newer "${RUNNER_TEMP}/cache-marker" -delete
-          du -sh "${GRADLE_BUILD_CACHE_DIR}" || true
+        run: .github/scripts/gradle-build-cache.sh prune
 
       # The repo's Actions cache is capped at 10 GB and evicts least-recently-used entries past it.
       # Each PR push used to save a fresh copy of every group's cache, so a few busy PRs pushed main's
@@ -252,13 +250,15 @@ jobs:
             gradle-build-cache-${{ runner.os }}-coverage-
             gradle-build-cache-${{ runner.os }}-
 
+      - name: Mark cache entries in use
+        run: .github/scripts/gradle-build-cache.sh mark
+
       - name: Generate coverage report
-        run: |
-          mkdir -p "${GRADLE_BUILD_CACHE_DIR}"
-          touch "${RUNNER_TEMP}/cache-marker"
-          ./gradlew koverXmlReport
-          # Same pruning as the test groups: keep only entries this run read or wrote.
-          find "${GRADLE_BUILD_CACHE_DIR}" -type f ! -newer "${RUNNER_TEMP}/cache-marker" -delete
+        run: ./gradlew koverXmlReport
+
+      # Same pruning as the test groups: keep only entries this run read or wrote.
+      - name: Prune unused cache entries
+        run: .github/scripts/gradle-build-cache.sh prune
 
       - name: Extract coverage percentage
         id: coverage

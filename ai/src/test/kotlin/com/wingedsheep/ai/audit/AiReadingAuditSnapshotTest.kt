@@ -26,10 +26,14 @@ class AiReadingAuditSnapshotTest : FunSpec({
         "Ajani's Pridemate" to emptyList(),
         // A +1/+1 counter on a target creature is a pump that never wears off.
         "Battlegrowth" to emptyList(),
+        // Equip's target reads as what the Equipment does to the creature it equips; the attach
+        // itself needs no intent tag.
+        "+2 Mace" to emptyList(),
+        // Mixed +4/-1: whether that helps depends on the creature, so equip's target stays unread.
+        "Barbed Battlegear" to listOf("polarity: AttachEquipmentEffect"),
         // Unread — the effect types the audit names as the work to do.
         "Adamant Will" to listOf("timing: GrantKeywordEffect"),
         "Abuna Acolyte" to listOf("timing: PreventDamageEffect"),
-        "+2 Mace" to listOf("intent: AttachEquipmentEffect", "polarity: AttachEquipmentEffect"),
         "Abzan Charm" to listOf("polarity: DistributeCountersAmongTargetsEffect"),
         "Act on Impulse" to listOf("intent: GrantMayPlayFromExileEffect", "intent: Pipeline(TopOfLibrary→exile)"),
         "Alchemist's Vial" to listOf(
