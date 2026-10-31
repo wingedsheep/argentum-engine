@@ -28,7 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
-- #PRNUM Limited decks run a non-basic land only when it makes nothing but deck colours (splash included) or fixes two of them — no more off-colour tapped duals — and at most one colourless utility land, only when the deck has something for it to do
+- #4149 Limited decks run a non-basic land only when it makes nothing but deck colours (splash included) or fixes two of them — no more off-colour tapped duals — and at most one colourless utility land, only when the deck has something for it to do
 - #4147 Limited decks whose two colours can't fill the spell slots now splash a few single-pip cards in a third colour instead of padding the gap with basics, running 18 lands rather than 21–22
 - #4144 When removal ("destroy target land" and the like) would leave the board looking the same whichever side it hits, it hits the opponent's permanent, not its own
 - #4143 Values a Treasure (and any permanent that sacrifices itself for mana: Gold, Eldrazi Spawn) as mana — half a land drop, a full one when it is the mana a spell in hand is one short of — so it takes the Treasure mode when that casts its next spell a turn early, and charges an opponent's Treasures the same
