@@ -2334,8 +2334,9 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   tapped and the one-way latch drops it when it untaps. From an activated ability the duration counts
   from activation (CR 611.2b): the stack object records the source's untap clock
   (`UntapCountComponent`), so a source that untaps before the ability resolves — even if it is tapped
-  again by then — leaves the effect inert. The same holds for every source-tapped duration
-  (`WhileSourceTappedAndAffectedPowerAtMostSource`, `WhileYouControlSourceAndSourceTapped`).
+  again by then — leaves the effect inert. The clock is stamped on floating effects (every
+  `Effects.ModifyStats` / `GrantKeyword` / `GainControl` / `BecomeCreature` with a source-tapped duration,
+  including `WhileSourceTappedAndAffectedPowerAtMostSource` and `WhileYouControlSourceAndSourceTapped`).
 - `SetBasePower(target, power: DynamicAmount, duration, reevaluateContinuously = false)` — set base power
   to a dynamic value (Layer 7b), leaving toughness unchanged.
 - `SetBaseToughness(target, toughness: DynamicAmount, duration, reevaluateContinuously = false)` —
