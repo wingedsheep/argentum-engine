@@ -66,6 +66,8 @@ tasks.withType<Test>().configureEach {
         "gameLog", "gameLogGames", "gameLogSeed", "gameLogAgent", "gameLogSeats", "gameLogAttackMode", "gameLogDir",
         // game-server's ReplayLogExport (`just ai-replay-logs`): server replays → AI-review logs.
         "replayLog", "replayLogDir",
+        // `just ai-reading-audit`: the AI card-reading audit (ai/.../audit/AiReadingAuditBenchmark).
+        "aiReadingAudit", "aiReadingAuditDir",
     )) {
         System.getProperty(prop)?.let { systemProperty(prop, it) }
     }

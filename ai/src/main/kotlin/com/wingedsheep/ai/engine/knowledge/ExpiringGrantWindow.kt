@@ -471,6 +471,19 @@ internal object ExpiringGrantWindow {
         !ability.isManaAbility && expiringPayoffs(ability.effect)?.all { it.kind == PayoffKind.CREATURE } == true
 
     /**
+     * Whether [effect] has an end-of-turn timing reading at all — every shape [holds] and
+     * [castBuysNothing] can judge under some profile flag. With [creatureGrants] false the
+     * creature-grant kind is left out, which is what a *spell* gets: [castBuysNothing] never reads
+     * grants (a pump spell's reading is [HoldPolicy]'s combat-trick tag instead).
+     *
+     * Read only by the AI card-reading audit (`just ai-reading-audit`); nothing decides on it.
+     */
+    fun hasExpiringReading(effect: Effect, creatureGrants: Boolean): Boolean {
+        val payoffs = expiringPayoffs(effect, readShrinks = true, readBorrows = true) ?: return false
+        return creatureGrants || payoffs.none { it.kind == PayoffKind.CREATURE }
+    }
+
+    /**
      * [canStillFight] for a grant that does not come from an activation — no source of ours taps
      * to pay for it. The yes/no half of
      * [com.wingedsheep.ai.engine.AiProfile.holdUnusablePumps] reads it.

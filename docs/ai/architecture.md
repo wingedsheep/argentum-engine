@@ -4,7 +4,8 @@ The seams the engine AI is built from, and which phase of
 [`backlog/engine-ai-improvement.md`](../../backlog/engine-ai-improvement.md) put each one there.
 
 Read this before changing how the AI *decides*. For how to measure a change, see
-[`measurement.md`](measurement.md); for the numbers, [`baseline-metrics.md`](baseline-metrics.md).
+[`measurement.md`](measurement.md); for the numbers, [`baseline-metrics.md`](baseline-metrics.md). For
+which cards the AI's static card readers can't read, see [`reading-audit.md`](reading-audit.md).
 
 ---
 

@@ -163,6 +163,15 @@ ai-replay-logs DIR:
     scripts/gradle-locked :game-server:test --tests "*.ReplayLogExport" -Dbenchmark=true -DreplayLog=true \
         -DreplayLogDir="$(cd "{{DIR}}" && pwd)"
 
+# Which cards can't the AI read? Runs the AI's static card readers (target polarity, card intent,
+# combat reach, end-of-turn timing, escalate pickers) over every card in the corpus and groups what
+# they miss by SDK effect type. Writes ai/build/reports/ai-reading-audit/{report.md,summary.tsv,cards.tsv}.
+# How to read it: docs/ai/reading-audit.md.
+[group: 'ai']
+ai-reading-audit:
+    scripts/gradle-locked :ai:test --tests "*.AiReadingAuditBenchmark" -Dbenchmark=true -DaiReadingAudit=true \
+        -DaiReadingAuditDir={{justfile_directory()}}/ai/build/reports/ai-reading-audit
+
 # Refresh the vendored Draftsim pick-rating tables (ai/src/main/resources/draftai/) from Draftsim's
 # current draft-app bundle. MODE=check diffs without writing; MODE=write regenerates. BUNDLE takes a
 # saved index-*.js or HAR instead of fetching https://draftsim.com/draft/. First-party tables are
