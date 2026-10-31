@@ -7486,7 +7486,7 @@
     "script": {
         "staticAbilities": [
             {
-                "type": "SuppressEntersTriggers",
+                "type": "SuppressZoneChangeTriggers",
                 "filter": "creature|artifact"
             }
         ]

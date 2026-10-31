@@ -9254,7 +9254,7 @@ The shapes in this family, with their engine notes.
   triggers an entry caused — a `ZoneChangeEvent` to the battlefield (the entering permanent's own ETB,
   another permanent's "whenever a [...] enters", landfall), a `PermanentsEnteredEvent` batch, or a `Triggers.or`
   trigger that fired through its enters atom ("enters or is turned face up" on entry, not on the face-up turn), the same
-  classification Torpor Orb's `SuppressEntersTriggers` uses — wherever the ability's source is (a graveyard card's
+  classification Torpor Orb's `SuppressZoneChangeTriggers` uses — wherever the ability's source is (a graveyard card's
   landfall counts under the current Oracle text). Both meta-triggers go on the stack in the second
   CR 603.3b wave, above the ability they saw, so
   `Effects.CounterUnlessPays("{2}", target = CounterTarget.Ability, targetSource = CounterTargetSource.TriggeringEntity)`
@@ -12105,18 +12105,26 @@ staticAbility {
   `Effects.RecordChosenLinkedExile(...)` to choose. (Koh, the Face Stealer — "Pay 1 life: Choose a
   creature card exiled with Koh. Koh has all activated and triggered abilities of the last chosen card"
   → `HasAbilitiesOfChosenLinkedExiledCard()`.)
-- `SuppressEntersTriggers(filter = GameObjectFilter.Creature, abilitiesOf = null)` — permanents matching `filter`
-  entering the battlefield don't cause abilities to trigger (CR 603.6 enters-the-battlefield
+- `SuppressZoneChangeTriggers(filter = GameObjectFilter.Creature, abilitiesOf = null, causes = setOf(ZoneChangeTriggerCause.ENTERING))` —
+  permanents matching `filter` entering the battlefield (and/or dying, per `causes`) don't cause abilities to trigger (CR 603.6 enters-the-battlefield
   triggers). Suppresses both the entering permanent's *own* ETB triggers and any other permanent's
   "whenever a [...] enters" trigger whose triggering object is that permanent — the gate is whether
   the *entering object* matches `filter` in projected state (continuous effects apply), not what the
   watching trigger names. Replacement effects (enters with counters/tapped) and `EntersWithChoice`
   "as it enters" choices are unaffected (they aren't triggered abilities). Torpor Orb / Hushwing Gryff
-  → `SuppressEntersTriggers()`; Tocatli Honor Guard → `SuppressEntersTriggers(GameObjectFilter.Creature.youControl())`.
+  → `SuppressZoneChangeTriggers()`; Tocatli Honor Guard → `SuppressZoneChangeTriggers(GameObjectFilter.Creature.youControl())`.
   `abilitiesOf` narrows *whose* abilities are suppressed: only triggers whose source is a battlefield
   permanent matching it (projected, reference player = this ability's controller); a graveyard card's
-  enters trigger is untouched. Elesh Norn, Mother of Machines → `SuppressEntersTriggers(GameObjectFilter.Permanent,
+  enters trigger is untouched. Elesh Norn, Mother of Machines → `SuppressZoneChangeTriggers(GameObjectFilter.Permanent,
   abilitiesOf = GameObjectFilter.Permanent.opponentControls())`.
+  `ZoneChangeTriggerCause.DYING` adds deaths: every dies / put-into-a-graveyard-from-the-battlefield /
+  leaves-the-battlefield trigger a matching permanent's death causes (per-object and the batched
+  `CreaturesYouControlDiedEvent` / `CardsPutIntoGraveyardEvent` alike), the dying object matched by its
+  last-known information. Those abilities look back in time, so the lock still applies when its source
+  dies at the same time (or is the one dying); a "put into a graveyard from anywhere" trigger is stopped
+  only while the lock is still on the battlefield, and never for the dying card's own ability. Triggers
+  on the cause of the death ("whenever you sacrifice") and replacement effects are untouched.
+  Hushbringer → `SuppressZoneChangeTriggers(causes = setOf(ZoneChangeTriggerCause.ENTERING, ZoneChangeTriggerCause.DYING))`.
 - `GainActivatedAbilitiesOfPermanents(grantedTo, sourceFilter, abilities = CopiedAbilities.NON_MANA, spendAsThoughAnyColor = false)` —
   permanents matching `grantedTo` (a `GroupFilter`; use `GroupFilter.source()` for "this permanent")
   gain copies of the activated abilities of every permanent matching `sourceFilter` (never their own).

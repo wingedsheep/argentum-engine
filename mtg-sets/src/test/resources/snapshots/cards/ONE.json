@@ -4563,7 +4563,7 @@
                 "mustBeYouControl": false
             },
             {
-                "type": "SuppressEntersTriggers",
+                "type": "SuppressZoneChangeTriggers",
                 "filter": "permanent",
                 "abilitiesOf": {
                     "cardPredicates": [

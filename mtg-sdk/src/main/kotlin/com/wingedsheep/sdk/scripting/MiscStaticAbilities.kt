@@ -1372,51 +1372,86 @@ data class PayLifeForColoredMana(
 }
 
 /**
- * Permanents matching [filter] entering the battlefield don't cause abilities to trigger
- * (CR 603.6 enters-the-battlefield triggers are suppressed).
+ * The zone changes a [SuppressZoneChangeTriggers] lock covers: a matching permanent *entering*
+ * the battlefield (Torpor Orb) and/or a matching permanent *dying* — being put into a graveyard
+ * from the battlefield (Hushbringer).
+ */
+@Serializable
+enum class ZoneChangeTriggerCause(val phrase: String) {
+    ENTERING("entering the battlefield"),
+    DYING("dying")
+}
+
+/**
+ * Permanents matching [filter] entering the battlefield and/or dying (per [causes]) don't cause
+ * abilities to trigger.
  *
  * Models the Torpor Orb family — Torpor Orb / Hushwing Gryff ("Creatures entering don't cause
- * abilities to trigger.") with `filter = GameObjectFilter.Creature`, and Tocatli Honor Guard
+ * abilities to trigger.") with `filter = GameObjectFilter.Creature`, Tocatli Honor Guard
  * ("Creatures entering the battlefield under your control don't cause abilities to trigger") with
- * `filter = GameObjectFilter.Creature.youControl()`.
+ * `filter = GameObjectFilter.Creature.youControl()`, and Hushbringer ("Creatures entering or dying
+ * don't cause abilities to trigger.") with `causes = setOf(ENTERING, DYING)`.
  *
- * This suppresses **every** triggered ability that the matching permanent's entry would cause —
- * the entering permanent's own enters-the-battlefield triggers *and* any other permanent's
+ * **Entering** suppresses every triggered ability that the matching permanent's entry would
+ * cause — the entering permanent's own enters-the-battlefield triggers *and* any other permanent's
  * "whenever a [...] enters" trigger whose triggering object is that permanent (per Torpor Orb's
  * Gatherer rulings). The gate is whether the *entering object* matches [filter] in projected state
  * (continuous effects apply — e.g. with March of the Machines an artifact enters as a creature and
  * is suppressed), not what the watching trigger's text names.
  *
+ * **Dying** suppresses, per Hushbringer's rulings, every ability that triggers on a matching
+ * permanent being put into a graveyard from the battlefield — "dies", "is put into a graveyard from
+ * the battlefield" and "leaves the battlefield" abilities, the batched "one or more creatures die"
+ * shapes included. The dying object is matched against [filter] by its last-known information (an
+ * animated land that dies counts as a creature). These are leaves-the-battlefield abilities, so the
+ * lock looks back in time: a creature dying at the same time as the lock's source (including the
+ * source itself) is still suppressed. An ability that triggers on a card being put into a graveyard
+ * "from anywhere" is not a look-back ability: it is stopped only while the lock's source is still
+ * on the battlefield, and never when it is the dying card's own ability. Abilities that trigger on
+ * the event that caused the death ("whenever you sacrifice a creature") are untouched.
+ *
  * Deliberately **not** affected, matching the rulings:
- *  - Replacement effects (enters with counters, enters tapped) — those are not triggered abilities
- *    and run through the replacement layer, which this never touches.
+ *  - Replacement effects (enters with counters, enters tapped, Leyline of the Void exiling a card
+ *    that would die) — those are not triggered abilities and run through the replacement layer,
+ *    which this never touches.
  *  - "As [this] enters the battlefield" choices (`EntersWithChoice`) — not triggered abilities.
- *  - Triggers caused by anything other than a matching permanent entering (leaves-the-battlefield
- *    triggers, attack triggers, etc.).
+ *  - Triggers caused by any zone change outside [causes], and by any other event (attack
+ *    triggers, sacrifice triggers, etc.).
  *
  * The engine evaluates this as a final filtering pass over the batch's pending triggers, so it
- * covers the per-permanent ETB path, the "one or more permanents entered" batch path, and any
+ * covers the per-permanent paths, the "one or more permanents entered / died" batch paths, and any
  * duplicated (Panharmonicon-style) copies uniformly. Multiple copies are redundant.
  *
- * @property filter Which entering permanents have their entry suppressed (matched via projected
- *   state). Defaults to [GameObjectFilter.Creature].
+ * @property filter Which entering/dying permanents have their zone change suppressed. Defaults to
+ *   [GameObjectFilter.Creature].
  * @property abilitiesOf When set, only triggered abilities *of permanents* matching this filter are
  *   suppressed — matched in projected state against the trigger's source, with this ability's
  *   controller as the reference player, and only while that source is on the battlefield (a
  *   graveyard card's "whenever a creature enters" is not an ability of a permanent). `null`
  *   (default) suppresses every ability, the Torpor Orb shape. Elesh Norn, Mother of Machines —
  *   "Permanents entering don't cause abilities of permanents your opponents control to trigger" —
- *   is `SuppressEntersTriggers(GameObjectFilter.Permanent, abilitiesOf = GameObjectFilter.Permanent.opponentControls())`.
+ *   is `SuppressZoneChangeTriggers(GameObjectFilter.Permanent, abilitiesOf = GameObjectFilter.Permanent.opponentControls())`.
+ * @property causes Which zone changes the lock covers; defaults to entering only.
  */
-@SerialName("SuppressEntersTriggers")
+@SerialName("SuppressZoneChangeTriggers")
 @Serializable
-data class SuppressEntersTriggers(
+data class SuppressZoneChangeTriggers(
     val filter: GameObjectFilter = GameObjectFilter.Creature,
-    val abilitiesOf: GameObjectFilter? = null
+    val abilitiesOf: GameObjectFilter? = null,
+    val causes: Set<ZoneChangeTriggerCause> = setOf(ZoneChangeTriggerCause.ENTERING)
 ) : StaticAbility {
-    override val description: String =
-        if (abilitiesOf == null) "${filter.description} entering the battlefield don't cause abilities to trigger"
-        else "${filter.description} entering the battlefield don't cause abilities of ${abilitiesOf.description} to trigger"
+    init {
+        require(causes.isNotEmpty()) { "SuppressZoneChangeTriggers needs at least one cause" }
+    }
+
+    override val description: String = buildString {
+        append(filter.description)
+        append(" ")
+        append(ZoneChangeTriggerCause.entries.filter { it in causes }.joinToString(" or ") { it.phrase })
+        append(" don't cause abilities")
+        if (abilitiesOf != null) append(" of ${abilitiesOf.description}")
+        append(" to trigger")
+    }
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
         val newAbilitiesOf = abilitiesOf?.applyTextReplacement(replacer)

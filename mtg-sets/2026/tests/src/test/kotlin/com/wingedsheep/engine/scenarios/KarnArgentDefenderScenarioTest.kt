@@ -20,7 +20,7 @@ import io.kotest.matchers.shouldNotBe
  * Karn, Argent Defender — "Artifacts and creatures entering the battlefield don't cause abilities
  * to trigger."
  *
- * A `SuppressEntersTriggers` widened to `CreatureOrArtifact`. The noncreature-artifact case is the
+ * A `SuppressZoneChangeTriggers` widened to `CreatureOrArtifact`. The noncreature-artifact case is the
  * one that fails if the widening is missing; the creature case covers the other half, and the
  * control runs prove the triggers do fire without Karn. Karn's lock is an ability of Karn's, so it
  * stops once Karn loses all abilities (issue #3240).

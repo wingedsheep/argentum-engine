@@ -401,7 +401,7 @@ object Emitter {
                 rname == "Equip" -> block = equipAbilityLine(rule)
                 rname == "Protection" -> block = protectionScopeDsl(rule)?.let { listOf(Eval(call("keywordAbility", arg(call("KeywordAbility.Protection", arg(Lit(it))))))) }
                 // Torpor Orb: "Creatures entering don't cause abilities to trigger." A whole-card static
-                // -> staticAbility { ability = SuppressEntersTriggers(<filter>) }. Only an `IsCardtype`
+                // -> staticAbility { ability = SuppressZoneChangeTriggers(<filter>) }. Only an `IsCardtype`
                 // permanent filter renders; any richer filter declines -> scaffold.
                 rname == "PermanentsEnteringTheBattlefieldDontCauseAbilitiesToTrigger" ->
                     block = ctx.suppressEntersTriggersBlock(rule)

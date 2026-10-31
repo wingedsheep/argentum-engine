@@ -1567,7 +1567,6 @@ SpendAnyManaTypeForActivatedAbilities — StaticAbility
 SpendAnyManaTypeForSpells — StaticAbility
 SpendManaAsColor — StaticAbility
 StationUsingToughness — StaticAbility
-SuppressEntersTriggers — StaticAbility
 SuppressHexproofForGroup — StaticAbility
 SuppressWardForGroup — StaticAbility
 TransformPermanent — StaticAbility
@@ -1808,6 +1807,7 @@ StatePredicate.StartedTurnUntapped — StatePredicate — Rasputin Dreamweaver �
 StatePredicate.WasDealtDamageThisTurnBy — StatePredicate — Kumano Faces Kakkazan (Etching of Kumano) — StatePredicate.WasDealtDamageBySourceThisTurn, StatePredicate.WasDealtDamageThisTurn — WasDealtDamageBySourceThisTurn names one source and reads that source's record, dropped when it leaves the battlefield (its cards' rulings need that), while this filters any source by its damage-time snapshot and must outlive it; WasDealtDamageThisTurn reads a combat/noncombat marker with no source data. Shares Shelob's DamageSourceLki matcher (the trigger-side CreatureDealtDamageBySourceDiesEvent.sourceFilter), now one helper
 SuccessCriterion.Transformed — SuccessCriterion — Enduring Angel — SuccessCriterion.TurnedFaceUp, SuccessCriterion.Auto — TurnedFaceUp scans for TurnFaceUpEvent, a different action; Auto infers only zone moves and transforming is not one
 SuppressLandwalkForGroup — StaticAbility — Quagmire — SuppressHexproofForGroup, CanBlockAsThoughUntapped — SuppressHexproofForGroup ignores a keyword for targeting, not blocking; CanBlockAsThoughUntapped lifts a block rule for the blocker, not the attacker's evasion keyword
+SuppressZoneChangeTriggers — StaticAbility — Hushbringer — SuppressEntersTriggers (renamed into this), SuppressWardForGroup — renames SuppressEntersTriggers and widens it with a ZoneChangeTriggerCause axis (entering / dying), no net new leaf; SuppressWardForGroup stops one keyword's trigger on its own holders, not every trigger a zone change causes
 TakeDesignationEffect — Effect — Queen Marchesa — GainCitysBlessingEffect, ChangeSpeedEffect — replaces BecomeMonarchEffect with a PlayerDesignation axis; both neighbours write a per-player designation every player may hold at once and never lose, while the monarch and the initiative are single-holder titles that move (CR 725.3 / 726.3)
 TriggeringAttackersAttackedPlayer — Condition — Firemane Commando — SourceAttackedPlayerThisTurn, YouWereAttackedThisStep — SourceAttackedPlayerThisTurn asks it of the source creature across the whole turn (a per-creature record that blurs separate combats and is gone once the creature leaves), and YouWereAttackedThisStep asks of every attacker in the step, live; this reads the attackers one trigger counted and whom each was declared attacking, frozen as it fired
 TriggeringEntityWas — Condition — Infernal Vessel — EntityMatches, SacrificedPermanentHadSubtype — replaces TriggeringEntityHadSubtype/HadCardType with a filter; EntityMatches(TriggeringEntity) reads the card in its new zone, not its last-known types (Infernal Vessel would loop), and SacrificedPermanentHadSubtype reads the sacrifice-cost snapshot, not the trigger's

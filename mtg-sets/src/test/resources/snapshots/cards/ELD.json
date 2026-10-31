@@ -3229,6 +3229,43 @@
     "colorIdentityOverride": []
 }
 
+// Hushbringer
+{
+    "name": "Hushbringer",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Faerie",
+    "oracleText": "Flying, lifelink\nCreatures entering or dying don't cause abilities to trigger.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "LIFELINK"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "SuppressZoneChangeTriggers",
+                "causes": [
+                    "ENTERING",
+                    "DYING"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "rarity": "RARE",
+        "artist": "Bastien L. Deharme",
+        "flavorText": "\"Let's begin this conversation again, and this time you will only listen.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/663b3e6f-1099-4de8-a0a7-6f1919c38010.jpg?1783932672"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Improbable Alliance
 {
     "name": "Improbable Alliance",

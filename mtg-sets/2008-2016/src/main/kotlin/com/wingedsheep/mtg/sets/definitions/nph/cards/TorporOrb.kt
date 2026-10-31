@@ -2,7 +2,7 @@ package com.wingedsheep.mtg.sets.definitions.nph.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.SuppressEntersTriggers
+import com.wingedsheep.sdk.scripting.SuppressZoneChangeTriggers
 
 /**
  * Torpor Orb
@@ -10,7 +10,7 @@ import com.wingedsheep.sdk.scripting.SuppressEntersTriggers
  * Artifact
  * Creatures entering don't cause abilities to trigger.
  *
- * The [SuppressEntersTriggers] static (default `filter = Creature`): when a creature enters the
+ * The [SuppressZoneChangeTriggers] static (default `filter = Creature`): when a creature enters the
  * battlefield, no triggered ability fires from that entry — neither the creature's own
  * enters-the-battlefield triggers nor any other permanent's "whenever a [...] enters" trigger that
  * the creature would cause. Replacement effects (enters with counters / tapped) and "as it enters"
@@ -22,7 +22,7 @@ val TorporOrb = card("Torpor Orb") {
     oracleText = "Creatures entering don't cause abilities to trigger."
 
     staticAbility {
-        ability = SuppressEntersTriggers()
+        ability = SuppressZoneChangeTriggers()
     }
 
     metadata {

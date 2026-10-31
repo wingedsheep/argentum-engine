@@ -165,7 +165,7 @@ import com.wingedsheep.sdk.scripting.PlayersCantActivateAbilities
 import com.wingedsheep.sdk.scripting.PlayersCantCastSpells
 import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
 import com.wingedsheep.sdk.scripting.PreventCycling
-import com.wingedsheep.sdk.scripting.SuppressEntersTriggers
+import com.wingedsheep.sdk.scripting.SuppressZoneChangeTriggers
 import com.wingedsheep.sdk.scripting.ConvertEmptyingMana
 import com.wingedsheep.sdk.scripting.PreventManaPoolEmptying
 import com.wingedsheep.sdk.scripting.RetainUnspentColoredMana
@@ -1387,9 +1387,9 @@ class StaticAbilityHandler(
             is com.wingedsheep.sdk.scripting.ExtraOnceOnlyActivations,
             is PreventCycling,
 
-            // Trigger detection (TriggerDetector.suppressEntersTriggers) — not a continuous
+            // Trigger detection (TriggerDetector.suppressZoneChangeTriggers) — not a continuous
             // projection effect; consulted as a final filter over the batch's pending triggers:
-            is SuppressEntersTriggers,
+            is SuppressZoneChangeTriggers,
 
             // Turn-based actions (BeginningPhaseManager / CleanupPhaseManager):
             is DamagePersistsThroughCleanup,

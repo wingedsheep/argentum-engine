@@ -1559,7 +1559,7 @@
     "oracleText": "Creatures entering don't cause abilities to trigger.",
     "script": {
         "staticAbilities": [
-            "SuppressEntersTriggers"
+            "SuppressZoneChangeTriggers"
         ]
     },
     "metadata": {

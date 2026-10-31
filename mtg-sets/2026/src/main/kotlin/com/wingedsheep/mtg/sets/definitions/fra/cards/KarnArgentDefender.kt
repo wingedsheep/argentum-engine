@@ -3,7 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.fra.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.SuppressEntersTriggers
+import com.wingedsheep.sdk.scripting.SuppressZoneChangeTriggers
 
 /**
  * Karn, Argent Defender — Reality Fracture #279
@@ -11,7 +11,7 @@ import com.wingedsheep.sdk.scripting.SuppressEntersTriggers
  *
  * Artifacts and creatures entering the battlefield don't cause abilities to trigger.
  *
- * Doorkeeper Thrull's lock on a colorless body: [SuppressEntersTriggers] widened from its
+ * Doorkeeper Thrull's lock on a colorless body: [SuppressZoneChangeTriggers] widened from its
  * creature-only default to [GameObjectFilter.CreatureOrArtifact]. The entering permanent is matched
  * in projected state, replacement effects ("enters tapped", "enters with counters", "as this
  * enters") are untouched, and permanents entering alongside Karn are suppressed too. Karn is itself
@@ -25,7 +25,7 @@ val KarnArgentDefender = card("Karn, Argent Defender") {
     oracleText = "Artifacts and creatures entering the battlefield don't cause abilities to trigger."
 
     staticAbility {
-        ability = SuppressEntersTriggers(GameObjectFilter.CreatureOrArtifact)
+        ability = SuppressZoneChangeTriggers(GameObjectFilter.CreatureOrArtifact)
     }
 
     metadata {

@@ -4,7 +4,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.SuppressEntersTriggers
+import com.wingedsheep.sdk.scripting.SuppressZoneChangeTriggers
 
 /**
  * Doorkeeper Thrull — Murders at Karlov Manor #13
@@ -18,7 +18,7 @@ import com.wingedsheep.sdk.scripting.SuppressEntersTriggers
  * the point: hold it up, and the moment an opponent's Sun Titan or Clue-maker resolves, the Thrull
  * lands first and the trigger never happens.
  *
- * Straight [SuppressEntersTriggers], widened from its `GameObjectFilter.Creature` default to
+ * Straight [SuppressZoneChangeTriggers], widened from its `GameObjectFilter.Creature` default to
  * [GameObjectFilter.CreatureOrArtifact]. Everything the rulings care about is already the shared
  * static's documented behaviour, so nothing is card-specific here:
  *
@@ -48,7 +48,7 @@ val DoorkeeperThrull = card("Doorkeeper Thrull") {
     keywords(Keyword.FLASH, Keyword.FLYING)
 
     staticAbility {
-        ability = SuppressEntersTriggers(GameObjectFilter.CreatureOrArtifact)
+        ability = SuppressZoneChangeTriggers(GameObjectFilter.CreatureOrArtifact)
     }
 
     metadata {

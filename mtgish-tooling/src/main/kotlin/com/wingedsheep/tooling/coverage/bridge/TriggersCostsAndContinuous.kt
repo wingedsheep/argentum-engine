@@ -483,8 +483,8 @@ internal fun BridgeBuilder.triggersCostsAndContinuous() {
 
     // Torpor Orb / Hushwing Gryff / Tocatli Honor Guard — "Creatures entering don't cause abilities to
     // trigger." A continuous static that suppresses CR 603.6 enters-the-battlefield triggers caused by a
-    // matching permanent entering. Renders to the SuppressEntersTriggers static ability.
-    supported("PermanentsEnteringTheBattlefieldDontCauseAbilitiesToTrigger", "rule: matching permanents entering don't cause abilities to trigger (SuppressEntersTriggers)")
+    // matching permanent entering. Renders to the SuppressZoneChangeTriggers static ability.
+    supported("PermanentsEnteringTheBattlefieldDontCauseAbilitiesToTrigger", "rule: matching permanents entering don't cause abilities to trigger (SuppressZoneChangeTriggers)")
 
     // Characteristic-defining power/toughness (CR 604.3, applied in layer 7a) — "~'s power is equal to
     // the number of [X]". The card DSL models each stat independently: `dynamicPower(amount, offset)` /

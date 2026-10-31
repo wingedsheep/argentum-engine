@@ -880,7 +880,7 @@ private fun EmitCtx.decreasePlotFromHandCostAbility(effect: JsonObject): Dsl? {
 
 /**
  * Torpor Orb: `PermanentsEnteringTheBattlefieldDontCauseAbilitiesToTrigger(IsCardtype <type>)` ->
- * `staticAbility { ability = SuppressEntersTriggers(GameObjectFilter.<Type>) }`. Only a single bare
+ * `staticAbility { ability = SuppressZoneChangeTriggers(GameObjectFilter.<Type>) }`. Only a single bare
  * `IsCardtype` permanent filter renders to an exact `GameObjectFilter` type val; any richer filter
  * (subtype, color, an `Or` union, …) declines (-> SCAFFOLD) rather than emit an inexact lock.
  */
@@ -897,7 +897,7 @@ internal fun EmitCtx.suppressEntersTriggersBlock(rule: JsonObject): List<Stmt>? 
         "Planeswalker" -> "GameObjectFilter.Planeswalker"
         else -> { reasons.add("PermanentsEnteringTheBattlefieldDontCauseAbilitiesToTrigger"); return null }
     }
-    return listOf(staticAbilityStmt(call("SuppressEntersTriggers", arg(Lit(type)))))
+    return listOf(staticAbilityStmt(call("SuppressZoneChangeTriggers", arg(Lit(type)))))
 }
 
 /**

@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AdditionalETBOrLTBTriggers
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.SuppressEntersTriggers
+import com.wingedsheep.sdk.scripting.SuppressZoneChangeTriggers
 
 /**
  * Elesh Norn, Mother of Machines
@@ -39,7 +39,7 @@ val EleshNornMotherOfMachines = card("Elesh Norn, Mother of Machines") {
     }
 
     staticAbility {
-        ability = SuppressEntersTriggers(
+        ability = SuppressZoneChangeTriggers(
             GameObjectFilter.Permanent,
             abilitiesOf = GameObjectFilter.Permanent.opponentControls()
         )

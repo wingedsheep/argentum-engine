@@ -65,6 +65,14 @@ data class PendingTrigger(
      * is known; read through [isEntryCaused]. A bare enters-shaped pattern needs no flag.
      */
     val enteredViaAnyOfAtom: Boolean = false,
+    /**
+     * The objects whose move into a graveyard caused this *batched* graveyard trigger ("one or more
+     * creatures you control die", "one or more cards are put into your graveyard"), stamped at
+     * detection. A batch trigger keeps no per-object triggering entity, so this is how a
+     * [com.wingedsheep.sdk.scripting.SuppressZoneChangeTriggers] dying lock (Hushbringer) tells
+     * which deaths caused it. Null on every other trigger.
+     */
+    val graveyardBatchCauseIds: List<EntityId>? = null,
     /** Frozen before stack-placement rewrites such as unwrapping a consent gate. */
     val rulesText: TriggeredAbility = ability,
     /** Provisional declaration taps; removed if their attack-tax payment is cancelled. */

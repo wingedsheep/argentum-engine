@@ -18,7 +18,7 @@ import com.wingedsheep.engine.core.Outcome
 /**
  * Doorkeeper Thrull — "Artifacts and creatures entering don't cause abilities to trigger."
  *
- * The card is a plain `SuppressEntersTriggers` widened to `CreatureOrArtifact`, so what is worth
+ * The card is a plain `SuppressZoneChangeTriggers` widened to `CreatureOrArtifact`, so what is worth
  * testing is that the *widening* actually reaches both halves. The suppressed-creature case would
  * pass on the static's `GameObjectFilter.Creature` default too; the noncreature-artifact case is the
  * one that fails if the filter is wrong, which is why both are here — together with a control run
