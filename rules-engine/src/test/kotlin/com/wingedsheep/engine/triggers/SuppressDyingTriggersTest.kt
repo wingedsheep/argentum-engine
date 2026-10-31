@@ -14,6 +14,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.SuppressZoneChangeTriggers
 import com.wingedsheep.sdk.scripting.ZoneChangeTriggerCause
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -121,6 +122,14 @@ class SuppressDyingTriggersTest : FunSpec({
         }
     }
     val plainArtifact = card("Test Plain Artifact") { typeLine = "Artifact" }
+    val exileAll = card("Test Exile") {
+        manaCost = "{2}"
+        typeLine = "Sorcery"
+        spell {
+            val victim = target(TargetFilter.Creature)
+            effect = Effects.Exile(victim)
+        }
+    }
     val wrath = card("Test Wrath") {
         manaCost = "{2}"
         typeLine = "Sorcery"
@@ -143,7 +152,7 @@ class SuppressDyingTriggersTest : FunSpec({
             TestCards.all + listOf(
                 lockOrb, lockCreature, enteringOnlyOrb, diesWatcher, leavesWatcher, batchWatcher,
                 anywhereWatcher, artifactWatcher, sacrificeWatcher, selfDies, selfAnywhere, enterer,
-                plainArtifact, wrath, shatterstorm, sacrificeAll
+                plainArtifact, wrath, shatterstorm, sacrificeAll, exileAll
             )
         )
         d.initMirrorMatch(Deck.of("Mountain" to 40), skipMulligans = true)
@@ -241,6 +250,19 @@ class SuppressDyingTriggersTest : FunSpec({
         withClue("the plain artifact and the (noncreature) lock both died and both triggered") {
             d.getLifeTotal(you) shouldBe 22
         }
+    }
+
+    test("a creature leaving without dying still triggers leaves-the-battlefield abilities") {
+        val (d, you) = driver()
+        d.putPermanentOnBattlefield(you, lockOrb.name)
+        d.putPermanentOnBattlefield(you, leavesWatcher.name)
+        val courser = d.putCreatureOnBattlefield(you, "Centaur Courser")
+        val spell = d.putCardInHand(you, exileAll.name)
+        d.giveColorlessMana(you, 2)
+        d.castSpell(you, spell, listOf(courser)).outcome shouldBe Outcome.Done
+        var guard = 0
+        while (!d.isPaused && d.state.stack.isNotEmpty() && guard++ < 40) d.bothPass()
+        d.getLifeTotal(you) shouldBe 21
     }
 
     test("a trigger on the cause of the death — a sacrifice — still triggers") {

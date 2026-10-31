@@ -634,7 +634,7 @@ Also (1–2 cards each): `AddAdditionalEndSteps`, `AddAdditionalUpkeepSteps`, `A
 | `CanBlockAnyNumber` | 4 | Thoughtweft Trio; Ironfist Crusher; Entangler; Wall of Glare |
 | `CantBeAttackedBy` | 4 | Teferi's Moat; Storm, Windrider; Blazing Archon; Form of the Dragon |
 | `SpendAnyManaTypeForActivatedAbilities` | 4 | Sharkey, Tyrant of the Shire; Drana and Linvala; Quicksilver Elemental; Agatha's Soul Cauldron |
-| `SuppressEntersTriggers` | 4 | Karn, Argent Defender; Doorkeeper Thrull; Torpor Orb; Elesh Norn, Mother of Machines |
+| `SuppressZoneChangeTriggers` | 5 | Hushbringer; Karn, Argent Defender; Doorkeeper Thrull; Torpor Orb; Elesh Norn, Mother of Machines |
 | `CanBlockAdditionalForCreatureGroup` | 3 | Brave the Sands; Lairwatch Giant; Selesnya Sagittars |
 | `CantAttackUnlessCoAttacker` | 3 | Toby, Beastie Befriender; Scarred Puma; Militia Rallier |
 | `CantBeBlockedByCreaturesWithLessPower` | 3 | Shrill Howler; Formation Breaker; Elusive Otter |
