@@ -29,7 +29,7 @@ class AiReadingAuditSnapshotTest : FunSpec({
         // Unread — the effect types the audit names as the work to do.
         "Adamant Will" to listOf("timing: GrantKeywordEffect"),
         "Abuna Acolyte" to listOf("timing: PreventDamageEffect"),
-        "+2 Mace" to listOf("intent: AttachEquipmentEffect", "polarity: AttachEquipmentEffect"),
+        "+2 Mace" to listOf("intent: AttachEquipmentEffect"),
         "Abzan Charm" to listOf("polarity: DistributeCountersAmongTargetsEffect"),
         "Act on Impulse" to listOf("intent: GrantMayPlayFromExileEffect", "intent: Pipeline(TopOfLibrary→exile)"),
         "Alchemist's Vial" to listOf(
