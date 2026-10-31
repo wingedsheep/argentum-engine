@@ -1869,6 +1869,89 @@
     ]
 }
 
+// Drown in the Loch
+{
+    "name": "Drown in the Loch",
+    "manaCost": "{U}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Counter target spell with mana value less than or equal to the number of cards in its controller's graveyard.\n• Destroy target creature with mana value less than or equal to the number of cards in its controller's graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": "Counter",
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "ManaValueAtMostDynamic",
+                                            "amount": {
+                                                "type": "Count",
+                                                "player": "Candidate",
+                                                "zone": "Graveyard"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "zone": "Stack"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Counter target spell with mana value less than or equal to the number of cards in its controller's graveyard"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "ManaValueAtMostDynamic",
+                                            "amount": {
+                                                "type": "Count",
+                                                "player": "Candidate",
+                                                "zone": "Graveyard"
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Destroy target creature with mana value less than or equal to the number of cards in its controller's graveyard"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "188",
+        "rarity": "UNCOMMON",
+        "artist": "John Stanko",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8bf5df5b-164d-4ec2-a5e6-bbaea152e271.jpg?1783932598"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Embercleave
 {
     "name": "Embercleave",

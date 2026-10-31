@@ -279,6 +279,12 @@ sealed interface Player {
      * inside that restriction-evaluation context (where `EffectContext.candidatePlayerId`
      * is set) — at effect-execution time there is no candidate, so it resolves to nothing.
      * Reach it through the `Conditions.candidate*` facade rather than constructing it by hand.
+     *
+     * Inside an object filter's dynamic cap (`manaValueAtMostDynamic`, `powerAtMostDynamic`, …)
+     * the candidate is an object, and this is **that object's controller** — "target spell with
+     * mana value less than or equal to the number of cards in its controller's graveyard" (Drown in
+     * the Loch) is `manaValueAtMostDynamic(DynamicAmounts.cardsInYourGraveyard(Player.Candidate))`,
+     * measured per candidate: a spell's caster, a permanent's controller.
      */
     @SerialName("Candidate")
     @Serializable

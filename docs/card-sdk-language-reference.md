@@ -6111,7 +6111,13 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   to map every handle to `ContextPlayer(0)`, reading the first target whatever the handle named).
 - `Player.ContextPlayer(i)` / `Player.Candidate` / `Player.Any` — positional target (engine- and
   pattern-internal; a card writes `handle.asPlayer`), CR 115 candidate during target-restriction
-  evaluation, and "a player" matching.
+  evaluation, and "a player" matching. Inside an **object** filter's dynamic cap (`ManaValueAtMostDynamic`,
+  `ManaValueEqualsDynamic`, `PowerAtMostDynamic`, `PowerEqualsDynamic`, `ToughnessEqualsDynamic`) the
+  candidate is an object and `Player.Candidate` is **its controller** (a spell's caster, a permanent's
+  controller), bound per candidate at targeting and at the CR 608.2b re-check: "target spell with mana
+  value less than or equal to the number of cards in its controller's graveyard" (Drown in the Loch) is
+  `TargetFilter.SpellOnStack.manaValueAtMostDynamic(DynamicAmounts.cardsInYourGraveyard(Player.Candidate))`.
+  Written directly there — the `Conditions.candidate*` facade is for player restrictions only.
 - `EffectTarget.ContextProperty(key)` — value plumbed into `EffectContext` (damage amount, life gained, blight
   amount, …).
 - `EnchantedCreature` / `EquippedCreature` — resolve via `AttachedToComponent`; requires the state-aware
