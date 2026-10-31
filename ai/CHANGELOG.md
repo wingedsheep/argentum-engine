@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- Generated 60-card constructed decks are built the constructed way — playsets of the best two-colour cards on a low curve (6/12/9/6/2/1 by mana value), eight interaction and sixteen creature copies first, tilted towards a build-around's tribe or theme when the top cards share one — and a format-matched AI seat plays a format-legal built-in starter when one qualifies instead of a generated deck
 - #4151 Generated Commander decks now fill role quotas — about ten ramp (fixing ramp first for three-plus colours), eight interaction, seven card draw — and 25 cards on the commander's tribe, keywords or theme, and play 36 lands with the pool's on-colour duals instead of 38 basics split by pips
 - #4150 Reads "choose one" spells (charms, commands): in hand a charm is worth what any of its modes does, and a cast is judged by the modes it chose — it no longer spends a charm's team pump at the opponent's end step or its counter mode on an empty stack, and sees a tax-counter mode's tax
 - #4150 Reads +1/+1 counters put on another creature as a pump and -1/-1 counters on an opponent's creature as removal, so it flashes in a creature like Little Bear before combat when the counter makes its attack lethal; still holds a flash creature in its own upkeep, and one whose ETB only taps a blocker when it has nothing to attack with

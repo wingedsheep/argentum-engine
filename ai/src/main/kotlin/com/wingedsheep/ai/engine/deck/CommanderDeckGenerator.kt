@@ -221,7 +221,7 @@ class CommanderDeckGenerator(
         // copy cap (CR 903.5b), so this always reaches the exact size the format demands — a deck
         // one card short is a deck the validator rejects and the seat can't play.
         val basicsNeeded = landSlots - nonbasics.size
-        val manabase = basicLands(spells + commander, identity, basicsNeeded)
+        val manabase = BasicLandSplit.split(spells + commander, identity, basicsNeeded, MIN_COLOUR_SHARE)
 
         val deckList = LinkedHashMap<String, Int>()
         for (card in spells + nonbasics) deckList.merge(card.name, 1, Int::plus)
@@ -427,38 +427,6 @@ class CommanderDeckGenerator(
         return result
     }
 
-    /**
-     * Split [count] basic lands across the commander's [identity], weighted by the coloured pips the
-     * deck actually asks for.
-     *
-     * Only the commander's own colours appear, which is CR 903.5d: a basic land is legal in the deck
-     * only if every colour it can produce is in the commander's identity. Every colour gets a floor
-     * of [MIN_COLOUR_SHARE] of the basics before the pips divide the rest — the commander itself has
-     * to be castable, and a pip count is a noisy read of a 60-card spell suite (2026-10-31: a
-     * three-colour deck ran 10 of its 38 basics in the colour of its double-pip six-drops).
-     */
-    private fun basicLands(cards: List<CardDefinition>, identity: Set<Color>, count: Int): Map<String, Int> {
-        if (count <= 0 || identity.isEmpty()) return emptyMap()
-        val ordered = identity.sortedBy { it.ordinal }
-        val pips = ordered.associateWith { color -> cards.sumOf { it.manaCost.colorCount[color] ?: 0 } }
-        val totalPips = pips.values.sum()
-
-        val floor = minOf((count * MIN_COLOUR_SHARE / ordered.size).toInt().coerceAtLeast(1), count / ordered.size)
-        val shares = ordered.associateWith { floor }.toMutableMap()
-        val rest = count - floor * ordered.size
-        // Largest-remainder split of what's left, so the counts sum to exactly `count`.
-        val exact = ordered.associateWith { color ->
-            if (totalPips == 0) rest.toDouble() / ordered.size else rest * pips.getValue(color).toDouble() / totalPips
-        }
-        exact.forEach { (color, share) -> shares[color] = shares.getValue(color) + share.toInt() }
-        val leftover = count - shares.values.sum()
-        ordered.sortedByDescending { exact.getValue(it) - exact.getValue(it).toInt() }
-            .take(leftover)
-            .forEach { shares[it] = shares.getValue(it) + 1 }
-
-        return ordered.associate { COLOR_TO_BASIC.getValue(it) to shares.getValue(it) }.filterValues { it > 0 }
-    }
-
     /** Total cards the format wants, counting the commander (CR 903.5a, CR 903.12d). */
     private fun deckSizeFor(format: DeckFormat): Int = when (format) {
         DeckFormat.STANDARD_BRAWL -> STANDARD_BRAWL_DECK_SIZE
@@ -554,13 +522,5 @@ class CommanderDeckGenerator(
          */
         private val IDENTITY_WEIGHT = mapOf(1 to 1.0, 2 to 0.9, 3 to 0.35)
         private const val LAST_RESORT_IDENTITY_WEIGHT = 0.05
-
-        private val COLOR_TO_BASIC = mapOf(
-            Color.WHITE to "Plains",
-            Color.BLUE to "Island",
-            Color.BLACK to "Swamp",
-            Color.RED to "Mountain",
-            Color.GREEN to "Forest",
-        )
     }
 }

@@ -8,8 +8,10 @@ import com.wingedsheep.ai.draftsim.toScorerCard
 import com.wingedsheep.engine.limited.BoosterGenerator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.sdk.core.CanadianHighlanderPoints
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.DeckFormat
 import com.wingedsheep.sdk.model.CardDefinition
+import kotlin.math.pow
 import kotlin.random.Random
 import org.slf4j.LoggerFactory
 
@@ -19,8 +21,11 @@ import org.slf4j.LoggerFactory
  *
  * This is the constructed counterpart to [com.wingedsheep.ai.engine.SealedDeckGenerator]: where that
  * one opens boosters and autobuilds a 40-card limited deck, this one draws from a *constructed* card
- * pool — every card the format allows — and hands it to the same Draftsim autobuilder, running at
- * [DraftsimDeckShape.CONSTRUCTED] instead of the limited 23+17.
+ * pool — every card the format allows. A 60-card deck is built the constructed way
+ * ([constructedBuild]: playsets of the colours' best cards on a low curve, interaction and creature
+ * quotas, a build-around when the top cards share one); a 100-card Highlander deck still goes
+ * through the Draftsim autobuilder at [DraftsimDeckShape.HIGHLANDER], where singleton construction
+ * makes a limited-style pick order the right shape.
  *
  * It exists because the AI seat used to play a limited deck no matter what the lobby asked for. A
  * Pauper lobby validated the human's deck down to commons and then sat them across from a sealed
@@ -95,12 +100,16 @@ class ConstructedDeckGenerator(
                 .groupingBy { it }.eachCount(),
         )
 
-        val deckList = draftsimBuild(pool, shape)
+        val build = when (shape) {
+            DeckShape.CONSTRUCTED -> constructedBuild(pool)
+            DeckShape.HIGHLANDER -> draftsimBuild(pool, shape)
+        }
+        val deckList = build
             // Pin the basics to the set's art, exactly as a human's submitted deck is.
             ?.let { BoosterGenerator.withBasicLandArt(it, basics.associateBy { basic -> basic.name }) }
             ?: run {
                 logger.warn(
-                    "Draftsim produced no {} build from {} legal cards; falling back to the random builder",
+                    "No {} build from {} legal cards; falling back to the random builder",
                     format.displayName,
                     pool.size,
                 )
@@ -150,16 +159,180 @@ class ConstructedDeckGenerator(
     fun generate(format: DeckFormat): Map<String, Int> = generate(emptyList(), format)
 
     /**
-     * Autobuild [pool] with Draftsim at the constructed shape, or null when it can't fill a deck.
+     * Build a 60-card deck the way a constructed player does, or null when the pool can't fill one.
+     *
+     * The limited autobuilder this replaces (still behind the Highlander shape) drew a 120-card
+     * random shortlist and ran Draftsim's 23+17 curve scaled up, which seated "generic piles": a few
+     * random four-ofs of whatever the draw turned up, three six-drops, little interaction, and no
+     * plan (2026-10-31 review: 0/4 against tuned Standard lists). A constructed deck is the opposite
+     * shape — the *best* cards the colours have, in playsets, on a low curve. So:
+     *
+     *  1. **Quality.** Every legal spell is rated (Draftsim's merged ratings — the only per-card
+     *     quality signal the repo has), discounted for mana value since a constructed game is decided
+     *     earlier than a limited one, and jittered a little per build so the margins turn over.
+     *  2. **Colours.** The two-colour pair whose dozen best castable cards rate highest, drawn
+     *     weighted among the top three pairs so the AI doesn't always play the same guild.
+     *  3. **Plan.** Among the pair's best cards, the one whose [CommanderSynergy] reading (tribe,
+     *     rewarded keyword, theme) the most other top cards answer is the deck's build-around; cards
+     *     that answer it are weighted up and it goes in first.
+     *  4. **Slots.** Interaction first ([CommanderDeckRoles] `REMOVAL`, up to [INTERACTION_COPIES]),
+     *     then creatures (up to [CREATURE_COPIES]), then the best of the rest — each new card as a
+     *     playset (two for a legend), inside a per-mana-value [CURVE] budget and with noncreature
+     *     spells held to [MAX_NONCREATURE]. Later passes relax the curve, then the playset rule and
+     *     the spell cap, so a thin pool still fills.
+     *
+     * The manabase is [DeckShape.CONSTRUCTED]'s 24 basics split by the deck's coloured pips.
+     */
+    private fun constructedBuild(pool: List<CardDefinition>): Map<String, Int>? {
+        val shape = DeckShape.CONSTRUCTED
+        val nonland = shape.draftsim.nonlandCount
+        val ops = ConstructedRatings.ops()
+        val spells = pool.filterNot { it.isLand }.distinctBy { it.name }
+        if (spells.isEmpty()) return null
+
+        // One jitter per card per build: the best cards still lead, the margins turn over.
+        val quality = spells.associate { card ->
+            val rating = ops.ratingFallback(card.toScorerCard()).coerceAtLeast(ConstructedRatings.MIN_WEIGHT)
+            card.name to rating * curveDiscount(card) * random.nextDouble(1 - JITTER, 1 + JITTER)
+        }
+        val colours = pickColours(spells, quality)
+        val candidates = spells.filter { castableIn(it, colours) }
+            .sortedByDescending { quality.getValue(it.name) }
+            .take(CANDIDATES)
+        val roles = candidates.associate { it.name to CommanderDeckRoles.rolesOf(it) }
+        val anchor = buildAround(candidates)
+        val score = candidates.associate { card ->
+            val synergy = anchor?.second?.score(card)?.coerceAtMost(MAX_SYNERGY) ?: 0.0
+            val interaction = if (DeckRole.REMOVAL in roles.getValue(card.name)) INTERACTION_BONUS else 1.0
+            card.name to quality.getValue(card.name) * (1 + SYNERGY_WEIGHT * synergy) * interaction
+        }
+        val ranked = candidates.sortedByDescending { score.getValue(it.name) }
+
+        val picks = LinkedHashMap<CardDefinition, Int>()
+        val curve = IntArray(CURVE.size)
+        fun filled() = picks.values.sum()
+
+        /**
+         * Walk [from] best-first, adding copies until [want] copies matching [counts] are in the
+         * deck. [slack] widens every curve bucket (null: no curve); a card new to the deck comes in
+         * with at least [minCopies] copies or not at all, while there's room for that many. While
+         * [capSpells] holds, noncreature spells stop at [MAX_NONCREATURE] copies, so a pool deep in
+         * well-rated removal still leaves the deck its creatures.
+         */
+        fun fill(
+            from: List<CardDefinition>,
+            want: Int,
+            slack: Int?,
+            minCopies: Int,
+            capSpells: Boolean = true,
+            counts: (CardDefinition) -> Boolean = { true },
+        ) {
+            var got = picks.entries.filter { counts(it.key) }.sumOf { it.value }
+            for (card in from) {
+                if (got >= want || filled() >= nonland) return
+                val held = picks[card] ?: 0
+                val bucket = curveBucket(card)
+                val bucketRoom = if (slack == null) nonland else CURVE[bucket] + slack - curve[bucket]
+                val spellRoom = if (capSpells && !card.typeLine.isCreature) {
+                    MAX_NONCREATURE - picks.entries.filterNot { it.key.typeLine.isCreature }.sumOf { it.value }
+                } else {
+                    nonland
+                }
+                val n = minOf(copyCap(card) - held, bucketRoom, spellRoom, nonland - filled())
+                if (n <= 0) continue
+                if (held == 0 && n < minCopies && nonland - filled() >= minCopies) continue
+                picks[card] = held + n
+                curve[bucket] += n
+                if (counts(card)) got += n
+            }
+        }
+
+        anchor?.first?.let { fill(listOf(it), want = copyCap(it), slack = null, minCopies = 1) }
+        fill(ranked.filter { DeckRole.REMOVAL in roles.getValue(it.name) }, INTERACTION_COPIES, slack = 0, minCopies = PLAYSET_MIN) {
+            DeckRole.REMOVAL in roles.getValue(it.name)
+        }
+        fill(ranked.filter { it.typeLine.isCreature }, CREATURE_COPIES, slack = 0, minCopies = PLAYSET_MIN) { it.typeLine.isCreature }
+        fill(ranked, nonland, slack = 0, minCopies = PLAYSET_MIN)
+        fill(ranked, nonland, slack = CURVE_SLACK, minCopies = 2)
+        fill(ranked, nonland, slack = null, minCopies = 1, capSpells = false)
+
+        val spellCount = filled()
+        if (spellCount < shape.minNonland) {
+            logger.warn("Constructed build found only {} of {} spells", spellCount, nonland)
+            return null
+        }
+        val deckCards = picks.flatMap { (card, n) -> List(n) { card } }
+        val used = colours.filter { colour -> deckCards.any { colour in it.colors } }.toSet().ifEmpty { colours }
+        val basics = BasicLandSplit.split(deckCards, used, shape.deckSize - spellCount, MIN_COLOUR_SHARE)
+
+        logger.info(
+            "Constructed build: {} in {}, {} spells ({} creatures, {} interaction), curve {}",
+            anchor?.first?.name?.let { "around $it" } ?: "no build-around",
+            colours.joinToString("") { it.symbol.toString() },
+            spellCount,
+            picks.entries.filter { it.key.typeLine.isCreature }.sumOf { it.value },
+            picks.entries.filter { DeckRole.REMOVAL in roles.getValue(it.key.name) }.sumOf { it.value },
+            curve.toList(),
+        )
+        val deckList = LinkedHashMap<String, Int>()
+        picks.forEach { (card, n) -> deckList[card.name] = n }
+        deckList.putAll(basics)
+        return deckList
+    }
+
+    /**
+     * The two colours to build in: the pair whose [CORE_SIZE] best castable cards rate highest,
+     * drawn among the [COLOUR_CHOICES] best pairs with a weight steep enough that a clearly better
+     * pair nearly always wins. A one-colour pool lands on a pair holding its colour; the basics
+     * then follow the cards actually played.
+     */
+    private fun pickColours(spells: List<CardDefinition>, quality: Map<String, Double>): Set<Color> {
+        val pairs = Color.entries.flatMapIndexed { i, a -> Color.entries.drop(i + 1).map { b -> setOf(a, b) } }
+        val value = pairs.associateWith { pair ->
+            spells.filter { castableIn(it, pair) }
+                .map { quality.getValue(it.name) }
+                .sortedDescending()
+                .take(CORE_SIZE)
+                .sum()
+        }
+        val best = value.values.max()
+        if (best <= 0.0) return pairs.first()
+        return value.entries.sortedByDescending { it.value }
+            .take(COLOUR_CHOICES)
+            .weightedSample(1, random) { (it.value / best).pow(COLOUR_SHARPNESS) }
+            .first().key
+    }
+
+    /**
+     * The deck's build-around among its best few cards, with the reading that scores the rest — or
+     * null when none of them asks for something [MIN_SUPPORT] of the other top cards supply. A
+     * card that only shares a creature type with others isn't a plan; one whose text names a tribe,
+     * rewards a keyword or pays off a theme is.
+     */
+    private fun buildAround(candidates: List<CardDefinition>): Pair<CardDefinition, CommanderSynergy>? {
+        val core = candidates.take(ANCHOR_CORE)
+        return candidates.take(ANCHOR_CHOICES)
+            .mapNotNull { card ->
+                val synergy = CommanderSynergy(card).takeIf { it.asksForSomething } ?: return@mapNotNull null
+                val support = core.count { it.name != card.name && synergy.score(it) >= MIN_SUPPORT_SCORE }
+                Triple(card, synergy, support)
+            }
+            .filter { it.third >= MIN_SUPPORT }
+            .maxByOrNull { it.third }
+            ?.let { (card, synergy, _) -> card to synergy }
+    }
+
+    /**
+     * Autobuild [pool] with Draftsim at [shape] (the Highlander shape; 60-card decks go through
+     * [constructedBuild]), or null when it can't fill a deck.
      *
      * Two things have to be bridged to get a limited autobuilder onto a constructed pool:
      *
      *  - **Size.** A sealed pool is ~90 cards; a constructed one is thousands, and the scorer is
      *    quadratic in pool size (every card is scored against the whole pool). So the pool is first
      *    [shortlist]ed down to sealed scale.
-     *  - **Copies.** Draftsim picks from *physical* pool cards and caps a name at 4 (2 for legendary
-     *    creatures). Constructed's four-of rule is exactly that cap, so handing it four instances of
-     *    every shortlisted card gets four-ofs of the good cards for free.
+     *  - **Copies.** Draftsim picks from *physical* pool cards, so [DeckShape.copiesPerCard]
+     *    instances of each shortlisted card are handed over — one for a singleton deck.
      *
      * Nonbasic lands are left out of the shortlist, so the manabase comes back as pure basics. The
      * builder *can* use pool lands, but it takes them unranked, and a constructed pool's land slice
@@ -229,7 +402,8 @@ class ConstructedDeckGenerator(
     /**
      * The two deck shapes this generator builds.
      *
-     * @property shortlistSize How many distinct cards the autobuilder actually sees. Sealed scale —
+     * @property shortlistSize How many distinct cards the Draftsim autobuilder sees (Highlander only;
+ *   the 60-card shape is built by [constructedBuild] from the whole pool). Sealed scale —
      *   the builder's home turf, and what keeps its quadratic scoring cheap — while still leaving
      *   every two-colour guild enough castable cards to fill the nonland slots. A singleton deck
      *   needs one distinct card per slot, so its shortlist is wider.
@@ -255,6 +429,84 @@ class ConstructedDeckGenerator(
 
     private companion object {
         private val logger = LoggerFactory.getLogger(ConstructedDeckGenerator::class.java)
+
+        /**
+         * Copies per mana value in a 60-card deck's 36 spells, MV 1 (and 0) to 6+: the low, wide
+         * curve of a constructed midrange list rather than limited's fat middle and top end.
+         */
+        private val CURVE = intArrayOf(0, 6, 12, 9, 6, 2, 1)
+
+        /** How far the second fill pass may overrun a curve bucket before the curve is dropped. */
+        private const val CURVE_SLACK = 2
+
+        /** A card new to the deck comes in as at least this many copies on the strict passes. */
+        private const val PLAYSET_MIN = 3
+
+        /** Interaction copies taken before anything else — about one in five spells. */
+        private const val INTERACTION_COPIES = 8
+
+        /** Creature copies taken before the best-of-the-rest pass. */
+        private const val CREATURE_COPIES = 16
+
+        /** Most noncreature spell copies before the last fill pass; leaves twenty creature slots. */
+        private const val MAX_NONCREATURE = 16
+
+        /** Interaction is worth a little more than its limited rating in constructed. */
+        private const val INTERACTION_BONUS = 1.2
+
+        /** Per-build rating jitter: ±this share. */
+        private const val JITTER = 0.15
+
+        /** Best-rated spells per colour pair considered at all — four times the deck's distinct cards. */
+        private const val CANDIDATES = 150
+
+        /** Cards a colour pair is judged by when picking the deck's colours. */
+        private const val CORE_SIZE = 12
+        private const val COLOUR_CHOICES = 3
+        private const val COLOUR_SHARPNESS = 8.0
+
+        /** Top cards tried as the build-around, and the top cards that may support it. */
+        private const val ANCHOR_CHOICES = 8
+        private const val ANCHOR_CORE = 40
+        private const val MIN_SUPPORT = 6
+        private const val MIN_SUPPORT_SCORE = 1.0
+
+        /** How far the build-around's synergy moves a card's score: × (1 + this × score). */
+        private const val SYNERGY_WEIGHT = 0.3
+        private const val MAX_SYNERGY = 5.0
+
+        /** Share of the basics every played colour gets before the pips divide the rest. */
+        private const val MIN_COLOUR_SHARE = 0.25
+
+        /** A card's colours all inside [colours]; colourless cards fit every deck. */
+        fun castableIn(card: CardDefinition, colours: Set<Color>): Boolean = card.colors.all { it in colours }
+
+        /**
+         * The mana value a card is played at: a split card or Room (no cost of its own) at its
+         * cheapest half, and an X spell for at least two more than its printed MV.
+         */
+        fun manaValue(card: CardDefinition): Int {
+            val printed = if (card.manaCost.symbols.isEmpty() && card.cardFaces.isNotEmpty()) {
+                card.cardFaces.minOf { it.manaCost.cmc }
+            } else {
+                card.cmc
+            }
+            return printed + if (card.manaCost.hasX) 2 else 0
+        }
+
+        fun curveBucket(card: CardDefinition): Int = manaValue(card).coerceIn(1, CURVE.size - 1)
+
+        /** Constructed games are decided earlier than limited ones; the top end is worth less. */
+        fun curveDiscount(card: CardDefinition): Double = when (manaValue(card)) {
+            in 0..3 -> 1.0
+            4 -> 0.92
+            5 -> 0.8
+            6 -> 0.65
+            else -> 0.5
+        }
+
+        /** The four-of rule; a legend is played as two, since a second copy on the battlefield dies. */
+        fun copyCap(card: CardDefinition): Int = if (card.typeLine.isLegendary) 2 else 4
 
 
         private val COLOR_TO_BASIC =

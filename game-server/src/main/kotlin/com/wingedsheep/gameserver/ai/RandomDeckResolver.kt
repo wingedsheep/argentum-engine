@@ -57,9 +57,10 @@ import org.springframework.stereotype.Component
  * **A constructed list with no set identity is matched by format instead.** A Standard deck
  * spread over a dozen sets has nothing to match, and its unmatched answer was a sealed pool from a
  * random set — 40 singletons against a tuned 60, which the AI lost nine times in ten. It now meets
- * a deck generated for the format the list was built for: the one its saved deck or example
- * declares, else the lobby's, else the narrowest of the nested constructed formats it is legal in
- * ([PremadeOpponentPicker.matchFormat]). A human on Random keeps the unmatched answer.
+ * a deck for the format the list was built for: the one its saved deck or example declares, else
+ * the lobby's, else the narrowest of the nested constructed formats it is legal in
+ * ([PremadeOpponentPicker.matchFormat]) — a built-in starter legal there when one qualifies, else a
+ * deck generated from the format's card base. A human on Random keeps the unmatched answer.
  */
 @Component
 class RandomDeckResolver(
@@ -158,14 +159,17 @@ class RandomDeckResolver(
         if (commanderRules || opponentDeck.values.sum() < CONSTRUCTED_DECK_SIZE) return null
         val target = premadePicker.matchFormat(opponentDeck, opponentDeckFormat, format) ?: return null
         logger.info("AI's set-matched deck failed; building a {} deck from the whole format instead", target.displayName)
-        return buildForFormat(target)
+        return starterOrBuildFor(opponentDeck, target)
     }
 
     /**
-     * A deck generated for the format [opponentDeck] — a constructed list with no set identity — is
-     * played in ([matchedFormat]), from that format's whole card base. Generated rather than picked
-     * from the curated starters so the AI's list turns over from game to game the way a sealed pool
-     * does. Null — the caller's unmatched answer — when no format applies.
+     * A deck for the format [opponentDeck] — a constructed list with no set identity — is played in
+     * ([matchedFormat]): a built-in starter legal in that format when one qualifies
+     * ([PremadeOpponentPicker.pickForFormat]), else one generated from the format's whole card base.
+     * The starters come first because a curated list is a tuned deck with a plan, which no build
+     * from ratings matches (2026-10-31: generated Standard decks went 0/4 against tuned lists); the
+     * pick among them is random, so the AI's list still turns over from game to game. Null — the
+     * caller's unmatched answer — when no format applies.
      */
     private fun formatMatchedDeck(
         opponentDeck: Map<String, Int>,
@@ -175,6 +179,14 @@ class RandomDeckResolver(
     ): GeneratedDeck? {
         val target = matchedFormat(opponentDeck, opponentDeckFormat, format, commanderRules) ?: return null
         logger.info("AI builds a {} deck to match the human's", target.displayName)
+        return starterOrBuildFor(opponentDeck, target)
+    }
+
+    private fun starterOrBuildFor(opponentDeck: Map<String, Int>, target: DeckFormat): GeneratedDeck? {
+        premadePicker.pickForFormat(opponentDeck, target)?.let { starter ->
+            logger.info("AI plays a {}-legal starter against the human's deck", target.displayName)
+            return starter
+        }
         return buildForFormat(target)
     }
 

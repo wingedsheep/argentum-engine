@@ -4,7 +4,11 @@ import com.wingedsheep.ai.draftsim.DraftsimData
 import com.wingedsheep.ai.draftsim.DraftsimDeckShape
 import com.wingedsheep.engine.limited.BoosterGenerator
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.DeckFormat
+import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.card as cardDef
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.CardDefinition
@@ -15,6 +19,8 @@ import io.kotest.assertions.withClue
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldNotBeEmpty
+import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
+import io.kotest.matchers.ints.shouldBeLessThanOrEqual
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.core.spec.style.FunSpec
@@ -329,6 +335,117 @@ class ConstructedDeckGeneratorTest : FunSpec({
         val decks = (1..6).map { gen.generate(listOf("AAA"), DeckFormat.MODERN) }
 
         decks.distinct().size shouldNotBe 1
+    }
+
+    // --- Constructed deck shape (D5): playsets of the best cards on a low curve, with a plan ---
+
+    val modern = setOf(DeckFormat.MODERN)
+    val pipOf = mapOf(Color.WHITE to "W", Color.BLUE to "U", Color.BLACK to "B", Color.RED to "R", Color.GREEN to "G")
+
+    fun removal(name: String, cost: String, rarity: Rarity = Rarity.UNCOMMON): CardDefinition = cardDef(name) {
+        manaCost = cost
+        typeLine = "Instant"
+        oracleText = "Destroy target creature."
+        spell {
+            val t = target(TargetFilter.Creature)
+            effect = com.wingedsheep.sdk.dsl.Effects.Move(t, Zone.GRAVEYARD, byDestruction = true)
+        }
+        metadata { this.rarity = rarity }
+    }.copy(legalFormats = modern)
+
+    /**
+     * Five colours deep, every mana value from one to seven, creatures and removal in each — the
+     * shape of a whole-format pool, where the old build drew a random shortlist and stacked
+     * whichever six-drops it turned up.
+     */
+    fun widePool(): List<CardDefinition> = Color.entries.flatMap { colour ->
+        val pip = pipOf.getValue(colour)
+        (1..30).map { i ->
+            val mv = (i % 7) + 1
+            card("$pip Creature $i", "{${mv - 1}}{$pip}", if (i % 5 == 0) Rarity.RARE else Rarity.COMMON, modern)
+        } + (1..8).map { i -> removal("$pip Removal $i", "{${i % 3}}{$pip}") }
+    }
+
+    val basicNames = setOf("Plains", "Island", "Swamp", "Mountain", "Forest")
+    fun isBasic(key: String) = key.substringBefore('#') in basicNames
+
+    fun wideGenerator(seed: Long): ConstructedDeckGenerator {
+        val cards = widePool()
+        val allBasics = listOf(
+            CardDefinition.basicLand("Plains", Subtype.PLAINS, ScryfallMetadata(collectorNumber = "301")),
+            CardDefinition.basicLand("Island", Subtype.ISLAND, ScryfallMetadata(collectorNumber = "302")),
+            CardDefinition.basicLand("Swamp", Subtype.SWAMP, ScryfallMetadata(collectorNumber = "303")),
+            CardDefinition.basicLand("Mountain", Subtype.MOUNTAIN, ScryfallMetadata(collectorNumber = "304")),
+            CardDefinition.basicLand("Forest", Subtype.FOREST, ScryfallMetadata(collectorNumber = "305")),
+        )
+        val registry = CardRegistry()
+        registry.register(cards)
+        registry.register(allBasics)
+        val booster = BoosterGenerator(mapOf("WID" to BoosterGenerator.SetConfig("WID", "Wide", cards, allBasics)))
+        return ConstructedDeckGenerator(booster, registry, Random(seed))
+    }
+
+    test("a whole-format build is a constructed deck: playsets, a low curve, creatures and interaction") {
+        val byName = widePool().associateBy { it.name }
+        (1L..4L).forEach { seed ->
+            val deck = wideGenerator(seed).generate(DeckFormat.MODERN)
+            val spells = deck.filterKeys { !isBasic(it) }.mapKeys { (k, _) -> byName.getValue(k) }
+            val copies = spells.values.sum()
+            fun count(pred: (CardDefinition) -> Boolean) = spells.filterKeys(pred).values.sum()
+
+            withClue("seed $seed: ${deck.entries.joinToString { "${it.value}x ${it.key}" }}") {
+                deck.values.sum() shouldBe deckSize
+                deck.filterKeys(::isBasic).values.sum() shouldBe shape.landCount
+                // Density: most of the spell slots are in three- and four-ofs, not 1-of filler.
+                count { spells.getValue(it) >= 3 } shouldBeGreaterThanOrEqual copies * 3 / 4
+                spells.size shouldBeLessThanOrEqual 14
+                // A constructed curve: the bulk at one to three, almost nothing at five and up.
+                count { it.cmc <= 3 } shouldBeGreaterThanOrEqual copies * 3 / 5
+                count { it.cmc >= 5 } shouldBeLessThanOrEqual 5
+                count { it.cmc >= 6 } shouldBeLessThanOrEqual 2
+                // The creature floor holds and the deck can answer a threat.
+                count { it.typeLine.isCreature } shouldBeGreaterThanOrEqual 16
+                count { DeckRole.REMOVAL in CommanderDeckRoles.rolesOf(it) } shouldBeGreaterThanOrEqual 8
+                // Two colours at most, on a basics manabase that follows them.
+                val colours = spells.keys.flatMap { it.colors }.toSet()
+                colours.size shouldBeLessThanOrEqual 2
+                deck.filterKeys(::isBasic).keys.map { it.substringBefore('#') }.toSet() shouldBe
+                    colours.map { BasicLandSplit.BASIC_FOR.getValue(it) }.toSet()
+            }
+        }
+    }
+
+    test("a build-around's tribe fills the deck") {
+        // A rare Elf lord whose text names its tribe, twenty Elves and sixty equally rated strangers.
+        // The lord reads as the deck's plan, so it goes in and the Elves beat the strangers to the slots.
+        val lord = CardDefinition.creature(
+            name = "Elvish Captain",
+            manaCost = ManaCost.parse("{1}{G}"),
+            subtypes = setOf(Subtype("Elf")),
+            power = 2,
+            toughness = 2,
+            oracleText = "Other Elves you control get +1/+1.",
+            metadata = ScryfallMetadata(collectorNumber = "1", rarity = Rarity.MYTHIC),
+        ).copy(legalFormats = modern)
+        val elves = (1..20).map { i ->
+            CardDefinition.creature(
+                name = "Elf $i",
+                manaCost = ManaCost.parse("{${i % 4}}{G}"),
+                subtypes = setOf(Subtype("Elf")),
+                power = 1,
+                toughness = 1,
+                metadata = ScryfallMetadata(collectorNumber = "e$i", rarity = Rarity.COMMON),
+            ).copy(legalFormats = modern)
+        }
+        val strangers = (1..60).map { i -> card("Stranger $i", "{${i % 4}}{G}", Rarity.COMMON, modern) }
+        val gen = generatorOver("ELF" to (listOf(lord) + elves + strangers))
+
+        val deck = gen.generate(listOf("ELF"), DeckFormat.MODERN)
+
+        withClue("deck was $deck") {
+            deck.keys.contains(lord.name) shouldBe true
+            deck.filterKeys { it.startsWith("Elf ") }.values.sum() shouldBeGreaterThanOrEqual 24
+        }
     }
 })
 

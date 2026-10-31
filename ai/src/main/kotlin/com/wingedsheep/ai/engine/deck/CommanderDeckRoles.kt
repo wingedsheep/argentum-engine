@@ -93,7 +93,9 @@ internal object CommanderDeckRoles {
 }
 
 /**
- * What a commander asks of the rest of its deck, and how well a candidate answers.
+ * What a commander asks of the rest of its deck, and how well a candidate answers. Nothing in it is
+ * specific to the command zone: [ConstructedDeckGenerator] reads its 60-card deck's build-around
+ * card the same way.
  *
  * Three readings of the commander, from strongest to weakest:
  *  - **Tribes.** A creature type its rules text names ("other Elves you control") is the deck's
@@ -155,6 +157,15 @@ internal class CommanderSynergy(commander: CardDefinition) {
     private val rewardsArtifacts = Regex("""\bartifacts?\b""").containsMatchIn(text)
     private val rewardsEnchantments = Regex("""\benchantments?\b""").containsMatchIn(text)
     private val rewardsSpells = Regex("""instant (or|and) sorcery|noncreature spell""").containsMatchIn(text)
+
+    /**
+     * True when the card's *text* asks the deck for something — a tribe it names, a keyword it
+     * rewards, a theme it does or pays off — rather than only sharing a creature type or keyword.
+     * The constructed generator reads a build-around through this class too, and only a card that
+     * asks for something is a plan worth building towards.
+     */
+    val asksForSomething: Boolean = namedTribes.isNotEmpty() || rewardedKeywords.isNotEmpty() ||
+        themes.isNotEmpty() || rewardsCounters || rewardsArtifacts || rewardsEnchantments || rewardsSpells
 
     /** True when the commander asks for anything at all; a vanilla legend scores every card 0. */
     val hasTheme: Boolean = namedTribes.isNotEmpty() || ownTribes.isNotEmpty() || rewardedKeywords.isNotEmpty() ||

@@ -109,6 +109,27 @@ class PremadeOpponentPickerTest : FunSpec({
         picker.matchFormat(orzhovLifegain, declared = null, lobbyFormat = DeckFormat.PREMODERN) shouldBe DeckFormat.PREMODERN
     }
 
+    test("a Standard list matched by format meets a Standard-legal starter, never its own") {
+        val validator = DeckValidator(registry)
+        val picks = (1..30).map { seed ->
+            val deck = picker.pickForFormat(orzhovLifegain, DeckFormat.STANDARD, Random(seed))
+            deck shouldNotBe null
+            deck!!.commander shouldBe null
+            deck.deckList.values.sum() shouldBe 60
+            validator.validate(deck.deckList, DeckFormat.STANDARD).valid shouldBe true
+            deck.deckList
+        }
+
+        picks.none { it == orzhovLifegain } shouldBe true
+        // Random among the qualifying starters, so the AI's list still turns over.
+        picks.distinct().size shouldNotBe 1
+    }
+
+    test("a format no starter is legal in leaves the build to the generator") {
+        picker.pickForFormat(orzhovLifegain, DeckFormat.PAUPER) shouldBe null
+        picker.pickForFormat(orzhovLifegain, DeckFormat.COMMANDER) shouldBe null
+    }
+
     test("commander shapes never apply") {
         picker.matchFormat(orzhovLifegain, declared = DeckFormat.COMMANDER, lobbyFormat = null) shouldBe DeckFormat.STANDARD
         picker.matchFormat(orzhovLifegain, declared = null, lobbyFormat = DeckFormat.COMMANDER) shouldBe null
