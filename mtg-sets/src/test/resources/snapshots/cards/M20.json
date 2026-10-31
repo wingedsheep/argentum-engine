@@ -2097,6 +2097,46 @@
     ]
 }
 
+// Embodiment of Agonies
+{
+    "name": "Embodiment of Agonies",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Creature — Demon",
+    "oracleText": "Flying, deathtouch\nThis creature enters with a +1/+1 counter on it for each different mana cost among nonland cards in your graveyard. (For example, {2}{B} and {1}{B}{B} are different mana costs.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "keywords": [
+        "FLYING",
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": {
+                    "type": "AggregateZone",
+                    "player": "You",
+                    "zone": "Graveyard",
+                    "filter": "nonland",
+                    "aggregation": "DISTINCT_MANA_COSTS"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "98",
+        "rarity": "RARE",
+        "artist": "Igor Kieryluk",
+        "flavorText": "\"I feel your pain. It's exquisite.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/7/77972745-8689-4733-9a9d-39ae9d6273a2.jpg?1783932995"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Empyrean Eagle
 {
     "name": "Empyrean Eagle",

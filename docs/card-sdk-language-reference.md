@@ -17007,7 +17007,7 @@ forbids `DynamicAmount.X` in card definitions.
   matching permanents. `aggregation` defaults to `COUNT`; other modes: `MAX`/`MIN`/`SUM` over a
   `property` (`POWER`/`TOUGHNESS`/`MANA_VALUE`), and the distinct-set counters
   `DISTINCT_TYPES`, `DISTINCT_PERMANENT_TYPES`, `DISTINCT_COLORS`, `DISTINCT_COLOR_PAIRS`,
-  `DISTINCT_NAMES`, `DISTINCT_BASIC_LAND_SUBTYPES`
+  `DISTINCT_NAMES`, `DISTINCT_MANA_COSTS` (see `AggregateZone` below), `DISTINCT_BASIC_LAND_SUBTYPES`
   (Domain; reads *projected* subtypes, so a land that lost all land types — Ultima, Origin of
   Oblivion's blight — still matches a land filter but adds no type),
   `DISTINCT_PLANESWALKER_SUBTYPES` (planeswalker types, CR 205.3j, among the matched
@@ -17082,6 +17082,14 @@ forbids `DynamicAmount.X` in card definitions.
   `fewestControlledBySinglePlayer(Land)` lands, then `leastAmongPlayers(cardsInYourHand())` cards,
   then `fewestControlledBySinglePlayer(Creature)` creatures, each counted at its own part.
 - `AggregateZone(player, zone, filter?, aggregation?)` — count cards in a zone.
+  `DISTINCT_MANA_COSTS` counts the *different mana costs* (CR 202.1) among the matched cards — by
+  printed symbol, not mana value: {2}{B} and {1}{B}{B} are two costs, {X} and {0} are two, a hybrid
+  {B/R} is neither {B} nor {R}, and symbol order is ignored. A card with no mana cost (CR 202.1b)
+  adds nothing while a printed {0} counts; a split card's cost is its halves combined (CR 709.4b,
+  Fire // Ice is {2}{U}{R}); a Room on the battlefield has only its unlocked halves' costs. Facade
+  `DynamicAmounts.zone(Player.You, Zone.GRAVEYARD, GameObjectFilter.Nonland).distinctManaCosts()` —
+  Embodiment of Agonies' "a +1/+1 counter on it for each different mana cost among nonland cards in
+  your graveyard". The aggregation works over `AggregateBattlefield` too.
 - `CountPermanentsOfType(player, subtype)` — count by creature type.
 - `CountCreaturesYouControl` — shorthand for "your creatures".
 

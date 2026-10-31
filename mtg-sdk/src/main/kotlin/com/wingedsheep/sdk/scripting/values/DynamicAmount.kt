@@ -1687,6 +1687,11 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
                     if (excludeSelf || excludeTriggeringEntity) append("other ")
                     append(pluralize(filter.description))
                 }
+                Aggregation.DISTINCT_MANA_COSTS -> {
+                    append("the number of different mana costs among ")
+                    if (excludeSelf || excludeTriggeringEntity) append("other ")
+                    append(pluralize(filter.description))
+                }
                 Aggregation.LARGEST_SAME_NAME_GROUP -> {
                     append("the greatest number of ")
                     if (excludeSelf || excludeTriggeringEntity) append("other ")
@@ -1879,6 +1884,10 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
                 }
                 Aggregation.DISTINCT_VALUES -> {
                     append("the number of different ${property?.description ?: "value"} among ")
+                    append(pluralize(filter.description))
+                }
+                Aggregation.DISTINCT_MANA_COSTS -> {
+                    append("the number of different mana costs among ")
                     append(pluralize(filter.description))
                 }
                 Aggregation.LARGEST_SAME_NAME_GROUP -> {

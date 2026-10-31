@@ -402,6 +402,15 @@ object DynamicAmounts {
          */
         fun distinctValues(property: CardNumericProperty): DynamicAmount =
             DynamicAmount.AggregateZone(player, zone, filter, Aggregation.DISTINCT_VALUES, property)
+
+        /**
+         * The number of different mana costs among the matched cards — e.g. over
+         * `GameObjectFilter.Nonland` in your graveyard for "a +1/+1 counter on it for each
+         * different mana cost among nonland cards in your graveyard" (Embodiment of Agonies).
+         * Compares printed symbols, not mana value; cards with no mana cost count for nothing.
+         */
+        fun distinctManaCosts(): DynamicAmount =
+            DynamicAmount.AggregateZone(player, zone, filter, Aggregation.DISTINCT_MANA_COSTS)
     }
 
     // =========================================================================

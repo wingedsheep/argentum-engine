@@ -122,6 +122,30 @@ class PredicateEvaluator(
         )
     }
 
+    /**
+     * [entityId]'s mana cost as CR 202.1 reads it in its current zone, or null when it has none
+     * (CR 202.1b: a land, a card printed with no mana symbols, a token that wasn't given one, a
+     * face-down permanent). A printed {0} is a mana cost and is returned. A split card off the
+     * stack combines its halves' costs (CR 709.4b — Fire // Ice is {2}{U}{R}), read off its
+     * definition because the card component carries a single cost; a Room on the battlefield has
+     * only its unlocked halves' costs (CR 709.5).
+     */
+    fun manaCostOf(state: GameState, entityId: EntityId): com.wingedsheep.sdk.core.ManaCost? {
+        val entity = state.getEntity(entityId) ?: return null
+        if (entity.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>()) return null
+        val card = entity.get<com.wingedsheep.engine.state.components.identity.CardComponent>() ?: return null
+        val room = entity.get<com.wingedsheep.engine.state.components.identity.RoomComponent>()
+        val cost = when {
+            room != null -> room.unlockedFaces.fold(com.wingedsheep.sdk.core.ManaCost.ZERO) { acc, face -> acc + face.manaCost }
+            entityId !in state.stack -> cardRegistry?.getCard(card.cardDefinitionId)
+                ?.takeIf { it.layout == com.wingedsheep.sdk.model.CardLayout.SPLIT && it.cardFaces.size >= 2 }
+                ?.cardFaces?.fold(com.wingedsheep.sdk.core.ManaCost.ZERO) { acc, face -> acc + face.manaCost }
+                ?: card.manaCost
+            else -> card.manaCost
+        }
+        return cost.takeIf { it.symbols.isNotEmpty() }
+    }
+
     internal fun duringManaAbilityQuery(entityId: EntityId): PredicateEvaluator =
         PredicateEvaluator(cardRegistry, manaAbilityQueries + entityId)
 

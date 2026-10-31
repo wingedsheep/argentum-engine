@@ -31,6 +31,7 @@ import com.wingedsheep.engine.state.components.player.PlayerCountersRemovedThisT
 import com.wingedsheep.engine.state.components.identity.RoomComponent
 import com.wingedsheep.engine.state.components.identity.ToxicComponent
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
+import com.wingedsheep.sdk.core.ManaSymbol
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
@@ -1565,6 +1566,7 @@ class DynamicAmountEvaluator(
                     resolveCardNumericProperty(state, projection, it, prop)
                 }.size
             }
+            Aggregation.DISTINCT_MANA_COSTS -> distinctManaCostCount(state, matchingEntities)
             // "<N> or more <group> with the same name as one another" (Mechanized Production):
             // bucket by name and take the biggest bucket. The projected name wins where a
             // name-changing effect set one, as in the Yenna name predicate. A face-down permanent
@@ -1676,6 +1678,7 @@ class DynamicAmountEvaluator(
                     resolveCardNumericProperty(state, null, it, prop)
                 }.size
             }
+            Aggregation.DISTINCT_MANA_COSTS -> distinctManaCostCount(state, matchingEntities)
             // Off the battlefield there is no projection, so the printed name is the only one.
             Aggregation.LARGEST_SAME_NAME_GROUP -> matchingEntities.mapNotNull { entityId ->
                 state.getEntity(entityId)?.get<CardComponent>()?.name
@@ -1763,6 +1766,20 @@ class DynamicAmountEvaluator(
     }
 
     private fun resolveUnifiedZone(zone: Zone): Zone = zone
+
+    /**
+     * How many different mana costs (CR 202.1) the [entities] have — see
+     * [Aggregation.DISTINCT_MANA_COSTS]. Two costs are the same when they hold the same symbols:
+     * the generic part is compared as one total and every other symbol as a multiset, so symbol
+     * order doesn't matter while {X} stays apart from {0} and {B/R} apart from {B} and {R}.
+     */
+    private fun distinctManaCostCount(state: GameState, entities: List<EntityId>): Int =
+        entities.mapNotNullTo(mutableSetOf()) { entityId ->
+            predicates.manaCostOf(state, entityId)?.let { cost ->
+                val generic = cost.symbols.filterIsInstance<ManaSymbol.Generic>().sumOf { it.amount }
+                generic to cost.symbols.filterNot { it is ManaSymbol.Generic }.map { it.toString() }.sorted()
+            }
+        }.size
 
     private fun resolveCardNumericProperty(
         state: GameState,
