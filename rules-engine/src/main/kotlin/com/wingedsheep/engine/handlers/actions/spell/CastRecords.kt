@@ -20,6 +20,7 @@ import com.wingedsheep.engine.state.components.identity.AfterResolveDestinationC
 import com.wingedsheep.sdk.scripting.CastThisWayExile
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.CardsDiscardedThisTurnComponent
+import com.wingedsheep.engine.state.components.player.SpellsCastThisGameComponent
 import com.wingedsheep.engine.state.components.stack.CastThisWayEntryRiderComponent
 import com.wingedsheep.engine.state.components.stack.EntryKeywordGrant
 import com.wingedsheep.engine.state.components.stack.SpellGrantedKeywordsComponent
@@ -211,6 +212,10 @@ internal class CastRecords(
             // "the spell most recently cast this turn" — read by Mana Maze's cast restriction.
             lastCastSpellColors = record.colors
         )
+        // "The first spell you've cast this game" (Once Upon a Time): a never-cleared game count.
+        newState = newState.updateEntity(action.playerId) { player ->
+            player.with(SpellsCastThisGameComponent((player.get<SpellsCastThisGameComponent>()?.count ?: 0) + 1))
+        }
         return newState to stormCount
     }
 

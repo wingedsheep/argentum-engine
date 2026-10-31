@@ -1078,6 +1078,14 @@ object DynamicAmounts {
     /** The total number of spells cast during the immediately preceding turn. */
     fun spellsCastLastTurn(): DynamicAmount = DynamicAmount.SpellsCastLastTurn
 
+    /**
+     * Spells [player] has cast this game, from any zone, countered or not. Zero while a spell is
+     * being cast means it is the first: "if this spell is the first spell you've cast this game"
+     * (Once Upon a Time).
+     */
+    fun spellsCastThisGame(player: Player = Player.You): DynamicAmount =
+        DynamicAmount.SpellsCastThisGame(player)
+
     /** Spells [player] cast during their own last turn (Arboria). */
     fun spellsCastDuringTheirLastTurn(player: Player): DynamicAmount =
         DynamicAmount.TurnTracking(player, TurnTracker.SPELLS_CAST_DURING_THEIR_LAST_TURN)

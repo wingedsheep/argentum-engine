@@ -1738,6 +1738,15 @@ data class CardsCycledThisGameComponent(val countsByName: Map<String, Int> = emp
 }
 
 /**
+ * How many spells this player has cast this game. Never cleared. Written by `CastRecords`
+ * alongside the per-turn counts; backs
+ * [com.wingedsheep.sdk.scripting.values.DynamicAmount.SpellsCastThisGame] — "if this spell is the
+ * first spell you've cast this game" (Once Upon a Time).
+ */
+@Serializable
+data class SpellsCastThisGameComponent(val count: Int = 0) : Component
+
+/**
  * Tracks the number of permanents (tokens included) put into this player's hand from the
  * battlefield this turn, keyed on the owner. Cleared at end of turn by CleanupPhaseManager.
  *

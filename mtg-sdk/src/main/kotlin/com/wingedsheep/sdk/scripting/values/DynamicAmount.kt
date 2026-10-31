@@ -2084,6 +2084,27 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     }
 
     /**
+     * How many spells a player has cast this game — every cast counts, from any zone, whether the
+     * spell resolved or was countered; a copy that wasn't cast doesn't (CR 707.10). A spell counts
+     * once it has become cast, so a cost or availability gate judged while it is being cast still
+     * reads the count from before it: `Compare(SpellsCastThisGame(), EQ, 0)` on a
+     * `SelfAlternativeCost` is "if this spell is the first spell you've cast this game" (Once Upon a
+     * Time). A multi-player [player] scope sums across those players.
+     *
+     * Neighbours: [SpellsCastThisTurn] carries a per-turn cast *history* (filters, zones, card types)
+     * that is cleared each turn, so a game-long scope would mean keeping every record forever for a
+     * count nothing filters yet; [CardsCycledThisGame] is the same game-long, per-player shape over a
+     * different action.
+     */
+    @SerialName("SpellsCastThisGame")
+    @Serializable
+    data class SpellsCastThisGame(val player: Player = Player.You) : DynamicAmount {
+        override val description: String =
+            if (player == Player.You) "the number of spells you've cast this game"
+            else "the number of spells ${player.description} has cast this game"
+    }
+
+    /**
      * Total printed power of the cards exiled to craft the source permanent (CR 702.167c).
      *
      * Reads the source's

@@ -301,6 +301,8 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
             // So does the per-owner card-type record of permanents put into a graveyard from the
             // battlefield; KamiOfTransienceScenarioTest pins it.
             "com.wingedsheep.engine.state.components.player.CardTypesPutIntoGraveyardFromBattlefieldThisTurnComponent" -
+            // The game-long spell count postdates the capture too; SpellsCastThisGameTest pins it.
+            "com.wingedsheep.engine.state.components.player.SpellsCastThisGameComponent" -
             "com.wingedsheep.engine.state.components.identity.PutIntoGraveyardThisTurnComponent").mapValues { (key, child) ->
             when {
                 // Captured ownership also postdates these traces; SourceOwnerLastKnownTest pins it.
