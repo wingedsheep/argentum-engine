@@ -38,6 +38,7 @@ import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.effects.AdaptAsThoughNoCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AdaptEffect
+import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
 import com.wingedsheep.sdk.scripting.effects.BecomePreparedEffect
@@ -206,7 +207,7 @@ object TargetPolarityAnalyzer {
         definitions: CardLookup = NO_DEFINITIONS,
     ): List<TargetPolarity> =
         abilityCache.getOrPut(Triple(card.name, ability.id.value, definitions !== NO_DEFINITIONS)) {
-            forRequirements(ability.effect, ability.targetRequirements, definitions)
+            forRequirements(ability.effect, ability.targetRequirements, definitions, source = card)
         }
 
     /**
@@ -221,11 +222,19 @@ object TargetPolarityAnalyzer {
         return combine(readings)
     }
 
-    /** Polarity of each of [requirements], read off [effect]. Not memoized — see the callers. */
+    /**
+     * Polarity of each of [requirements], read off [effect]. Not memoized — see the callers.
+     *
+     * [source] is the card the effect is printed on, when the caller knows it. An equip
+     * ([AttachEquipmentEffect]) needs it: the attach itself does nothing to the creature — the
+     * Equipment's "equipped creature …" abilities do, and those live on [source]. Without it an
+     * equip slot stays unread.
+     */
     fun forRequirements(
         effect: Effect?,
         requirements: List<TargetRequirement>,
         definitions: CardLookup = NO_DEFINITIONS,
+        source: CardDefinition? = null,
     ): List<TargetPolarity> {
         if (requirements.isEmpty()) return emptyList()
         if (effect == null) return requirements.map { TargetPolarity.UNKNOWN }
@@ -237,7 +246,7 @@ object TargetPolarityAnalyzer {
             // that is every target of that slot, so the body reads as the slot's; with several,
             // `ContextTarget(0)` walks all of them and names no one slot.
             if (leaf is ForEachEffect && leaf.space == IterationSpace.Targets) {
-                if (requirements.size == 1) perSlot[0] += forRequirements(leaf.body, requirements, definitions)
+                if (requirements.size == 1) perSlot[0] += forRequirements(leaf.body, requirements, definitions, source)
                 continue
             }
             // "… to each of X target creatures" (Spinning Wheel Kick) visits one declaration's
@@ -252,6 +261,15 @@ object TargetPolarityAnalyzer {
                         slot?.let { perSlot[it] += polarity }
                     }
                 }
+                continue
+            }
+            // "Attach this Equipment to target creature you control" does to that creature what the
+            // Equipment does to the creature it is attached to — read exactly like an Aura's host.
+            // An Equipment that does nothing readable to its host stays silent, leaving the slot to
+            // the ability's other steps (The Aetherspark's +1/+1 counter on the same creature).
+            if (leaf is AttachEquipmentEffect) {
+                val host = source?.let { auraPolarity(it, definitions) }?.takeIf { it != TargetPolarity.UNKNOWN }
+                if (host != null) slotOf(leaf.target, requirements)?.let { perSlot[it] += host }
                 continue
             }
             val recursion = recursionSlot(leaf, requirements)
@@ -478,9 +496,10 @@ object TargetPolarityAnalyzer {
     }
 
     /**
-     * What an Aura does to the creature it enchants: its [Scope.AttachedTo] statics plus every
-     * triggered or activated effect aimed at [EffectTarget.EnchantedCreature], combined like any
-     * other slot. An activated one counts because the Aura's controller is who can activate it.
+     * What an Aura does to the creature it enchants — or an Equipment to the creature it equips: its
+     * [Scope.AttachedTo] statics plus every triggered or activated effect aimed at the host
+     * ([HOST_TARGETS]), combined like any other slot. An activated one counts because the
+     * attachment's controller is who can activate it.
      */
     private fun auraPolarity(card: CardDefinition, definitions: CardLookup): TargetPolarity {
         val readings = mutableListOf<TargetPolarity>()

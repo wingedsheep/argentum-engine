@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- Equips the creature an Equipment does the most for: an equip target is read as a gift, so the AI tries its best creatures first instead of its worst
 - #4157 Reads the payoff behind "you may pay/discard/sacrifice … If you do, …": aims those pumps and counters at its own creatures, and sees the tutors, draws and removal they unlock; reads a base-0/0 shrink as removal and a loyalty counter as a gift
 - #4155 Generated 60-card constructed decks are built the constructed way — playsets of the best two-colour cards on a low curve (6/12/9/6/2/1 by mana value), eight interaction and sixteen creature copies first, tilted towards a build-around's tribe or theme when the top cards share one — and a format-matched AI seat plays a format-legal built-in starter when one qualifies instead of a generated deck
 - #4151 Generated Commander decks now fill role quotas — about ten ramp (fixing ramp first for three-plus colours), eight interaction, seven card draw — and 25 cards on the commander's tribe, keywords or theme, and play 36 lands with the pool's on-colour duals instead of 38 basics split by pips
