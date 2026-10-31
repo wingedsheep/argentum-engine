@@ -6,7 +6,7 @@
 import { getArchetypesForSets } from '@/components/draft/SetSynergiesOverlay'
 import { SetIcon } from '@/components/ui/SetIcon'
 import type { AvailableSet } from '@/types/messages'
-import { ColorPips, MechanicChips, RatingMeters } from './SetProfileParts'
+import { ColorPips, MechanicChips, RatingMeters, ThemeTags, TryIf } from './SetProfileParts'
 import { setProfile } from './setProfiles'
 import styles from './SetGuide.module.css'
 
@@ -37,8 +37,10 @@ export function SetPickerPreview({ set }: { set: AvailableSet | undefined }) {
       {p ? (
         <>
           <p className={styles.tagline}>{p.tagline}</p>
+          <TryIf text={p.tryIf} compact />
           <RatingMeters profile={p} />
-          <p className={styles.previewText}>{p.playstyle}</p>
+          <ThemeTags themes={p.themes} />
+          <p className={styles.previewText}>{p.gameplay}</p>
           <MechanicChips mechanics={p.mechanics} />
           {archetypes.length > 0 && (
             <ul className={styles.previewArchetypes} aria-label="Archetypes">

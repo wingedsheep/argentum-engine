@@ -10,7 +10,7 @@ import { Link } from 'react-router-dom'
 import { getArchetypesForSets } from '@/components/draft/SetSynergiesOverlay'
 import { SetIcon } from '@/components/ui/SetIcon'
 import { pageStyles } from '@/components/ui/PageShell'
-import { ArchetypeRow, ColorPips, MechanicChips, RatingMeter, RatingMeters, themeLabel } from './SetProfileParts'
+import { ArchetypeRow, ColorPips, MechanicChips, MechanicList, RatingMeter, RatingMeters, ThemeTags, TipList, TryIf } from './SetProfileParts'
 import { MAX_COMPARE, RATINGS, type GuideSet } from './setGuideModel'
 import styles from './SetGuide.module.css'
 
@@ -70,6 +70,7 @@ export function SetProfileDialog({
           <h2 className={styles.heroName}>{set.name}</h2>
           <SetMeta set={set} />
           {p && <p className={styles.heroTagline}>{p.tagline}</p>}
+          {p && <TryIf text={p.tryIf} />}
         </div>
         <SetIcon code={set.code} className={styles.heroWatermark} />
       </header>
@@ -79,24 +80,27 @@ export function SetProfileDialog({
             <div className={styles.dialogColumns}>
               <div className={styles.prose}>
                 <section>
-                  <h3 className={styles.sectionTitle}>The set</h3>
-                  <p>{p.about}</p>
+                  <h3 className={styles.sectionTitle}>How games play</h3>
+                  <p>{p.gameplay}</p>
                 </section>
                 <section>
-                  <h3 className={styles.sectionTitle}>How it plays</h3>
-                  <p>{p.playstyle}</p>
+                  <h3 className={styles.sectionTitle}>How to win</h3>
+                  <TipList tips={p.tips} />
                 </section>
-                <p className={styles.tryIf}>Try it if you like {p.tryIf}.</p>
+                <section>
+                  <h3 className={styles.sectionTitle}>Mechanics in play</h3>
+                  <MechanicList mechanics={p.mechanics} />
+                </section>
               </div>
               <aside className={styles.factsAside}>
                 <RatingMeters profile={p} />
                 <div>
-                  <h3 className={styles.sectionTitle}>Mechanics</h3>
-                  <MechanicChips mechanics={p.mechanics} />
+                  <h3 className={styles.sectionTitle}>Themes</h3>
+                  <ThemeTags themes={p.themes} />
                 </div>
                 <div>
-                  <h3 className={styles.sectionTitle}>Themes</h3>
-                  <p className={styles.themeLine}>{p.themes.map(themeLabel).join(' · ')}</p>
+                  <h3 className={styles.sectionTitle}>Setting</h3>
+                  <p className={styles.themeLine}>{p.setting}</p>
                 </div>
               </aside>
             </div>
@@ -181,9 +185,12 @@ export function SetCompareDialog({
             </thead>
             <tbody>
               {row('In a line', (s) => <span className={styles.compareTagline}>{s.profile!.tagline}</span>)}
+              {row('Try it if you like', (s) => <span className={styles.compareTryIf}>{s.profile!.tryIf}</span>)}
               {RATINGS.map((r) => row(r.label, (s) => <RatingMeter ratingKey={r.key} value={s.profile![r.key]} />))}
+              {row('How games play', (s) => <span className={styles.compareProse}>{s.profile!.gameplay}</span>)}
+              {row('Top tip', (s) => <span className={styles.compareProse}>{s.profile!.tips[0]}</span>)}
               {row('Mechanics', (s) => <MechanicChips mechanics={s.profile!.mechanics} />)}
-              {row('Themes', (s) => s.profile!.themes.map(themeLabel).join(' · '))}
+              {row('Themes', (s) => <ThemeTags themes={s.profile!.themes} />)}
               {row('Archetypes', (s) => {
                 const archetypes = getArchetypesForSets([s.code])
                 if (archetypes.length === 0) return <span className={pageStyles.muted}>—</span>
@@ -197,7 +204,6 @@ export function SetCompareDialog({
                   </ul>
                 )
               })}
-              {row('Try it if you like', (s) => s.profile!.tryIf)}
             </tbody>
           </table>
         </div>

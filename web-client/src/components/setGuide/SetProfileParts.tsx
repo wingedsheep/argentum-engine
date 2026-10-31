@@ -6,7 +6,7 @@ import { ManaSymbol } from '@/components/ui/ManaSymbols'
 import { getArchetypeGradient, type Archetype } from '@/components/draft/SetSynergiesOverlay'
 import { getScryfallArtCropUrl } from '@/utils/cardImages'
 import { RATINGS, ratingWord, type RatingKey } from './setGuideModel'
-import { SET_THEMES, type Rating, type SetProfile } from './setProfiles'
+import { SET_THEMES, type Rating, type SetMechanic, type SetProfile, type SetTheme } from './setProfiles'
 import styles from './SetGuide.module.css'
 
 export function RatingMeter({ ratingKey, value, compact = false }: { ratingKey: RatingKey; value: Rating; compact?: boolean }) {
@@ -35,19 +35,69 @@ export function RatingMeters({ profile, compact = false }: { profile: SetProfile
   )
 }
 
-/** `single` keeps the chips to one line, dropping the ones that don't fit — tiles show the lead mechanics only. */
-export function MechanicChips({ mechanics, single = false }: { mechanics: readonly string[]; single?: boolean }) {
+/**
+ * Mechanic names as chips, each explaining itself on hover. `single` keeps the chips to one line,
+ * dropping the ones that don't fit — tiles show the lead mechanics only.
+ */
+export function MechanicChips({ mechanics, single = false }: { mechanics: readonly SetMechanic[]; single?: boolean }) {
   return (
     <ul className={styles.chips} data-single={single} aria-label="Mechanics">
       {mechanics.map((m) => (
-        <li key={m} className={styles.chip}>{m}</li>
+        <li key={m.name} className={styles.chip} title={m.inPlay}>{m.name}</li>
       ))}
     </ul>
   )
 }
 
-export function themeLabel(id: string): string {
-  return SET_THEMES.find((t) => t.id === id)?.label ?? id
+/** Each mechanic with what it does to a game, for the set's own dialog. */
+export function MechanicList({ mechanics }: { mechanics: readonly SetMechanic[] }) {
+  return (
+    <dl className={styles.mechanicList}>
+      {mechanics.map((m) => (
+        <div key={m.name} className={styles.mechanicItem}>
+          <dt>{m.name}</dt>
+          <dd>{m.inPlay}</dd>
+        </div>
+      ))}
+    </dl>
+  )
+}
+
+/** The set's three tips, numbered. */
+export function TipList({ tips }: { tips: readonly string[] }) {
+  return (
+    <ol className={styles.tips}>
+      {tips.map((t) => (
+        <li key={t}>{t}</li>
+      ))}
+    </ol>
+  )
+}
+
+/** The set's theme tags, each explaining itself on hover. `single` keeps them to one line. */
+export function ThemeTags({ themes, single = false }: { themes: readonly SetTheme[]; single?: boolean }) {
+  return (
+    <ul className={styles.chips} data-single={single} aria-label="Themes">
+      {themes.map((id) => {
+        const theme = SET_THEMES.find((t) => t.id === id)
+        return (
+          <li key={id} className={styles.themeTag} title={theme?.hint}>
+            {theme?.label ?? id}
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
+
+/** "Try it if you like …" as a callout. */
+export function TryIf({ text, compact = false }: { text: string; compact?: boolean }) {
+  return (
+    <p className={styles.tryIf} data-compact={compact}>
+      <span className={styles.tryIfLabel}>Try it if you like</span>
+      <span className={styles.tryIfText}>{text}</span>
+    </p>
+  )
 }
 
 /** Colour pips for an archetype, e.g. W U. */

@@ -110,7 +110,15 @@ export function filterGuideSets(sets: readonly GuideSet[], filter: GuideFilter):
     for (const theme of filter.themes) if (!s.profile?.themes.includes(theme)) return false
     if (!needle) return true
     const p = s.profile
-    const haystack = [s.name, s.code, p?.tagline, p?.about, p?.playstyle, ...(p?.mechanics ?? [])]
+    const haystack = [
+      s.name,
+      s.code,
+      p?.tagline,
+      p?.setting,
+      p?.gameplay,
+      ...(p?.tips ?? []),
+      ...(p?.mechanics ?? []).flatMap((m) => [m.name, m.inPlay]),
+    ]
       .join(' ')
       .toLowerCase()
     return haystack.includes(needle)

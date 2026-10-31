@@ -1,6 +1,6 @@
 /**
- * The Set guide, at `/sets` — every fully playable set with what it is about, how its Limited games
- * play, and power / speed / complexity ratings, so a player can pick a set for sealed or draft
+ * The Set guide, at `/sets` — every fully playable set with how its Limited games play, what wins
+ * them, what its mechanics do to a game, and power / speed / complexity ratings, so a player can pick a set for sealed or draft
  * without knowing Magic's back catalogue.
  *
  * Two views over the same filtered list: a grid of profile tiles, and a map that places each set by
@@ -13,7 +13,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { listPlayableSets } from '@/api/playableSets'
 import { PageShell, pageStyles } from '@/components/ui/PageShell'
 import { SetIcon } from '@/components/ui/SetIcon'
-import { MechanicChips, RatingMeters } from './SetProfileParts'
+import { RatingMeters, ThemeTags, TryIf } from './SetProfileParts'
 import { SetCompareDialog, SetProfileDialog } from './SetGuideDialogs'
 import {
   filterGuideSets,
@@ -109,8 +109,8 @@ export function SetGuidePage() {
         <div>
           <h1 className={pageStyles.h1}>Find a set to play</h1>
           <p className={pageStyles.lede}>
-            {sets ? `${sets.length} sets` : 'Every set'} are ready for sealed and draft. Each plays differently — compare their
-            power, speed and complexity, and read what they are about.
+            {sets ? `${sets.length} sets` : 'Every set'} are ready for sealed and draft. Each plays differently — see how its games
+            unfold, what wins them and what its mechanics do, and compare power, speed and complexity.
           </p>
         </div>
         <Link to="/set-completion" className={styles.introLink}>
@@ -166,7 +166,7 @@ export function SetGuidePage() {
           ))}
           <span className={styles.filterDivider} aria-hidden />
           {SET_THEMES.map((t) => (
-            <button key={t.id} type="button" className={styles.filterChip} data-kind="theme" aria-pressed={themes.has(t.id)} onClick={() => toggle(setThemes, t.id)}>
+            <button key={t.id} type="button" className={styles.filterChip} data-kind="theme" title={t.hint} aria-pressed={themes.has(t.id)} onClick={() => toggle(setThemes, t.id)}>
               {t.label}
             </button>
           ))}
@@ -291,8 +291,9 @@ function SetTile({
       {p ? (
         <>
           <p className={styles.tagline}>{p.tagline}</p>
+          <TryIf text={p.tryIf} compact />
           <RatingMeters profile={p} compact />
-          <MechanicChips mechanics={p.mechanics} single />
+          <ThemeTags themes={p.themes} single />
         </>
       ) : (
         <p className={`${styles.tagline} ${pageStyles.muted}`}>No guide written yet.</p>

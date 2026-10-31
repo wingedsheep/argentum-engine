@@ -209,6 +209,12 @@ class Strategist(
      */
     private val fetchedLandDropFollowUp: Boolean = false,
     /**
+     * [AiProfile.recastBouncedPermanents] — a line that returns one of our permanents to our hand
+     * scores as at least recasting it, and a self-bounce aims where that recast is worth most. See
+     * [bouncedPermanentFollowUps] and [bestReplayOfBounced].
+     */
+    private val recastBouncedPermanents: Boolean = false,
+    /**
      * [AiProfile.precombatPumpsForThePlan] — in our precombat main, a pump that changes who the
      * attack plan sends is priced by the attack it buys. See [pumpThatBuysTheAttack].
      */
@@ -448,6 +454,10 @@ class Strategist(
             if (fetchedLandDropFollowUp && !forcedPlay) {
                 addAll(fetchedLandFollowUps(evaluationState, leaves, leafStates, playerId, budget))
             }
+            // ── Pass 1e: the permanent a line returns to our hand, cast again — see [bouncedPermanentFollowUps] ──
+            if (recastBouncedPermanents && !forcedPlay) {
+                addAll(bouncedPermanentFollowUps(evaluationState, leaves, leafStates, playerId, budget))
+            }
         }
 
         // ── Pass 2: score every leaf at once ──
@@ -498,6 +508,7 @@ class Strategist(
             val adjustment = if (unlocked != null && unlocked.second.score > own.score) {
                 val name = resolveCardName(leafStates[i], unlocked.first.action) ?: "a spell"
                 val why = when {
+                    unlocked.first.note != null -> unlocked.first.note
                     leaves[i].action is PlayLand -> "land first: unlocks"
                     unlocked.first.action.action is PlayLand -> "then plays"
                     else -> "first: discounts"
@@ -1207,6 +1218,8 @@ class Strategist(
          * there too — set only by [enablerFollowUps], whose pair is then priced against it.
          */
         val sibling: Int? = null,
+        /** How the panel names the pair, when the default wording for its shape would mislabel it. */
+        val note: String? = null,
     )
 
     /**
@@ -1375,6 +1388,88 @@ class Strategist(
             }
         }
         return followUps
+    }
+
+    /**
+     * For each non-land leaf, casting again the permanent it returned from our battlefield to our
+     * hand — [AiProfile.recastBouncedPermanents].
+     *
+     * The search is one action deep, so "return target permanent you control to its owner's hand"
+     * is scored as a permanent lost and a card gained, never as the enters-the-battlefield trigger
+     * that recasting it buys. The misplay (Rescue Girl, First Responder, reported from live games):
+     * the AI tapped her to return its own Island while Mindseeker Oculus — "when this creature
+     * enters, empower Jace 4" — sat beside it with the mana to recast it.
+     *
+     * Same shape as [fetchedLandFollowUps]: our own main phase, a quiet leaf where we still hold
+     * priority, and only cards that were on our battlefield at the root. A returned land is left to
+     * that pass; this one follows spells. Stops when the budget does.
+     */
+    private fun bouncedPermanentFollowUps(
+        root: GameState,
+        leaves: List<LegalAction>,
+        leafStates: List<GameState>,
+        playerId: EntityId,
+        budget: DecisionBudget,
+    ): List<LandFollowUp> {
+        val followUps = mutableListOf<LandFollowUp>()
+        for (i in leaves.indices) {
+            if (budget.expired()) return followUps
+            val action = leaves[i].action
+            if (action is PlayLand || action is PassPriority) continue
+            val after = leafStates[i]
+            val recasts = replaysOfBounced(root, after, playerId).filter { it.action is CastSpell }
+            if (recasts.isEmpty()) continue
+            val here = StateProgress.digest(after)
+            for (recast in recasts) {
+                if (budget.expired()) return followUps
+                val (materialized, simulation) = materialize(after, recast, playerId, budget, here)
+                if (simulation is SimulationResult.Illegal || simulation is SimulationResult.StoppedAtLimit) continue
+                followUps += LandFollowUp(i, recast.copy(action = materialized), simulation.state, note = "then recasts")
+            }
+        }
+        return followUps
+    }
+
+    /**
+     * The best static score among the plays that put back what [leaf] returned from our
+     * battlefield to our hand — a land played again, a permanent spell recast — or
+     * `-Infinity` when there is none. [chooseCommittedTargets] takes it over the leaf's own score,
+     * so a self-bounce aims at the permanent whose return is worth most rather than the one whose
+     * loss costs least: Mindseeker Oculus to recast for its trigger, not the Island that only
+     * comes back as the same Island, nor a Jace token that would cease to exist. Targets of the
+     * replay are the heuristic pick: this runs inside target refinement and must stay cheap.
+     */
+    private fun bestReplayOfBounced(root: GameState, leaf: GameState, playerId: EntityId): Double =
+        replaysOfBounced(root, leaf, playerId).maxOfOrNull { replay ->
+            val action = if (replay.action is PlayLand) replay.action else heuristicTargets(leaf, replay, playerId)
+            simulator.simulate(leaf, action).scoreOrRankLast { after ->
+                evaluator.evaluate(after, after.projectedState, playerId)
+            }
+        } ?: Double.NEGATIVE_INFINITY
+
+    /**
+     * The affordable land plays and spell casts, from [leaf], of cards that were on [playerId]'s
+     * battlefield at [root] and are in their hand at [leaf]. Empty outside our own main phase with
+     * an empty stack, or when [leaf] is not a quiet position where we hold priority.
+     */
+    private fun replaysOfBounced(root: GameState, leaf: GameState, playerId: EntityId): List<LegalAction> {
+        if (!root.isActiveTurnFor(playerId) || root.stack.isNotEmpty()) return emptyList()
+        if (root.step != Step.PRECOMBAT_MAIN && root.step != Step.POSTCOMBAT_MAIN) return emptyList()
+        if (leaf.pendingDecision != null || leaf.stack.isNotEmpty() ||
+            leaf.step != root.step || leaf.priorityPlayerId != playerId
+        ) return emptyList()
+        val wasOurs = root.getBattlefield(playerId).toHashSet()
+        val returned = leaf.getZone(ZoneKey(playerId, Zone.HAND)).filterTo(HashSet()) { it in wasOurs }
+        if (returned.isEmpty()) return emptyList()
+        return candidatesFrom(simulator.getLegalActions(leaf, playerId)).filter { replay ->
+            val cardId = when (val action = replay.action) {
+                is CastSpell -> action.cardId
+                is PlayLand -> action.cardId
+                else -> return@filter false
+            }
+            cardId in returned && !replay.hasUnfillableTargetRequirement &&
+                !(targetPolarityFromEffect && TargetSelection.aimsOnlyAtTheWrongSide(leaf, replay, playerId, intents))
+        }
     }
 
     /** The mana value of an enumerated cast's price, or null when it has none to compare (X). */
@@ -1679,7 +1774,8 @@ class Strategist(
                     if (StateProgress.digest(leaf) == here) {
                         Double.NEGATIVE_INFINITY
                     } else {
-                        evaluator.evaluate(leaf, leaf.projectedState, playerId)
+                        val direct = evaluator.evaluate(leaf, leaf.projectedState, playerId)
+                        if (recastBouncedPermanents) maxOf(direct, bestReplayOfBounced(state, leaf, playerId)) else direct
                     }
                 }
             } ?: continue

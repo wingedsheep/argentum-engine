@@ -858,12 +858,12 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     section: 'limited',
     title: 'Choosing a set: the Set guide',
     summary:
-      'Set guide, in the home screen’s top bar, lists every set that is fully playable for sealed and draft, with what it is about, how it plays, and power, speed and complexity ratings to compare them by. The play screen links to it under its set choice.',
+      'Set guide, in the home screen’s top bar, lists every set that is fully playable for sealed and draft, with how its games play, what wins them, and power, speed and complexity ratings to compare them by. The play screen links to it under its set choice.',
     body: [
-      { kind: 'p', text: 'Each set has a short summary on its tile — what it is about, how it plays and what makes it special — and three five-step meters. The ratings compare the sets here with each other as Limited formats, not with Magic as a whole: Power is how strong the cards are, Speed how quickly games tend to end, Complexity how much there is to keep track of.' },
+      { kind: 'p', text: 'Each set has a short summary on its tile — how a game of it feels and what decides it — a “Try it if you like” line, three five-step meters and its theme tags. The ratings compare the sets here with each other as Limited formats, not with Magic as a whole: Power is how strong the cards are, Speed how quickly games tend to end, Complexity how much there is to keep track of.' },
       { kind: 'ul', items: [
-        'Quick filters answer the usual questions — Easy to learn, Fast & aggressive, Slow & grindy, High power, Before 2008 — and theme chips narrow it to sets built around creature types, graveyards, spells, artifacts and so on. Search also matches mechanics, so `foretell` finds Kaldheim.',
-        'Click a set to read about it up close: the world, how its games play, its mechanics and its draft archetypes.',
+        'Quick filters answer the usual questions — Easy to learn, Fast & aggressive, Slow & grindy, High power, Before 2008 — and theme chips narrow it to sets built around creature types, graveyards, spells, artifacts and so on. Search also matches mechanics and tips, so `foretell` finds Kaldheim. Hover a theme tag or mechanic to see what it means for a game.',
+        'Click a set to read about it up close: how its games play, three tips for drafting and playing it, what each of its mechanics does to a game, its draft archetypes, and a line on its world.',
         '+ Compare on up to four sets, then Compare, puts them side by side. The address bar keeps the comparison, so it can be shared.',
         'Map lays every set out by speed and complexity, coloured by power, for a feel of the whole catalogue at once.',
       ] },

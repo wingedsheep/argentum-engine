@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- #4085 Returning its own permanent to hand (Rescue Girl, First Responder) now picks the permanent worth recasting, like an enters-trigger creature, instead of a land or a token, and counts that recast as the reason to activate
 - #4019 Facing a constructed deck with no single-set identity (a Standard deck spread over many sets), builds a fresh deck for the format that deck was built for — the one its saved or starter deck declares, else the narrowest of Standard to Vintage it is legal in — instead of a 40-card sealed pool from a random set; a deck from one or a few sets is still answered out of those sets, now to its declared format
 - #3967 Drafts with the Draftsim scorer and set ratings its deckbuilder already uses, instead of a rarity-and-keyword heuristic that took weak rares over premium common removal; cards of a set with no ratings file are rated from their abilities rather than by rarity alone, for picks and for the Draftsim deckbuild
 - #3968 Builds a 100-card singleton deck for Highlander and Canadian Highlander lobbies (leaving points-list cards out of the Canadian build) instead of a 60-card four-of list

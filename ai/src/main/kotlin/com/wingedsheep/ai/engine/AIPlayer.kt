@@ -357,6 +357,7 @@ class AIPlayer(
                     activatedPumpsNeedAPlannedAttack = profile.activatedPumpsNeedAPlannedAttack,
                     enablersFirst = profile.enablersFirst,
                     fetchedLandDropFollowUp = profile.fetchedLandDropFollowUp,
+                    recastBouncedPermanents = profile.recastBouncedPermanents,
                     precombatPumpsForThePlan = profile.precombatPumpsForThePlan,
                     holdInstantSpeedDeploys = profile.holdInstantSpeedDeploys,
                     taxCountersReadTheirMana = profile.taxCountersReadTheirMana,

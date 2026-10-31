@@ -32,11 +32,13 @@ describe('setGuideModel', () => {
     expect(codes(sortGuideSets(sets, 'newest'))).toEqual(['ZZZ', 'BLB', 'MH3', 'POR'])
   })
 
-  it('profiles use only known themes and in-range ratings', () => {
+  it('profiles use only known themes, in-range ratings and three tips', () => {
     const known = new Set(SET_THEMES.map((t) => t.id))
     for (const [code, p] of Object.entries(SET_PROFILES)) {
       expect(p.themes.every((t) => known.has(t)), code).toBe(true)
       expect(p.mechanics.length, code).toBeGreaterThan(0)
+      expect(p.tips.length, code).toBe(3)
+      expect(p.gameplay.length, code).toBeGreaterThan(0)
       for (const r of [p.power, p.speed, p.complexity]) expect(r >= 1 && r <= 5, code).toBe(true)
     }
   })

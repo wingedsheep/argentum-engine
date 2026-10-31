@@ -210,6 +210,7 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 /* One line, clipped at the last chip that fits whole: the wrapped rows collapse to zero height. */
+.chip[title] { cursor: help; }
 .chips[data-single='true'] { margin-top: auto; max-height: 26px; overflow: hidden; }
 .pips { display: inline-flex; gap: 2px; vertical-align: -2px; }
 
@@ -397,7 +398,70 @@
   text-transform: uppercase;
   color: #8f98ac;
 }
-.prose p.tryIf { font-style: italic; color: #fbe2bd; }
+.tryIf {
+  margin: 10px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(242, 180, 92, 0.35);
+  border-left: 3px solid #f2b45c;
+  background: rgba(242, 180, 92, 0.1);
+}
+.tryIfLabel { font-size: 10.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #f2b45c; }
+.tryIfText { font-size: 15px; line-height: 1.4; color: #fbe2bd; }
+.tryIfText::first-letter { text-transform: uppercase; }
+.tryIf[data-compact='true'] { margin: 0; padding: 7px 10px; }
+.tryIf[data-compact='true'] .tryIfText { font-size: 13.5px; }
+.compareTryIf { color: #fbe2bd; }
+.compareTryIf::first-letter { text-transform: uppercase; }
+.themeTag {
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #dcd6f7;
+  background: rgba(169, 156, 240, 0.12);
+  border: 1px solid rgba(169, 156, 240, 0.3);
+  cursor: help;
+}
+
+.tips { margin: 0; padding: 0; list-style: none; counter-reset: tip; display: flex; flex-direction: column; gap: 10px; }
+.tips li {
+  counter-increment: tip;
+  position: relative;
+  padding-left: 34px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: #d5dae6;
+}
+.tips li::before {
+  content: counter(tip);
+  position: absolute;
+  left: 0;
+  top: 1px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fbe2bd;
+  background: rgba(242, 180, 92, 0.14);
+  border: 1px solid rgba(242, 180, 92, 0.4);
+}
+
+.mechanicList { margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+.mechanicItem {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+.mechanicItem dt { font-size: 13.5px; font-weight: 600; color: #eef0f6; margin-bottom: 3px; }
+.mechanicItem dd { margin: 0; font-size: 13px; line-height: 1.45; color: #a9b1c3; }
 .factsAside { display: flex; flex-direction: column; gap: 18px; }
 .themeLine { margin: 0; font-size: 13px; color: #c9cfdc; line-height: 1.5; }
 
@@ -480,6 +544,7 @@
 }
 .compareRemove:hover { color: #fff; text-decoration: underline; }
 .compareTagline { color: #eef0f6; }
+.compareProse { font-size: 13px; line-height: 1.5; color: #c9cfdc; }
 .compareArchetypes { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 3px; font-size: 12.5px; }
 
 /* ── Lobby set picker preview ──────────────────────────────────────────── */

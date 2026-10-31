@@ -968,6 +968,27 @@ data class AiProfile(
      */
     val fetchedLandDropFollowUp: Boolean = false,
     /**
+     * Credit a line that **returns one of our own permanents to our hand** with casting it again
+     * the same turn, and aim such a self-bounce at the permanent whose recast is worth most.
+     *
+     * Reported from live games: Rescue Girl, First Responder ("{T}: Return another target
+     * permanent you control to its owner's hand") kept returning the AI's own Island while
+     * Mindseeker Oculus ("when this creature enters, empower Jace 4") sat beside it. The search is
+     * one action deep, so target refinement scored each pick as "this permanent gone, its card in
+     * hand" and chose whatever was cheapest to lose — an Island, or even a Jace token, which ceases
+     * to exist in hand — never the enters trigger that recasting the Oculus buys.
+     *
+     * Two parts, one idea — a bounced permanent is worth what putting it back buys:
+     *  - Target refinement scores a candidate as the better of its own leaf and the best replay of
+     *    what it returned (a land played again, a permanent spell recast, heuristic targets).
+     *  - `Strategist` adds the recast as a follow-up of the bouncing leaf, adjusted as its own
+     *    decision would be — the credit [fetchedLandDropFollowUp] gives a returned land.
+     *
+     * Our own main phase only, from a quiet leaf where we still hold priority, and only for cards
+     * that were on our battlefield before the line.
+     */
+    val recastBouncedPermanents: Boolean = false,
+    /**
      * In our own precombat main, price a **pump that changes who attacks** by the attack it buys.
      *
      * PR #3211's known gap. [HoldPolicy] holds a combat trick out of the main phase and
@@ -2221,6 +2242,7 @@ data class AiProfile(
             holdInstantSpeedDeploys = true,
             enablersFirst = true,
             fetchedLandDropFollowUp = true,
+            recastBouncedPermanents = true,
             precombatPumpsForThePlan = true,
             spendFuelWalkers = true,
             walkersPricedAsEngines = true,
