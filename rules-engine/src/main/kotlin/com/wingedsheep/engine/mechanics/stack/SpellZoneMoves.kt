@@ -38,7 +38,7 @@ internal object SpellZoneMoves {
      * [PlottedComponent] + [PlayWithoutPayingCostComponent], grant a permanent may-play
      * permission gated on [SourcePlottedOnPriorTurn] (a plotted card can't be cast the turn it
      * was plotted), and emit [CardPlottedEvent]. Shared by [ExileTargetSpellEffect]'s
-     * `makePlotted` path and the [AfterResolveDestinationComponent].`makePlotted` self-cast path
+     * `makePlotted` path and the [AfterResolveDestinationComponent] `ExiledSpellRider.BECOMES_PLOTTED` self-cast path
      * (Lilah, Undefeated Slickshot).
      */
     fun applyPlottedToExiledCard(

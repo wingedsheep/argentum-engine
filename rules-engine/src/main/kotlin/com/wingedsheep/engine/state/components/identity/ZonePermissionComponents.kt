@@ -284,11 +284,13 @@ data class PlayWithFixedAlternativeManaCostComponent(
  *   it actually lands in exile, so the UI can show the exiled cards tethered under
  *   the source permanent (e.g. Goliath Daydreamer's "exile that card with a dream
  *   counter on it" pile). Only applied when the spell actually resolves into exile.
- * @param makePlotted When true, the card becomes *plotted* (CR 718) for its owner once it lands
- *   in exile — the same effect as [com.wingedsheep.sdk.scripting.effects.MakePlottedEffect], but
- *   applied to a self-cast spell as it resolves rather than to a targeted spell. Used by Lilah,
- *   Undefeated Slickshot: "exile that spell instead of putting it into your graveyard as it
- *   resolves. If you do, it becomes plotted." Only applied when the card actually lands in exile.
+ * @param exiledRider What happens to the card once it lands in exile as the spell resolves
+ *   ([com.wingedsheep.sdk.scripting.effects.MarkSpellExileOnResolveEffect]): it becomes *plotted*
+ *   (CR 718) for its owner (Lilah, Undefeated Slickshot), or a delayed trigger returns it to its
+ *   owner's hand at the beginning of the next end step (Feather, the Redeemed). Only applied when the
+ *   card actually lands in exile.
+ * @param exiledRiderControllerId Who controls the ability that set [exiledRider] — the controller of
+ *   the delayed return trigger. Falls back to the spell's caster when null.
  * @param everyStackExit When true, the rider covers *every* way the spell leaves the stack, not just
  *   the graveyard-bound ones — a bounce to hand or a put-into-library is sent to [destination] too.
  *   That is the "instead of putting it anywhere else any time it would leave the stack" clause of
@@ -307,7 +309,8 @@ data class AfterResolveDestinationComponent(
      */
     val onlyIfResolved: Boolean = false,
     val linkedSourceId: EntityId? = null,
-    val makePlotted: Boolean = false,
+    val exiledRider: com.wingedsheep.sdk.scripting.effects.ExiledSpellRider? = null,
+    val exiledRiderControllerId: EntityId? = null,
     val everyStackExit: Boolean = false
 ) : Component {
     /** The zone [destination] names — the two members differ in placement, not only in zone. */

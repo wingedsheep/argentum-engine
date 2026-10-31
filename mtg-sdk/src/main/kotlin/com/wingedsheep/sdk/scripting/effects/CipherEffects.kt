@@ -17,7 +17,7 @@ import kotlinx.serialization.Serializable
  *
  * Closest existing types, and why neither takes the axis — both also mark a spell for its
  * resolution destination:
- *  - [MarkSpellPlotOnResolveEffect] marks a *target* spell to be exiled and plotted *instead of
+ *  - [MarkSpellExileOnResolveEffect] marks a *target* spell to be exiled (then plotted, or returned) *instead of
  *    going to the graveyard*, and hands out a cast permission; cipher's exile is the resolving
  *    spell's own last instruction (not a graveyard replacement, so rebound and graveyard riders
  *    don't apply) and leaves a link to a chosen creature that gains an ability.

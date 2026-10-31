@@ -1815,16 +1815,17 @@ object Effects {
     )
 
     /**
-     * Mark a spell on the stack so that it is exiled and becomes *plotted* (CR 718) instead of
-     * being put into its owner's graveyard when it resolves. Sibling of
-     * [MarkSpellExileWithCounters] for triggered abilities that read like a replacement effect,
-     * e.g. Lilah, Undefeated Slickshot's "exile that spell instead of putting it into your
-     * graveyard as it resolves. If you do, it becomes plotted." The plot designation is granted
-     * only if the spell actually resolves into exile (not if it is countered or fizzles).
+     * Mark a spell on the stack so that it is exiled instead of being put into its owner's
+     * graveyard as it resolves, and then [then] happens to the exiled card. Sibling of
+     * [MarkSpellExileWithCounters] for triggered abilities that read like a replacement effect —
+     * Lilah, Undefeated Slickshot ("If you do, it becomes plotted"), Feather, the Redeemed ("If you
+     * do, return it to your hand at the beginning of the next end step"). Nothing happens if the
+     * spell is countered or fizzles.
      */
-    fun MarkSpellPlotOnResolve(
+    fun MarkSpellExileOnResolve(
+        then: com.wingedsheep.sdk.scripting.effects.ExiledSpellRider,
         target: EffectTarget = EffectTarget.TriggeringEntity,
-    ): Effect = com.wingedsheep.sdk.scripting.effects.MarkSpellPlotOnResolveEffect(target = target)
+    ): Effect = com.wingedsheep.sdk.scripting.effects.MarkSpellExileOnResolveEffect(target = target, then = then)
 
     /**
      * Put onto the battlefield.

@@ -44,7 +44,7 @@ class StackExecutors(
         ChangeTriggeringObjectTargetsExecutor(targetFinder = targetFinder),
         GrantKeywordToSpellExecutor(),
         MarkSpellExileWithCountersExecutor(),
-        MarkSpellPlotOnResolveExecutor(),
+        MarkSpellExileOnResolveExecutor(),
         EncodeOnCreatureExecutor(),
         ReturnSpellToOwnersHandExecutor(),
         ReturnSpellOrPermanentToOwnersHandExecutor(zones, cardRegistry, targetFinder = targetFinder),

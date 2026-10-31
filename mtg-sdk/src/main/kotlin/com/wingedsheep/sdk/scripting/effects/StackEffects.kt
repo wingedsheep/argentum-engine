@@ -1566,28 +1566,60 @@ data class MarkSpellExileWithCountersEffect(
 }
 
 /**
- * Mark a spell on the stack so that, when it resolves, it is exiled instead of put into its
- * owner's graveyard and **becomes plotted** (CR 718). The plot designation and free-cast-on-a-
- * later-turn permission are granted only if the spell actually resolves into exile — if it is
- * countered or otherwise fails to resolve, it goes to the graveyard normally (sibling of
- * [MarkSpellExileWithCountersEffect], which carries the same `onlyIfResolved` semantics).
+ * Mark a spell on the stack so that, **as it resolves**, it is exiled instead of put into its
+ * owner's graveyard, and then [then] happens to the exiled card. Both halves apply only if the
+ * spell actually resolves into exile — if it is countered or otherwise fails to resolve, it goes to
+ * its owner's graveyard normally and nothing follows (the `onlyIfResolved` semantics shared with
+ * [MarkSpellExileWithCountersEffect]; the "If you do" of every card that uses it).
  *
- * Distinct from [ExileTargetSpellEffect]`(makePlotted = true)`: that one targets and removes a
- * spell from the stack *now* (a non-counter removal); this one lets the spell resolve fully and
- * only re-routes its post-resolution destination. Used by Lilah, Undefeated Slickshot: "exile
- * that spell instead of putting it into your graveyard as it resolves. If you do, it becomes
- * plotted."
+ * Distinct from [ExileTargetSpellEffect]: that one removes a spell from the stack *now* (a
+ * non-counter removal, the spell never resolves); this one lets the spell resolve fully and only
+ * re-routes its post-resolution destination. Distinct from [MarkSpellExileWithCountersEffect],
+ * whose follow-up is counters on the card plus a link to the marking source.
+ *
+ * Used by Lilah, Undefeated Slickshot ("exile that spell instead of putting it into your graveyard
+ * as it resolves. If you do, it becomes plotted." — [ExiledSpellRider.BECOMES_PLOTTED]) and
+ * Feather, the Redeemed ("exile that card instead of putting it into your graveyard as it
+ * resolves. If you do, return it to your hand at the beginning of the next end step." —
+ * [ExiledSpellRider.RETURN_TO_HAND_AT_NEXT_END_STEP]).
  *
  * @property target The spell on the stack to mark (typically the triggering entity).
+ * @property then What happens to the card once it lands in exile.
  */
-@SerialName("MarkSpellPlotOnResolve")
+@SerialName("MarkSpellExileOnResolve")
 @Serializable
-data class MarkSpellPlotOnResolveEffect(
+data class MarkSpellExileOnResolveEffect(
     val target: com.wingedsheep.sdk.scripting.targets.EffectTarget = com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity,
+    val then: ExiledSpellRider,
 ) : Effect {
     override val description: String =
-        "Exile that spell instead of putting it into your graveyard as it resolves. " +
-            "If you do, it becomes plotted"
+        "Exile that spell instead of putting it into your graveyard as it resolves. If you do, ${then.riderText}"
+}
+
+/**
+ * What follows when a spell marked by [MarkSpellExileOnResolveEffect] lands in exile as it resolves.
+ */
+@Serializable
+enum class ExiledSpellRider {
+    /**
+     * The card becomes *plotted* for its owner (CR 718): it may be cast as a sorcery on a later turn
+     * without paying its mana cost.
+     */
+    BECOMES_PLOTTED,
+
+    /**
+     * A delayed triggered ability returns the card from exile to its owner's hand at the beginning
+     * of the next end step. It follows that exiled object only (CR 400.7): if the card has left exile
+     * by then, it stays where it is.
+     */
+    RETURN_TO_HAND_AT_NEXT_END_STEP;
+
+    /** The printed "If you do, …" sentence. */
+    val riderText: String
+        get() = when (this) {
+            BECOMES_PLOTTED -> "it becomes plotted"
+            RETURN_TO_HAND_AT_NEXT_END_STEP -> "return it to your hand at the beginning of the next end step"
+        }
 }
 
 // =============================================================================

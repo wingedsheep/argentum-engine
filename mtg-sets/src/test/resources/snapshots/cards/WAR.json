@@ -2635,6 +2635,89 @@
     ]
 }
 
+// Feather, the Redeemed
+{
+    "name": "Feather, the Redeemed",
+    "manaCost": "{R}{W}{W}",
+    "typeLine": "Legendary Creature — Angel",
+    "oracleText": "Flying\nWhenever you cast an instant or sorcery spell that targets a creature you control, exile that card instead of putting it into your graveyard as it resolves. If you do, return it to your hand at the beginning of the next end step.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Feather, the Redeemed:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    },
+                    "requires": [
+                        {
+                            "type": "SpellTargetsMatching",
+                            "filter": "creature ctrl:you"
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MarkSpellExileOnResolve",
+                    "then": "RETURN_TO_HAND_AT_NEXT_END_STEP"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "197",
+        "rarity": "RARE",
+        "artist": "Wayne Reynolds",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/4/e4a2d2c6-8eaa-4760-b620-921b807baa2e.jpg?1783933396",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "If Feather is still on the battlefield as you finish casting an instant or sorcery spell that targets one or more creatures you control, its ability triggers. The replacement effect that exiles that spell and the delayed triggered ability that returns it to your hand both take effect even if Feather leaves the battlefield after this point."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "The spell may have any other targets in addition to a creature you control."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "If an instant or sorcery spell you cast that targets your creature doesn't resolve for any reason (either because another spell or ability counters it or because all its targets are illegal as it tries to resolve), it won't be exiled. You won't return it to your hand."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "If an instant or sorcery spell's own instructions tell you to exile it or put it anywhere else, it won't try to be put into your graveyard or exiled with Feather's effect, so you won't return it to your hand."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "If another replacement effect instructs you to exile an instant or sorcery spell, such as that of Dreadhorde Arcanist or the flashback keyword, you may choose to apply Feather's replacement effect first. If you do, Feather's delayed triggered ability will return that card to your hand."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "If you cast an instant or sorcery spell that you don't own, it won't try to be put into your graveyard, so you won't exile it with Feather's effect or return it to your hand."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Finale of Devastation
 {
     "name": "Finale of Devastation",

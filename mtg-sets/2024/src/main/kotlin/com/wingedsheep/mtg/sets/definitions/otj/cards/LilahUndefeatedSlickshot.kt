@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.effects.ExiledSpellRider
 import com.wingedsheep.sdk.scripting.events.SpellCastPredicate
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -25,7 +26,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *   trigger).
  * - The second ability is a triggered ability shaped exactly like Goliath Daydreamer's
  *   "exile that card … instead of putting it into your graveyard as it resolves" — it marks the
- *   triggering spell with [Effects.MarkSpellPlotOnResolve] (the plot sibling of
+ *   triggering spell with [Effects.MarkSpellExileOnResolve] (`BECOMES_PLOTTED`; sibling of
  *   MarkSpellExileWithCounters). The spell resolves fully; only its post-resolution destination is
  *   re-routed to exile, where it becomes plotted for its owner. Per the engine's `onlyIfResolved`
  *   semantics, if the spell is countered or otherwise fails to resolve it goes to the graveyard
@@ -47,7 +48,7 @@ val LilahUndefeatedSlickshot = card("Lilah, Undefeated Slickshot") {
 
     triggeredAbility {
         trigger = Triggers.you.casts(GameObjectFilter.InstantOrSorcery and GameObjectFilter.Multicolored, requires = setOf(SpellCastPredicate.CastFromZone(Zone.HAND)))
-        effect = Effects.MarkSpellPlotOnResolve(target = EffectTarget.TriggeringEntity)
+        effect = Effects.MarkSpellExileOnResolve(ExiledSpellRider.BECOMES_PLOTTED, target = EffectTarget.TriggeringEntity)
         description = "Whenever you cast a multicolored instant or sorcery spell from your hand, " +
             "exile that spell instead of putting it into your graveyard as it resolves. It becomes plotted."
     }

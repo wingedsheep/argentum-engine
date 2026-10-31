@@ -2612,6 +2612,7 @@ Chandra, Acolyte of Flame	intent: CastFromCollectionWithoutPayingCostEffect; int
 Chandra, Awakened Inferno	intent: ForEach>CreateGlobalTriggeredAbilityEffect
 Chandra, Chill of Compliance	intent: CreateGlobalTriggeredAbilityEffect; intent: EmitSurveiledEventEffect; intent: Pipeline(TopOfLibrary→graveyard|hand|library)
 Chandra, Dressed to Kill	intent: CreateGlobalTriggeredAbilityEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Chandra, Fire Artisan	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Chandra, Flame's Catalyst	intent: CastFromCollectionWithoutPayingCostEffect; intent: DealDamageEffect; intent: Pipeline(ChosenTargets→?); polarity: CastFromCollectionWithoutPayingCostEffect; polarity: Pipeline(ChosenTargets→?)
 Chandra, Flame's Fury
 Chandra, Flameshaper	polarity: CreateTokenCopyOfTargetEffect; polarity: DividedDamageEffect
@@ -5472,6 +5473,7 @@ Feaster of Fools
 Feasting Troll King
 Feat of Resistance
 Feather of Flight
+Feather, the Redeemed	intent: MarkSpellExileOnResolveEffect
 Featherbrained Filcher
 Fecund Greenshell	intent: Pipeline(TopOfLibrary→battlefield|hand)
 Federation Probe
@@ -9356,7 +9358,7 @@ Lightstall Inquisitor	intent: ForEach>GrantMayPlayFromExileEffect; intent: ForEa
 Lightwheel Enhancements
 Lignify
 Likeness Looter	intent: EachPermanentBecomesCopyOfTargetEffect; polarity: EachPermanentBecomesCopyOfTargetEffect
-Lilah, Undefeated Slickshot	intent: MarkSpellPlotOnResolveEffect
+Lilah, Undefeated Slickshot	intent: MarkSpellExileOnResolveEffect
 Liliana Vess	intent: Pipeline(graveyard→battlefield); intent: Pipeline(hand→graveyard); polarity: Pipeline(hand→graveyard)
 Liliana of the Dark Realms	intent: ChooseActionEffect; intent: CreatePermanentEmblemEffect; polarity: ChooseActionEffect
 Liliana of the Veil	intent: ChoosePileEffect; intent: ForEach>Pipeline(hand→graveyard); intent: Pipeline(ControlledPermanents→graveyard); polarity: ForceSacrificeEffect; polarity: Pipeline(ControlledPermanents→graveyard)
@@ -18003,6 +18005,7 @@ Vivien's Arkbow	intent: Pipeline(TopOfLibrary→battlefield|library)
 Vivien's Crocodile
 Vivien's Jaguar
 Vivien, Arkbow Ranger	intent: Pipeline(sideboard→hand); polarity: DealDamageEffect
+Vivien, Champion of the Wilds	intent: GrantKeywordEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile|library)
 Vivien, Monsters' Advocate	intent: CreateDelayedTriggerEffect
 Vivisection
 Vivisection Evangelist

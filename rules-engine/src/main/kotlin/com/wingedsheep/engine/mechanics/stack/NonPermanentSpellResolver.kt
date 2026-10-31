@@ -481,6 +481,12 @@ internal class NonPermanentSpellResolver(
         val reboundExile: Boolean,
         /** Time counters the card's own "exile with N time counters" clause puts on it (0 = none). */
         val selfSuspendCounters: Int,
+        /**
+         * Whether a [AfterResolveDestinationComponent.exiledRider]'s "If you do, …" follows: only when
+         * the rider really replaced a trip to the graveyard. A spell whose own instructions exile it
+         * (or shuffle it away) was never headed for a graveyard, so nothing follows.
+         */
+        val exiledRiderFollows: Boolean,
     )
 
     /**
@@ -582,6 +588,7 @@ internal class NonPermanentSpellResolver(
             selfShuffleIntoLibrary = selfShuffleIntoLibrary,
             reboundExile = reboundExile,
             selfSuspendCounters = if (intendedDestination == Zone.EXILE && !cipherExile) selfSuspendCounters else 0,
+            exiledRiderFollows = exileAfterResolveComp != null && !selfExile && !selfShuffleIntoLibrary,
         )
     }
 
@@ -698,10 +705,24 @@ internal class NonPermanentSpellResolver(
             newState = applyExileCounters(newState, spellId, exileAfterResolveComp.withCounters, events)
         }
 
-        // Make the exiled card plotted (Lilah, Undefeated Slickshot): "exile that spell instead of
-        // putting it into your graveyard as it resolves. If you do, it becomes plotted."
-        if (destinationZone == Zone.EXILE && exileAfterResolveComp?.makePlotted == true) {
-            newState = SpellZoneMoves.applyPlottedToExiledCard(newState, spellId, ownerId, cardComponent?.name ?: "Unknown", events)
+        // "Exile that spell instead of putting it into your graveyard as it resolves. If you do, …"
+        // (MarkSpellExileOnResolveEffect): the follow-up applies only once the card is in exile.
+        if (destinationZone == Zone.EXILE && destination.exiledRiderFollows) {
+            when (exileAfterResolveComp?.exiledRider) {
+                // Lilah, Undefeated Slickshot: "If you do, it becomes plotted."
+                com.wingedsheep.sdk.scripting.effects.ExiledSpellRider.BECOMES_PLOTTED ->
+                    newState = SpellZoneMoves.applyPlottedToExiledCard(
+                        newState, spellId, ownerId, cardComponent?.name ?: "Unknown", events
+                    )
+                // Feather, the Redeemed: "If you do, return it to your hand at the beginning of the
+                // next end step."
+                com.wingedsheep.sdk.scripting.effects.ExiledSpellRider.RETURN_TO_HAND_AT_NEXT_END_STEP ->
+                    newState = scheduleEndStepReturnToHand(
+                        newState, spellId, exileAfterResolveComp.exiledRiderControllerId ?: ownerId,
+                        cardComponent?.name ?: "Unknown"
+                    )
+                null -> Unit
+            }
         }
 
         // Link the exiled spell back to the source permanent (Goliath Daydreamer)
@@ -852,6 +873,44 @@ internal class NonPermanentSpellResolver(
                 ),
                 sourceName = sourceName,
                 controllerId = casterId,
+            )
+        )
+    }
+
+    /**
+     * Schedule [com.wingedsheep.sdk.scripting.effects.ExiledSpellRider.RETURN_TO_HAND_AT_NEXT_END_STEP]'s
+     * delayed triggered ability: at the beginning of the next end step (this turn's, unless this
+     * turn's end step has already begun), return the just-exiled card to its owner's hand. The trigger captures the
+     * card's exile object, so if the card leaves exile before then it is a new object (CR 400.7) and
+     * stays where it is. It is consumed the first time it fires.
+     */
+    private fun scheduleEndStepReturnToHand(
+        state: GameState,
+        exiledCardId: EntityId,
+        controllerId: EntityId,
+        sourceName: String
+    ): GameState {
+        val (triggerId, allocatedState) = state.newRoutingId()
+        return allocatedState.addDelayedTrigger(
+            com.wingedsheep.engine.event.DelayedTriggeredAbility(
+                id = triggerId,
+                effect = com.wingedsheep.sdk.dsl.Effects.Move(
+                    com.wingedsheep.sdk.scripting.targets.EffectTarget.Self, Zone.HAND, fromZone = Zone.EXILE
+                ),
+                fireAtStep = com.wingedsheep.sdk.core.Step.END,
+                // Resolved during an end step (or cleanup): this turn's end step has already
+                // begun, so "the next end step" is next turn's.
+                notBeforeTurn = if (state.step == com.wingedsheep.sdk.core.Step.END ||
+                    state.step == com.wingedsheep.sdk.core.Step.CLEANUP
+                ) state.turnNumber + 1 else null,
+                sourceId = exiledCardId,
+                objectReferences = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(
+                    captured = true,
+                    origin = state.objectRef(exiledCardId),
+                    source = state.objectRef(exiledCardId),
+                ),
+                sourceName = sourceName,
+                controllerId = controllerId,
             )
         )
     }
