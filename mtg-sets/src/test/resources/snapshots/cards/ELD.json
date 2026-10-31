@@ -1,3 +1,130 @@
+// Acclaimed Contender
+{
+    "name": "Acclaimed Contender",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "When this creature enters, if you control another Knight, look at the top five cards of your library. You may reveal a Knight, Aura, Equipment, or legendary artifact card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Acclaimed Contender:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            {
+                                                "type": "Or",
+                                                "predicates": [
+                                                    {
+                                                        "type": "Or",
+                                                        "predicates": [
+                                                            {
+                                                                "type": "HasSubtype",
+                                                                "subtype": "Knight"
+                                                            },
+                                                            {
+                                                                "type": "HasSubtype",
+                                                                "subtype": "Aura"
+                                                            }
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "HasSubtype",
+                                                        "subtype": "Equipment"
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "type": "And",
+                                                "predicates": [
+                                                    "IsArtifact",
+                                                    "IsLegendary"
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "prompt": "You may reveal a Knight, Aura, Equipment, or legendary artifact card and put it into your hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent Knight",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "RARE",
+        "artist": "David Gaillet",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/b/fb6b12e7-bb93-4eb6-bad1-b256a6ccff4e.jpg?1783932679"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // All That Glitters
 {
     "name": "All That Glitters",
@@ -180,6 +307,150 @@
     "colorIdentityOverride": [
         "BLUE",
         "WHITE"
+    ]
+}
+
+// Archon of Absolution
+{
+    "name": "Archon of Absolution",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Archon",
+    "oracleText": "Flying\nProtection from white\nCreatures can't attack you or planeswalkers you control unless their controller pays {1} for each of those creatures.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.Color",
+                "color": "WHITE"
+            }
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "AttackTax",
+                "amountPerAttacker": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
+                "coversPlaneswalkers": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/8/684ca60c-7ed4-49e1-b54a-91d129539375.jpg?1783932681"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Ardenvale Paladin
+{
+    "name": "Ardenvale Paladin",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Adamant — If at least three white mana was spent to cast this spell, this creature enters with a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 5
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "ManaOfColorSpent",
+                        "color": "WHITE"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "artist": "Volkan Baǵa",
+        "flavorText": "\"Even when hope is but a small flame fighting the night, I will serve the absent king.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a32fa360-6c41-4146-931b-c19e9a766803.jpg?1783932679"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Ardenvale Tactician
+{
+    "name": "Ardenvale Tactician",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Flying",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "metadata": {
+        "collectorNumber": "5",
+        "artist": "Jason Rainville",
+        "flavorText": "In a castle that prizes loyalty above all, the bond between knight and griffin is unmatched.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/7/c7d5e394-8e41-442e-ae97-a478a61e1b9d.jpg?1783932677"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "Dizzying Swoop",
+            "manaCost": "{1}{W}",
+            "typeLine": "Instant — Adventure",
+            "oracleText": "Tap up to two target creatures. (Then exile this card. You may cast the creature later from exile.)",
+            "script": {
+                "spellEffect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "TapUntap",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 2,
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        }
     ]
 }
 
@@ -1869,6 +2140,51 @@
     ]
 }
 
+// Deafening Silence
+{
+    "name": "Deafening Silence",
+    "manaCost": "{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Each player can't cast more than one noncreature spell each turn.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "RestrictSpellsCastPerTurn",
+                "eachPlayer": true,
+                "spellFilter": {
+                    "cardPredicates": [
+                        "IsNoncreature"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Kieryluk",
+        "flavorText": "\"They have forsaken their vows. The edict of the Circle demands their voices be silenced.\"\n—Syr Tasdale, knight of Ardenvale",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/0/6072d9b0-d3c7-46f4-bd24-095bb13c4dea.jpg?1783932677",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "Players may cast any number of creature spells plus one noncreature spell each turn."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Deafening Silence will look at the entire turn to see if a player has cast a noncreature spell yet that turn, even if Deafening Silence wasn't on the battlefield when that spell was cast. Notably, you can't cast Deafening Silence and then cast another noncreature spell that turn."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If you cast a noncreature spell that was countered, you can't cast another noncreature spell that turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Drown in the Loch
 {
     "name": "Drown in the Loch",
@@ -2395,6 +2711,78 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Faerie Guidemother
+{
+    "name": "Faerie Guidemother",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Faerie",
+    "oracleText": "Flying",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "metadata": {
+        "collectorNumber": "11",
+        "artist": "Mila Pesic",
+        "flavorText": "No one is so lost that a faerie can't find them.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e8bbece8-9620-44d9-b991-350fe952538a.jpg?1783932674"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "Gift of the Fae",
+            "manaCost": "{1}{W}",
+            "typeLine": "Sorcery — Adventure",
+            "oracleText": "Target creature gets +2/+1 and gains flying until end of turn. (Then exile this card. You may cast the creature later from exile.)",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "FLYING",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        }
     ]
 }
 
@@ -3762,6 +4150,94 @@
     ]
 }
 
+// Harmonious Archon
+{
+    "name": "Harmonious Archon",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Creature — Archon",
+    "oracleText": "Flying\nNon-Archon creatures have base power and toughness 3/3.\nWhen this creature enters, create two 1/1 white Human creature tokens.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Harmonious Archon:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Human"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/9/4/94057dc6-e589-4a29-9bda-90f5bece96c4.jpg?1783932485"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "SetBasePowerToughnessStatic",
+                "power": 3,
+                "toughness": 3,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Archon"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "rarity": "MYTHIC",
+        "artist": "Anastasia Ovchinnikova",
+        "flavorText": "First among equals.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/7/c7093834-9627-4da2-9322-c03bfd5b3a71.jpg?1783932673",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "Harmonious Archon overwrites all previous effects that set a creature's base power and toughness to specific values. Any power- or toughness-setting effects that start to apply after Harmonious Archon enters the battlefield will overwrite this effect."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If an effect causes a noncreature permanent to become a creature and sets its power and toughness as it does so, that creature will have that power and toughness; it won't be 3/3. Notably, crewing a Vehicle does not set its power and toughness, so a Vehicle will be a 3/3 creature once crewed."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Effects that modify a creature's power and/or toughness, such as the effect of Festive Funeral, will apply to the creature no matter when they started to take effect. The same is true for any counters that change its power and/or toughness."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Because damage remains marked on a creature until the damage is removed as the turn ends, nonlethal damage dealt to creatures may become lethal if Harmonious Archon enters or leaves the battlefield during that turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Heraldic Banner
 {
     "name": "Heraldic Banner",
@@ -4858,6 +5334,55 @@
     "colorIdentityOverride": []
 }
 
+// Lonesome Unicorn
+{
+    "name": "Lonesome Unicorn",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Unicorn",
+    "oracleText": "Vigilance",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "metadata": {
+        "collectorNumber": "21",
+        "artist": "Winona Nelson",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/99083707-2152-42c0-b5c3-b4f97ec20190.jpg?1783932670"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "Rider in Need",
+            "manaCost": "{2}{W}",
+            "typeLine": "Sorcery — Adventure",
+            "oracleText": "Create a 2/2 white Knight creature token with vigilance. (Then exile this card. You may cast the creature later from exile.)",
+            "script": {
+                "spellEffect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Knight"
+                    ],
+                    "keywords": [
+                        "VIGILANCE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/7/0/703e7ecf-3d73-40c1-8cfe-0758778817cf.jpg?1783932483"
+                }
+            }
+        }
+    ]
+}
+
 // Lost Legion
 {
     "name": "Lost Legion",
@@ -5803,6 +6328,73 @@
     ]
 }
 
+// Rally for the Throne
+{
+    "name": "Rally for the Throne",
+    "manaCost": "{2}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Create two 1/1 white Human creature tokens.\nAdamant — If at least three white mana was spent to cast this spell, you gain 1 life for each creature you control.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Human"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/9/4/94057dc6-e589-4a29-9bda-90f5bece96c4.jpg?1783932485"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "ManaOfColorSpent",
+                                "color": "WHITE"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "creature"
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "rarity": "UNCOMMON",
+        "artist": "James Paick",
+        "flavorText": "\"If you're as loyal as you claim, now is the time to show it.\"\n—Queen Linden of Ardenvale",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/548d7ff0-70b6-4221-b50b-3ee8547e1b0a.jpg?1783932669"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Realm-Cloaked Giant
 {
     "name": "Realm-Cloaked Giant",
@@ -6575,6 +7167,55 @@
     }
 }
 
+// Shepherd of the Flock
+{
+    "name": "Shepherd of the Flock",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Peasant",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "rarity": "UNCOMMON",
+        "artist": "Drew Baker",
+        "flavorText": "Not all heroes carry swords.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c0b4f0ce-0d18-4546-803d-94a2f4f30951.jpg?1783932668"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "Usher to Safety",
+            "manaCost": "{W}",
+            "typeLine": "Instant — Adventure",
+            "oracleText": "Return target permanent you control to its owner's hand. (Then exile this card. You may cast the creature later from exile.)",
+            "script": {
+                "spellEffect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        }
+    ]
+}
+
 // Shimmer Dragon
 {
     "name": "Shimmer Dragon",
@@ -6838,6 +7479,222 @@
         "imageUri": "https://cards.scryfall.io/normal/front/a/2/a2c5f336-c100-4bec-89d5-548f60064d7f.jpg?1783932583"
     },
     "colorIdentityOverride": []
+}
+
+// Silverflame Ritual
+{
+    "name": "Silverflame Ritual",
+    "manaCost": "{3}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Put a +1/+1 counter on each creature you control.\nAdamant — If at least three white mana was spent to cast this spell, creatures you control gain vigilance until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "ManaOfColorSpent",
+                                "color": "WHITE"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        "body": {
+                            "type": "GrantKeyword",
+                            "keyword": "VIGILANCE",
+                            "target": "IterationEntity"
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "artist": "Jason Felix",
+        "flavorText": "Tempered by fire and united in virtue, the knights of Ardenvale fight with a single, unbreakable will.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/a/cad7efd1-5f53-4466-9a02-c474c265298a.jpg?1783932666"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Silverflame Squire
+{
+    "name": "Silverflame Squire",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "artist": "Lie Setiawan",
+        "flavorText": "Beacons along the borderlands are lit at any incursion from the wilds.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7bd105f3-fa33-4490-aea9-b47ca121b664.jpg?1783932665"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "On Alert",
+            "manaCost": "{2}{W}",
+            "typeLine": "Instant — Adventure",
+            "oracleText": "Target creature gets +2/+2 until end of turn. Untap it. (Then exile this card. You may cast the creature later from exile.)",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "tap": false
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        }
+    ]
+}
+
+// Silverwing Squadron
+{
+    "name": "Silverwing Squadron",
+    "manaCost": "{5}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Flying, vigilance\nSilverwing Squadron's power and toughness are each equal to the number of creatures you control.\nWhenever this creature attacks, create a number of 2/2 white Knight creature tokens with vigilance equal to the number of opponents you have.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "creature"
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "creature"
+            }
+        }
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Silverwing Squadron:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "CreateToken",
+                    "count": "PlayerCount",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Knight"
+                    ],
+                    "keywords": [
+                        "VIGILANCE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/7/0/703e7ecf-3d73-40c1-8cfe-0758778817cf.jpg?1783932483"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "315",
+        "rarity": "RARE",
+        "artist": "Johannes Voss",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/3/4348513e-4a03-4e06-98e0-ac6c0dfb013d.jpg?1783932552",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "The ability that defines Silverwing Squadron's power and toughness works in all zones, not just the battlefield."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "As long as Silverwing Squadron is on the battlefield, its ability will count itself, so it'll be at least 1/1."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "In a multiplayer game, opponents who have left the game aren't counted by Silverwing Squadron's triggered ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // So Tiny
@@ -8232,6 +9089,124 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Trapped in the Tower
+{
+    "name": "Trapped in the Tower",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature without flying\nEnchanted creature can't attack or block, and its activated abilities can't be activated.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "CantBlock",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "PreventActivatedAbilities",
+                "filter": {
+                    "cardPredicates": [
+                        "IsPermanent"
+                    ],
+                    "statePredicates": [
+                        "IsAttachedToBySource"
+                    ]
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "NotKeyword",
+                            "keyword": "FLYING"
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "artist": "Howard Lyon",
+        "flavorText": "\"At least up here I have some peace and quiet.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/974e84ce-5b51-4bd7-9a4d-b64d8f8f62d4.jpg?1783932663",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "If the enchanted creature gains flying, Trapped in the Tower is put into your graveyard as a state-based action. The creature won't get stuck in the tower again when it loses flying."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Activated abilities contain a colon. They're generally written \"[Cost]: [Effect].\" Some keyword abilities are activated abilities and will have colons in their reminder text. Triggered abilities (starting with \"when,\" \"whenever,\" or \"at\") are unaffected by Trapped in the Tower."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// True Love's Kiss
+{
+    "name": "True Love's Kiss",
+    "manaCost": "{2}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Exile target artifact or enchantment.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact|enchantment"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "artist": "Donato Giancola",
+        "flavorText": "\"Be careful, dear. Some people deserve their curses.\"\n—Marawen, barrow witch",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/23a4bac2-f6cb-4712-8510-a63657c43a5c.jpg?1783932663"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
