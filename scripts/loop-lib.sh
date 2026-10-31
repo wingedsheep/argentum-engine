@@ -1,4 +1,4 @@
-# Shared by the headless loop launchers (set-loop, commander-loop, assay-loop). Sourced, not run.
+# Shared by the headless loop launchers (set-loop, commander-loop, assay-loop, ai-reading-loop). Sourced, not run.
 #
 # A loop PR is reviewed *before* it is opened, so it needs exactly one CI run, and the session
 # that merges it goes straight on to build the next unit — no session is spent on review alone or

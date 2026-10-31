@@ -20,7 +20,7 @@ STAMP = re.compile(r"^\[(\d{4}-\d\d-\d\d \d\d:\d\d:\d\d)\] (.*)$")
 MILESTONE = re.compile(r"^\s+(🔨|🔎|📋) (.*)$")
 ITERATION = re.compile(r"^iteration (\d+) \(PR: ([^)]*)\)")
 FINISHED = re.compile(r"^iteration (\d+) finished: (.*?)(?: \(([^()]*)\))?$")
-PR_PREFIX = {"commander": "loop-cmdr-", "assay": "loop-assay-"}
+PR_PREFIX = {"commander": "loop-cmdr-", "assay": "loop-assay-", "ai-reading": "loop-ai-reading-"}
 TTY = sys.stdout.isatty()
 
 
@@ -46,7 +46,7 @@ def running_loops(runs):
             pass
     ps = subprocess.run(["ps", "-eo", "pid=,command="], capture_output=True, text=True).stdout
     for line in ps.splitlines():
-        m = re.search(r"^\s*(\d+) .*scripts/(set|assay|commander)-loop(?:\s+(\S+))?", line)
+        m = re.search(r"^\s*(\d+) .*scripts/(set|assay|commander|ai-reading)-loop(?:\s+(\S+))?", line)
         if not m:
             continue
         name = m.group(3).lower() if m.group(2) == "set" and m.group(3) else m.group(2)

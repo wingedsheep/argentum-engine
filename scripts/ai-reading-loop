@@ -1,0 +1,250 @@
+#!/usr/bin/env bash
+# Work the AI card-reading audit (`just ai-reading-audit`) with headless Claude Code or Codex, one fresh
+# session per step and one effect-type group per PR: judge the group, teach the AI's reader that effect,
+# prove it with one AI decision test, re-bless the ratchet. The step prompt lives in the
+# ai-reading-loop skill (.agents/skills/ai-reading-loop/SKILL.md).
+#   just ai-reading-loop [model] [focus]    e.g. just ai-reading-loop opus "polarity: ModifyStats"
+# Stop it with Ctrl-C, or `touch .claude/loop-runs/ai-reading.stop` to stop after the current step.
+# When the subscription's usage limit is hit, it waits and retries.
+set -uo pipefail
+
+models() {
+  cat <<'EOF2'
+Model       CLI           Selection
+sonnet      Claude Code   Claude's sonnet alias
+opus        Claude Code   Claude's opus alias
+astra       Codex         gpt-6-astra
+
+Full claude-* and gpt-* model IDs also work.
+Use codex:<model-id> to select any Codex model ID.
+GPT model IDs are normalized to lowercase; other IDs pass through unchanged.
+Omitting the model uses MODEL, or claude-opus-5-5 when MODEL is unset.
+EOF2
+}
+
+usage() {
+  cat <<'EOF2'
+Usage: just ai-reading-loop [model] [focus]
+
+Works the AI card-reading audit (docs/ai/reading-audit.md), one effect-type group per PR: judges whether
+the group is a real gap (or an audit false positive), teaches the AI's reader that effect, adds one AI
+decision test that fails before the fix, and re-blesses the ratchet baseline. Progress is kept in the
+ledger at .claude/loop-runs/ai-reading.md.
+
+Examples:
+  just ai-reading-loop                             # claude-opus-5-5, the biggest unread group
+  just ai-reading-loop sonnet
+  just ai-reading-loop astra
+  just ai-reading-loop codex:gpt-6-sol
+  just ai-reading-loop opus "polarity: ModifyStats"
+  just ai-reading-loop opus timing                 # groups of one check first
+  just ai-reading-loop pick                        # Choose from a menu
+  just ai-reading-loop --models                    # Show model shortcuts
+
+EOF2
+  models
+}
+
+case "${1:-}" in
+  -h|--help) usage; exit 0 ;;
+  --models) models; exit 0 ;;
+esac
+if [ "$#" -gt 2 ]; then usage >&2; exit 2; fi
+
+FOCUS=${2:-}
+MODEL=${1:-${MODEL:-claude-opus-5-5}}
+if [ "$MODEL" = pick ]; then
+  if [ ! -t 0 ]; then
+    echo "ai-reading-loop: pick needs a terminal; pass sonnet, opus, astra, or a full model ID" >&2
+    exit 2
+  fi
+  PS3="Choose a model (Ctrl-C to cancel): "
+  select choice in sonnet opus astra "Custom Codex model"; do
+    case "$choice" in
+      "Custom Codex model")
+        read -r -p "Codex model ID: " custom_model || exit 2
+        if [ -z "$custom_model" ]; then
+          echo "Enter a model ID." >&2
+          continue
+        fi
+        MODEL="codex:$custom_model"
+        break
+        ;;
+      "") echo "Choose 1, 2, 3, or 4." >&2 ;;
+      *) MODEL=$choice; break ;;
+    esac
+  done
+  [ "$MODEL" != pick ] || exit 2
+fi
+# Codex's picker displays GPT names with capitals, but its model IDs are lowercase.
+# Normalize only GPT IDs so custom provider IDs keep their original spelling.
+case "$MODEL" in
+  [gG][pP][tT]-*|codex:[gG][pP][tT]-*)
+    NORMALIZED_MODEL=$(printf '%s' "$MODEL" | tr '[:upper:]' '[:lower:]')
+    if [ "$MODEL" != "$NORMALIZED_MODEL" ]; then
+      echo "ai-reading-loop: model '$MODEL' normalized to '$NORMALIZED_MODEL'"
+      MODEL=$NORMALIZED_MODEL
+    fi
+    ;;
+esac
+case "$MODEL" in
+  codex:)
+    echo "ai-reading-loop: codex: requires a model ID" >&2
+    exit 2
+    ;;
+  codex:*) MODEL=${MODEL#codex:}; HARNESS=codex ;;
+  astra) MODEL=gpt-6-astra; HARNESS=codex ;;
+  gpt-*) HARNESS=codex ;;
+  *) HARNESS=claude ;;
+esac
+command -v "$HARNESS" >/dev/null || { echo "ai-reading-loop: $HARNESS is not installed" >&2; exit 1; }
+REPO=$(cd "$(git rev-parse --git-common-dir)/.." && pwd)
+RUNS="$REPO/.claude/loop-runs"
+mkdir -p "$RUNS"
+# shellcheck source=loop-lib.sh
+source "$(dirname "$0")/loop-lib.sh"
+loop_maybe_tui ai-reading "$0" "$(loop_model_arg)" ${FOCUS:+"$FOCUS"}
+
+FOCUS_LINE="Focus: none — take the biggest group the audit reports."
+[ -z "$FOCUS" ] || FOCUS_LINE="Focus: '$FOCUS' — PICK takes this group (or, for a check name, that check's groups) while any is left, then falls back to the biggest."
+
+SKILL="$(dirname "$0")/../.agents/skills/ai-reading-loop/SKILL.md"
+[ -r "$SKILL" ] || { echo "ai-reading-loop: step prompt not found at $SKILL" >&2; exit 1; }
+# The step prompt lives in the skill, between its markers, minus the code fence around it.
+STEP=$(awk '/^<!-- step-prompt:end -->$/ {on=0} on && !/^```$/ {print} /^<!-- step-prompt:begin -->$/ {on=1}' "$SKILL")
+[ -n "$STEP" ] || { echo "ai-reading-loop: no step prompt between the markers in $SKILL" >&2; exit 1; }
+# Bash 5.2 expands & in a substitution's replacement; a focus may contain one.
+shopt -u patsub_replacement 2>/dev/null || true
+STEP=${STEP//<MODEL_ID>/$MODEL}
+STEP=${STEP//<FOCUS_LINE>/$FOCUS_LINE}
+STEP=${STEP//<RUNS>/$RUNS}
+STEP=${STEP//<REPO>/$REPO}
+
+PROMPT="$STEP
+
+$LOOP_PR_PROTOCOL
+
+A human watches your text live, one line at a time, so keep them posted in short lines (under 150 chars each):
+- once you know which step you're taking: 'Working on: <step and group, e.g. step 5, polarity: ModifyStats>'
+- whenever you learn something that changes the plan — a JUDGE verdict, a group split into sub-shapes,
+  a test that would not fail first, a review finding you fixed or declined: 'Finding: <one line>'
+- just before your final line, one to three lines: 'Summary: <what you did / what's next>'
+No other long prose.
+End your reply with exactly one line: STEP <n> DONE | WAITING_CI | AI_READING_COMPLETE | STUCK <reason>"
+
+if [ "$HARNESS" = codex ]; then
+  PROMPT="$PROMPT
+
+Read the applicable skill files in .agents/skills/ (review-changes/SKILL.md, verify/SKILL.md). If subagents
+are unavailable, perform their steps inline."
+elif [ "$MODEL" = sonnet ] || [ "$MODEL" = opus ]; then
+  PROMPT="$PROMPT
+
+The requested model '$MODEL' is a Claude alias. Before opening a PR, resolve the actual driving
+model ID from your session's system information and use it instead of '$MODEL' in every
+[agent-loop: ...] title and model attribution. Never guess a version; if it cannot be determined,
+answer STUCK cannot determine driving model ID."
+fi
+
+# Everything the loop prints also goes to the run log.
+LOGDIR="$RUNS/ai-reading-logs"
+mkdir -p "$LOGDIR"
+exec > >(tee -a "$RUNS/ai-reading.log") 2>&1
+loop_clear_stale_stop "$RUNS/ai-reading.stop" "$RUNS/ai-reading.pid"
+# `just loops` reads this to tell a running loop from a finished one.
+echo $$ > "$RUNS/ai-reading.pid"
+trap 'rm -f "$RUNS/ai-reading.pid"' EXIT
+log() { echo "[$(date '+%F %T')] $*"; }
+
+# Streamed live: the milestones the session reports (Working on / Finding / Summary), nothing else.
+# LOOP_VERBOSE=1 adds its other messages and every tool call. `just loops` is the at-a-glance view.
+[ -n "${LOOP_VERBOSE:-}" ] && VERBOSE=true || VERBOSE=false
+MILESTONE='def milestone: (if startswith("Working on") then "   🔨 " elif startswith("Finding") then "   🔎 " else "   📋 " end) + .[0:200];'
+PRETTY="$MILESTONE"'select(.type == "assistant") | .message.content[]? |
+  (if .type == "text" then
+     ([.text | split("\n")[] | select(test("^(Working on|Finding|Summary):"))]) as $m
+     | if ($m | length) > 0 then $m[] | milestone
+       elif $verbose then "   💬 " + (.text | split("\n")[0] | .[0:160]) else empty end
+   elif .type == "tool_use" and $verbose then "   → " + .name + ": " +
+     ((.input.description // .input.command // .input.skill // .input.file_path // .input.pattern
+       // .input.prompt // "") | tostring | split("\n")[0] | .[0:140])
+   else empty end)'
+
+if [ "$HARNESS" = codex ]; then
+  PRETTY="$MILESTONE"'if .type == "item.completed" and .item.type == "agent_message" then
+      .item.text | split("\n")[] | select(length > 0)
+      | if test("^(Working on|Finding|Summary):") then milestone elif $verbose then "   💬 " + .[0:200] else empty end
+    elif .type == "item.started" and .item.type == "command_execution" and $verbose then
+      "   → " + (.item.command | split("\n")[0] | .[0:140])
+    elif .type == "error" or .type == "turn.failed" then
+      "   ! " + (.message // .error.message // "Codex turn failed")
+    else empty end'
+fi
+
+# Stamp each rendered line when received, using the same local clock as launcher events.
+PRETTY="($PRETTY)"' | "[" + (now | strflocaltime("%Y-%m-%d %H:%M:%S")) + "] " + .'
+
+log "ai-reading-loop started${FOCUS:+ (focus: $FOCUS)} (harness $HARNESS, model $MODEL, log $RUNS/ai-reading.log)"
+N=0
+while [ ! -e "$RUNS/ai-reading.stop" ]; do
+  N=$((N + 1))
+  loop_await_turn "loop-ai-reading-"
+  PR=$LOOP_PRS
+  [ -e "$RUNS/ai-reading.stop" ] && break
+
+  loop_session_acquire "$RUNS/ai-reading.stop" || break
+  SESSION_START=$SECONDS
+  TRANSCRIPT="$LOGDIR/$(date '+%Y%m%d-%H%M%S')-iter$N.jsonl"
+  log "iteration $N (PR: ${PR:-none}) — transcript $TRANSCRIPT"
+  if [ "$HARNESS" = codex ]; then
+    FINAL_FILE="${TRANSCRIPT%.jsonl}.txt"
+    # A failed launch must never reuse a stale completion marker.
+    rm -f "$FINAL_FILE"
+    (cd "$REPO" && codex exec --model "$MODEL" --approve-for-me --json \
+        --output-last-message "$FINAL_FILE" "$PROMPT" 2>&1) \
+      | tee "$TRANSCRIPT" | jq -Rr --unbuffered --argjson verbose "$VERBOSE" "fromjson? | $PRETTY"
+    SESSION_STATUS=$?
+    RESULT=$(cat "$FINAL_FILE" 2>/dev/null || true)
+    FINAL=$RESULT
+    STATS="exit $SESSION_STATUS"
+  else
+    (cd "$REPO" && loop_run_reaped "$TRANSCRIPT" AI_READING_COMPLETE \
+        claude -p "$PROMPT" --model "$MODEL" --permission-mode "${PERMISSION_MODE:-auto}" \
+        --output-format stream-json --verbose 2>&1) \
+      | tee "$TRANSCRIPT" | jq -Rr --unbuffered --argjson verbose "$VERBOSE" "fromjson? | $PRETTY"
+    loop_note_reaped "$TRANSCRIPT"
+
+    FINAL=$(jq -Rc 'fromjson? | select(.type == "result")' "$TRANSCRIPT" 2>/dev/null | tail -1)
+    RESULT=$(echo "$FINAL" | jq -r '.result // empty' 2>/dev/null)
+
+    # A session reports a result each time it wakes for a background task, so the last one's
+    # duration is only its tail: time the session by the wall clock instead.
+    STATS=$(echo "$FINAL" | jq -r '"$\(.total_cost_usd // 0 | . * 100 | round / 100) at API prices"' 2>/dev/null)
+  fi
+  LAST=$(echo "$RESULT" | tail -1)
+  STATS="$(( (SECONDS - SESSION_START) / 60 )) min, $STATS"
+  log "iteration $N finished: ${LAST:-<no result>} ($STATS)"
+  loop_session_release
+
+  # A session that ended on its protocol line finished its step; any "rate limit" in its text is
+  # its own prose (e.g. a Scryfall 429 it reported), not the harness stopping it.
+  if ! grep -qE '^(STEP [0-9]+ DONE|WAITING_CI|[A-Z]+_COMPLETE|STUCK)' <<<"$LAST" &&
+     grep -qiE 'usage limit|session limit|hit your limit|rate limit|overloaded|quota exceeded' <<<"$RESULT$(tail -5 "$TRANSCRIPT")"; then
+    log "limit reached — waiting 15 min"; sleep 900; continue
+  fi
+  if [ "$HARNESS" = codex ] && { [ "$SESSION_STATUS" -ne 0 ] || [ -z "$FINAL" ]; }; then
+    log "Codex failed or returned no final message — see $TRANSCRIPT"
+    tail -5 "$TRANSCRIPT"
+    exit 1
+  fi
+  if [ -z "$FINAL" ]; then
+    log "no result — waiting 30 min"; sleep 1800; continue
+  fi
+  case $LAST in
+    WAITING_CI*)   log "session saw CI pending — waiting on it next iteration" ;;
+    AI_READING_COMPLETE*) log "ai-reading loop complete — nothing worth a PR left"; exit 0 ;;
+    STUCK*)        log "stuck — see the ledger at $RUNS/ai-reading.md"; exit 1 ;;
+  esac
+done
+log "stop file found — stopping"
+rm -f "$RUNS/ai-reading.stop"

@@ -61,7 +61,7 @@ reviews the branch with `review-changes` *before* pushing, opens the PR, and pos
 merges the green PR and goes straight on to build the next unit. A session is only spent on an open
 PR when CI failed, it conflicts with main, or its head lacks a review marker. Only one PR is open at
 a time: the next unit is never built while CI runs on the last. The shared protocol
-lives in `scripts/loop-lib.sh` and applies to `set-loop`, `commander-loop` and `assay-loop` alike.
+lives in `scripts/loop-lib.sh` and applies to `set-loop`, `commander-loop`, `assay-loop` and `ai-reading-loop` alike.
 
 The following describes the alternative in-session `/loop` workflow.
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""A live dashboard for one agent loop (set-loop, commander-loop, assay-loop).
+"""A live dashboard for one agent loop (set-loop, commander-loop, assay-loop, ai-reading-loop).
 
 The launchers open it themselves when started from a terminal; it runs the launcher underneath and
 draws what it is doing from the loop's log, its open PRs and the set's progress:

@@ -108,3 +108,34 @@ instead. `just loop-gate` runs the ratchet whenever cards, the SDK or the engine
 covering both read and unread shapes, so a reader change shows up as a deliberate edit there. When a
 reader learns an effect type, remove that card's expected flag in the same change. When a reader loses
 one, the test fails.
+
+## The loop
+
+`just ai-reading-loop [model] [focus]` works the audit down unattended, one group per PR, in a fresh
+headless session per step. It has the same launcher shape as `just assay-loop` and `just set-loop`: a
+model argument, PRs titled `[agent-loop: <model-id>]`, review before the PR opens, merge once CI is
+green, a ledger at `.claude/loop-runs/ai-reading.md`, and a stop file at
+`.claude/loop-runs/ai-reading.stop`. `focus` is a group key (`"polarity: ModifyStats"`) or a check name
+(`timing`). The step prompt lives in the [`ai-reading-loop`](../../.agents/skills/ai-reading-loop/SKILL.md)
+skill, which also describes the in-session `/loop` / `/goal` variant. `scripts/ai-reading-loop` reads the
+prompt from there.
+
+Each step:
+
+1. Runs the audit and takes the biggest group, or the focus group. It skips groups already in the ledger
+   and groups an open PR is already working on.
+2. Judges whether the group is a real gap. If the reader is right to have no entry (a self-only effect,
+   a drawback with nothing to time), the step fixes the audit instead and says so in the PR. If the right
+   reading depends on board context, the group is a judgment call and is skipped. A group whose effect has
+   distinct sub-shapes is split, and one sub-shape goes in each PR.
+3. Adds one AI decision test, named for the effect, on an example card from the group. The test must fail
+   before the reader change, in a position where the better play is clearly better.
+4. Teaches the reader the effect type, never a card. It composes existing readings before adding new
+   ones and changes no SDK or engine code.
+5. Re-runs the audit, re-blesses the baseline with `just ai-reading-baseline`, and checks that cards only
+   lose flags.
+6. Gates with `just loop-gate` and opens the PR. It adds an `ai/CHANGELOG.md` line only when the new
+   reading changes how the AI plays a common card.
+
+The loop stops when the top groups are all in the ledger, in flight, judgment calls, or too small to
+matter (under five cards).

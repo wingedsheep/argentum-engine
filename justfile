@@ -365,6 +365,12 @@ commander-staples *ARGS:
 assay-loop MODEL="" FOCUS="":
     scripts/assay-loop "{{MODEL}}" "{{FOCUS}}"
 
+# Waits out subscription usage limits; stop with `touch .claude/loop-runs/ai-reading.stop`.
+# Teach the AI to read the effect types `ai-reading-audit` flags, one group per PR: ai-reading-loop [model] [focus]
+[group: 'ai']
+ai-reading-loop MODEL="" FOCUS="":
+    scripts/ai-reading-loop "{{MODEL}}" "{{FOCUS}}"
+
 # Report implemented vs missing cards for a set (e.g., just card-status --set BLB --list)
 [group: 'build']
 card-status *ARGS:
