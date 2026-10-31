@@ -1797,7 +1797,7 @@
 {
     "name": "Faerie Miscreant",
     "manaCost": "{U}",
-    "typeLine": "Creature — Faerie Wizard",
+    "typeLine": "Creature — Faerie Rogue",
     "oracleText": "Flying\nWhen this creature enters, if you control another creature named Faerie Miscreant, draw a card.",
     "creatureStats": {
         "power": 1,

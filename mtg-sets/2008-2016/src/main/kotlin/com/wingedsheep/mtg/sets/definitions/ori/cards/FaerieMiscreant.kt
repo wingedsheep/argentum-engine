@@ -11,7 +11,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 /**
  * Faerie Miscreant
  * {U}
- * Creature — Faerie Wizard
+ * Creature — Faerie Rogue
  * 1/1
  * Flying
  * When this creature enters, if you control another creature named Faerie Miscreant, draw a card.
@@ -22,7 +22,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 val FaerieMiscreant = card("Faerie Miscreant") {
     manaCost = "{U}"
     colorIdentity = "U"
-    typeLine = "Creature — Faerie Wizard"
+    typeLine = "Creature — Faerie Rogue"
     power = 1
     toughness = 1
     oracleText = "Flying\n" +
