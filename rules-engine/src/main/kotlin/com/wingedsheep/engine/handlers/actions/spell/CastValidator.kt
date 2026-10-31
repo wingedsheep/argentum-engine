@@ -89,7 +89,6 @@ import com.wingedsheep.engine.state.components.identity.PlayWithAdditionalCostCo
 import com.wingedsheep.engine.state.components.identity.PlayWithCostIncreaseComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithFixedAlternativeManaCostComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
-import com.wingedsheep.engine.state.components.player.CantCastFromNonHandZonesComponent
 import com.wingedsheep.engine.state.components.player.GrantedSpellKeywordsComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.player.ManaSpentOnSpellsThisTurnComponent
@@ -405,16 +404,8 @@ internal class CastValidator(
             return "You can't play cards from your hand"
         }
 
-        // Avatar's Wrath: "your opponents can't cast spells from anywhere other than their hands."
-        // A per-player, duration-bounded restriction to hand-only casting — any non-hand cast
-        // (flashback/escape from graveyard, foretell/plot/may-play from exile, library top, command
-        // zone) is illegal while the component is present. Ordinary hand casts are untouched.
-        if (!source.inHand && state.getEntity(action.playerId)?.has<CantCastFromNonHandZonesComponent>() == true) {
-            return "You can't cast spells from anywhere other than your hand right now"
-        }
-
         // Single cast-legality chokepoint: per-turn spell limit (Yawgmoth's Agenda), Silence-style
-        // can't-cast, Mana Maze color sharing, and PlayersCantCastSpells (Voice of Victory, …) all
+        // can't-cast, Avatar's Wrath hand-only casting, Mana Maze color sharing, and PlayersCantCastSpells (Voice of Victory, …) all
         // resolve to a reason here, or null if the cast is allowed.
         castPermissionUtils.reasonCannotCast(state, action.playerId, action.cardId, action)?.let { return it }
 

@@ -12,6 +12,7 @@ import com.wingedsheep.engine.mechanics.CastCharacteristics
 import com.wingedsheep.engine.handlers.effects.permanent.types.buildCardComponentForDfcFace
 import com.wingedsheep.engine.handlers.effects.permanent.types.dfcBackFaceManaValue
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.sdk.model.CreatureStats
 
@@ -35,6 +36,7 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.EmblemActivatedAbilityComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.player.CantCastSpellsComponent
+import com.wingedsheep.engine.state.components.player.CantCastFromNonHandZonesComponent
 import com.wingedsheep.engine.state.components.player.EquipActivationsThisTurnComponent
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.model.EntityId
@@ -184,13 +186,30 @@ class CastPermissionUtils(
     fun reasonCannotCast(
         state: GameState, playerId: EntityId, spellCardId: EntityId,
         action: CastSpell = CastSpell(playerId, spellCardId)
+    ): String? = castFaceZoneFailure(state, action) ?: castProhibition(state, playerId, spellCardId, action)
+
+    /**
+     * [reasonCannotCast] without the face/zone shape of the proposed cast: only the prohibitions —
+     * bans, [PlayersCantCastSpells], hand-only casting, per-turn limits, Mana Maze, the legendary
+     * sorcery rule. A cast an effect makes while resolving asks this before its half or face is
+     * chosen, so a split card or Room is still offered when nothing forbids it.
+     */
+    fun castProhibition(
+        state: GameState, playerId: EntityId, spellCardId: EntityId,
+        action: CastSpell = CastSpell(playerId, spellCardId)
     ): String? {
         proposedSpellRestriction(state, action)?.let { return it }
         // "… and can't play it" on this very hand object (Firestorm Phoenix).
         if (com.wingedsheep.engine.mechanics.HandObjectRestrictions.isCantBePlayed(state, spellCardId)) {
             return "That card can't be played right now"
         }
-        castFaceZoneFailure(state, action)?.let { return it }
+        // Avatar's Wrath: "your opponents can't cast spells from anywhere other than their hands"
+        // for a duration — any non-hand cast (flashback, foretell, cascade from exile, …).
+        if (state.getEntity(playerId)?.has<CantCastFromNonHandZonesComponent>() == true &&
+            spellCardId !in state.getZone(ZoneKey(playerId, Zone.HAND))
+        ) {
+            return "You can't cast spells from anywhere other than your hand right now"
+        }
         if (hasReachedSpellCastLimit(state, playerId)) {
             return "You can't cast another spell this turn"
         }

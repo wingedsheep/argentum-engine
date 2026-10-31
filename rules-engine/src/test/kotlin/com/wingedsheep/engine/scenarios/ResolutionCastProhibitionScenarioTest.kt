@@ -3,6 +3,7 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.core.YesNoResponse
 import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
+import com.wingedsheep.engine.state.components.player.CantCastFromNonHandZonesComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
@@ -70,6 +71,44 @@ class ResolutionCastProhibitionScenarioTest : ScenarioTestBase() {
                 game.resolveStack()
 
                 game.isOnBattlefield("Grizzly Bears") shouldBe true
+            }
+
+            test("with no prohibition in play, a split card cascaded into is still offered") {
+                // The prohibition check runs before a half is chosen, so it must not reject the
+                // cast for lacking one.
+                val game = scenario()
+                    .withPlayers()
+                    .withCardInHand(1, "Quandrix, the Proof")
+                    .withLandsOnBattlefield(1, "Forest", 5)
+                    .withLandsOnBattlefield(1, "Island", 2)
+                    .withCardInLibrary(1, "Wear // Tear")
+                    .withCardInLibrary(1, "Mountain")
+                    .build()
+
+                game.castSpell(1, "Quandrix, the Proof").error shouldBe null
+                game.resolveStack()
+
+                game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
+            }
+
+            test("Avatar's Wrath's hand-only casting stops a cascade hit too") {
+                val game = scenario()
+                    .withPlayers()
+                    .withCardInHand(1, "Quandrix, the Proof")
+                    .withLandsOnBattlefield(1, "Forest", 5)
+                    .withLandsOnBattlefield(1, "Island", 2)
+                    .withCardInLibrary(1, "Grizzly Bears")
+                    .withCardInLibrary(1, "Mountain")
+                    .build()
+                game.state = game.state.updateEntity(game.player1Id) {
+                    it.with(CantCastFromNonHandZonesComponent(expiresForPlayerId = game.player2Id))
+                }
+
+                game.castSpell(1, "Quandrix, the Proof").error shouldBe null
+                game.resolveStack()
+
+                game.getPendingDecision() shouldBe null
+                game.isOnBattlefield("Grizzly Bears") shouldBe false
             }
 
             test("a discovered card the prohibition forbids casting goes to hand instead") {

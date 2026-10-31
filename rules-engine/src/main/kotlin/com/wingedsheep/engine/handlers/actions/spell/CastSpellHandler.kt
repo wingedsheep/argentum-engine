@@ -216,7 +216,7 @@ class CastSpellHandler(
      * takes its "if you don't cast it" branch.
      */
     fun resolutionCastProhibition(state: GameState, action: CastSpell): String? =
-        castPermissionUtils.reasonCannotCast(state, action.playerId, action.cardId, action)
+        castPermissionUtils.castProhibition(state, action.playerId, action.cardId, action)
 
     /** Each cost the caster owes, reduced to the leg they took (see [SpellCosts.reduceAlternatives]). */
     private fun reduceCostAlternatives(
