@@ -22,8 +22,9 @@ and writes three files to `ai/build/reports/ai-reading-audit/`:
 | `summary.tsv` | The comparable numbers: `cards`, `read-fully`, `fraction`, two informational counts, then one `group<TAB>key<TAB>count` line per group, sorted by key. Two runs diff line by line. |
 | `cards.tsv` | Each flagged card and its group keys. Use it to find example cards for a group, or to see why one card isn't read. |
 
-The full walk is a test (`AiReadingAuditBenchmark`) that only runs with `-DaiReadingAudit=true`, so it
-stays out of the normal `:ai:test` suite. The tool needs no server and no credentials.
+The report writer is a test (`AiReadingAuditBenchmark`) that only runs with `-DaiReadingAudit=true`. The
+same walk also runs in the normal `:ai:test` suite as a ratchet (see [The ratchet](#the-ratchet)). The
+tool needs no server and no credentials.
 
 ## Reading a group
 
@@ -66,8 +67,44 @@ change to either shows up.
   because `payEscalateCost` maps a fixed set of `CostAtom` shapes.
 - **Usage weighting.** Groups are ranked by card count only.
 
+## The ratchet
+
+`AiReadingRatchetTest` runs the same full walk inside the normal `:ai:test` suite (CI's `ai` group;
+the walk takes about ten seconds once the module is compiled) and holds it against a checked-in
+per-card baseline, `ai/src/test/resources/ai-reading-baseline.tsv`. That file has one line per card in
+the corpus at the last re-bless: the name alone when the card is read fully, otherwise the name and its
+flags. Coverage can only move up. The test fails on two things:
+
+1. **A card the baseline knows gains a flag.** A reader lost a case, or an edit to that card made it use
+   an effect type the AI doesn't read. Every per-group unread count and the unread-card total, taken over
+   the baselined cards, can only rise this way, so this is the regression check.
+2. **A new group**: a flag key that no baselined card has. A new card brought an effect type the AI has
+   never been asked to read, or a reader change opened a new gap.
+
+Everything else passes on purpose:
+
+- **A card the baseline doesn't list yet** passes when it is read fully or lands only in groups the
+  baseline already has. Set loops add cards all the time. Failing every new card in a known gap would
+  make each card PR edit the baseline, and every two card PRs would then conflict on it. Growth into a
+  known gap isn't a reader regression, and the group is already on the A3 work list.
+- **Coverage gains and removed cards** pass. The test prints a hint to re-bless and lock the gain in.
+
+When it fails, read the message. It lists the cards and groups that moved. If a reader change caused
+it, fix the reader. If it's expected (a card whose effect type the AI can't read yet), re-bless and
+commit the baseline in the same PR:
+
+```bash
+just ai-reading-baseline
+```
+
+The baseline diff is the review: it shows exactly which cards gained or lost flags. A PR that teaches a
+reader an effect type re-blesses too, so the cards it fixed move to read-fully in the diff. The file holds
+no totals line on purpose, because every two re-blesses would conflict on it. The test prints the totals
+instead. `just loop-gate` runs the ratchet whenever cards, the SDK or the engine changed.
+
 ## Keeping it honest
 
-`AiReadingAuditSnapshotTest` runs in the normal suite. It pins the exact flags on a dozen cards,
-covering both read and unread shapes. When a reader learns an effect type, remove that card's
-expected flag in the same change. When a reader loses one, the test fails.
+`AiReadingAuditSnapshotTest` runs in the normal suite too. It pins the exact flags on a dozen cards,
+covering both read and unread shapes, so a reader change shows up as a deliberate edit there. When a
+reader learns an effect type, remove that card's expected flag in the same change. When a reader loses
+one, the test fails.

@@ -33,6 +33,7 @@ waiting on.
 | AI advisors / draft heuristics | `just test-ai` |
 | One class (any module) | `just test-class <ClassName>` |
 | Card snapshots after an intentional change | `just rebless-cards` |
+| `AiReadingRatchetTest` fails: a card the AI can't read (new effect type, or a reader lost a case) | Fix the reader, or if expected, `just ai-reading-baseline` and commit the baseline ([`docs/ai/reading-audit.md`](../../../docs/ai/reading-audit.md), "The ratchet") |
 | SDK types added, removed or re-documented | `just sdk-index`, then `just test-class SdkSurfaceBaselineTest` |
 | Web client | `cd web-client && npm run typecheck` |
 | Visual / UX mechanic | Verify manually in a browser (a `generate-scenario` board, by hand or Playwright-driven). Don't run the E2E suite (`just e2e*`) for `add-card` / `add-feature` work — it takes too long |

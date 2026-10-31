@@ -172,6 +172,14 @@ ai-reading-audit:
     scripts/gradle-locked :ai:test --tests "*.AiReadingAuditBenchmark" -Dbenchmark=true -DaiReadingAudit=true \
         -DaiReadingAuditDir={{justfile_directory()}}/ai/build/reports/ai-reading-audit
 
+# Re-bless the AI card-reading ratchet's baseline (ai/src/test/resources/ai-reading-baseline.tsv) after
+# coverage rose, or to record a card that brings an effect type the AI can't read yet.
+# AiReadingRatchetTest (in :ai:test) fails when it is behind; docs/ai/reading-audit.md, "The ratchet".
+[group: 'ai']
+ai-reading-baseline:
+    scripts/gradle-locked :ai:test --tests "*.AiReadingRatchetTest" --rerun \
+        -DaiReadingBaseline={{justfile_directory()}}/ai/src/test/resources/ai-reading-baseline.tsv
+
 # Refresh the vendored Draftsim pick-rating tables (ai/src/main/resources/draftai/) from Draftsim's
 # current draft-app bundle. MODE=check diffs without writing; MODE=write regenerates. BUNDLE takes a
 # saved index-*.js or HAR instead of fetching https://draftsim.com/draft/. First-party tables are

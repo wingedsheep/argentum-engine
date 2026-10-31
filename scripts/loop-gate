@@ -7,8 +7,8 @@ suite, gym) — and then CI runs the same thing again on the PR. A loop unit pay
 gate reads the diff against origin/main and runs, in one locked Gradle invocation:
 
   - every test class the branch adds or changes, in its own module;
-  - the content suite (`:mtg-sets:test` — card snapshots, card lint, printing checks) whenever
-    cards, the SDK or the engine moved;
+  - the content suite (`:mtg-sets:test` — card snapshots, card lint, printing checks) and the AI
+    card-reading ratchet (`AiReadingRatchetTest`) whenever cards, the SDK or the engine moved;
   - the whole test suite of any non-card module whose main sources changed (engine, SDK, AI,
     server, Assay, search, gym), plus the touched eras' scenario suites when the engine or SDK
     moved;
@@ -100,6 +100,9 @@ def plan(files: list[str]) -> tuple[list[str], bool]:
 
     if content:
         suites.add(":mtg-sets")
+        # A card can bring an effect type the AI can't read; the ratchet (~10 s once :ai compiles)
+        # catches that here rather than in CI's ai group. See docs/ai/reading-audit.md.
+        classes.setdefault(":ai", set()).add("AiReadingRatchetTest")
     if core_changed:
         suites |= {f":mtg-sets:{era}:tests" for era in eras}
 

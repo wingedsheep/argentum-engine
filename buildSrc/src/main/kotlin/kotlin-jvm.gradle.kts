@@ -66,8 +66,9 @@ tasks.withType<Test>().configureEach {
         "gameLog", "gameLogGames", "gameLogSeed", "gameLogAgent", "gameLogSeats", "gameLogAttackMode", "gameLogDir",
         // game-server's ReplayLogExport (`just ai-replay-logs`): server replays → AI-review logs.
         "replayLog", "replayLogDir",
-        // `just ai-reading-audit`: the AI card-reading audit (ai/.../audit/AiReadingAuditBenchmark).
-        "aiReadingAudit", "aiReadingAuditDir",
+        // `just ai-reading-audit`: the AI card-reading audit (ai/.../audit/AiReadingAuditBenchmark);
+        // `just ai-reading-baseline`: re-bless the ratchet's baseline (AiReadingRatchetTest).
+        "aiReadingAudit", "aiReadingAuditDir", "aiReadingBaseline",
     )) {
         System.getProperty(prop)?.let { systemProperty(prop, it) }
     }

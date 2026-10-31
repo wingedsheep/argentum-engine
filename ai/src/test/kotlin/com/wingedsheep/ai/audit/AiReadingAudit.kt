@@ -383,16 +383,23 @@ object AiReadingAudit {
         }
     }
 
+    /**
+     * Every card in [cards] (deduplicated by name), sorted by name, mapped to its distinct flag keys —
+     * empty for a card read fully. [report] and `AiReadingRatchetTest` both build on this.
+     */
+    fun cardFlags(cards: List<CardDefinition>, lookup: CardLookup): Map<String, List<String>> =
+        cards.distinctBy { it.name }.sortedBy { it.name }
+            .associateTo(linkedMapOf()) { card -> card.name to audit(card, lookup).map { it.key }.distinct() }
+
     /** Audit every card in [cards] (deduplicated by name) and group the flags by effect type. */
     fun report(cards: List<CardDefinition>, lookup: CardLookup): Report {
         val unique = cards.distinctBy { it.name }.sortedBy { it.name }
         val byKey = sortedMapOf<String, MutableList<String>>()
         val flagsByCard = sortedMapOf<String, List<String>>()
         var readFully = 0
-        for (card in unique) {
-            val keys = audit(card, lookup).map { it.key }.distinct()
-            if (keys.isEmpty()) readFully++ else flagsByCard[card.name] = keys
-            keys.forEach { byKey.getOrPut(it) { mutableListOf() } += card.name }
+        for ((name, keys) in cardFlags(unique, lookup)) {
+            if (keys.isEmpty()) readFully++ else flagsByCard[name] = keys
+            keys.forEach { byKey.getOrPut(it) { mutableListOf() } += name }
         }
         val groups = byKey.map { (k, v) -> Group(k, v) }.sortedWith(compareByDescending<Group> { it.cards.size }.thenBy { it.key })
         return Report(
