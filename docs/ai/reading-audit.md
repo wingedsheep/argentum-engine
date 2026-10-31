@@ -46,6 +46,12 @@ Two label shapes need explaining:
   plus bookkeeping) named as one type by where its cards come from and go to. Its stages mean
   nothing alone.
 
+The `intent` check leaves out one shape the reader is right to leave untagged: a counter an
+effect puts on its own source or on its own controller (a creature growing itself, a charge, oil or
+quest counter, `{E}` or experience for you), unless it is a keyword counter. Counters on another
+player (poison, rad) are not this shape and stay flagged. There is no target to choose and no window to
+time, and tagging a self-grown flash creature `PUMP` would make `AmbushWindow` stop holding it.
+
 Not every flag is a bug. Some effects legitimately carry no intent tag, and an until-end-of-turn
 effect that is a drawback has nothing to time. A group is a list of places to look, ranked by how many
 cards a fix would reach.

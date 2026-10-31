@@ -20,7 +20,9 @@ import io.kotest.matchers.collections.shouldNotContain
  *
  * Built from real cards with no card-specific AI code anywhere: Leonin Sun Standard ("{1}{W}:
  * Creatures you control get +1/+1 until end of turn") for the team pump, Prodigal Sorcerer
- * ("{T}: This creature deals 1 damage to any target") for the pinger.
+ * ("{T}: This creature deals 1 damage to any target") for the pinger, Skilled Battlecarver
+ * ("During your turn, this creature has first strike. {1}{R}: This creature gets +1/+0 until end of
+ * turn") for a self-pump on an attacker that's worth no less than the blocker in front of it.
  */
 class AnticipateCombatResponsesTest : ScenarioTestBase() {
 
@@ -162,6 +164,28 @@ class AnticipateCombatResponsesTest : ScenarioTestBase() {
             )
             val after = game.attackersChosenBy(AiProfile.LIVE)
             withClue("attacked with ${game.names(after)}") { after shouldContain game.findPermanent("Divining Duelist")!! }
+        }
+
+        // 2026-10-31 replay 5d3038e5: a 2/3 in front of a first-striking 2/1 reads as a free kill
+        // — it survives two damage and strikes back — and is worth no more than the Battlecarver,
+        // so local search never tried taking the block back. One {1}{R} pump after blocks makes
+        // the Battlecarver a 3/1 that kills the 2/3 first.
+        test("doesn't block a first striker that can pump itself past the blocker") {
+            val (game, after) = blocksChosenBy(
+                AiProfile.LIVE, attackers = listOf("Skilled Battlecarver"),
+                theirs = List(2) { Permanent("Mountain") },
+                ours = listOf(Permanent("Blind Phantasm")),
+            )
+            withClue("blocked with ${game.names(after.keys)}") { after.keys.shouldBeEmpty() }
+        }
+
+        test("blocks the same first striker when its controller is tapped out") {
+            val (game, after) = blocksChosenBy(
+                AiProfile.LIVE, attackers = listOf("Skilled Battlecarver"),
+                theirs = List(2) { Permanent("Mountain", tapped = true) },
+                ours = listOf(Permanent("Blind Phantasm")),
+            )
+            withClue("blocked with ${game.names(after.keys)}") { game.names(after.keys) shouldContain "Blind Phantasm" }
         }
 
         test("blocks the same attacker when its controller is tapped out") {

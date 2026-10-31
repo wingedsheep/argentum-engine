@@ -22,8 +22,11 @@ class AiReadingAuditSnapshotTest : FunSpec({
         "Icy Manipulator" to emptyList(),
         "Llanowar Elves" to emptyList(),
         "Smuggler's Copter" to emptyList(),
+        // A +1/+1 counter on itself needs no intent tag (see AiReadingAudit.needsNoIntent).
+        "Ajani's Pridemate" to emptyList(),
         // Unread — the effect types the audit names as the work to do.
         "Adamant Will" to listOf("timing: GrantKeywordEffect"),
+        "Battlegrowth" to listOf("intent: AddCountersEffect"),
         "Abuna Acolyte" to listOf("timing: PreventDamageEffect"),
         "+2 Mace" to listOf("intent: AttachEquipmentEffect", "polarity: AttachEquipmentEffect"),
         "Abzan Charm" to listOf("intent: ModalEffect", "polarity: DistributeCountersAmongTargetsEffect"),

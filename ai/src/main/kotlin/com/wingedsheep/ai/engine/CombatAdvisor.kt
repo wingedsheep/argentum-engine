@@ -710,6 +710,7 @@ class CombatAdvisor(
             }
             ?: return currentPlan
         var currentScore = seedOutcome.score
+        var currentLosers = seedOutcome.losingBlockers
         trace?.recordBlock(currentPlan, currentScore)
 
         // Blockers the seed already loses. Under [chumpOnlyWhenInDanger] a mutation may keep these
@@ -730,11 +731,12 @@ class CombatAdvisor(
 
             val mutations = generateBlockMutations(
                 state, projected, attackers, validBlockers,
-                mandatoryBlockerIds, currentPlan
+                mandatoryBlockerIds, currentPlan, currentLosers
             )
 
             var bestMutation: MutableMap<EntityId, List<EntityId>>? = null
             var bestScore = currentScore
+            var bestLosers = currentLosers
 
             for (mutation in mutations) {
                 if (simulationsLeft <= 0 || System.nanoTime() > deadline) break
@@ -749,12 +751,14 @@ class CombatAdvisor(
                 if (score > bestScore) {
                     bestScore = score
                     bestMutation = mutation
+                    bestLosers = outcome.losingBlockers
                 }
             }
 
             if (bestMutation != null) {
                 currentPlan = bestMutation
                 currentScore = bestScore
+                currentLosers = bestLosers
             } else {
                 break // converged
             }
@@ -767,6 +771,12 @@ class CombatAdvisor(
      * Generate a small set of promising blocking mutations from the current plan.
      * Uses combat math to filter out obviously bad candidates before expensive simulation.
      *
+     * [simulatedLosers] are the blockers [currentPlan]'s own simulation lost without taking their
+     * attacker with them. The printed numbers can call such a block a free kill — a 2/3 in front
+     * of a 2/1 first striker — while the simulation, with the attacker's affordable pump used
+     * after blocks ([anticipateCombatResponses]), shows the 2/3 dying for nothing. Removing that
+     * blocker is always tried, so "don't block" gets scored against what the simulation saw.
+     *
      * Returns at most ~8-12 candidate plans.
      */
     private fun generateBlockMutations(
@@ -775,7 +785,8 @@ class CombatAdvisor(
         attackers: List<EntityId>,
         validBlockers: List<EntityId>,
         mandatoryBlockerIds: Set<EntityId>,
-        currentPlan: Map<EntityId, List<EntityId>>
+        currentPlan: Map<EntityId, List<EntityId>>,
+        simulatedLosers: Set<EntityId> = emptySet(),
     ): List<MutableMap<EntityId, List<EntityId>>> {
         val mutations = mutableListOf<MutableMap<EntityId, List<EntityId>>>()
 
@@ -789,10 +800,10 @@ class CombatAdvisor(
             val targetAttacker = currentPlan[blockerId]?.firstOrNull() ?: continue
             val blockerValue = CombatMath.creatureValue(state, projected, blockerId)
             val attackerValue = CombatMath.creatureValue(state, projected, targetAttacker)
-            // Only try removing if the blocker is more valuable than what it's blocking
-            // or if the blocker doesn't kill the attacker
+            // Only try removing if the blocker is more valuable than what it's blocking,
+            // if the blocker doesn't kill the attacker, or if the simulation lost it for nothing
             val kills = CombatMath.wouldKillInCombat(state, projected, blockerId, targetAttacker)
-            if (blockerValue > attackerValue || !kills) {
+            if (blockerValue > attackerValue || !kills || blockerId in simulatedLosers) {
                 val mutation = currentPlan.toMutableMap()
                 mutation.remove(blockerId)
                 mutations.add(mutation)
