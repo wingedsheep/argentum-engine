@@ -15,7 +15,7 @@ import io.kotest.assertions.withClue
  *
  *  - **Attackers pointed at your planeswalkers count.** `CreaturesAttackYouEvent` implements
  *    CR 509.1b the narrow way by default (Orim's Prayer), so Tomik has to opt in via
- *    `includePlaneswalkersYouControl`. The planeswalker-only attack is the test that would fail
+ *    `defenders = YOU_AND_PLANESWALKERS_YOU_CONTROL`. The planeswalker-only attack is the test that would fail
  *    without it.
  *  - **"That opponent" resolves.** `AttackersDeclaredEvent` published an empty `TriggerContext`
  *    before this card, so `Player.TriggeringPlayer` evaluated to null and the life loss went

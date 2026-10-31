@@ -1974,6 +1974,32 @@ class TriggerDetector(
                             )
                         }
                     }
+                    // "Whenever an opponent attacks a planeswalker you control with one or more
+                    // creatures, … that player" (Oath of Kaya): once per attacked planeswalker (the
+                    // card's ruling), the attacking player bound by fromEvent as "that player", the
+                    // planeswalker as the triggering entity, its attackers as the captured collection.
+                    else if (trigger is EventPattern.CreaturesAttackYouEvent &&
+                        (trigger as EventPattern.CreaturesAttackYouEvent).defenders ==
+                        AttackedDefenders.EACH_PLANESWALKER_YOU_CONTROL &&
+                        event is AttackersDeclaredEvent) {
+                        val attacked = matcher.attackedPlaneswalkersYouControl(
+                            trigger as EventPattern.CreaturesAttackYouEvent, event, controllerId, state
+                        )
+                        for ((planeswalkerId, attackers) in attacked) {
+                            triggers.add(
+                                PendingTrigger(
+                                    ability = ability,
+                                    sourceId = entityId,
+                                    sourceName = cardComponent.name,
+                                    controllerId = controllerId,
+                                    triggerContext = TriggerContext.fromEvent(event).copy(
+                                        triggeringEntityId = planeswalkerId,
+                                        capturedEntityIds = attackers
+                                    )
+                                )
+                            )
+                        }
+                    }
                     // "Whenever a player attacks you with one or more creatures, that player gets
                     // twice that many rad counters" (Struggle for Project Purity): capture the
                     // attackers declared at you, so "that many" is fixed at declaration (CR 508.1)

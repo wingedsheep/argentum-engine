@@ -3,6 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.m21.cards
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
+import com.wingedsheep.sdk.scripting.AttackedDefenders
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 
@@ -30,7 +31,7 @@ val MangaraTheDiplomat = card("Mangara, the Diplomat") {
     keywords(Keyword.LIFELINK)
 
     triggeredAbility {
-        trigger = Triggers.you.isAttacked(2, includePlaneswalkers = true)
+        trigger = Triggers.you.isAttacked(2, defenders = AttackedDefenders.YOU_AND_PLANESWALKERS_YOU_CONTROL)
         effect = Effects.DrawCards(1)
         description = "Whenever an opponent attacks with creatures, if two or more of those " +
             "creatures are attacking you and/or planeswalkers you control, draw a card."

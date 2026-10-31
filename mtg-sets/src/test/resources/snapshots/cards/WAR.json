@@ -6227,6 +6227,104 @@
     ]
 }
 
+// Oath of Kaya
+{
+    "name": "Oath of Kaya",
+    "manaCost": "{1}{W}{B}",
+    "typeLine": "Legendary Enchantment",
+    "oracleText": "When Oath of Kaya enters, it deals 3 damage to any target and you gain 3 life.\nWhenever an opponent attacks a planeswalker you control with one or more creatures, Oath of Kaya deals 2 damage to that player and you gain 2 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Oath of Kaya:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Oath of Kaya:2",
+                "trigger": {
+                    "type": "CreaturesAttackYouEvent",
+                    "defenders": "EACH_PLANESWALKER_YOU_CONTROL"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "TriggeringPlayer"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "209",
+        "rarity": "RARE",
+        "artist": "Wesley Burt",
+        "flavorText": "\"So everyone gets what they truly deserve, I will keep watch.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/a/faba010d-5b1b-4562-91d6-ec55303c4dcd.jpg?1783933391",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "If the target is an illegal target by the time the first ability of Oath of Kaya tries to resolve, the ability doesn't resolve. You won't gain 3 life."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If an opponent attacks more than one planeswalker you control, the last ability of Oath of Kaya triggers once for each of those attacked planeswalkers."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Ob Nixilis's Cruelty
 {
     "name": "Ob Nixilis's Cruelty",

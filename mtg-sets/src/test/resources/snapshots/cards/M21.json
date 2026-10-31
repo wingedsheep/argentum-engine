@@ -7957,7 +7957,7 @@
                 "trigger": {
                     "type": "CreaturesAttackYouEvent",
                     "minAttackers": 2,
-                    "includePlaneswalkersYouControl": true
+                    "defenders": "YOU_AND_PLANESWALKERS_YOU_CONTROL"
                 },
                 "binding": "ANY",
                 "effect": {

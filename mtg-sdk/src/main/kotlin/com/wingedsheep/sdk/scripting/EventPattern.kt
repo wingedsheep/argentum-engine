@@ -1275,11 +1275,14 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * declared against the player themself. That is the default, and it is what "creatures attack
      * you" prints.
      *
-     * [includePlaneswalkersYouControl] opts into the wider reading for the cards that spell it
-     * out — Tomik, Wielder of Law: "two or more of those creatures are attacking you **and/or
-     * planeswalkers you control**". It widens only which attackers *count*; the trigger is still
-     * the defending player's. Battles are never included: "planeswalkers you control" is literal,
-     * and a battle you protect is controlled by its caster, not by you.
+     * [defenders] names which defenders count ([AttackedDefenders]): the player alone (the
+     * default), "you **and/or planeswalkers you control**" (Tomik, Wielder of Law — it widens only
+     * which attackers *count*; the trigger is still the defending player's), or "whenever an
+     * opponent attacks **a planeswalker you control** with one or more creatures" (Oath of Kaya),
+     * which fires once for each of the controller's planeswalkers attacked by at least
+     * [minAttackers] creatures, binding the attacking player as "that player" and the planeswalker
+     * as the triggering entity. Battles are never included: "planeswalkers you control" is
+     * literal, and a battle you protect is controlled by its caster, not by you.
      *
      * [unblocked] is the "… attack you **and aren't blocked**" form (Coveted Jewel). It moves the
      * trigger from declare attackers to the end of the trigger controller's block declaration and
@@ -1297,7 +1300,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     @Serializable
     data class CreaturesAttackYouEvent(
         val minAttackers: Int = 1,
-        val includePlaneswalkersYouControl: Boolean = false,
+        val defenders: AttackedDefenders = AttackedDefenders.YOU,
         val unblocked: Boolean = false,
         val attackedPlayer: Player = Player.You
     ) : EventPattern {
@@ -1305,8 +1308,11 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
             require(attackedPlayer == Player.You || attackedPlayer == Player.EnchantedPlayer) {
                 "CreaturesAttackYouEvent: attackedPlayer supports You and EnchantedPlayer, not $attackedPlayer"
             }
-            require(attackedPlayer == Player.You || (!includePlaneswalkersYouControl && !unblocked)) {
-                "CreaturesAttackYouEvent: includePlaneswalkersYouControl and unblocked are only supported for attackedPlayer = You"
+            require(attackedPlayer == Player.You || (defenders == AttackedDefenders.YOU && !unblocked)) {
+                "CreaturesAttackYouEvent: defenders and unblocked are only supported for attackedPlayer = You"
+            }
+            require(defenders != AttackedDefenders.EACH_PLANESWALKER_YOU_CONTROL || !unblocked) {
+                "CreaturesAttackYouEvent: unblocked is not supported with defenders = EACH_PLANESWALKER_YOU_CONTROL"
             }
         }
 
@@ -1315,8 +1321,13 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
                 append(if (minAttackers <= 1) "enchanted player is attacked" else "$minAttackers or more creatures attack enchanted player")
                 return@buildString
             }
+            if (defenders == AttackedDefenders.EACH_PLANESWALKER_YOU_CONTROL) {
+                append("an opponent attacks a planeswalker you control with ")
+                append(if (minAttackers <= 1) "one or more creatures" else "$minAttackers or more creatures")
+                return@buildString
+            }
             append(if (minAttackers <= 1) "one or more creatures attack" else "$minAttackers or more creatures attack")
-            append(if (includePlaneswalkersYouControl) " you and/or planeswalkers you control" else " you")
+            append(if (defenders == AttackedDefenders.YOU_AND_PLANESWALKERS_YOU_CONTROL) " you and/or planeswalkers you control" else " you")
             if (unblocked) append(" and aren't blocked")
         }
     }
@@ -4209,3 +4220,23 @@ internal fun ordinalWord(n: Int): String = listOf(
     n % 10 == 3 -> "rd"
     else -> "th"
 })
+
+/**
+ * Which defenders a [EventPattern.CreaturesAttackYouEvent] watches (CR 508.1 — each attacker is
+ * declared attacking a player, planeswalker or battle).
+ */
+@Serializable
+enum class AttackedDefenders {
+    /** "creatures attack **you**" — only attackers declared against the player themself. */
+    YOU,
+
+    /** "attack you **and/or planeswalkers you control**" — one firing, counting both (Tomik, Wielder of Law). */
+    YOU_AND_PLANESWALKERS_YOU_CONTROL,
+
+    /**
+     * "whenever an opponent attacks **a planeswalker you control** with one or more creatures" —
+     * one firing per planeswalker you control that is attacked (Oath of Kaya's ruling), never for
+     * attackers aimed at you.
+     */
+    EACH_PLANESWALKER_YOU_CONTROL
+}

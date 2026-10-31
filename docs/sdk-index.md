@@ -1212,7 +1212,7 @@ Families:
 - `EventPattern.CountersRemovedEvent(counterType: CounterType?, filter: GameObjectFilter, lastRemoved: Boolean, byDamagePrevention: Boolean, removedBy: Player?)` — When one or more counters of a specific type are **removed** from a permanent — the mirror of CountersPlacedEvent.
 - `EventPattern.CreatureDealtDamageBySourceDiesEvent(sourceFilter: GameObjectFilter?, dyingFilter: GameObjectFilter?)` — Whenever a creature dealt damage this turn by a matching source dies.
 - `EventPattern.CreatureTurnedFaceUpEvent(player: Player, filter: GameObjectFilter)` — When a creature is turned face up.
-- `EventPattern.CreaturesAttackYouEvent(minAttackers: Int, includePlaneswalkersYouControl: Boolean, unblocked: Boolean, attackedPlayer: Player)` — When one or more creatures attack the trigger's controller — or, with attackedPlayer = EnchantedPlayer, the player the source Aura enchants ("whenever enchanted player is attacked").
+- `EventPattern.CreaturesAttackYouEvent(minAttackers: Int, defenders: AttackedDefenders, unblocked: Boolean, attackedPlayer: Player)` — When one or more creatures attack the trigger's controller — or, with attackedPlayer = EnchantedPlayer, the player the source Aura enchants ("whenever enchanted player is attacked").
 - `EventPattern.CreaturesAttackYourOpponentEvent(minAttackers: Int)` — When one or more creatures attack a player who is an opponent of the trigger's controller.
 - `EventPattern.CreaturesYouControlDiedEvent(filter: GameObjectFilter, excludeSelf: Boolean)` — Whenever one or more creatures you control die.
 - `EventPattern.CrewsEvent` — Whenever this creature crews a Vehicle.

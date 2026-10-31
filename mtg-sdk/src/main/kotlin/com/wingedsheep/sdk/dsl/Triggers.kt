@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.ControlChangeDirection
 import com.wingedsheep.sdk.scripting.DrawStepFirstCard
+import com.wingedsheep.sdk.scripting.AttackedDefenders
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.EventPattern.*
 import com.wingedsheep.sdk.scripting.ExploreReveal
@@ -1089,29 +1090,34 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
     }
 
     /**
-     * "is attacked" — "whenever one or more creatures attack you" ([Triggers.you]; with
-     * [includePlaneswalkers], "you and/or planeswalkers you control") or "whenever one or more of
+     * "is attacked" — "whenever one or more creatures attack you" ([Triggers.you]; [defenders]
+     * widens it to "you and/or planeswalkers you control", or moves it to "whenever an opponent
+     * attacks a planeswalker you control", once per attacked planeswalker) or "whenever one or more of
      * your opponents are attacked" ([Triggers.anOpponent]). Once per combat. [unblocked] is
      * "whenever one or more creatures attack you and aren't blocked" ([Triggers.you]; Coveted
      * Jewel) — it fires after blockers instead, and binds the attacking player as "that player".
      * `Triggers.player(Player.EnchantedPlayer).isAttacked()` is "whenever enchanted player is
      * attacked" on a Curse (Curse of Opulence); the attacking player is the triggering player.
      */
-    fun isAttacked(minAttackers: Int = 1, includePlaneswalkers: Boolean = false, unblocked: Boolean = false): TriggerSpec = when (player) {
+    fun isAttacked(
+        minAttackers: Int = 1,
+        defenders: AttackedDefenders = AttackedDefenders.YOU,
+        unblocked: Boolean = false
+    ): TriggerSpec = when (player) {
         Player.You -> spec(
             CreaturesAttackYouEvent(
                 minAttackers = minAttackers,
-                includePlaneswalkersYouControl = includePlaneswalkers,
+                defenders = defenders,
                 unblocked = unblocked
             )
         )
         Player.EachOpponent -> {
-            require(!includePlaneswalkers) { "includePlaneswalkers is only supported for Triggers.you" }
+            require(defenders == AttackedDefenders.YOU) { "defenders is only supported for Triggers.you" }
             require(!unblocked) { "unblocked is only supported for Triggers.you" }
             spec(CreaturesAttackYourOpponentEvent(minAttackers = minAttackers))
         }
         Player.EnchantedPlayer -> {
-            require(!includePlaneswalkers) { "includePlaneswalkers is only supported for Triggers.you" }
+            require(defenders == AttackedDefenders.YOU) { "defenders is only supported for Triggers.you" }
             require(!unblocked) { "unblocked is only supported for Triggers.you" }
             spec(CreaturesAttackYouEvent(minAttackers = minAttackers, attackedPlayer = Player.EnchantedPlayer))
         }

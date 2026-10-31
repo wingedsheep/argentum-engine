@@ -347,7 +347,7 @@ Fields that hand-written cards set on a subtype Assay does emit, but that Assay 
 | `ZoneChangeEvent` | `excludeSacrifice` (1), `excludeTo` (1), `requireCraftMaterial` (1) |
 | `AddColorlessMana` | `riders` (2) |
 | `ChangeTarget` | `newTargetMustBePlayer` (1), `onlyIfCurrentTargetIsController` (1) |
-| `CreaturesAttackYouEvent` | `includePlaneswalkersYouControl` (1), `minAttackers` (1) |
+| `CreaturesAttackYouEvent` | `defenders` (1), `minAttackers` (1) |
 | `FromZone` | `excludeSacrificedThisWay` (2) |
 | `Numeric` | `keyword` (1), `n` (1) |
 | `Power` | `base` (1), `exponent` (1) |

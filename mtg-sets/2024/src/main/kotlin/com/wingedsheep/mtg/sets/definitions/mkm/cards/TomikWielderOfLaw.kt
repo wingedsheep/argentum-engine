@@ -14,6 +14,7 @@ import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Triggers
+import com.wingedsheep.sdk.scripting.AttackedDefenders
 
 /**
  * Tomik, Wielder of Law — Murders at Karlov Manor #431
@@ -34,7 +35,7 @@ import com.wingedsheep.sdk.dsl.Triggers
  * [EventPattern.CreaturesAttackYouEvent] deliberately implements CR 509.1b the narrow way — an
  * attacker aimed at *your planeswalker* does not count as attacking *you* — because that is what
  * Orim's Prayer needs. Tomik prints the wider reading explicitly ("you and/or planeswalkers you
- * control"), so it opts in via `includePlaneswalkersYouControl`. Battles stay out: a battle you
+ * control"), so it opts in via `AttackedDefenders.YOU_AND_PLANESWALKERS_YOU_CONTROL`. Battles stay out: a battle you
  * protect is controlled by its caster, not by you.
  *
  * **`minAttackers = 2` and the [interveningIf] are both required, and they are not redundant.**
@@ -65,7 +66,7 @@ val TomikWielderOfLaw = card("Tomik, Wielder of Law") {
     keywords(Keyword.FLYING, Keyword.VIGILANCE)
 
     triggeredAbility {
-        trigger = Triggers.you.isAttacked(2, includePlaneswalkers = true)
+        trigger = Triggers.you.isAttacked(2, defenders = AttackedDefenders.YOU_AND_PLANESWALKERS_YOU_CONTROL)
         interveningIf = Conditions.CompareAmounts(
             DynamicAmounts.battlefield(
                 Player.Each,

@@ -8716,17 +8716,24 @@ The shapes in this family, with their engine notes.
   player gets twice that many rad counters" is
   `Effects.AddDynamicCounters(CounterType.RAD, DynamicAmounts.distinctEntitiesIn(CollectionSlot.TriggerCaptured) * 2, EffectTarget.PlayerRef(Player.TriggeringPlayer))`.
   The `unblocked` form captures, per triggering player, that player's unblocked attackers.
-  The underlying `EventPattern.CreaturesAttackYouEvent(minAttackers, includePlaneswalkersYouControl)`
-  exposes both knobs for cards that print them: `minAttackers` raises the batch threshold (there is no
-  `Triggers.` constant for it — construct the pattern inline, as the `YouAttackEvent(minAttackers = n)`
-  cards do), and `includePlaneswalkersYouControl = true` opts into the wider "you **and/or planeswalkers
-  you control**" reading that CR 509.1b denies by default. Tomik, Wielder of Law uses both. Note the
-  widened flag changes only which attackers *count*; the trigger still belongs to the defending player,
-  and battles are never included.
+  The underlying `EventPattern.CreaturesAttackYouEvent(minAttackers, defenders)` exposes both knobs
+  for cards that print them (`Triggers.you.isAttacked(minAttackers, defenders = …)`): `minAttackers`
+  raises the batch threshold, and `defenders: AttackedDefenders` names which defenders count —
+  `YOU` (default; CR 509.1b's narrow reading), `YOU_AND_PLANESWALKERS_YOU_CONTROL` ("you **and/or
+  planeswalkers you control**" — Tomik, Wielder of Law, Mangara, the Diplomat; it changes only which
+  attackers *count*, the trigger still fires once per combat), or `EACH_PLANESWALKER_YOU_CONTROL`.
+  Battles are never included.
+- `Triggers.you.isAttacked(defenders = AttackedDefenders.EACH_PLANESWALKER_YOU_CONTROL)` — "whenever an
+  opponent attacks **a planeswalker you control** with one or more creatures" (Oath of Kaya). Fires on
+  `AttackersDeclaredEvent` once **per attacked planeswalker** you control (the card's ruling), never
+  for attackers aimed at you. Each firing binds the attacking player as the triggering player ("that
+  player" = `EffectTarget.PlayerRef(Player.TriggeringPlayer)`), the planeswalker as the triggering
+  entity, and the attackers declared at it as the captured collection; `minAttackers` applies per
+  planeswalker. Not combinable with `unblocked`.
 - `Triggers.you.isAttacked(unblocked = true)` — "whenever one or more creatures [an opponent controls]
   attack you **and aren't blocked**" (Coveted Jewel). `CreaturesAttackYouEvent.unblocked` moves the
   trigger to the `BlockersDeclaredEvent` and counts the attackers aimed at you that have unblocked
-  status then (CR 509.1h; `minAttackers` / `includePlaneswalkersYouControl` still apply). Each
+  status then (CR 509.1h; `minAttackers` / `defenders = YOU_AND_PLANESWALKERS_YOU_CONTROL` still apply). Each
   defending player declares in turn in multiplayer, so it fires once — on the declaration
   (`BlockersDeclaredEvent.blockingPlayerId`) that completes your team's — and the unblocked
   attackers' controller is the triggering player (one firing per attacking player when teammates attack
@@ -8738,7 +8745,7 @@ The shapes in this family, with their engine notes.
   The trigger is the Curse controller's, but only creatures declared attacking the player the Curse
   enchants count (not their planeswalkers), once per combat; they're the firing's captured collection
   and the attacking player is the triggering player, as on the "you" form. It never fires while the
-  source enchants no player. `includePlaneswalkers` / `unblocked` are "you"-only. "Each opponent
+  source enchants no player. `defenders` / `unblocked` are "you"-only. "Each opponent
   attacking that player does the same" is judged on resolution (a player is attacking another if they
   control a creature attacking them — the Curse cycle's ruling): `ForEachPlayer(EachOpponent,
   If(YouControl(Creature.attackingEnchantedPlayer()), …))`, `Player.You` being the visited opponent

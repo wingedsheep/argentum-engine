@@ -23,7 +23,6 @@ import com.wingedsheep.engine.state.components.battlefield.chosenPlayer
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
-import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.state.components.player.CardsDrawnThisTurnComponent
@@ -39,6 +38,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.scripting.DrawStepFirstCard
+import com.wingedsheep.sdk.scripting.AttackedDefenders
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.TapSymbolInCost
 import com.wingedsheep.sdk.scripting.ZoneChangeCause
@@ -196,7 +196,11 @@ class TriggerMatcher(
                     (trigger.fromZoneOtherThan == null || event.fromZone != trigger.fromZoneOtherThan)
             }
             is EventPattern.CreaturesAttackYouEvent ->
-                attackersAgainstYou(trigger, event, sourceId, controllerId, state).size >= trigger.minAttackers
+                if (trigger.defenders == AttackedDefenders.EACH_PLANESWALKER_YOU_CONTROL) {
+                    attackedPlaneswalkersYouControl(trigger, event, controllerId, state).isNotEmpty()
+                } else {
+                    attackersAgainstYou(trigger, event, sourceId, controllerId, state).size >= trigger.minAttackers
+                }
             is EventPattern.CreaturesAttackYourOpponentEvent -> {
                 if (event !is AttackersDeclaredEvent) return false
                 // Count attackers declared against an opponent *player* of the controller (not the
@@ -1080,10 +1084,10 @@ class TriggerMatcher(
     }
 
     /**
-     * Only attackers declared against the player themself count, not ones attacking a planeswalker
-     * they control (CR 509.1b / Orim's Prayer ruling) — unless the card spells out "you and/or
-     * planeswalkers you control" (Tomik, Wielder of Law), which `includePlaneswalkersYouControl`
-     * opts into.
+     * Which defender an attacker must be aimed at to count, per [EventPattern.CreaturesAttackYouEvent.defenders]:
+     * by default only the player themself, not a planeswalker they control (CR 509.1b / Orim's
+     * Prayer ruling); "you and/or planeswalkers you control" (Tomik, Wielder of Law) adds the
+     * controller's planeswalkers; "a planeswalker you control" (Oath of Kaya) counts only those.
      */
     private fun attacksYou(
         trigger: EventPattern.CreaturesAttackYouEvent,
@@ -1095,21 +1099,47 @@ class TriggerMatcher(
         val defenderId = state.getEntity(attackerId)
             ?.get<com.wingedsheep.engine.state.components.combat.AttackingComponent>()
             ?.defenderId
-        return when {
-            defenderId == null -> false
-            defenderId == attackedPlayerId -> true
-            !trigger.includePlaneswalkersYouControl -> false
-            else -> state.getEntity(defenderId)
-                ?.get<ControllerComponent>()
-                ?.playerId == controllerId &&
-                state.projectedState.isPlaneswalker(defenderId)
+        if (defenderId == null) return false
+        return when (trigger.defenders) {
+            AttackedDefenders.YOU -> defenderId == attackedPlayerId
+            AttackedDefenders.YOU_AND_PLANESWALKERS_YOU_CONTROL ->
+                defenderId == attackedPlayerId || isPlaneswalkerControlledBy(defenderId, controllerId, state)
+            AttackedDefenders.EACH_PLANESWALKER_YOU_CONTROL -> isPlaneswalkerControlledBy(defenderId, controllerId, state)
         }
+    }
+
+    private fun isPlaneswalkerControlledBy(entityId: EntityId, playerId: EntityId, state: GameState): Boolean {
+        val projected = state.projectedState
+        return projected.getController(entityId) == playerId && projected.isPlaneswalker(entityId)
+    }
+
+    /**
+     * "Whenever an opponent attacks a planeswalker you control with one or more creatures" (Oath of
+     * Kaya): each planeswalker the trigger's controller controls that at least
+     * [EventPattern.CreaturesAttackYouEvent.minAttackers] declared attackers are aimed at, mapped to
+     * those attackers, in declaration order. The detector fires once per entry (the card's ruling:
+     * attacking several of your planeswalkers triggers once for each). Only declared attackers count
+     * (CR 508.4), so a creature put onto the battlefield attacking a planeswalker never fires it.
+     */
+    fun attackedPlaneswalkersYouControl(
+        trigger: EventPattern.CreaturesAttackYouEvent,
+        event: EngineGameEvent,
+        controllerId: EntityId,
+        state: GameState
+    ): Map<EntityId, List<EntityId>> {
+        if (event !is AttackersDeclaredEvent) return emptyMap()
+        return event.attackers
+            .filter { attacksYou(trigger, it, controllerId, controllerId, state) }
+            .groupBy {
+                state.getEntity(it)!!.get<com.wingedsheep.engine.state.components.combat.AttackingComponent>()!!.defenderId
+            }
+            .filterValues { it.size >= trigger.minAttackers }
     }
 
     /**
      * The attackers behind a [EventPattern.CreaturesAttackYouEvent] firing: on the declare-attackers
-     * event, the declared attackers aimed at the trigger's controller (or, with
-     * `includePlaneswalkersYouControl`, at their planeswalkers); for the `unblocked` form, the
+     * event, the declared attackers aimed at the defenders [EventPattern.CreaturesAttackYouEvent.defenders]
+     * names; for the `unblocked` form, the
      * attackers left unblocked once the controller's team has declared blockers.
      *
      * The detector stores them as the trigger's captured collection, so "that many" (Struggle for
