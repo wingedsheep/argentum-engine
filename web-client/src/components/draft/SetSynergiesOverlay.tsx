@@ -1625,7 +1625,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Loot Control',
         colors: ['U', 'B'],
         keyCard: 'Tomebound Lich',
-        description: 'Trade early with removal and deathtouch, then draw and discard every turn with Tomebound Lich and friends to find the best threats. A control deck that wins the long game on card quality.',
+        description: 'Trade early with removal and deathtouch, then loot with Tomebound Lich and friends to find the best threats. A control deck that wins the long game on card quality.',
       },
       {
         name: 'Damage Removal',
@@ -1644,7 +1644,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Go Wide',
         colors: ['G', 'W'],
         keyCard: 'Ironroot Warlord',
-        description: 'Flood the board with creatures and tokens so Ironroot Warlord and anthem effects make every attacker big. A midrange deck that overwhelms single blockers.',
+        description: 'Flood the board with creatures and tokens so Ironroot Warlord grows huge and its Soldiers keep coming. A midrange deck that overwhelms single blockers.',
       },
       {
         name: 'Life Drain',
