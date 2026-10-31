@@ -147,6 +147,57 @@ export interface SetDetail {
   readonly extraGroups: readonly ExtraGroup[]
 }
 
+/**
+ * A set's AI-reading score: of its authored cards, how many the engine AI's static card readers
+ * read fully (the headline), and of their checked abilities, how many are read (the secondary,
+ * ability-weighted measure).
+ */
+export interface SetAiReading {
+  readonly readFully: number
+  readonly total: number
+  readonly abilitiesRead: number
+  readonly abilities: number
+}
+
+/** One effect-type group the AI misses in a set: the audit key (`intent: AddCountersEffect`) and its cards. */
+export interface AiGapGroup {
+  readonly key: string
+  /** `polarity`, `intent`, `combat`, `timing` or `modal`. */
+  readonly check: string
+  readonly effectType: string
+  readonly cards: readonly string[]
+}
+
+/** A set's unread cards, grouped by what the AI misses — biggest group first. */
+export interface SetAiReadingDetail {
+  readonly ready: boolean
+  readonly score: SetAiReading | null
+  readonly groups: readonly AiGapGroup[]
+  readonly unread: readonly { readonly name: string; readonly flags: readonly string[] }[]
+}
+
+export async function fetchSetAiReading(code: string): Promise<SetAiReadingDetail> {
+  const res = await fetch(`/api/sets/${encodeURIComponent(code)}/ai-reading`)
+  if (!res.ok) throw new Error(`Failed to load AI reading (${res.status})`)
+  return res.json() as Promise<SetAiReadingDetail>
+}
+
+/**
+ * Per-set AI-read counts from the AI card-reading audit (`docs/ai/reading-audit.md`). The server
+ * indexes the corpus lazily in the background, so the first answers are `ready: false` with no
+ * sets; poll until it is ready. A set with no authored cards has no entry.
+ */
+export interface AiReadingSummary {
+  readonly ready: boolean
+  readonly sets: Readonly<Record<string, SetAiReading>>
+}
+
+export async function fetchAiReadingSummary(): Promise<AiReadingSummary> {
+  const res = await fetch('/api/sets/coverage/ai-reading')
+  if (!res.ok) throw new Error(`Failed to load AI reading (${res.status})`)
+  return res.json() as Promise<AiReadingSummary>
+}
+
 /** Per-set card-implementation coverage, newest release first. */
 export async function fetchSetCoverage(): Promise<readonly SetCoverage[]> {
   const res = await fetch('/api/sets/coverage')

@@ -954,6 +954,19 @@ data class AiProfile(
      */
     val libraryClock: Boolean = false,
     /**
+     * Price **mana banked in a permanent that sacrifices itself to make it** — Treasure, Gold, an
+     * Eldrazi Spawn — as mana: the evaluator's `OneShotMana` term, half the next land drop on the
+     * controller's land curve, and a full land drop's worth when it is the mana a spell in our own
+     * hand is one short of. Clue, Food and Blood pay out a card or life, not mana, and stay out.
+     *
+     * #4116 (choose-N modal modes): a mode that makes a Treasure scored as nothing worth having —
+     * [Tempo][com.wingedsheep.ai.engine.evaluation.Tempo] counts lands only, and the board prior
+     * read the token as a 0.7-point mana rock whatever the hand held. Gala Greeters' alliance
+     * trigger took 2 life at 20 over a Treasure with a four-drop in hand on three lands.
+     * `TreasureValueAiTest` pins it.
+     */
+    val oneShotManaIsMana: Boolean = false,
+    /**
      * Cast **enablers before what they discount**: in our own main phase a spell scores as at
      * least the best spell it makes cheaper (or castable), judged from the position right after it
      * — the same credit [landDropUnlocksSpells] gives a land.
@@ -2400,6 +2413,7 @@ data class AiProfile(
             surplusLandsReadTheHand = true,
             lookDigsForLand = true,
             libraryClock = true,
+            oneShotManaIsMana = true,
             rollouts = PRODUCTION_CANDIDATE_EXPIRING.rollouts?.copy(staticPriorPlayouts = 1.0),
         )
 
@@ -2564,6 +2578,16 @@ data class AiProfile(
         val PRODUCTION_CANDIDATE_SURPLUSLANDS = PRODUCTION_CANDIDATE_EXPIRING.copy(
             id = "production-candidate-surpluslands",
             surplusAwareLands = true,
+        )
+
+        /**
+         * [oneShotManaIsMana] on top of [PRODUCTION_CANDIDATE_EXPIRING] — the last pinned candidate
+         * [LIVE] builds on — so `just arena production-candidate-expiring
+         * production-candidate-oneshotmana` measures this flag and nothing else. [LIVE] ships it.
+         */
+        val PRODUCTION_CANDIDATE_ONESHOTMANA = PRODUCTION_CANDIDATE_EXPIRING.copy(
+            id = "production-candidate-oneshotmana",
+            oneShotManaIsMana = true,
         )
 
         /**

@@ -285,6 +285,7 @@ class AIPlayer(
                 surplusAwareLands = profile.surplusAwareLands,
                 libraryClock = profile.libraryClock,
                 surplusLandsReadTheHand = profile.surplusLandsReadTheHand,
+                oneShotManaIsMana = profile.oneShotManaIsMana,
             )
             val combatAdvisor = CombatAdvisor(
                 simulator, evaluator, cardRegistry, advisorRegistry,

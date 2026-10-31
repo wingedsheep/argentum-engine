@@ -6415,6 +6415,28 @@ does not exist, that first sweep downloads the bulk; where it cannot, the page s
 live parser and rule tree and reports the failure. The differential needs `mtg-sets` test resources
 and so answers "no goldens found" off a bootJar — one page degraded, the rest intact.
 
+### What the engine AI reads
+
+Inside the app, each card page also has an **AI reading** panel: what the engine AI's static card
+readers (target polarity, card intent, combat reach, end-of-turn timing, the escalate picker)
+understand of each of the card's abilities — the corpus audit of
+[`docs/ai/reading-audit.md`](../docs/ai/reading-audit.md), placed. Each spell, triggered and
+activated ability is a row marked read (✓) or with gaps (✕); each finding names its reader, the
+target slot or the step of the effect it is about, a plain-English reason ("target 1: can't tell if
+this helps or hurts"), and the SDK effect type for a developer. A chip beside the card's title sums
+it up ("AI reads 3/4 abilities") and jumps to the panel. The card list gains an AI column and an
+**AI gaps** filter.
+
+Which definition is read: the engine's own (the live registry), else the hand-written golden, else —
+for a card nobody has implemented — Assay's whole-card [`CardCompiler`] output, labelled a
+**preview** of what the AI would understand if the card were written the way Assay reads it.
+
+This module cannot compute any of that: the readers live in `:ai`, which depends on the engine, and
+`:oracle-assay` depends on the SDK alone. So `explore/AiReading.kt` declares an
+`AiReadingProvider` interface and the views the page renders, `ExploreApi` takes one optionally, and
+`game-server` passes its implementation (`AiReadingService`) when it mounts the explorer. Standalone
+`just assay-explore` passes none, and the panel says the AI reading needs the game server.
+
 ## The verdict ledger
 
 `just assay-bake` writes `game-server/src/main/resources/coverage/assay-verdicts.json`: one sorted

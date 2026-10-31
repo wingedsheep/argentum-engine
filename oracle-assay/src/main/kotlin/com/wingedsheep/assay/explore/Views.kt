@@ -231,7 +231,7 @@ internal object Views {
     // Cards — the browsable sweep
     // -------------------------------------------------------------------------------------------
 
-    fun cards(index: AssayIndex, filter: CardFilter, offset: Int, limit: Int): JsonObject {
+    fun cards(index: AssayIndex, filter: CardFilter, offset: Int, limit: Int, ai: AiColumn = AiColumn.NONE): JsonObject {
         val matching = index.rows.asSequence().filter(filter::accepts)
         val page = matching.drop(offset).take(limit).toList()
         return buildJsonObject {
@@ -244,6 +244,10 @@ internal object Views {
             // reads as a set the sweep lost cards from.
             put("setPrinted", filter.setCards?.size ?: 0)
             put("setUnresolved", filter.setUnresolved)
+            // Whether the AI column means anything here: no provider (standalone), or a provider
+            // still indexing the corpus, are both said rather than shown as an empty column.
+            put("aiAvailable", ai.available)
+            put("aiReady", ai.ready)
             put(
                 "rows",
                 buildJsonArray {
@@ -258,6 +262,7 @@ internal object Views {
                                 put("inScope", row.inScope)
                                 put("golden", index.hasGolden(row.name))
                                 put("declines", strings(row.declineKeys(DeclineKey.TOKEN)))
+                                if (ai.available) filter.aiReadsFully(row.name)?.let { put("aiReadsFully", it) }
                             }
                         )
                     }
@@ -610,6 +615,13 @@ internal object Views {
     private fun Int?.orZero() = this ?: 0
 }
 
+/** Whether the card table can show the AI column: a provider exists, and its corpus index is done. */
+internal data class AiColumn(val available: Boolean, val ready: Boolean) {
+    companion object {
+        val NONE = AiColumn(available = false, ready = false)
+    }
+}
+
 /** The fields the live-parse page posts. A card that was never printed, in Scryfall's own shape. */
 internal data class ParseRequest(
     val name: String,
@@ -633,6 +645,10 @@ internal data class CardFilter(
     val scopeOnly: Boolean,
     val goldenOnly: Boolean,
     private val goldens: Set<String>,
+    /** Only implemented cards the engine AI does not read fully. */
+    val aiGaps: Boolean = false,
+    /** The [AiReadingProvider.readsFully] answer for a card name — null when unknown. */
+    val aiReadsFully: (String) -> Boolean? = { null },
 ) {
     /** True when a set was asked for and could not be resolved — the page says so rather than lying. */
     val setUnresolved: Boolean get() = set != null && setCards == null
@@ -641,6 +657,7 @@ internal data class CardFilter(
         if (scopeOnly && !row.inScope) return false
         if (set != null && setCards?.contains(row.oracleId, row.name) != true) return false
         if (goldenOnly && row.name !in goldens && row.name.substringBefore(" // ") !in goldens) return false
+        if (aiGaps && aiReadsFully(row.name) != false) return false
         if (query != null && !row.name.lowercase(Locale.ROOT).contains(query.lowercase(Locale.ROOT))) return false
         return when (state) {
             null, "" -> true

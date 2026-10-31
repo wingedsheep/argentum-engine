@@ -52,6 +52,7 @@ data class EvaluationWeights(
         surplusAwareLands: Boolean = false,
         libraryClock: Boolean = false,
         surplusLandsReadTheHand: Boolean = false,
+        oneShotManaIsMana: Boolean = false,
     ): BoardEvaluator = CompositeBoardEvaluator(
         listOfNotNull(
             life to LifeDifferential,
@@ -71,6 +72,8 @@ data class EvaluationWeights(
             tempo to Tempo,
             // In life units, so on [life]'s weight: an empty library is a near-loss like 0 life.
             if (libraryClock) life to LibraryClock else null,
+            // In land drops, so on [tempo]'s weight: a Treasure is a share of the next land.
+            if (oneShotManaIsMana) tempo to OneShotMana(intents) else null,
         )
     )
 
@@ -157,13 +160,14 @@ object EvalWeights {
         surplusAwareLands: Boolean = false,
         libraryClock: Boolean = false,
         surplusLandsReadTheHand: Boolean = false,
+        oneShotManaIsMana: Boolean = false,
     ): BoardEvaluator =
         apprenticeWeights[id]?.takeIf(RawEvaluationWeights::isValid)?.toEvaluator(intents)
             ?: rawResourceWeights[id]?.takeIf(RawEvaluationWeights::isValid)?.toEvaluator(intents)
             ?: resolve(id).toEvaluator(
                 intents, landDropIsNotCardLoss, sequenceLandsByUsableMana, discountedRaceClock,
                 creatureValuation, priceLandsInHandAsMana, evasionAfterAttacking, pendingLandDropIsMana,
-                surplusAwareLands, libraryClock, surplusLandsReadTheHand,
+                surplusAwareLands, libraryClock, surplusLandsReadTheHand, oneShotManaIsMana,
             )
 
     /** Whether [id] selects a complete, finite raw vector rather than the composite fallback. */

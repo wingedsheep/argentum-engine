@@ -2,6 +2,7 @@ package com.wingedsheep.gameserver.controller
 
 import com.wingedsheep.ai.engine.deck.SetArchetypes
 import com.wingedsheep.engine.limited.BoosterGenerator
+import com.wingedsheep.gameserver.coverage.AiReadingService
 import com.wingedsheep.gameserver.coverage.SetCoverageService
 import com.wingedsheep.mtg.sets.MtgSetCatalog
 import com.wingedsheep.sdk.model.CardDefinition
@@ -19,6 +20,8 @@ import org.springframework.web.server.ResponseStatusException
  * - `GET /api/sets/booster-ready`         — subset draftable for sealed/draft (booster generation).
  * - `GET /api/sets/coverage`              — per-set card-implementation coverage (Set Completion view).
  * - `GET /api/sets/coverage/summary`      — project-wide distinct + printing rollup (Set Completion banner).
+ * - `GET /api/sets/coverage/ai-reading`   — per-set AI-reading score: authored cards the engine AI reads fully.
+ * - `GET /api/sets/{code}/ai-reading`     — one set's unread cards, grouped by the effect type the AI misses.
  * - `GET /api/sets/progress`              — distinct-cards-over-time series (Set Completion chart).
  * - `GET /api/sets/{setCode}/archetypes`  — limited archetype synergies for a single set.
  * - `GET /api/sets/{setCode}/cube-cards`  — a set's implemented cards with their rarity in it, for
@@ -35,6 +38,7 @@ import org.springframework.web.server.ResponseStatusException
 class SetsController(
     private val boosterGenerator: BoosterGenerator,
     private val setCoverageService: SetCoverageService,
+    private val aiReadingService: AiReadingService,
 ) {
 
     /**
@@ -98,6 +102,24 @@ class SetsController(
      */
     @GetMapping("/coverage/summary")
     fun getCoverageSummary(): SetCoverageService.CoverageSummaryDTO = setCoverageService.summary()
+
+    /**
+     * Per set, how many of its authored cards the engine AI's static readers read fully (the AI
+     * card-reading audit). Its own route rather than a field of `/coverage` because it is computed
+     * lazily in the background: the first request starts the index and answers `ready = false`, and
+     * the Set Completion view polls until it is ready instead of waiting on it.
+     */
+    @GetMapping("/coverage/ai-reading")
+    fun getAiReading(): AiReadingService.SetSummary = aiReadingService.setSummary()
+
+    /**
+     * One set's AI-reading detail: its unread cards, grouped by the effect type the AI misses,
+     * biggest group first. Same lazy index as [getAiReading]; 404 for an uncatalogued set.
+     */
+    @GetMapping("/{setCode}/ai-reading")
+    fun getSetAiReading(@PathVariable setCode: String): AiReadingService.SetDetail =
+        aiReadingService.setDetail(setCode.uppercase())
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "No set $setCode")
 
     /**
      * One set's full canonical card list, each card marked implemented / missing

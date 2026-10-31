@@ -307,6 +307,42 @@
   }
   .form .pair { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
 
+  /* ---- AI reading ----
+     What the engine AI's static readers understand, one row per ability. Read is the accent with a
+     check; a gap is ochre with a cross — never colour alone, and never the "bad" red, because an
+     unread effect is work to do rather than a bug. A static ability nobody asks about is hollow. */
+  .ai-sum { display: inline-flex; align-items: center; gap: .3rem; }
+  button.ai-sum { cursor: pointer; font-family: ui-monospace, Menlo, monospace; font-size: .62rem; }
+  button.ai-sum:hover { filter: brightness(.92); }
+  .ai-sum.ok { color: var(--accent); border-color: var(--accent); background: var(--accent-w); }
+  .ai-sum.gap { color: var(--ochre); border-color: var(--ochre); background: var(--ochre-w); }
+  .ai-sum.wait { color: var(--faint); }
+  .ai-sum .dot { width: 5px; height: 5px; }
+  .aiab { border: 1px solid var(--hair); background: var(--surface); margin-bottom: .45rem; box-shadow: var(--shadow); }
+  .aiab > .head { display: grid; grid-template-columns: auto minmax(0,1fr) auto; gap: .55rem; align-items: baseline; padding: .4rem .7rem; }
+  .aiab.ok > .head { border-left: 2px solid var(--accent); }
+  .aiab.gap > .head { border-left: 2px solid var(--ochre); }
+  .aiab.na > .head { border-left: 2px solid var(--hair-2); }
+  .aiab .ttl { font-family: ui-monospace, Menlo, monospace; font-size: .64rem; text-transform: uppercase; letter-spacing: .09em; color: var(--muted); white-space: nowrap; }
+  .aiab .txt { font-size: .78rem; overflow-wrap: anywhere; }
+  .aiab.na .txt { color: var(--muted); }
+  .aiab .fs { border-top: 1px solid var(--hair); padding: .35rem .7rem .45rem; display: flex; flex-direction: column; gap: .3rem; }
+  .aif { display: grid; grid-template-columns: 1.1rem minmax(0,1fr); gap: .35rem; font-size: .76rem; }
+  .aif .why { color: var(--ink); }
+  .aif.gap .why { color: var(--ink); font-weight: 500; }
+  .aif .dev { display: block; font-family: ui-monospace, Menlo, monospace; font-size: .66rem; color: var(--faint); overflow-wrap: anywhere; }
+  .aif .dev q { color: var(--muted); quotes: "\201C" "\201D"; }
+  .ic { display: inline-flex; align-items: center; justify-content: center; width: 1rem; height: 1rem; border-radius: 50%; font-size: .62rem; font-weight: 700; line-height: 1; flex: none; margin-top: .08rem; }
+  .ic.ok { color: var(--accent); background: var(--accent-w); border: 1px solid var(--accent); }
+  .ic.gap { color: var(--ochre); background: var(--ochre-w); border: 1px solid var(--ochre); }
+  .ic.na { color: var(--faint); border: 1px dashed var(--hair-2); }
+  .aikey { display: flex; flex-wrap: wrap; gap: .2rem 1rem; font-size: .7rem; color: var(--muted); margin: .1rem 0 .6rem; align-items: center; }
+  .aikey span { display: inline-flex; align-items: center; gap: .3rem; }
+  .callout.preview { border-left-color: var(--ochre); margin: 0 0 .7rem; }
+  .callout.preview .h { color: var(--ochre); }
+  .aiwait { display: flex; align-items: center; gap: .5rem; color: var(--faint); font-size: .78rem; padding: 1rem; border: 1px dashed var(--hair-2); border-radius: 3px; }
+  td.ai { text-align: center; }
+
   .note { font-size: .72rem; color: var(--faint); }
   .callout { border-left: 2px solid var(--accent); background: var(--surface); padding: .6rem .8rem; margin-top: 1.2rem; }
   .callout .h { font-family: ui-monospace, Menlo, monospace; font-size: .64rem; text-transform: uppercase; letter-spacing: .1em; color: var(--accent); display: block; margin-bottom: .25rem; }
@@ -494,7 +530,13 @@ function route() {
   const h = location.hash || "";
   el("main").scrollTop = 0;
   buildNav();
-  if (h.startsWith("#c/")) viewCard(decodeURIComponent(h.slice(3)));
+  // `#c/<name>/ai` opens the card scrolled to its AI reading — the Set Completion view's AI-gaps
+  // list links there, since the gap is what the reader came to see.
+  if (h.startsWith("#c/")) {
+    const rest = h.slice(3);
+    const toAi = rest.endsWith("/ai");
+    viewCard(decodeURIComponent(toAi ? rest.slice(0, -3) : rest), toAi);
+  }
   else if (h.startsWith("#d/")) {
     const rest = h.slice(3);
     const cut = rest.indexOf("/");
@@ -948,16 +990,19 @@ function probeResultHTML(r) {
 
 /* =========================== cards =========================== */
 
-const cardFilter = { state: "", q: "", set: "", scope: false, golden: false, offset: 0, rows: [] };
+const cardFilter = { state: "", q: "", set: "", scope: false, golden: false, ai: false, offset: 0, rows: [] };
+let cardsShowAi = false;
 
 async function viewCards() {
   const d = await api("cards", {
     state: cardFilter.state, q: cardFilter.q, set: cardFilter.set,
     scope: cardFilter.scope ? 1 : "", golden: cardFilter.golden ? 1 : "",
+    ai: cardFilter.ai ? "gaps" : "",
     offset: cardFilter.offset, limit: 100,
   });
   if (indexing(d)) { el("view").innerHTML = indexingHTML(d); return; }
   cardFilter.rows = cardFilter.offset ? cardFilter.rows.concat(d.rows) : d.rows;
+  cardsShowAi = !!d.aiAvailable;
 
   const states = [["", "all"], ["round-trip", "round-trip"], ["variant", "variant"],
                   ["vanilla", "vanilla"], ["declined", "declined"]];
@@ -989,11 +1034,16 @@ async function viewCards() {
              title="every card printed in the set — Scryfall's per-set list, not the Set column">
       <button class="chip${cardFilter.scope ? " on" : ""}" id="cscope" title="vanilla + keyword-only — Phase 1's own target class">in scope</button>
       <button class="chip${cardFilter.golden ? " on" : ""}" id="cgold" title="cards that already have a hand-written definition">hand-written</button>
+      ${d.aiAvailable ? '<button class="chip' + (cardFilter.ai ? " on" : "") + '" id="cai" title="implemented cards the engine AI does not read fully">✕ AI gaps</button>' : ""}
       <span class="cnt">${fmt(d.total)} cards</span>
     </div>
     ${setNote}
+    ${d.aiAvailable && !d.aiReady ? '<p class="note" style="margin:0 0 .6rem"><span class="dot load" style="display:inline-block;margin-right:.35rem"></span>' +
+      "The AI reading index is still building in the background, so the AI column and the AI-gaps filter are incomplete. " +
+      '<a href="#cards" id="airetry">Reload</a> in a few seconds.</p>' : ""}
     <div class="tablewrap"><table>
-      <thead><tr><th>Card</th><th title="the printing the Oracle bulk shows this card under — one per Oracle ID, so a reprint is credited to its newest set">Set</th><th class="num">Lines</th><th>Verdict</th><th>Blocked on</th></tr></thead>
+      <thead><tr><th>Card</th><th title="the printing the Oracle bulk shows this card under — one per Oracle ID, so a reprint is credited to its newest set">Set</th><th class="num">Lines</th><th>Verdict</th>${
+        cardsShowAi ? '<th class="ai" title="implemented cards only: ✓ the engine AI reads every ability, ✕ it has gaps">AI</th>' : ""}<th>Blocked on</th></tr></thead>
       <tbody>${cardFilter.rows.map(cardRowHTML).join("")}</tbody>
     </table></div>
     ${cardFilter.rows.length < d.total
@@ -1007,6 +1057,8 @@ async function viewCards() {
   }
   el("cscope").onclick = () => { cardFilter.scope = !cardFilter.scope; reload(); };
   el("cgold").onclick = () => { cardFilter.golden = !cardFilter.golden; reload(); };
+  if (el("cai")) el("cai").onclick = () => { cardFilter.ai = !cardFilter.ai; reload(); };
+  if (el("airetry")) el("airetry").onclick = (e) => { e.preventDefault(); reload(); };
 
   // Re-rendering replaces the input the user is typing in, so the caret is restored explicitly.
   let timer = null;
@@ -1049,6 +1101,8 @@ function cardRowHTML(r) {
     <td class="mono" style="color:var(--muted)">${esc(r.set)}</td>
     <td class="num" style="color:var(--muted)">${r.lines}</td>
     <td>${STATE_TAG[r.state] || ""}</td>
+    ${cardsShowAi ? '<td class="ai">' + (r.aiReadsFully === true ? '<span class="ic ok" title="the AI reads every ability" aria-label="AI reads it fully">✓</span>'
+      : r.aiReadsFully === false ? '<span class="ic gap" title="the AI has gaps on this card" aria-label="AI has gaps">✕</span>' : "") + "</td>" : ""}
     <td class="mono" style="font-size:.72rem;color:var(--muted)">${
       r.declines.slice(0, 3).map((t) => '<a href="#d/token/' + encodeURIComponent(t) + '">' + esc(t) + "</a>").join(", ")}</td>
   </tr>`;
@@ -1056,7 +1110,7 @@ function cardRowHTML(r) {
 
 /* =========================== one card =========================== */
 
-async function viewCard(name) {
+async function viewCard(name, toAi = false) {
   const d = await api("card", { name });
   if (indexing(d)) { el("view").innerHTML = indexingHTML(d); return; }
   if (d.error) {
@@ -1071,10 +1125,121 @@ async function viewCard(name) {
       ${d.roundTrips ? '<span class="tag k">round-trips</span>' : d.covered ? '<span class="tag w">covered</span>' : '<span class="tag">not covered</span>'}
       ${d.inScope ? '<span class="tag" title="vanilla or keyword-only — Phase 1\'s target class">in scope</span>' : ""}
       <span class="tag">${esc(d.layout)}</span>
+      <span class="tag ai-sum wait" id="aisum" title="what the engine AI's card readers understand of this card"><span class="dot load"></span>AI reading…</span>
     </div>
     ${assayHTML(d)}
+    <div class="block" id="aiblock"><h2>AI reading</h2>
+      <div class="aiwait"><span class="dot load"></span>Asking the engine AI's card readers…</div></div>
     ${goldenHTML(d.golden)}`;
   rail("", []);
+  loadAiReading(d.name, toAi);
+}
+
+/* =========================== AI reading =========================== */
+
+/* What the engine AI understands of the card, beside how Assay reads it. Its own request, so the
+   Assay half paints at once; a response for a card the user has already left is dropped. */
+let aiToken = 0;
+
+async function loadAiReading(name, scroll = false) {
+  const token = ++aiToken;
+  let d;
+  try { d = await api("ai", { name }); }
+  catch (e) { d = { error: "the request failed (" + e.message + ")" }; }
+  if (token !== aiToken || !el("aiblock")) return;
+  const [sum, body] = aiReadingHTML(d);
+  el("aisum").outerHTML = sum;
+  el("aiblock").innerHTML = "<h2>AI reading</h2>" + body;
+  // The panel sits below Assay's (often long) reading; the chip up top jumps to it.
+  el("aisum").onclick = () => el("aiblock").scrollIntoView({ behavior: "smooth", block: "start" });
+  if (scroll) el("aiblock").scrollIntoView({ block: "start" });
+}
+
+const AI_SOURCE = {
+  implemented: "Read from the engine's own definition of the card — the one the AI plays with.",
+};
+
+/* The summary chip and the panel body, for every state the route can answer with. */
+function aiReadingHTML(d) {
+  const chip = (cls, text, title) =>
+    '<button class="tag ai-sum ' + cls + '" id="aisum" title="' + esc(title) + ' — jump to the AI reading">' + text + "</button>";
+  if (d.available === false) {
+    return [chip("wait", "AI reading n/a", "AI reading needs the game server"),
+      `<div class="empty">The AI reading is only available when the explorer runs inside the game
+      server — open it from the <b>Assay Explorer</b> tab of the Set Completion view. Standalone
+      <code>just assay-explore</code> has no engine AI on its classpath, by design: Assay depends on
+      the SDK alone.</div>`];
+  }
+  if (indexing(d)) {
+    return [chip("wait", "AI reading…", "waiting for the corpus sweep"),
+      '<div class="aiwait"><span class="dot load"></span>Waiting for the corpus sweep to finish.</div>'];
+  }
+  if (d.error) {
+    return [chip("gap", "AI reading failed", d.error),
+      '<div class="empty" style="border-color:var(--bad);color:var(--bad)">Couldn\'t read this card: ' + esc(d.error) + "</div>"];
+  }
+  if (d.source === "none") {
+    return [chip("wait", "AI: nothing to read", "not implemented, and Assay doesn't read it whole"),
+      `<div class="empty">Nobody has implemented this card and Assay doesn't read it whole, so there is
+      no definition for the AI to read. Assay stopped at: ${esc(d.why)}</div>`];
+  }
+  const r = d.reading;
+  const checked = r.abilities.filter((a) => a.checked);
+  const read = checked.filter((a) => a.readFully).length;
+  const preview = d.source === "preview";
+  const summary = checked.length
+    ? (preview ? "AI would read " : "AI reads ") + read + "/" + checked.length + " abilit" + (checked.length === 1 ? "y" : "ies")
+    : "AI: nothing to read";
+  const sum = chip(checked.length ? (read === checked.length ? "ok" : "gap") : "wait",
+    (checked.length ? (read === checked.length ? "✓ " : "✕ ") : "") + summary,
+    preview ? "a preview: the card isn't implemented" : "of the abilities the AI's readers are asked about");
+
+  let html = preview
+    ? `<div class="callout preview"><span class="h">Preview — not implemented</span><p>Nobody has
+      implemented this card yet. This is what the AI would understand if it were implemented the way
+      Assay reads it: the readers ran on Assay's whole-card compile.</p></div>`
+    : '<p class="note">' + AI_SOURCE.implemented + "</p>";
+  if (r.abilities.length) html += `<div class="aikey"><span><span class="ic ok">✓</span>understood</span>
+    <span><span class="ic gap">✕</span>not understood — the AI falls back to a generic default here</span>
+    ${r.abilities.some((a) => !a.checked) ? '<span><span class="ic na">–</span>not checked</span>' : ""}</div>`;
+  else {
+    html += `<div class="empty">No spell effect and no abilities for the readers to check. Keywords
+      such as flying aren't part of this reading.</div>`;
+  }
+  html += r.abilities.map(aiAbilityHTML).join("");
+  if (r.flags.length) {
+    html += '<details class="raw"><summary>audit flags (' + r.flags.length + ")</summary>" +
+      '<div class="struct" style="margin-top:.35rem">' + r.flags.map(esc).join("<br>") + "</div>" +
+      '<p class="note" style="margin-top:.35rem">The same keys <code>just ai-reading-audit</code> groups by, ' +
+      "and the ratchet baseline records.</p></details>";
+  }
+  return [sum, html];
+}
+
+function aiAbilityHTML(a) {
+  const state = !a.checked ? "na" : a.readFully ? "ok" : "gap";
+  const icon = state === "ok" ? "✓" : state === "gap" ? "✕" : "–";
+  const title = (a.face ? a.face + " · " : "") + a.title;
+  const fs = a.checked
+    ? a.findings.map(aiFindingHTML).join("")
+    : '<div class="aif"><span></span><span class="note">Static abilities aren\'t checked: the AI sees ' +
+      "their effect through the board state rather than through a card reader.</span></div>";
+  return `<div class="aiab ${state}">
+    <div class="head"><span class="ic ${state}" aria-label="${state === "ok" ? "understood" : state === "gap" ? "not fully understood" : "not checked"}">${icon}</span>
+      <span class="txt"><span class="ttl">${esc(title)}</span> ${esc(a.text) || '<span class="note">(no text)</span>'}</span>
+      ${state === "ok" ? '<span class="tag k">read</span>' : state === "gap" ? '<span class="tag w">gaps</span>' : '<span class="tag">not checked</span>'}</div>
+    <div class="fs">${fs}</div>
+  </div>`;
+}
+
+function aiFindingHTML(f) {
+  const where = [f.reader];
+  if (f.mode) where.push("mode " + f.mode);
+  if (f.step) where.push("step " + f.step + (f.stepText ? ' <q>' + esc(f.stepText) + "</q>" : ""));
+  if (f.effectType) where.push(esc(f.effectType));
+  const cls = f.read ? "ok" : "gap";
+  return `<div class="aif ${cls}"><span class="ic ${cls}" aria-label="${f.read ? "understood" : "not understood"}">${f.read ? "✓" : "✕"}</span>
+    <span><span class="why">${esc(f.reason)}</span><span class="dev">${where.join(" · ")}</span></span></div>`;
 }
 
 /* The two panes: what Wizards printed, and what Assay makes of it. */

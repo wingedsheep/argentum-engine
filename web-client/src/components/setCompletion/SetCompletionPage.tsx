@@ -11,6 +11,10 @@ import {
   fetchSetCoverage,
   fetchCoverageSummary,
   fetchSetDetail,
+  fetchAiReadingSummary,
+  fetchSetAiReading,
+  type SetAiReading,
+  type SetAiReadingDetail,
   type SetCoverage,
   type CoverageSummary,
   type SetDetail,
@@ -19,7 +23,7 @@ import {
 import { SET_KINDS, SET_KIND_ORDER, setKind, setTypeLabel, type SetKind } from './setKinds'
 import styles from './SetCompletionPage.module.css'
 
-type SortKey = 'newest' | 'percent' | 'implemented' | 'assayReady' | 'name'
+type SortKey = 'newest' | 'percent' | 'implemented' | 'assayReady' | 'aiRead' | 'name'
 type Filter = 'all' | 'standard' | 'inProgress' | 'complete'
 type KindFilter = 'all' | SetKind
 
@@ -33,6 +37,7 @@ const SORT_LABELS: Record<SortKey, string> = {
   percent: 'Most complete',
   implemented: 'Most cards done',
   assayReady: 'Most Assay-ready',
+  aiRead: 'Least AI-read',
   name: 'A–Z',
 }
 
@@ -114,6 +119,7 @@ export function SetCompletionPage() {
   const [sets, setSets] = useState<readonly SetCoverage[] | null>(null)
   const [summary, setSummary] = useState<CoverageSummary | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const aiRead = useAiReading()
   // The view's choices live in the URL, so "Commander sets, most Assay-ready first" is a link someone
   // can share, and reloading or going back lands on the same list rather than the default one.
   const [params, setParams] = useSearchParams()
@@ -154,6 +160,44 @@ export function SetCompletionPage() {
   )
   const [showProgress, setShowProgress] = useState(false)
   const [tab, setTab] = useState<Tab>('sets')
+  // Where the framed explorer opens: its own home, or a card a set's AI-gaps list pointed at.
+  const [explorerHash, setExplorerHash] = useState('')
+  const exploreCard = useCallback(
+    (name: string) => {
+      // `/ai` opens the card scrolled to its AI reading panel.
+      setExplorerHash('#c/' + encodeURIComponent(name) + '/ai')
+      setOpenCode(null)
+      setTab('explorer')
+    },
+    [setOpenCode],
+  )
+  // Opening a set straight on what the AI misses in it — the AI score on a tile links here.
+  const openSetAiGaps = useCallback(
+    (code: string) =>
+      setParams(
+        (prev) => {
+          const next = new URLSearchParams(prev)
+          next.set('set', code)
+          next.set('cards', 'ai')
+          return next
+        },
+        { replace: true },
+      ),
+    [setParams],
+  )
+  const closeSet = useCallback(
+    () =>
+      setParams(
+        (prev) => {
+          const next = new URLSearchParams(prev)
+          next.delete('set')
+          next.delete('cards')
+          return next
+        },
+        { replace: true },
+      ),
+    [setParams],
+  )
 
   useEffect(() => {
     let cancelled = false
@@ -222,6 +266,16 @@ export function SetCompletionPage() {
         // A null (no ledger baked) sorts as 0 rather than dropping the set out of the list.
         sorted.sort((a, b) => (b.assayReady ?? 0) - (a.assayReady ?? 0) || byName(a, b))
         break
+      case 'aiRead': {
+        // "Which sets does the AI understand least" — the ones that need attention first. A set
+        // with nothing authored (or before the index lands) has no score and sorts last.
+        const score = (x: SetCoverage) => {
+          const r = aiRead?.[x.code]
+          return r && r.total > 0 ? r.readFully / r.total : Number.POSITIVE_INFINITY
+        }
+        sorted.sort((a, b) => score(a) - score(b) || byName(a, b))
+        break
+      }
       case 'name':
         sorted.sort(byName)
         break
@@ -231,7 +285,7 @@ export function SetCompletionPage() {
         break
     }
     return sorted
-  }, [preKind, kind, sort])
+  }, [preKind, kind, sort, aiRead])
 
   // The explorer pane is a full-height frame rather than a block in the scrolling document, so the
   // page stops being its own scroll container while that tab is up and hands the height to the frame.
@@ -272,7 +326,7 @@ export function SetCompletionPage() {
         </div>
       </header>
 
-      {onExplorer && <ExplorerPane />}
+      {onExplorer && <ExplorerPane hash={explorerHash} />}
 
       {!onExplorer && (
         <SetsTab
@@ -293,7 +347,9 @@ export function SetCompletionPage() {
           preKindCount={preKind.length}
           onClearFilters={clearFilters}
           onOpen={setOpenCode}
+          onOpenAiGaps={openSetAiGaps}
           onShowProgress={() => setShowProgress(true)}
+          aiRead={aiRead}
         />
       )}
 
@@ -303,7 +359,10 @@ export function SetCompletionPage() {
           <SetDetailOverlay
             code={openCode}
             setType={sets?.find((s) => s.code === openCode)?.setType ?? null}
-            onClose={() => setOpenCode(null)}
+            aiRead={aiRead?.[openCode] ?? null}
+            initialFilter={params.get('cards') === 'ai' ? 'aiGaps' : 'all'}
+            onExplore={exploreCard}
+            onClose={closeSet}
           />,
           document.body,
         )}
@@ -328,12 +387,12 @@ export function SetCompletionPage() {
  * while the page is already up, and degrades to "the sweep failed" with the live parser and rule
  * tree still working if it can't reach one — so there is no state this component has to anticipate.
  */
-function ExplorerPane() {
+function ExplorerPane({ hash }: { hash: string }) {
   return (
     <div className={styles.explorerPane}>
       <iframe
         className={styles.explorerFrame}
-        src={EXPLORER_URL}
+        src={EXPLORER_URL + hash}
         title="Argentum Assay Explorer"
         // Same origin, so the frame can talk to its own endpoints; it needs nothing else.
         sandbox="allow-scripts allow-same-origin allow-forms"
@@ -361,8 +420,12 @@ function SetsTab({
   preKindCount,
   onClearFilters,
   onOpen,
+  onOpenAiGaps,
   onShowProgress,
+  aiRead,
 }: {
+  onOpenAiGaps: (code: string) => void
+  aiRead: Readonly<Record<string, SetAiReading>> | null
   sets: readonly SetCoverage[] | null
   summary: CoverageSummary | null
   totals: { implemented: number; total: number; complete: number; setCount: number; percent: number } | null
@@ -539,7 +602,13 @@ function SetsTab({
           ) : (
             <div className={styles.grid}>
               {visible.map((s) => (
-                <SetCard key={s.code} set={s} onOpen={() => onOpen(s.code)} />
+                <SetCard
+                  key={s.code}
+                  set={s}
+                  aiRead={aiRead?.[s.code] ?? null}
+                  onOpen={() => onOpen(s.code)}
+                  onOpenAiGaps={() => onOpenAiGaps(s.code)}
+                />
               ))}
             </div>
           )}
@@ -590,7 +659,17 @@ function KindBadge({ setType }: { setType: string | null }) {
   )
 }
 
-function SetCard({ set, onOpen }: { set: SetCoverage; onOpen: () => void }) {
+function SetCard({
+  set,
+  aiRead,
+  onOpen,
+  onOpenAiGaps,
+}: {
+  set: SetCoverage
+  aiRead: SetAiReading | null
+  onOpen: () => void
+  onOpenAiGaps: () => void
+}) {
   const t = tier(set.percent)
   const remaining = set.total - set.implemented
   const notPlanned = set.notPlanned + set.extraNotPlanned
@@ -655,6 +734,7 @@ function SetCard({ set, onOpen }: { set: SetCoverage; onOpen: () => void }) {
             ⚡ {set.assayReady} Assay-ready
           </span>
         )}
+        <AiReadTag reading={aiRead} onOpen={onOpenAiGaps} />
         {t === 'done' ? (
           <span className={styles.doneTag}>Complete</span>
         ) : (
@@ -665,35 +745,266 @@ function SetCard({ set, onOpen }: { set: SetCoverage; onOpen: () => void }) {
   )
 }
 
-type CardFilter = 'all' | 'implemented' | 'missing' | 'assayReady' | 'notPlanned'
+/**
+ * The per-set AI card-reading share, polled until the server's background index is ready.
+ *
+ * Its own request, never part of the coverage payload: the server builds the index lazily the first
+ * time anyone asks (several seconds over the whole corpus), and the set grid must not wait on it. So
+ * the grid renders at once and the AI tags fill in when the index lands. Null until then, or if the
+ * endpoint is unavailable — the tags simply don't appear.
+ */
+function useAiReading(): Readonly<Record<string, SetAiReading>> | null {
+  const [sets, setSets] = useState<Readonly<Record<string, SetAiReading>> | null>(null)
+  useEffect(() => {
+    let cancelled = false
+    let timer: ReturnType<typeof setTimeout> | undefined
+    let tries = 0
+    const poll = () => {
+      fetchAiReadingSummary()
+        .then((d) => {
+          if (cancelled) return
+          if (d.ready) setSets(d.sets)
+          else if (++tries < 40) timer = setTimeout(poll, 1500)
+        })
+        .catch(() => {}) // advisory: no tags rather than an error banner
+    }
+    poll()
+    return () => {
+      cancelled = true
+      if (timer) clearTimeout(timer)
+    }
+  }, [])
+  return sets
+}
+
+function aiReadPercent(r: SetAiReading): number {
+  return r.total === 0 ? 0 : Math.floor((r.readFully * 100) / r.total)
+}
+
+type AiBand = 'good' | 'fair' | 'low'
+
+/**
+ * The AI-reading score's band. Fixed thresholds rather than relative ones, so a set's band means
+ * the same thing next month and a set climbs out of "needs attention" by being fixed, not by its
+ * neighbours getting worse. Placed against today's spread (most sets read 55–75% of their cards
+ * fully): under 55% the AI is guessing on nearly every other card, and those are the sets to work
+ * first. Raise them as the readers improve.
+ */
+function aiBand(pct: number): AiBand {
+  return pct >= 75 ? 'good' : pct >= 55 ? 'fair' : 'low'
+}
+
+/** Colour is never the only cue: each band carries its own glyph and a word in the tooltip. */
+const AI_BAND: Record<AiBand, { icon: string; word: string }> = {
+  good: { icon: '✓', word: 'well read' },
+  fair: { icon: '◐', word: 'partly read' },
+  low: { icon: '!', word: 'needs attention' },
+}
+
+/**
+ * "AI 82%" on a set tile: the set's AI-reading score — of its authored cards, the share the engine
+ * AI's static readers read fully. Banded by colour and glyph so the sets needing attention stand
+ * out in the grid; clicking it opens the set straight on its AI gaps. Absent until the index is
+ * ready and on sets with nothing authored, so it never claims a number nobody measured.
+ *
+ * A span with a click handler rather than a button: the whole tile is already a button, and a
+ * button inside a button is invalid. Keyboard users reach the same view through the tile and the
+ * set's "AI gaps" tab.
+ */
+function AiReadTag({ reading, onOpen }: { reading: SetAiReading | null; onOpen: () => void }) {
+  if (!reading || reading.total === 0) return null
+  const pct = aiReadPercent(reading)
+  const band = aiBand(pct)
+  const unread = reading.total - reading.readFully
+  return (
+    <span
+      className={styles.aiReadTag}
+      data-band={band}
+      onClick={(e) => {
+        e.stopPropagation()
+        onOpen()
+      }}
+      title={`AI-reading score: the engine AI fully reads ${reading.readFully} of this set's ${reading.total} implemented cards (${AI_BAND[band].word}). Click to see the ${unread} it doesn't, grouped by what it misses.`}
+    >
+      <span aria-hidden="true">{AI_BAND[band].icon}</span> AI {pct}%
+    </span>
+  )
+}
+
+/** Plain words for an audit check — the group's headline; the effect type stays beside it. */
+const AI_CHECK_WORDS: Record<string, string> = {
+  polarity: "Can't tell if a target is helped or hurt",
+  intent: "Doesn't know what the effect is for",
+  combat: "Combat can't see it",
+  timing: 'No timing for an until-end-of-turn effect',
+  modal: "Can't pay for extra modes",
+}
+
+/**
+ * What the AI misses in one set: its unread cards grouped by the effect type behind each gap,
+ * biggest group first. The groups are the actionable part — one reader entry fixes every card in
+ * one, which is the unit `just ai-reading-loop` works on — so they lead, and picking one narrows
+ * the card grid below to its cards.
+ */
+function AiGapsPanel({
+  data,
+  error,
+  selected,
+  onSelect,
+  onExplore,
+}: {
+  data: SetAiReadingDetail | null
+  error: string | null
+  selected: string | null
+  onSelect: (key: string | null) => void
+  onExplore: (name: string) => void
+}) {
+  if (error) return <div className={styles.error}>Couldn’t load the AI reading: {error}</div>
+  if (!data || !data.ready) return <div className={styles.loading}>Reading the set’s cards…</div>
+  const score = data.score
+  if (!score) return <div className={styles.aiGapsEmpty}>Nothing implemented in this set yet, so there is nothing for the AI to read.</div>
+  const pct = aiReadPercent(score)
+  const band = aiBand(pct)
+  const abilityPct = score.abilities === 0 ? 100 : Math.floor((score.abilitiesRead * 100) / score.abilities)
+  const top = data.groups[0]?.cards.length ?? 1
+  return (
+    <section className={styles.aiGaps} aria-label="What the AI misses in this set">
+      <div className={styles.aiGapsHead}>
+        <span className={styles.aiScore} data-band={band}>
+          <span aria-hidden="true">{AI_BAND[band].icon}</span> {pct}%
+        </span>
+        <span className={styles.aiGapsSummary}>
+          The AI fully reads <strong>{score.readFully}</strong> of {score.total} implemented cards ({AI_BAND[band].word}) ·{' '}
+          {score.abilitiesRead} of {score.abilities} abilities ({abilityPct}%)
+          <span className={styles.assayNoteTip}>
+            <HelpTip topicId="ai-reading" size="sm" />
+          </span>
+        </span>
+      </div>
+      {data.groups.length === 0 ? (
+        <div className={styles.aiGapsEmpty}>The AI reads every implemented card in this set.</div>
+      ) : (
+        <>
+          <p className={styles.aiGapsLead}>
+            What it misses, by effect type — one fix to a reader covers every card in a group. Pick a group to narrow
+            the cards below; open a card to see exactly where the gap is.
+          </p>
+          <ol className={styles.aiGroups}>
+            {data.groups.slice(0, 12).map((g) => (
+              <li key={g.key}>
+                <button
+                  className={styles.aiGroup}
+                  data-on={selected === g.key || undefined}
+                  aria-pressed={selected === g.key}
+                  onClick={() => onSelect(selected === g.key ? null : g.key)}
+                >
+                  <span className={styles.aiGroupCount}>{g.cards.length}</span>
+                  <span className={styles.aiGroupBar} aria-hidden="true">
+                    <span style={{ width: `${Math.max(4, (g.cards.length * 100) / top)}%` }} />
+                  </span>
+                  <span className={styles.aiGroupText}>
+                    <span>{AI_CHECK_WORDS[g.check] ?? g.check}</span>
+                    <code>{g.effectType}</code>
+                  </span>
+                </button>
+                <span className={styles.aiGroupCards}>
+                  {g.cards.slice(0, 4).map((name, i) => (
+                    <span key={name}>
+                      {i > 0 && ', '}
+                      <button
+                        className={styles.linkButton}
+                        onClick={() => onExplore(name)}
+                        title={`Open ${name} in the Assay Explorer to see where the AI's reading stops`}
+                      >
+                        {name}
+                      </button>
+                    </span>
+                  ))}
+                  {g.cards.length > 4 && ` +${g.cards.length - 4}`}
+                </span>
+              </li>
+            ))}
+          </ol>
+          {data.groups.length > 12 && (
+            <p className={styles.aiGapsLead}>…and {data.groups.length - 12} smaller groups.</p>
+          )}
+        </>
+      )}
+    </section>
+  )
+}
+
+type CardFilter = 'all' | 'implemented' | 'missing' | 'assayReady' | 'aiGaps' | 'notPlanned'
 
 const CARD_FILTER_LABELS: Record<CardFilter, string> = {
   all: 'All',
   implemented: 'Implemented',
   missing: 'Missing',
   assayReady: '⚡ Assay-ready',
+  aiGaps: 'AI gaps',
   notPlanned: 'Not planned',
 }
 
 function SetDetailOverlay({
   code,
   setType,
+  aiRead,
+  initialFilter,
+  onExplore,
   onClose,
 }: {
   code: string
   /** From the set list — the detail endpoint doesn't repeat it. */
   setType: string | null
+  /** The AI card-reading share, once the server has indexed it; null until then or with no cards. */
+  aiRead: SetAiReading | null
+  /** The filter to open on — `aiGaps` when the set was opened from its AI score. */
+  initialFilter: CardFilter
+  /** Open a card in the framed Assay Explorer. */
+  onExplore: (name: string) => void
   onClose: () => void
 }) {
   const [detail, setDetail] = useState<SetDetail | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [cardFilter, setCardFilter] = useState<CardFilter>('all')
+  const [cardFilter, setCardFilter] = useState<CardFilter>(initialFilter)
+  // The set's AI gaps load only when that tab is opened, and once per set.
+  const [aiDetail, setAiDetail] = useState<SetAiReadingDetail | null>(null)
+  const [aiError, setAiError] = useState<string | null>(null)
+  const [aiGroup, setAiGroup] = useState<string | null>(null)
+  const aiReady = aiDetail?.ready === true
+  useEffect(() => {
+    if (cardFilter !== 'aiGaps' || aiReady) return
+    let cancelled = false
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const load = () =>
+      fetchSetAiReading(code)
+        .then((d) => {
+          if (cancelled) return
+          setAiDetail(d)
+          if (!d.ready) timer = setTimeout(load, 1500) // the server's index is still building
+        })
+        .catch((e) => !cancelled && setAiError(e instanceof Error ? e.message : String(e)))
+    load()
+    return () => {
+      cancelled = true
+      if (timer) clearTimeout(timer)
+    }
+  }, [cardFilter, code, aiReady])
+  const aiUnread = useMemo(() => {
+    if (!aiDetail?.ready) return null
+    const names = aiGroup
+      ? (aiDetail.groups.find((g) => g.key === aiGroup)?.cards ?? [])
+      : aiDetail.unread.map((u) => u.name)
+    return new Set(names.map((n) => n.split(' // ')[0]))
+  }, [aiDetail, aiGroup])
   const [hover, setHover] = useState<HoverState | null>(null)
 
   useEffect(() => {
     let cancelled = false
     setDetail(null)
     setError(null)
+    setAiDetail(null)
+    setAiGroup(null)
     fetchSetDetail(code)
       .then((d) => !cancelled && setDetail(d))
       .catch((e) => !cancelled && setError(e instanceof Error ? e.message : String(e)))
@@ -746,11 +1057,13 @@ function SetDetailOverlay({
           return isAssayReady(c)
         case 'notPlanned':
           return c.notPlanned !== null
+        case 'aiGaps':
+          return c.implemented && aiUnread !== null && aiUnread.has(c.name.split(' // ')[0] ?? c.name)
         default:
           return true
       }
     },
-    [cardFilter],
+    [cardFilter, aiUnread],
   )
   const draftCards = useMemo(() => detail?.draft.filter(matches) ?? [], [detail, matches])
   // Each extras section keeps its own tally, so filtering to "Missing" still shows a section as
@@ -867,6 +1180,20 @@ function SetDetailOverlay({
                     </span>
                   </span>
                 )}
+                {aiRead && aiRead.total > 0 && (
+                  <span className={styles.aiReadNote}>
+                    {' · '}
+                    <button
+                      className={styles.aiReadNoteButton}
+                      data-band={aiBand(aiReadPercent(aiRead))}
+                      onClick={() => setCardFilter('aiGaps')}
+                      title="Show the cards the AI doesn't fully read, grouped by what it misses"
+                    >
+                      <span aria-hidden="true">{AI_BAND[aiBand(aiReadPercent(aiRead))].icon}</span> AI reads{' '}
+                      {aiRead.readFully} of {aiRead.total} ({aiReadPercent(aiRead)}%)
+                    </button>
+                  </span>
+                )}
               </span>
             </div>
           )}
@@ -898,6 +1225,8 @@ function SetDetailOverlay({
             // (nobody ran `just assay-bake`); shown at zero, because "no free work left in this set"
             // is a real answer and worth being able to read.
             .filter((f) => f !== 'assayReady' || detail?.assayReady != null)
+            // AI gaps is only worth a tab once something in the set is implemented.
+            .filter((f) => f !== 'aiGaps' || (detail?.implemented ?? 0) + (detail?.extraImplemented ?? 0) > 0)
             .map((f) => (
               <button
                 key={f}
@@ -906,12 +1235,15 @@ function SetDetailOverlay({
                 title={
                   f === 'assayReady'
                     ? 'Missing cards Argentum Assay already reads end to end — implementable with the SDK vocabulary that exists today'
-                    : undefined
+                    : f === 'aiGaps'
+                      ? "Implemented cards the engine AI doesn't fully read, grouped by what it misses"
+                      : undefined
                 }
               >
                 {CARD_FILTER_LABELS[f]}
                 {f === 'notPlanned' && ` (${notPlannedCount})`}
                 {f === 'assayReady' && ` (${detail?.assayReady ?? 0})`}
+                {f === 'aiGaps' && aiRead && ` (${aiRead.total - aiRead.readFully})`}
               </button>
             ))}
         </div>
@@ -939,6 +1271,15 @@ function SetDetailOverlay({
           <div className={styles.overlayBody} ref={bodyRef}>
             {error && <div className={styles.error}>Couldn’t load cards: {error}</div>}
             {!detail && !error && <div className={styles.loading}>Loading {code} cards…</div>}
+            {cardFilter === 'aiGaps' && (
+              <AiGapsPanel
+                data={aiDetail}
+                error={aiError}
+                selected={aiGroup}
+                onSelect={setAiGroup}
+                onExplore={onExplore}
+              />
+            )}
             {/* Scryfall's own set-page sectioning: the draftable pool first, then each
                 completionist product that added cards of its own. */}
             {sections.map((s) => (

@@ -29,6 +29,7 @@ Format — newest first, one bullet each:
 ## Changes
 
 - #4144 When removal ("destroy target land" and the like) would leave the board looking the same whichever side it hits, it hits the opponent's permanent, not its own
+- #4143 Values a Treasure (and any permanent that sacrifices itself for mana: Gold, Eldrazi Spawn) as mana — half a land drop, a full one when it is the mana a spell in hand is one short of — so it takes the Treasure mode when that casts its next spell a turn early, and charges an opponent's Treasures the same
 - #4138 Counts a land in hand that no coming land drop needs (its other lands already cover next turn and no spell in hand wants more mana) as a tenth of a card, so it stops trading spells, fights or draws for lands it has no use for; replaces #4113's landcycling-only floor
 - #4136 Reconsiders a block that looks like a free kill on paper once the attacker's visible pump would win the fight (a 2/3 in front of a first-striking Skilled Battlecarver with {1}{R} open), instead of only second-guessing blocks by creatures worth more than the attacker
 - #4128 Kills an attacker with a free double block (two blockers it can't kill) before trading for it, and no longer attacks a creature into two blockers that can do that to it

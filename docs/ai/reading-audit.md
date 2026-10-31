@@ -22,7 +22,7 @@ and writes three files to `ai/build/reports/ai-reading-audit/`:
 | `summary.tsv` | The comparable numbers: `cards`, `read-fully`, `fraction`, two informational counts, then one `group<TAB>key<TAB>count` line per group, sorted by key. Two runs diff line by line. |
 | `cards.tsv` | Each flagged card and its group keys. Use it to find example cards for a group, or to see why one card isn't read. |
 
-The report writer is a test (`AiReadingAuditBenchmark`) that only runs with `-DaiReadingAudit=true`. The
+The audit itself (`AiReadingAudit`) is in `ai/src/main`; the report writer is a test (`AiReadingAuditBenchmark`) that only runs with `-DaiReadingAudit=true`. The
 same walk also runs in the normal `:ai:test` suite as a ratchet (see [The ratchet](#the-ratchet)). The
 tool needs no server and no credentials.
 
@@ -55,6 +55,36 @@ time, and tagging a self-grown flash creature `PUMP` would make `AmbushWindow` s
 Not every flag is a bug. Some effects legitimately carry no intent tag, and an until-end-of-turn
 effect that is a drawback has nothing to time. A group is a list of places to look, ranked by how many
 cards a fix would reach.
+
+## Where a flag is: the per-ability reading
+
+The flags above say *what* a reader missed on a card. `AiReadingAudit.read(card)` says *where*: one
+`AbilityReading` per spell, triggered ability, state trigger and activated ability (static
+abilities are listed but not checked), each with the findings of every reader asked about it —
+which reader, which target slot, which step of the effect (a leaf, numbered in order), the SDK effect
+type, a plain-English reason, and the audit flag it produces. Understood parts are findings too
+(`target 1: reads as harmful`, `knows what it's for: removal`), so a view can show what is read as
+well as what is not. `audit(card)` is `read(card).flags`, so the flag strings and the ratchet
+baseline are the same as before.
+
+The audit lives in `ai/src/main` (package `com.wingedsheep.ai.audit`) so it can run in a live
+server, not only in the test suite. Two views use it:
+
+- **The Assay explorer's AI reading panel.** `game-server` mounts the Argentum Assay explorer and
+  supplies the readings (`AiReadingService`, through `:oracle-assay`'s `AiReadingProvider` hook). A
+  card page shows each ability as read or with gaps, with the reasons; a card nobody has implemented
+  is read off Assay's whole-card compile, as a preview. See the
+  [oracle-assay README](../../oracle-assay/README.md#what-the-engine-ai-reads).
+- **The Set Completion view's AI-reading score.** Every set gets the share of its authored cards
+  the AI reads fully (and, secondary, the share of their checked abilities), banded ✓ 75%+, ◐ 55–74%,
+  ! under 55%, and sortable by "Least AI-read". A set's **AI gaps** tab lists its unread cards
+  grouped by flag key, biggest group first: the per-set slice of this report, and the groups the
+  loop below works on. `GET /api/sets/coverage/ai-reading` and `GET /api/sets/{code}/ai-reading`.
+
+Neither is baked. The server indexes every registered card on a background thread the first time
+either view asks (about a second for the whole corpus), then holds it for the life of the process:
+card definitions are fixed at boot, so it never goes stale, and a baked file would churn on every card
+PR.
 
 ## Informational counts
 

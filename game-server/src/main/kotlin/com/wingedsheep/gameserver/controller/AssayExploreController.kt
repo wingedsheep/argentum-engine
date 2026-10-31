@@ -1,6 +1,7 @@
 package com.wingedsheep.gameserver.controller
 
 import com.wingedsheep.assay.explore.ExploreApi
+import com.wingedsheep.gameserver.coverage.AiReadingService
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -44,20 +45,27 @@ import org.springframework.web.bind.annotation.RestController
  *   bootJar. In production that page answers with its "no goldens found" message rather than an
  *   error; the rest of the explorer is unaffected.
  *
+ * ## The AI reading panel
+ *
+ * `:oracle-assay` cannot see the engine AI, so this is where the explorer gets it: the page's
+ * card view asks the `ai` route what the AI's static readers understand of a card, and
+ * [AiReadingService] answers from `:ai`. Standalone `just assay-explore` has no provider and its
+ * panel says the reading needs the game server.
+ *
  *  - GET  /api/assay/explorer          → the page, with its API base rewritten to this prefix
  *  - GET  /api/assay/explorer/{route}  → the read routes (status, overview, cards, declines, …)
  *  - POST /api/assay/explorer/{route}  → the measuring routes (parse, probe)
  */
 @RestController
 @RequestMapping("/api/assay/explorer")
-class AssayExploreController {
+class AssayExploreController(private val aiReading: AiReadingService) {
 
     /**
      * Built on first use. `lazy` rather than a bean because constructing it starts a corpus sweep,
      * and a boot that pays for one nobody asked for is the difference between this being free and
      * this being a tax on every server that mounts it.
      */
-    private val api: ExploreApi by lazy { ExploreApi().also { it.startSweep() } }
+    private val api: ExploreApi by lazy { ExploreApi(aiReading = aiReading).also { it.startSweep() } }
 
     @GetMapping(produces = [MediaType.TEXT_HTML_VALUE])
     fun page(): ResponseEntity<ByteArray> = ResponseEntity.ok()

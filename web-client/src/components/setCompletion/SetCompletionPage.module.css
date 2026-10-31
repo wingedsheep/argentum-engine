@@ -556,6 +556,166 @@
   padding: 0 6px;
   white-space: nowrap;
 }
+.aiReadTag {
+  --ai-band: var(--text-muted);
+  color: var(--ai-band);
+  font-size: var(--font-xs);
+  font-weight: var(--font-weight-semibold);
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: 0 6px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+.aiReadTag:hover {
+  background: color-mix(in srgb, var(--ai-band) 14%, transparent);
+}
+/* The AI-reading bands: colour plus a glyph (✓ ◐ !), never colour alone. */
+.aiReadTag[data-band='good'],
+.aiReadNoteButton[data-band='good'],
+.aiScore[data-band='good'] {
+  --ai-band: var(--color-success-light, #6fcf97);
+}
+.aiReadTag[data-band='fair'],
+.aiReadNoteButton[data-band='fair'],
+.aiScore[data-band='fair'] {
+  --ai-band: var(--color-warning, #f2b134);
+}
+.aiReadTag[data-band='low'],
+.aiReadNoteButton[data-band='low'],
+.aiScore[data-band='low'] {
+  --ai-band: var(--color-error, #eb5757);
+}
+.aiReadNote {
+  white-space: nowrap;
+}
+.aiReadNoteButton {
+  --ai-band: var(--text-muted);
+  color: var(--ai-band);
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+}
+.aiReadNoteButton:hover {
+  text-decoration-style: solid;
+}
+
+/* ---- a set's AI gaps ---- */
+.aiGaps {
+  border: 1px solid var(--border-medium);
+  border-radius: 10px;
+  padding: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+.aiGapsHead {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+}
+.aiScore {
+  --ai-band: var(--text-primary);
+  color: var(--ai-band);
+  font-size: var(--font-xl);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+.aiGapsSummary {
+  color: var(--text-secondary);
+  font-size: var(--font-sm);
+}
+.aiGapsSummary strong {
+  color: var(--text-primary);
+}
+.aiGapsLead {
+  color: var(--text-muted);
+  font-size: var(--font-sm);
+  margin: var(--space-2) 0;
+}
+.aiGapsEmpty {
+  color: var(--text-muted);
+  font-size: var(--font-sm);
+  margin-top: var(--space-2);
+}
+.aiGroups {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+.aiGroups li {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: center;
+}
+@media (max-width: 760px) {
+  .aiGroups li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+}
+.aiGroup {
+  display: grid;
+  grid-template-columns: 2.4em 5em minmax(0, 1fr);
+  gap: var(--space-2);
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 4px 6px;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--font-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+.aiGroup:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.aiGroup[data-on] {
+  border-color: var(--color-warning, #f2b134);
+  background: rgba(242, 177, 52, 0.08);
+}
+.aiGroupCount {
+  text-align: right;
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+.aiGroupBar {
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.aiGroupBar span {
+  display: block;
+  height: 100%;
+  background: var(--color-warning, #f2b134);
+}
+.aiGroupText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.aiGroupText code {
+  color: var(--text-muted);
+  font-size: var(--font-xs);
+  overflow-wrap: anywhere;
+}
+.aiGroupCards {
+  color: var(--text-muted);
+  font-size: var(--font-xs);
+  min-width: 0;
+}
 .assayNote {
   color: var(--color-warning, #f2b134);
   white-space: nowrap;
