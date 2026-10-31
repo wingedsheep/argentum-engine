@@ -16352,7 +16352,11 @@ work in both resolution and static-ability (projection) contexts. The DSL helper
 default to "you" so card authors don't need to pass it explicitly.
 
 - `YouAttackedWithCreaturesThisTurn(filter, atLeast)` — Raid/Battalion shape. Backed by
-  `PlayerAttackedWithCreaturesThisTurn(Player.You, filter, atLeast)`.
+  `PlayerAttackedWithCreaturesThisTurn(Player.You, filter, atLeast)`. The filter is matched against
+  each attacker **as it was declared** — the attack record freezes a snapshot of its projected
+  characteristics at declaration — so "during any turn you attacked with a Rogue" (**Robber of the
+  Rich**, a permanent `GrantMayPlayFromExile` gated on it) stays true after the Rogue dies or stops
+  being a Rogue, and a creature that became a Rogue only after attacking doesn't count.
 - `CreaturesAttackedThisTurn(atLeast, filter = Creature)` — the **player-agnostic** count: at least
   `atLeast` creatures matching `filter` attacked this turn, whoever declared them
   (`PlayerAttackedWithCreaturesThisTurn(Player.Each, …)`, which unions every player's attack record

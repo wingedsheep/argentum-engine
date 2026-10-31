@@ -258,8 +258,10 @@ data class TriggeringAttackersAttackedPlayer(
 
 /**
  * Condition: "If [player] attacked with [atLeast] or more creatures matching [filter] this turn".
- * Counts every creature [player] declared as an attacker this turn whose current state
- * (per the projected state) matches the filter.
+ * Counts every creature [player] declared as an attacker this turn that matched the filter **as it
+ * was declared** (its projected characteristics at declaration, CR 508.1): a Rogue that attacked
+ * still counts after it dies, its token ceases to exist, or it stops being a Rogue, and a creature
+ * that became one only after attacking doesn't (Robber of the Rich, Deepway Navigator rulings).
  *
  * The `Conditions.YouAttackedWithCreaturesThisTurn(...)` DSL helper passes [Player.You],
  * which the engine resolves to the source's controller in both resolution and static-ability

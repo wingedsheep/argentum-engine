@@ -387,6 +387,10 @@ class PredicateEvaluator(
             // A departed object is the effect's source only if it is that very object; with no
             // source context the question has no answer.
             StatePredicate.IsSource -> context.sourceId?.let { it == snapshot.entityId }
+            // Commander-ness belongs to the card (CR 903.3), not to one battlefield visit, so the
+            // card's own designation answers it — "if you attacked with your commander" (Neriv).
+            StatePredicate.IsCommander -> state.getEntity(snapshot.entityId)
+                ?.has<com.wingedsheep.engine.state.components.identity.CommanderComponent>()
             is StatePredicate.Not -> matchesSnapshotState(state, snapshot, predicate.predicate, context, onBattlefield)?.not()
             is StatePredicate.And -> {
                 val results = predicate.predicates.map { matchesSnapshotState(state, snapshot, it, context, onBattlefield) }

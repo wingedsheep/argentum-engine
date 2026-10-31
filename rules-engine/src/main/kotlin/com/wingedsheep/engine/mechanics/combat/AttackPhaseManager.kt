@@ -14,6 +14,9 @@ import com.wingedsheep.engine.state.components.combat.MustAttackNextCombatCompon
 import com.wingedsheep.engine.state.components.combat.MustAttackThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.PlayerAttackedThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.PlayerAttackersThisTurnComponent
+import com.wingedsheep.engine.state.components.identity.TokenComponent
+import com.wingedsheep.engine.state.components.stack.EntitySnapshot
+import com.wingedsheep.engine.state.components.stack.captureEntitySnapshots
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -445,7 +448,9 @@ internal class AttackPhaseManager(
                     updated = updated.with(
                         PlayerAttackersThisTurnComponent(
                             attackerIds = (previous?.attackerIds ?: emptySet()) + memberAttackers.keys,
-                            battleAttackerIds = (previous?.battleAttackerIds ?: emptySet()) + (attackersAgainstBattle intersect memberAttackers.keys)
+                            battleAttackerIds = (previous?.battleAttackerIds ?: emptySet()) + (attackersAgainstBattle intersect memberAttackers.keys),
+                            declaredAs = previous?.declaredAs.orEmpty() +
+                                declaredAttackerSnapshots(state, memberAttackers.keys.toList())
                         )
                     )
                     if (attackedPlayers.isNotEmpty()) {
@@ -1466,4 +1471,19 @@ internal class AttackPhaseManager(
         attackers: Map<EntityId, EntityId>,
         projected: ProjectedState
     ): Int = CombatTaxes.attackTax(state, cardRegistry, attackers, projected, predicateEvaluator = predicateEvaluator)
+
+    /**
+     * Each attacker's characteristics as declared (CR 508.1), read off the pre-declaration
+     * [state] — the projection the declaration was legal against. Kept on the attack record so
+     * "you attacked with a Rogue this turn" survives the Rogue leaving or ceasing to be one.
+     */
+    private fun declaredAttackerSnapshots(state: GameState, ids: List<EntityId>): List<EntitySnapshot> {
+        val projected = state.projectedState
+        return captureEntitySnapshots(ids, projected, state).map { snapshot ->
+            snapshot.copy(
+                keywords = projected.getKeywords(snapshot.entityId),
+                wasToken = state.getEntity(snapshot.entityId)?.has<TokenComponent>() ?: false,
+            )
+        }
+    }
 }

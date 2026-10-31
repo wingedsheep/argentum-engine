@@ -1626,15 +1626,8 @@ class ConditionEvaluator(
             else -> listOfNotNull(resolvePlayer(state, condition.player, ctx))
         }
         if (playerIds.isEmpty()) return 0
-        // Attackers are recorded per declaring player, so the union is the set of creatures that
-        // attacked at all this turn — a creature counts once even if two scopes both name it.
-        val attackerIds = playerIds.flatMapTo(mutableSetOf()) { playerId ->
-            state.getEntity(playerId)
-                ?.get<PlayerAttackersThisTurnComponent>()
-                ?.attackerIds
-                ?: emptySet()
-        }
-        if (attackerIds.isEmpty()) return 0
+        val records = playerIds.mapNotNull { state.getEntity(it)?.get<PlayerAttackersThisTurnComponent>() }
+        if (records.all { it.attackerIds.isEmpty() }) return 0
         val predicateContext = when (ctx) {
             is Resolution -> PredicateContext.fromEffectContext(ctx.effectContext)
             // The filter's own "you control" clauses are relative to the ability's controller,
@@ -1643,15 +1636,35 @@ class ConditionEvaluator(
                 controllerId = resolvePlayer(state, Player.You, ctx) ?: playerIds.first()
             )
         }
-        val projected = ctx.projectedStateFor(state)
-        var matches = 0
-        for (id in attackerIds) {
-            if (predicates.matches(state, projected, id, condition.filter, predicateContext)) {
-                matches++
-                if (matches >= cap) return matches
+        // "Attacked with a Rogue" reads each creature as it was declared (its snapshot), so the
+        // answer survives the creature dying, its token ceasing to exist, or the effect that made
+        // it a Rogue ending. Attackers are recorded per declaring player, so a creature counts once
+        // even if two scopes both name it — or if it matched in more than one combat.
+        val matched = mutableSetOf<EntityId>()
+        for (record in records) {
+            for (snapshot in record.declaredAs) {
+                if (snapshot.entityId in matched) continue
+                if (predicates.matchesSnapshot(state, snapshot, condition.filter, predicateContext, onBattlefield = true)) {
+                    matched += snapshot.entityId
+                    if (matched.size >= cap) return matched.size
+                }
             }
         }
-        return matches
+        // A record written before declarations carried snapshots (an older serialized game) has
+        // only ids; fall back to the live projected read for those.
+        val legacy = records.flatMapTo(mutableSetOf()) { record ->
+            record.attackerIds - record.declaredAs.mapTo(mutableSetOf()) { it.entityId }
+        } - matched
+        if (legacy.isNotEmpty()) {
+            val projected = ctx.projectedStateFor(state)
+            for (id in legacy) {
+                if (predicates.matches(state, projected, id, condition.filter, predicateContext)) {
+                    matched += id
+                    if (matched.size >= cap) return matched.size
+                }
+            }
+        }
+        return matched.size
     }
 
     private fun evaluateAttackedPlayerThisTurnCtx(
