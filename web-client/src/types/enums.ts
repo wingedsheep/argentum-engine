@@ -712,6 +712,7 @@ export enum CounterType {
   VOYAGE = 'VOYAGE',
   GHOSTFORM = 'GHOSTFORM',
   NIGHT = 'NIGHT',
+  TASK = 'TASK',
 }
 
 export const CounterTypeDisplayNames: Record<CounterType, string> = {
@@ -873,6 +874,7 @@ export const CounterTypeDisplayNames: Record<CounterType, string> = {
   [CounterType.VOYAGE]: 'Voyage',
   [CounterType.GHOSTFORM]: 'Ghostform',
   [CounterType.NIGHT]: 'Night',
+  [CounterType.TASK]: 'Task',
 }
 
 /**

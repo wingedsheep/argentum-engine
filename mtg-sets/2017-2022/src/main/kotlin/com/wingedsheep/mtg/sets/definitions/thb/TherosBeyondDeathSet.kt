@@ -15,7 +15,6 @@ object TherosBeyondDeathSet : MtgSet {
     override val code = "THB"
     override val displayName = "Theros Beyond Death"
     override val releaseDate = "2020-01-24"
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)

@@ -906,6 +906,13 @@ value class CounterType(val name: String) {
          */
         val NIGHT = CounterType("NIGHT")
 
+        /**
+         * Task counter (THB — Heliod's Punishment). A passive countdown with no inherent rule: the
+         * Aura enters with four, its upkeep trigger removes one, then destroys the Aura once none are
+         * left.
+         */
+        val TASK = CounterType("TASK")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -1066,6 +1073,7 @@ value class CounterType(val name: String) {
             VOYAGE,
             GHOSTFORM,
             NIGHT,
+            TASK,
         )
 
         /**

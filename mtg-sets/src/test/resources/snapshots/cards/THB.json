@@ -7437,6 +7437,123 @@
     ]
 }
 
+// Heliod's Punishment
+{
+    "name": "Heliod's Punishment",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nThis Aura enters with four task counters on it.\nEnchanted creature can't attack or block. It loses all abilities and has \"{T}: Remove a task counter from Heliod's Punishment. Then if it has no task counters on it, destroy Heliod's Punishment.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "CantBlock",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            "LoseAllAbilities",
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Heliod's Punishment:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "RemoveCounters",
+                                "counterType": "TASK",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": "GrantingSource"
+                            },
+                            {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.WhenCondition",
+                                    "condition": {
+                                        "type": "Not",
+                                        "condition": {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "EntityProperty",
+                                                "entity": "GrantingSource",
+                                                "numericProperty": {
+                                                    "type": "CounterCount",
+                                                    "counterType": "TASK"
+                                                }
+                                            },
+                                            "operator": "GTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        }
+                                    }
+                                },
+                                "then": {
+                                    "type": "MoveToZone",
+                                    "target": "GrantingSource",
+                                    "destination": "Graveyard",
+                                    "byDestruction": true
+                                }
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "{T}: Remove a task counter from Heliod's Punishment. Then if it has no task counters on it, destroy Heliod's Punishment."
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "TASK",
+                "count": 4,
+                "selfOnly": true
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "UNCOMMON",
+        "artist": "Aleksi Briclot",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3b8e6878-06aa-4505-b3a5-172083b7d258.jpg?1783931596",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If the affected creature gains an ability after Heliod's Punishment becomes attached to it, it will keep that ability."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If the enchanted creature has an ability that defines a * in its power or toughness, that * is 0."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If a creature is enchanted by two or more Heliod's Punishments, it has only the activated ability of the one that most recently became attached. Activating that ability removes a task counter from only that one."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Heliod, Sun-Crowned
 {
     "name": "Heliod, Sun-Crowned",

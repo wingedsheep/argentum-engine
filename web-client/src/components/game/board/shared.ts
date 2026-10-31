@@ -905,6 +905,8 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.GHOSTFORM,
   // Replicating Ring's upkeep countdown to eight Replicated Rings.
   CounterType.NIGHT,
+  // Heliod's Punishment's upkeep countdown to destroying itself.
+  CounterType.TASK,
   CounterType.PLUS_ONE_PLUS_TWO,
   CounterType.PLUS_TWO_PLUS_TWO,
   CounterType.MINUS_TWO_MINUS_TWO,

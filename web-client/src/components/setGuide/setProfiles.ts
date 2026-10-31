@@ -262,6 +262,15 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
     themes: ['legends', 'artifacts'],
     mechanics: ['Historic', 'Kicker', 'Sagas', 'Legendary sorceries'],
   },
+  THB: {
+    tagline: 'Gods and heroes in the Underworld of Theros. Midrange games built on enchantments: Aura-carrying heroes, constellation payoffs, and escape cards that climb back out of the graveyard.',
+    about: 'Theros Beyond Death follows Elspeth into the Underworld of Theros, a Greek-myth plane where gods answer their followers\' devotion.',
+    playstyle: 'Midrange with long games. Devotion wakes the gods, heroes grow from the spells you target them with, and escape lets graveyard cards return by exiling others.',
+    tryIf: 'enchantments, Aura-boosted heroes and graveyard recursion',
+    power: 3, speed: 2, complexity: 3,
+    themes: ['graveyard', 'counters', 'bigThings'],
+    mechanics: ['Escape', 'Devotion', 'Constellation', 'Sagas'],
+  },
   M21: {
     tagline: 'A clean core set with simple, familiar cards and unusually big bombs. Classic two-colour Limited with plenty of removal, where games often swing on who draws their rare.',
     about: 'Core Set 2021 is headlined by Teferi, Basri, Chandra, Liliana and Garruk, with no single plane — just straightforward Magic.',

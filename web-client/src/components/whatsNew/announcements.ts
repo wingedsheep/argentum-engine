@@ -30,6 +30,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-thb',
+    date: '2026-10-31',
+    kind: 'set',
+    setCode: 'THB',
+    title: 'Theros Beyond Death is complete',
+    body:
+      "Descend into the Underworld of Theros, where the gods reward devotion: stack your colour's mana symbols to wake Heliod, Thassa or Purphoros, chain enchantments for constellation triggers, and give your heroes Auras that pay off every time they're targeted. Escape lets graveyard cards come back by exiling others, so long games turn on Uro, Kroxa and recurring Underworld creatures, while Sagas tell a three-chapter story each.",
+    tryIf: 'enchantments, Aura-boosted heroes and graveyard recursion',
+  },
+  {
     id: 'feature-set-guide',
     date: '2026-10-30',
     kind: 'feature',
