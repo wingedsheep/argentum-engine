@@ -25,7 +25,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 class FetchedLandDropFollowUpTest : ScenarioTestBase() {
 
     private val before = AiProfile.LIVE.copy(id = "live-without-fetched-land", fetchedLandDropFollowUp = false)
-    private val withoutUse = AiProfile.LIVE.copy(id = "live-without-landcycling-use", landcyclingNeedsAUse = false)
+    private val withoutHandRead = AiProfile.LIVE.copy(id = "live-without-hand-read-lands", surplusLandsReadTheHand = false)
 
     private fun TestGame.choice(profile: AiProfile = AiProfile.LIVE): GameAction =
         AIPlayer.create(cardRegistry, player1Id, profile).chooseAction(state)
@@ -152,7 +152,7 @@ class FetchedLandDropFollowUpTest : ScenarioTestBase() {
             val game = witchstalkerPosition()
             game.execute(PlayLand(game.player1Id, game.findCardsInHand(1, "Mountain").single())).error shouldBe null
 
-            game.choice(withoutUse).shouldBeInstanceOf<TypecycleCard>()
+            game.choice(withoutHandRead).shouldBeInstanceOf<TypecycleCard>()
             (game.choice() is TypecycleCard) shouldBe false
         }
     }

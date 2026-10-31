@@ -823,21 +823,25 @@ object CardAdvantage : BoardFeature {
         priceLandsInHandAsMana: Boolean = false,
         surplusAwareLands: Boolean = false,
         modalLandRoot: ModalLandRoot? = null,
+        surplusLandsReadTheHand: Boolean = false,
     ): Double {
         val sides = state.sidesFor(playerId) ?: return 0.0
         // The earmark model only: the mana model already prices a flood on its own schedule.
         val surplus = surplusAwareLands && landDropIsNotCardLoss && !priceLandsInHandAsMana
+        // Own seat only: the hand's mana needs are read off its contents (see [landDropsTheHandNeeds]).
+        val readsHandOf = playerId.takeIf { surplus && surplusLandsReadTheHand }
         val mine = sideHandValue(
             state, projected, sides.mine, topdeckPenalty, landDropIsNotCardLoss, priceLandsInHandAsMana, surplus,
+            readsHandOf,
         ) - if (surplus && modalLandRoot != null) {
-            modalFaceCharge(state, projected, playerId, topdeckPenalty, modalLandRoot)
+            modalFaceCharge(state, projected, playerId, topdeckPenalty, modalLandRoot, readsHandOf != null)
         } else {
             0.0
         }
         return sides.against(OpponentAggregate.FIELD) { opponent ->
             mine - sideHandValue(
                 state, projected, opponent, topdeckPenalty, landDropIsNotCardLoss, priceLandsInHandAsMana,
-                surplus,
+                surplus, readsHandOf = null,
             )
         }
     }
@@ -854,18 +858,19 @@ object CardAdvantage : BoardFeature {
         private val priceLandsInHandAsMana: Boolean,
         private val surplusAwareLands: Boolean,
         private val modalLandRoot: ModalLandRoot? = null,
+        private val surplusLandsReadTheHand: Boolean = false,
     ) : BoardFeature {
         override fun score(state: GameState, projected: ProjectedState, playerId: EntityId): Double =
             score(
                 state, projected, playerId, topdeckPenalty, landDropIsNotCardLoss, priceLandsInHandAsMana,
-                surplusAwareLands, modalLandRoot,
+                surplusAwareLands, modalLandRoot, surplusLandsReadTheHand,
             )
 
         override fun rootedAt(root: GameState, playerId: EntityId): BoardFeature =
             if (!surplusAwareLands) this
             else Bound(
                 topdeckPenalty, landDropIsNotCardLoss, priceLandsInHandAsMana, surplusAwareLands,
-                ModalLandRoot.of(root, playerId),
+                ModalLandRoot.of(root, playerId), surplusLandsReadTheHand,
             )
     }
 
@@ -893,6 +898,7 @@ object CardAdvantage : BoardFeature {
         playerId: EntityId,
         topdeckPenalty: Double,
         root: ModalLandRoot,
+        readsHand: Boolean,
     ): Double {
         val played = root.playedAsLands(projected, playerId).size
         if (played == 0) return 0.0
@@ -901,7 +907,10 @@ object CardAdvantage : BoardFeature {
             root.waived -> -1.0
             else -> return 0.0
         }
-        val held = heldCardCount(state, playerId, landDropIsNotCardLoss = true, surplusAwareLands = true)
+        val held = heldCardCount(
+            state, playerId, landDropIsNotCardLoss = true, surplusAwareLands = true,
+            readsHand = readsHand, projected = projected,
+        )
         return sign * (cardValue(held + played, topdeckPenalty) - cardValue(held, topdeckPenalty))
     }
 
@@ -913,11 +922,12 @@ object CardAdvantage : BoardFeature {
         landDropIsNotCardLoss: Boolean,
         priceLandsInHandAsMana: Boolean,
         surplusAwareLands: Boolean,
+        readsHandOf: EntityId?,
     ): Double =
         side.sumOf {
             handValue(
                 state, projected, it, topdeckPenalty, landDropIsNotCardLoss, priceLandsInHandAsMana,
-                surplusAwareLands,
+                surplusAwareLands, readsHand = it == readsHandOf,
             )
         }
 
@@ -942,9 +952,11 @@ object CardAdvantage : BoardFeature {
         landDropIsNotCardLoss: Boolean,
         priceLandsInHandAsMana: Boolean,
         surplusAwareLands: Boolean = false,
+        readsHand: Boolean = false,
     ): Double {
         if (!priceLandsInHandAsMana) {
-            return cardValue(heldCardCount(state, playerId, landDropIsNotCardLoss, surplusAwareLands), topdeckPenalty)
+            val held = heldCardCount(state, playerId, landDropIsNotCardLoss, surplusAwareLands, readsHand, projected)
+            return cardValue(held, topdeckPenalty)
         }
         val hand = state.getZone(playerId, Zone.HAND)
         val lands = hand.count { state.getEntity(it)?.get<CardComponent>()?.isLand == true }
@@ -1055,6 +1067,8 @@ object CardAdvantage : BoardFeature {
         playerId: EntityId,
         landDropIsNotCardLoss: Boolean,
         surplusAwareLands: Boolean = false,
+        readsHand: Boolean = false,
+        projected: ProjectedState? = null,
     ): Double {
         val hand = state.getZone(playerId, Zone.HAND)
         if (!landDropIsNotCardLoss) return hand.size.toDouble()
@@ -1062,8 +1076,54 @@ object CardAdvantage : BoardFeature {
         val lands = hand.count { state.getEntity(it)?.get<CardComponent>()?.isLand == true }
         val earmarked = if (drops <= 0) 0 else minOf(lands, drops)
         if (!surplusAwareLands) return (hand.size - earmarked).toDouble()
-        return hand.size - earmarked - surplusLands(lands, drops) * (1.0 - SURPLUS_LAND_CARD)
+        val lookahead = if (readsHand && projected != null) {
+            landDropsTheHandNeeds(state, projected, playerId, hand, earmarked)
+        } else {
+            LOOKAHEAD_LAND_DROPS
+        }
+        return hand.size - earmarked - surplusLands(lands, drops, lookahead) * (1.0 - SURPLUS_LAND_CARD)
     }
+
+    /**
+     * How many turns of land drops after this one the hand still wants a land for —
+     * [AiProfile.surplusLandsReadTheHand]. The lookahead [surplusLands] counts a land in hand
+     * against, shrunk from "the next [LOOKAHEAD_LAND_DROPS] drops, always" to the drops something
+     * is waiting on.
+     *
+     * The same reach `CardSelectionValue.landShort` reads: the lands in play plus the one this
+     * turn's drop puts there ([earmarked]), against the costliest spell still in hand. A land is
+     * wanted while that reach falls short of the spell, or of [DEVELOPED_MANA] — a hand of cheap
+     * spells still draws into the deck's top end, so the lands up to a developed board are never
+     * surplus. The next turn's drop always counts, whatever the hand holds: a land queued for it is
+     * a guaranteed play, and a card.
+     *
+     * Before, every land within the next two drops was a whole card, so with three lands in play,
+     * Swamp and Mountain in hand and Apex Witchstalker as the only spell, landcycling the 6/4 for a
+     * third land read as a card-neutral swap (2026-10-31 AI-vs-humans review, `b1a69afb` turn 7).
+     *
+     * **Own seat only**: this reads the mana values of the cards in a hand, and the AI is entitled
+     * to its own — see [BoardPresence]'s idle-mana refund for the same rule.
+     */
+    private fun landDropsTheHandNeeds(
+        state: GameState,
+        projected: ProjectedState,
+        playerId: EntityId,
+        hand: List<EntityId>,
+        earmarked: Int,
+    ): Int {
+        val topEnd = hand.maxOfOrNull { id ->
+            state.getEntity(id)?.get<CardComponent>()?.takeIf { !it.isLand }?.manaValue ?: 0
+        } ?: 0
+        val reach = landsInPlay(state, projected, playerId) + earmarked
+        return (maxOf(topEnd, DEVELOPED_MANA) - reach).coerceIn(1, LOOKAHEAD_LAND_DROPS)
+    }
+
+    /**
+     * The land count a hand of cheap spells still wants before a land in hand stops being a card:
+     * a Limited curve tops out around four, and [Tempo] prices the lands up to there at its steepest
+     * rates (2.0 a land through the third, 1.2 for the fourth).
+     */
+    private const val DEVELOPED_MANA = 4
 
     /**
      * How many of [playerId]'s lands in hand no land drop in sight reaches: more than the drops left
