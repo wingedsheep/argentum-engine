@@ -9,6 +9,7 @@ import com.wingedsheep.engine.state.components.battlefield.HasBecomeTappedCompon
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.battlefield.TargetedByControllerThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.TimestampComponent
+import com.wingedsheep.engine.state.components.battlefield.UntapCountComponent
 import com.wingedsheep.engine.state.components.player.EquipActivationsThisTurnComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.player.PermanentAbilitiesActivatedThisTurnComponent
@@ -220,6 +221,10 @@ object StateProgress {
      * [EntryTapStateComponent] is stamped by the first tap or untap of a battlefield visit with
      * how the permanent *entered* — a fact that was already true, so recording it is no progress.
      *
+     * [UntapCountComponent] is bumped by every untap, so Alchemist untapping itself would otherwise
+     * read as progress too. The only thing it gates — whether an earlier source-tapped effect still
+     * holds — shows up in the floating effects the moment the clock actually ends one.
+     *
      * [PermanentAbilitiesActivatedThisTurnComponent] is the player-side twin of
      * [AbilityActivatedThisTurnComponent]: every activation of a permanent's ability (mana sources
      * tapped by auto-pay included) records that permanent once, for Tezzeret, Betrayer of Flesh's
@@ -243,6 +248,7 @@ object StateProgress {
         TimestampComponent::class.java,
         ManaPoolComponent::class.java,
         PermanentAbilitiesActivatedThisTurnComponent::class.java,
+        UntapCountComponent::class.java,
     )
 
     /**
