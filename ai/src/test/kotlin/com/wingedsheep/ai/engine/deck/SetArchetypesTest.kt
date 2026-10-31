@@ -191,6 +191,25 @@ class SetArchetypesTest : StringSpec({
         synergies.archetypes.single { it.name == "Citizens" }.creatureTypes shouldContainExactly listOf("Citizen")
     }
 
+    "Ikoria exposes one archetype per gold signpost uncommon" {
+        val synergies = SetArchetypes.getForSet("IKO")!!
+
+        synergies.setName shouldBe "Ikoria: Lair of Behemoths"
+        synergies.archetypes.associate { it.name to it.colors.toSet() } shouldBe mapOf(
+            "Flying Counters" to setOf(Color.WHITE, Color.BLUE),
+            "Flash" to setOf(Color.BLUE, Color.BLACK),
+            "Menace" to setOf(Color.BLACK, Color.RED),
+            "Trample" to setOf(Color.RED, Color.GREEN),
+            "Vigilance" to setOf(Color.GREEN, Color.WHITE),
+            "Humans" to setOf(Color.WHITE, Color.BLACK),
+            "Spells" to setOf(Color.BLUE, Color.RED),
+            "Mutate Graveyard" to setOf(Color.BLACK, Color.GREEN),
+            "Cycling" to setOf(Color.RED, Color.WHITE),
+            "Mutate" to setOf(Color.GREEN, Color.BLUE),
+        )
+        synergies.archetypes.single { it.name == "Humans" }.creatureTypes shouldContainExactly listOf("Human")
+    }
+
     "Kamigawa: Neon Dynasty exposes one archetype per allied and enemy pair" {
         val synergies = SetArchetypes.getForSet("NEO")!!
 

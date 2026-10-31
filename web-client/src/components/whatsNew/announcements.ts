@@ -30,6 +30,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-iko',
+    date: '2026-10-31',
+    kind: 'set',
+    setCode: 'IKO',
+    title: 'Ikoria: Lair of Behemoths is complete',
+    body:
+      "Ikoria is a world of colossal monsters: mutate one creature onto another to build a single towering threat that collects every ability underneath, while Humans bond with beasts by handing out flying, menace, trample and vigilance counters. Cycling keeps every hand smooth and feeds payoffs like Zenith Flare, and each two-colour pair has its own plan, from Sprite Dragon spells to Boneyard Lurker graveyard mutate.",
+    tryIf: 'building one huge monster, keyword counters and cycling',
+  },
+  {
     id: 'set-thb',
     date: '2026-10-31',
     kind: 'set',

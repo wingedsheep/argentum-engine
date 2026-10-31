@@ -142,6 +142,54 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
         boosterGenerator.getBasicLands("KHM").keys shouldBe setOf("Plains", "Island", "Swamp", "Mountain", "Forest")
     }
 
+    test("Ikoria draft pack opens 10 commons, 3 uncommons, a rare or mythic and a gain land or basic") {
+        // IKO draft sheets (taw/magic-search-engine, mtg.wtf/pack/iko-draft): 10 commons, 3 uncommons,
+        // 1 rare/mythic (rares weighted 2, mythics 1 -> 15/121), and a basic_or_gainland slot where the ten
+        // gain lands (1/20 each) and fifteen basic arts (1/30 each) split it 50/50. Showcase variants and
+        // the foil replacing a common in a third of packs are cosmetic and not modelled.
+        val iko = boosterGenerator.availableSets["IKO"].shouldNotBeNull()
+        iko.fullyImplemented shouldBe true
+        val strategy = iko.boosterStrategy.shouldBeInstanceOf<LandSlotBooster>()
+        strategy.base shouldBe StandardBooster(commons = 10, mythicChance = 15.0 / 121)
+        strategy.nonbasicChance shouldBe 0.5
+        strategy.basicLands.map { it.name }.toSet() shouldBe setOf("Plains", "Island", "Swamp", "Mountain", "Forest")
+        val gainLands = strategy.nonbasicLandNames
+        gainLands.size shouldBe 10
+        val eligible = iko.cards.filter {
+            it.metadata.inBooster && !it.typeLine.isBasicLand && !it.meldResult && it.name !in gainLands
+        }
+        // The draft sheets' non-land commons, uncommons and rares/mythics, by distinct name.
+        eligible.distinctBy { it.name }.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.COMMON to 101, Rarity.UNCOMMON to 80, Rarity.RARE to 53, Rarity.MYTHIC to 15,
+        )
+        val eligibleNames = eligible.map { it.name }.toSet()
+        var mythics = 0
+        var gainLandPacks = 0
+        val packs = 3000
+        repeat(packs) {
+            val pack = boosterGenerator.generateBooster("IKO")
+            pack.size shouldBe 15
+            pack.map { it.name }.toSet().size shouldBe 15
+            withClue("pack ${pack.map { it.name }} holds an off-sheet card outside the land slot") {
+                pack.dropLast(1).all { it.name in eligibleNames } shouldBe true
+            }
+            pack.dropLast(1).count { it.metadata.rarity == Rarity.COMMON } shouldBe 10
+            pack.count { it.metadata.rarity == Rarity.UNCOMMON } shouldBe 3
+            val land = pack.last()
+            (land.name in gainLands || land.typeLine.isBasicLand) shouldBe true
+            if (land.name in gainLands) gainLandPacks++
+            mythics += pack.count { it.metadata.rarity == Rarity.MYTHIC }
+        }
+        (gainLandPacks.toDouble() / packs) shouldBe (0.5 plusOrMinus 0.035)
+        (mythics.toDouble() / packs) shouldBe (15.0 / 121 plusOrMinus 0.025)
+        // A host ban on every gain land leaves the land slot to the basics.
+        repeat(20) {
+            val pack = boosterGenerator.generateBooster("IKO", bannedCardNames = gainLands)
+            pack.size shouldBe 15
+            pack.last().typeLine.isBasicLand shouldBe true
+        }
+    }
+
     test("Adventures in the Forgotten Realms draft pack is 10 commons, 3 uncommons and one rare or mythic from its booster pool") {
         // Draft Booster: 1 rare/mythic, 3 uncommons, 10 commons, 1 basic land (the generator supplies
         // basics at deck building), a token/ad card, and a foil of any rarity replacing a common in a
@@ -539,7 +587,7 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
         // foil/List/Special Guest/bonus-sheet cards).
         val expected = mapOf(
             "ARN" to 8, "ATQ" to 8, "DRK" to 8, "FEM" to 8, "LEG" to 15, "PTK" to 8,
-            "POR" to 13, "P02" to 13, "S99" to 13, "VOW" to 14, "KHM" to 15, "LCI" to 15, "MOM" to 14,
+            "POR" to 13, "P02" to 13, "S99" to 13, "VOW" to 14, "KHM" to 15, "IKO" to 15, "LCI" to 15, "MOM" to 14,
             "MKM" to 13, "OTJ" to 13, "MH3" to 13, "BLB" to 13, "DSK" to 14, "FDN" to 14, "INR" to 13,
             "DFT" to 14, "TDM" to 14, "FIN" to 14, "EOE" to 13, "SPM" to 14, "TLA" to 14, "ECL" to 13,
             "TMT" to 14, "SOS" to 13, "MSH" to 14, "HOB" to 14, "ZNR" to 14, "STX" to 15,

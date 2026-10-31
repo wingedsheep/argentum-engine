@@ -1482,6 +1482,73 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  IKO: {
+    setCode: 'IKO',
+    setName: 'Ikoria: Lair of Behemoths',
+    archetypes: [
+      {
+        name: 'Flying Counters',
+        colors: ['W', 'U'],
+        keyCard: 'Jubilant Skybonder',
+        description: 'Put flying counters on your creatures with mentors, cycling creatures and mutate, then protect the air force by taxing spells aimed at it. A tempo deck that wins in the sky.',
+      },
+      {
+        name: 'Flash',
+        colors: ['U', 'B'],
+        keyCard: 'Cunning Nightbonder',
+        description: 'Hold up mana and cast flash creatures and instants on the opponent\'s turn, ambushing attackers and answering threats at instant speed. A reactive control deck that never taps out on its own turn.',
+      },
+      {
+        name: 'Menace',
+        colors: ['B', 'R'],
+        keyCard: 'Sonorous Howlbonder',
+        description: 'Put menace counters on aggressive creatures and make them so hard to block that chump blocks run out. An aggro deck that punishes a thin board.',
+      },
+      {
+        name: 'Trample',
+        colors: ['R', 'G'],
+        keyCard: 'Proud Wildbonder',
+        description: 'Play the biggest creatures in the set, give them trample counters and stop them being gang-blocked. A stompy midrange deck that pushes damage through any blocker.',
+      },
+      {
+        name: 'Vigilance',
+        colors: ['G', 'W'],
+        keyCard: 'Alert Heedbonder',
+        description: 'Spread vigilance counters, attack with everything and still keep blockers home while gaining life each end step. A midrange deck that grinds out board stalls.',
+      },
+      {
+        name: 'Humans',
+        colors: ['W', 'B'],
+        creatureTypes: ['Human'],
+        keyCard: "General's Enforcer",
+        description: 'Go wide with Humans and Human Soldier tokens, then turn them into removal and indestructible threats. A grindy deck that rewards staying all-Human.',
+      },
+      {
+        name: 'Spells',
+        colors: ['U', 'R'],
+        keyCard: 'Sprite Dragon',
+        description: 'Cast cheap instants and sorceries to grow your spell-matter creatures and fill the graveyard for burn that scales with it. A tempo deck that interacts every turn.',
+      },
+      {
+        name: 'Mutate Graveyard',
+        colors: ['B', 'G'],
+        keyCard: 'Boneyard Lurker',
+        description: 'Mill your own library, mutate onto your creatures and bring the best of them back from the graveyard. A grindy value deck that recurs its threats.',
+      },
+      {
+        name: 'Cycling',
+        colors: ['R', 'W'],
+        keyCard: 'Zenith Flare',
+        description: 'Play cards with cycling, reward every cycle with damage, counters and tokens, then finish with a burn spell that counts them. An aggressive deck that never floods.',
+      },
+      {
+        name: 'Mutate',
+        colors: ['G', 'U'],
+        keyCard: 'Trumpeting Gnarr',
+        description: 'Stack mutate creatures on a non-Human, collecting every enters and mutate trigger on one huge threat. A value deck built around a single towering monster.',
+      },
+    ],
+  },
   M21: {
     setCode: 'M21',
     setName: 'Core Set 2021',

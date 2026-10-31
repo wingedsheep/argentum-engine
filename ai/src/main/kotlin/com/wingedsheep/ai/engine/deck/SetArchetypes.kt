@@ -670,6 +670,33 @@ object SetArchetypes {
                     "Ramp into X spells and Fractals, then double the +1/+1 counters on your creatures. A counters-ramp deck whose threats scale with every land and every counter."),
             )
         ),
+        "IKO" to SetSynergies(
+            setCode = "IKO",
+            setName = "Ikoria: Lair of Behemoths",
+            archetypes = listOf(
+                Archetype("Flying Counters", listOf(Color.WHITE, Color.BLUE),
+                    "Put flying counters on your creatures with mentors, cycling creatures and mutate, then protect the air force by taxing spells aimed at it. A tempo deck that wins in the sky."),
+                Archetype("Flash", listOf(Color.BLUE, Color.BLACK),
+                    "Hold up mana and cast flash creatures and instants on the opponent's turn, ambushing attackers and answering threats at instant speed. A reactive control deck that never taps out on its own turn."),
+                Archetype("Menace", listOf(Color.BLACK, Color.RED),
+                    "Put menace counters on aggressive creatures and make them so hard to block that chump blocks run out. An aggro deck that punishes a thin board."),
+                Archetype("Trample", listOf(Color.RED, Color.GREEN),
+                    "Play the biggest creatures in the set, give them trample counters and stop them being gang-blocked. A stompy midrange deck that pushes damage through any blocker."),
+                Archetype("Vigilance", listOf(Color.GREEN, Color.WHITE),
+                    "Spread vigilance counters, attack with everything and still keep blockers home while gaining life each end step. A midrange deck that grinds out board stalls."),
+                Archetype("Humans", listOf(Color.WHITE, Color.BLACK),
+                    "Go wide with Humans and Human Soldier tokens, then turn them into removal and indestructible threats. A grindy deck that rewards staying all-Human.",
+                    creatureTypes = listOf("Human")),
+                Archetype("Spells", listOf(Color.BLUE, Color.RED),
+                    "Cast cheap instants and sorceries to grow your spell-matter creatures and fill the graveyard for burn that scales with it. A tempo deck that interacts every turn."),
+                Archetype("Mutate Graveyard", listOf(Color.BLACK, Color.GREEN),
+                    "Mill your own library, mutate onto your creatures and bring the best of them back from the graveyard. A grindy value deck that recurs its threats."),
+                Archetype("Cycling", listOf(Color.RED, Color.WHITE),
+                    "Play cards with cycling, reward every cycle with damage, counters and tokens, then finish with a burn spell that counts them. An aggressive deck that never floods."),
+                Archetype("Mutate", listOf(Color.GREEN, Color.BLUE),
+                    "Stack mutate creatures on a non-Human, collecting every enters and mutate trigger on one huge threat. A value deck built around a single towering monster."),
+            )
+        ),
         "M21" to SetSynergies(
             setCode = "M21",
             setName = "Core Set 2021",
