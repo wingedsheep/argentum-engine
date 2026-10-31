@@ -72,7 +72,15 @@ class ChandraNalaarScenarioTest : FunSpec({
             val result = d.submitSuccess(ActivateAbility(me, chandra, abilities[1].id,
                 targets = listOf(ChosenTarget.Permanent(creature)), xValue = x))
             loyalty(d, chandra) shouldBe 6 - x
-            result.events.filterIsInstance<CountersRemovedEvent>().sumOf { it.amount } shouldBe x
+            val removals = result.events.filterIsInstance<CountersRemovedEvent>()
+            if (x == 0) {
+                removals shouldBe emptyList()
+            } else {
+                val removal = removals.single()
+                removal.counterType shouldBe CounterType.LOYALTY
+                removal.amount shouldBe x
+                removal.removedBy shouldBe me
+            }
             d.bothPass()
             if (x == 0) {
                 d.state.getEntity(creature)?.get<DamageComponent>()?.amount.orZero() shouldBe 0
