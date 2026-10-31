@@ -236,4 +236,6 @@ export const counterManaClass: Record<string, string> = {
   GHOSTFORM: 'counter-lore',
   NIGHT: 'counter-time',
   TASK: 'counter-time',
+  HOUR: 'counter-time',
+  KNOWLEDGE: 'counter-lore',
 }

@@ -84,7 +84,7 @@ class AddCountersExecutor(
 
         return EffectResult.success(
             newState,
-            listOf(CountersAddedEvent(targetId, effect.counterType, modifiedCount, entityName, firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn, placedBy = context.controllerId))
+            listOf(CountersAddedEvent(targetId, effect.counterType, modifiedCount, entityName, firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn, placedBy = context.controllerId, totalCount = current.getCount(counterType) + modifiedCount))
         )
     }
 }

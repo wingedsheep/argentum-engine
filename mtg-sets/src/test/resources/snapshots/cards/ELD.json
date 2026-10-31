@@ -9968,6 +9968,133 @@
     ]
 }
 
+// Midnight Clock
+{
+    "name": "Midnight Clock",
+    "manaCost": "{2}{U}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add {U}.\n{2}{U}: Put an hour counter on this artifact.\nAt the beginning of each upkeep, put an hour counter on this artifact.\nWhen the twelfth hour counter is put on this artifact, shuffle your hand and graveyard into your library, then draw seven cards. Exile this artifact.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Midnight Clock:3",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "HOUR",
+                    "count": 1,
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Midnight Clock:4",
+                "trigger": {
+                    "type": "CountersPlacedEvent",
+                    "counterType": "HOUR",
+                    "nth": 12
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromMultipleZones",
+                                "zones": [
+                                    "Hand",
+                                    "Graveyard"
+                                ]
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Shuffled"
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 7
+                            }
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Exile"
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Midnight Clock:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Midnight Clock:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "HOUR",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "RARE",
+        "artist": "Alexander Forssberg",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0f7f1148-7b1b-4969-a2f8-428de1e2e8ff.jpg?1783932655",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "If Midnight Clock leaves the battlefield while its last ability is on the stack, it won't be exiled."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "You can activate Midnight Clock's mana ability to pay the cost of its second ability."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Midnight Clock's last ability triggers after one or more counters are put onto it if it had fewer than twelve counters on it before those counters were put on it and it has twelve or more counters on it after."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Midnight Clock's first triggered ability triggers at the beginning of each upkeep, not just your upkeep. In a Two-Headed Giant game, an ability that triggers at the beginning of each upkeep rather than each player's upkeep triggers only once during each team's upkeep."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Mirrormade
 {
     "name": "Mirrormade",
@@ -16199,6 +16326,97 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// The Magic Mirror
+{
+    "name": "The Magic Mirror",
+    "manaCost": "{6}{U}{U}{U}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "This spell costs {1} less to cast for each instant and sorcery card in your graveyard.\nYou have no maximum hand size.\nAt the beginning of your upkeep, put a knowledge counter on The Magic Mirror, then draw a card for each knowledge counter on The Magic Mirror.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "The Magic Mirror:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "KNOWLEDGE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": {
+                                    "type": "CounterCount",
+                                    "counterType": "KNOWLEDGE"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "CardsInGraveyardMatchingFilter",
+                        "filter": "instant|sorcery"
+                    }
+                }
+            },
+            "NoMaximumHandSize"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "rarity": "MYTHIC",
+        "artist": "Anastasia Ovchinnikova",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/08b89af1-7b22-4153-b42d-a2ea4e0f320c.jpg?1783932655",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "Adventurer cards aren't instant or sorcery cards while they're in your graveyard."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If a split card is both an instant card and a sorcery card, it's only counted once for The Magic Mirror's cost reduction ability."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If The Magic Mirror leaves the battlefield while its last ability is on the stack, the ability will use the number of knowledge counters The Magic Mirror had before leaving the battlefield to determine how many cards you'll draw."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying, add any cost increases, then apply any cost reductions. The mana value of the spell remains unchanged, no matter what the total cost to cast it was."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "The cost reduction ability reduces only the generic mana in the relic's cost. The colored mana must still be paid."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Once you announce that you're casting a spell, no player may take actions until the spell has been paid for. Notably, opponents can't try to change by how much a relic's cost is reduced."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

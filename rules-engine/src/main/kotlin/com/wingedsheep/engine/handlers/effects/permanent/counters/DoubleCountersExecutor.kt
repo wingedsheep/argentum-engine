@@ -84,7 +84,8 @@ class DoubleCountersExecutor(
             events.add(
                 CountersAddedEvent(
                     targetId, counterType, added, entityName,
-                    firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn, placedBy = context.controllerId
+                    firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn, placedBy = context.controllerId,
+                    totalCount = current.getCount(counterType) + added
                 )
             )
             // Marked per kind, inside the loop, because the counter-history marker records which

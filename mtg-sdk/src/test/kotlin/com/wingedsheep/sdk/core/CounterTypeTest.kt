@@ -173,7 +173,7 @@ class CounterTypeTest : DescribeSpec({
             CounterType.ICE to "ice", CounterType.PLAN to "plan", CounterType.INVASION to "invasion",
             CounterType.UNLOCK to "unlock", CounterType.JUDGMENT to "judgment",
             CounterType.BRAIN to "brain", CounterType.HATCHING to "hatching",
-            CounterType.INTERVENTION to "intervention", CounterType.REJECTION to "rejection", CounterType.VALOR to "valor", CounterType.RITUAL to "ritual", CounterType.FLAME to "flame", CounterType.EMBER to "ember", CounterType.BOOK to "book", CounterType.STUDY to "study", CounterType.REFINE to "refine", CounterType.VOYAGE to "voyage", CounterType.GHOSTFORM to "ghostform", CounterType.NIGHT to "night", CounterType.TASK to "task", CounterType.MINUS_ZERO_MINUS_TWO to "-0/-2"
+            CounterType.INTERVENTION to "intervention", CounterType.REJECTION to "rejection", CounterType.VALOR to "valor", CounterType.RITUAL to "ritual", CounterType.FLAME to "flame", CounterType.EMBER to "ember", CounterType.BOOK to "book", CounterType.STUDY to "study", CounterType.REFINE to "refine", CounterType.VOYAGE to "voyage", CounterType.GHOSTFORM to "ghostform", CounterType.NIGHT to "night", CounterType.TASK to "task", CounterType.HOUR to "hour", CounterType.KNOWLEDGE to "knowledge", CounterType.MINUS_ZERO_MINUS_TWO to "-0/-2"
         )
     }
 }

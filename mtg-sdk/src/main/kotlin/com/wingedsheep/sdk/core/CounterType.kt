@@ -913,6 +913,19 @@ value class CounterType(val name: String) {
          */
         val TASK = CounterType("TASK")
 
+        /**
+         * Hour counter (ELD — Midnight Clock). A passive tally with no inherent rule: the Clock gains
+         * one each upkeep and from its activated ability, and "when the twelfth hour counter is put
+         * on" it (`getsCounters(HOUR, nth = 12)`) it resets your hand and exiles itself.
+         */
+        val HOUR = CounterType("HOUR")
+
+        /**
+         * Knowledge counter (ELD — The Magic Mirror). A passive tally with no inherent rule: the
+         * Mirror gains one each upkeep, then its controller draws a card for each.
+         */
+        val KNOWLEDGE = CounterType("KNOWLEDGE")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -1074,6 +1087,8 @@ value class CounterType(val name: String) {
             GHOSTFORM,
             NIGHT,
             TASK,
+            HOUR,
+            KNOWLEDGE,
         )
 
         /**

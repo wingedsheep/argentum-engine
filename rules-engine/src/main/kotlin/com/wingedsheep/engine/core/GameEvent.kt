@@ -1821,7 +1821,16 @@ data class CountersAddedEvent(
      * `null` for the few paths that don't attribute a placer (saga lore counters, poison counters on
      * players); a null placer never matches a placer-restricted trigger.
      */
-    val placedBy: EntityId? = null
+    val placedBy: EntityId? = null,
+    /**
+     * How many [counterType] counters [entityId] had immediately after *this* placement, or null
+     * when the emitter didn't record it. Read by the ordinal "when the Nth counter is put on"
+     * template ([com.wingedsheep.sdk.scripting.EventPattern.CountersPlacedEvent.nth]); like
+     * [CountersRemovedEvent.remainingCount] it can't be re-derived at detection time when one
+     * resolution makes several placements on the same permanent, so the matcher falls back to the
+     * live count only when this is null.
+     */
+    val totalCount: Int? = null
 ) : GameEvent
 
 /**

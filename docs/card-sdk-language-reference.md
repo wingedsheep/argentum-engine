@@ -10191,6 +10191,13 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
   `batch` or `firstTimeEachTurn` (both fire at most once). Flourishing Defenses:
   `Triggers.a(GameObjectFilter.Creature).getsCounters(CounterType.MINUS_ONE_MINUS_ONE, perCounter = true)`
   + `optional = true` + `Effects.CreateToken(1/1 green Elf Warrior)`.
+  **The Nth counter.** `nth = N` (`CountersPlacedEvent.nth`) is the ordinal "when the **twelfth**
+  <type> counter is put on ~" template: it fires for the placement that takes the recipient's count
+  of that kind from below N to N or more — one placement jumping from eleven to thirteen fires it,
+  the thirteenth counter alone doesn't, and a count that is reset and climbs back fires it again.
+  The count after the placement is read from `CountersAddedEvent.totalCount` (live count when an
+  emitter didn't record it). Needs a named `type`; not combinable with `batch`, `perCounter` or
+  `firstTimeEachTurn`. Midnight Clock: `Triggers.self.getsCounters(CounterType.HOUR, nth = 12)`.
 - `Triggers.self.getsCounters()` — "whenever you put one or more counters on ~" (any kind, SELF-bound).
   Aragorn, Company Leader.
 - `Triggers.<subject>.losesCounters(type, lastRemoved, byDamagePrevention, by)`
@@ -19844,6 +19851,8 @@ are their printed spellings (`CounterType.printed`). Text converts back only thr
 - `ghostform` (`CounterType.GHOSTFORM`): KHM — Kaya the Inexorable. A pure reminder with no inherent rule: Kaya's +1 puts one on a creature alongside a `Duration.Permanent` granted dies / leaves-to-exile trigger, and that trigger keeps working if the counter is removed.
 - `night` (`CounterType.NIGHT`): KHM — Replicating Ring. Passive countdown with no inherent rule (unrelated to the day/night designation): its upkeep trigger adds one, then `Effects.If(Conditions.SourceCounterCountAtLeast(NIGHT, 8), Effects.RemoveAllCountersOfType(NIGHT, Self) then Effects.CreatePredefinedToken("Replicated Ring", 8))`. The passive-counter badge displays its count.
 - `task` (`CounterType.TASK`): THB — Heliod's Punishment. Passive countdown with no inherent rule: the Aura enters with four (`EntersWithCounters(TASK, 4, selfOnly = true)`) and grants the enchanted creature "{T}: remove one" — `Effects.RemoveCounters(TASK, 1, EffectTarget.GrantingSource) then Effects.If(Conditions.Not(Conditions.TargetHasCounter(TASK, EffectTarget.GrantingSource)), Effects.Destroy(EffectTarget.GrantingSource))`. The passive-counter badge displays its count.
+- `hour` (`CounterType.HOUR`): ELD — Midnight Clock. Passive tally with no inherent rule: one each upkeep and from `{2}{U}`, and `Triggers.self.getsCounters(HOUR, nth = 12)` fires the reset. The passive-counter badge displays its count.
+- `knowledge` (`CounterType.KNOWLEDGE`): ELD — The Magic Mirror. Passive tally with no inherent rule: the upkeep trigger adds one, then draws `DynamicAmounts.countersOnSelf(KNOWLEDGE)`. The passive-counter badge displays its count.
 - `charge`, `time`, `level`, `quest`, `fade`, `vanishing`, `experience`, `age`, `velocity`, `awakening`,
   `blood`, `cage`, `doom`, `storage`, `divinity` (`CounterType.DIVINITY`, a passive counter used by the Myojin
   cycle), `charm`, `music`, `crumble`, `corpse`, `germ`, `ink`, `growth`,

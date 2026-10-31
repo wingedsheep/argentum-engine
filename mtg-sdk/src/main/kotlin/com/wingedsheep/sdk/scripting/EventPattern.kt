@@ -2840,7 +2840,16 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
          * (`TriggerDetector.expandPerCounterTriggers`), so a recipient's simultaneous placements
          * are summed first and then fanned out. Not combinable with [batch] or [firstTimeEachTurn].
          */
-        val perCounter: Boolean = false
+        val perCounter: Boolean = false,
+        /**
+         * The *ordinal* template "When the **twelfth** hour counter is put on this artifact"
+         * (Midnight Clock): the trigger fires only for the placement that takes the recipient's
+         * count of [counterType] from below [nth] to [nth] or more — so a single placement that
+         * jumps from eleven to thirteen still fires it, a thirteenth counter doesn't, and a count
+         * that is reset and climbs back fires it again. `null` (default) is no ordinal. Requires a
+         * named [counterType]; not combinable with [batch], [perCounter] or [firstTimeEachTurn].
+         */
+        val nth: Int? = null
     ) : EventPattern {
         init {
             require(recipient == null || (filter == GameObjectFilter.Any && !includePlayers)) {
@@ -2849,10 +2858,18 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
             require(!(perCounter && (batch || firstTimeEachTurn))) {
                 "CountersPlacedEvent.perCounter fires once per counter; batch and firstTimeEachTurn fire at most once"
             }
+            require(nth == null || (nth >= 1 && counterType != null && !batch && !perCounter && !firstTimeEachTurn)) {
+                "CountersPlacedEvent.nth needs a named counterType and excludes batch, perCounter and firstTimeEachTurn"
+            }
         }
 
         override val description: String = buildString {
             val typeLabel = counterType?.let { "${it.printed} " } ?: ""
+            if (nth != null) {
+                append("the ${ordinalWord(nth)} ${typeLabel}counter is put on ")
+                append(describeObjectForEvent(filter))
+                return@buildString
+            }
             // "a -1/-1 counter" for the per-counter template, "one or more -1/-1 counters" otherwise.
             val counters = if (perCounter) "a ${typeLabel}counter" else "one or more ${typeLabel}counters"
             if (recipient != null) {
@@ -4158,3 +4175,9 @@ enum class DrawStepFirstCard {
     /** Only that draw matches (Wiretapping). */
     ONLY,
 }
+
+/** "first", "second", … "twelfth" for the ordinal trigger templates; "13th" and beyond as digits. */
+internal fun ordinalWord(n: Int): String = listOf(
+    "first", "second", "third", "fourth", "fifth", "sixth",
+    "seventh", "eighth", "ninth", "tenth", "eleventh", "twelfth"
+).getOrNull(n - 1) ?: "${n}th"

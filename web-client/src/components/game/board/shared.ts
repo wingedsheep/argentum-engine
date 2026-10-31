@@ -907,6 +907,10 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.NIGHT,
   // Heliod's Punishment's countdown, ticked by the enchanted creature's granted {T} ability.
   CounterType.TASK,
+  // Midnight Clock's tally toward its twelfth-hour reset.
+  CounterType.HOUR,
+  // The Magic Mirror's growing upkeep draw.
+  CounterType.KNOWLEDGE,
   CounterType.PLUS_ONE_PLUS_TWO,
   CounterType.PLUS_TWO_PLUS_TWO,
   CounterType.MINUS_TWO_MINUS_TWO,

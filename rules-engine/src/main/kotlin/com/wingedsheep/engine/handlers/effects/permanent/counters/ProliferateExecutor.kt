@@ -266,7 +266,8 @@ class ProliferateExecutor(
                             modifiedAmount,
                             entityName,
                             firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn,
-                            placedBy = controllerId
+                            placedBy = controllerId,
+                            totalCount = before.getCount(counterType) + modifiedAmount
                         )
                     )
                 }

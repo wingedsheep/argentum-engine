@@ -488,7 +488,8 @@ class ObjectTriggerSubject internal constructor(
      * [CountersPlacedEvent.batch]; [orPlayer] widens the recipient to "a permanent **or player**"
      * (All Will Be One) — see [CountersPlacedEvent.includePlayers]; [perCounter] is "whenever **a**
      * [type] counter is put on" — once per counter (Flourishing Defenses), see
-     * [CountersPlacedEvent.perCounter].
+     * [CountersPlacedEvent.perCounter]; [nth] is "when the **twelfth** [type] counter is put on" —
+     * the placement that reaches that count (Midnight Clock), see [CountersPlacedEvent.nth].
      */
     fun getsCounters(
         type: CounterType? = null,
@@ -497,6 +498,7 @@ class ObjectTriggerSubject internal constructor(
         batch: Boolean = false,
         orPlayer: Boolean = false,
         perCounter: Boolean = false,
+        nth: Int? = null,
     ): TriggerSpec = spec(
         CountersPlacedEvent(
             counterType = type,
@@ -506,6 +508,7 @@ class ObjectTriggerSubject internal constructor(
             batch = batch,
             includePlayers = orPlayer,
             perCounter = perCounter,
+            nth = nth,
         )
     )
 
