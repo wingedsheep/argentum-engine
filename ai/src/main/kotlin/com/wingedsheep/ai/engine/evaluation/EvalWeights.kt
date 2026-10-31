@@ -51,6 +51,7 @@ data class EvaluationWeights(
         pendingLandDropIsMana: Boolean = false,
         surplusAwareLands: Boolean = false,
         libraryClock: Boolean = false,
+        surplusLandsReadTheHand: Boolean = false,
         oneShotManaIsMana: Boolean = false,
     ): BoardEvaluator = CompositeBoardEvaluator(
         listOfNotNull(
@@ -60,6 +61,7 @@ data class EvaluationWeights(
             ),
             cardAdvantage to CardAdvantage.Bound(
                 topdeckPenalty, landDropIsNotCardLoss, priceLandsInHandAsMana, surplusAwareLands,
+                surplusLandsReadTheHand = surplusLandsReadTheHand,
             ),
             threatAssessment to BoardFeature { state, projected, playerId ->
                 ThreatAssessment.score(
@@ -139,10 +141,11 @@ object EvalWeights {
 
     /**
      * [landDropIsNotCardLoss], [sequenceLandsByUsableMana], [discountedRaceClock],
-     * [creatureValuation], [priceLandsInHandAsMana], [evasionAfterAttacking], [pendingLandDropIsMana]
-     * and [surplusAwareLands] reach only the composite fallback: the raw Phase 9 vectors price
-     * `myHandSize` linearly, so a land drop already costs them one fitted coefficient with no cliff
-     * to step off, and changing what any of them count would silently invalidate the fit.
+     * [creatureValuation], [priceLandsInHandAsMana], [evasionAfterAttacking], [pendingLandDropIsMana],
+     * [surplusAwareLands] and [surplusLandsReadTheHand] reach only the composite fallback: the raw
+     * Phase 9 vectors price `myHandSize` linearly, so a land drop already costs them one fitted
+     * coefficient with no cliff to step off, and changing what any of them count would silently
+     * invalidate the fit.
      */
     fun resolveEvaluator(
         id: String,
@@ -156,6 +159,7 @@ object EvalWeights {
         pendingLandDropIsMana: Boolean = false,
         surplusAwareLands: Boolean = false,
         libraryClock: Boolean = false,
+        surplusLandsReadTheHand: Boolean = false,
         oneShotManaIsMana: Boolean = false,
     ): BoardEvaluator =
         apprenticeWeights[id]?.takeIf(RawEvaluationWeights::isValid)?.toEvaluator(intents)
@@ -163,7 +167,7 @@ object EvalWeights {
             ?: resolve(id).toEvaluator(
                 intents, landDropIsNotCardLoss, sequenceLandsByUsableMana, discountedRaceClock,
                 creatureValuation, priceLandsInHandAsMana, evasionAfterAttacking, pendingLandDropIsMana,
-                surplusAwareLands, libraryClock, oneShotManaIsMana,
+                surplusAwareLands, libraryClock, surplusLandsReadTheHand, oneShotManaIsMana,
             )
 
     /** Whether [id] selects a complete, finite raw vector rather than the composite fallback. */

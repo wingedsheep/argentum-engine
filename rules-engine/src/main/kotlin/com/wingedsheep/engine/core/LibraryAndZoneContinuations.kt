@@ -229,6 +229,8 @@ data class MoveCollectionAuraTargetContinuation(
      * there — Warp World's ruling), so these are never offered as hosts.
      */
     val excludedHosts: List<EntityId> = emptyList(),
+    /** The move puts its cards onto the battlefield tapped ("return them to the battlefield tapped"). */
+    val tapped: Boolean = false,
 ) : AnswerContinuation
 
 /**

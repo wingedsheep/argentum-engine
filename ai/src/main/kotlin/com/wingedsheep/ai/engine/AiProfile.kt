@@ -999,24 +999,23 @@ data class AiProfile(
      */
     val fetchedLandDropFollowUp: Boolean = false,
     /**
-     * Don't typecycle a spell for a land the hand has no use for: when the lands already in hand
-     * cover this turn's land drop and the next, and every other spell in hand is castable off the
-     * lands those drops reach, a cycle that finds a land is floored below passing.
+     * Price a land in hand by the land drops the hand is actually waiting on, not by the next two
+     * drops whatever the hand holds. Refines [surplusAwareLands]: a land past this turn's drop is a
+     * whole card only while the lands before it fall short of the costliest spell in hand (or of a
+     * developed four-land board); past that it is surplus, a tenth of a card. The next turn's drop
+     * always counts. Own hand only — it reads the cards' mana values.
      *
      * Off the 2026-10-31 AI-vs-humans review: `b1a69afb` turn 7, three lands in play and Swamp,
      * Mountain and Apex Witchstalker in hand — its only spell — the AI basic-landcycled the 6/4 and
-     * ended the game with two Swamps in hand. The leaf read the swap as neutral (a land in hand
-     * counts as a card, like the spell it replaced), so a playout or two decided it; and with the
-     * land drop unused, [fetchedLandDropFollowUp] credited the cycle with playing the land it
-     * fetched, though a land already in hand made that same drop.
-     *
-     * By effect, not by card: any typecycling whose search put a land in hand (basic landcycling,
-     * Plainscycling, …). It leaves the case [fetchedLandDropFollowUp] was written for alone — no
-     * land in hand, or one that covers only this turn while the spells in hand need the next land
-     * (`FetchedLandDropFollowUpTest`'s Noble Templar positions). Pinned by the Apex Witchstalker
-     * case in that test.
+     * ended the game with two Swamps in hand. The leaf read the swap as card-neutral: a third land
+     * in hand counted as a whole card, like the spell it replaced. #4113 floored that one cycle in
+     * the Strategist; this prices the hand right instead, so every line that trades a spell or a
+     * board for a land nothing needs — a modal fetch over a fight, a draw, a land returned to hand —
+     * sees the same thing. Pinned by `SurplusLandsReadTheHandTest` (Bushwhack fetching a seventh
+     * land over killing the opponent's only creature) and `FetchedLandDropFollowUpTest`'s
+     * Witchstalker case. Needs [surplusAwareLands].
      */
-    val landcyclingNeedsAUse: Boolean = false,
+    val surplusLandsReadTheHand: Boolean = false,
     /**
      * Credit a line that **returns one of our own permanents to our hand** with casting it again
      * the same turn, and aim such a self-bounce at the permanent whose recast is worth most.
@@ -2411,7 +2410,7 @@ data class AiProfile(
             threatAwareDefender = true,
             borrowedCreaturesGoHome = true,
             curveAwareMulligan = true,
-            landcyclingNeedsAUse = true,
+            surplusLandsReadTheHand = true,
             lookDigsForLand = true,
             libraryClock = true,
             oneShotManaIsMana = true,

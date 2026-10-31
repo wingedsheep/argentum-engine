@@ -309,104 +309,27 @@ class LibraryAndZoneContinuationResumer(
             cardRegistry = services.cardRegistry,
             targetFinder = services.targetFinder
         )
-        val (newState, moveEvents) = executor.moveAuraToBattlefield(state, auraId, targetId, destPlayerId)
+        val (newState, moveEvents) = executor.moveAuraToBattlefield(
+            state, auraId, targetId, destPlayerId, tapped = continuation.tapped
+        )
 
-        // Continue with remaining auras
-        val remainingAuras = continuation.remainingAuras
-        if (remainingAuras.isNotEmpty()) {
-            val nextAuraId = remainingAuras.first()
-            val nextRemaining = remainingAuras.drop(1)
-
-            // When underOwnersControl, use the next aura's owner as its controller
-            val nextControllerId = if (continuation.underOwnersControl) {
-                val e = newState.getEntity(nextAuraId)
-                e?.get<OwnerComponent>()?.playerId
-                    ?: e?.get<CardComponent>()?.ownerId
-                    ?: continuation.controllerId
-            } else continuation.controllerId
-
-            val nextCardComponent = newState.getEntity(nextAuraId)?.get<CardComponent>()
-            val nextCardDef = nextCardComponent?.let { services.cardRegistry.getCard(it.cardDefinitionId) }
-            val nextAuraTarget = nextCardDef?.script?.auraTarget
-
-            if (nextAuraTarget == null) {
-                // Skip this aura, continue to next
-                return resumeMoveCollectionAuraTarget(
-                    newState,
-                    continuation.copy(
-                        auraId = nextAuraId,
-                        controllerId = nextControllerId,
-                        destPlayerId = nextControllerId,
-                        remainingAuras = nextRemaining,
-                    ),
-                    response,
-                    checkForMore
-                )
-            }
-
-            val legalTargets = services.targetFinder.findLegalTargets(
-                state = newState,
-                requirement = nextAuraTarget,
-                controllerId = nextControllerId,
-                sourceId = nextAuraId,
-                ignoreTargetingRestrictions = true
-            ).filter { it !in continuation.excludedHosts }
-
-            if (legalTargets.isEmpty()) {
-                // No targets — Aura stays in current zone (Rule 303.4g), continue to next
-                if (nextRemaining.isNotEmpty()) {
-                    return resumeMoveCollectionAuraTarget(
-                        newState,
-                        continuation.copy(
-                            auraId = nextRemaining.first(),
-                            controllerId = nextControllerId,
-                            destPlayerId = nextControllerId,
-                            remainingAuras = nextRemaining.drop(1),
-                        ),
-                        response,
-                        checkForMore
-                    )
-                }
-                return checkForMore(newState, moveEvents)
-            }
-
-            // Pause for next aura target
-            val auraName = nextCardComponent.name
-            val requirementInfo = TargetRequirementInfo(
-                index = 0,
-                description = nextAuraTarget.description,
-                minTargets = 1,
-                maxTargets = 1
-            )
-            val question = { decisionId: String -> ChooseTargetsDecision(
-                id = decisionId,
-                playerId = nextControllerId,
-                prompt = "Choose what $auraName enchants",
-                context = DecisionContext(
-                    sourceId = nextAuraId,
-                    sourceName = auraName,
-                    phase = DecisionPhase.RESOLUTION
-                ),
-                targetRequirements = listOf(requirementInfo),
-                legalTargets = mapOf(0 to legalTargets)
-            ) }
-
-            val nextContinuation = MoveCollectionAuraTargetContinuation(
-                auraId = nextAuraId,
-                controllerId = nextControllerId,
-                destPlayerId = nextControllerId,
-                remainingAuras = nextRemaining,
-                sourceId = continuation.sourceId,
-                objectReferences = continuation.objectReferences,
-                sourceName = continuation.sourceName,
-                underOwnersControl = continuation.underOwnersControl,
-                excludedHosts = continuation.excludedHosts
-            )
-
-            return newState.suspendForDecision(question, nextContinuation, moveEvents)
-        }
-
-        return checkForMore(newState, moveEvents)
+        // The next Aura (if any) is asked about by the same code that asked about this one: an
+        // Aura with no legal host stays where it is (CR 303.4g) rather than following this one.
+        val next = executor.continueAuraProcessingOrFinish(
+            state = newState,
+            events = moveEvents,
+            remainingAuras = continuation.remainingAuras,
+            controllerId = continuation.controllerId,
+            destPlayerId = destPlayerId,
+            sourceId = continuation.sourceId,
+            sourceName = continuation.sourceName,
+            underOwnersControl = continuation.underOwnersControl,
+            excludedHosts = continuation.excludedHosts,
+            tapped = continuation.tapped,
+            objectReferences = continuation.objectReferences
+        )
+        if (next.outcome is Outcome.Paused) return next.toExecutionResult()
+        return checkForMore(next.state, next.events.toList())
     }
 
     /**
