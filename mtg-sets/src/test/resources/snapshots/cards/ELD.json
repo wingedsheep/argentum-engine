@@ -852,6 +852,97 @@
     ]
 }
 
+// Beanstalk Giant
+{
+    "name": "Beanstalk Giant",
+    "manaCost": "{6}{G}",
+    "typeLine": "Creature — Giant",
+    "oracleText": "Beanstalk Giant's power and toughness are each equal to the number of lands you control.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "land"
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "149",
+        "rarity": "UNCOMMON",
+        "artist": "Jason A. Engle",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a66f5ea7-ddbb-4b89-b812-77bd17972cf9.jpg?1783932613",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "The ability that defines Beanstalk Giant's power and toughness works in all zones, not just the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "Fertile Footsteps",
+            "manaCost": "{2}{G}",
+            "typeLine": "Sorcery — Adventure",
+            "oracleText": "Search your library for a basic land card, put it onto the battlefield, then shuffle. (Then exile this card. You may cast the creature later from exile.)",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "basicland"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a basic land card to put onto the battlefield",
+                            "selectedLabel": "Put onto the battlefield"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        }
+    ]
+}
+
 // Belle of the Brawl
 {
     "name": "Belle of the Brawl",
@@ -2762,6 +2853,41 @@
     ]
 }
 
+// Curious Pair
+{
+    "name": "Curious Pair",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Human Peasant",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "metadata": {
+        "collectorNumber": "150",
+        "artist": "Daarken",
+        "flavorText": "\"It's gingerbread, like Mother makes. What is there to be afraid of?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f78a570-d776-42f2-a609-6da0156c8de7.jpg?1783932614"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "Treats to Share",
+            "manaCost": "{G}",
+            "typeLine": "Sorcery — Adventure",
+            "oracleText": "Create a Food token. (Then exile this card. You may cast the creature later from exile. A Food token is an artifact with \"{2}, {T}, Sacrifice this token: You gain 3 life.\")",
+            "script": {
+                "spellEffect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Food"
+                }
+            }
+        }
+    ]
+}
+
 // Dance of the Manse
 {
     "name": "Dance of the Manse",
@@ -3164,6 +3290,66 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Edgewall Innkeeper
+{
+    "name": "Edgewall Innkeeper",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Human Peasant",
+    "oracleText": "Whenever you cast a creature spell that has an Adventure, draw a card. (It doesn't need to have gone on the adventure first.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Edgewall Innkeeper:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "HasAdventure"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "151",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Stewart",
+        "flavorText": "\"Warmth. Safety. A fully-stocked larder. You'll find nothing like Edgewall Keep in the wilds, I promise you that!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c5d0560-f9e6-4c70-8cce-cae61e4e74bc.jpg?1783932613",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "Edgewall Innkeeper's ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "An effect may refer to a card, spell, or permanent that \"has an Adventure.\" This refers to a card, spell, or permanent that has an adventurer card's set of alternative characteristics, even if they're not being used and even if that card was never cast as an Adventure."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If an effect refers to a card, spell, or permanent that has an Adventure, it won't find an instant or sorcery spell on the stack that's been cast as an Adventure."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -4093,6 +4279,85 @@
     ]
 }
 
+// Feasting Troll King
+{
+    "name": "Feasting Troll King",
+    "manaCost": "{2}{G}{G}{G}{G}",
+    "typeLine": "Creature — Troll Noble",
+    "oracleText": "Vigilance, trample\nWhen this creature enters, if you cast it from your hand, create three Food tokens. (They're artifacts with \"{2}, {T}, Sacrifice this token: You gain 3 life.\")\nSacrifice three Foods: Return this card from your graveyard to the battlefield. Activate only during your turn.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 6
+    },
+    "keywords": [
+        "VIGILANCE",
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Feasting Troll King:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Food",
+                    "count": 3
+                },
+                "interveningIf": "WasCastFromHand"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Feasting Troll King:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "Food",
+                        "count": 3
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
+                },
+                "restrictions": [
+                    "OnlyDuringYourTurn"
+                ],
+                "activateFromZone": "Graveyard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "rarity": "RARE",
+        "artist": "Nicholas Gregory",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/a/9a6bb435-1205-416a-a5a0-ca6d37b4dcb2.jpg?1783932612",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "If you put Feasting Troll King onto the battlefield from your hand without casting it, its enters-the-battlefield ability won't trigger."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If you cast a creature spell that enters the battlefield as a copy of Feasting Troll King, such as Clone, the enters-the-battlefield ability will trigger."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "If an effect refers to a Food, it means any Food artifact, not just a Food artifact token."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Fell the Pheasant
 {
     "name": "Fell the Pheasant",
@@ -4370,6 +4635,111 @@
     "colorIdentityOverride": [
         "RED",
         "WHITE"
+    ]
+}
+
+// Flaxen Intruder
+{
+    "name": "Flaxen Intruder",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Human Berserker",
+    "oracleText": "Whenever this creature deals combat damage to a player, you may sacrifice it. When you do, destroy target artifact or enchantment.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Flaxen Intruder:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "SourceInZone",
+                            "zones": [
+                                "Battlefield"
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "ReflexiveTrigger",
+                        "action": "SacrificeSelf",
+                        "reflexiveEffect": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        },
+                        "reflexiveTargetRequirements": [
+                            {
+                                "type": "TargetObject",
+                                "filter": {
+                                    "baseFilter": "artifact|enchantment"
+                                },
+                                "id": "t0"
+                            }
+                        ],
+                        "descriptionOverride": "You may sacrifice this creature. When you do, destroy target artifact or enchantment."
+                    }
+                },
+                "descriptionOverride": "Whenever this creature deals combat damage to a player, you may sacrifice it. When you do, destroy target artifact or enchantment."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "155",
+        "rarity": "UNCOMMON",
+        "artist": "Gabor Szikszai",
+        "flavorText": "The middle blade was just right.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/06bd1ad2-fb5d-4aef-87d1-13a341c686fa.jpg?1783932614",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "Flaxen Intruder's triggered ability goes on the stack without a target. While that ability is resolving, you may sacrifice it. When you do, the reflexive triggered ability triggers and you pick a target artifact or enchantment to be destroyed. This is different from effects that say \"If you do . . .\" in that players may take actions after you've sacrificed Flaxen Intruder but before the artifact or enchantment is destroyed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "Welcome Home",
+            "manaCost": "{5}{G}{G}",
+            "typeLine": "Sorcery — Adventure",
+            "oracleText": "Create three 2/2 green Bear creature tokens. (Then exile this card. You may cast the creature later from exile.)",
+            "script": {
+                "spellEffect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Bear"
+                    ]
+                }
+            }
+        }
     ]
 }
 
@@ -4883,6 +5253,180 @@
     ]
 }
 
+// Garenbrig Carver
+{
+    "name": "Garenbrig Carver",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Human Warrior",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "metadata": {
+        "collectorNumber": "156",
+        "artist": "Lucas Graciano",
+        "flavorText": "Countless knights of Garenbrig owe their lives to his peerless craftsmanship.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/194b7a1c-291a-470e-9a40-61b72a46793b.jpg?1783932612"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "Shield's Might",
+            "manaCost": "{1}{G}",
+            "typeLine": "Instant — Adventure",
+            "oracleText": "Target creature gets +2/+2 until end of turn. (Then exile this card. You may cast the creature later from exile.)",
+            "script": {
+                "spellEffect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        }
+    ]
+}
+
+// Garenbrig Paladin
+{
+    "name": "Garenbrig Paladin",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Giant Knight",
+    "oracleText": "Adamant — If at least three green mana was spent to cast this spell, this creature enters with a +1/+1 counter on it.\nThis creature can't be blocked by creatures with power 2 or less.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "PowerAtMost",
+                            "max": 2
+                        }
+                    ]
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "ManaOfColorSpent",
+                        "color": "GREEN"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "157",
+        "artist": "Nicholas Gregory",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/8445020a-6fab-47dd-9e57-886c28f68b3f.jpg?1783932610"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Garenbrig Squire
+{
+    "name": "Garenbrig Squire",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Whenever you cast a creature spell that has an Adventure, this creature gets +1/+1 until end of turn. (It doesn't need to have gone on the adventure first.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Garenbrig Squire:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "HasAdventure"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "158",
+        "artist": "Dallas Williams",
+        "flavorText": "\"Find him a weapon as big as his dreams.\"\n—Yorvo, lord of Garenbrig",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/74237cce-2ca2-4bfd-a846-c7309621a85f.jpg?1783932610",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "Garenbrig Squire's ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "An effect may refer to a card, spell, or permanent that \"has an Adventure.\" This refers to a card, spell, or permanent that has an adventurer card's set of alternative characteristics, even if they're not being used and even if that card was never cast as an Adventure."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If an effect refers to a card, spell, or permanent that has an Adventure, it won't find an instant or sorcery spell on the stack that's been cast as an Adventure."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Garrison Griffin
 {
     "name": "Garrison Griffin",
@@ -5070,6 +5614,69 @@
     "startingLoyalty": 5,
     "colorIdentityOverride": [
         "BLACK",
+        "GREEN"
+    ]
+}
+
+// Giant Opportunity
+{
+    "name": "Giant Opportunity",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "You may sacrifice two Foods. If you do, create a 7/7 green Giant creature token. Otherwise, create three Food tokens. (They're artifacts with \"{2}, {T}, Sacrifice this token: You gain 3 life.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.MayPay",
+                "cost": {
+                    "type": "Sacrifice",
+                    "filter": "Food",
+                    "count": 2
+                }
+            },
+            "then": {
+                "type": "CreateToken",
+                "power": 7,
+                "toughness": 7,
+                "colors": [
+                    "GREEN"
+                ],
+                "creatureTypes": [
+                    "Giant"
+                ],
+                "imageUri": "https://cards.scryfall.io/normal/front/3/c/3c1debc4-0b12-4848-b551-90680ab8c0ab.jpg?1783932481"
+            },
+            "otherwise": {
+                "type": "CreatePredefinedToken",
+                "tokenType": "Food",
+                "count": 3
+            },
+            "descriptionOverride": "You may sacrifice two Foods. If you do, create a 7/7 green Giant creature token. Otherwise, create three Food tokens."
+        }
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "rarity": "UNCOMMON",
+        "artist": "James Paick",
+        "flavorText": "They look tasty, but best to plant them.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/40383646-3fc4-4267-b9ad-bf90a85972fc.jpg?1783932609",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "You choose whether to sacrifice two Foods as Giant Opportunity resolves, not as you cast it."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "You can't sacrifice more than two Foods to create more than one Giant token."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "If an effect refers to a Food, it means any Food artifact, not just a Food artifact token."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
         "GREEN"
     ]
 }
@@ -6239,6 +6846,89 @@
     "colorIdentityOverride": []
 }
 
+// Insatiable Appetite
+{
+    "name": "Insatiable Appetite",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "You may sacrifice a Food. If you do, target creature gets +5/+5 until end of turn. Otherwise, that creature gets +3/+3 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.MayPay",
+                "cost": {
+                    "type": "Sacrifice",
+                    "filter": "Food"
+                }
+            },
+            "then": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": 5
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": 5
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            },
+            "otherwise": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": 3
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": 3
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            },
+            "descriptionOverride": "You may sacrifice a Food. If you do, target creature gets +5/+5 until end of turn. Otherwise, that creature gets +3/+3 until end of turn."
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "artist": "Nils Hamm",
+        "flavorText": "He ate them out of house and home and shed and barn and flock and herd.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/2357f2db-00c2-41f6-bd04-93f905dea461.jpg?1783932609",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "You choose a target creature as you cast Insatiable Appetite, but you don't choose whether to sacrifice a Food until the spell resolves."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If the target creature is an illegal target by the time Insatiable Appetite tries to resolve, the spell won't resolve. You won't sacrifice a Food."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "If an effect refers to a Food, it means any Food artifact, not just a Food artifact token."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Inspiring Veteran
 {
     "name": "Inspiring Veteran",
@@ -7300,6 +7990,63 @@
     ]
 }
 
+// Lovestruck Beast
+{
+    "name": "Lovestruck Beast",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Beast Noble",
+    "oracleText": "This creature can't attack unless you control a 1/1 creature.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnless",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "creature pow=1 tou>=1 tou<=1"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "165",
+        "rarity": "RARE",
+        "artist": "Kev Walker",
+        "flavorText": "His mind chose solitude, but his heart disagreed.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/c/4ccdef9c-1e85-4358-8059-8972479f7556.jpg?1783932607"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "Heart's Desire",
+            "manaCost": "{G}",
+            "typeLine": "Sorcery — Adventure",
+            "oracleText": "Create a 1/1 white Human creature token. (Then exile this card. You may cast the creature later from exile.)",
+            "script": {
+                "spellEffect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Human"
+                    ]
+                }
+            }
+        }
+    ]
+}
+
 // Mad Ratter
 {
     "name": "Mad Ratter",
@@ -7575,6 +8322,54 @@
         "GREEN",
         "BLUE"
     ]
+}
+
+// Maraleaf Rider
+{
+    "name": "Maraleaf Rider",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Elf Knight",
+    "oracleText": "Sacrifice a Food: Target creature blocks this creature this turn if able.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Maraleaf Rider:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "Food"
+                    }
+                },
+                "effect": {
+                    "type": "ForceBlock",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "166",
+        "artist": "Kieran Yanner",
+        "flavorText": "They both hunger for battle.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1b2b198d-493c-4d6c-bfb6-e842728522f6.jpg?1783932607"
+    }
 }
 
 // Memory Theft
@@ -8789,6 +9584,105 @@
     ]
 }
 
+// Outmuscle
+{
+    "name": "Outmuscle",
+    "manaCost": "{3}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Put a +1/+1 counter on target creature you control, then it fights target creature you don't control. (Each deals damage equal to its power to the other.)\nAdamant — If at least three green mana was spent to cast this spell, the creature you control gains indestructible until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Fight",
+                    "target1": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "ManaOfColorSpent",
+                                "color": "GREEN"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "GrantKeyword",
+                        "keyword": "INDESTRUCTIBLE",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "170",
+        "artist": "Viktor Titov",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/40d0ddcc-e6df-4fe1-9ac9-f895885ccc84.jpg?1783932605",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "If either target is an illegal target as Outmuscle tries to resolve, neither creature will deal or be dealt damage."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If the creature you control is an illegal target as Outmuscle tries to resolve, no creature gets a +1/+1 counter. If that creature is a legal target but the creature you don't control isn't, it still gets a +1/+1 counter and gains indestructible if appropriate."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Because state-based actions don't destroy a creature with lethal damage marked on it until a player would receive priority, gaining indestructible from Outmuscle will save your creature if it's dealt lethal damage in the fight."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Overwhelmed Apprentice
 {
     "name": "Overwhelmed Apprentice",
@@ -9972,6 +10866,50 @@
                         "id": "t0"
                     }
                 ]
+            }
+        }
+    ]
+}
+
+// Rosethorn Acolyte
+{
+    "name": "Rosethorn Acolyte",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Elf Druid",
+    "oracleText": "{T}: Add one mana of any color.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Rosethorn Acolyte:1",
+                "cost": "CostTap",
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "174",
+        "artist": "Johannes Voss",
+        "flavorText": "\"Old battlefields make great gardens. So rich from the blood of the fallen.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/a/2a0d430f-da84-4752-940c-8457c525aac9.jpg?1783932603"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "Seasonal Ritual",
+            "manaCost": "{G}",
+            "typeLine": "Sorcery — Adventure",
+            "oracleText": "Add one mana of any color. (Then exile this card. You may cast the creature later from exile.)",
+            "script": {
+                "spellEffect": "AddManaOfChoice"
             }
         }
     ]
@@ -14272,6 +15210,93 @@
         "rarity": "RARE",
         "artist": "Lius Lasahido",
         "imageUri": "https://cards.scryfall.io/normal/front/5/5/55f76830-369e-4224-9ded-7d1ce04c87e4.jpg?1783932600"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Wildwood Tracker
+{
+    "name": "Wildwood Tracker",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Elf Warrior",
+    "oracleText": "Whenever this creature attacks or blocks, if you control another non-Human creature, this creature gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wildwood Tracker:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                },
+                "interveningIf": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Human"
+                            }
+                        ]
+                    },
+                    "excludeSelf": true
+                }
+            },
+            {
+                "id": "Wildwood Tracker:2",
+                "trigger": "BlockEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                },
+                "interveningIf": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Human"
+                            }
+                        ]
+                    },
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "183",
+        "artist": "Titus Lunter",
+        "flavorText": "\"This one was wearing shoes made of glass. She'll be no ordinary prey.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/3538eba1-475a-4388-8a72-55ab7cd1027e.jpg?1783932600"
     },
     "colorIdentityOverride": [
         "GREEN"
