@@ -30,6 +30,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-eld',
+    date: '2026-10-31',
+    kind: 'set',
+    setCode: 'ELD',
+    title: 'Throne of Eldraine is complete',
+    body:
+      "Throne of Eldraine is a fairy-tale world of five castles and the enchanted wilds beyond: Adventure cards let you cast a spell first and the creature later, so one card does two jobs. Knights race for the throne in red, white and black, Food decks bake their way to a long game, blue-black mills both libraries for Drown in the Loch, and adamant rewards going nearly mono-coloured.",
+    tryIf: 'two-for-one Adventure cards, Knight aggro and Food value',
+  },
+  {
     id: 'set-iko',
     date: '2026-10-31',
     kind: 'set',
@@ -66,16 +76,6 @@ export const ANNOUNCEMENTS: readonly Announcement[] = [
     body:
       "Teferi, Basri, Chandra, Liliana and Garruk headline a straightforward core set where every two-colour pair has a clear plan: Watcher of the Spheres fliers, Conclave Mentor counters, Indulging Patrician life drain, Dire Fleet Warmonger sacrifice aggro and Leafkin Avenger's big creatures. Removal is plentiful and the bombs are huge, so games swing on who draws Terror of the Peaks first.",
     tryIf: 'classic two-colour Limited, big dragons and planeswalkers',
-  },
-  {
-    id: 'set-stx',
-    date: '2026-10-30',
-    kind: 'set',
-    setCode: 'STX',
-    title: 'Strixhaven: School of Mages is complete',
-    body:
-      "Enrol at Strixhaven, where five rival colleges each draft as their own two-colour deck: Silverquill's magecraft fliers, Prismari's big spells, Witherbloom's life drain, Lorehold's graveyard Spirits and Quandrix's growing counters. Every pack opens a Lesson, and Learn spells fetch one from your sideboard, so your picks keep paying off after the deck is built.",
-    tryIf: 'instants and sorceries, magecraft and toolbox sideboards',
   },
   {
     id: 'mode-highlander',

@@ -11,16 +11,14 @@ import com.wingedsheep.sdk.model.Printing
  * Set Code: ELD
  * Release Date: October 4, 2019
  *
- * Scaffolded as the canonical home for cards whose earliest real expansion printing is ELD
- * (later reprinted in newer sets). Only the cards implemented so far live here; the set is marked
- * [incomplete].
+ * Complete: every card in the set is implemented. The draft booster is the era default
+ * (10 commons, 3 uncommons, 1 rare or mythic; basics supplied at deck building).
  */
 object ThroneOfEldraineSet : MtgSet {
 
     override val code = "ELD"
     override val displayName = "Throne of Eldraine"
     override val releaseDate = "2019-10-04"
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)

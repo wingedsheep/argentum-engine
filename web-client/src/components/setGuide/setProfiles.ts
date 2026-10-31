@@ -510,6 +510,25 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
       { name: 'Heroic', inPlay: 'Targeting your own creature with Auras and tricks grows it, rewarding aggression but leaving you exposed to removal in response.' },
     ],
   },
+  ELD: {
+    tagline: 'A fast, two-for-one format: Adventure cards give two spells for one card, Food buys time, and aggressive Knight decks punish slow starts.',
+    setting: 'Eldraine, a fairy-tale plane of five courtly castles and the wild, enchanted realm beyond them.',
+    gameplay: 'Adventure creatures cast their spell half first and come back from exile later as a creature, so card advantage is everywhere and trading one-for-one rarely keeps up. Knight decks in red, white and black curve out and race, while Food decks gain life and grind with Bake into a Pie and Giant Opportunity. Blue-black mills both players for Drown in the Loch, and mono-coloured payoffs reward heavy commitment to one colour.',
+    tips: [
+      'Value Adventure cards highly: a removal spell or trick that later becomes a creature is two cards in one.',
+      'Respect the Knight aggro decks; a curve of cheap creatures backed by Searing Barrage or Scorching Dragonfire ends games by turn six.',
+      'Count your devotion: cards that check for mono-coloured permanents or adamant ({W}{W}{W} spent) are much better in a deck heavy in one colour.',
+    ],
+    tryIf: 'Adventure value, Knight aggro and fairy-tale flavour',
+    power: 3, speed: 4, complexity: 3,
+    themes: ['aggro', 'tribal', 'graveyard'],
+    mechanics: [
+      { name: 'Adventure', inPlay: 'Cast the spell half from your hand, then the creature from exile later, so one card does two jobs and games turn into card-advantage races.' },
+      { name: 'Food', inPlay: 'Artifact tokens you sacrifice for 3 life; they buy time against aggro and fuel payoffs that want Food on the board.' },
+      { name: 'Adamant', inPlay: 'Spells and creatures get a bonus when three mana of one colour paid for them, rewarding near mono-coloured decks.' },
+      { name: 'Mill', inPlay: 'Blue-black fills both graveyards to power Drown in the Loch and graveyard-counting threats; milling out is a real way to win.' },
+    ],
+  },
   IKO: {
     tagline: 'A high-power format packed with cheap removal: mutate stacks and big monsters meet plenty of answers, cheap creatures pull their weight, and cycling keeps draws useful.',
     setting: 'Ikoria, a plane of kaiju-sized monsters and the humans who hunt or bond with them.',

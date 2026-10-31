@@ -19484,6 +19484,66 @@
     ]
 }
 
+// Wandermare
+{
+    "name": "Wandermare",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Creature — Horse",
+    "oracleText": "Whenever you cast a creature spell that has an Adventure, put a +1/+1 counter on this creature. (It doesn't need to have gone on the adventure first.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wandermare:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "HasAdventure"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "204",
+        "rarity": "UNCOMMON",
+        "artist": "Kari Christensen",
+        "flavorText": "\"A good steed will carry you home. A great steed will carry you to glory.\"\n—Syr Alin, the Lion's Claw",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/a/9a72fb5b-5c55-4ce9-b9d0-98f924d6f338.jpg?1783932592",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "Wandermare's ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "An effect may refer to a card, spell, or permanent that \"has an Adventure.\" This refers to a card, spell, or permanent that has an adventurer card's set of alternative characteristics, even if they're not being used and even if that card was never cast as an Adventure."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If an effect refers to a card, spell, or permanent that has an Adventure, it won't find an instant or sorcery spell on the stack that's been cast as an Adventure."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Weapon Rack
 {
     "name": "Weapon Rack",

@@ -17,6 +17,7 @@ import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
@@ -188,6 +189,38 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
             pack.size shouldBe 15
             pack.last().typeLine.isBasicLand shouldBe true
         }
+    }
+
+    test("Throne of Eldraine draft pack is 10 commons, 3 uncommons and one rare or mythic from its booster pool") {
+        // Draft Booster (Project Booster Fun, magic.wizards.com 2019-07-20): 1 rare/mythic, 3 uncommons,
+        // 10 commons, 1 basic land (the generator supplies basics at deck building) and an ad/token card.
+        // Showcase and borderless variants and the foil replacing a common are cosmetic, not modelled.
+        // The Brawl-deck cards (Oko, the Trickster etc.) are not booster cards.
+        val eld = boosterGenerator.availableSets["ELD"].shouldNotBeNull()
+        eld.fullyImplemented shouldBe true
+        eld.boosterStrategy shouldBe StandardBooster(commons = 10)
+        val eligible = eld.cards.filter { it.metadata.inBooster && !it.typeLine.isBasicLand }
+        // Scryfall `set:eld is:booster -t:basic`.
+        eligible.distinctBy { it.name }.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.COMMON to 101, Rarity.UNCOMMON to 80, Rarity.RARE to 53, Rarity.MYTHIC to 15,
+        )
+        eligible.map { it.name } shouldNotContain "Oko, the Trickster"
+        val eligibleNames = eligible.map { it.name }.toSet()
+        var mythics = 0
+        val packs = 2000
+        repeat(packs) {
+            val pack = boosterGenerator.generateBooster("ELD")
+            pack.size shouldBe 14
+            pack.map { it.name }.toSet().size shouldBe 14
+            withClue("pack ${pack.map { it.name }} holds an off-sheet card") {
+                pack.all { it.name in eligibleNames } shouldBe true
+            }
+            pack.count { it.metadata.rarity == Rarity.COMMON } shouldBe 10
+            pack.count { it.metadata.rarity == Rarity.UNCOMMON } shouldBe 3
+            mythics += pack.count { it.metadata.rarity == Rarity.MYTHIC }
+        }
+        // 1 in 8 rare slots upgrades to a mythic.
+        (mythics.toDouble() / packs) shouldBe (0.125 plusOrMinus 0.03)
     }
 
     test("Adventures in the Forgotten Realms draft pack is 10 commons, 3 uncommons and one rare or mythic from its booster pool") {

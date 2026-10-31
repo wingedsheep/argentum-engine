@@ -191,6 +191,26 @@ class SetArchetypesTest : StringSpec({
         synergies.archetypes.single { it.name == "Citizens" }.creatureTypes shouldContainExactly listOf("Citizen")
     }
 
+    "Throne of Eldraine exposes one archetype per gold signpost uncommon" {
+        val synergies = SetArchetypes.getForSet("ELD")!!
+
+        synergies.setName shouldBe "Throne of Eldraine"
+        synergies.archetypes.associate { it.name to it.colors.toSet() } shouldBe mapOf(
+            "Artifacts & Enchantments" to setOf(Color.WHITE, Color.BLUE),
+            "Mill Control" to setOf(Color.BLUE, Color.BLACK),
+            "Sacrifice Knights" to setOf(Color.BLACK, Color.RED),
+            "Non-Humans" to setOf(Color.RED, Color.GREEN),
+            "Adventures" to setOf(Color.GREEN, Color.WHITE),
+            "Knights" to setOf(Color.WHITE, Color.BLACK),
+            "Draw Two" to setOf(Color.BLUE, Color.RED),
+            "Food" to setOf(Color.BLACK, Color.GREEN),
+            "Knights Aggro" to setOf(Color.RED, Color.WHITE),
+            "Ramp" to setOf(Color.GREEN, Color.BLUE),
+        )
+        synergies.archetypes.filter { it.creatureTypes.isNotEmpty() }.map { it.name } shouldContainExactly
+            listOf("Sacrifice Knights", "Knights", "Knights Aggro")
+    }
+
     "Ikoria exposes one archetype per gold signpost uncommon" {
         val synergies = SetArchetypes.getForSet("IKO")!!
 
