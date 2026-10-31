@@ -262,7 +262,12 @@ class PredicateEvaluator(
      * [com.wingedsheep.sdk.scripting.ReduceActivatedAbilityCost], reads snapshots built by
      * `activationSourceSnapshot`, which populates every field this function answers directly except
      * the combat and tap status (its filters never ask about those — the snapshot is a per-turn
-     * identity, so it must not vary with tapping); a third caller must do one or the other.
+     * identity, so it must not vary with tapping). The third,
+     * [com.wingedsheep.sdk.scripting.conditions.PlayerAttackedWithCreaturesThisTurn], reads the
+     * attack record's `declaredAs` snapshots from `AttackPhaseManager.declaredAttackerSnapshots`:
+     * taken just before declaration, they populate types, subtypes, colors, keywords, controller
+     * and token-ness but leave tap, combat and battlefield-entry status at their defaults ("attacked
+     * with a tapped creature" is not a shape any card prints). A further caller must do one or the other.
      */
     fun matchesSnapshot(
         state: GameState,

@@ -32,12 +32,11 @@ import com.wingedsheep.sdk.core.Step
  * - Both halves are **turn-history** reads, not battlefield-existence checks. That distinction is
  *   the whole card: "you attacked with a Hero this turn" stays true after the Hero trades in
  *   combat, and trading in combat then drawing at end step is the card's ordinary line.
- *   - The attack half is [Conditions.YouAttackedWithCreaturesThisTurn], which walks the player's
- *     own `PlayerAttackersThisTurnComponent` id set. The filter deliberately omits `youControl()`:
- *     the set is already per-player, so scoping is free, and a Hero sitting in the graveyard has
- *     no controller to test — dropping it is what lets a dead attacker still count (its subtype
- *     falls back to the printed type line). Keying off *your* attacker set also kills the
- *     converse bug: gaining control of an opponent's Hero that attacked doesn't qualify.
+ *   - The attack half is [Conditions.YouAttackedWithCreaturesThisTurn], which reads the player's
+ *     own `PlayerAttackersThisTurnComponent` record: each attacker as it was declared, so a Hero
+ *     that died in combat still counts. The record is already per-player, so the filter needs no
+ *     `youControl()`; keying off *your* record also means gaining control of an opponent's Hero
+ *     that attacked doesn't qualify.
  *   - The entered half counts entries in `PermanentsEnteredUnderControlThisTurnComponent` via
  *     [DynamicAmounts.subtypeEnteredUnderControlThisTurn], whose records capture subtypes at
  *     entry time — so it survives the Hero leaving or later losing the type, exactly as printed.
