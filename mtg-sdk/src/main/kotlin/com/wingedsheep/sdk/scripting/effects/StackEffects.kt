@@ -62,6 +62,22 @@ sealed interface CounterTargetSource {
     @SerialName("CounterTargetSource.TriggeringEntity")
     @Serializable
     data object TriggeringEntity : CounterTargetSource
+
+    /**
+     * Every object on the stack of the effect's [CounterTarget] kind whose controller is one of
+     * [controller] — untargeted. "For each spell and ability your opponents control, counter it
+     * unless its controller pays {4}" (Whirlwind Denial) is
+     * `CounterEffect(target = SpellOrAbility, targetSource = EachOnStack(), condition = UnlessPaysMana("{4}"))`.
+     * [CounterEffect.filter] narrows the set further; the resolving object itself is never included.
+     *
+     * With an unless-pays condition the controllers decide in APNAP order (starting with the
+     * active player), each choosing which of their objects to pay for and paying, and then every
+     * object nobody paid for is countered at the same time (Whirlwind Denial's ruling). The
+     * per-object "If they do, …" rider is not supported here.
+     */
+    @SerialName("CounterTargetSource.EachOnStack")
+    @Serializable
+    data class EachOnStack(val controller: Player = Player.EachOpponent) : CounterTargetSource
 }
 
 /**
@@ -181,7 +197,37 @@ data class CounterEffect(
     val condition: CounterCondition = CounterCondition.Always,
     val filter: TargetFilter? = null
 ) : Effect {
+    init {
+        if (targetSource is CounterTargetSource.EachOnStack) {
+            val onPaid = when (condition) {
+                CounterCondition.Always -> null
+                is CounterCondition.UnlessPaysMana -> condition.onPaid
+                is CounterCondition.UnlessPaysDynamic -> condition.onPaid
+            }
+            require(onPaid == null) { "CounterTargetSource.EachOnStack has no per-object onPaid rider" }
+            require(counterDestination !is CounterDestination.Library || counterDestination.positions.size == 1) {
+                "CounterTargetSource.EachOnStack needs a fixed library position"
+            }
+        }
+    }
+
     override val description: String = buildString {
+        if (targetSource is CounterTargetSource.EachOnStack) {
+            val kind = when (target) {
+                CounterTarget.Spell -> "spell"
+                CounterTarget.Ability -> "activated or triggered ability"
+                CounterTarget.SpellOrAbility -> "spell and ability"
+            }
+            val whose = when (targetSource.controller) {
+                Player.EachOpponent -> "your opponents control"
+                Player.You -> "you control"
+                Player.Each -> "on the stack"
+                else -> "${targetSource.controller.description} controls"
+            }
+            append("For each $kind $whose, counter it")
+            appendUnlessPays()
+            return@buildString
+        }
         when (target) {
             CounterTarget.Ability -> {
                 append(
@@ -329,6 +375,10 @@ data class ExileTargetSpellEffect(
      */
     val spell: CounterTargetSource = CounterTargetSource.Chosen
 ) : Effect {
+    init {
+        require(spell !is CounterTargetSource.EachOnStack) { "ExileTargetSpellEffect exiles one spell; EachOnStack is a CounterEffect axis" }
+    }
+
     override val description: String = buildString {
         append(if (spell == CounterTargetSource.TriggeringEntity) "Exile that spell" else "Exile target spell")
         if (makePlotted) append(". It becomes plotted")

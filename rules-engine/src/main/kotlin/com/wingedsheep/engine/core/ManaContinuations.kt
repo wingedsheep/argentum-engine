@@ -29,6 +29,10 @@ import kotlinx.serialization.Serializable
  *   Disaster's "If they do, you create a Lander token"). The rider runs with
  *   [controllerId] as its controller — i.e. the controller of the counter effect, who
  *   is "you" in the rider text — not the spell's controller who paid.
+ * @property deferCounter True when this question is one object of a
+ *   [CounterEachUnlessPaysContinuation] batch: an unpaid object is recorded on that frame
+ *   (directly beneath this question) instead of being countered now, so the batch counters
+ *   every unpaid object at the same time once all controllers have decided.
  */
 @Serializable
 data class CounterUnlessPaysContinuation(
@@ -42,7 +46,34 @@ data class CounterUnlessPaysContinuation(
     val onPaid: Effect? = null,
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
     val resolvingTriggeredAbility: com.wingedsheep.sdk.scripting.TriggeredAbility? = null,
+    val deferCounter: Boolean = false,
 ) : AnswerContinuation
+
+/**
+ * The rest of a stack-wide "for each spell and ability … counter it unless its controller pays"
+ * ([com.wingedsheep.sdk.scripting.effects.CounterTargetSource.EachOnStack], Whirlwind Denial).
+ *
+ * Sits beneath each object's [CounterUnlessPaysContinuation] question (`deferCounter = true`).
+ * When resumed it asks about the next object in [remaining] — already sorted by controller in
+ * APNAP order — and once none are left it counters every object in [unpaid] together, so no
+ * object is countered before every controller has chosen and paid.
+ *
+ * @property remaining Stack objects still to ask about, in asking order
+ * @property unpaid Objects whose controller declined or couldn't pay
+ * @property target Which kind of stack object is being countered (dispatches spell vs ability)
+ * @property controllerId The controller of the counter effect (the counterer)
+ */
+@Serializable
+data class CounterEachUnlessPaysContinuation(
+    val remaining: List<EntityId>,
+    val unpaid: List<EntityId>,
+    val manaCost: ManaCost,
+    val target: com.wingedsheep.sdk.scripting.effects.CounterTarget,
+    val counterDestination: CounterDestination,
+    val controllerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+) : AutomaticContinuation
 
 /**
  * Resume after the controller decides whether to pay a mana cost for an optional
@@ -222,6 +253,8 @@ data class CounterUnlessPaysManaSelectionContinuation(
     val waterbend: Boolean = false,
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
     val resolvingTriggeredAbility: com.wingedsheep.sdk.scripting.TriggeredAbility? = null,
+    /** See [CounterUnlessPaysContinuation.deferCounter]. */
+    val deferCounter: Boolean = false,
 ) : AnswerContinuation
 
 /**

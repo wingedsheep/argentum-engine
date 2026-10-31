@@ -18877,6 +18877,35 @@
     ]
 }
 
+// Whirlwind Denial
+{
+    "name": "Whirlwind Denial",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "For each spell and ability your opponents control, counter it unless its controller pays {4}.",
+    "script": {
+        "spellEffect": {
+            "type": "Counter",
+            "target": "CounterTarget.SpellOrAbility",
+            "targetSource": "CounterTargetSource.EachOnStack",
+            "condition": {
+                "type": "CounterCondition.UnlessPaysMana",
+                "cost": "{4}"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "rarity": "UNCOMMON",
+        "artist": "Lie Setiawan",
+        "flavorText": "\"No, no, and ... no.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9e127856-bedd-40a9-9e8e-d1f9fbefe07d.jpg?1783931573"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Wings of Hubris
 {
     "name": "Wings of Hubris",

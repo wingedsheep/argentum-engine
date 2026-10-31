@@ -10,6 +10,7 @@ import com.wingedsheep.engine.state.endResolutionControl
  * Core auto-resumers that process continuations without player input:
  * - AdvanceStepContinuation / FinishUntapStepContinuation (the rest of a turn-based step)
  * - ForEachContinuation (remaining ForEach iterations, any iteration space)
+ * - CounterEachUnlessPaysContinuation (next object of a stack-wide counter-unless-pays batch)
  * - DrawReplacementRemainingDrawsContinuation (remaining draws after bounce)
  * - CycleDrawContinuation / TypecycleSearchContinuation (legacy saved games only)
  * - EffectProgram (the rest of an effect program, once the node at its cursor has finished)
@@ -66,6 +67,13 @@ class CoreAutoResumerModule(
                 departed = continuation.effectContext.departedPermanents + result.updatedDepartedPermanents,
             )
             checkForMore(published, events + result.events)
+        },
+
+        autoResumer(CounterEachUnlessPaysContinuation::class) { state, continuation, events, checkForMore ->
+            val result = com.wingedsheep.engine.handlers.effects.stack.CounterEachUnlessPays(
+                services.spellCounterer, services.manaSolver
+            ).step(state, continuation)
+            mergeAndContinue(result, events, checkForMore)
         },
 
         autoResumer(DrawReplacementRemainingDrawsContinuation::class) { state, continuation, events, checkForMore ->

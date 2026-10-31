@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.stack
 
+import com.wingedsheep.engine.core.CounterEachUnlessPaysContinuation
 import com.wingedsheep.engine.core.CounterUnlessPaysContinuation
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.DecisionHandler
@@ -22,6 +23,7 @@ import com.wingedsheep.sdk.scripting.effects.CounterDestination
 import com.wingedsheep.sdk.scripting.effects.CounterEffect
 import com.wingedsheep.sdk.scripting.effects.CounterTarget
 import com.wingedsheep.sdk.scripting.effects.CounterTargetSource
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import kotlin.reflect.KClass
 
 /**
@@ -46,6 +48,11 @@ class CounterEffectExecutor(
         effect: CounterEffect,
         context: EffectContext
     ): EffectResult {
+        val targetSource = effect.targetSource
+        if (targetSource is CounterTargetSource.EachOnStack) {
+            return executeEachOnStack(state, effect, targetSource, context)
+        }
+
         // Step 1: Resolve the spell/ability entity ID
         val entityId = resolveCounterTarget(effect, context, state)
             ?: return if (effect.targetSource == CounterTargetSource.TriggeringEntity) {
@@ -83,7 +90,64 @@ class CounterEffectExecutor(
                 val id = context.triggeringEntityId ?: return null
                 if (!state.stack.contains(id)) null else id
             }
+            is CounterTargetSource.EachOnStack -> error("EachOnStack is resolved by executeEachOnStack")
         }
+    }
+
+    /**
+     * "For each spell and ability your opponents control, counter it [unless its controller pays N]"
+     * (Whirlwind Denial). Untargeted: every matching object on the stack at resolution, asked
+     * about grouped by controller in APNAP order (CR 101.4), then every unpaid one countered at
+     * the same time by [CounterEachUnlessPays].
+     */
+    private fun executeEachOnStack(
+        state: GameState,
+        effect: CounterEffect,
+        source: CounterTargetSource.EachOnStack,
+        context: EffectContext
+    ): EffectResult {
+        val controllers = context.resolvePlayerTargets(EffectTarget.PlayerRef(source.controller), state).toSet()
+        val predicateContext = PredicateContext.fromEffectContext(context)
+        val filter = effect.filter
+        val apnap = state.apnapOrder
+        val objects = state.stack.asReversed().filter { id ->
+            id != context.sourceId &&
+                TargetResolutionUtils.stackObjectController(state, id) in controllers &&
+                when (effect.target) {
+                    CounterTarget.Spell -> state.isSpellOnStack(id)
+                    CounterTarget.Ability -> !state.isSpellOnStack(id)
+                    CounterTarget.SpellOrAbility -> true
+                } &&
+                (filter == null || predicateEvaluator.matches(
+                    state, state.projectedState, id, filter.baseFilter, predicateContext
+                ))
+        }.sortedBy { id ->
+            // Stable sort: each controller's objects stay top-of-stack first.
+            apnap.indexOf(TargetResolutionUtils.stackObjectController(state, id)).let { if (it < 0) Int.MAX_VALUE else it }
+        }
+
+        val manaCost = when (val condition = effect.condition) {
+            CounterCondition.Always -> null
+            is CounterCondition.UnlessPaysMana -> condition.cost
+            is CounterCondition.UnlessPaysDynamic -> {
+                val amount = amountEvaluator.evaluate(state, condition.amount, context)
+                // A cost of 0 or less is always "paid": nothing is countered.
+                if (amount <= 0) return EffectResult.success(state)
+                ManaCost(listOf(ManaSymbol.Generic(amount)))
+            }
+        }
+        val controllerId = context.controllerId
+        val frame = CounterEachUnlessPaysContinuation(
+            remaining = if (manaCost == null) emptyList() else objects,
+            unpaid = if (manaCost == null) objects else emptyList(),
+            manaCost = manaCost ?: ManaCost(emptyList()),
+            target = effect.target,
+            counterDestination = effect.counterDestination,
+            controllerId = controllerId,
+            sourceId = context.sourceId,
+            sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
+        )
+        return EffectResult.from(CounterEachUnlessPays(counterer, ManaSolver(cardRegistry, predicateEvaluator)).step(state, frame))
     }
 
     private fun performCounter(
@@ -92,28 +156,12 @@ class CounterEffectExecutor(
         entityId: EntityId,
         context: EffectContext
     ): EffectResult {
-        // For SpellOrAbility, dispatch by what's actually on the stack at this entity:
-        // a spell carries SpellOnStackComponent; activated/triggered abilities do not.
-        val effectiveTarget = when (effect.target) {
-            CounterTarget.SpellOrAbility -> {
-                if (state.isSpellOnStack(entityId)) CounterTarget.Spell else CounterTarget.Ability
-            }
-            else -> effect.target
-        }
-        return EffectResult.from(when (effectiveTarget) {
-            CounterTarget.Ability -> counterer.counterAbility(state, entityId)
-            CounterTarget.Spell -> when (val dest = effect.counterDestination) {
-                CounterDestination.Graveyard -> counterer.counterSpell(state, entityId, context.controllerId)
-                is CounterDestination.Exile -> counterer.counterSpellToExile(
-                    state, entityId, dest.grantFreeCast, context.controllerId
-                )
-                CounterDestination.Hand -> counterer.counterSpellToHand(state, entityId, context.controllerId)
-                is CounterDestination.Library -> counterSpellToLibrary(
-                    state, counterer, entityId, dest, context.controllerId, context.sourceId
-                )
-            }
-            CounterTarget.SpellOrAbility -> error("unreachable — resolved above")
-        })
+        return EffectResult.from(
+            counterStackObject(
+                state, counterer, effect.target, effect.counterDestination,
+                entityId, context.controllerId, context.sourceId
+            )
+        )
     }
 
     private fun handleUnlessPaysMana(
