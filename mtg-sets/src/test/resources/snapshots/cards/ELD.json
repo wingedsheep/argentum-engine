@@ -3840,6 +3840,85 @@
     ]
 }
 
+// Escape to the Wilds
+{
+    "name": "Escape to the Wilds",
+    "manaCost": "{3}{R}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exile the top five cards of your library. You may play cards exiled this way until the end of your next turn.\nYou may play an additional land this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 5
+                        }
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    }
+                },
+                {
+                    "type": "GrantMayPlayFromExile",
+                    "from": "gathered0",
+                    "expiry": {
+                        "type": "UntilControllerStep",
+                        "step": "CLEANUP",
+                        "includeCurrentTurn": false
+                    }
+                },
+                {
+                    "type": "PlayAdditionalLands",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "189",
+        "rarity": "RARE",
+        "artist": "Chris Ostrowski",
+        "flavorText": "The guards kindled the hearth and locked the door to Ellwen's chamber. By morning, the fire was out and Ellwen was gone.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/e/3e26c10b-179f-4a6e-bc8d-3ec1d6783fb9.jpg?1783932598",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "Escape to the Wilds doesn't change when you can play the exiled cards. For example, if you exile a sorcery card, you can cast it only during your main phase when the stack is empty. If you exile a land card, you can play it only during your main phase and only if you have an available land play remaining."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Casting an exiled card causes it to leave exile. You can't cast it multiple times."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "The additional land that you play doesn't have to be from among the exiled cards."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If you don't play a card exiled this way, it remains in exile."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Eye Collector
 {
     "name": "Eye Collector",
@@ -4406,6 +4485,67 @@
     ]
 }
 
+// Ferocity of the Wilds
+{
+    "name": "Ferocity of the Wilds",
+    "manaCost": "{2}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Attacking non-Human creatures you control get +1/+0 and have trample.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Human"
+                            }
+                        ],
+                        "statePredicates": [
+                            "IsAttacking"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Human"
+                            }
+                        ],
+                        "statePredicates": [
+                            "IsAttacking"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "123",
+        "rarity": "UNCOMMON",
+        "artist": "Josu Hernaiz",
+        "flavorText": "Knights who excel in tournaments sometimes underestimate threats beyond the realm.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8f7005fd-5917-4f7d-9a7d-7ccc044d0f87.jpg?1783932625"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Fervent Champion
 {
     "name": "Fervent Champion",
@@ -4635,6 +4775,71 @@
     "colorIdentityOverride": [
         "RED",
         "WHITE"
+    ]
+}
+
+// Fires of Invention
+{
+    "name": "Fires of Invention",
+    "manaCost": "{3}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "You can cast spells only during your turn and you can cast no more than two spells each turn.\nYou may cast spells with mana value less than or equal to the number of lands you control without paying their mana costs.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "PlayersCantCastSpells",
+                "affected": "You",
+                "condition": "IsNotYourTurn"
+            },
+            {
+                "type": "RestrictSpellsCastPerTurn",
+                "maxPerTurn": 2
+            },
+            {
+                "type": "MayCastWithoutPayingManaCost",
+                "controllerOnly": true,
+                "spellFilter": {
+                    "cardPredicates": [
+                        {
+                            "type": "ManaValueAtMostDynamic",
+                            "amount": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "land"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "125",
+        "rarity": "RARE",
+        "artist": "Stanton Feng",
+        "flavorText": "\"Just tell us how many you want and get out of the way.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a12b16b0-f75f-42d8-9b24-947c1908e0f7.jpg?1783932623",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "If a spell has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If an effect allows or instructs you to cast a spell during another player's turn, you can't do so. The restriction of Fires of Invention takes precedence over that permission. Similarly, if an effect allows or instructs you to cast a third spell during your turn, you can't do so."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Fires of Invention will look at the entire turn to see if you've cast two spells yet that turn, even if Fires of Invention wasn't on the battlefield when those spells were cast. Notably, you can't cast Fires of Invention and then cast two more spells that turn; if Fires of Invention was your second (or third, or fourth) spell that turn, you can't cast another spell at all."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "You may choose to pay the mana cost or an alternative cost for spells you cast, even if their mana value is less than or equal to the number of lands you control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -6070,6 +6275,69 @@
     "colorIdentityOverride": []
 }
 
+// Grumgully, the Generous
+{
+    "name": "Grumgully, the Generous",
+    "manaCost": "{1}{R}{G}",
+    "typeLine": "Legendary Creature — Goblin Shaman",
+    "oracleText": "Each other non-Human creature you control enters with an additional +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
+                "otherOnly": true,
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Human"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "to": "Battlefield"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "192",
+        "rarity": "UNCOMMON",
+        "artist": "Milivoj Ćeran",
+        "flavorText": "\"Does it matter what it is? Take it and be grateful!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/9/b9d50d26-3c44-4c8f-81bb-9093dacfb804.jpg?1783932596",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "A non-Human creature you control that would enter the battlefield with no +1/+1 counters on it enters with one +1/+1 counter on it."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Any other non-Human creatures that enter the battlefield at the same time as Grumgully won't get a +1/+1 counter."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If a non-Human creature enters the battlefield as a copy of a Human creature, it won't get a +1/+1 counter. Similarly, if a Human enters as a non-Human creature, it will get a +1/+1 counter."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Happily Ever After
 {
     "name": "Happily Ever After",
@@ -7145,6 +7413,101 @@
     ]
 }
 
+// Joust
+{
+    "name": "Joust",
+    "manaCost": "{1}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose target creature you control and target creature you don't control. The creature you control gets +2/+1 until end of turn if it's a Knight. Then those creatures fight each other. (Each deals damage equal to its power to the other.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "filter": "creature Knight"
+                        }
+                    },
+                    "then": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                {
+                    "type": "Fight",
+                    "target1": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "129",
+        "rarity": "UNCOMMON",
+        "artist": "Bram Sels",
+        "flavorText": "\"Life is a tournament that rewards the bold.\"\n—Syr Layne, knight of Embereth",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/e/5e725f04-5530-47f1-9f04-4cc13ed9348b.jpg?1783932622",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "The target creature you control gets +2/+1 only if it's a Knight as Joust resolves. It'll still fight if it doesn't get +2/+1."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If either target is an illegal target as Joust tries to resolve, neither creature will deal or be dealt damage."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If the creature you control is an illegal target as Joust tries to resolve, no creature gets +2/+1. If that creature is a legal target but the creature you don't control isn't, it still gets +2/+1 until end of turn if it's a Knight."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Jousting Dummy
 {
     "name": "Jousting Dummy",
@@ -7242,6 +7605,81 @@
         "artist": "Alex Konstad",
         "flavorText": "\"Only the lion knows more stories than I do.\"\n—Chulane, Teller of Tales",
         "imageUri": "https://cards.scryfall.io/normal/front/6/7/6754d6cf-3506-48b5-a0ef-8a90b8dd2701.jpg?1783932608"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Kenrith's Transformation
+{
+    "name": "Kenrith's Transformation",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen this Aura enters, draw a card.\nEnchanted creature loses all abilities and is a green Elk creature with base power and toughness 3/3. (It loses all other card types and creature types.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kenrith's Transformation:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            "LoseAllAbilities",
+            {
+                "type": "TransformPermanent",
+                "setCardTypes": [
+                    "CREATURE"
+                ],
+                "setSubtypes": [
+                    "Elk"
+                ],
+                "setColors": [
+                    "GREEN"
+                ]
+            },
+            {
+                "type": "SetBasePowerToughnessStatic",
+                "power": 3,
+                "toughness": 3
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "164",
+        "rarity": "UNCOMMON",
+        "artist": "Kimonas Theodossiou",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6da7cd39-1f8a-4f68-adb7-df2beac02263.jpg?1783932607",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "If the creature Kenrith's Transformation would enchant is an illegal target by the time the Aura spell resolves, the entire spell doesn't resolve. It won't enter the battlefield, so its ability won't trigger."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Kenrith's Transformation overwrites all colors and creature types the enchanted creature has. It's just a green Elk. The creature keeps any supertypes (such as legendary) it has, but loses any other card types it has (such as artifact)."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Kenrith's Transformation may enchant a permanent that is only temporarily a creature, such as Enchanted Carriage. If this happens, the Aura's effect causes the enchanted permanent to remain a green Elk creature even after the temporary effect expires."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -8513,6 +8951,122 @@
     ]
 }
 
+// Merchant of the Vale
+{
+    "name": "Merchant of the Vale",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Peasant",
+    "oracleText": "{2}{R}, Discard a card: Draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Merchant of the Vale:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{R}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": "AtomDiscard"
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "{2}{R}, Discard a card: Draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "artist": "David Gaillet",
+        "flavorText": "\"Buying old, worn-out junk. Selling marvels of real value.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/b/0b4399b6-e67f-40d8-8676-f5db7e04a6c9.jpg?1783932621"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "Haggle",
+            "manaCost": "{R}",
+            "typeLine": "Instant — Adventure",
+            "oracleText": "You may discard a card. If you do, draw a card. (Then exile this card. You may cast the creature later from exile.)",
+            "script": {
+                "spellEffect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        },
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "descriptionOverride": "You may discard a card. If you do, draw a card."
+                }
+            }
+        }
+    ]
+}
+
 // Merfolk Secretkeeper
 {
     "name": "Merfolk Secretkeeper",
@@ -9376,6 +9930,109 @@
     ]
 }
 
+// Once and Future
+{
+    "name": "Once and Future",
+    "manaCost": "{3}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Return target card from your graveyard to your hand. Put up to one other target card from your graveyard on top of your library. Exile Once and Future.\nAdamant — If at least three green mana was spent to cast this spell, instead return those cards to your hand and exile Once and Future.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand",
+                    "fromZone": "Graveyard"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "ManaOfColorSpent",
+                                "color": "GREEN"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "destination": "Hand",
+                        "fromZone": "Graveyard"
+                    },
+                    "otherwise": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "destination": "Library",
+                        "placement": "Top",
+                        "fromZone": "Graveyard"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetOther",
+                "baseRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "own:you",
+                        "zone": "Graveyard"
+                    }
+                },
+                "id": "t1"
+            }
+        ],
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "168",
+        "rarity": "UNCOMMON",
+        "artist": "Nils Hamm",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1c5dd4e8-4d5f-45a0-9cae-4f842751894d.jpg?1783932605",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "You choose which card will be returned to your hand and which will be put on top of your library as you choose those cards as targets, not as Once and Future resolves."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If one of the two target cards is an illegal target by the time Once and Future resolves, you'll put the other in the appropriate zone and exile Once and Future. If both targets are illegal, the spell won't resolve and you won't exile Once and Future."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Opportunistic Dragon
 {
     "name": "Opportunistic Dragon",
@@ -9580,6 +10237,135 @@
         "imageUri": "https://cards.scryfall.io/normal/front/6/6/663e0208-81c3-4a76-bcc2-bc59cf8ca649.jpg"
     },
     "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Outlaws' Merriment
+{
+    "name": "Outlaws' Merriment",
+    "manaCost": "{1}{R}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your upkeep, choose one at random. Create a red and white creature token with those characteristics.\n• 3/1 Human Warrior with trample and haste.\n• 2/1 Human Cleric with lifelink and haste.\n• 1/2 Human Rogue with haste and \"When this token enters, it deals 1 damage to any target.\"",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Outlaws' Merriment:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "CreateToken",
+                                "power": 3,
+                                "toughness": 1,
+                                "colors": [
+                                    "RED",
+                                    "WHITE"
+                                ],
+                                "creatureTypes": [
+                                    "Human",
+                                    "Warrior"
+                                ],
+                                "keywords": [
+                                    "TRAMPLE",
+                                    "HASTE"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/c/9/c994ea90-71f4-403f-9418-2b72cc2de14d.jpg?1783932479"
+                            },
+                            "description": "Create a 3/1 red and white Human Warrior with trample and haste"
+                        },
+                        {
+                            "effect": {
+                                "type": "CreateToken",
+                                "power": 2,
+                                "toughness": 1,
+                                "colors": [
+                                    "RED",
+                                    "WHITE"
+                                ],
+                                "creatureTypes": [
+                                    "Human",
+                                    "Cleric"
+                                ],
+                                "keywords": [
+                                    "LIFELINK",
+                                    "HASTE"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/d/b/db951f76-b785-453e-91b9-b3b8a5c1cfd4.jpg?1783932481"
+                            },
+                            "description": "Create a 2/1 red and white Human Cleric with lifelink and haste"
+                        },
+                        {
+                            "effect": {
+                                "type": "CreateToken",
+                                "power": 1,
+                                "toughness": 2,
+                                "colors": [
+                                    "RED",
+                                    "WHITE"
+                                ],
+                                "creatureTypes": [
+                                    "Human",
+                                    "Rogue"
+                                ],
+                                "keywords": [
+                                    "HASTE"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/c/d/cd3ca6d5-4b2c-46d4-95f3-f0f2fa47f447.jpg?1783932481",
+                                "triggeredAbilities": [
+                                    {
+                                        "id": "Outlaws' Merriment:1",
+                                        "trigger": {
+                                            "type": "ZoneChangeEvent",
+                                            "to": "Battlefield"
+                                        },
+                                        "effect": {
+                                            "type": "DealDamage",
+                                            "amount": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            },
+                                            "target": {
+                                                "type": "BoundVariable",
+                                                "name": "t0"
+                                            }
+                                        },
+                                        "targetRequirement": {
+                                            "type": "AnyTarget",
+                                            "id": "t0"
+                                        },
+                                        "descriptionOverride": "When this token enters, it deals 1 damage to any target."
+                                    }
+                                ]
+                            },
+                            "description": "Create a 1/2 red and white Human Rogue with haste and \"When this token enters, it deals 1 damage to any target\""
+                        }
+                    ],
+                    "chooseAtRandom": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "198",
+        "rarity": "MYTHIC",
+        "artist": "Suzanne Helmigh",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5d7585ab-a364-471c-8ef1-318e459b4020.jpg?1783932597",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "As you put the triggered ability of Outlaws' Merriment on the stack, you choose a mode at random. Players can respond to the ability knowing which token will be created."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
         "WHITE"
     ]
 }
@@ -10098,6 +10884,54 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Rampart Smasher
+{
+    "name": "Rampart Smasher",
+    "manaCost": "{R/G}{R/G}{R/G}{R/G}",
+    "typeLine": "Creature — Giant",
+    "oracleText": "This creature can't be blocked by Knights or Walls.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "Or",
+                            "predicates": [
+                                {
+                                    "type": "HasSubtype",
+                                    "subtype": "Knight"
+                                },
+                                {
+                                    "type": "HasSubtype",
+                                    "subtype": "Wall"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "213",
+        "rarity": "UNCOMMON",
+        "artist": "Emrah Elmasli",
+        "flavorText": "\"He has strength and courage—just way, way too much of both.\"\n—Syr Faren, the Hengehammer",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/f/2fb9a632-a56b-48fb-bc24-14572b6a8a55.jpg?1783932589"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
     ]
 }
 
@@ -11635,6 +12469,64 @@
         "collectorNumber": "140",
         "artist": "Allen Williams",
         "imageUri": "https://cards.scryfall.io/normal/front/d/2/d2f11135-e9ce-4e4c-bea7-72a46d326e40.jpg?1783932619"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Seven Dwarves
+{
+    "name": "Seven Dwarves",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Dwarf",
+    "oracleText": "This creature gets +1/+1 for each other creature named Seven Dwarves you control.\nA deck can have up to seven cards named Seven Dwarves.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "creature name:Seven Dwarves",
+                    "excludeSelf": true
+                },
+                "toughnessBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "creature name:Seven Dwarves",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "artist": "Jason Rainville",
+        "flavorText": "\"The gleam of rubies and my brothers and sisters by my side . . . what more could I want?\"\n—Brognold the Third",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/6/464adbae-70ea-48e1-b8ae-b404766f7a5a.jpg?1783932616",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "Because damage remains marked on a creature until the damage is removed as the turn ends, nonlethal damage dealt to one Seven Dwarves may become lethal if another Seven Dwarves you control leaves the battlefield during that turn."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "The last ability of Seven Dwarves lets you ignore the \"four-of\" rule. It doesn't let you ignore format legality. For example, during a Throne of Eldraine Limited event, you can't add Seven Dwarves from your personal collection, no matter how happy they would be."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If you're fortunate enough to open or draft eight or more Seven Dwarves during a Limited event, you can include only seven of them in your deck. The rest remain in your sideboard."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "RED"
@@ -13422,6 +14314,81 @@
     ]
 }
 
+// Syr Faren, the Hengehammer
+{
+    "name": "Syr Faren, the Hengehammer",
+    "manaCost": "{G}{G}",
+    "typeLine": "Legendary Creature — Human Knight",
+    "oracleText": "Whenever Syr Faren attacks, another target attacking creature gets +X/+X until end of turn, where X is Syr Faren's power.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Syr Faren, the Hengehammer:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "IfPositive",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": "Self",
+                            "numericProperty": "Power"
+                        }
+                    },
+                    "toughnessModifier": {
+                        "type": "IfPositive",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": "Self",
+                            "numericProperty": "Power"
+                        }
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature attacking",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "177",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Rallis",
+        "flavorText": "\"Words are pointless. It's what you do with your hammer that counts.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/a/9a8b1fea-3c5d-43d2-b4d2-e8938f3f7b9c.jpg?1783932602",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "The value of X is determined only as Syr Faren's triggered ability resolves. Once that happens, the value of X won't change later in the turn even if Syr Faren's power changes."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If Syr Faren leaves the battlefield before its triggered ability resolves, use its power as it last existed on the battlefield to determine the value of X."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If Syr Faren's power is negative as its triggered ability resolves, X is considered to be 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Syr Konrad, the Grim
 {
     "name": "Syr Konrad, the Grim",
@@ -13572,6 +14539,50 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Tall as a Beanstalk
+{
+    "name": "Tall as a Beanstalk",
+    "manaCost": "{3}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +3/+3, has reach, and is a Giant in addition to its other types.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 3,
+                "toughnessBonus": 3
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "REACH"
+            },
+            {
+                "type": "GrantSubtype",
+                "subtype": "Giant",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "178",
+        "artist": "Emrah Elmasli",
+        "flavorText": "He realized a bit late that he was supposed to *plant* the magic beans.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/9/098bfd71-a47f-4dfc-b516-b88a388fb7b5.jpg?1783932603"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -14612,6 +15623,55 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Tuinvale Treefolk
+{
+    "name": "Tuinvale Treefolk",
+    "manaCost": "{5}{G}",
+    "typeLine": "Creature — Treefolk Druid",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 5
+    },
+    "metadata": {
+        "collectorNumber": "180",
+        "artist": "Jason A. Engle",
+        "flavorText": "\"Right now you are a feeble stick, but I will help you grow some rings.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8bc518fc-904e-4e39-aeda-ffb222bfcc82.jpg?1783932601"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "Oaken Boon",
+            "manaCost": "{3}{G}",
+            "typeLine": "Sorcery — Adventure",
+            "oracleText": "Put two +1/+1 counters on target creature. (Then exile this card. You may cast the creature later from exile.)",
+            "script": {
+                "spellEffect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 2,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        }
     ]
 }
 
@@ -15758,5 +16818,93 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Yorvo, Lord of Garenbrig
+{
+    "name": "Yorvo, Lord of Garenbrig",
+    "manaCost": "{G}{G}{G}",
+    "typeLine": "Legendary Creature — Giant Noble",
+    "oracleText": "Yorvo enters with four +1/+1 counters on it.\nWhenever another green creature you control enters, put a +1/+1 counter on Yorvo. Then if that creature's power is greater than Yorvo's power, put another +1/+1 counter on Yorvo.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Yorvo, Lord of Garenbrig:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature green ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "TriggeringEntity",
+                                        "numericProperty": "Power"
+                                    },
+                                    "operator": "GT",
+                                    "right": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": "Power"
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 4,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "185",
+        "rarity": "RARE",
+        "artist": "Zack Stella",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/e/ae2998a1-1713-467e-a08e-0efd8720aa5b.jpg?1783932599",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "Yorvo's triggered ability compares the power of the entering green creature only after putting a +1/+1 counter on Yorvo. If that counter causes Yorvo's power to be greater than or equal to the entering creature's power, it won't get a second +1/+1 counter."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If the entering green creature dies before Yorvo's triggered ability resolves, use its power as it last existed on the battlefield to determine whether Yorvo gets a second +1/+1 counter."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }

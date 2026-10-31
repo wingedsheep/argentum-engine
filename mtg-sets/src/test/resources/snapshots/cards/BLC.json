@@ -2136,69 +2136,6 @@
     ]
 }
 
-// Grumgully, the Generous
-{
-    "name": "Grumgully, the Generous",
-    "manaCost": "{1}{R}{G}",
-    "typeLine": "Legendary Creature — Goblin Shaman",
-    "oracleText": "Each other non-Human creature you control enters with an additional +1/+1 counter on it.",
-    "creatureStats": {
-        "power": 3,
-        "toughness": 3
-    },
-    "script": {
-        "replacementEffects": [
-            {
-                "type": "EntersWithDynamicCounters",
-                "count": {
-                    "type": "Fixed",
-                    "amount": 1
-                },
-                "otherOnly": true,
-                "appliesTo": {
-                    "type": "ZoneChangeEvent",
-                    "filter": {
-                        "cardPredicates": [
-                            "IsCreature",
-                            {
-                                "type": "NotSubtype",
-                                "subtype": "Human"
-                            }
-                        ],
-                        "controllerPredicate": "ControlledByYou"
-                    },
-                    "to": "Battlefield"
-                }
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "253",
-        "rarity": "UNCOMMON",
-        "artist": "Milivoj Ćeran",
-        "flavorText": "\"Does it matter what it is? Take it and be grateful!\"",
-        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d8d7ac51-450e-473e-93e1-3fa9b3b6e2d4.jpg?1721429470",
-        "rulings": [
-            {
-                "date": "2019-10-04",
-                "text": "A non-Human creature you control that would enter the battlefield with no +1/+1 counters on it enters with one +1/+1 counter on it."
-            },
-            {
-                "date": "2019-10-04",
-                "text": "Any other non-Human creatures that enter the battlefield at the same time as Grumgully won't get a +1/+1 counter."
-            },
-            {
-                "date": "2019-10-04",
-                "text": "If a non-Human creature enters the battlefield as a copy of a Human creature, it won't get a +1/+1 counter. Similarly, if a Human enters as a non-Human creature, it will get a +1/+1 counter."
-            }
-        ]
-    },
-    "colorIdentityOverride": [
-        "RED",
-        "GREEN"
-    ]
-}
-
 // Hazel of the Rootbloom
 {
     "name": "Hazel of the Rootbloom",
