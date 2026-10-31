@@ -374,5 +374,52 @@ value class Subtype(val value: String) {
             "Yeti",
             "Zombie", "Zubera"
         ).sorted()
+
+        /** All artifact types per comprehensive rules 205.3g. */
+        val ALL_ARTIFACT_TYPES: Set<String> = setOf(
+            "Attraction", "Blood", "Bobblehead", "Book", "Clue", "Contraption", "Equipment", "Food",
+            "Fortification", "Gold", "Heartwood", "Incubator", "Infinity", "Junk", "Lander", "Map",
+            "Mutagen", "Powerstone", "Spacecraft", "Stone", "Treasure", "Vehicle", "Vibranium"
+        )
+
+        /** All enchantment types per comprehensive rules 205.3h. */
+        val ALL_ENCHANTMENT_TYPES: Set<String> = setOf(
+            "Aura", "Background", "Cartouche", "Case", "Class", "Curse", "Plan", "Role", "Room",
+            "Rune", "Saga", "Shard", "Shrine"
+        )
+
+        /** All spell types (shared by instants and sorceries) per comprehensive rules 205.3k. */
+        val ALL_SPELL_TYPES: Set<String> = setOf("Adventure", "Arcane", "Lesson", "Omen", "Trap")
+
+        /** All battle types per comprehensive rules 205.3q. */
+        val ALL_BATTLE_TYPES: Set<String> = setOf("Siege")
+
+        private val CREATURE_TYPE_SET: Set<String> by lazy { ALL_CREATURE_TYPES.toSet() }
+        private val PLANESWALKER_TYPE_SET: Set<String> by lazy { ALL_PLANESWALKER_TYPES.toSet() }
+
+        /**
+         * The card types a subtype is correlated with (CR 205.3) — the types whose subtype list it
+         * belongs to. Creature types are shared by creatures and kindreds (205.3m), spell types by
+         * instants and sorceries (205.3k). Empty for a string that is no official subtype, so callers
+         * that prune on it leave unknown subtypes alone.
+         */
+        fun correlatedCardTypes(subtype: String): Set<CardType> = when (subtype) {
+            in CREATURE_TYPE_SET -> CREATURE_AND_KINDRED
+            in ALL_LAND_TYPES -> LAND_ONLY
+            in ALL_ARTIFACT_TYPES -> ARTIFACT_ONLY
+            in ALL_ENCHANTMENT_TYPES -> ENCHANTMENT_ONLY
+            in PLANESWALKER_TYPE_SET -> PLANESWALKER_ONLY
+            in ALL_SPELL_TYPES -> INSTANT_AND_SORCERY
+            in ALL_BATTLE_TYPES -> BATTLE_ONLY
+            else -> emptySet()
+        }
+
+        private val CREATURE_AND_KINDRED = setOf(CardType.CREATURE, CardType.KINDRED)
+        private val LAND_ONLY = setOf(CardType.LAND)
+        private val ARTIFACT_ONLY = setOf(CardType.ARTIFACT)
+        private val ENCHANTMENT_ONLY = setOf(CardType.ENCHANTMENT)
+        private val PLANESWALKER_ONLY = setOf(CardType.PLANESWALKER)
+        private val INSTANT_AND_SORCERY = setOf(CardType.INSTANT, CardType.SORCERY)
+        private val BATTLE_ONLY = setOf(CardType.BATTLE)
     }
 }

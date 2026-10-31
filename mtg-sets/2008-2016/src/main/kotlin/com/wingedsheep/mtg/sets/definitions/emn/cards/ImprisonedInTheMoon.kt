@@ -38,9 +38,10 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  *
  * Modeled as a stack of statics on the enchanted permanent, the same shape as Sugar Coat /
  * Witness Protection ("becomes a different thing entirely" via [TransformPermanent]):
- *  - [TransformPermanent] Layer 4 (TYPE) replaces all card types with LAND (subtypes are left
- *    UNCHANGED — `setSubtypes` is empty and `clearSubtypes` is false on purpose, see the land
- *    ruling below) and Layer 5 (COLOR) sets colorless.
+ *  - [TransformPermanent] Layer 4 (TYPE) replaces all card types with LAND (`setSubtypes` is empty
+ *    and `clearSubtypes` is false on purpose, see the land ruling below: land types stay, while the
+ *    engine drops the creature/planeswalker types of the lost card types per CR 205.1a) and
+ *    Layer 5 (COLOR) sets colorless.
  *  - [LoseAllAbilities] (Layer 6) strips every other ability — including any intrinsic mana
  *    ability the permanent already had (e.g. a Plains's "{T}: Add {W}").
  *  - [GrantActivatedAbility] (Layer 6) grants "{T}: Add {C}".

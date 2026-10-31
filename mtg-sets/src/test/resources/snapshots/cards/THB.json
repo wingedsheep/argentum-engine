@@ -11866,6 +11866,58 @@
     ]
 }
 
+// One with the Stars
+{
+    "name": "One with the Stars",
+    "manaCost": "{3}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature or enchantment\nEnchanted permanent is an enchantment and loses all other card types. (It still has its abilities, but it's no longer a creature.)",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "TransformPermanent",
+                "setCardTypes": [
+                    "ENCHANTMENT"
+                ]
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature|enchantment"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "rarity": "UNCOMMON",
+        "artist": "Caio Monteiro",
+        "flavorText": "\"Take your place among the stars.\"\n—Kruphix, god of horizons",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/98b7070d-4b09-4390-aa21-1bc0aa2b629c.jpg?1783931580",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If One with the Stars enchants an enchantment that has no other card types, the enchanted permanent won't be affected."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "The enchanted permanent keeps its abilities but has no power or toughness. If one of its abilities refers to them, it uses 0."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "The enchanted permanent loses any subtypes associated with the card types it lost. It keeps any supertypes, such as legendary."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "One with the Stars may enchant a permanent that is only temporarily a creature, such as a Vehicle. If this happens, One with the Stars's effect causes the enchanted permanent to remain an enchantment even after the temporary effect expires."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Oread of Mountain's Blaze
 {
     "name": "Oread of Mountain's Blaze",

@@ -621,7 +621,9 @@ data class AnimateLandGroup(
  * Note: Combine with LoseAllAbilities and GrantActivatedAbility
  * separately for ability removal/granting.
  *
- * @property setCardTypes Card types to set (replaces ALL existing card types)
+ * @property setCardTypes Card types to set (replaces ALL existing card types). The subtypes of every
+ *   card type the object loses go with it unless a remaining type shares them (CR 205.1a) — the engine
+ *   prunes them, so "loses all other card types" needs no [setSubtypes].
  * @property setSubtypes Subtypes to set (replaces ALL existing subtypes). A non-empty set
  *   replaces all subtypes; an empty set leaves subtypes unchanged unless [clearSubtypes] is set.
  * @property setColors Colors to set (null = don't change, empty = colorless)

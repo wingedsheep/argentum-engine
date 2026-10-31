@@ -10879,6 +10879,12 @@ staticAbility {
   replacing only the creature types and keeping every card type, supertype and non-creature subtype (CR 205.1a) — an
   enchanted artifact creature stays an artifact. Don't spell that wording as `setCardTypes = {"CREATURE"}` +
   `setSubtypes`: that is "is a [type] **creature**", which loses all other card types (Eaten by Piranhas).
+  `setCardTypes` alone (no `setSubtypes`) still drops the subtypes of every card type the object **lost** (CR 205.1a):
+  `Modification.SetCardTypes` prunes each subtype whose `Subtype.correlatedCardTypes` (the CR 205.3 lists) no longer
+  includes a type the object has. One with the Stars' "is an enchantment and loses all other card types" turns a
+  Spirit enchantment creature into a plain enchantment that keeps Aura/Saga-style enchantment types but is no longer a
+  Spirit; Imprisoned in the Moon keeps a Plains's land type but strips a creature's. Creature types survive while the
+  object is still kindred; subtypes on no official list are left alone.
 - `SetName(name, filter)` — a standalone static that overrides the matching permanents' **name** with a fixed string
   (Layer 3 / TEXT; CR 612 / 613.1c — setting a name is a text-changing effect). Lowers to the same `Modification.SetName`
   as `TransformPermanent.setName`, exposed by `ProjectedState.getName` and surfaced to the client by
