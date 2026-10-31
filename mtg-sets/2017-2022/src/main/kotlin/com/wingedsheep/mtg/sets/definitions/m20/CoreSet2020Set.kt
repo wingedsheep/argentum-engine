@@ -8,8 +8,7 @@ import com.wingedsheep.sdk.model.Printing
 /**
  * Core Set 2020 (2019)
  *
- * mtgish-tooling auto-generated seed: only the cards relocated here as their canonical
- * earliest printing. Intentionally incomplete relative to the official set.
+ * Every card is implemented: canonicals first printed here, plus `Printing` rows for reprints.
  *
  * Set Code: M20
  * Release Date: 2019-07-12
@@ -20,7 +19,6 @@ object CoreSet2020Set : MtgSet {
     override val displayName = "Core Set 2020"
     override val releaseDate = "2019-07-12"
     override val sealedSupported = false
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
