@@ -19,7 +19,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
  * As long as this creature is in your graveyard, each Human creature you control enters with an
  * additional +1/+1 counter on it.
  *
- * [com.wingedsheep.mtg.sets.definitions.blc.cards.GrumgullyTheGenerous]'s
+ * [com.wingedsheep.mtg.sets.definitions.eld.cards.GrumgullyTheGenerous]'s
  * [EntersWithDynamicCounters] with its zone moved: `activeZones = setOf(Zone.GRAVEYARD)` is the
  * whole of "as long as this creature is in your graveyard" (CR 113.6). The scanner reads that
  * field, so the same declaration both switches the grant **on** from the graveyard and **off** on
