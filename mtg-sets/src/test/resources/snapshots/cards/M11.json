@@ -1580,6 +1580,35 @@
     ]
 }
 
+// Leyline of Sanctity
+{
+    "name": "Leyline of Sanctity",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "If this card is in your opening hand, you may begin the game with it on the battlefield.\nYou have hexproof. (You can't be the target of spells or abilities your opponents control.)",
+    "script": {
+        "staticAbilities": [
+            "GrantHexproofToController"
+        ],
+        "beginOnBattlefield": {}
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "RARE",
+        "artist": "Ryan Pancoast",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/6/262de9ae-d641-4f0e-af6a-03ce0e1c91d3.jpg?1783941834",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "A player's \"opening hand\" is the hand of cards the player has after all players have taken mulligans. If players have any cards in hand that allow actions to be taken with them from a player's opening hand, the starting player takes all such actions first in any order, followed by each other player in turn order. Then the first turn begins."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Liliana's Caress
 {
     "name": "Liliana's Caress",

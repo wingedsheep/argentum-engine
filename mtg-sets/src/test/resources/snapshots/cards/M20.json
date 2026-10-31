@@ -1,3 +1,63 @@
+// Aerial Assault
+{
+    "name": "Aerial Assault",
+    "manaCost": "{2}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target tapped creature. You gain 1 life for each creature you control with flying.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature kw:flying"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature tapped"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "\"Oh, you must be mistaken. Hawks are solitary hunters, you see.\"\n—Bunder Diedreck, ornithologist",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/64d9c182-cbb3-4791-90dd-0e533ddeebda.jpg?1783933035",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "If the target creature is an illegal target by the time Aerial Assault tries to resolve, the spell doesn't resolve. You won't gain life. If the target is legal but is not destroyed (most likely because it has indestructible), you will gain life."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Any abilities that trigger as the target creature is destroyed won't resolve until after you've gained life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Aether Gust
 {
     "name": "Aether Gust",
@@ -209,6 +269,157 @@
     ]
 }
 
+// Ajani, Inspiring Leader
+{
+    "name": "Ajani, Inspiring Leader",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Legendary Planeswalker — Ajani",
+    "oracleText": "+2: You gain 2 life. Put two +1/+1 counters on up to one target creature.\n−3: Exile target creature. Its controller gains 2 life.\n−10: Creatures you control gain flying and double strike until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ajani, Inspiring Leader:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 2,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You gain 2 life. Put two +1/+1 counters on up to one target creature."
+            },
+            {
+                "id": "Ajani, Inspiring Leader:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": "TargetController"
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "destination": "Exile"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Exile target creature. Its controller gains 2 life."
+            },
+            {
+                "id": "Ajani, Inspiring Leader:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -10
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "FLYING",
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "DOUBLE_STRIKE",
+                                "target": "IterationEntity"
+                            }
+                        ]
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Creatures you control gain flying and double strike until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "282",
+        "rarity": "MYTHIC",
+        "artist": "Yongjae Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/b/dba41e5f-66b8-4459-8a07-bbe893216f1e.jpg?1783932923",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "You may activate Ajani's first ability without choosing any target. If you do, you will gain 2 life. However, if you do choose a target and the target creature is an illegal target by the time the ability tries to resolve, the ability doesn't resolve. You won't gain 2 life."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If the target creature is an illegal target by the time Ajani's second ability tries to resolve, the ability doesn't resolve. No player will gain life."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Ajani's last ability affects only creatures you control at the time it resolves. Creatures you begin to control later in the turn won't gain flying or double strike."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Ajani, Strength of the Pride
 {
     "name": "Ajani, Strength of the Pride",
@@ -361,6 +572,110 @@
         ]
     },
     "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Ancestral Blade
+{
+    "name": "Ancestral Blade",
+    "manaCost": "{1}{W}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "When this Equipment enters, create a 1/1 white Soldier creature token, then attach this Equipment to it.\nEquipped creature gets +1/+1.\nEquip {1} ({1}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ancestral Blade:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "WHITE"
+                            ],
+                            "creatureTypes": [
+                                "Soldier"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/a/4/a491d9da-a58d-4423-b565-c5a99ef63132.jpg?1783932857"
+                        },
+                        {
+                            "type": "AttachEquipment",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Ancestral Blade:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "3",
+        "rarity": "UNCOMMON",
+        "artist": "Scott Murphy",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2ba18114-af6c-48cd-82c9-eb6541d566bf.jpg?1783933034",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "The Soldier token that you create enters the battlefield as a 1/1 creature. Any abilities that trigger when a creature with a certain power enters the battlefield will see the token enter as a 1/1 creature. Static abilities that affect the Soldier's power and toughness may change this, but Ancestral Blade will be attached to the Soldier before the game checks to see if it has toughness 0 or less. For example, if Illness in the Ranks (\"Creature tokens get -1/-1\") is on the battlefield, the Soldier will enter as a 0/0 creature, but then Ancestral Blade will make it a 1/1 and the token will survive."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "No player may take any actions between the time you create the Soldier token and the time Ancestral Blade becomes attached to it."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "If the triggered ability causes two Soldiers to be created (due to an effect such as that of Doubling Season), Ancestral Blade becomes attached to one of them."
+            }
+        ]
+    },
     "colorIdentityOverride": [
         "WHITE"
     ]
@@ -915,6 +1230,75 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Battalion Foot Soldier
+{
+    "name": "Battalion Foot Soldier",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "When this creature enters, you may search your library for any number of cards named Battalion Foot Soldier, reveal them, put them into your hand, then shuffle.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Battalion Foot Soldier:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "name:Battalion Foot Soldier"
+                                },
+                                "storeAs": "gathered0",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": "ChooseAnyNumber",
+                                "storeSelected": "selected1",
+                                "prompt": "Search your library for any number of cards named Battalion Foot Soldier"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                },
+                                "revealed": true
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "artist": "Cristi Balanescu",
+        "flavorText": "\"With me! Break this line and the rest will fall!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/d/1db6393a-88b0-4973-9832-1482f69917ff.jpg?1783933033"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -2912,6 +3296,79 @@
     ]
 }
 
+// Colossus Hammer
+{
+    "name": "Colossus Hammer",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +10/+10 and loses flying.\nEquip {8} ({8}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Colossus Hammer:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{8}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 10,
+                "toughnessBonus": 10
+            },
+            {
+                "type": "RemoveKeywordStatic",
+                "keyword": "FLYING"
+            }
+        ]
+    },
+    "equipCost": "{8}",
+    "metadata": {
+        "collectorNumber": "223",
+        "rarity": "UNCOMMON",
+        "artist": "Dmitry Burmak",
+        "flavorText": "\"There's only one way to be sure it's really dead.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/a/fa35b2b5-3e91-4a6c-90b1-8581b4ecaf8b.jpg?1783932945",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "Colossus Hammer can be attached to a creature that didn't have flying to begin with. It just won't lose flying."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If the equipped creature gains flying after Colossus Hammer became attached to it, it will keep flying."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If an ability of the equipped creature states that it has flying \"as long as\" a particular condition is true, that condition becoming true will not cause that creature to gain flying. For example, if the equipped creature \"has flying as long as it's attacking,\" it will not gain flying, even if it attacks after Colossus Hammer becomes attached to it."
+            }
+        ]
+    }
+}
+
 // Corpse Knight
 {
     "name": "Corpse Knight",
@@ -3219,6 +3676,56 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Diamond Knight
+{
+    "name": "Diamond Knight",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Knight",
+    "oracleText": "Vigilance (Attacking doesn't cause this creature to tap.)\nAs this creature enters, choose a color.\nWhenever you cast a spell of the chosen color, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Diamond Knight:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "SharesChosenColorWithSource"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever you cast a spell of the chosen color, put a +1/+1 counter on this creature."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "COLOR"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "224",
+        "rarity": "UNCOMMON",
+        "artist": "Alayna Danner",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/eeab4819-dd26-4f5c-8538-50f2caca292d.jpg?1783932945"
+    }
 }
 
 // Drakuseth, Maw of Flames
@@ -3707,6 +4214,44 @@
     ]
 }
 
+// Eternal Isolation
+{
+    "name": "Eternal Isolation",
+    "manaCost": "{1}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Put target creature with power 4 or greater on the bottom of its owner's library.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Library",
+            "placement": "Bottom"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature pow>=4"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "rarity": "UNCOMMON",
+        "artist": "Johan Grenier",
+        "flavorText": "\"Well, at least it's a lovely view.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/021963bf-87fc-432f-b9a1-4f627885a7a9.jpg?1783933031"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Ferocious Pup
 {
     "name": "Ferocious Pup",
@@ -4048,6 +4593,66 @@
     ]
 }
 
+// Gauntlets of Light
+{
+    "name": "Gauntlets of Light",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +0/+2 and assigns combat damage equal to its toughness rather than its power.\nEnchanted creature has \"{2}{W}: Untap this creature.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 0,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "AssignDamageEqualToToughness",
+                "onlyWhenToughnessGreaterThanPower": false
+            },
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Gauntlets of Light:1",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{2}{W}"
+                        }
+                    },
+                    "effect": {
+                        "type": "TapUntap",
+                        "target": "Self",
+                        "tap": false
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "rarity": "UNCOMMON",
+        "artist": "Ekaterina Burmak",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/da0d5436-b881-45ac-b8ec-248d88714021.jpg?1783933028",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "Gauntlets of Light's effect doesn't change the enchanted creature's power; it changes only the amount of combat damage that creature assigns. All other rules and effects that check power or toughness use the actual values. For example, if a creature fights while enchanted by Gauntlets of Light, that creature will deal damage equal to its power, not its toughness."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Glint-Horn Buccaneer
 {
     "name": "Glint-Horn Buccaneer",
@@ -4286,6 +4891,188 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Goldmane Griffin
+{
+    "name": "Goldmane Griffin",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Creature — Griffin",
+    "oracleText": "Flying, vigilance\nWhen this creature enters, you may search your library and/or graveyard for a card named Ajani, Inspiring Leader, reveal it, and put it into your hand. If you search your library this way, shuffle.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Goldmane Griffin:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "Search your library",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Library"
+                                            ],
+                                            "filter": "name:Ajani, Inspiring Leader"
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library for a card named Ajani, Inspiring Leader to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Search your graveyard",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Graveyard"
+                                            ],
+                                            "filter": "name:Ajani, Inspiring Leader"
+                                        },
+                                        "storeAs": "searchable"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your graveyard for a card named Ajani, Inspiring Leader to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Search your library and graveyard",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Library",
+                                                "Graveyard"
+                                            ],
+                                            "filter": "name:Ajani, Inspiring Leader"
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library and/or graveyard for a card named Ajani, Inspiring Leader to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Don't search",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": []
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, you may search your library and/or graveyard for a card named Ajani, Inspiring Leader, reveal it, and put it into your hand. If you search your library this way, shuffle."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "283",
+        "rarity": "RARE",
+        "artist": "Paul Scott Canavan",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/67edcb9b-f56b-4a34-b4bd-d22ee929041a.jpg?1783932923"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -5537,6 +6324,70 @@
     ]
 }
 
+// Loxodon Lifechanter
+{
+    "name": "Loxodon Lifechanter",
+    "manaCost": "{5}{W}",
+    "typeLine": "Creature — Elephant Cleric",
+    "oracleText": "When this creature enters, you may have your life total become the total toughness of creatures you control.\n{5}{W}: This creature gets +X/+X until end of turn, where X is your life total.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Loxodon Lifechanter:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "SetLifeTotal",
+                        "amount": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "creature",
+                            "aggregation": "SUM",
+                            "property": "TOUGHNESS"
+                        }
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Loxodon Lifechanter:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": "YourLifeTotal",
+                    "toughnessModifier": "YourLifeTotal",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "rarity": "RARE",
+        "artist": "Nicholas Gregory",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/19610e6d-61bf-4c79-bfb2-e855eb944d11.jpg?1783933025"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Manifold Key
 {
     "name": "Manifold Key",
@@ -6721,6 +7572,108 @@
         "BLUE",
         "RED"
     ]
+}
+
+// Pattern Matcher
+{
+    "name": "Pattern Matcher",
+    "manaCost": "{4}",
+    "typeLine": "Artifact Creature — Golem",
+    "oracleText": "When this creature enters, you may search your library for a card with the same name as another creature you control, reveal it, put it into your hand, then shuffle.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pattern Matcher:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            {
+                                                "type": "SharesNameWithYourCard",
+                                                "filter": {
+                                                    "cardPredicates": [
+                                                        "IsCreature"
+                                                    ],
+                                                    "statePredicates": [
+                                                        {
+                                                            "type": "StateNot",
+                                                            "predicate": "IsSource"
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a card with the same name as a not this creature you control to put into your hand",
+                                "selectedLabel": "Put into your hand"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                },
+                                "revealed": true
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "234",
+        "rarity": "UNCOMMON",
+        "artist": "Jesper Ejsing",
+        "flavorText": "\"Good! Now put it with the other widdle bunnies.\"\n—Sargis Haz, artificer",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/d/ad608eb3-d387-4414-b194-703f38863896.jpg?1783932941",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "You may choose to search your library for nothing and shuffle it, even if you control no other creatures."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If a second Pattern Matcher enters the battlefield under your control, you can have it look at the first Pattern Matcher to search for a third Pattern Matcher."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Pyroclastic Elemental

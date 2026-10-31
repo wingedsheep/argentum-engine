@@ -628,6 +628,50 @@
     ]
 }
 
+// Loyal Pegasus
+{
+    "name": "Loyal Pegasus",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Pegasus",
+    "oracleText": "Flying\nThis creature can't attack or block alone.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnlessCoAttacker",
+                "coAttackerFilter": {
+                    "cardPredicates": [
+                        "IsCreature"
+                    ]
+                }
+            },
+            {
+                "type": "CantBlockUnlessCoBlocker",
+                "coBlockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "artist": "John Severin Brassell",
+        "flavorText": "\"Even if I should die in the saddle, she will not let me fall to the ground.\"\n—Hypatia of the Winged Horse",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e6b29f36-e84d-402e-9ab7-935fd2e7532d.jpg?1783939579"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Mogis, God of Slaughter
 {
     "name": "Mogis, God of Slaughter",

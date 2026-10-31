@@ -1,3 +1,59 @@
+// Angelic Guardian
+{
+    "name": "Angelic Guardian",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying\nWhenever one or more creatures you control attack, they gain indestructible until end of turn.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Angelic Guardian:1",
+                "trigger": "YouAttackEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "AttackedThisCombat"
+                                ]
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "INDESTRUCTIBLE",
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Whenever one or more creatures you control attack, they gain indestructible until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "70767",
+        "rarity": "RARE",
+        "artist": "Sara Winters",
+        "flavorText": "\"No single arrow can pierce an entire flock.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c6cb2bba-a745-492c-948f-9f8af05a68a4.jpg?1783933919"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Immortal Phoenix
 {
     "name": "Immortal Phoenix",

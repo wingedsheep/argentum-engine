@@ -1298,6 +1298,53 @@
     ]
 }
 
+// Gods Willing
+{
+    "name": "Gods Willing",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature you control gains protection from the color of your choice until end of turn. (It can't be blocked, targeted, dealt damage, enchanted, or equipped by anything of that color.)\nScry 1.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ChooseColorThen",
+                    "then": {
+                        "type": "GrantProtectionFromChosenColor",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                {
+                    "type": "Scry",
+                    "count": 1
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "artist": "Mark Winters",
+        "flavorText": "Honor the gods of Theros, and they will return the favor.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/abafabb3-b2e7-4d78-b4b7-d8f701d3ee8b.jpg?1783939814"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Gray Merchant of Asphodel
 {
     "name": "Gray Merchant of Asphodel",
