@@ -38,7 +38,6 @@ import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.core.PassPriority
 import com.wingedsheep.engine.core.PlayLand
 import com.wingedsheep.engine.core.SaddleMount
-import com.wingedsheep.engine.core.TypecycleCard
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.sdk.core.Keyword
@@ -220,11 +219,6 @@ class Strategist(
      * unused scores as at least playing that land. See [fetchedLandFollowUps].
      */
     private val fetchedLandDropFollowUp: Boolean = false,
-    /**
-     * [AiProfile.landcyclingNeedsAUse] — a typecycle that trades a spell for a land the hand has no
-     * use for is floored below passing. See [landcycleWithoutAUse].
-     */
-    private val landcyclingNeedsAUse: Boolean = false,
     /**
      * [AiProfile.recastBouncedPermanents] — a line that returns one of our permanents to our hand
      * scores as at least recasting it, and a self-bounce aims where that recast is worth most. See
@@ -1009,11 +1003,6 @@ class Strategist(
             if (fuel > 0.0) "loyalty is only fuel %+.2f".format(fuel) else null,
         ).joinToString("; ").ifEmpty { null }
         rideForTheAttack(state, action, playerId, leafState, passScore)?.let { return it }
-        if (landcyclingNeedsAUse && landcycleWithoutAUse(state, action, playerId, leafState)) {
-            // A floor, so no follow-up lifts it either: the land drop it would credit is already
-            // in hand, and nothing in hand needs the mana the fetched land adds.
-            return AdjustedScore(passScore - 1.0, "fetches a land the hand has no use for — floored below passing", floored = true)
-        }
         val cardName = resolveCardName(state, action) ?: return AdjustedScore(leafScore, creditNote)
 
         // A precombat pump the attack plan needs is priced by the attack it buys, ahead of the
@@ -1504,53 +1493,6 @@ class Strategist(
             }
         }
         return followUps
-    }
-
-    /**
-     * True when [action] typecycles a spell for a land that our hand has no use for —
-     * [AiProfile.landcyclingNeedsAUse].
-     *
-     * The leaf prices a land in hand as a card, the same as the spell it replaced, so the swap reads
-     * as neutral and a playout or two decides it. It is not neutral when the lands already in hand
-     * make this turn's land drop and the next ones: the fetched land then waits behind them, and
-     * every other spell in hand is castable off the lands we will have without it. The misplay
-     * (2026-10-31 AI-vs-humans review, `b1a69afb` turn 7): three lands in play, Swamp and Mountain
-     * in hand, and the AI basic-landcycled Apex Witchstalker — its only spell — then ran out of
-     * things to cast.
-     *
-     * Read off the leaf by effect: the cycled card has left our hand, and everything new in it is a
-     * land. Not when no land in hand covers the next drop — that is the cycle
-     * [fetchedLandFollowUps] exists to find — nor when a spell still in hand costs more than the
-     * lands in play and in hand add up to.
-     */
-    private fun landcycleWithoutAUse(
-        root: GameState,
-        action: LegalAction,
-        playerId: EntityId,
-        leaf: GameState,
-    ): Boolean {
-        val cycled = (action.action as? TypecycleCard)?.cardId ?: return false
-        val rootHand = root.getZone(ZoneKey(playerId, Zone.HAND))
-        val leafHand = leaf.getZone(ZoneKey(playerId, Zone.HAND))
-        if (cycled in leafHand) return false
-        fun isLand(state: GameState, id: EntityId) = state.getEntity(id)?.get<CardComponent>()?.isLand == true
-        val fetched = leafHand.filter { it !in rootHand }
-        if (fetched.isEmpty() || !fetched.all { isLand(leaf, it) }) return false
-
-        val landsInHand = rootHand.count { isLand(root, it) }
-        val dropsThisTurn = if (root.isActiveTurnFor(playerId)) {
-            (root.getEntity(playerId)?.get<LandDropsComponent>()?.remaining ?: 0).coerceAtLeast(0)
-        } else 0
-        // This turn's drops and next turn's are made from hand already.
-        if (landsInHand < dropsThisTurn + 1) return false
-
-        val projected = root.projectedState
-        val landsInPlay = projected.getBattlefieldControlledBy(playerId).count { projected.hasType(it, "LAND") }
-        val reach = landsInPlay + landsInHand
-        return leafHand.none { id ->
-            val card = leaf.getEntity(id)?.get<CardComponent>() ?: return@none false
-            !card.isLand && card.manaValue > reach
-        }
     }
 
     /**

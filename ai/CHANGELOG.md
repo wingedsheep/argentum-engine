@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- #PRNUM Counts a land in hand that no coming land drop needs (its other lands already cover next turn and no spell in hand wants more mana) as a tenth of a card, so it stops trading spells, fights or draws for lands it has no use for; replaces #4113's landcycling-only floor
 - #4128 Kills an attacker with a free double block (two blockers it can't kill) before trading for it, and no longer attacks a creature into two blockers that can do that to it
 - #4127 Stops in its own upkeep when its library is empty, so it can refill the library before the losing draw (Paradox Shaper putting a graveyard card on the bottom) instead of auto-passing into a decking loss
 - #4122 Answers no to an optional "Pay {1}?" it would then decline to pay (only a tap-another-permanent source like Gene Pollinator could pay), instead of yes followed by an empty payment

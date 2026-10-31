@@ -76,7 +76,8 @@ internal class CardSelectionValue private constructor(
     /**
      * Short of lands: some spell in hand costs more than the lands in play and in hand add up to,
      * so the next land drawn is mana a held card is waiting on. The same reach
-     * `Strategist.landcycleWithoutAUse` reads before letting a cycle fetch a land.
+     * `CardAdvantage` reads to tell a land in hand worth a card from a surplus one
+     * ([AiProfile.surplusLandsReadTheHand]).
      */
     val landShort: Boolean
         get() = handSpells.any { it.second.manaValue > landsInPlay + handLands.size }

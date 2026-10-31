@@ -183,10 +183,11 @@ object ArenaAgents {
             "live-without-borrowed-go-home",
             AiProfile.LIVE.copy(id = "live-without-borrowed-go-home", borrowedCreaturesGoHome = false),
         ),
-        // LIVE typecycling a spell for a land its hand already has: `just arena live-without-landcycling-use live 300`
+        // LIVE pricing every land within the next two drops as a whole card, whatever the hand
+        // needs: `just arena live-without-hand-read-lands live 300`
         ArenaAgent(
-            "live-without-landcycling-use",
-            AiProfile.LIVE.copy(id = "live-without-landcycling-use", landcyclingNeedsAUse = false),
+            "live-without-hand-read-lands",
+            AiProfile.LIVE.copy(id = "live-without-hand-read-lands", surplusLandsReadTheHand = false),
         ),
         // LIVE keeping any scried / surveiled spell over the keep threshold, land-short or not:
         // `just arena live-without-look-digs live 300`
