@@ -64,7 +64,7 @@ class KayaBaneOfTheDeadScenarioTest : ScenarioTestBase() {
             game.castSpellTargetingPlayer(1, "Shock", 2).error shouldNotBe null
         }
 
-        test("the opponent's Kaya doesn't let them through your hexproof, and yours doesn't help them") {
+        test("an opponent's Kaya doesn't help you target them") {
             val game = scenario()
                 .withPlayers("Player", "Opponent")
                 .withCardOnBattlefield(2, "Kaya, Bane of the Dead")

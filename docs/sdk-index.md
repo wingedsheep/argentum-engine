@@ -2020,7 +2020,7 @@ Families:
 - `SpendAnyManaTypeForSpells(filter: GameObjectFilter)` — You can spend mana of any type to cast spells matching filter (CR 118.14 / 609.4b — the colored, hybrid, Phyrexian and colorless requirements of the spell's mana cost may each be paid with mana of…
 - `SpendManaAsColor(fromColor: Color?, toColor: Color?, players: Player)` — players may spend fromColor mana as though it were toColor mana, for any mana payment (CR 609.4b).
 - `StationUsingToughness` — Creatures this permanent's controller controls that are tapped to activate a Station ability contribute their toughness (rather than their power), as long as toughness is greater than power.
-- `SuppressHexproofForGroup(filter: GroupFilter, players: Player?)` — Creatures matching filter can be the targets of spells and abilities as though they didn't have hexproof.
+- `SuppressHexproofForGroup(filter: GroupFilter, players: Player?)` — Permanents matching filter, and the players named, can be the targets of spells and abilities you control as though they didn't have hexproof.
 - `SuppressLandwalkForGroup(landwalks: Set<Keyword>, filter: GroupFilter)` — Creatures matching filter can be blocked as though they didn't have landwalks — the landwalk evasion of CR 702.14 is ignored for them, and nothing else about the keywords changes.
 - `SuppressWardForGroup(filter: GroupFilter)` — Ward abilities of creatures matching filter don't trigger.
 - `SuppressZoneChangeTriggers(filter: GameObjectFilter, abilitiesOf: GameObjectFilter?, causes: Set<ZoneChangeTriggerCause>)` — Permanents matching filter entering the battlefield and/or dying (per causes) don't cause abilities to trigger.

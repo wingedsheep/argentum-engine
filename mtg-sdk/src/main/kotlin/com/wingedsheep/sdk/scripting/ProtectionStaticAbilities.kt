@@ -663,8 +663,8 @@ data object GrantCantLoseGameFromLife : StaticAbility {
 }
 
 /**
- * Creatures matching [filter] can be the targets of spells and abilities as though
- * they didn't have hexproof.
+ * Permanents matching [filter], and the [players] named, can be the targets of spells and abilities
+ * you control as though they didn't have hexproof.
  *
  * Used for Nowhere to Run: "Creatures your opponents control can be the targets of
  * spells and abilities as though they didn't have hexproof."
