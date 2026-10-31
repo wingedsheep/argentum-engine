@@ -22,7 +22,7 @@ Aang, at the Crossroads	intent: CreateDelayedTriggerEffect; intent: Pipeline(Top
 Aang, the Last Airbender	intent: EmitBendEventEffect; intent: GrantKeywordEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→exile); polarity: EmitBendEventEffect; polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets→exile)
 Aarakocra Sneak	intent: TakeDesignationEffect
 Aatchik, Emerald Radian	intent: LoseLifeEffect
-Abandon Attachments	intent: GatedEffect
+Abandon Attachments
 Abandon the Post	intent: ForEach>CantBlockEffect
 Abandoned Air Temple
 Abandoned Campground
@@ -116,7 +116,7 @@ Adaptive Shimmerer
 Adaptive Sporesinger
 Adarkar Sentinel
 Adarkar Wastes
-Adder-Staff Boggart	intent: GatedEffect
+Adder-Staff Boggart
 Additive Evolution
 Addle	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
 Adelbert Steiner
@@ -140,7 +140,7 @@ Adventurous Eater
 Adventurous Impulse	intent: Pipeline(TopOfLibrary→hand|library)
 Advocate of the Beast
 Aegar, the Freezing Flame
-Aegis Sculptor	intent: GatedEffect
+Aegis Sculptor
 Aegis Turtle
 Aegis of the Heavens
 Aeolipile
@@ -241,7 +241,7 @@ Aim for the Head	polarity: Pipeline(hand→exile)
 Ainok Bond-Kin
 Ainok Strike Leader
 Ainok Tracker
-Ainok Wayfarer	intent: GatedEffect; intent: Pipeline(TopOfLibrary→graveyard)
+Ainok Wayfarer	intent: Pipeline(TopOfLibrary→graveyard)
 Air Bladder
 Air Elemental
 Air Marshal
@@ -283,7 +283,7 @@ Akki Coalflinger	intent: ForEach>GrantKeywordEffect
 Akki Ember-Keeper
 Akki Lavarunner	intent: FlipEffect
 Akki Rockspeaker
-Akki Ronin	intent: GatedEffect
+Akki Ronin
 Akki Scrapchomper
 Akki Underminer
 Akki War Paint
@@ -432,7 +432,7 @@ Ana Disciple	intent: ModifyStatsEffect
 Anaba Bodyguard
 Anaba Shaman
 Anaconda
-Anafenza, Unyielding Lineage	intent: GatedEffect
+Anafenza, Unyielding Lineage
 Anafenza, the Foremost
 Analyze the Pollen
 Anara, Wolvid Familiar
@@ -586,7 +586,7 @@ Anzrag, the Quake-Mole	combat: MustBeBlockedEffect; intent: AddCombatPhaseEffect
 Ao, the Dawn Sky
 Apex Devastator
 Apex Witchstalker
-Aphemia, the Cacophony	intent: GatedEffect
+Aphemia, the Cacophony
 Aphetto Alchemist	intent: TapUntapEffect
 Aphetto Dredging
 Aphetto Exterminator
@@ -597,7 +597,7 @@ Apocalypse Runner	intent: GrantKeywordEffect
 Apostle of Invasion
 Apostle of Purifying Light
 Apothecary Geist
-Apothecary Initiate	intent: GatedEffect
+Apothecary Initiate
 Apothecary Stomper
 Appa, Loyal Sky Bison	polarity: EmitBendEventEffect; polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets→exile)
 Appa, Steadfast Guardian	intent: EmitBendEventEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→exile); polarity: EmitBendEventEffect; polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets→exile)
@@ -689,7 +689,7 @@ Archfiend of Depravity	intent: Pipeline(ControlledPermanents→graveyard)
 Archfiend of Despair	intent: ForEach>LoseLifeEffect
 Archfiend of Ifnir
 Archfiend of the Dross	intent: LoseGameEffect; intent: LoseLifeEffect; intent: RemoveCountersEffect
-Archfiend's Vessel	intent: GatedEffect
+Archfiend's Vessel
 Archghoul of Thraben	intent: Pipeline(TopOfLibrary→graveyard|hand|library)
 Archipelagore
 Archive Arbiter
@@ -798,7 +798,7 @@ Arnyn, Deathbloom Botanist
 Aron, Benalia's Ruin
 Arrest
 Arrogant Outlaw
-Arrogant Poet	intent: GatedEffect
+Arrogant Poet
 Arrogant Vampire
 Arrow Storm
 Artful Maneuver
@@ -866,7 +866,7 @@ Ashnod's Battle Gear	polarity: ModifyStatsEffect
 Ashnod's Harvester
 Ashnod's Intervention	polarity: GrantTriggeredAbilityEffect; timing: GrantTriggeredAbilityEffect
 Ashnod's Transmogrant
-Ashnod, Flesh Mechanist	intent: GatedEffect
+Ashnod, Flesh Mechanist
 Ashroot Animist	polarity: ModifyStatsEffect
 Asinine Antics	intent: ForEach>CreateAuraTokenEffect
 Asmodeus the Archfiend	intent: LoseLifeEffect; intent: Pipeline(FromLinkedExile→hand)
@@ -1162,7 +1162,7 @@ Bant Battlemage
 Bant Charm	polarity: MoveToZoneEffect
 Bar the Gate
 Barad-dûr	intent: AmassEffect
-Baral and Kari Zev	intent: GatedEffect
+Baral and Kari Zev
 Barbara Wright
 Barbarian Class
 Barbarian General
@@ -1391,7 +1391,7 @@ Benevolent Ancestor	timing: PreventDamageEffect
 Benevolent Hydra
 Benevolent River Spirit	intent: ScryEffect
 Benthic Behemoth
-Benthic Criminologists	intent: GatedEffect
+Benthic Criminologists
 Benthic Djinn	intent: LoseLifeEffect
 Benthic Giant
 Benthicore
@@ -1479,9 +1479,9 @@ Bite Down	polarity: DealDamageEffect
 Bite Down on Crime
 Biting Rain
 Biting-Palm Ninja	intent: MoveToZoneEffect; intent: ReflexiveTriggerEffect
-Bitter Chill	intent: GatedEffect
+Bitter Chill
 Bitter Downfall
-Bitter Reunion	intent: ForEach>GrantKeywordEffect; intent: GatedEffect
+Bitter Reunion	intent: ForEach>GrantKeywordEffect
 Bitter Revelation	intent: LoseLifeEffect; intent: Pipeline(TopOfLibrary→graveyard|hand)
 Bitter Triumph
 Bitter Work	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
@@ -1602,7 +1602,7 @@ Blightreaper Thallid	intent: TransformEffect
 Blightspeaker	intent: LoseLifeEffect
 Blightstep Pathway
 Blind Creeper	intent: ModifyStatsEffect
-Blind Obedience	intent: GatedEffect
+Blind Obedience
 Blind Phantasm
 Blind Seer	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
 Blind with Anger	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect); timing: GrantKeywordEffect
@@ -1666,7 +1666,7 @@ Blood Rites
 Blood Seeker	intent: LoseLifeEffect
 Blood Servitor
 Blood Spatter Analysis	intent: Pipeline(TopOfLibrary→graveyard); intent: ReflexiveTriggerEffect
-Blood Speaker	intent: GatedEffect
+Blood Speaker
 Blood Vassal
 Blood for Bones	intent: Pipeline(graveyard→battlefield|hand)
 Blood of the Martyr	intent: RedirectNextDamageEffect; timing: RedirectNextDamageEffect
@@ -1678,7 +1678,7 @@ Bloodbond Vampire
 Bloodbraid Elf	intent: CascadeEffect
 Bloodchief Ascension
 Bloodchief's Thirst
-Bloodcrazed Socialite	intent: GatedEffect
+Bloodcrazed Socialite
 Bloodcurdling Scream
 Bloodfeather Phoenix	intent: GatedEffect
 Bloodfell Caves
@@ -1774,7 +1774,7 @@ Bofur, Reliable Guardian	timing: GrantKeywordEffect
 Bog Badger
 Bog Elemental	intent: PayOrSufferEffect
 Bog Glider
-Bog Hoodlums	intent: GatedEffect
+Bog Hoodlums
 Bog Imp
 Bog Initiate
 Bog Naughty
@@ -1785,7 +1785,7 @@ Bog Tatters
 Bog Witch
 Bog Wraith
 Bog Wreckage
-Bog-Strider Ash	intent: GatedEffect
+Bog-Strider Ash
 Bogardan Dragonheart	intent: BecomeCreatureEffect; timing: BecomeCreatureEffect
 Bogardan Rager
 Boggart Birth Rite
@@ -1927,7 +1927,7 @@ Bounce Off	polarity: MoveToZoneEffect
 Bouncer's Beatdown	timing: MarkExileOnDeathEffect
 Bound by Moonsilver	intent: AttachEquipmentEffect; polarity: AttachEquipmentEffect
 Bound in Gold
-Boundary Lands Ranger	intent: GatedEffect
+Boundary Lands Ranger
 Bounding Felidar
 Bounding Wolf
 Bountiful Landscape
@@ -2211,11 +2211,11 @@ Butcher's Glee	timing: GrantKeywordEffect
 Butterbur, Bree Innkeeper
 Buy Your Silence
 Buzz Bots
-Buzzard-Wasp Colony	intent: GatedEffect; intent: MoveAllLastKnownCountersEffect
+Buzzard-Wasp Colony	intent: MoveAllLastKnownCountersEffect
 By Invitation Only	intent: ChooseNumberThenEffect
 Bygone Colossus
 Byrke, Long Ear of the Law	intent: DoubleCountersEffect
-Byway Barterer	intent: GatedEffect
+Byway Barterer
 C.A.M.P.	intent: AttachEquipmentEffect; polarity: AttachEquipmentEffect
 Cabal Archon
 Cabal Coffers
@@ -2359,7 +2359,7 @@ Captain of the Watch
 Captain's Call
 Captain's Tutelage	intent: GrantKeywordEffect
 Captivating Cave
-Captivating Glance	intent: GatedEffect; polarity: Aura>GatedEffect
+Captivating Glance	polarity: Aura>GatedEffect
 Captivating Gyre	polarity: ForEachEffect
 Captivating Unicorn
 Captivating Vampire
@@ -2481,7 +2481,7 @@ Cavalier of Dawn
 Cavalier of Flame
 Cavalier of Gales	intent: MoveToZoneEffect; intent: ScryEffect
 Cavalier of Night	intent: ReflexiveTriggerEffect
-Cavalier of Thorns	intent: GatedEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard); polarity: GatedEffect
+Cavalier of Thorns	intent: Pipeline(TopOfLibrary→battlefield|graveyard); polarity: GatedEffect
 Cavalry Drillmaster
 Cavalry Master
 Cave People	intent: ModifyStatsEffect
@@ -2666,7 +2666,7 @@ Charging War Boar
 Charisma Bobblehead
 Charismatic Conqueror
 Charismatic Vanguard
-Charitable Levy	intent: GatedEffect
+Charitable Levy
 Charity Extractor
 Charix, the Raging Isle	intent: ModifyStatsEffect
 Charmed Clothier	intent: CreateAuraTokenEffect
@@ -2686,7 +2686,7 @@ Check for Traps	intent: ConditionalOnCollectionEffect; intent: Pipeline(hand→e
 Checkpoint Officer
 Cheeky House-Mouse
 Cheerful Osteomancer
-Cheering Crowd	intent: ForEach>GatedEffect
+Cheering Crowd
 Chelonian Tackle	polarity: FightEffect
 Chevill, Bane of Monsters	intent: AddCountersEffect; polarity: AddCountersEffect
 Chief Warg's Company
@@ -2715,7 +2715,7 @@ Chittering Host
 Chittering Rats	intent: Pipeline(hand→library); polarity: Pipeline(hand→library)
 Chittering Skitterling
 Chittering Witch
-Chitterspitter	intent: GatedEffect
+Chitterspitter
 Cho-Arrim Bruiser
 Choco, Seeker of Paradise	intent: Pipeline(TopOfLibrary→battlefield|graveyard|hand)
 Choco-Comet
@@ -2802,7 +2802,7 @@ Civic Gardener	intent: TapUntapEffect
 Civic Guildmage	polarity: MoveToZoneEffect
 Civic Stalwart
 Civic Wayfinder
-Civil Servant	intent: GatedEffect
+Civil Servant
 Clachan Festival
 Clackbridge Troll	intent: AnyPlayerMayPayEffect; polarity: CreateTokenEffect
 Claim Jumper
@@ -2816,7 +2816,7 @@ Clandestine Meddler	intent: SurveilEffect; intent: SuspectEffect; polarity: Susp
 Clarion Cathars
 Clarion Conqueror
 Clarion Spirit
-Clash of Elements	intent: GatedEffect; polarity: GatedEffect
+Clash of Elements	polarity: GatedEffect
 Clash of Titans	polarity: FightEffect
 Clash of the Eikons	polarity: AddCountersEffect; polarity: FightEffect; polarity: RemoveCountersEffect
 Clattering Skeletons	intent: VentureIntoTheDungeonEffect
@@ -2909,7 +2909,7 @@ Cloudcrown Oak
 Cloudgoat Ranger
 Cloudheath Drake	intent: GrantKeywordEffect
 Cloudkin Seer
-Cloudpiercer	intent: GatedEffect
+Cloudpiercer
 Cloudpost
 Cloudreach Cavalry
 Cloudreader Sphinx	intent: ScryEffect
@@ -3013,7 +3013,7 @@ Combat Tutorial
 Combustion Man	intent: ChooseActionEffect; polarity: ChooseActionEffect
 Combustion Technique	timing: MarkExileOnDeathEffect
 Come Back Wrong	intent: CreateDelayedTriggerEffect; intent: Pipeline(ChosenTargets→battlefield|graveyard); polarity: CreateDelayedTriggerEffect; polarity: Pipeline(ChosenTargets→battlefield|graveyard)
-Comet Crawler	intent: GatedEffect
+Comet Crawler
 Comforting Counsel
 Coming In Hot	timing: GrantKeywordEffect
 Command Beacon	intent: Pipeline(command→hand)
@@ -3077,7 +3077,7 @@ Condescend
 Conduct Electricity
 Conductive Machete	intent: AttachEquipmentEffect; intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard); polarity: AttachEquipmentEffect
 Conductor of Cacophony
-Conduit Goblin	intent: GatedEffect; polarity: GatedEffect
+Conduit Goblin	polarity: GatedEffect
 Conduit Pylons	intent: SurveilEffect
 Conduit of Storms	intent: CreateDelayedTriggerEffect; intent: TransformEffect
 Conduit of Worlds	intent: GatedEffect; intent: Pipeline(ChosenTargets→?); polarity: GatedEffect; polarity: Pipeline(ChosenTargets→?)
@@ -3102,7 +3102,7 @@ Consider
 Consign to Memory
 Consign to the Pit
 Conspicuous Snoop
-Conspiracy Theorist	intent: GatedEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(?→exile)
+Conspiracy Theorist	intent: GrantMayPlayFromExileEffect; intent: Pipeline(?→exile)
 Conspiracy Unraveler
 Constable Odo
 Constricting Tendrils	intent: ModifyStatsEffect
@@ -3147,7 +3147,7 @@ Convenient Target	intent: MoveToZoneEffect; intent: SuspectEffect
 Conversion	intent: PayOrSufferEffect
 Converter Beast
 Convolute
-Cool but Rude	intent: GatedEffect
+Cool but Rude
 Cooped Up
 Cooperation	polarity: Aura>GrantKeyword
 Coordinated Assault	timing: ForEach>ModifyStatsEffect
@@ -3222,7 +3222,7 @@ Cost of Brilliance	polarity: mixed(DrawCardsEffect+LoseLifeEffect)
 Costume Closet	intent: MoveCountersEffect; polarity: MoveCountersEffect
 Council of Advisors
 Council of Echoes	polarity: MoveToZoneEffect
-Council's Deliberation	intent: GatedEffect
+Council's Deliberation
 Counsel of the Soratami
 Count on Luck	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Counterbalance
@@ -3235,7 +3235,7 @@ Courageous Goblin
 Courier Bat
 Courier Griffin
 Courier Hawk
-Courier of Comestibles	intent: GatedEffect
+Courier of Comestibles
 Courier's Briefcase
 Courier's Capsule
 Courser of Kruphix
@@ -3247,7 +3247,7 @@ Cover of Darkness
 Covert Cutpurse
 Covert Operative
 Covert Technician	intent: MoveToZoneEffect; intent: Pipeline(hand→battlefield); intent: StoreNumberEffect
-Coveted Falcon	intent: ForEach>GatedEffect; intent: Pipeline(ChosenTargets→?); polarity: ForEachEffect; polarity: Pipeline(ChosenTargets→?)
+Coveted Falcon	polarity: ForEachEffect; polarity: Pipeline(ChosenTargets→?)
 Coveted Jewel
 Coveted Prize
 Covetous Castaway	intent: Pipeline(TopOfLibrary→graveyard); polarity: ForEachEffect
@@ -3401,7 +3401,7 @@ Cryotheory Adept
 Crypt Angel
 Crypt Creeper
 Crypt Feaster
-Crypt Ghast	intent: GatedEffect
+Crypt Ghast
 Crypt Lurker	intent: ChooseActionEffect
 Crypt Rats
 Crypt Ripper
@@ -3425,8 +3425,8 @@ Crystal Carapace
 Crystal Fragments	intent: AttachEquipmentEffect; intent: ExileAndReturnTransformedEffect; polarity: AttachEquipmentEffect
 Crystal Grotto	intent: ScryEffect
 Crystal Quarry
-Crystal Rod	intent: GatedEffect
-Crystal Shard	intent: GatedEffect; polarity: GatedEffect
+Crystal Rod
+Crystal Shard	polarity: GatedEffect
 Crystal Slipper	intent: AttachEquipmentEffect; polarity: AttachEquipmentEffect
 Crystal Spray	polarity: ChangeWordInTextEffect; timing: ChangeWordInTextEffect
 Crystal Vein
@@ -3475,7 +3475,7 @@ Curse of Hospitality	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOf
 Curse of Leeches	polarity: Aura>GainLifeEffect; polarity: Aura>LoseLifeEffect
 Curse of Opulence	polarity: Aura>CreatePredefinedTokenEffect; polarity: Aura>ForEachEffect
 Curse of Shaken Faith	intent: DealDamageEffect; polarity: Aura>DealDamageEffect
-Curse of Silence	intent: GatedEffect; polarity: Aura>GatedEffect; polarity: Aura>ModifySpellCost
+Curse of Silence	polarity: Aura>GatedEffect; polarity: Aura>ModifySpellCost
 Curse of Surveillance	polarity: Aura>ForEachEffect
 Curse of the Werefox	intent: Pipeline(ChosenTargets→?); intent: ReflexiveTriggerEffect; polarity: ReflexiveTriggerEffect
 Curse-Marred Demon
@@ -3494,7 +3494,7 @@ Cursed Windbreaker	intent: AttachEquipmentEffect; intent: EmitManifestedDreadEve
 Cursed Wombat	intent: AdaptEffect
 Custodian of the Trove
 Custody Battle	polarity: Aura>GrantTriggeredAbility
-Customs Depot	intent: GatedEffect
+Customs Depot
 Cut Down
 Cut In
 Cut Propulsion
@@ -3509,7 +3509,7 @@ Cutthroat Maneuver	timing: ForEach>ModifyStatsEffect
 Cyberdrive Awakener	intent: MassAnimateEffect
 Cybernetic Specialist	intent: SurveilEffect; polarity: MoveToZoneEffect
 Cycle of Renewal
-Cyclone	intent: GatedEffect
+Cyclone
 Cyclone Summoner	intent: Pipeline(BattlefieldMatching→hand)
 Cyclonic Rift	polarity: MoveToZoneEffect
 Cyclopean Mummy	intent: MoveToZoneEffect
@@ -3669,7 +3669,7 @@ Dauthi Slayer
 Dauthi Voidwalker	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithoutPayingCostEffect; intent: Pipeline(exile→?)
 Dawn Elemental
 Dawn Evangel
-Dawn of Hope	intent: GatedEffect
+Dawn of Hope
 Dawn of a New Age
 Dawn's Light Archer
 Dawn's Truce
@@ -3747,7 +3747,7 @@ Death or Glory	intent: ChoosePileEffect; intent: Pipeline(graveyard→battlefiel
 Death to Our Enemies	intent: ReflexiveTriggerEffect
 Death's Oasis	intent: Pipeline(TopOfLibrary|graveyard→graveyard|hand)
 Death's-Head Buzzard
-Death-Priest of Myrkul	intent: GatedEffect
+Death-Priest of Myrkul
 Death-Rattle Oni	intent: Pipeline(BattlefieldMatching→graveyard)
 Deathbellow War Cry
 Deathbloom Gardener
@@ -3796,7 +3796,7 @@ Decorated Griffin	timing: PreventDamageEffect
 Decorum Dissertation	polarity: mixed(DrawCardsEffect+LoseLifeEffect)
 Decoy Ploy
 Decree of Annihilation
-Decree of Justice	intent: GatedEffect
+Decree of Justice
 Decree of Pain
 Decree of Savagery
 Decree of Silence
@@ -3933,7 +3933,7 @@ Derelict Attic // Widow's Walk
 Derelor
 Derevi, Empyrial Tactician	intent: MoveToZoneEffect; polarity: ModalEffect
 Dermoplasm	intent: ConditionalOnCollectionEffect; intent: Pipeline(hand→battlefield)
-Descendant of Storms	intent: GatedEffect
+Descendant of Storms
 Desculpting Blast	polarity: MoveToZoneEffect
 Desdemona, Freedom's Edge	intent: GrantEscapeEffect; polarity: GrantEscapeEffect
 Desecrated Tomb
@@ -4002,7 +4002,7 @@ Devouring Greed
 Devouring Light
 Devouring Rage
 Devouring Strossus	intent: SacrificeEffect
-Devouring Sugarmaw	intent: GatedEffect
+Devouring Sugarmaw
 Devouring Swarm
 Devouring Tendrils	polarity: DealDamageEffect
 Devout Chaplain
@@ -4066,7 +4066,7 @@ Diplomatic Relations	timing: GrantKeywordEffect
 Dire Downdraft	intent: PutOnLibraryPositionOfChoiceEffect; polarity: PutOnLibraryPositionOfChoiceEffect
 Dire Flail	intent: AttachEquipmentEffect; intent: ReturnSelfFromExileTransformedEffect; polarity: AttachEquipmentEffect
 Dire Fleet Hoarder
-Dire Fleet Warmonger	intent: GatedEffect
+Dire Fleet Warmonger
 Dire Tactics
 Dire Wolf Prowler
 Dire Wolves
@@ -4086,7 +4086,7 @@ Dirtwater Wraith
 Disappearing Act
 Disarm	intent: ForEach>UnattachEquipmentEffect; intent: Pipeline(AttachedTo→?); polarity: Pipeline(AttachedTo→?)
 Discerning Financier	polarity: GiveControlToTargetPlayerEffect
-Discerning Peddler	intent: GatedEffect
+Discerning Peddler
 Disciple of Freyalise	intent: ConditionalOnCollectionEffect; intent: Pipeline(BattlefieldMatching→?)
 Disciple of Grace
 Disciple of Law
@@ -4300,7 +4300,7 @@ Dragon Turtle
 Dragon Tyrant	intent: PayOrSufferEffect
 Dragon Whelp
 Dragon Wings	intent: ReturnSelfToBattlefieldAttachedEffect
-Dragon's Approach	intent: DealDamageEffect; intent: GatedEffect
+Dragon's Approach
 Dragon's Claw
 Dragon's Disciple
 Dragon's Eye Savants	intent: LookAtTargetHandEffect; polarity: LookAtTargetHandEffect
@@ -4363,7 +4363,7 @@ Drannith Stinger	intent: DealDamageEffect
 Draugr Necromancer
 Draugr Recruiter
 Draugr Thought-Thief	intent: Pipeline(TopOfLibrary→graveyard|library); polarity: Pipeline(TopOfLibrary→graveyard|library)
-Draugr's Helm	intent: AttachEquipmentEffect; intent: GatedEffect; polarity: AttachEquipmentEffect
+Draugr's Helm	intent: AttachEquipmentEffect; polarity: AttachEquipmentEffect
 Drawn from Dreams	intent: Pipeline(TopOfLibrary→hand|library)
 Dread
 Dread Charge	intent: GrantCantBeBlockedExceptByColorEffect
@@ -4378,7 +4378,7 @@ Dread Summons
 Dread of Night
 Dreadbore
 Dreaded Bat-Cloud
-Dreadfeast Demon	intent: GatedEffect
+Dreadfeast Demon
 Dreadful Apathy
 Dreadful as the Storm	intent: SetBaseStatsEffect; intent: TheRingTemptsYouEffect; polarity: SetBaseStatsEffect; timing: SetBaseStatsEffect
 Dreadhorde Invasion	intent: AmassEffect; intent: GrantKeywordEffect; intent: LoseLifeEffect
@@ -4543,7 +4543,7 @@ Duskworker
 Dust Animus
 Dust Bowl
 Dust to Dust
-Dusyut Earthcarver	intent: GatedEffect
+Dusyut Earthcarver
 Dutiful Griffin
 Dutiful Replicator	intent: ReflexiveTriggerEffect
 Dutiful Return
@@ -4558,7 +4558,7 @@ Dwarven Catapult	polarity: ForEachEffect
 Dwarven Demolition Team
 Dwarven Forge-Chanter
 Dwarven Grunt
-Dwarven Hammer	intent: AttachEquipmentEffect; intent: GatedEffect; polarity: AttachEquipmentEffect
+Dwarven Hammer	intent: AttachEquipmentEffect; polarity: AttachEquipmentEffect
 Dwarven Hold
 Dwarven Lieutenant
 Dwarven Mattock	intent: AttachEquipmentEffect; polarity: AttachEquipmentEffect
@@ -4672,7 +4672,7 @@ Eclipsed Realms
 Ecological Appreciation	intent: Pipeline(FromMultipleZones→battlefield|library)
 Ecologist's Terrarium
 Ecstatic Awakener
-Eddie Brock	intent: GatedEffect; intent: TransformEffect
+Eddie Brock	intent: TransformEffect
 Eddymurk Crab
 Eden, Seat of the Sanctum	intent: Pipeline(TopOfLibrary→graveyard); intent: ReflexiveTriggerEffect
 Edgar Markov
@@ -4744,7 +4744,7 @@ Electric Revelation
 Electrickery
 Electrify
 Electro's Bolt
-Electro, Assaulting Battery	intent: GatedEffect; polarity: GatedEffect
+Electro, Assaulting Battery	polarity: GatedEffect
 Electrodominance
 Electroduplicate	polarity: CreateTokenCopyOfTargetEffect
 Electrolyze	polarity: DividedDamageEffect; polarity: DrawCardsEffect
@@ -4812,7 +4812,7 @@ Elturgard Ranger
 Eluge, the Shoreless Sea	intent: AddCountersEffect; polarity: AddCountersEffect
 Elusive Otter	intent: DistributeCountersAmongTargetsEffect; polarity: DistributeCountersAmongTargetsEffect
 Elven Ambush
-Elven Bow	intent: AttachEquipmentEffect; intent: GatedEffect; polarity: AttachEquipmentEffect
+Elven Bow	intent: AttachEquipmentEffect; polarity: AttachEquipmentEffect
 Elven Cache
 Elven Chorus
 Elven Farsight	intent: Pipeline(TopOfLibrary→hand); intent: ScryEffect
@@ -4874,12 +4874,12 @@ Ember-Fist Zubera
 Embercleave	intent: AttachEquipmentEffect; polarity: AttachEquipmentEffect
 Embereth Paladin
 Embereth Shieldbreaker
-Embereth Skyblazer	intent: GatedEffect
+Embereth Skyblazer
 Embereth Veteran	intent: CreateAuraTokenEffect
 Emberheart Challenger	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Embermage Goblin
 Embermouth Sentinel
-Embersmith	intent: GatedEffect; polarity: GatedEffect
+Embersmith	polarity: GatedEffect
 Emberstrike Duo	intent: GrantKeywordEffect
 Embodiment of Agonies
 Embodiment of Spring
@@ -4908,7 +4908,7 @@ Emeritus of Truce	polarity: CreateTokenEffect
 Emeritus of Woe	intent: BecomePreparedEffect
 Emet-Selch of the Third Seat	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(ChosenTargets→?); polarity: CastFromCollectionWithoutPayingCostEffect; polarity: Pipeline(ChosenTargets→?)
 Emet-Selch, Unsundered	intent: TransformEffect
-Emiel the Blessed	intent: GatedEffect; polarity: MoveToZoneEffect
+Emiel the Blessed	polarity: MoveToZoneEffect
 Emil, Vastlands Roamer
 Emissary Escort
 Emissary of Soulfire	intent: AddCountersEffect; polarity: AddCountersEffect
@@ -5005,12 +5005,12 @@ Enthusiastic Study	timing: GrantKeywordEffect
 Entish Restoration
 Entity Tracker
 Entomb
-Entrails Feaster	intent: GatedEffect; polarity: GatedEffect
+Entrails Feaster	polarity: GatedEffect
 Entrancing Lyre
 Entrapment Maneuver	polarity: ForceSacrificeEffect
 Entreat the Angels
 Entropic Battlecruiser	intent: ForEach>LoseLifeEffect; intent: ForEach>Pipeline(hand→graveyard); intent: LoseLifeEffect
-Entrust the Spark	intent: GatedEffect
+Entrust the Spark
 Environmental Sciences
 Environmental Scientist
 Envoy of Okinec Ahau
@@ -5032,7 +5032,7 @@ Erase
 Erdwal Illuminator
 Erebor Flamesmith	intent: DealDamageEffect
 Erebos's Intervention
-Erebos, Bleak-Hearted	intent: GatedEffect
+Erebos, Bleak-Hearted
 Erg Raiders	intent: DealDamageEffect
 Erhnam Djinn
 Eriette of the Charmed Apple
@@ -5076,7 +5076,7 @@ Esper Battlemage	timing: PreventDamageEffect
 Esper Charm	polarity: Pipeline(hand→graveyard)
 Esper Cormorants
 Esper Origins
-Esper Sentinel	intent: GatedEffect
+Esper Sentinel
 Esquire of the King
 Essence Anchor	intent: SurveilEffect
 Essence Burn	timing: MarkExileOnDeathEffect
@@ -5097,7 +5097,7 @@ Essence of Antiquity
 Essence of Orthodoxy
 Essenceknit Scholar
 Estrid's Invocation
-Estwald Shieldbasher	intent: GatedEffect
+Estwald Shieldbasher
 Etali's Favor	intent: DiscoverEffect
 Etali, Primal Conqueror	intent: AddDynamicCountersEffect; intent: CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: GatherUntilMatchEffect; intent: Pipeline(?→exile); intent: TransformEffect
 Etali, Primal Storm	intent: CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→exile)
@@ -5109,7 +5109,7 @@ Eternal Dragon
 Eternal Flame
 Eternal Isolation	polarity: MoveToZoneEffect
 Eternal Student
-Eternal Taskmaster	intent: GatedEffect; polarity: GatedEffect
+Eternal Taskmaster	polarity: GatedEffect
 Eternal Warrior
 Eternal Witness
 Eternity Snare
@@ -5261,7 +5261,7 @@ Eye of Jace
 Eye of Malcator	intent: BecomeCreatureEffect; intent: ScryEffect
 Eye of Nowhere	polarity: MoveToZoneEffect
 Eye of Ramos
-Eye of Vecna	intent: GatedEffect
+Eye of Vecna
 Eye of the Storm	intent: ExileTargetSpellEffect; intent: ForEach>CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: ForEach>CopyCollectionIntoCollectionEffect; intent: ForEach>Pipeline(FromLinkedExile→?)
 Eyeblight Assassin
 Eyeblight Massacre
@@ -5370,7 +5370,7 @@ Famished Paladin	intent: TapUntapEffect
 Famished Worldsire	intent: Pipeline(TopOfLibrary→battlefield|library)
 Fan Bearer
 Fanatic of Rhonas
-Fanatic of the Harrowing	intent: ForEach>Pipeline(hand→graveyard); intent: GatedEffect
+Fanatic of the Harrowing
 Fanatical Fever	timing: GrantKeywordEffect
 Fanatical Firebrand
 Fanatical Offering
@@ -5483,7 +5483,7 @@ Feed the Clan
 Feed the Cycle
 Feed the Flames	timing: MarkExileOnDeathEffect
 Feed the Infection
-Feed the Pack	intent: GatedEffect
+Feed the Pack
 Feed the Serpent
 Feed the Swarm
 Feedback	intent: DealDamageEffect; polarity: Aura>DealDamageEffect
@@ -5708,12 +5708,12 @@ Firmament Sage
 First Day of Class	intent: ConditionalOnCollectionEffect; intent: CreateDelayedTriggerEffect; intent: Pipeline(hand→graveyard)
 First-Time Flyer
 Fisher's Talent
-Fishing Pole	intent: AttachEquipmentEffect; intent: GatedEffect; polarity: AttachEquipmentEffect
+Fishing Pole	intent: AttachEquipmentEffect; polarity: AttachEquipmentEffect
 Fishliver Oil
 Fisk Tower
 Fissure
 Fissure Vent
-Fissure Wizard	intent: GatedEffect
+Fissure Wizard
 Fistful of Force
 Fists of Flame	timing: GrantKeywordEffect
 Fists of Ironwood
@@ -5761,7 +5761,7 @@ Flare of Duplication	intent: CopyTargetSpellEffect; polarity: CopyTargetSpellEff
 Flare of Faith	timing: GrantKeywordEffect
 Flare of Fortitude	timing: ForEach>GrantKeywordEffect; timing: LockLifeGainEffect; timing: LockLifeLossEffect
 Flare of Malice	intent: ForEach>Pipeline(ControlledPermanents→graveyard)
-Flaring Cinder	intent: GatedEffect
+Flaring Cinder
 Flash Conscription	polarity: mixed(GainControlEffect+GrantKeywordEffect+GrantTriggeredAbilityEffect+TapUntapEffect); timing: GrantKeywordEffect; timing: GrantTriggeredAbilityEffect
 Flash Counter
 Flash Flood	polarity: MoveToZoneEffect
@@ -5958,7 +5958,7 @@ Form a Posse
 Form of the Dragon	intent: SetLifeTotalEffect
 Formation Breaker
 Formidable Commons
-Formidable Speaker	intent: GatedEffect; intent: TapUntapEffect
+Formidable Speaker	intent: TapUntapEffect
 Forsake the Worldly
 Forsaken Miner	intent: GatedEffect
 Forsaken Monument
@@ -5972,7 +5972,7 @@ Fortify
 Fortifying Draught
 Fortifying Provisions
 Fortress Crab
-Fortress Kin-Guard	intent: GatedEffect
+Fortress Kin-Guard
 Fortuitous Find
 Fortune Teller's Talent
 Fortune, Loyal Steed	intent: CreateDelayedTriggerEffect; intent: ScryEffect
@@ -6129,7 +6129,7 @@ Furor of the Bitten
 Furtive Analyst
 Furtive Courier
 Fury Sliver
-Furyblade Vampire	intent: GatedEffect
+Furyblade Vampire
 Furycalm Snarl
 Fusion Elemental
 Fuss // Bother
@@ -6145,7 +6145,7 @@ Fyndhorn Elves
 Fynn, the Fangbearer	intent: AddCountersEffect
 Fíli the Pathfinder
 G'raha Tia
-G'raha Tia, Scion Reborn	intent: GatedEffect
+G'raha Tia, Scion Reborn
 Gabriel Angelfire	intent: ChooseActionEffect
 Gaddock Teeg
 Gadget Technician
@@ -6191,7 +6191,7 @@ Gallant Fowlknight
 Gallant Pie-Wielder
 Gallant Strike
 Gallantry
-Gallia of the Endless Dance	intent: GatedEffect
+Gallia of the Endless Dance
 Gallia, Tragic Host
 Gallia, the Merrymaker
 Gallows Warden
@@ -6231,7 +6231,7 @@ Garnet, Princess of Alexandria	intent: ForEach>RemoveCountersEffect; intent: Pip
 Garrison Cat
 Garrison Excavator
 Garrison Griffin
-Garruk Relentless	intent: GatedEffect; intent: TransformEffect
+Garruk Relentless	intent: TransformEffect
 Garruk Wildspeaker	intent: ForEach>TapUntapEffect
 Garruk's Companion
 Garruk's Gorehorn
@@ -6317,7 +6317,7 @@ Generous Plunderer	intent: DealDamageEffect; intent: ReflexiveTriggerEffect
 Generous Revival
 Generous Stray
 Generous Visitor
-Genesis	intent: GatedEffect; polarity: GatedEffect
+Genesis	polarity: GatedEffect
 Genesis Ultimatum	intent: Pipeline(TopOfLibrary→battlefield|hand)
 Genesis Wave	intent: Pipeline(TopOfLibrary→battlefield|graveyard)
 Genghis Frog
@@ -6328,7 +6328,7 @@ Geology Enthusiast
 Geometer's Arthropod	intent: Pipeline(TopOfLibrary→hand|library)
 Geothermal Bog
 Geothermal Crevice
-Geothermal Kami	intent: GatedEffect
+Geothermal Kami
 Geralf, Visionary Stitcher
 Geralf, the Fleshwright
 Germinate Recruits
@@ -6389,7 +6389,7 @@ Ghostly Changeling
 Ghostly Dancers	intent: ModalEffect; polarity: UnlockDoorEffect
 Ghostly Flicker	intent: Pipeline(ChosenTargets|FromLinkedExile→battlefield|exile); polarity: Pipeline(ChosenTargets|FromLinkedExile→battlefield|exile)
 Ghostly Keybearer	intent: UnlockDoorEffect; polarity: UnlockDoorEffect
-Ghostly Pilferer	intent: GatedEffect; intent: GrantKeywordEffect
+Ghostly Pilferer	intent: GrantKeywordEffect
 Ghostly Prison
 Ghostly Sentinel
 Ghostly Touch	polarity: Aura>GrantTriggeredAbility
@@ -6417,7 +6417,7 @@ Giant Koi	intent: GrantKeywordEffect
 Giant Ladybug
 Giant Mantis
 Giant Octopus
-Giant Opportunity	intent: GatedEffect
+Giant Opportunity
 Giant Ox
 Giant Scorpion
 Giant Shark
@@ -6428,7 +6428,7 @@ Giant Strength
 Giant Tortoise
 Giant Turtle
 Giant Warthog
-Giant's Amulet	intent: AttachEquipmentEffect; intent: GatedEffect; polarity: AttachEquipmentEffect
+Giant's Amulet	intent: AttachEquipmentEffect; polarity: AttachEquipmentEffect
 Giant's Boulder	intent: ScryEffect
 Giant's Grasp	polarity: Aura>GainControlEffect
 Giant's Ire
@@ -6483,7 +6483,7 @@ Gimli, Mournful Avenger	intent: IncrementAbilityResolutionCountEffect; intent: R
 Gingerbread Cabin
 Gingerbread Hunter
 Gingerbrute	combat: GrantCantBeBlockedExceptByEffect; intent: GrantCantBeBlockedExceptByEffect; timing: GrantCantBeBlockedExceptByEffect
-Giott, King of the Dwarves	intent: GatedEffect
+Giott, King of the Dwarves
 Girder Goons
 Gisa and Geralf	intent: Pipeline(TopOfLibrary→graveyard)
 Gisa's Bidding
@@ -6498,7 +6498,7 @@ Gitaxian Raptor	intent: ModifyStatsEffect
 Give In to Violence	timing: GrantKeywordEffect
 Gix's Caress	polarity: Pipeline(hand→graveyard); polarity: RevealHandEffect
 Gix's Command
-Gix, Yawgmoth Praetor	intent: CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: GatedEffect; intent: Pipeline(TopOfLibrary→exile); polarity: CastAnyNumberFromCollectionWithoutPayingCostEffect; polarity: Pipeline(TopOfLibrary→exile)
+Gix, Yawgmoth Praetor	intent: CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→exile); polarity: CastAnyNumberFromCollectionWithoutPayingCostEffect; polarity: Pipeline(TopOfLibrary→exile)
 Gixian Infiltrator
 Gixian Puppeteer	intent: MoveToZoneEffect
 Gixian Skullflayer
@@ -6651,7 +6651,7 @@ Go-Shintai of Boundless Vigor	intent: ReflexiveTriggerEffect
 Go-Shintai of Hidden Cruelty	intent: ReflexiveTriggerEffect
 Go-Shintai of Life's Origin
 Go-Shintai of Lost Wisdom	intent: ReflexiveTriggerEffect
-Go-Shintai of Shared Purpose	intent: GatedEffect
+Go-Shintai of Shared Purpose
 Goatnap	polarity: mixed(GainControlEffect+GrantKeywordEffect+ModifyStatsEffect+TapUntapEffect)
 Goatnapper	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
 Gobbling Ooze
@@ -6766,7 +6766,7 @@ Goblin Wizardry
 Goblin-town
 Goblin-town Flunkies	intent: AmassEffect
 Goblins of the Flarg
-Goblinslide	intent: GatedEffect
+Goblinslide
 God-Eternal Bontu	intent: MoveToZoneEffect
 Goddric, Cloaked Reveler
 Godless Shrine
@@ -7055,7 +7055,7 @@ Groundskeeper
 Groundswell
 Group Project
 Grove Rumbler
-Grovetender Druids	intent: GatedEffect
+Grovetender Druids
 Grow Extra Arms
 Grow from the Ashes
 Growing Dread	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard)
@@ -7079,7 +7079,7 @@ Gruul War Chant
 Gryff Rider	intent: EmitKeywordCounterEventEffect
 Gryff Vanguard
 Gryff's Boon	intent: ReturnSelfToBattlefieldAttachedEffect; polarity: ReturnSelfToBattlefieldAttachedEffect
-Gryffwing Cavalry	intent: EmitKeywordCounterEventEffect; intent: GatedEffect; polarity: GatedEffect
+Gryffwing Cavalry	intent: EmitKeywordCounterEventEffect; polarity: GatedEffect
 Gríma Wormtongue	intent: AmassEffect; intent: LoseLifeEffect
 Guac & Marshmallow Pizza
 Guadosalam, Farplane Gateway
@@ -7293,7 +7293,7 @@ Harvester of Souls
 Harvestrite Host
 Harvesttide Infiltrator
 Harvesttide Sentry	intent: GrantStaticAbilityEffect
-Hashaton, Scarab's Fist	intent: GatedEffect
+Hashaton, Scarab's Fist
 Hasran Ogress	intent: PayOrSufferEffect
 Haste Magic	timing: GrantKeywordEffect
 Hate Weaver
@@ -7334,7 +7334,7 @@ Hazel's Brewmaster
 Hazel's Nocturne
 Hazerider Drake
 Hazezon Tamar	intent: CreateDelayedTriggerEffect
-Hazoret's Monument	intent: GatedEffect
+Hazoret's Monument
 Hazoret, Godseeker	intent: GrantKeywordEffect
 He Who Hungers	intent: Pipeline(hand→graveyard); polarity: Pipeline(hand→graveyard)
 He's Dead, Jim
@@ -7394,7 +7394,7 @@ Hedron Crab	intent: Pipeline(TopOfLibrary→graveyard); polarity: Pipeline(TopOf
 Hedron Scrabbler
 Heedless One
 Hei Bai, Forest Guardian	intent: GatherUntilMatchEffect; intent: Pipeline(?→battlefield)
-Hei Bai, Spirit of Balance	intent: GatedEffect; intent: MoveAllLastKnownCountersEffect; polarity: MoveAllLastKnownCountersEffect
+Hei Bai, Spirit of Balance	intent: MoveAllLastKnownCountersEffect; polarity: MoveAllLastKnownCountersEffect
 Heightened Reflexes
 Heiko Yamazaki, the General	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→?); polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets→?)
 Heir of the Ancient Fang
@@ -7536,7 +7536,7 @@ High Stride	timing: GrantKeywordEffect
 High Tide	intent: GrantStaticAbilityEffect; timing: GrantStaticAbilityEffect
 High-Flying Ace
 High-Rise Sawjack
-High-Society Hunter	intent: GatedEffect
+High-Society Hunter
 High-Speed Hoverbike
 Highborn Vampire
 Highland Forest
@@ -7547,7 +7547,7 @@ Highspire Artisan
 Highspire Bell-Ringer
 Highspire Mantis
 Highway Robber
-Highway Robbery	intent: ModalEffect
+Highway Robbery
 Higure, the Still Wind	intent: GrantKeywordEffect; intent: MoveToZoneEffect
 Hikari, Twilight Guardian	intent: CreateDelayedTriggerEffect; intent: MoveToZoneEffect
 Hill Giant
@@ -7596,7 +7596,7 @@ Hobbling Zombie
 Hobgoblin Bandit Lord
 Hobgoblin Captain	intent: GrantKeywordEffect
 Hobgoblin, Mantled Marauder
-Hofri Ghostforge	intent: GatedEffect
+Hofri Ghostforge
 Hog-Monkey
 Hold for Questioning
 Hold for Ransom	polarity: Aura>CantAttack; polarity: Aura>CantBlock; polarity: Aura>GrantActivatedAbility
@@ -7839,7 +7839,7 @@ Hysterical Blindness	intent: ForEach>ModifyStatsEffect
 Hystrodon
 I Am Iron Man	polarity: BecomeCreatureEffect; timing: BecomeCreatureEffect
 Ian the Reckless
-Ib Halfheart, Goblin Tactician	intent: GatedEffect; intent: Pipeline(BattlefieldMatching→?)
+Ib Halfheart, Goblin Tactician
 Icatian Crier
 Icatian Infantry	intent: GrantKeywordEffect
 Icatian Javelineers
@@ -7925,7 +7925,7 @@ Imagecrafter	intent: BecomeCreatureTypeEffect; polarity: BecomeCreatureTypeEffec
 Imi Statue
 Immaculate Magistrate
 Immersturm Predator
-Immersturm Raider	intent: GatedEffect
+Immersturm Raider
 Immersturm Skullcairn
 Immolation	polarity: Aura>ModifyStats
 Immortal Phoenix	intent: MoveToZoneEffect
@@ -7961,7 +7961,7 @@ Impossible Inferno
 Impostor Syndrome
 Impostor of the Sixth Pride
 Impractical Joke
-Imprison	intent: GatedEffect; polarity: Aura>GatedEffect
+Imprison	polarity: Aura>GatedEffect
 Imprisoned in the Moon	polarity: Aura>GrantActivatedAbility; polarity: Aura>LoseAllAbilities; polarity: Aura>TransformPermanent
 Improbable Alliance
 Improvisation Capstone	intent: ExileLibraryUntilManaValueEffect; intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithoutPayingCostEffect
@@ -8092,7 +8092,7 @@ Inordinate Rage
 Inquisition
 Inquisitive Glimmer
 Inquisitive Puppet	intent: ScryEffect
-Insatiable Appetite	intent: GatedEffect; polarity: GatedEffect
+Insatiable Appetite	polarity: GatedEffect
 Insatiable Avarice	polarity: mixed(DrawCardsEffect+LoseLifeEffect)
 Insatiable Frugivore	intent: RepeatWhileEffect
 Insatiable Harpy
@@ -8127,7 +8127,7 @@ Inspiring Unicorn
 Inspiring Vantage
 Inspiring Veteran
 Inspirit
-Inspirited Vanguard	intent: GatedEffect
+Inspirited Vanguard
 Instant Ramen
 Instill Energy	intent: TapUntapEffect
 Instill Furor	polarity: Aura>GrantTriggeredAbility
@@ -8183,7 +8183,7 @@ Invasion of Azgol
 Invasion of Belenon
 Invasion of Dominaria
 Invasion of Eldraine	intent: DealDamageEffect; intent: Pipeline(hand→graveyard); polarity: Pipeline(hand→graveyard)
-Invasion of Ergamon	intent: GatedEffect
+Invasion of Ergamon
 Invasion of Fiora	intent: ModalEffect; intent: RemoveAllCountersEffect; polarity: RemoveAllCountersEffect
 Invasion of Gobakhan	intent: ConditionalOnCollectionEffect; intent: LookAtTargetHandEffect; intent: Pipeline(hand→?); polarity: LookAtTargetHandEffect; polarity: Pipeline(hand→?)
 Invasion of Ikoria	intent: Pipeline(FromMultipleZones→battlefield)
@@ -8195,7 +8195,7 @@ Invasion of Kamigawa
 Invasion of Karsus	intent: DealDamageEffect
 Invasion of Kylem
 Invasion of Lorwyn
-Invasion of Mercadia	intent: GatedEffect
+Invasion of Mercadia
 Invasion of Moag
 Invasion of Muraganda	polarity: FightEffect
 Invasion of New Capenna	intent: AttachEquipmentEffect; intent: ReflexiveTriggerEffect; polarity: AttachEquipmentEffect
@@ -8233,7 +8233,7 @@ Invisible Woman, Sue Storm
 Invoke Calamity	intent: CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: Pipeline(FromMultipleZones→?)
 Invoke Despair
 Invoke Justice	polarity: DistributeCountersAmongFilteredEffect
-Invoke Prejudice	intent: GatedEffect
+Invoke Prejudice
 Invoke the Ancients
 Invoke the Divine
 Invoke the Winds	polarity: mixed(GainControlEffect+TapUntapEffect)
@@ -8254,7 +8254,7 @@ Iroas's Champion
 Iroas, God of Victory
 Iroh's Demonstration
 Iroh, Grand Lotus
-Iroh, Tea Master	intent: GatedEffect; polarity: GatedEffect
+Iroh, Tea Master	polarity: GatedEffect
 Iron Apprentice	intent: MoveAllLastKnownCountersEffect; polarity: MoveAllLastKnownCountersEffect
 Iron Bully
 Iron Fist, Living Weapon	intent: GrantActivatedAbilityEffect
@@ -8271,7 +8271,7 @@ Iron Man Armor	intent: AttachEquipmentEffect; intent: BecomeCreatureEffect; pola
 Iron Man, Master of Machines
 Iron Myr
 Iron Spider, Stark Upgrade
-Iron Star	intent: GatedEffect
+Iron Star
 Iron Tusk Elephant
 Iron Verdict
 Iron Will
@@ -8294,7 +8294,7 @@ Ironshell Beetle
 Ironwill Forger	intent: GrantKeywordEffect; polarity: GrantKeywordEffect
 Irradiate	intent: ModifyStatsEffect; timing: ModifyStatsEffect
 Irregular Cohort
-Irreverent Gremlin	intent: GatedEffect
+Irreverent Gremlin
 Irreverent Revelers
 Irrigated Farmland
 Irrigation Ditch
@@ -8318,8 +8318,8 @@ It'll Quench Ya!
 Item Shopkeep
 Ith, High Arcanist	polarity: PreventDamageEffect; timing: PreventDamageEffect
 Ithilien Kingfisher
-Itzquinth, Firstborn of Gishath	intent: GatedEffect; polarity: GatedEffect
-Ivory Cup	intent: GatedEffect
+Itzquinth, Firstborn of Gishath	polarity: GatedEffect
+Ivory Cup
 Ivory Giant
 Ivory Guardians
 Ivory Tower
@@ -8334,7 +8334,7 @@ Ixhel, Scion of Atraxa	intent: ForEach>GrantMayPlayFromExileEffect; intent: ForE
 Ixidor's Will
 Ixidor, Reality Sculptor	intent: TurnFaceUpEffect; polarity: TurnFaceUpEffect
 Iymrith, Desert Doom
-Izoni, Center of the Web	intent: GatedEffect
+Izoni, Center of the Web
 Izzet Boilerworks	intent: Pipeline(BattlefieldMatching→hand)
 Izzet Chronarch
 Izzet Generatorium
@@ -8486,7 +8486,7 @@ Jolly Gerbils
 Jolrael's Centaur
 Jolrael, Mwonvuli Recluse	combat: ForEach>SetBaseStatsEffect; intent: ForEach>SetBaseStatsEffect; timing: ForEach>SetBaseStatsEffect
 Jolrael, Voice of Zhalfir	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
-Jolted Awake	intent: GatedEffect; polarity: GatedEffect
+Jolted Awake	polarity: GatedEffect
 Joo Dee, One of Many
 Jor Kadeen, First Goldwarden
 Joraga Invocation
@@ -8572,7 +8572,7 @@ Kaervek the Merciless
 Kaervek, the Punisher
 Kaervek, the Spiteful
 Kaheera, the Orphanguard
-Kain, Traitorous Dragoon	intent: GatedEffect
+Kain, Traitorous Dragoon
 Kairi, the Swirling Sky	polarity: ForEachEffect
 Kaito Shizuki	intent: CreateGlobalTriggeredAbilityEffect; intent: PhaseOutEffect
 Kaito's Pursuit	polarity: Pipeline(hand→graveyard)
@@ -8582,7 +8582,7 @@ Kaito, Dancing Shadow	combat: CantBlockEffect; intent: CantAttackEffect; intent:
 Kalain, Reclusive Painter
 Kalakscion, Hunger Tyrant
 Kalastria Healer
-Kalastria Highborn	intent: GatedEffect; polarity: GatedEffect
+Kalastria Highborn	polarity: GatedEffect
 Kalastria Nightwatch
 Kalonian Hydra	intent: ForEach>DoubleCountersEffect
 Kalonian Tusker
@@ -8666,7 +8666,7 @@ Katilda, Dawnhart Martyr
 Katilda, Dawnhart Prime
 Katsumasa, the Animator	timing: AddCardTypeEffect; timing: BecomeCreatureEffect
 Kav Landseeker
-Kavaron Harrier	intent: GatedEffect
+Kavaron Harrier
 Kavaron Skywarden
 Kavaron Turbodrone
 Kavaron, Memorial World
@@ -8771,27 +8771,27 @@ Khenra Spellspear	intent: TransformEffect
 Kheru Bloodsucker
 Kheru Dreadmaw
 Kheru Goldkeeper
-Kheru Lich Lord	intent: GatedEffect
+Kheru Lich Lord
 Kheru Spellsnatcher
 Kianne, Dean of Substance	intent: AddCountersToCollectionEffect; intent: Pipeline(TopOfLibrary|exile→exile|hand); intent: Pipeline(TopOfLibrary→exile|hand)
 Kibo, Uktabi Prince
 Kick in the Door
-Kickoff Celebrations	intent: ForEach>GrantKeywordEffect; intent: GatedEffect
+Kickoff Celebrations	intent: ForEach>GrantKeywordEffect
 Kid Loki
 Kiki-Jiki, Mirror Breaker	polarity: CreateTokenCopyOfTargetEffect
 Kiku, Night's Flower
 Kill Shot
-Kill-Zone Acrobat	intent: GatedEffect
+Kill-Zone Acrobat
 Killer Bees
 Killer's Mask	intent: AttachEquipmentEffect; intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard); polarity: AttachEquipmentEffect
-Killian's Confidence	intent: GatedEffect
+Killian's Confidence
 Killian, Ink Duelist
-Killing Wave	intent: ForEach>ForEachEffect
+Killing Wave
 Killmonger, Scourge of Wakanda	intent: ReflexiveTriggerEffect
 Kiln Fiend
 Kilnmouth Dragon
 Kin-Tree Invocation
-Kin-Tree Nurturer	intent: GatedEffect
+Kin-Tree Nurturer
 Kin-Tree Severance
 Kin-Tree Warden
 Kinbinding
@@ -8823,7 +8823,7 @@ Kinsbaile Aspirant
 Kinsbaile Balloonist
 Kinsbaile Skirmisher
 Kinscaer Sentry	intent: Pipeline(hand→battlefield)
-Kinzu of the Bleak Coven	intent: GatedEffect
+Kinzu of the Bleak Coven
 Kiora Bests the Sea God
 Kiora of Fire and Ashes
 Kiora of Salt and Sand	intent: GrantKeywordEffect; intent: TapUntapEffect
@@ -9004,7 +9004,7 @@ Kree Sentinel
 Krenko's Buzzcrusher	intent: ForEach>ConditionalOnCollectionEffect; intent: ForEach>Pipeline(battlefield→graveyard)
 Krenko's Command
 Krenko's Enforcer
-Krenko, Baron of Tin Street	intent: GatedEffect
+Krenko, Baron of Tin Street
 Krenko, Mob Boss
 Krenko, Tin Street Kingpin
 Kris Mage
@@ -9023,13 +9023,13 @@ Krosan Warchief
 Krosan Wayfarer	intent: Pipeline(hand→battlefield)
 Krotiq Nestguard	intent: CanAttackDespiteDefenderThisTurnEffect
 Krovikan Scoundrel
-Krovod Haunch	intent: AttachEquipmentEffect; intent: GatedEffect; polarity: AttachEquipmentEffect
+Krovod Haunch	intent: AttachEquipmentEffect; polarity: AttachEquipmentEffect
 Kroxa and Kunoros	intent: ReflexiveTriggerEffect
 Kroxa, Titan of Death's Hunger	intent: ForEach>LoseLifeEffect; intent: ForEach>Pipeline(hand→?); intent: ForEach>StorePlayerEffect; intent: Pipeline(?→graveyard); intent: SacrificeSelfEffect
 Kruin Outlaw	intent: TransformEffect
 Kruin Striker
 Krumar Bond-Kin
-Krumar Initiate	intent: GatedEffect
+Krumar Initiate
 Kruphix, God of Horizons
 Kry Shield	polarity: mixed(ModifyStatsEffect+PreventDamageEffect); timing: PreventDamageEffect
 Krydle of Baldur's Gate	intent: GatedEffect; polarity: GatedEffect
@@ -9038,7 +9038,7 @@ Kudzu	polarity: Aura>ForEachEffect; polarity: Aura>MoveToZoneEffect
 Kuja, Genome Sorcerer
 Kujar Seedsculptor
 Kuldotha Cackler
-Kuldotha Flamefiend	intent: GatedEffect; polarity: GatedEffect
+Kuldotha Flamefiend	polarity: GatedEffect
 Kuldotha Forgemaster
 Kuldotha Rebirth
 Kulrath Mystic
@@ -9150,7 +9150,7 @@ Lathiel, the Bounteous Dawn	intent: DistributeCountersAmongTargetsEffect; polari
 Lathliss, Dragon Queen
 Lathnu Sailback
 Lathril, Blade of the Elves
-Lattice-Blade Mantis	intent: GatedEffect
+Lattice-Blade Mantis
 Laughing Jasper Flint	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile); polarity: Pipeline(TopOfLibrary→exile)
 Laughing Mad
 Launch Mishap
@@ -9189,7 +9189,7 @@ Leader, Super-Genius	polarity: ConditionalOnCollectionEffect
 Leaf Arrow
 Leaf Dancer
 Leaf Gilder
-Leaf-Crowned Visionary	intent: GatedEffect
+Leaf-Crowned Visionary
 Leafkin Avenger
 Leafkin Druid
 Leap of Faith	timing: GrantKeywordEffect; timing: PreventDamageEffect
@@ -9304,11 +9304,11 @@ Life from the Loam	intent: Pipeline(ChosenTargets→hand); polarity: Pipeline(Ch
 Life of Toshiro Umezawa
 Lifeblood
 Lifecraft Engine
-Lifecrafter's Bestiary	intent: GatedEffect; intent: ScryEffect
+Lifecrafter's Bestiary	intent: ScryEffect
 Lifecreed Duo
 Lifeforce
 Lifelace	intent: ChangeColorEffect; polarity: ChangeColorEffect
-Lifesmith	intent: GatedEffect
+Lifesmith
 Lifespark Spellbomb	intent: AnimateLandEffect; polarity: AnimateLandEffect; timing: AnimateLandEffect
 Lifespring Druid
 Lifetap
@@ -9341,7 +9341,7 @@ Lightning Hounds
 Lightning Javelin
 Lightning Mare
 Lightning Mauler	intent: PairWithSourceEffect; intent: Pipeline(BattlefieldMatching→?); intent: Pipeline(Entity→?)
-Lightning Rift	intent: GatedEffect; polarity: GatedEffect
+Lightning Rift	polarity: GatedEffect
 Lightning Spear	intent: AttachEquipmentEffect; polarity: AttachEquipmentEffect
 Lightning Stormkin
 Lightning Strike
@@ -9365,7 +9365,7 @@ Liliana of the Veil	intent: ChoosePileEffect; intent: ForEach>Pipeline(hand→gr
 Liliana the Faultless
 Liliana the Repentant	intent: Pipeline(TopOfLibrary→graveyard)
 Liliana's Caress	intent: LoseLifeEffect
-Liliana's Devotee	intent: GatedEffect
+Liliana's Devotee
 Liliana's Elite
 Liliana's Mastery
 Liliana's Scorn
@@ -9387,7 +9387,7 @@ Lindblum, Industrial Regency
 Linden, the Steadfast Queen
 Linebreaker Baloth
 Lingering Death
-Lingering Phantom	intent: GatedEffect
+Lingering Phantom
 Lingering Souls
 Linvala, Keeper of Silence
 Linvala, Shield of Sea Gate	intent: CantAttackEffect; intent: CantBlockEffect; intent: ChooseActionEffect; intent: GrantStaticAbilityEffect
@@ -9459,7 +9459,7 @@ Loathsome Troll
 Lobber Crew	intent: DealDamageEffect; intent: TapUntapEffect
 Lobelia Sackville-Baggins	polarity: CreatePredefinedTokenEffect; polarity: MoveToZoneEffect
 Lobotomy	intent: Pipeline(FromMultipleZones|hand→exile); intent: RevealHandEffect; intent: StoreCardNameEffect; polarity: Pipeline(FromMultipleZones|hand→exile); polarity: RevealHandEffect
-Loch Dragon	intent: GatedEffect
+Loch Dragon
 Loch Korrigan
 Loch Mare
 Lochmere Serpent	intent: GrantKeywordEffect
@@ -9529,7 +9529,7 @@ Lorehold Charm
 Lorehold Command
 Lorehold Excavation
 Lorehold Pledgemage
-Lorehold, the Historian	intent: GatedEffect
+Lorehold, the Historian
 Lorescale Coatl
 Los Diablos Missile Base
 Lose Hope
@@ -9622,7 +9622,7 @@ Lumra, Bellow of the Woods	intent: Pipeline(TopOfLibrary|graveyard→battlefield
 Lunar Convocation	intent: LoseLifeEffect
 Lunar Frenzy	timing: GrantKeywordEffect
 Lunar Insight
-Lunar Mystic	intent: GatedEffect
+Lunar Mystic
 Lunar Rejection	polarity: MoveToZoneEffect
 Lunarch Mantle
 Lunarch Veteran
@@ -9676,7 +9676,7 @@ Mad Prophet
 Mad Ratter
 Madame Hydra
 Madame Masque
-Madame Null, Power Broker	intent: GatedEffect
+Madame Null, Power Broker
 Madame Web, Clairvoyant	intent: Pipeline(TopOfLibrary→graveyard)
 Maddening Cacophony	intent: ForEach>Pipeline(TopOfLibrary→graveyard); intent: Pipeline(TopOfLibrary→graveyard)
 Maelstrom Artisan
@@ -9891,7 +9891,7 @@ Marionette Apprentice	intent: LoseLifeEffect
 Marionette Master	intent: LoseLifeEffect
 Mariposa Military Base
 Marisi, Breaker of the Coil	intent: ForEach>GoadEffect
-Marit Lage's Slumber	intent: GatedEffect; intent: ScryEffect
+Marit Lage's Slumber	intent: ScryEffect
 Maritime Guard
 Mark of Eviction	polarity: Aura>GatherCardsEffect; polarity: Aura>MoveCollectionEffect; polarity: Aura>MoveToZoneEffect
 Mark of the Vampire
@@ -9903,11 +9903,11 @@ Marketwatch Phantom
 Markov Baron
 Markov Dreadknight
 Markov Patrician
-Markov Purifier	intent: GatedEffect
+Markov Purifier
 Markov Retribution	polarity: DealDamageEffect
 Markov Waltzer
 Markov Warlord	intent: ForEach>CantBlockEffect
-Marooned	intent: GatedEffect
+Marooned
 Marrow Bats
 Marrow-Gnawer
 Marsh Boa
@@ -9938,16 +9938,16 @@ Masako the Humorless
 Mascot Exhibition
 Mascot Interception	polarity: mixed(GainControlEffect+GrantKeywordEffect+ModifyStatsEffect+TapUntapEffect)
 Mask of Avacyn	intent: AttachEquipmentEffect; polarity: AttachEquipmentEffect
-Mask of Griselbrand	intent: AttachEquipmentEffect; intent: GatedEffect; polarity: AttachEquipmentEffect
+Mask of Griselbrand	intent: AttachEquipmentEffect; polarity: AttachEquipmentEffect
 Mask of Immolation	intent: AttachEquipmentEffect; polarity: AttachEquipmentEffect
 Mask of Law and Grace
 Mask of Memory	intent: AttachEquipmentEffect; polarity: AttachEquipmentEffect
 Mask of the Jadecrafter
-Masked Admirers	intent: GatedEffect
+Masked Admirers
 Masked Bandits	intent: GrantActivatedAbilityEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(exile→?); polarity: GrantActivatedAbilityEffect
 Masked Blackguard
 Masked Meower
-Masked Vandal	intent: GatedEffect; polarity: GatedEffect
+Masked Vandal	polarity: GatedEffect
 Maskwood Nexus
 Mass Appeal
 Mass Calcify	intent: Pipeline(BattlefieldMatching→graveyard)
@@ -9963,7 +9963,7 @@ Master Decoy
 Master Healer	timing: PreventDamageEffect
 Master Pakku	intent: Pipeline(TopOfLibrary→graveyard); polarity: Pipeline(TopOfLibrary→graveyard)
 Master Piandao	intent: Pipeline(TopOfLibrary→hand|library)
-Master Skald	intent: GatedEffect; polarity: GatedEffect
+Master Skald	polarity: GatedEffect
 Master Splicer
 Master Symmetrist
 Master Transmuter	intent: Pipeline(hand→battlefield)
@@ -10013,13 +10013,13 @@ Maze of Ith	polarity: PreventDamageEffect; timing: PreventDamageEffect
 Maze of Shadows	polarity: PreventDamageEffect; timing: PreventDamageEffect
 Maze's End
 Maze's Mantle
-Mazemind Tome	intent: GatedEffect; intent: ScryEffect
+Mazemind Tome	intent: ScryEffect
 Mazirek, Kraul Death Priest
 Meandering River
 Meandering Towershell	intent: CreateDelayedTriggerEffect; intent: MoveToZoneEffect
 Meanders Guide	intent: ReflexiveTriggerEffect
 Meat Locker // Drowned Diner
-Meathook Massacre II	intent: GatedEffect; intent: PayOrSufferEffect
+Meathook Massacre II	intent: PayOrSufferEffect
 Mech Hangar	intent: AddCardTypeEffect; polarity: AddCardTypeEffect; timing: AddCardTypeEffect
 Mechan Assembler
 Mechan Navigator
@@ -10046,7 +10046,7 @@ Megatog
 Megaton's Fate
 Megrim	intent: DealDamageEffect
 Melancholic Poet
-Melded Moxite	intent: GatedEffect
+Melded Moxite
 Meldweb Curator	polarity: MoveToZoneEffect
 Meldweb Strider	intent: BecomeCreatureEffect; timing: BecomeCreatureEffect
 Melek, Reforged Researcher
@@ -10083,7 +10083,7 @@ Mental Journey
 Mental Misstep
 Mental Modulation
 Mental Note
-Mentor of the Meek	intent: GatedEffect
+Mentor of the Meek
 Mentor's Guidance	intent: CopyTargetSpellEffect
 Mephitic Draught
 Mer-Ek Nightblade
@@ -10092,7 +10092,7 @@ Merchant Scroll
 Merchant Ship
 Merchant of Many Hats
 Merchant of Secrets
-Merchant of the Vale	intent: GatedEffect
+Merchant of the Vale
 Merciless Enforcers	intent: DealDamageEffect
 Merciless Executioner
 Merciless Javelineer	combat: CantBlockEffect; timing: CantBlockEffect
@@ -10176,7 +10176,7 @@ Michelangelo, Weirdness to 11
 Michiko Konda, Truth Seeker
 Michiko's Reign of Truth
 Micromancer
-Midgar, City of Mako	intent: GatedEffect
+Midgar, City of Mako
 Midnight Assassin
 Midnight Charm
 Midnight Clock
@@ -10221,7 +10221,7 @@ Military Discipline	intent: GrantKeywordEffect
 Military Intelligence
 Militia Bugler	intent: Pipeline(TopOfLibrary→hand|library)
 Militia Rallier	intent: TapUntapEffect
-Militia's Pride	intent: GatedEffect
+Militia's Pride
 Millikin
 Millstone	intent: Pipeline(TopOfLibrary→graveyard); polarity: Pipeline(TopOfLibrary→graveyard)
 Mimeoplasm, Revered One	intent: EachPermanentBecomesCopyOfTargetEffect; polarity: EachPermanentBecomesCopyOfTargetEffect
@@ -10248,7 +10248,7 @@ Mind Transfer Protocol	polarity: AddCardTypeEffect; polarity: BecomeCreatureEffe
 Mind Twist	intent: Pipeline(hand→graveyard); polarity: Pipeline(hand→graveyard)
 Mind into Matter
 Mind's Desire	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→exile)
-Mind's Eye	intent: GatedEffect
+Mind's Eye
 Mindblaze	intent: ChooseNumberThenEffect; polarity: ChooseNumberThenEffect
 Mindbreak Trap	intent: ForEach>ExileTargetSpellEffect
 Mindcrank	intent: Pipeline(TopOfLibrary→graveyard)
@@ -10358,8 +10358,8 @@ Mishra's Foundry	intent: BecomeCreatureEffect; timing: BecomeCreatureEffect
 Mishra's Juggernaut
 Mishra's Onslaught
 Mishra's Research Desk	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
-Mishra's Self-Replicator	intent: GatedEffect
-Mishra's War Machine	intent: GatedEffect
+Mishra's Self-Replicator
+Mishra's War Machine
 Mishra's Workshop
 Mishra, Claimed by Gix
 Mishra, Excavation Prodigy
@@ -10376,7 +10376,7 @@ Mistbreath Elder	intent: MoveToZoneEffect; intent: Pipeline(BattlefieldMatching�
 Mistcutter Hydra
 Mister Fantastic, Reed Richards
 Mister Gutsy
-Mister Hyde, Monster Within	intent: ModalEffect
+Mister Hyde, Monster Within
 Mister Negative	intent: ExchangeLifeTotalsEffect; polarity: ExchangeLifeTotalsEffect
 Mistfire Weaver
 Mistford River Turtle	intent: GrantKeywordEffect
@@ -10429,7 +10429,7 @@ Mockingbird, Ace Agent
 Mogg Fanatic
 Mogg Mob	polarity: DividedDamageEffect
 Mogg Raider
-Mogg War Marshal	intent: GatedEffect
+Mogg War Marshal
 Moggcatcher
 Mogis's Favor	polarity: Aura>ModifyStats
 Mogis, God of Slaughter	intent: PayOrSufferEffect
@@ -10523,7 +10523,7 @@ Moonfolk Puzzlemaker	intent: ScryEffect
 Moonglove Extract
 Moonglove Extractor
 Moonglove Winnower
-Moonlight Bargain	intent: ForEach>GatedEffect; intent: Pipeline(TopOfLibrary→?)
+Moonlight Bargain
 Moonlight Geist	timing: PreventDamageEffect
 Moonlight Hunt	polarity: ForEachEffect
 Moonlit Lamenter
@@ -10648,7 +10648,7 @@ Mudflat Village
 Muerra, Trash Tactician	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Mugato
 Mukotai Ambusher	intent: MoveToZoneEffect
-Mukotai Soulripper	intent: GatedEffect
+Mukotai Soulripper
 Mulch	intent: Pipeline(TopOfLibrary→graveyard|hand)
 Muldrotha, the Gravetide
 Mulldrifter
@@ -10660,7 +10660,7 @@ Multiversal Passage
 Munitions Enthusiast
 Muraganda Raceway
 Murasa Brute
-Murasa Ranger	intent: GatedEffect
+Murasa Ranger
 Murasa Rootgrazer	intent: Pipeline(hand→battlefield); polarity: MoveToZoneEffect
 Murasa Sproutling
 Murder
@@ -10728,7 +10728,7 @@ Mystic Denial
 Mystic Forge	intent: Pipeline(TopOfLibrary→exile)
 Mystic Monastery
 Mystic Reflection	intent: GrantReplacementEffectEffect; polarity: GrantReplacementEffectEffect
-Mystic Remora	intent: GatedEffect; intent: PayOrSufferEffect
+Mystic Remora	intent: PayOrSufferEffect
 Mystic Repeal	polarity: MoveToZoneEffect
 Mystic Restraints
 Mystic Retrieval
@@ -10754,7 +10754,7 @@ Nacatl Savage
 Nacre Talisman	intent: GatedEffect; polarity: GatedEffect
 Nadaar, Selfless Paladin	intent: VentureIntoTheDungeonEffect
 Nadier's Nightblade
-Nadir Kraken	intent: GatedEffect
+Nadir Kraken
 Nadu, Winged Wisdom
 Nael, Avizoa Aeronaut
 Nafs Asp	intent: CreateDelayedTriggerEffect
@@ -10800,7 +10800,7 @@ Narset's Rebuke	timing: MarkExileOnDeathEffect
 Narset's Reversal	intent: CopyTargetSpellEffect; intent: ReturnSpellOrPermanentToOwnersHandEffect; polarity: CopyTargetSpellEffect; polarity: ReturnSpellOrPermanentToOwnersHandEffect
 Narset, Enlightened Exile
 Narset, Enlightened Master	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→exile)
-Narset, Jeskai Waymaster	intent: GatedEffect
+Narset, Jeskai Waymaster
 Narset, Parter of Veils	intent: Pipeline(TopOfLibrary→hand|library)
 Narstad Scrapper
 Naru Meha, Master Wizard	intent: CopyTargetSpellEffect; polarity: CopyTargetSpellEffect
@@ -10811,7 +10811,7 @@ Nasty End
 Nasty Little Rabbit
 Nath of the Gilt-Leaf	intent: Pipeline(hand→graveyard); polarity: Pipeline(hand→graveyard)
 Nath's Buffoon
-Nath's Elite	intent: GatedEffect
+Nath's Elite
 Natural End
 Natural Order
 Natural Reclamation	intent: CascadeEffect
@@ -10841,7 +10841,7 @@ Neck Snap
 Necrite
 Necrobite	timing: GrantKeywordEffect
 Necroblossom Snarl
-Necrodominance	intent: GatedEffect
+Necrodominance
 Necroduality
 Necrogen Censer	intent: LoseLifeEffect
 Necrogen Communion	polarity: Aura>GrantKeyword; polarity: Aura>MoveToZoneEffect
@@ -10851,7 +10851,7 @@ Necrogen Scudder	intent: LoseLifeEffect
 Necrogen Spellbomb	intent: Pipeline(hand→graveyard); polarity: Pipeline(hand→graveyard)
 Necromancer's Stockpile
 Necromantic Thirst	polarity: Aura>MoveToZoneEffect
-Necromaster Dragon	intent: GatedEffect
+Necromaster Dragon
 Necromentia	polarity: CreateTokenEffect; polarity: Pipeline(FromMultipleZones→exile)
 Necropanther
 Necroplasm	intent: Pipeline(BattlefieldMatching→graveyard)
@@ -10906,7 +10906,7 @@ Nesting Wurm
 Netcaster Spider
 Nether Horror
 Nether Shadow
-Nether Traitor	intent: GatedEffect
+Nether Traitor
 Nether Void
 Netherborn Phalanx	intent: ForEach>LoseLifeEffect
 Nethergoyf
@@ -10975,7 +10975,7 @@ Nighthowl Pursuer
 Nightkin Ambusher	intent: AddCountersEffect; polarity: AddCountersEffect
 Nightmare
 Nightmare Lash	intent: AttachEquipmentEffect; polarity: AttachEquipmentEffect
-Nightmare Shepherd	intent: GatedEffect
+Nightmare Shepherd
 Nightmare Sower
 Nightmare Void	intent: Pipeline(hand→graveyard); polarity: Pipeline(hand→graveyard)
 Nightpack Ambusher
@@ -11035,7 +11035,7 @@ Nissa, Ascended Animist
 Nissa, Resurgent Animist
 Nissa, Who Shakes the World
 Nita, Forum Conciliator
-Niv-Mizzet, Ghost Counsel	intent: GatedEffect
+Niv-Mizzet, Ghost Counsel
 Niv-Mizzet, Guildpact
 Niv-Mizzet, Parun
 Niv-Mizzet, Supreme
@@ -11120,8 +11120,8 @@ Nullmage Shepherd
 Nullpriest of Oblivion
 Nullstone Gargoyle
 Numai Outcast
-Numot, the Devastator	intent: GatedEffect; polarity: GatedEffect
-Nurturer Initiate	intent: GatedEffect; polarity: GatedEffect
+Numot, the Devastator	polarity: GatedEffect
+Nurturer Initiate	polarity: GatedEffect
 Nurturing Bristleback
 Nurturing Peatland
 Nurturing Pixie	polarity: MoveToZoneEffect
@@ -11145,7 +11145,7 @@ Nyxborn Marauder
 Nyxborn Seaguard
 Nyxborn Unicorn
 O'aka, Traveling Merchant
-Oaken Brawler	intent: GatedEffect
+Oaken Brawler
 Oaken Siren
 Oakenform
 Oakgnarl Warrior
@@ -11229,7 +11229,7 @@ Ogre Slumlord
 Ogre Taskmaster
 Ogre Warrior
 Ogre's Cleaver	intent: AttachEquipmentEffect; polarity: AttachEquipmentEffect
-Ogre-Head Helm	intent: AttachEquipmentEffect; intent: GatedEffect; intent: UnattachEquipmentEffect; polarity: AttachEquipmentEffect
+Ogre-Head Helm	intent: AttachEquipmentEffect; intent: UnattachEquipmentEffect; polarity: AttachEquipmentEffect
 Oil-Gorger Troll
 Oildeep Gearhulk	intent: ConditionalOnCollectionEffect; intent: LookAtTargetHandEffect; intent: Pipeline(hand→?); polarity: ConditionalOnCollectionEffect; polarity: LookAtTargetHandEffect; polarity: Pipeline(hand→?)
 Ojer Axonil, Deepest Might	intent: ReturnSelfFromZoneTransformedEffect; intent: TransformEffect
@@ -11273,7 +11273,7 @@ Olivia's Wrath	intent: ForEach>ModifyStatsEffect
 Olivia, Crimson Bride
 Ollenbock Escort
 Olog-hai Crusher
-Oloro, Ageless Ascetic	intent: GatedEffect
+Oloro, Ageless Ascetic
 Oltec Archaeologists
 Oltec Cloud Guard
 Oltec Matterweaver	polarity: CreateTokenCopyOfTargetEffect
@@ -11386,7 +11386,7 @@ Ordeal of Purphoros
 Order of Leitbur	intent: GrantKeywordEffect
 Order of Midnight
 Order of the Ebon Hand	intent: GrantKeywordEffect
-Order of the Golden Cricket	intent: GatedEffect
+Order of the Golden Cricket
 Order of the Mirror	intent: TransformEffect
 Order of the Sacred Bell
 Order of the White Shield	intent: GrantKeywordEffect
@@ -11396,7 +11396,7 @@ Ordruun Commando	timing: PreventDamageEffect
 Ore Gorger
 Ore-Scale Guardian
 Oread of Mountain's Blaze
-Oreplate Pangolin	intent: GatedEffect
+Oreplate Pangolin
 Oreskos Explorer
 Oreskos Swiftclaw
 Organ Hoarder	intent: Pipeline(TopOfLibrary→graveyard|hand)
@@ -11427,7 +11427,7 @@ Orochi Merge-Keeper
 Orochi Ranger
 Orochi Sustainer
 Oroku Saki, Shredder Rising
-Oros, the Avenger	intent: GatedEffect
+Oros, the Avenger
 Orphans of the Wheat
 Orthion, Hero of Lavabrink	polarity: CreateTokenCopyOfTargetEffect
 Orthodoxy Enforcer
@@ -11535,7 +11535,7 @@ Ozai, the Phoenix King
 Ozolith, the Shattered Spire
 Pacesetter Paragon	intent: GrantKeywordEffect
 Pacifism
-Pack Guardian	intent: GatedEffect
+Pack Guardian
 Pack Hunt	polarity: Pipeline(library→hand)
 Pack Leader
 Pack Mastiff
@@ -11566,7 +11566,7 @@ Paladin of the Bloodstained
 Paladin's Arms	intent: AttachEquipmentEffect; polarity: AttachEquipmentEffect
 Paladin's Shield	intent: AttachEquipmentEffect; polarity: AttachEquipmentEffect
 Palani's Hatcher
-Palantír of Orthanc	intent: GatedEffect; intent: ScryEffect; polarity: GatedEffect
+Palantír of Orthanc	polarity: GatedEffect
 Pale Bears
 Paleoloth
 Palinchron	intent: MoveToZoneEffect; intent: Pipeline(BattlefieldMatching→?); intent: TapUntapCollectionEffect
@@ -11580,8 +11580,8 @@ Panicked Bystander	intent: GrantKeywordEffect; intent: TransformEffect
 Panther Pounce	polarity: InvestigateEffect; timing: GrantKeywordEffect
 Panther Warriors
 Papalymo Totolymo	intent: ForEach>Pipeline(BattlefieldMatching→?); intent: ForEach>StorePlayerEffect; intent: Pipeline(?→graveyard)
-Papercraft Decoy	intent: GatedEffect
-Paperfin Rascal	intent: GatedEffect
+Papercraft Decoy
+Paperfin Rascal
 Paradise Druid
 Paradox Gardens	intent: SurveilEffect
 Paradox Haze	intent: AddAdditionalUpkeepStepsEffect; polarity: Aura>AddAdditionalUpkeepStepsEffect
@@ -11748,7 +11748,7 @@ Pestilent Syphoner
 Pestilent Wolf	intent: GrantKeywordEffect
 Pests of Honor
 Pet Avengers
-Petals of Insight	intent: GatedEffect; intent: Pipeline(TopOfLibrary→?)
+Petals of Insight
 Peter Parker	intent: TransformEffect
 Peter Parker's Camera	intent: CopyTargetSpellOrAbilityEffect; polarity: CopyTargetSpellOrAbilityEffect
 Petra Sphinx	intent: ChooseOptionEffect; intent: Pipeline(TopOfLibrary→graveyard|hand); polarity: ChooseOptionEffect; polarity: Pipeline(TopOfLibrary→graveyard|hand)
@@ -11800,7 +11800,7 @@ Phyrexian Debaser
 Phyrexian Defiler
 Phyrexian Delver
 Phyrexian Denouncer
-Phyrexian Dragon Engine	intent: GatedEffect
+Phyrexian Dragon Engine
 Phyrexian Driver
 Phyrexian Espionage
 Phyrexian Fleshgorger
@@ -11833,7 +11833,7 @@ Phyrexian Walker
 Phyrexian Warhorse
 Phytohydra
 Pia Nalaar, Consul of Revival
-Pia, Aether Ascetic	intent: GatedEffect
+Pia, Aether Ascetic
 Pia, Determined Rebuilder
 Pianna, Nomad Captain
 Picard, Leading by Example	intent: ModifyStatsEffect; polarity: ModifyStatsEffect
@@ -11882,7 +11882,7 @@ Pious Wayfarer
 Pip-Boy 3000	intent: AttachEquipmentEffect; polarity: AttachEquipmentEffect
 Piper Wright, Publick Reporter
 Piper of the Swarm
-Pippin's Bravery	intent: GatedEffect; polarity: GatedEffect
+Pippin's Bravery	polarity: GatedEffect
 Pippin, Guard of the Citadel	combat: GrantProtectionFromChosenCardTypeEffect; intent: GrantProtectionFromChosenCardTypeEffect; polarity: GrantProtectionFromChosenCardTypeEffect; timing: GrantProtectionFromChosenCardTypeEffect
 Piracy	intent: TapForManaPermanentsYouDontControlEffect
 Piracy Charm	polarity: ModifyStatsEffect; polarity: Pipeline(hand→graveyard)
@@ -11979,7 +11979,7 @@ Plunder
 Plunder the Trollshaws
 Plundering Barbarian
 Plundering Pirate
-Plundering Predator	intent: GatedEffect
+Plundering Predator
 Plunge into Winter
 Poet's Quill	intent: AttachEquipmentEffect; intent: ConditionalOnCollectionEffect; intent: Pipeline(hand→graveyard); polarity: AttachEquipmentEffect
 Poetic Ingenuity
@@ -12007,13 +12007,13 @@ Polukranos Reborn	intent: TransformEffect
 Polukranos, Unchained	polarity: FightEffect
 Polygraph Orb	intent: ForEach>ChooseActionEffect; intent: LoseLifeEffect; intent: Pipeline(TopOfLibrary→graveyard|hand)
 Polymorph
-Pompous Battlemage	intent: GatedEffect
+Pompous Battlemage
 Pompous Gadabout
 Pond Prophet
 Ponder
 Pondering Mage
 Pongify
-Pontiff of Blight	intent: GatedEffect
+Pontiff of Blight
 Ponyback Brigade
 Pop Quiz
 Poppet Stitcher	intent: TransformEffect
@@ -12048,10 +12048,10 @@ Power Armor
 Power Artifact	polarity: Aura>ReduceActivatedAbilityCost
 Power Conduit	polarity: AddCountersEffect
 Power Fist	intent: AttachEquipmentEffect; polarity: AttachEquipmentEffect
-Power Leak	intent: DealDamageEffect; intent: GatedEffect; polarity: Aura>DealDamageEffect; polarity: Aura>GatedEffect
+Power Leak	polarity: Aura>DealDamageEffect; polarity: Aura>GatedEffect
 Power Matrix
 Power Plant Worker
-Power Sink	intent: ForEach>GatedEffect; polarity: ForEachEffect
+Power Sink	polarity: ForEachEffect
 Power Surge	intent: DealDamageEffect
 Power Word Kill
 Power of Persuasion	polarity: MoveToZoneEffect; polarity: PutOnLibraryPositionOfChoiceEffect
@@ -12152,7 +12152,7 @@ Primitive Etchings
 Primoc Escapee
 Primordial Gnawer	intent: DiscoverEffect
 Primordial Hydra
-Primordial Ooze	intent: GatedEffect
+Primordial Ooze
 Primordial Pachyderm
 Primordial Sage
 Primordial Wurm
@@ -12200,7 +12200,7 @@ Professor of Zoomancy
 Professor's Warning
 Profound Journey
 Proft's Eidetic Memory
-Proft, Consulting Detective	intent: GatedEffect
+Proft, Consulting Detective
 Proft, Sinister Mastermind
 Progenitor Exarch	intent: RepeatDynamicTimesEffect; intent: TransformEffect; polarity: TransformEffect
 Progenitus
@@ -12408,7 +12408,7 @@ Quicksilver Elemental	intent: GainAllActivatedAbilitiesOfEffect; polarity: GainA
 Quicksilver Fisher
 Quicksilver Fountain	intent: AddCountersEffect; intent: ForEach>RemoveAllCountersOfTypeEffect; polarity: AddCountersEffect
 Quicksilver, Brash Blur	intent: AddCountersEffect
-Quiet Contemplation	intent: GatedEffect; polarity: GatedEffect
+Quiet Contemplation	polarity: GatedEffect
 Quiet Purity
 Quill-Blade Laureate
 Quill-Slinger Boggart	intent: LoseLifeEffect
@@ -12463,7 +12463,7 @@ Radioactive Spider
 Radjan Spirit	combat: RemoveKeywordEffect; intent: RemoveKeywordEffect; polarity: RemoveKeywordEffect; timing: RemoveKeywordEffect
 Radstorm	intent: ProliferateEffect
 Raff Capashen, Ship's Mage
-Raff, Weatherlight Stalwart	intent: GatedEffect
+Raff, Weatherlight Stalwart
 Raffine's Guidance
 Raffine's Informant
 Raffine's Silencer	intent: ModifyStatsEffect; polarity: ModifyStatsEffect
@@ -12482,7 +12482,7 @@ Ragefire
 Ragefire Hellkite	intent: GatedEffect
 Ragged Playmate	intent: GrantKeywordEffect
 Ragged Recluse	intent: TransformEffect
-Ragged Short Spear	intent: AttachEquipmentEffect; intent: GatedEffect; polarity: AttachEquipmentEffect
+Ragged Short Spear	intent: AttachEquipmentEffect; polarity: AttachEquipmentEffect
 Ragged Veins	intent: LoseLifeEffect; polarity: Aura>LoseLifeEffect
 Raging Battle Mouse
 Raging Bull
@@ -12738,7 +12738,7 @@ Reassembling Skeleton
 Reave Soul
 Reaver Ambush
 Rebel Salvo	timing: RemoveKeywordEffect
-Rebellion of the Flamekin	intent: GatedEffect
+Rebellion of the Flamekin
 Rebellious Captives	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
 Rebellious Strike
 Rebirth	intent: ForEach>ConditionalOnCollectionEffect; intent: ForEach>Pipeline(TopOfLibrary→?)
@@ -12805,7 +12805,7 @@ Red Ward
 Redcap Gutter-Dweller	intent: GatedEffect
 Redcap Heelslasher
 Redcap Melee
-Redcap Raiders	intent: GatedEffect
+Redcap Raiders
 Redcap Thief
 Redirect Lightning	intent: ModalEffect; polarity: ChangeTargetEffect
 Rediscover the Way
@@ -12813,7 +12813,7 @@ Redoubled Stormsinger
 Redrock Sentinel
 Redshift, Rocketeer Chief	intent: Pipeline(hand→battlefield)
 Redtooth Genealogist	intent: CreateAuraTokenEffect
-Redtooth Vanguard	intent: GatedEffect
+Redtooth Vanguard
 Reduce to Ashes
 Reduce to Memory
 Redwood Treefolk
@@ -12864,7 +12864,7 @@ Reknit
 Relearn
 Release the Dogs
 Relentless Assault	intent: AddCombatPhaseEffect; intent: AddMainPhaseEffect; intent: ForEach>TapUntapEffect
-Relentless Dead	intent: GatedEffect; polarity: GatedEffect
+Relentless Dead	polarity: GatedEffect
 Relentless Drednok
 Relentless Pursuit	intent: Pipeline(TopOfLibrary→graveyard|hand)
 Relentless Rohirrim	intent: TheRingTemptsYouEffect
@@ -12915,7 +12915,7 @@ Renewing Dawn	polarity: GainLifeEffect
 Renewing Touch	intent: Pipeline(ChosenTargets→library); polarity: Pipeline(ChosenTargets→library)
 Reno and Rude	intent: GatedEffect; intent: Pipeline(TopOfLibrary→exile)
 Renowned Weaponsmith
-Rent Is Due	intent: GatedEffect
+Rent Is Due
 Repair and Recharge
 Repeal	polarity: MoveToZoneEffect
 Repeat Offender	intent: SuspectEffect
@@ -12925,7 +12925,7 @@ Repel Calamity
 Repel the Vile
 Repentant Blacksmith
 Replicating Ring
-Replication Specialist	intent: GatedEffect
+Replication Specialist
 Repository Skaab	intent: ReflexiveTriggerEffect
 Reprieve	polarity: DrawCardsEffect; polarity: ReturnSpellToOwnersHandEffect
 Reptil, Dinomorpher	intent: BecomeCreatureEffect; timing: BecomeCreatureEffect
@@ -12945,7 +12945,7 @@ Reroute Systems
 Rescind	polarity: MoveToZoneEffect
 Rescue	polarity: MoveToZoneEffect
 Rescue Girl, First Responder	polarity: MoveToZoneEffect
-Rescue Leopard	intent: GatedEffect
+Rescue Leopard
 Rescue Retriever
 Rescue Skiff	intent: MoveToZoneEffect
 Resculpt
@@ -12984,7 +12984,7 @@ Restless Prairie	intent: BecomeCreatureEffect; timing: BecomeCreatureEffect
 Restless Reef	intent: BecomeCreatureEffect; intent: Pipeline(TopOfLibrary→graveyard); polarity: Pipeline(TopOfLibrary→graveyard); timing: BecomeCreatureEffect
 Restless Ridgeline	intent: BecomeCreatureEffect; timing: BecomeCreatureEffect
 Restless Spire	intent: BecomeCreatureEffect; intent: GrantKeywordEffect; intent: ScryEffect; timing: BecomeCreatureEffect
-Restless Vents	intent: BecomeCreatureEffect; intent: GatedEffect; timing: BecomeCreatureEffect
+Restless Vents	intent: BecomeCreatureEffect; timing: BecomeCreatureEffect
 Restless Vinestalk	intent: BecomeCreatureEffect; intent: SetBaseStatsEffect; polarity: SetBaseStatsEffect; timing: BecomeCreatureEffect
 Restock
 Restoration Angel	polarity: MoveToZoneEffect
@@ -13131,7 +13131,7 @@ Ring of the Lucii
 Ringing Strike Mastery	polarity: Aura>GrantActivatedAbility; polarity: Aura>GrantKeyword; polarity: Aura>TapUntapEffect
 Rings of Brighthearth	intent: GatedEffect
 Ringsight
-Ringskipper	intent: GatedEffect
+Ringskipper
 Ringwarden Owl
 Ringwraiths	intent: MoveToZoneEffect
 Rinoa Heartilly
@@ -13248,7 +13248,7 @@ Roast
 Rob the Archives	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Robber of the Rich	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Robe of Mirrors
-Robobrain War Mind	intent: GatedEffect
+Robobrain War Mind
 Robot Domination
 Robotics Mastery
 Roc Charger
@@ -13333,7 +13333,7 @@ Rooting Moloch	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTarge
 Rootless Yew
 Rootrider Faun
 Rootrunner	polarity: MoveToZoneEffect
-Roots of Wisdom	intent: GatedEffect; intent: Pipeline(TopOfLibrary→graveyard)
+Roots of Wisdom
 Rootwalla
 Rootwater Commando
 Rootwater Diver
@@ -13391,7 +13391,7 @@ Royal Falcon
 Royal Treatment	timing: GrantKeywordEffect
 Royal Trooper
 Rubble Reading
-Rubble Rouser	intent: GatedEffect
+Rubble Rouser
 Rubble Slinger
 Rubbleback Rhino
 Rubblebelt Boar
@@ -13420,7 +13420,7 @@ Ruins Recluse
 Ruins of Trokair
 Rukh Egg	intent: CreateDelayedTriggerEffect
 Rule of Law
-Rulik Mons, Warren Chief	intent: GatedEffect
+Rulik Mons, Warren Chief
 Rumble Arena	intent: ScryEffect
 Rumbling Baloth
 Rumbling Rockslide
@@ -13503,7 +13503,7 @@ Ruthless Ripper	intent: LoseLifeEffect
 Ruthless Technomancer	intent: ConditionalOnCollectionEffect; intent: Pipeline(BattlefieldMatching→?)
 Ruthless Winnower
 Rydia's Return
-Rydia, Summoner of Mist	intent: GatedEffect
+Rydia, Summoner of Mist
 Ryusei, the Falling Star
 S.H.I.E.L.D. Deployment Drone
 S.H.I.E.L.D. Flying Car
@@ -13563,7 +13563,7 @@ Sagu Mauler
 Sagu Pummeler
 Sagu Wildling
 Sahagin	intent: GrantKeywordEffect
-Saheeli's Lattice	intent: GatedEffect; intent: ReturnSelfFromExileTransformedEffect
+Saheeli's Lattice	intent: ReturnSelfFromExileTransformedEffect
 Saheeli, Consul of Oversight
 Saheeli, Filigree Master	intent: CreatePermanentEmblemEffect
 Saheeli, Jewel of Avishkar
@@ -13616,7 +13616,7 @@ Sanctuary Cat
 Sanctuary Lockdown
 Sanctuary Smasher	intent: AddCountersEffect
 Sanctuary Wall
-Sanctuary Warden	intent: GatedEffect; intent: SelectTargetEffect
+Sanctuary Warden
 Sanctum Custodian	timing: PreventDamageEffect
 Sanctum Gargoyle
 Sanctum Lurker
@@ -13638,7 +13638,7 @@ Sandbenders' Storm	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityE
 Sandman's Quicksand
 Sandman, Shifting Scoundrel
 Sandskin	polarity: Aura>(nothing on the host)
-Sandskitter Outrider	intent: GatedEffect
+Sandskitter Outrider
 Sandsower
 Sandstalker Moloch	intent: Pipeline(TopOfLibrary→hand|library)
 Sandsteppe Citadel
@@ -13655,7 +13655,7 @@ Sanguine Evangelist
 Sanguine Guard
 Sanguine Indulgence
 Sanguine Savior	intent: GrantKeywordEffect
-Sanguine Spy	intent: GatedEffect; intent: SurveilEffect
+Sanguine Spy	intent: SurveilEffect
 Sanguine Statuette	intent: BecomeCreatureEffect
 Sanguine Syphoner
 Sanitarium Skeleton
@@ -13699,7 +13699,7 @@ Satyr Wayfinder	intent: Pipeline(TopOfLibrary→graveyard|hand)
 Satyr's Cunning
 Sauron's Ransom	intent: ChoosePileEffect; intent: Pipeline(FromVariable|TopOfLibrary→graveyard|hand); intent: TheRingTemptsYouEffect; polarity: ChoosePileEffect; polarity: Pipeline(FromVariable|TopOfLibrary→graveyard|hand); polarity: TheRingTemptsYouEffect
 Sauron, Lord of the Rings	intent: AmassEffect; intent: Pipeline(TopOfLibrary|graveyard→battlefield|graveyard); intent: TheRingTemptsYouEffect
-Sauron, the Dark Lord	intent: AmassEffect; intent: GatedEffect; intent: TheRingTemptsYouEffect
+Sauron, the Dark Lord	intent: AmassEffect; intent: TheRingTemptsYouEffect
 Sauron, the Lidless Eye	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
 Sauron, the Necromancer
 Savaen Elves
@@ -13730,9 +13730,9 @@ Savior of Ollenbock	intent: EmitKeywordCounterEventEffect; intent: Pipeline(From
 Savior of the Sleeping
 Savior of the Small
 Savor
-Savra, Queen of the Golgari	intent: GatedEffect
+Savra, Queen of the Golgari
 Savvy Hunter
-Saw	intent: AttachEquipmentEffect; intent: GatedEffect; polarity: AttachEquipmentEffect
+Saw	intent: AttachEquipmentEffect; polarity: AttachEquipmentEffect
 Saw It Coming
 Saw in Half	intent: CaptureControllersEffect; intent: ForEachCapturedControllerEffect; intent: Pipeline(ChosenTargets→graveyard); intent: StoreNumberEffect; polarity: ForEachCapturedControllerEffect; polarity: StoreNumberEffect
 Sawblade Scamp	intent: DealDamageEffect
@@ -13766,7 +13766,7 @@ Scarecrow	timing: PreventDamageEffect
 Scarecrow Guide
 Scarland Thrinax
 Scarlet Spider, Ben Reilly
-Scarlet Spider, Kaine	intent: GatedEffect
+Scarlet Spider, Kaine
 Scarred Puma
 Scarred Vinebreeder
 Scarwood Bandits	intent: PayOrSufferEffect; polarity: PayOrSufferEffect
@@ -13861,7 +13861,7 @@ Scrappy Bruiser
 Scrapshooter
 Scrapskin Drake
 Scrapwork Cohort
-Scrapwork Mutt	intent: GatedEffect
+Scrapwork Mutt
 Scrapwork Rager
 Scrapyard Mongrel
 Scrapyard Recombiner
@@ -13910,7 +13910,7 @@ Scuttling Doom Engine
 Scuttling Sliver
 Scuzzback Marauders
 Scuzzback Scrapper
-Scuzzback Scrounger	intent: GatedEffect
+Scuzzback Scrounger
 Scythe Leopard
 Scythe Tiger	intent: PayOrSufferEffect
 Scythe of the Wretched	intent: AttachEquipmentEffect; polarity: AttachEquipmentEffect
@@ -13958,7 +13958,7 @@ Searchlight Geist	intent: GrantKeywordEffect
 Searing Barb
 Searing Barrage
 Searing Flesh
-Searing Meditation	intent: GatedEffect; polarity: GatedEffect
+Searing Meditation	polarity: GatedEffect
 Searing Rays	intent: ChooseColorThenEffect
 Searing Spear
 Searing Spear Askari
@@ -14032,7 +14032,7 @@ Seeker of Sunlight	intent: ExploreEffect
 Seeker of the Way	intent: GrantKeywordEffect
 Seeker's Folly	polarity: Pipeline(hand→graveyard)
 Seer of Stolen Sight	intent: SurveilEffect
-Seer's Sundial	intent: GatedEffect
+Seer's Sundial
 Seer's Vision	intent: Pipeline(hand→graveyard); polarity: Pipeline(hand→graveyard)
 Seething Landscape
 Seething Song
@@ -14106,26 +14106,26 @@ Sentinel of the Nameless City
 Sentinel of the Pearl Trident
 Sentinel's Eyes
 Sentinels of Glen Elendra
-Sentry Bot	intent: GatedEffect
-Sentry Oak	intent: GatedEffect
+Sentry Bot
+Sentry Oak
 Sentry of the Underworld
 Separatist Voidmage	polarity: MoveToZoneEffect
 Sephara, Sky's Blade
 Sephiroth's Intervention
-Sephiroth, Fabled SOLDIER	intent: CreateGlobalTriggeredAbilityEffect; intent: GatedEffect
+Sephiroth, Fabled SOLDIER	intent: CreateGlobalTriggeredAbilityEffect
 Sephiroth, Planet's Heir
 Sepulcher Ghoul
 Serah Farron	intent: TransformEffect
 Seraph Sanctuary
 Seraph of Dawn
-Seraph of New Capenna	intent: GatedEffect; intent: TransformEffect
+Seraph of New Capenna	intent: TransformEffect
 Seraph of the Masses
 Seraph of the Suns
 Seraphic Steed
 Serendib Djinn
 Serendib Efreet	intent: DealDamageEffect
 Serene Heart	intent: Pipeline(BattlefieldMatching→graveyard)
-Serene Steward	intent: GatedEffect; polarity: GatedEffect
+Serene Steward	polarity: GatedEffect
 Serene Sunset	timing: ForEach>PreventDamageEffect
 Sergeant-at-Arms
 Serpent Assassin
@@ -14163,7 +14163,7 @@ Serum Visions
 Serum-Core Chimera
 Servant of Volrath	intent: SacrificeEffect
 Servant of the Scale	intent: MoveAllLastKnownCountersEffect; polarity: MoveAllLastKnownCountersEffect
-Servant of the Stinger	intent: GatedEffect
+Servant of the Stinger
 Seshiro the Anointed
 Set Adrift	polarity: MoveToZoneEffect
 Setessan Champion
@@ -14185,7 +14185,7 @@ Sewer Crocodile	intent: GrantKeywordEffect
 Sewer Rats
 Sewer-veillance Cam	polarity: ModalEffect
 Sewerdreg
-Seymour Flux	intent: GatedEffect
+Seymour Flux
 Shackle Slinger
 Shacklegeist
 Shackles	intent: MoveToZoneEffect
@@ -14202,7 +14202,7 @@ Shadow Urchin	intent: AddCountersToCollectionEffect; intent: GrantMayPlayFromExi
 Shadow of Doubt	timing: CantSearchLibrariesEffect
 Shadow of Mortality
 Shadow of the Enemy	intent: GrantMayPlayFromExileEffect; intent: Pipeline(graveyard→exile); polarity: Pipeline(graveyard→exile)
-Shadow of the Goblin	intent: DealDamageEffect; intent: GatedEffect
+Shadow of the Goblin	intent: DealDamageEffect
 Shadow of the Second Sun	intent: AddBeginningPhaseEffect; polarity: Aura>AddBeginningPhaseEffect
 Shadow-Rite Priest
 Shadowbeast Sighting
@@ -14233,7 +14233,7 @@ Shaman of Spring
 Shaman of the Pack	intent: LoseLifeEffect
 Shamanic Revelation
 Shambling Attendants
-Shambling Cie'th	intent: GatedEffect
+Shambling Cie'th
 Shambling Ghast
 Shambling Ghoul
 Shambling Goblin
@@ -14313,7 +14313,7 @@ Shepherd of the Flock	polarity: MoveToZoneEffect
 Shepherd of the Lost
 Shepherding Spirits
 Sheriff of Safe Passage
-Shessra, Death's Whisper	intent: GatedEffect; intent: MarkMustBlockThisTurnEffect; polarity: MarkMustBlockThisTurnEffect
+Shessra, Death's Whisper	intent: MarkMustBlockThisTurnEffect; polarity: MarkMustBlockThisTurnEffect
 Shield Bearer
 Shield Broker	polarity: mixed(AddCountersEffect+GainControlEffect)
 Shield Wall
@@ -14479,7 +14479,7 @@ Sigardian Savior
 Sight Beyond Sight	intent: Pipeline(TopOfLibrary→hand|library)
 Sigil of Sleep	polarity: Aura>MoveToZoneEffect; polarity: MoveToZoneEffect
 Sigil of the Empty Throne
-Sigil of the New Dawn	intent: GatedEffect
+Sigil of the New Dawn
 Sigiled Contender
 Sigiled Sentinel
 Sigiled Starfish	intent: ScryEffect
@@ -14577,7 +14577,7 @@ Sinister Monolith
 Sinister Starfish	intent: SurveilEffect
 Sink into Stupor	intent: ReturnSpellOrPermanentToOwnersHandEffect; polarity: ReturnSpellOrPermanentToOwnersHandEffect
 Sinkhole
-Sinkhole Surveyor	intent: GatedEffect; intent: LoseLifeEffect
+Sinkhole Surveyor
 Sins of the Past	intent: GrantFreeCastTargetFromExileEffect; polarity: GrantFreeCastTargetFromExileEffect
 Sinuous Benthisaur	intent: Pipeline(TopOfLibrary→hand|library)
 Sinuous Vermin	intent: BecomeMonstrousEffect
@@ -14659,7 +14659,7 @@ Skull of Orm
 Skull of Ramos
 Skullcap Snail	intent: Pipeline(hand→exile); polarity: Pipeline(hand→exile)
 Skullclamp	intent: AttachEquipmentEffect; polarity: AttachEquipmentEffect
-Skullknocker Ogre	intent: GatedEffect
+Skullknocker Ogre
 Skullport Merchant
 Skullslither Worm	intent: ForEach>Pipeline(hand→graveyard); intent: ForEach>StorePlayerEffect
 Skullsnap Nuisance	intent: SurveilEffect
@@ -14705,7 +14705,7 @@ Skyknight Legionnaire
 Skyknight Squire
 Skyknight Vanguard
 Skyline Predator
-Skyline Scout	intent: GatedEffect
+Skyline Scout
 Skyraker Giant
 Skyscanner
 Skyscythe Engulfer
@@ -14731,11 +14731,11 @@ Skystrike Officer
 Skyswimmer Koi
 Skyswirl Harrier
 Skyward Spider
-Skywarp Skaab	intent: GatedEffect
+Skywarp Skaab
 Skyway Sniper
 Skywhaler's Shot
 Skywing Aven	intent: MoveToZoneEffect
-Skywise Teachings	intent: GatedEffect
+Skywise Teachings
 Slag Strider
 Slagdrill Scrapper
 Slagstone Refinery
@@ -14820,7 +14820,7 @@ Smaug's Fury	timing: GrantKeywordEffect
 Smaug, Wicked Worm
 Smaug, the Great Calamity
 Smelt-Ward Minotaur	intent: CantBlockEffect
-Smelted Chargebug	intent: GatedEffect; polarity: GatedEffect
+Smelted Chargebug	polarity: GatedEffect
 Smile at Death
 Smite
 Smite the Deathless	timing: MarkExileOnDeathEffect; timing: RemoveKeywordEffect
@@ -14858,7 +14858,7 @@ Snapsail Glider
 Snare Tactician
 Snare Thopter
 Snare the Skies	timing: GrantKeywordEffect
-Snaremaster Sprite	intent: GatedEffect; polarity: GatedEffect
+Snaremaster Sprite	polarity: GatedEffect
 Snarespinner
 Snarl Song
 Snarling Gorehound	intent: SurveilEffect
@@ -14889,7 +14889,7 @@ Social Climber
 Social Snub	intent: CopyTargetSpellEffect
 Soilshaper	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
 Sokenzan Bruiser
-Sokenzan Smelter	intent: GatedEffect
+Sokenzan Smelter
 Sokenzan, Crucible of Defiance	timing: ForEach>GrantKeywordEffect
 Sokka's Haiku	polarity: CounterEffect; polarity: DrawCardsEffect; polarity: Pipeline(TopOfLibrary→graveyard); polarity: TapUntapEffect
 Sokka, Bold Boomeranger
@@ -14953,13 +14953,13 @@ Soratami Savant
 Soratami Seer
 Sorcerer Class
 Sorcerer of the Fang
-Sorcerer's Broom	intent: GatedEffect
+Sorcerer's Broom
 Sorcerer's Wand	intent: AttachEquipmentEffect; polarity: AttachEquipmentEffect
 Sorceress Queen	combat: SetBaseStatsEffect; intent: SetBaseStatsEffect; polarity: SetBaseStatsEffect; timing: SetBaseStatsEffect
 Sorceress's Schemes
 Sorcerous Sight	polarity: LookAtTargetHandEffect
 Sorcerous Spyglass
-Sorin of House Markov	intent: ExileAndReturnTransformedEffect; intent: GatedEffect; polarity: AddCreatureTypeEffect
+Sorin of House Markov	intent: ExileAndReturnTransformedEffect; polarity: AddCreatureTypeEffect
 Sorin the Mirthless	intent: ConditionalOnCollectionEffect; intent: Pipeline(TopOfLibrary→hand|library)
 Sorin's Guide	intent: ChooseActionEffect
 Sorin's Thirst
@@ -14977,7 +14977,7 @@ Soul Feast
 Soul Foundry	intent: Pipeline(hand→exile)
 Soul Immolation
 Soul Manipulation
-Soul Net	intent: GatedEffect
+Soul Net
 Soul Nova
 Soul Partition	intent: ExileAndGrantOwnerPlayPermissionEffect; polarity: ExileAndGrantOwnerPlayPermissionEffect
 Soul Read
@@ -15044,7 +15044,7 @@ Spark Jolt
 Spark Reaper
 Spark Rupture
 Spark Spray
-Spark of Creativity	intent: GatedEffect; intent: Pipeline(TopOfLibrary→exile); polarity: GatedEffect
+Spark of Creativity	polarity: GatedEffect
 Sparkhunter Masticore
 Sparkmage Apprentice
 Sparksmith
@@ -15130,7 +15130,7 @@ Spider Spawning
 Spider-Bot
 Spider-Byte, Web Warden	polarity: MoveToZoneEffect
 Spider-Girl, Legacy Hero
-Spider-Gwen, Free Spirit	intent: GatedEffect
+Spider-Gwen, Free Spirit
 Spider-Ham, Peter Porker
 Spider-Islanders
 Spider-Man 2099
@@ -15157,7 +15157,7 @@ Spidery Grasp	timing: GrantKeywordEffect
 Spike Drone
 Spiked Corridor // Torture Pit
 Spiked Pit Trap
-Spiked Ripsaw	intent: AttachEquipmentEffect; intent: GatedEffect; polarity: AttachEquipmentEffect
+Spiked Ripsaw	intent: AttachEquipmentEffect; polarity: AttachEquipmentEffect
 Spikefield Hazard	timing: MarkExileOnDeathEffect
 Spikeshell Harrier	polarity: MoveToZoneEffect
 Spikeshot Goblin
@@ -15191,7 +15191,7 @@ Spire Mechcycle	intent: BecomeCreatureEffect
 Spire Owl	intent: Pipeline(TopOfLibrary→library)
 Spire of Industry
 Spirebluff Canal
-Spirit Bonds	intent: GatedEffect
+Spirit Bonds
 Spirit Link	polarity: Aura>GainLifeEffect
 Spirit Mascot
 Spirit Shackle	polarity: Aura>AddCountersEffect
@@ -15203,12 +15203,12 @@ Spirit of Malevolence
 Spirit of Resistance
 Spirit of the Aldergard
 Spirit of the Spires
-Spirit-Sister's Call	intent: GatedEffect; polarity: GatedEffect
+Spirit-Sister's Call	polarity: GatedEffect
 Spiritcall Enthusiast	intent: BecomePreparedEffect
 Spirited Companion
 Spiritual Guardian
 Spiritual Sanctuary
-Spit Flame	intent: GatedEffect
+Spit Flame
 Spite // Malice
 Spitebellows
 Spiteful Banditry
@@ -15467,7 +15467,7 @@ Sticky Fingers	polarity: Aura>DrawCardsEffect; polarity: Aura>GrantKeyword; pola
 Stickytongue Sentinel	polarity: MoveToZoneEffect
 Stifle
 Stillness in Motion	intent: MoveToZoneEffect; intent: Pipeline(TopOfLibrary|graveyard→graveyard|library)
-Stiltzkin, Moogle Merchant	intent: GatedEffect; polarity: GatedEffect
+Stiltzkin, Moogle Merchant	polarity: GatedEffect
 Stimulus Package
 Sting, Bilbo's Sword	intent: AttachEquipmentEffect; polarity: AddDynamicCountersEffect; polarity: AttachEquipmentEffect
 Sting, the Glinting Dagger	intent: AttachEquipmentEffect; intent: TapUntapEffect; polarity: AttachEquipmentEffect
@@ -15589,7 +15589,7 @@ Stormrider Spirit
 Stormscale Scion
 Stormscape Apprentice	intent: LoseLifeEffect
 Stormscape Master	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
-Stormshriek Feral	intent: GatedEffect
+Stormshriek Feral
 Stormsplitter
 Stormwatch Eagle	intent: MoveToZoneEffect
 Stormwild Capridor
@@ -15679,7 +15679,7 @@ Subterranean Scout	intent: GrantKeywordEffect
 Subterranean Spirit
 Subtle Strike
 Suburban Sanctuary	intent: SurveilEffect
-Subway Train	intent: GatedEffect
+Subway Train
 Succumb to the Cold
 Sudden Breakthrough	timing: GrantKeywordEffect
 Sudden Insight
@@ -15813,7 +15813,7 @@ Sunspire Griffin
 Sunstar Chaplain
 Sunstar Expansionist
 Sunstar Lightsmith
-Sunstreak Phoenix	intent: GatedEffect
+Sunstreak Phoenix
 Sunstrike Legionnaire	intent: TapUntapEffect
 Suntail Hawk
 Super Intelligence	polarity: Aura>DrawCardsEffect
@@ -15847,7 +15847,7 @@ Surge of Salvation	timing: ForEach>GrantKeywordEffect; timing: GrantEvasionKeywo
 Surge of Thoughtweft
 Surge of Zeal	intent: ForEach>GrantKeywordEffect; intent: GrantKeywordEffect; timing: ForEach>GrantKeywordEffect; timing: GrantKeywordEffect
 Surgehacker Mech
-Surgespanner	intent: GatedEffect; polarity: GatedEffect
+Surgespanner	polarity: GatedEffect
 Surgical Precision
 Surgical Skullbomb	polarity: MoveToZoneEffect
 Surgical Suite // Hospital Room
@@ -15896,7 +15896,7 @@ Swallowed by Leviathan
 Swallowing Plague
 Swampsnare Trap
 Swan Song
-Swarm Culler	intent: GatedEffect
+Swarm Culler
 Swarm Guildmage
 Swarm Shambler
 Swarm of Bloodflies
@@ -15976,7 +15976,7 @@ Symbiotic Beast
 Symbiotic Elf
 Symbiotic Wurm
 Symbol of Unsummoning	polarity: MoveToZoneEffect
-Symmetry Matrix	intent: GatedEffect
+Symmetry Matrix
 Symmetry Sage	intent: SetBaseStatsEffect; polarity: SetBaseStatsEffect
 Synapse Necromage
 Synapse Sliver
@@ -16015,7 +16015,7 @@ T-45 Power Armor	intent: AttachEquipmentEffect; intent: GatedEffect; polarity: A
 TCRI Building
 Tablet of Compleation
 Tablet of Discovery	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→graveyard)
-Tablet of Epityr	intent: GatedEffect
+Tablet of Epityr
 Taborax, Hope's Demise
 Tackle Artist
 Taiga
@@ -16032,7 +16032,7 @@ Tainted Peak
 Tainted Treats
 Tainted Well	polarity: Aura>DrawCardsEffect; polarity: Aura>SetEnchantedLandType
 Tainted Wood
-Taj-Nar Swordsmith	intent: GatedEffect
+Taj-Nar Swordsmith
 Tajuru Beastmaster
 Tajuru Blightblade
 Tajuru Paragon	intent: Pipeline(TopOfLibrary→hand|library)
@@ -16283,7 +16283,7 @@ Temur Charger
 Temur Charm	polarity: FightEffect
 Temur Devotee
 Temur Monument
-Temur Sabertooth	intent: GatedEffect
+Temur Sabertooth
 Temur Tawnyback
 Tenacious Tomeseeker
 Tenacious Underdog
@@ -16302,7 +16302,7 @@ Tenuous Truce	polarity: Aura>DrawCardsEffect; polarity: Aura>SacrificeTargetEffe
 Tenured Concocter
 Tenured Inkcaster
 Tenured Oilcaster	intent: Pipeline(TopOfLibrary→graveyard)
-Tenured Tethermage	intent: GatedEffect
+Tenured Tethermage
 Tenza, Godo's Maul	intent: AttachEquipmentEffect; polarity: AttachEquipmentEffect
 Teo, Spirited Glider
 Tephraderm	intent: DealDamageEffect
@@ -16556,7 +16556,7 @@ The Rise of Sozin	intent: GatedEffect
 The Rollercrusher Ride
 The Royal Scions
 The Ruinous Wrecking Crew
-The Sackville-Bagginses	intent: GatedEffect; intent: LoseLifeEffect
+The Sackville-Bagginses	intent: LoseLifeEffect
 The Scarab God	intent: CreateDelayedTriggerEffect; intent: EmitScriedEventEffect; intent: LoseLifeEffect; intent: Pipeline(TopOfLibrary→library); polarity: CreateTokenCopyOfTargetEffect; polarity: MoveToZoneEffect
 The Scarlet Witch
 The Seedcore
@@ -16767,9 +16767,9 @@ Thriving Grove
 Thriving Heath
 Thriving Isle
 Thriving Moor
-Thriving Skyclaw	intent: GatedEffect
+Thriving Skyclaw
 Throat Slitter	intent: MoveToZoneEffect
-Throne of Bone	intent: GatedEffect
+Throne of Bone
 Throne of Makindi
 Throne of the Grim Captain	intent: Pipeline(TopOfLibrary→graveyard); intent: ReturnSelfFromExileTransformedEffect
 Throttle
@@ -16926,7 +16926,7 @@ Titans' Vanguard
 Tithebearer Giant
 Tithing Blade	intent: ReturnSelfFromExileTransformedEffect
 Tivadar's Crusade	intent: Pipeline(BattlefieldMatching→graveyard)
-Tivash, Gloom Summoner	intent: GatedEffect
+Tivash, Gloom Summoner
 Toadstool Admirer
 Tobias Andrion
 Toby, Beastie Befriender
@@ -16983,7 +16983,7 @@ Topan Ascetic
 Topan Freeblade
 Toph, Earthbending Master	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
 Toph, Greatest Earthbender	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
-Toph, Hardheaded Teacher	intent: GatedEffect; polarity: AnimateLandEffect; polarity: GatedEffect; polarity: GrantTriggeredAbilityEffect
+Toph, Hardheaded Teacher	polarity: AnimateLandEffect; polarity: GatedEffect; polarity: GrantTriggeredAbilityEffect
 Toph, the Blind Bandit	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
 Toph, the First Metalbender	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
 Topiary Lecturer
@@ -17128,7 +17128,7 @@ Trapped in the Tower
 Trash for Treasure
 Trash the Town
 Traumatic Critique
-Traumatic Revelation	intent: GatedEffect; intent: Pipeline(hand→?); intent: RevealHandEffect; polarity: GatedEffect; polarity: Pipeline(hand→?); polarity: RevealHandEffect
+Traumatic Revelation	polarity: GatedEffect; polarity: Pipeline(hand→?); polarity: RevealHandEffect
 Traumatic Visions
 Travel Preparations
 Travel the Overworld
@@ -17191,7 +17191,7 @@ Tribal Forcemage
 Tribal Golem
 Tribal Unity
 Tributary Vaulter
-Tribute to Horobi	intent: GatedEffect
+Tribute to Horobi
 Tribute to Hunger	polarity: ForceSacrificeEffect
 Tribute to Urborg	timing: ModifyStatsEffect
 Tribute to the World Tree
@@ -17403,7 +17403,7 @@ Ultimate Green Goblin
 Ultimecia, Temporal Threat
 Ultimecia, Time Sorceress	intent: GatedEffect; intent: SurveilEffect; intent: TakeExtraTurnEffect
 Ultron Drone
-Ultron, Artificial Malevolence	intent: GatedEffect
+Ultron, Artificial Malevolence
 Ultros, Obnoxious Octopus
 Ulvenwald Mysteries
 Ulvenwald Oddity	intent: TransformEffect
@@ -17465,7 +17465,7 @@ Undergrowth Leopard
 Undergrowth Recon	intent: MoveToZoneEffect
 Undergrowth Scavenger
 Undergrowth Stadium
-Underhanded Designs	intent: GatedEffect
+Underhanded Designs
 Undermine
 Underrealm Lich
 Undersea Invader
@@ -17611,19 +17611,19 @@ Uruk-hai Berserker	intent: TheRingTemptsYouEffect
 Urza Assembles the Titans
 Urza's Avenger	intent: ChooseActionEffect
 Urza's Cave
-Urza's Chalice	intent: GatedEffect
+Urza's Chalice
 Urza's Command
 Urza's Factory
 Urza's Filter
 Urza's Incubator
 Urza's Mine
-Urza's Miter	intent: GatedEffect
+Urza's Miter
 Urza's Power Plant
 Urza's Rage
 Urza's Rebuff
 Urza's Ruinous Blast	intent: Pipeline(BattlefieldMatching→exile)
 Urza's Saga
-Urza's Sylex	intent: ForEach>Pipeline(ControlledPermanents→?); intent: GatedEffect; intent: Pipeline(BattlefieldMatching→graveyard)
+Urza's Sylex	intent: ForEach>Pipeline(ControlledPermanents→?); intent: Pipeline(BattlefieldMatching→graveyard)
 Urza's Tome
 Urza's Tower
 Urza, Chief Artificer
@@ -17648,7 +17648,7 @@ Uurg, Spawn of Turg	intent: SurveilEffect
 Uvilda, Dean of Perfection	intent: ForEach>AddCountersEffect; intent: ForEach>GrantTriggeredAbilityEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile); intent: Pipeline(hand→exile)
 Uyo, Silent Prophet	intent: CopyTargetSpellEffect; polarity: CopyTargetSpellEffect
 V.A.T.S.	intent: Pipeline(ChosenTargets→graveyard); polarity: Pipeline(ChosenTargets→graveyard)
-Vaan, Street Thief	intent: GatedEffect; intent: Pipeline(TopOfLibrary→exile)
+Vaan, Street Thief
 Vadmir, New Blood
 Vadrik, Astral Archmage
 Vadrok, Apex of Thunder	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(ChosenTargets→?); polarity: CastFromCollectionWithoutPayingCostEffect; polarity: Pipeline(ChosenTargets→?)
@@ -17659,7 +17659,7 @@ Valakut Exploration	intent: DealDamageEffect; intent: GrantMayPlayFromExileEffec
 Valakut Invoker
 Valakut Predator
 Valduk, Keeper of the Flame
-Valentin, Dean of the Vein	intent: GatedEffect
+Valentin, Dean of the Vein
 Valeron Outlander
 Valgavoth's Faithful
 Valgavoth's Lair
@@ -17674,7 +17674,7 @@ Valki, God of Lies	intent: EachPermanentBecomesCopyOfTargetEffect; intent: Pipel
 Valkyrie Aerial Unit	intent: SurveilEffect
 Valkyrie Harbinger
 Valkyrie's Call
-Valkyrie's Sword	intent: AttachEquipmentEffect; intent: GatedEffect; polarity: AttachEquipmentEffect
+Valkyrie's Sword	intent: AttachEquipmentEffect; polarity: AttachEquipmentEffect
 Valley Dasher
 Valley Flamecaller
 Valley Floodcaller
@@ -17692,7 +17692,7 @@ Valorous Steed
 Vampire Bats
 Vampire Champion
 Vampire Envoy
-Vampire Gourmand	intent: GatedEffect
+Vampire Gourmand
 Vampire Interloper
 Vampire Neonate
 Vampire Nighthawk
@@ -17760,7 +17760,7 @@ Vault of Champions
 Vault of Whispers
 Vault of the Archangel	intent: ForEach>GrantKeywordEffect
 Vaultborn Tyrant
-Vaultguard Trooper	intent: GatedEffect
+Vaultguard Trooper
 Vayne's Treachery
 Vectis Silencers	intent: GrantKeywordEffect
 Vector, Imperial Capital
@@ -17818,7 +17818,7 @@ Venomsac Lagac
 Venomspout Brackus
 Venser's Sliver
 Venser, Corpse Puppet
-Venus, Torn Between Worlds	intent: GatedEffect
+Venus, Torn Between Worlds
 Verazol, the Split Current	intent: GatedEffect
 Verdant Catacombs
 Verdant Command	polarity: CreateTokenEffect
@@ -17835,7 +17835,7 @@ Vermiculos
 Vermin Gorger
 Vernadi Shieldmate
 Vernal Fen
-Veronica, Dissident Scribe	intent: GatedEffect
+Veronica, Dissident Scribe
 Vesperlark
 Vessel of Ephemera
 Vessel of Malignity	intent: Pipeline(hand→exile); polarity: Pipeline(hand→exile)
@@ -17894,7 +17894,7 @@ Vicious Kavu
 Vicious Offering
 Vicious Rivalry	intent: Pipeline(BattlefieldMatching→graveyard)
 Victim of Night
-Victimize	intent: GatedEffect; polarity: GatedEffect
+Victimize	polarity: GatedEffect
 Victor, Valgavoth's Seneschal	intent: ForEach>Pipeline(hand→graveyard); intent: IncrementAbilityResolutionCountEffect; intent: Pipeline(graveyard→battlefield); intent: SurveilEffect
 Victory's Envoy
 View from Above	timing: GrantKeywordEffect
@@ -17993,7 +17993,7 @@ Vitu-Ghazi Inspector
 Vitu-Ghazi, the City-Tree
 Viv Vision, Teen Synthezoid
 Vivi Ornitier	intent: DealDamageEffect
-Vivi's Persistence	intent: GatedEffect
+Vivi's Persistence
 Vivid Crag
 Vivid Creek
 Vivid Grove
@@ -18055,8 +18055,8 @@ Voja, Jaws of the Conclave
 Volatile Arsonist
 Volatile Fault
 Volatile Fjord
-Volatile Stormdrake	intent: GatedEffect; polarity: GatedEffect
-Volatile Wanderglyph	intent: GatedEffect
+Volatile Stormdrake	polarity: GatedEffect
+Volatile Wanderglyph
 Volcanic Awakening
 Volcanic Dragon
 Volcanic Eruption	polarity: ForEachEffect; polarity: Pipeline(ChosenTargets→graveyard); polarity: StoreNumberEffect
@@ -18099,14 +18099,14 @@ Voracious Fell Beast
 Voracious Greatshark
 Voracious Hydra	polarity: FightEffect
 Voracious Null
-Voracious Tome-Skimmer	intent: GatedEffect
+Voracious Tome-Skimmer
 Voracious Typhon
 Voracious Vampire
 Voracious Varmint
 Voracious Vermin
 Vorinclex	intent: ExileAndReturnTransformedEffect
 Vorinclex, Monstrous Raider
-Vorosh, the Hunter	intent: GatedEffect
+Vorosh, the Hunter
 Vorpal Sword	intent: AttachEquipmentEffect; intent: GrantTriggeredAbilityEffect; polarity: AttachEquipmentEffect; timing: GrantTriggeredAbilityEffect
 Vorrac Battlehorns	intent: AttachEquipmentEffect; polarity: AttachEquipmentEffect
 Vorstclaw
@@ -18273,7 +18273,7 @@ Warden of Evos Isle
 Warden of Geometries
 Warden of the Chained
 Warden of the Eye
-Warden of the Grove	intent: GatedEffect
+Warden of the Grove
 Warden of the Inner Sky	intent: ScryEffect
 Warden of the Woods
 Wardens of the Cycle
@@ -18395,7 +18395,7 @@ Wayward Swordtooth
 We Say Thee Nay!
 Weakness
 Weakstone
-Weakstone's Subjugation	intent: GatedEffect
+Weakstone's Subjugation
 Weapon Rack	intent: MoveCountersEffect; polarity: MoveCountersEffect
 Weaponcraft Enthusiast
 Weaponize the Monsters
@@ -18432,7 +18432,7 @@ Webweaver Changeling
 Wedding Announcement
 Wedding Invitation	intent: GrantKeywordEffect
 Wedding Ring	polarity: CreateTokenCopyOfTargetEffect
-Wedding Security	intent: GatedEffect
+Wedding Security
 Wedgelight Rammer
 Wee Dragonauts
 Weed Strangle
@@ -18497,13 +18497,13 @@ Whirlermaker
 Whirling Dervish
 Whirling Strike	timing: GrantKeywordEffect
 Whirlpool Warrior
-Whirlpool Whelm	intent: GatedEffect; polarity: GatedEffect
+Whirlpool Whelm	polarity: GatedEffect
 Whirlwind	intent: Pipeline(BattlefieldMatching→graveyard)
 Whirlwind Adept
 Whirlwind Denial
 Whirlwind of Thought
 Whirlwing Stormbrood
-Whiskerquill Scribe	intent: GatedEffect
+Whiskerquill Scribe
 Whiskervale Forerunner	intent: Pipeline(TopOfLibrary→battlefield|hand|library)
 Whisper Agent	intent: SurveilEffect
 Whisper Squad
@@ -18536,7 +18536,7 @@ Wiccan, Rising Magician
 Wick's Patrol	intent: ReflexiveTriggerEffect
 Wick, the Whorled Mind
 Wicked Akuba	intent: LoseLifeEffect
-Wicked Guardian	intent: GatedEffect
+Wicked Guardian
 Wicked Pact
 Wicked Slumber
 Wicked Visitor	intent: LoseLifeEffect
@@ -18593,7 +18593,7 @@ Wildwood Mentor	intent: ModifyStatsEffect; polarity: ModifyStatsEffect
 Wildwood Patrol
 Wildwood Scourge
 Wildwood Tracker
-Wilhelt, the Rotcleaver	intent: GatedEffect
+Wilhelt, the Rotcleaver
 Will of the All-Hunter
 Will of the Jeskai
 Will of the Mardu	polarity: CreateTokenEffect
@@ -18715,7 +18715,7 @@ Witch's Cauldron
 Witch's Clinic	intent: GrantKeywordEffect
 Witch's Cottage	polarity: MoveToZoneEffect
 Witch's Familiar
-Witch's Mark	intent: CreateAuraTokenEffect; intent: GatedEffect
+Witch's Mark
 Witch's Oven
 Witch's Vengeance
 Witch's Web	timing: GrantKeywordEffect
@@ -18765,7 +18765,7 @@ Wolf Pack
 Wolf Strike
 Wolf's Quarry
 Wolf-Skull Shaman	intent: ConditionalOnCollectionEffect; intent: Pipeline(TopOfLibrary→?)
-Wolfbat	intent: GatedEffect
+Wolfbat
 Wolfir Avenger
 Wolfkin Bond
 Wolfkin Outcast
@@ -18783,7 +18783,7 @@ Woodcaller Automaton	intent: BecomeCreatureEffect; intent: TapUntapEffect
 Woodcloaker
 Wooded Foothills
 Wooded Ridgeline
-Wooden Sphere	intent: GatedEffect
+Wooden Sphere
 Woodfall Primus
 Woodland Acolyte	polarity: MoveToZoneEffect
 Woodland Cemetery
@@ -18918,7 +18918,7 @@ Yavimaya Steelcrusher
 Yavimaya Wurm
 Yavimaya's Embrace	polarity: Aura>ControlEnchantedPermanent; polarity: Aura>GrantKeyword; polarity: Aura>ModifyStats
 Yavimaya, Cradle of Growth
-Yawgmoth Demon	intent: GatedEffect
+Yawgmoth Demon
 Yawgmoth's Agenda
 Yawgmoth's Vile Offering
 Yawgmoth, Thran Physician	intent: ProliferateEffect
@@ -18978,7 +18978,7 @@ Yuna, Hope of Spira
 Yuriko, Blade of the Mighty	intent: GrantKeywordEffect
 Yuriko, Hope from the Shadows	intent: ModalEffect
 Yuriko, the Tiger's Shadow	intent: LoseLifeEffect; intent: MoveToZoneEffect; intent: Pipeline(TopOfLibrary→hand)
-Yuyan Archers	intent: GatedEffect
+Yuyan Archers
 Zack Fair
 Zaffai and the Tempests
 Zagoth Crystal
