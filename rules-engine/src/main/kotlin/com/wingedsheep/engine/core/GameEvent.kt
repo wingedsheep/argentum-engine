@@ -1263,6 +1263,11 @@ data class TargetsChosenEvent(
  * player-vs-permanent fact is stamped here rather than re-derived downstream.
  * [attackersAgainstBattle] is the battle-defender sibling, backing
  * `AttackPredicate.DefenderIsBattle` ("attacks a battle").
+ *
+ * [attackersAloneAgainstPlayer] is the subset of [attackersAgainstPlayer] that are the only
+ * creature declared as attacking their player — "attacks a player alone" (CR 506.6). It backs
+ * `AttackPredicate.AloneAgainstPlayer`; it needs every attacker's defender, which the event
+ * doesn't otherwise carry, so it's stamped here too.
  */
 @Serializable
 @SerialName("AttackersDeclaredEvent")
@@ -1272,7 +1277,8 @@ data class AttackersDeclaredEvent(
     val attackingPlayerId: EntityId? = null,
     val firstTimeAttackers: Set<EntityId> = emptySet(),
     val attackersAgainstPlayer: Set<EntityId> = emptySet(),
-    val attackersAgainstBattle: Set<EntityId> = emptySet()
+    val attackersAgainstBattle: Set<EntityId> = emptySet(),
+    val attackersAloneAgainstPlayer: Set<EntityId> = emptySet()
 ) : GameEvent
 
 /**

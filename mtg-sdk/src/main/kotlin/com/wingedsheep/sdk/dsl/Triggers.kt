@@ -235,7 +235,8 @@ class ObjectTriggerSubject internal constructor(
     /**
      * "attacks". [requires] is a conjunctive set of [AttackPredicate]s — "attacks alone"
      * (`AttackPredicate.Alone`), "attacks a player" (`DefenderIsPlayer`, which never fires on a
-     * planeswalker or battle, CR 508.1), "attacks for the first time each turn"
+     * planeswalker or battle, CR 508.1), "attacks a player alone" (`AloneAgainstPlayer`,
+     * CR 506.6), "attacks for the first time each turn"
      * (`FirstTimeEachTurn`), battalion (`AttackerCountAtLeast(3)`), pack tactics
      * (`AttackersTotalPowerAtLeast(6)`).
      */

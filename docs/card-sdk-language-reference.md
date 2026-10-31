@@ -8830,6 +8830,10 @@ The shapes in this family, with their engine notes.
 **`AttackPredicate`** — extensible "facts about an attack declaration."
 Adding a new attack-time mechanic is one new sealed-case + one matcher branch
 — `AttackEvent` does not grow a new field per axis.
+Per-attacker predicates (`FirstTimeEachTurn`, `DefenderIsPlayer`, `DefenderIsBattle`,
+`AloneAgainstPlayer`, `AttackedAlongsideGreaterPower`) gate on the trigger's own attacker: the
+source on a `SELF` binding, and each attacker the trigger fans out to on `ANY`/`OTHER` — so
+"whenever a creature you control attacks a player alone" fires once per qualifying attacker.
 
 - `AttackPredicate.Alone` — the attacker is the only declared attacker this
   combat (`attacker count == 1`). Replaces the old `alone: Boolean` axis.
@@ -8858,14 +8862,22 @@ Adding a new attack-time mechanic is one new sealed-case + one matcher branch
   ever attacks a player who is its controller's opponent, so on a `SELF` binding this is
   exactly the "attacks an opponent" wording (Kaalia of the Vast — whose 2024 ruling
   clarifies the ability "doesn't trigger if it attacks a planeswalker or battle").
-  Per-attacker, so use it on a `SELF` binding (or an ANY-binding attacker filter that
-  already scopes to one creature). The defender kind is fixed at declaration, so it's
+  Per-attacker (see above). The defender kind is fixed at declaration, so it's
   captured on `AttackersDeclaredEvent.attackersAgainstPlayer` rather than re-derived
   from post-declaration state. Prefer the `Triggers.self.attacks(setOf(AttackPredicate.DefenderIsPlayer))` sugar.
 - `AttackPredicate.DefenderIsBattle` — the battle sibling of `DefenderIsPlayer`: the trigger's own
   attacker was declared as attacking a **battle** (CR 508.1). Stamped on
   `AttackersDeclaredEvent.attackersAgainstBattle` at declaration. Per-attacker (`SELF` binding).
   Thrashing Frontliner / War-Trained Slasher: `Triggers.self.attacks(setOf(AttackPredicate.DefenderIsBattle))`.
+- `AttackPredicate.AloneAgainstPlayer` — the trigger's attacker **attacks a player alone**
+  (CR 506.6): it was declared as attacking a player and no other creature was declared as
+  attacking that same player. Other creatures may attack another player, a planeswalker or a
+  battle in the same combat, which is what sets it apart from `Alone` (CR 506.5, the only attacker
+  in the whole combat) — `Alone` + `DefenderIsPlayer` is narrower than the rule. Stamped on
+  `AttackersDeclaredEvent.attackersAloneAgainstPlayer` at declaration, so a creature put onto the
+  battlefield attacking neither qualifies nor spoils another's claim. Jiang Yanggu, Alone / Yuriko,
+  Blade of the Mighty:
+  `Triggers.a(GameObjectFilter.Creature.youControl()).attacks(setOf(AttackPredicate.AloneAgainstPlayer))`.
 - `AttackPredicate.AttackedAlongsideGreaterPower` — the trigger's own attacker was declared
   **and** at least one *other* declared attacker has strictly greater **projected** power than
   the trigger's attacker (CR 702.149a, the Training condition). Unlike the count/stamped-set

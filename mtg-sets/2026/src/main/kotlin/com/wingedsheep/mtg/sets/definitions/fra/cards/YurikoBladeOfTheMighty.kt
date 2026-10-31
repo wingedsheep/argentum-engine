@@ -23,9 +23,9 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * - The cast half is [PlayersCantCastSpells]; the activate half is [PlayersCantActivateAbilities]
  *   with mana abilities exempt and `anyZone` set, since the printed text names no object — it also
  *   stops graveyard and hand abilities such as cycling, and crewing.
- * - "Attacks a player alone": the lone declared attacker ([AttackPredicate.Alone]) whose defender
- *   is a player (`attackingAnOpponent()` — a creature you control only ever attacks an opponent),
- *   so attacking a planeswalker or battle alone doesn't trigger it.
+ * - "Attacks a player alone" is [AttackPredicate.AloneAgainstPlayer] (CR 506.6): the only creature
+ *   declared as attacking that player. Other creatures attacking a planeswalker, a battle or another
+ *   player don't stop it; attacking a planeswalker or battle alone doesn't trigger it.
  */
 val YurikoBladeOfTheMighty = card("Yuriko, Blade of the Mighty") {
     manaCost = "{3}{W}"
@@ -53,7 +53,7 @@ val YurikoBladeOfTheMighty = card("Yuriko, Blade of the Mighty") {
     }
 
     triggeredAbility {
-        trigger = Triggers.a(GameObjectFilter.Creature.youControl().attackingAnOpponent()).attacks(setOf(AttackPredicate.Alone))
+        trigger = Triggers.a(GameObjectFilter.Creature.youControl()).attacks(setOf(AttackPredicate.AloneAgainstPlayer))
         effect = Effects.GrantKeyword(Keyword.DOUBLE_STRIKE, EffectTarget.TriggeringEntity, Duration.EndOfTurn)
         description = "Whenever a creature you control attacks a player alone, it gains double strike until " +
             "end of turn."

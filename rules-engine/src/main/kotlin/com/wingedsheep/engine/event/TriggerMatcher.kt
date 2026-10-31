@@ -170,7 +170,7 @@ class TriggerMatcher(
             is EventPattern.AttackEvent -> {
                 event is AttackersDeclaredEvent &&
                     checkBinding(binding, sourceId, event.attackers) &&
-                    trigger.requires.all { matchesAttackPredicate(it, event, sourceId, state) }
+                    attackPredicatesHold(trigger, binding, event, sourceId, state)
             }
             is EventPattern.YouAttackEvent -> {
                 if (event !is AttackersDeclaredEvent) return false
@@ -1367,7 +1367,33 @@ class TriggerMatcher(
         val context = PredicateContext(controllerId = controllerId, sourceId = sourceId)
         return event.attackers.filter { attackerId ->
             (binding != TriggerBinding.OTHER || attackerId != sourceId) &&
-                (filter == null || predicateEvaluator.matches(state, state.projectedState, attackerId, filter, context))
+                (filter == null || predicateEvaluator.matches(state, state.projectedState, attackerId, filter, context)) &&
+                trigger.requires.all { matchesAttackPredicate(it, event, attackerId, state) }
+        }
+    }
+
+    /**
+     * Whether [trigger]'s [AttackPredicate]s hold for this declaration. A `SELF` trigger gates on
+     * its source. An `ANY`/`OTHER` trigger fans out per attacker ([matchingAttackers]), so a
+     * per-attacker predicate ("whenever a creature you control attacks a player alone",
+     * CR 506.6) is about the attacker it fires for, not the trigger's source: it holds when some
+     * attacker the trigger can fire for satisfies every predicate. Whole-declaration predicates
+     * ([AttackPredicate.Alone], the attacker counts) read the same either way.
+     */
+    private fun attackPredicatesHold(
+        trigger: EventPattern.AttackEvent,
+        binding: TriggerBinding,
+        event: AttackersDeclaredEvent,
+        sourceId: EntityId,
+        state: GameState
+    ): Boolean {
+        if (trigger.requires.isEmpty()) return true
+        return when (binding) {
+            TriggerBinding.ANY, TriggerBinding.OTHER -> event.attackers.any { attackerId ->
+                (binding != TriggerBinding.OTHER || attackerId != sourceId) &&
+                    trigger.requires.all { matchesAttackPredicate(it, event, attackerId, state) }
+            }
+            else -> trigger.requires.all { matchesAttackPredicate(it, event, sourceId, state) }
         }
     }
 
@@ -2525,6 +2551,9 @@ class TriggerMatcher(
         AttackPredicate.DefenderIsPlayer -> boundEntityId in event.attackersAgainstPlayer
         // Per-attacker: the trigger's own source was declared as attacking a battle.
         AttackPredicate.DefenderIsBattle -> boundEntityId in event.attackersAgainstBattle
+        // Per-attacker: the trigger's own source is the only creature declared as attacking its
+        // player (CR 506.6). Needs every attacker's defender, so it's stamped at declaration.
+        AttackPredicate.AloneAgainstPlayer -> boundEntityId in event.attackersAloneAgainstPlayer
         // Training (CR 702.149a): the source attacked, and at least one *other* declared attacker
         // has strictly greater PROJECTED power (Rule 613 layers — so an anthem/aura on the other
         // attacker counts). Read every power through the cached projected state, never raw

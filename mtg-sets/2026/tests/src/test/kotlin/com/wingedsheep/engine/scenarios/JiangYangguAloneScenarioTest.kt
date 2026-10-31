@@ -32,6 +32,7 @@ class JiangYangguAloneScenarioTest : ScenarioTestBase() {
                 .withPlayers("Player", "Opponent")
                 .withCardOnBattlefield(1, "Jiang Yanggu, Alone")
                 .withCardOnBattlefield(1, "Grizzly Bears")
+                .withCardOnBattlefield(2, "Liliana Vess")
                 .withActivePlayer(1)
                 .inPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
             for (card in hand) b = b.withCardInHand(1, card)
@@ -73,6 +74,33 @@ class JiangYangguAloneScenarioTest : ScenarioTestBase() {
 
                 game.handSize(1) shouldBe 1
                 game.plusCounters(game.findPermanent("Grizzly Bears")!!) shouldBe 0
+            }
+
+            // CR 506.6: alone against *that player* — Jiang attacking a planeswalker doesn't count.
+            test("the player's only attacker triggers while another creature attacks a planeswalker") {
+                val game = combatGame("Hill Giant")
+                game.declareAttackersWithPermanentTargets(
+                    playerAttackers = mapOf("Grizzly Bears" to 2),
+                    permanentAttackers = mapOf("Jiang Yanggu, Alone" to "Liliana Vess")
+                ).error shouldBe null
+                game.resolveStack()
+                game.discardFirstOffered()
+                game.resolveStack()
+
+                game.graveyardSize(1) shouldBe 1
+                game.plusCounters(game.findPermanent("Grizzly Bears")!!) shouldBe 1
+                game.plusCounters(game.findPermanent("Jiang Yanggu, Alone")!!) shouldBe 0
+            }
+
+            test("a creature attacking a planeswalker alone doesn't trigger") {
+                val game = combatGame("Hill Giant")
+                game.declareAttackersWithPermanentTargets(
+                    permanentAttackers = mapOf("Grizzly Bears" to "Liliana Vess")
+                ).error shouldBe null
+                game.resolveStack()
+
+                game.hasPendingDecision() shouldBe false
+                game.handSize(1) shouldBe 1
             }
 
             test("attacking with two creatures doesn't trigger") {

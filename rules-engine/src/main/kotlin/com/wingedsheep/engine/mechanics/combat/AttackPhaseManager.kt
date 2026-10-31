@@ -427,6 +427,13 @@ internal class AttackPhaseManager(
         // kind is fixed at declaration and the event carries no per-attacker defender identity,
         // so the fact is stamped here. `defenderId in turnOrder` is the player-identity idiom.
         val attackersAgainstPlayer = attackers.filterValues { it in state.turnOrder }.keys
+        // "Attacks a player alone" (CR 506.6): the only creature declared as attacking its player,
+        // whatever else attacks other players, planeswalkers or battles. Backs
+        // AttackPredicate.AloneAgainstPlayer.
+        val attackersAloneAgainstPlayer = attackers.entries
+            .filter { it.key in attackersAgainstPlayer }
+            .groupBy({ it.value }, { it.key })
+            .values.mapNotNullTo(mutableSetOf()) { it.singleOrNull() }
         // The battle-defender sibling: backs AttackPredicate.DefenderIsBattle ("attacks a battle")
         // and the per-turn record behind StatePredicate.AttackedABattleThisTurn (War Historian).
         val attackersAgainstBattle = attackers.filterValues { Battles.isBattle(state, it) }.keys
@@ -478,7 +485,8 @@ internal class AttackPhaseManager(
                     attackingPlayer,
                     firstTimeAttackers = firstTimeAttackers,
                     attackersAgainstPlayer = attackersAgainstPlayer,
-                    attackersAgainstBattle = attackersAgainstBattle
+                    attackersAgainstBattle = attackersAgainstBattle,
+                    attackersAloneAgainstPlayer = attackersAloneAgainstPlayer
                 )
             )
         )
