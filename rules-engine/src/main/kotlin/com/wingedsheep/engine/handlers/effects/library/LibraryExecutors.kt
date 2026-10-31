@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.library
 
+import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.TargetFinder
@@ -10,6 +11,7 @@ import com.wingedsheep.engine.handlers.effects.ExecutorModule
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.Effect
 
 /**
@@ -31,6 +33,11 @@ class LibraryExecutors(
     private val legalActionEnumerator: () -> com.wingedsheep.engine.legalactions.LegalActionEnumerator
 ) : ExecutorModule {
 
+    /** A resolution-time cast a prohibition forbids (Drannith Magistrate) is never offered. */
+    private val castForbidden: (GameState, EntityId, EntityId) -> Boolean = { state, playerId, cardId ->
+        castSpellHandler().resolutionCastProhibition(state, CastSpell(playerId, cardId)) != null
+    }
+
     override fun executors(): List<EffectExecutor<*>> = listOf(
         ForcePlayExecutor(legalActionEnumerator),
         ScryExecutor(recursion),
@@ -48,8 +55,8 @@ class LibraryExecutors(
         ExileFromTopRepeatingExecutor(zones),
         ExileLibraryUntilManaValueExecutor(zones),
         ExileTopCardContestExecutor(zones),
-        CascadeExecutor(zones),
-        DiscoverExecutor(zones, recursion),
+        CascadeExecutor(zones, castForbidden),
+        DiscoverExecutor(zones, recursion, castForbidden),
         CastFromCollectionWithoutPayingCostExecutor(
             castSpellHandlerProvider = castSpellHandler,
             cardRegistry = cardRegistry,
@@ -61,7 +68,10 @@ class LibraryExecutors(
             cardRegistry = cardRegistry,
             targetFinder = targetFinder,
         ),
-        CastAnyNumberFromCollectionWithoutPayingCostExecutor(playLandHandlerProvider = playLandHandler),
+        CastAnyNumberFromCollectionWithoutPayingCostExecutor(
+            playLandHandlerProvider = playLandHandler,
+            castSpellHandlerProvider = castSpellHandler,
+        ),
         GatherSubtypesExecutor(),
         CaptureControllersExecutor(),
         ChooseCreatureTypePipelineExecutor(),

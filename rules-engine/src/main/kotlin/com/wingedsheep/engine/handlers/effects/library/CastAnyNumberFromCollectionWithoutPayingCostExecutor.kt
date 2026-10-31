@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers.effects.library
 
 import com.wingedsheep.engine.core.suspendForDecision
 import com.wingedsheep.engine.core.CastAnyNumberFromCollectionContinuation
+import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.DecisionContext
 import com.wingedsheep.engine.core.DecisionPhase
 import com.wingedsheep.engine.core.EffectResult
@@ -9,6 +10,7 @@ import com.wingedsheep.engine.core.SearchCardInfo
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.actions.land.PlayLandHandler
+import com.wingedsheep.engine.handlers.actions.spell.CastSpellHandler
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
@@ -60,6 +62,7 @@ import kotlin.reflect.KClass
  */
 class CastAnyNumberFromCollectionWithoutPayingCostExecutor(
     private val playLandHandlerProvider: () -> PlayLandHandler,
+    private val castSpellHandlerProvider: () -> CastSpellHandler,
 ) : EffectExecutor<CastAnyNumberFromCollectionWithoutPayingCostEffect> {
 
     override val effectType: KClass<CastAnyNumberFromCollectionWithoutPayingCostEffect> =
@@ -96,6 +99,11 @@ class CastAnyNumberFromCollectionWithoutPayingCostExecutor(
                     PlayFromCollectionWithoutPayingCostExecutor.canPlayLandNow(
                         state, playLandHandlerProvider(), context.controllerId, context.sourceId, id
                     )
+            }
+            .filter { id ->
+                // A spell a cast prohibition forbids (Drannith Magistrate) isn't offered at all.
+                isLand(state, id) ||
+                    castSpellHandlerProvider().resolutionCastProhibition(state, CastSpell(context.controllerId, id)) == null
             }
         if (candidates.isEmpty()) return done
 

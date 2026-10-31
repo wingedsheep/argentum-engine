@@ -51,6 +51,8 @@ class DiscoverExecutor(
     private val zones: ZoneTransitionService,
     /** Runs a [DiscoverEffect.thenEffect] through the registry. */
     private val runEffect: (GameState, Effect, EffectContext) -> EffectResult,
+    /** Whether a cast prohibition forbids (player) casting (card) right now (Drannith Magistrate). */
+    private val castForbidden: (GameState, EntityId, EntityId) -> Boolean = { _, _, _ -> false },
     private val decisionHandler: DecisionHandler = DecisionHandler()
 ) : EffectExecutor<DiscoverEffect> {
     private val amountEvaluator = zones.predicateEvaluator.amounts
@@ -155,6 +157,37 @@ class DiscoverExecutor(
             } else {
                 EffectResult.success(thenResult.state, allEvents + bottomEvents + thenResult.events)
             }
+        }
+
+        if (castForbidden(currentState, controllerId, discoveredCard)) {
+            // A cast prohibition (Drannith Magistrate) leaves only the "put it into your hand" branch,
+            // so take it without asking.
+            val bottomEvents = CascadeExecutor.bottomRandomize(
+                zones, currentState, controllerId, exiledCards.filter { it != discoveredCard }
+            ) { newState -> currentState = newState }
+            val handEvents = mutableListOf<EngineGameEvent>()
+            val moved = ZoneMovementUtils.moveCardToZone(zones, currentState, discoveredCard, Zone.HAND)
+            if (moved.outcome is Outcome.Done) {
+                currentState = moved.state
+                handEvents.addAll(moved.events)
+            }
+            val thenResult = runEffect(
+                currentState,
+                CompositeEffect(listOfNotNull(effect.thenEffect, emitDiscovered)),
+                EffectContext(
+                    resolvingTriggeredAbility = context.resolvingTriggeredAbility,
+                    sourceId = context.sourceId,
+                    objectReferences = context.objectReferences,
+                    controllerId = controllerId,
+                    pipeline = PipelineState.EMPTY.copy(
+                        storedCollections = effect.storeDiscoveredAs?.let { mapOf(it to listOf(discoveredCard)) } ?: emptyMap()
+                    ),
+                    programOrigin = context.programOrigin,
+                )
+            )
+            val events = allEvents + bottomEvents + handEvents + thenResult.events
+            return if (thenResult.outcome is Outcome.Paused) EffectResult.propagatePause(thenResult.state, events)
+            else EffectResult.success(thenResult.state, events)
         }
 
         val discoveredName = currentState.getEntity(discoveredCard)

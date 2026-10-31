@@ -2062,6 +2062,59 @@
     ]
 }
 
+// Drannith Magistrate
+{
+    "name": "Drannith Magistrate",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Your opponents can't cast spells from anywhere other than their hands.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "PlayersCantCastSpells",
+                "fromZones": [
+                    "Library",
+                    "Battlefield",
+                    "Graveyard",
+                    "Stack",
+                    "Exile",
+                    "Command",
+                    "Sideboard",
+                    "Ante"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "rarity": "RARE",
+        "artist": "Kieran Yanner",
+        "flavorText": "\"Our sanctuaries must be beacons of reason and calm or else they will fall.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/98b0a4a8-9319-451b-9b79-b0bca7a41e91.jpg?1783931091",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "If an effect says that an opponent may cast a spell from anywhere other than their hand, Drannith Magistrate's restriction overrules that permission."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Effects may put cards from other zones onto the battlefield under an opponent's control."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If a rule or effect allows them to do so, your opponents may play lands from zones other than their hand and activate abilities of cards in zones other than their hand."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Drannith Stinger
 {
     "name": "Drannith Stinger",

@@ -44,6 +44,8 @@ import com.wingedsheep.engine.core.Outcome
  */
 class CascadeExecutor(
     private val zones: ZoneTransitionService,
+    /** Whether a cast prohibition forbids (player) casting (card) right now (Drannith Magistrate). */
+    private val castForbidden: (GameState, EntityId, EntityId) -> Boolean = { _, _, _ -> false },
     private val decisionHandler: DecisionHandler = DecisionHandler()
 ) : EffectExecutor<CascadeEffect> {
 
@@ -106,7 +108,8 @@ class CascadeExecutor(
             }
         }
 
-        if (cascadeCard == null) {
+        if (cascadeCard == null || castForbidden(currentState, controllerId, cascadeCard)) {
+            // A hit a cast prohibition forbids casting (Drannith Magistrate) is no offer at all:
             // Library exhausted without a qualifying card — bottom-randomize everything
             // exiled this way and finish, no may-cast offered.
             val bottomEvents = bottomRandomize(zones, currentState, controllerId, exiledCards) { newState ->

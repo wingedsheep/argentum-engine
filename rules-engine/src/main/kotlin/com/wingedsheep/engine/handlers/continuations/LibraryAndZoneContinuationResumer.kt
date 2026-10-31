@@ -1010,7 +1010,14 @@ class LibraryAndZoneContinuationResumer(
         // CastFromCollectionWithoutPayingCostExecutor does. If a required slot has no legal
         // targets the cast can't initiate (CR 601.2c) and the cascade card is bottomed. Checked
         // *before* granting so the bottomed card carries no lingering free-cast grant.
-        val targetPrep = CastFromCollectionWithoutPayingCostExecutor.prepareTargetSelection(
+        // A cast prohibition (Drannith Magistrate) forbids the cast outright; it takes the same
+        // can't-initiate branch, so the card is bottomed without a free-cast grant.
+        val targetPrep = if (castSpellHandler.resolutionCastProhibition(
+                afterBottom, CastSpell(continuation.playerId, continuation.cascadeCardId)
+            ) != null
+        ) {
+            CastFromCollectionWithoutPayingCostExecutor.TargetPrep.NoLegalTargets
+        } else CastFromCollectionWithoutPayingCostExecutor.prepareTargetSelection(
             state = afterBottom,
             cardId = continuation.cascadeCardId,
             casterId = continuation.playerId,
@@ -1148,7 +1155,14 @@ class LibraryAndZoneContinuationResumer(
         // CastFromCollectionWithoutPayingCostExecutor does. If a required slot has no legal
         // targets the cast can't initiate (CR 601.2c) and the card goes to hand instead. Checked
         // *before* granting so the card reaches hand without a lingering free-cast grant.
-        val targetPrep = CastFromCollectionWithoutPayingCostExecutor.prepareTargetSelection(
+        // A cast prohibition (Drannith Magistrate) forbids the cast outright; it takes the same
+        // can't-initiate branch, so the card is put into hand without a free-cast grant.
+        val targetPrep = if (castSpellHandler.resolutionCastProhibition(
+                afterBottom, CastSpell(continuation.playerId, discovered)
+            ) != null
+        ) {
+            CastFromCollectionWithoutPayingCostExecutor.TargetPrep.NoLegalTargets
+        } else CastFromCollectionWithoutPayingCostExecutor.prepareTargetSelection(
             state = afterBottom,
             cardId = discovered,
             casterId = continuation.playerId,

@@ -206,6 +206,18 @@ class CastSpellHandler(
         return if (error != null) ExecutionResult.error(state, error) else execute(state, action)
     }
 
+    /**
+     * Why the cast an effect makes *while resolving* (cascade, discover, "cast it without paying its
+     * mana cost") is forbidden, or null when it may proceed. Those casts skip the priority-window
+     * [validate] — timing doesn't apply to them — but a cast prohibition still does: Drannith
+     * Magistrate stops a cascaded card cast from exile, a "can't cast more than one spell each turn"
+     * limit stops a second one. Checked against the card in the zone it is cast from, before any
+     * free-cast grant or target prompt, so a forbidden cast simply never initiates and the effect
+     * takes its "if you don't cast it" branch.
+     */
+    fun resolutionCastProhibition(state: GameState, action: CastSpell): String? =
+        castPermissionUtils.reasonCannotCast(state, action.playerId, action.cardId, action)
+
     /** Each cost the caster owes, reduced to the leg they took (see [SpellCosts.reduceAlternatives]). */
     private fun reduceCostAlternatives(
         costs: List<AdditionalCost>,

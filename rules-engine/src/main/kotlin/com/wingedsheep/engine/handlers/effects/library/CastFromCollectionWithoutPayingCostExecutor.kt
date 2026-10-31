@@ -124,6 +124,19 @@ class CastFromCollectionWithoutPayingCostExecutor(
             return EffectResult.success(state)
         }
 
+        // A cast prohibition (Drannith Magistrate, a per-turn cast limit) reaches resolution-time
+        // casts too: the cast never initiates and the card stays where it is.
+        if (castSpellHandlerProvider().resolutionCastProhibition(
+                state,
+                CastSpell(
+                    controllerId, cardId, faceIndex = faceIndex, castFaceDown = effect.castFaceDown, castFused = castFused,
+                    useAlternativeCost = castUsing != null, alternativeCostType = castUsing,
+                ),
+            ) != null
+        ) {
+            return EffectResult.success(state)
+        }
+
         // Check targeting *before* granting: a grant made ahead of a cast that never happens
         // would follow the card out of exile and stay live until end-of-turn cleanup. A face-down
         // spell is a vanilla 2/2 (CR 708.2) — nothing on it targets.

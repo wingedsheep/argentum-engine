@@ -1245,7 +1245,12 @@ data class MayCastWithoutPayingManaCost(
  * @property fromZones The **where** axis — the zones a forbidden spell is cast *from*, read off
  *   the card before it moves to the stack; `null` = any zone. Soulless Jailer:
  *   `PlayersCantCastSpells(Player.Each, GameObjectFilter.Noncreature,
- *   fromZones = setOf(Zone.GRAVEYARD, Zone.EXILE))`.
+ *   fromZones = setOf(Zone.GRAVEYARD, Zone.EXILE))`. Drannith Magistrate: `fromZones = PlayersCantCastSpells.OUTSIDE_HAND`
+ *   ("can't cast spells from anywhere other than their hands").
+ *
+ * Read on every cast, including casts an effect makes while resolving (cascade, discover, "cast it
+ * without paying its mana cost"): a forbidden one never initiates and the effect takes its
+ * "if you don't cast it" branch.
  */
 /**
  * Players matching [affected] can't play lands (CR 305.1) — Worms of the Earth's "players can't
@@ -1561,7 +1566,12 @@ data class PlayersCantCastSpells(
             else -> affected.description.replaceFirstChar { it.uppercase() }
         }
         val spells = (if (spellFilter == GameObjectFilter.Any) "spells" else "${spellFilter.description} spells") +
-            (fromZones?.let { " from ${zonePhrase(it)}" } ?: "")
+            when (fromZones) {
+                null -> ""
+                OUTSIDE_HAND -> if (affected is Player.You) " from anywhere other than your hand"
+                    else " from anywhere other than their hands"
+                else -> " from ${zonePhrase(fromZones)}"
+            }
         if (conditionFromCaster && condition is IsNotYourTurn) {
             append("$who can cast $spells only during their own turns")
             return@buildString
@@ -1583,6 +1593,11 @@ data class PlayersCantCastSpells(
         val newCondition = condition?.applyTextReplacement(replacer)
         return if (newFilter === spellFilter && newCondition === condition) this
         else copy(spellFilter = newFilter, condition = newCondition)
+    }
+
+    companion object {
+        /** [fromZones] for "from anywhere other than their hands" (Drannith Magistrate): every zone but the hand. */
+        val OUTSIDE_HAND: Set<Zone> = Zone.entries.toSet() - Zone.HAND
     }
 }
 

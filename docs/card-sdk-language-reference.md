@@ -12391,7 +12391,7 @@ staticAbility {
   a resolved `CantCastSpells` ban gets), and **when** (`condition`, evaluated in the controller's context, so `IsYourTurn` = "during
   your turn", `IsNotYourTurn` = "during an opponent's turn"; `null` = always). Read at cast-legality
   time through the single `CastPermissionUtils.reasonCannotCast` chokepoint, so it covers every
-  casting zone (hand, flashback/harmonize, exile, top of library) uniformly; control is read from
+  casting zone (hand, flashback/harmonize, exile, top of library) and resolution-time casts uniformly; control is read from
   projected state. Examples: Voice of Victory = `PlayersCantCastSpells(Player.EachOpponent, condition
   = IsYourTurn)`; Grand Abolisher's cast clause = `PlayersCantCastSpells(Player.EachOpponent, condition
   = IsYourTurn)`; Void Winnower = `PlayersCantCastSpells(Player.EachOpponent, spellFilter =
@@ -12410,7 +12410,13 @@ staticAbility {
   (the per-player attack record — an attacking token that has since ceased to exist still counts). **where**
   (`fromZones`, the zones the card is cast *from*, read before it moves to the stack; `null` = any):
   Soulless Jailer = `PlayersCantCastSpells(Player.Each, GameObjectFilter.Noncreature, fromZones =
-  setOf(Zone.GRAVEYARD, Zone.EXILE))`. Teferi, Time Raveler = `PlayersCantCastSpells(Player.EachOpponent, condition =
+  setOf(Zone.GRAVEYARD, Zone.EXILE))`; Drannith Magistrate ("can't cast spells from anywhere other than
+  their hands") = `PlayersCantCastSpells(Player.EachOpponent, fromZones = PlayersCantCastSpells.OUTSIDE_HAND)`.
+  Casts an effect makes *while resolving* (cascade, discover, "cast it without paying its mana cost")
+  skip timing but not this: `CastSpellHandler.resolutionCastProhibition` asks the same chokepoint before
+  any free-cast grant or target prompt, so a forbidden cast never initiates and the effect takes its
+  "if you don't cast it" branch (the cascade hit is bottomed, the discovered card goes to hand).
+  Teferi, Time Raveler = `PlayersCantCastSpells(Player.EachOpponent, condition =
   Conditions.Not(Conditions.CouldCastSorcery), conditionFromCaster = true)` ("Each opponent can cast
   spells only any time they could cast a sorcery" — CR 307.5; it outranks any flash permission the
   opponent holds).
