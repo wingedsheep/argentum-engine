@@ -45,7 +45,6 @@ class InterplanarBeaconScenarioTest : ScenarioTestBase() {
                 .build()
 
             game.castSpell(1, "Grizzly Bears").error.shouldNotBeNull()
-            game.getLifeTotal(1) shouldBe 20
         }
 
         test("{T}: Add {C} pays generic for any spell") {
@@ -61,6 +60,8 @@ class InterplanarBeaconScenarioTest : ScenarioTestBase() {
             game.castSpell(1, "Grizzly Bears").error shouldBe null
             game.resolveStack()
             game.isOnBattlefield("Grizzly Bears") shouldBe true
+            // A creature spell isn't a planeswalker spell: no life gained.
+            game.getLifeTotal(1) shouldBe 20
         }
     }
 }

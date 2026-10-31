@@ -344,13 +344,12 @@ data class AddDynamicManaEffect(
                 append(" among ")
                 append(allowedColors.sorted().joinToString(", ") { "{${it.symbol}}" })
             }
-            if (restriction != null) append(". ${restriction.description}")
-            return@buildString
+        } else {
+            append("Add X mana in any combination of ")
+            append(allowedColors.joinToString(" and/or ") { "{${it.symbol}}" })
+            append(", where X is ${amountSource.description}")
         }
-        append("Add X mana in any combination of ")
-        append(allowedColors.joinToString(" and/or ") { "{${it.symbol}}" })
-        append(", where X is ${amountSource.description}")
-        if (restriction != null) append(". ${restriction.description}")
+        if (restriction != null && restriction.description.isNotEmpty()) append(". ${restriction.description}")
         when (expiry) {
             ManaExpiry.END_OF_COMBAT -> append(". Until end of combat, you don't lose this mana as steps and phases end")
             ManaExpiry.KEPT_UNTIL_END_OF_TURN -> append(". Until end of turn, you don't lose this mana as steps and phases end")

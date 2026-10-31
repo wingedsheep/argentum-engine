@@ -2729,8 +2729,9 @@ class ManaSolver private constructor(
         }
 
         // A multiplied "different colors" tap makes [multiplier] of each of several colors — groups
-        // the distinct-unit model can't hold. Plan it conservatively as [multiplier] of the color
-        // chosen (never more than the tap really makes, never two pips from one same-color unit).
+        // the distinct-unit model can't hold. Auto-pay plans and credits it as [multiplier] of the
+        // chosen color only: never more than the tap makes, but the other colors' units are not
+        // added. A player with a mana doubler gets the full output by activating it by hand.
         if (multiplier > 1 && source.differentColors) {
             return source.copy(
                 exactIndependentTap = false,
