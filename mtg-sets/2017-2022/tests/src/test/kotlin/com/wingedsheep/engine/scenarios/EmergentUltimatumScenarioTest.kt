@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.ints.shouldBeLessThanOrEqual
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
@@ -114,10 +115,12 @@ class EmergentUltimatumScenarioTest : FunSpec({
 
         d.castUltimatum()
 
+        // Either the selection is rejected outright or the duplicate is dropped. Checked before the
+        // opponent's pick: without the restriction both copies would sit in exile here.
         d.submitCardSelection(d.player1, listOf(courser1, courser2))
         withClue("at most one Centaur Courser may be exiled") {
-            val library = d.state.getLibrary(d.player1)
-            ((courser1 in library) || (courser2 in library)) shouldBe true
+            val exile = d.getExile(d.player1)
+            listOf(courser1, courser2).count { it in exile } shouldBeLessThanOrEqual 1
         }
     }
 })
