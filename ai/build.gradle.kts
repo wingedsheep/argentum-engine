@@ -20,3 +20,15 @@ dependencies {
     testImplementation(libs.kotestProperty)
     testImplementation(kotlin("reflect"))
 }
+
+// AI decision tests must be reproducible: `GameState.rng` seeds the rollouts and the hidden-
+// information determinizations, so a scenario seeded from the clock (ScenarioTestBase's default)
+// lets the same position pass on one run and fail on the next. Pin it here; a test that wants a
+// particular seed still calls `withRngSeed`. Pass `-Dargentum.scenario.rngSeed=<n>` to rerun the
+// suite under another seed and find assertions that only hold by luck.
+tasks.withType<Test>().configureEach {
+    systemProperty(
+        "argentum.scenario.rngSeed",
+        System.getProperty("argentum.scenario.rngSeed") ?: "1",
+    )
+}
