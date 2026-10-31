@@ -675,7 +675,7 @@ object SetArchetypes {
             setName = "Ikoria: Lair of Behemoths",
             archetypes = listOf(
                 Archetype("Flying Counters", listOf(Color.WHITE, Color.BLUE),
-                    "Put flying counters on your creatures with mentors, cycling creatures and mutate, then protect the air force by taxing spells aimed at it. A tempo deck that wins in the sky."),
+                    "Put flying counters on your creatures with Wingspan Mentor, cycling creatures and mutate, then protect the air force by taxing spells aimed at it. A tempo deck that wins in the sky."),
                 Archetype("Flash", listOf(Color.BLUE, Color.BLACK),
                     "Hold up mana and cast flash creatures and instants on the opponent's turn, ambushing attackers and answering threats at instant speed. A reactive control deck that never taps out on its own turn."),
                 Archetype("Menace", listOf(Color.BLACK, Color.RED),

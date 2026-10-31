@@ -1490,7 +1490,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Flying Counters',
         colors: ['W', 'U'],
         keyCard: 'Jubilant Skybonder',
-        description: 'Put flying counters on your creatures with mentors, cycling creatures and mutate, then protect the air force by taxing spells aimed at it. A tempo deck that wins in the sky.',
+        description: 'Put flying counters on your creatures with Wingspan Mentor, cycling creatures and mutate, then protect the air force by taxing spells aimed at it. A tempo deck that wins in the sky.',
       },
       {
         name: 'Flash',
