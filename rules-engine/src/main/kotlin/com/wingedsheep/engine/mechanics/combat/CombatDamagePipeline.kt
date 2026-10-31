@@ -38,30 +38,50 @@ interface CombatDamageModifier {
     ): List<CombatDamageAssignment>
 }
 
+/**
+ * Whether this combat damage assignment can't be prevented (CR 615.12) — Sunspine Lynx, Questing
+ * Beast's "combat damage that would be dealt by creatures you control", Fear, Fire, Foes!. Every
+ * preventing modifier below keeps such an assignment, checked per assignment because the shutoff
+ * can be scoped to one source or recipient.
+ */
+private fun CombatDamageAssignment.isUnpreventable(state: GameState, predicateEvaluator: PredicateEvaluator): Boolean =
+    DamageUtils.isDamagePreventionDisabled(state, targetId, sourceId, isCombatDamage = true, predicateEvaluator = predicateEvaluator)
+
 /** Prevents all combat damage (Fog, Moment's Peace). */
-internal class PreventAllCombatDamageModifier : CombatDamageModifier {
+internal class PreventAllCombatDamageModifier(
+    private val predicateEvaluator: PredicateEvaluator
+) : CombatDamageModifier {
     override fun modify(state: GameState, projected: ProjectedState, assignments: List<CombatDamageAssignment>): List<CombatDamageAssignment> {
         val prevented = state.floatingEffects.any { it.effect.modification is SerializableModification.PreventAllCombatDamage }
-        return if (prevented) emptyList() else assignments
+        return if (prevented) assignments.filter { it.isUnpreventable(state, predicateEvaluator) } else assignments
     }
 }
 
 /** Prevents all damage from a specific source (Chain of Silence). */
-internal class PreventAllDamageFromSourceModifier : CombatDamageModifier {
+internal class PreventAllDamageFromSourceModifier(
+    private val predicateEvaluator: PredicateEvaluator
+) : CombatDamageModifier {
     override fun modify(state: GameState, projected: ProjectedState, assignments: List<CombatDamageAssignment>): List<CombatDamageAssignment> {
-        return assignments.filter { !DamageUtils.isAllDamageFromSourcePrevented(state, it.sourceId) }
+        return assignments.filter {
+            !DamageUtils.isAllDamageFromSourcePrevented(state, it.sourceId) || it.isUnpreventable(state, predicateEvaluator)
+        }
     }
 }
 
 /** Prevents combat damage to and from specific creatures. */
-internal class PreventCombatDamageToAndByModifier : CombatDamageModifier {
+internal class PreventCombatDamageToAndByModifier(
+    private val predicateEvaluator: PredicateEvaluator
+) : CombatDamageModifier {
     override fun modify(state: GameState, projected: ProjectedState, assignments: List<CombatDamageAssignment>): List<CombatDamageAssignment> {
         val preventedEntities = state.floatingEffects
             .filter { it.effect.modification is SerializableModification.PreventCombatDamageToAndBy }
             .flatMap { it.effect.affectedEntities }
             .toSet()
         if (preventedEntities.isEmpty()) return assignments
-        return assignments.filter { it.sourceId !in preventedEntities && it.targetId !in preventedEntities }
+        return assignments.filter {
+            (it.sourceId !in preventedEntities && it.targetId !in preventedEntities) ||
+                it.isUnpreventable(state, predicateEvaluator)
+        }
     }
 }
 
@@ -73,7 +93,7 @@ internal class PreventCombatDamageFromGroupModifier(
         val groupEffects = state.floatingEffects.filter { it.effect.modification is SerializableModification.PreventCombatDamageFromGroup }
         if (groupEffects.isEmpty()) return assignments
         return assignments.filter { assignment ->
-            !groupEffects.any { floatingEffect ->
+            assignment.isUnpreventable(state, predicateEvaluator) || !groupEffects.any { floatingEffect ->
                 val mod = floatingEffect.effect.modification as SerializableModification.PreventCombatDamageFromGroup
                 val context = PredicateContext(controllerId = floatingEffect.controllerId)
                 predicateEvaluator.matches(state, projected, assignment.sourceId, mod.filter, context)
@@ -92,7 +112,7 @@ internal class ProtectionModifier(
         // per-recipient (Whippoorwill) as well as global (Sunspine Lynx): one marked creature must
         // take its damage in full without blanking protection for everyone else in the combat.
         return assignments.filter { assignment ->
-            if (DamageUtils.isDamagePreventionDisabled(state, assignment.targetId, assignment.sourceId, predicateEvaluator = predicateEvaluator)) {
+            if (DamageUtils.isDamagePreventionDisabled(state, assignment.targetId, assignment.sourceId, isCombatDamage = true, predicateEvaluator = predicateEvaluator)) {
                 return@filter true
             }
             val sourceColors = projected.getColors(assignment.sourceId)
@@ -139,7 +159,7 @@ internal class PlayerProtectionModifier(
         // *source* (Excruciator), so one attacker's damage may ignore player protection while
         // another attacker's in the same combat does not.
         return assignments.filter { assignment ->
-            if (DamageUtils.isDamagePreventionDisabled(state, assignment.targetId, assignment.sourceId, predicateEvaluator = predicateEvaluator)) {
+            if (DamageUtils.isDamagePreventionDisabled(state, assignment.targetId, assignment.sourceId, isCombatDamage = true, predicateEvaluator = predicateEvaluator)) {
                 return@filter true
             }
             !PlayerProtectionRules.isProtectedFromSource(

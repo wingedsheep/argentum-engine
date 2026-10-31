@@ -1767,7 +1767,11 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   Narrow the pattern for a card that names one end of the damage instance: **Excruciator**'s "damage that
   would be dealt by this creature can't be prevented" is
   `DamageCantBePrevented(EventPattern.DamageEvent(source = GameObjectFilter.Any.sourceItself()))`, which leaves every other
-  source's damage preventable. `DamageUtils.isDamagePreventionDisabled(state, recipientId, sourceId)`
+  source's damage preventable. `damageType` scopes it too: **Questing Beast**'s "combat damage that would be
+  dealt by creatures you control can't be prevented" is
+  `DamageEvent(source = GameObjectFilter.Creature.youControl(), damageType = DamageType.Combat)`, and Frenzied
+  Baloth's "combat damage can't be prevented" is `DamageEvent(damageType = DamageType.Combat)` — a creature's
+  noncombat ping stays preventable under either. `DamageUtils.isDamagePreventionDisabled(state, recipientId, sourceId, isCombatDamage)`
   matches the pattern against the concrete damage instance through the same `damageSourceMatches` /
   `damageRecipientMatches` pair every other damage replacement uses, so a filter supported by one is
   supported by all. Callers that don't know both ends of the instance get the *unscoped* answer only —

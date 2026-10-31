@@ -234,7 +234,7 @@ object DamageUtils {
 
         // Check for global "damage can't be prevented" effects (Sunspine Lynx, Leyline of Punishment)
         @Suppress("NAME_SHADOWING")
-        val cantBePrevented = cantBePrevented || isDamagePreventionDisabled(state, targetId, sourceId, predicateEvaluator = zones.predicateEvaluator)
+        val cantBePrevented = cantBePrevented || isDamagePreventionDisabled(state, targetId, sourceId, isCombatDamage, predicateEvaluator = zones.predicateEvaluator)
 
         // Check for damage redirection (Glarecaster, Zealous Inquisitor). Whippoorwill's clause
         // shuts this half off too — "…or dealt instead to another permanent or player" — so a
@@ -1682,13 +1682,20 @@ object DamageUtils {
      * end gets the unscoped answer only. That is deliberately the safe direction: an unknown
      * instance never blanks a prevention shield or a protection keyword it might not cover.
      *
+     * The pattern's `damageType` scopes it the same way: Questing Beast's and Frenzied Baloth's
+     * "**combat** damage … can't be prevented" leaves a burn spell's damage preventable. A
+     * combat- or noncombat-only pattern needs [isCombatDamage] to judge, and a caller that doesn't
+     * pass it gets the safe answer (not disabled) from that pattern.
+     *
      * @param recipientId the entity being damaged, when the caller knows it
      * @param sourceId the source dealing the damage, when the caller knows it
+     * @param isCombatDamage whether the damage instance is combat damage, when the caller knows it
      */
     fun isDamagePreventionDisabled(
         state: GameState,
         recipientId: EntityId? = null,
         sourceId: EntityId? = null,
+        isCombatDamage: Boolean? = null,
         predicateEvaluator: PredicateEvaluator
     ): Boolean {
         // Turn-scoped "Damage can't be prevented this turn" (Fear, Fire, Foes!).
@@ -1709,6 +1716,12 @@ object DamageUtils {
             for (effect in replacementComponent.replacementEffects) {
                 if (effect !is DamageCantBePrevented) continue
                 val pattern = effect.appliesTo as? EventPattern.DamageEvent ?: continue
+                val typeMatches = when (pattern.damageType) {
+                    DamageType.Any -> true
+                    DamageType.Combat -> isCombatDamage == true
+                    DamageType.NonCombat -> isCombatDamage == false
+                }
+                if (!typeMatches) continue
                 // Unscoped: the printed "damage can't be prevented" with no source or recipient
                 // clause. Answers for every instance, including the ones this call knows nothing about.
                 if (pattern.source == GameObjectFilter.Any && pattern.recipient == Recipient.Any) {
@@ -1799,7 +1812,7 @@ object DamageUtils {
         // CR 615.12 — when damage can't be prevented, prevention shields aren't reduced and prevent
         // nothing. When any battlefield "damage can't be prevented" (Spider-Punk) or the "this turn"
         // one-shot (Fear, Fire, Foes!) is active, no shield applies and the damage passes through in full.
-        if (isDamagePreventionDisabled(state, targetId, sourceId, predicateEvaluator = predicateEvaluator)) {
+        if (isDamagePreventionDisabled(state, targetId, sourceId, isCombatDamage, predicateEvaluator = predicateEvaluator)) {
             val (riderState, _) = applyStaticDamageReduction(
                 state, targetId, amount, isCombatDamage, sourceId, predicateEvaluator, unpreventable = true
             )
@@ -2460,7 +2473,7 @@ object DamageUtils {
                 remainingCount = present - removed, byDamagePrevention = true
             ))
             val disabled = preventionDisabled ?: isDamagePreventionDisabled(
-                state, targetId, sourceId, predicateEvaluator = predicateEvaluator
+                state, targetId, sourceId, isCombatDamage, predicateEvaluator = predicateEvaluator
             ).also { preventionDisabled = it }
             if (!disabled) remaining -= removed
         }
