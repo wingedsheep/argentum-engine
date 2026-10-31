@@ -69,6 +69,8 @@ tasks.withType<Test>().configureEach {
         // `just ai-reading-audit`: the AI card-reading audit (ai/.../audit/AiReadingAuditBenchmark);
         // `just ai-reading-baseline`: re-bless the ratchet's baseline (AiReadingRatchetTest).
         "aiReadingAudit", "aiReadingAuditDir", "aiReadingBaseline",
+        // `just ai-card`: one card's AI reading and rating (ai/.../audit/AiCardReport).
+        "aiCard", "aiCardOut",
     )) {
         System.getProperty(prop)?.let { systemProperty(prop, it) }
     }

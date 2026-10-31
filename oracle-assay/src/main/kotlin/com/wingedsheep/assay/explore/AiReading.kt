@@ -40,6 +40,13 @@ interface AiReadingProvider {
      * showing a filter that silently matches too little.
      */
     fun corpusReady(): Boolean = true
+
+    /**
+     * How the AI rates [card] — for draft and deckbuilding, and as a permanent in play. Null when the
+     * provider has no rating to give. The provider decides which sets the card is printed in; the
+     * draft half reports one row per set.
+     */
+    fun rate(card: CardDefinition): AiRatingView? = null
 }
 
 /** One card's reading. [abilities] per face: the spell, triggered, activated, then static. */
@@ -86,3 +93,61 @@ data class AiFindingView(
     /** 1-based mode of a modal ability. */
     val mode: Int? = null,
 )
+
+/**
+ * How the engine AI rates a card. Every number is on its own scale — [pick] on the 0–5 limited pick
+ * scale, [board] in the evaluator's board-value points — and every part list sums to its number, so
+ * the page can draw each as a segmented bar.
+ */
+@Serializable
+data class AiRatingView(
+    val pick: AiPickView,
+    val board: AiBoardView,
+    val intent: AiIntentView,
+    /** The hand-written card advisor the live AI consults, by class name; null for most cards. */
+    val advisor: String? = null,
+)
+
+@Serializable
+data class AiPickView(
+    /** What decks built outside a set's draft use: sealed pools, generated decks, constructed. */
+    val rating: Double,
+    /** `basicLand`, `land`, `winRate`, `table` or `heuristic`. */
+    val source: String,
+    val tableSet: String? = null,
+    val winRate: Double? = null,
+    val games: Int? = null,
+    /** The effect heuristic's terms, always — they sum to [heuristicRating] before its 0–5 clamp. */
+    val heuristic: List<AiPartView>,
+    val heuristicRating: Double,
+    /** The draft pick scorer's starting number, per set the card is printed in. */
+    val sets: List<AiSetPickView>,
+)
+
+@Serializable
+data class AiSetPickView(
+    val set: String,
+    val rating: Double? = null,
+    val fromTable: Boolean,
+    val removal: Boolean,
+    val archetypes: List<String> = emptyList(),
+)
+
+@Serializable
+data class AiPartView(val label: String, val value: Double, val detail: String? = null)
+
+@Serializable
+data class AiBoardView(
+    /** `creature`, `variableCreature`, `permanent`, `planeswalker`, `land` or `spell`. */
+    val kind: String,
+    val value: Double? = null,
+    val parts: List<AiPartView>,
+    /** A sentence on what the number leaves to play. */
+    val rule: String? = null,
+)
+
+@Serializable
+data class AiIntentView(val tags: List<AiTagView>, val speed: String, val facts: List<String>)
+
+@Serializable
+data class AiTagView(val key: String, val label: String)

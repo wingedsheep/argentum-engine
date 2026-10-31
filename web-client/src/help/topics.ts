@@ -1897,7 +1897,25 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
         'Pick a group to narrow the card grid to it, or click a card name to open it in the Assay Explorer at its AI reading.',
       ] },
     ],
-    related: ['assay-explorer', 'set-completion'],
+    related: ['assay-explorer', 'set-completion', 'ai-rating'],
+  },
+  {
+    id: 'ai-rating',
+    section: 'cards',
+    title: 'How the AI rates a card',
+    summary:
+      'The “How the AI rates it” panel on an Assay Explorer card page shows the numbers the built-in AI puts on a card: how highly it picks it in a draft or rates it for a deck, and what it counts the card for once it is on the battlefield.',
+    body: [
+      { kind: 'p', text: 'Both numbers are drawn, not just printed. Each sits on a scale, and below it a bar per part of the card — its stats, each keyword, each ability — shows what that part adds, so you can see why a card scores what it does.' },
+      { kind: 'ul', items: [
+        'Draft & deckbuilding is on a 0–5 pick scale: under 1 unplayable, then marginal, solid, premium, and bomb from 3.9. It comes from 17Lands win rates where there are enough games, else a pick table for the set, else an estimate from what the card does. When a table rates the card, the dotted marker shows what the estimate would have said.',
+        'By set lists where the draft AI starts for each set the card is in. A hatched bar means that set’s table does not rate it, and its tag says where the number comes from instead. The AI then adjusts for colours, archetype and removal as the draft goes.',
+        'In play is the card’s worth to the AI’s board evaluation, with ticks for a land, a vanilla 2/2, an Oblivion Ring and a 2/2 flier for scale. Instants and sorceries have none: the AI judges them by what they do when cast.',
+        'What the AI thinks it is for lists what it recognises the card does — removal, card draw, a combat trick — which decides when it casts it and what it aims it at.',
+      ] },
+      { kind: 'p', text: 'When nothing rates a card — no 17Lands data, no pick table in any set — the panel says so: “No draft rating”, and the number is the AI’s own estimate. On Set Completion, a set’s AI gaps tab shows the same split for the whole set: cards its pick table rates, cards borrowed from another set’s table, and cards with no draft rating at all, in amber.' },
+    ],
+    related: ['ai-reading', 'assay-explorer'],
   },
   {
     id: 'assay-custom-cards',

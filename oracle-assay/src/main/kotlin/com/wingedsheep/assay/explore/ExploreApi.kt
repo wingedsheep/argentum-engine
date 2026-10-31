@@ -254,6 +254,7 @@ class ExploreApi(
                 put("available", true)
                 put("source", source)
                 put("reading", json.encodeToJsonElement(AiReadingView.serializer(), view))
+                provider.rate(definition)?.let { put("rating", json.encodeToJsonElement(AiRatingView.serializer(), it)) }
             }
         }
     }

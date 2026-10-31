@@ -584,7 +584,7 @@ object BoardPresence : BoardFeature {
     private const val ANTHEM_VALUE_PER_STAT = 0.25
 
     /** Board value of one loyalty counter. Only reached with card knowledge on. */
-    private const val LOYALTY_VALUE = 0.8
+    internal const val LOYALTY_VALUE = 0.8
 
     /**
      * What a creature's **body** is worth — the half of [creatureValue] that reads only stats and
@@ -597,7 +597,7 @@ object BoardPresence : BoardFeature {
      * [CreatureValuation.expiringStatsNeedAFight] gives `creatureValue`'s caller. Off the battlefield there are no temporary modifications, so the two coincide and
      * the defaults are the printed numbers.
      */
-    private fun creatureBodyValue(
+    internal fun creatureBodyValue(
         power: Int,
         toughness: Int,
         keywords: Set<String>,
@@ -733,7 +733,7 @@ object BoardPresence : BoardFeature {
     }
 
     /** What a land is worth on the battlefield. Historical constants; [landSequencing] refines them. */
-    private const val LAND_UNTAPPED = 0.6
+    internal const val LAND_UNTAPPED = 0.6
     private const val LAND_TAPPED = 0.3
 
     /** Exactly the charge [permanentValue] applied, so an idle tapped land nets out to a full land. */

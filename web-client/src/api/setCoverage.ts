@@ -174,6 +174,22 @@ export interface SetAiReadingDetail {
   readonly score: SetAiReading | null
   readonly groups: readonly AiGapGroup[]
   readonly unread: readonly { readonly name: string; readonly flags: readonly string[] }[]
+  /** Where the draft AI's pick ratings for the set come from; absent while the index builds. */
+  readonly draft?: SetDraftRatings | null
+}
+
+/**
+ * How the draft AI rates a set's cards: `rated` of `nonland` implemented nonland cards are in the
+ * set's own pick table (none when `hasTable` is false); the limited rater fills in the rest.
+ * `archetypes` — the table carries archetype tags, so the pick scorer reads archetype fit.
+ */
+export interface SetDraftRatings {
+  readonly hasTable: boolean
+  readonly rated: number
+  readonly nonland: number
+  readonly archetypes: boolean
+  /** Of the cards the table leaves unrated, how many nothing rates anywhere — the effect heuristic's guesses. */
+  readonly heuristic: number
 }
 
 export async function fetchSetAiReading(code: string): Promise<SetAiReadingDetail> {

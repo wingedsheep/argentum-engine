@@ -186,6 +186,13 @@ These are the ones that have actually caused bugs here.
   index: `Patterns.Library`, `.Hand`, `.Group`, `.Exile`, `.CreatureType`, `.Mechanic`, `.Sideboard`.
 - **Composition before new types** — a new `Effect` + executor is the last resort, and it's `add-feature`
   territory. The bar and the reusability rules: [`docs/sdk-design-principles.md`](docs/sdk-design-principles.md).
+- **Ask what the engine AI makes of a card** — `just ai-card "<Card>|<Card>"` prints, per card, which
+  abilities its readers understand (and the effect type behind each gap), its draft pick rating and
+  where that comes from (flagging a card nothing rates, so the AI guesses from a heuristic), its board
+  value in play and what it thinks the card is for. Use it before a card or feature PR (`add-card` /
+  `add-feature` Step 10), and whenever you need to explain or predict an AI decision — a misplay in an
+  `ai-game-review` or `ai-playtest` log, a strange draft pick. The Assay Explorer's card page draws the
+  same analysis for humans.
 - **Reprints** — only a card's *earliest real printing* gets a full `card(...)`; later sets get a
   `Printing(...)` row, never a duplicate canonical. `just check-card-printing "<Card>"` is the gate.
 

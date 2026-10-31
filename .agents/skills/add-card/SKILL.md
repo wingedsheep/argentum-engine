@@ -25,9 +25,9 @@ unrelated cards.
 
 Given several card names:
 
-- Run **Steps 0–9 once per card**, committing each card separately (Step 10's commit rule) so a bad card
+- Run **Steps 0–9 once per card**, committing each card separately (Step 11's commit rule) so a bad card
   can be dropped without unpicking the others.
-- Run **Step 10's gate once**, at the end, for the whole batch. Don't gate per card.
+- Run **Step 10's AI check and Step 11's gate once**, at the end, for the whole batch. Don't gate per card.
 - **A card that turns out to need new SDK vocabulary leaves the batch** the moment Step 4 says so. Reset
   its commit, report it as dropped, and ship the rest. Do not grow the PR to cover it, and do not
   fake it with an existing primitive that only works in the common case. A card that could only ship
@@ -299,7 +299,40 @@ The mistakes this actually catches: wrong P/T, a missing keyword, a missing "tar
 modelled as "whenever", "enters the battlefield" as "dies", one ability of a multi-ability card dropped
 entirely, and "until end of turn" wired as a permanent effect.
 
-## Step 10: Verify and commit
+## Step 10: Check the AI can play it
+
+**Always, once for the whole batch.** A card that works for a human can still be a card the engine AI
+misplays: it plays every card, but where its readers don't understand an ability it falls back to a
+generic default, and where nothing rates the card it drafts it on a guess. One command shows both:
+
+```bash
+just ai-card "Card One|Card Two|Card Three"
+```
+
+It prints, per card, the same answers the Assay explorer's **AI reading** and **How the AI rates it**
+panels draw (open `#c/<Card>` in the Assay Explorer tab of Set Completion for the visual version):
+
+- **Reading** — `✓ n/n abilities read fully`, or a `✕` line per gap: which ability, what the reader
+  couldn't tell, and the SDK effect type behind it.
+- **Pick** — the 0–5 draft rating and where it comes from (17Lands, a set's pick table, or the effect
+  heuristic), then one line per set the card is in. `! no draft rating anywhere` means no data rates it
+  and the AI guesses from the heuristic, whose terms are listed.
+- **In play / Intent** — the board value the evaluator gives it, and what the AI thinks the card is for.
+
+What to do with it:
+
+- **A reading gap.** Nothing to fix in a card PR — teaching a reader an effect type is
+  `just ai-reading-loop` / `add-feature` work that fixes every card using it. But if the gap is an
+  effect type no card had before, `AiReadingRatchetTest` fails: re-bless with
+  `just ai-reading-baseline` in this PR (see `docs/ai/reading-audit.md`, "The ratchet").
+- **No draft rating** for a card in a set that has a **first-party** pick table: add the card's rating
+  to that table (`docs/limited-card-ratings.md`, "Adding or refreshing ratings"). Vendored Draftsim
+  tables are never hand-edited, and a set with no table at all gets one from the set's finishing PR.
+- **Say it in the PR body**, one line per card or one for the batch:
+  `AI: reads 2/2 · pick 2.4 (FDN table) · intent Removal` — and call out every `✕` and every
+  heuristic-only pick, so a reviewer sees what the AI will get wrong before players do.
+
+## Step 11: Verify and commit
 
 Run the gates via the **`verify`** skill — `just build` for cards on existing effects, `just test` when
 Step 4 added engine behavior. **Once for the whole batch, after every card is written** — not per card;

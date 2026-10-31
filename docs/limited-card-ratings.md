@@ -103,6 +103,15 @@ Once a table has *any* ratings, the scorer and deckbuilder switch to their ratin
 cost several times more per build than the rarity-only path. That is the normal cost for every rated
 set.
 
+## Seeing a card's rating
+
+The Assay explorer's card page (Set Completion → Assay Explorer tab) has a **How the AI rates it**
+panel: the rating on this scale with its source, each set's starting number for the draft scorer, and
+the heuristic's terms as a waterfall — shown even when a table outranks it, so a disagreement is
+visible. `just ai-card "<name>"` prints the same in the terminal. A set's **AI gaps** tab on Set
+Completion shows how much of the set its pick table covers and how many cards have no draft rating at
+all. `LimitedCardRater.explain` is the one code path behind all three; `rate` is its answer.
+
 ## Adding or refreshing ratings
 
 1. **Draftsim covers the set** — `just draftsim-refresh check`, review the diff, then

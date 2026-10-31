@@ -6437,6 +6437,19 @@ This module cannot compute any of that: the readers live in `:ai`, which depends
 `game-server` passes its implementation (`AiReadingService`) when it mounts the explorer. Standalone
 `just assay-explore` passes none, and the panel says the AI reading needs the game server.
 
+Beside it, **How the AI rates it** draws the numbers the AI puts on the card, from the same provider
+(`AiReadingProvider.rate`, answered by `AiCardRating` in `:ai`):
+
+- **Draft & deckbuilding** — the 0–5 limited pick rating on a gauge banded by the scorer's cutoffs,
+  where it came from (17Lands, a pick table, or the effect heuristic — called out as "No draft rating"
+  when nothing rates the card), the draft scorer's starting number per set the card is in, and the
+  heuristic as a waterfall: base, each keyword, each ability, rarity and curve.
+- **In play** — the evaluator's board value on an empty battlefield, on a scale ticked with familiar
+  cards, broken into stats and keywords (a creature) or the prior rung that priced it (any other
+  permanent), and the intent tags the AI's timing and targeting policies read.
+
+`just ai-card "<name>|<name>"` prints both panels' answers in the terminal.
+
 ## The verdict ledger
 
 `just assay-bake` writes `game-server/src/main/resources/coverage/assay-verdicts.json`: one sorted

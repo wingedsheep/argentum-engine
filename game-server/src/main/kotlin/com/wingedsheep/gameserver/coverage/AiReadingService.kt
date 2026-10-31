@@ -1,8 +1,18 @@
 package com.wingedsheep.gameserver.coverage
 
+import com.wingedsheep.ai.audit.AiCardRating
 import com.wingedsheep.ai.audit.AiReadingAudit
+import com.wingedsheep.ai.draftsim.DraftsimData
+import com.wingedsheep.ai.engine.LimitedCardRater
 import com.wingedsheep.ai.engine.knowledge.CardLookup
 import com.wingedsheep.assay.explore.AiAbilityView
+import com.wingedsheep.assay.explore.AiBoardView
+import com.wingedsheep.assay.explore.AiIntentView
+import com.wingedsheep.assay.explore.AiPartView
+import com.wingedsheep.assay.explore.AiPickView
+import com.wingedsheep.assay.explore.AiRatingView
+import com.wingedsheep.assay.explore.AiSetPickView
+import com.wingedsheep.assay.explore.AiTagView
 import com.wingedsheep.assay.explore.AiFindingView
 import com.wingedsheep.assay.explore.AiReadingProvider
 import com.wingedsheep.assay.explore.AiReadingView
@@ -66,6 +76,16 @@ class AiReadingService(private val registry: CardRegistry) : AiReadingProvider {
 
     override fun corpusReady(): Boolean = (index != null).also { if (!it) warm() }
 
+    /** How the AI rates [card], with one draft row per catalogued set that authors or reprints it. */
+    override fun rate(card: CardDefinition): AiRatingView {
+        val names = setOf(card.name, frontFace(card.name))
+        val sets = MtgSetCatalog.all
+            .filter { set -> set.cards.any { it.name in names } || set.printings.any { it.name in names } }
+            .sortedBy { it.releaseDate ?: "9999" }
+            .map { it.code }
+        return ratingView(AiCardRating.of(card, sets))
+    }
+
     // ── Set Completion ──────────────────────────────────────────────────────
 
     /**
@@ -95,6 +115,24 @@ class AiReadingService(private val registry: CardRegistry) : AiReadingProvider {
         val score: SetReading?,
         val groups: List<GapGroup>,
         val unread: List<UnreadCard>,
+        /** Where the draft AI's pick ratings for this set come from; null while indexing. */
+        val draft: DraftRatings? = null,
+    )
+
+    /**
+     * How the draft AI rates this set's cards: [rated] of [nonland] nonland cards are in the set's own
+     * pick table (none at all when [hasTable] is false); the rest are filled in by the limited rater's
+     * fallback — another set's table, a 17Lands win rate, or, for [heuristic] of them, the effect
+     * heuristic. [archetypes] says whether the table carries archetype tags, which switches the pick
+     * scorer to its archetype-aware path.
+     */
+    data class DraftRatings(
+        val hasTable: Boolean,
+        val rated: Int,
+        val nonland: Int,
+        val archetypes: Boolean,
+        /** Of the cards the table leaves unrated, how many no data rates anywhere — the effect heuristic's guesses. */
+        val heuristic: Int,
     )
 
     fun setSummary(): SetSummary {
@@ -121,6 +159,23 @@ class AiReadingService(private val registry: CardRegistry) : AiReadingProvider {
             score = score(entries).takeIf { it.total > 0 },
             groups = groups,
             unread = unread.map { UnreadCard(it.name, it.flags) },
+            draft = draftRatings(set),
+        )
+    }
+
+    private fun draftRatings(set: MtgSet): DraftRatings {
+        val tables = DraftsimData.tablesFor(listOf(set.code))
+        val nonland = (set.cards.map { it.name } + set.printings.map { it.name }).distinct()
+            .mapNotNull { registry.getCard(it) ?: registry.getCard(frontFace(it)) }
+            .distinctBy { it.name }
+            .filterNot { it.typeLine.isLand }
+        val unrated = nonland.filterNot { DraftsimData.nameKey(it.name) in tables.ratings }
+        return DraftRatings(
+            hasTable = tables.ratings.isNotEmpty(),
+            rated = nonland.size - unrated.size,
+            nonland = nonland.size,
+            archetypes = tables.archetypes.isNotEmpty(),
+            heuristic = unrated.count { LimitedCardRater.explain(it).source == LimitedCardRater.Source.HEURISTIC },
         )
     }
 
@@ -204,6 +259,44 @@ class AiReadingService(private val registry: CardRegistry) : AiReadingProvider {
             )
         },
     )
+
+    private fun ratingView(r: AiCardRating.Rating): AiRatingView {
+        fun part(p: AiCardRating.Part) = AiPartView(p.label, p.value, p.detail)
+        val e = r.limited.explanation
+        return AiRatingView(
+            pick = AiPickView(
+                rating = e.rating,
+                source = when (e.source) {
+                    LimitedCardRater.Source.BASIC_LAND -> "basicLand"
+                    LimitedCardRater.Source.LAND -> "land"
+                    LimitedCardRater.Source.WIN_RATE -> "winRate"
+                    LimitedCardRater.Source.TABLE -> "table"
+                    LimitedCardRater.Source.HEURISTIC -> "heuristic"
+                },
+                tableSet = e.tableSet,
+                winRate = e.winRate,
+                games = e.games,
+                heuristic = e.heuristic.map { AiPartView(it.part, it.value, it.detail) },
+                heuristicRating = e.heuristicRating,
+                sets = r.limited.sets.map { AiSetPickView(it.set, it.rating, it.fromTable, it.removal, it.archetypes) },
+            ),
+            board = AiBoardView(
+                kind = when (r.board.kind) {
+                    AiCardRating.BoardKind.CREATURE -> "creature"
+                    AiCardRating.BoardKind.VARIABLE_CREATURE -> "variableCreature"
+                    AiCardRating.BoardKind.PERMANENT -> "permanent"
+                    AiCardRating.BoardKind.PLANESWALKER -> "planeswalker"
+                    AiCardRating.BoardKind.LAND -> "land"
+                    AiCardRating.BoardKind.SPELL -> "spell"
+                },
+                value = r.board.value,
+                parts = r.board.parts.map(::part),
+                rule = r.board.rule,
+            ),
+            intent = AiIntentView(r.intent.tags.map { AiTagView(it.key, it.label) }, r.intent.speed, r.intent.facts),
+            advisor = r.advisor,
+        )
+    }
 
     private companion object {
         private val log = LoggerFactory.getLogger(AiReadingService::class.java)

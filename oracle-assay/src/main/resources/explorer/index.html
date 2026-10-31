@@ -343,6 +343,87 @@
   .aiwait { display: flex; align-items: center; gap: .5rem; color: var(--faint); font-size: .78rem; padding: 1rem; border: 1px dashed var(--hair-2); border-radius: 3px; }
   td.ai { text-align: center; }
 
+  /* ---- AI rating ----
+     Two numbers, each drawn rather than printed: the limited pick rating on its 0–5 scale with the
+     band zones the scorer's cutoffs carve (bomb at 3.9), and the board value on the evaluator's own
+     points with a few familiar cards marked for scale. Below each, a waterfall — one row per part of
+     the card, each bar starting where the last ended — so what makes the number is visible at a
+     glance. Gains are the accent, a drawback ochre; the total row is solid. */
+  .rgrid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 1rem; align-items: start; }
+  @media (max-width: 60rem) { .rgrid { grid-template-columns: minmax(0,1fr); } }
+  .rcard { border: 1px solid var(--hair); background: var(--surface); box-shadow: var(--shadow); padding: .8rem .9rem .9rem; min-width: 0; }
+  .rcard > h3 { margin: 0 0 .55rem; font-family: ui-monospace, Menlo, monospace; font-size: .64rem; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+  .rhead { display: flex; align-items: baseline; gap: .5rem; flex-wrap: wrap; margin-bottom: .55rem; }
+  .rnum { font-family: ui-monospace, Menlo, monospace; font-size: 1.9rem; font-weight: 600; line-height: 1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .rnum small { font-size: .78rem; font-weight: 400; color: var(--faint); margin-left: .35rem; letter-spacing: 0; }
+  .rband { font-family: ui-monospace, Menlo, monospace; font-size: .62rem; text-transform: uppercase; letter-spacing: .09em; padding: .12rem .45rem; border-radius: 2px; border: 1px solid currentColor; }
+  .rband[data-b="0"] { color: var(--faint); }
+  .rband[data-b="1"] { color: var(--muted); }
+  .rband[data-b="2"], .rband[data-b="3"] { color: var(--accent); }
+  .rband[data-b="4"] { color: var(--accent); background: var(--accent-w); font-weight: 600; }
+  .rsrc { font-size: .76rem; color: var(--muted); margin: .55rem 0 0; }
+  .rsrc b { color: var(--ink); font-weight: 500; }
+
+  .gauge { position: relative; padding-top: 1.15rem; margin: .1rem 0 .1rem; }
+  .gauge .track { display: flex; height: .55rem; border-radius: 2px; overflow: hidden; }
+  .gauge .zone { height: 100%; border-right: 1px solid var(--surface); }
+  .gauge .zone:last-child { border-right: 0; }
+  .gauge .zones { display: flex; margin-top: .25rem; }
+  .gauge .zones span { font-family: ui-monospace, Menlo, monospace; font-size: .56rem; text-transform: uppercase; letter-spacing: .06em; color: var(--faint); text-align: center; overflow: hidden; white-space: nowrap; text-overflow: clip; }
+  .gauge .zones span.on { color: var(--ink); font-weight: 600; }
+  .gauge .mk { position: absolute; top: 0; bottom: 1.05rem; width: 0; transform: translateX(-50%); }
+  .gauge .mk::before { content: ""; position: absolute; left: -1px; top: .95rem; bottom: -.2rem; width: 2px; background: var(--ink); border-radius: 1px; }
+  .gauge .mk span { position: absolute; top: 0; left: 50%; transform: translateX(-50%); font-family: ui-monospace, Menlo, monospace; font-size: .6rem; font-weight: 600; white-space: nowrap; color: var(--ink); }
+  .gauge .mk.ghost::before { background: none; border-left: 2px dotted var(--faint); left: -1px; width: 0; }
+  .gauge .mk.ghost span { color: var(--faint); font-weight: 400; }
+  .gauge .mk.ref::before { background: var(--hair-2); width: 1px; left: 0; top: 1.05rem; }
+  .gauge .mk.ref span { color: var(--faint); font-weight: 400; font-size: .56rem; }
+  .gauge.plain { padding-bottom: .95rem; }
+  .gauge.plain .mk { bottom: 0; }
+  .gauge.plain .mk::before { bottom: .75rem; }
+  .gauge.plain .mk.ref::before { top: 1.15rem; bottom: .8rem; }
+  .gauge.plain .mk.ref span { top: auto; bottom: 0; }
+  .gauge .mk.edge-l span { left: 0; transform: none; }
+  .gauge .mk.edge-r span { left: auto; right: 0; transform: none; }
+
+  .wf { margin-top: .75rem; display: flex; flex-direction: column; gap: .18rem; }
+  .wf .wh { font-family: ui-monospace, Menlo, monospace; font-size: .6rem; text-transform: uppercase; letter-spacing: .09em; color: var(--faint); margin-bottom: .15rem; display: flex; justify-content: space-between; gap: .5rem; }
+  .wrow { display: grid; grid-template-columns: minmax(5.5rem, 9rem) minmax(0,1fr) 3.1rem; gap: .55rem; align-items: center; font-size: .72rem; }
+  .wrow .wl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }
+  .wrow .wl .d { color: var(--faint); }
+  .wrow .wt { position: relative; height: .7rem; background: var(--sunken); border-radius: 2px; }
+  .wrow .wt i { position: absolute; top: 0; bottom: 0; border-radius: 2px; background: var(--accent); opacity: .78; }
+  .wrow .wt i.neg { background: var(--ochre); }
+  .wrow .wv { font-family: ui-monospace, Menlo, monospace; font-size: .68rem; text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+  .wrow.tot { border-top: 1px solid var(--hair); padding-top: .3rem; margin-top: .15rem; }
+  .wrow.tot .wl { font-weight: 600; }
+  .wrow.tot .wt i { opacity: 1; }
+  .wrow.tot .wv { color: var(--ink); font-weight: 600; }
+  .wrow .wt .cap { position: absolute; top: -.15rem; bottom: -.15rem; width: 0; border-left: 1px dashed var(--faint); }
+
+  .psets { margin-top: .75rem; display: flex; flex-direction: column; gap: .2rem; }
+  .pset { display: grid; grid-template-columns: 3.6rem minmax(0,1fr) 2.4rem 8.5rem; gap: .55rem; align-items: center; font-size: .72rem; }
+  .pset .sc { font-family: ui-monospace, Menlo, monospace; font-size: .66rem; font-weight: 600; }
+  .pset .bar { height: .4rem; background: var(--sunken); border-radius: 2px; position: relative; }
+  .pset .bar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent); border-radius: 2px; }
+  .pset .bar i.fb { background: repeating-linear-gradient(135deg, var(--accent) 0 3px, transparent 3px 5px); opacity: .8; }
+  .pset .v { font-family: ui-monospace, Menlo, monospace; font-size: .68rem; text-align: right; font-variant-numeric: tabular-nums; }
+  .pset .tags { display: flex; gap: .25rem; flex-wrap: wrap; }
+  .pset .tag { font-size: .54rem; padding: 0 .3rem; }
+
+  .itags { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .75rem; }
+  .itag { font-size: .7rem; padding: .12rem .5rem; border-radius: 999px; background: var(--accent-w); color: var(--accent); border: 1px solid transparent; }
+  .itag.sp { background: transparent; border-color: var(--hair-2); color: var(--muted); }
+  .itag.none { background: var(--ochre-w); color: var(--ochre); font: inherit; font-size: .7rem; cursor: pointer; }
+  .itag.none:hover { filter: brightness(.95); text-decoration: underline; }
+  .ifacts { margin: .5rem 0 0; padding-left: 1rem; font-size: .74rem; color: var(--muted); }
+  .ifacts li { margin: .1rem 0; }
+  .rempty { font-size: .76rem; color: var(--muted); padding: .7rem .8rem; background: var(--sunken); border-radius: 3px; margin-top: .2rem; }
+  .rlegend { display: flex; gap: .9rem; flex-wrap: wrap; font-size: .66rem; color: var(--faint); margin-top: .45rem; }
+  .rlegend span { display: inline-flex; align-items: center; gap: .3rem; }
+  .rlegend i { display: inline-block; width: .9rem; height: .4rem; border-radius: 2px; background: var(--accent); }
+  .rlegend i.fb { background: repeating-linear-gradient(135deg, var(--accent) 0 3px, transparent 3px 5px); }
+
   .note { font-size: .72rem; color: var(--faint); }
   .callout { border-left: 2px solid var(--accent); background: var(--surface); padding: .6rem .8rem; margin-top: 1.2rem; }
   .callout .h { font-family: ui-monospace, Menlo, monospace; font-size: .64rem; text-transform: uppercase; letter-spacing: .1em; color: var(--accent); display: block; margin-bottom: .25rem; }
@@ -1126,8 +1207,10 @@ async function viewCard(name, toAi = false) {
       ${d.inScope ? '<span class="tag" title="vanilla or keyword-only — Phase 1\'s target class">in scope</span>' : ""}
       <span class="tag">${esc(d.layout)}</span>
       <span class="tag ai-sum wait" id="aisum" title="what the engine AI's card readers understand of this card"><span class="dot load"></span>AI reading…</span>
+      <span class="tag ai-sum wait" id="ratesum" hidden></span>
     </div>
     ${assayHTML(d)}
+    <div class="block" id="rateblock" hidden></div>
     <div class="block" id="aiblock"><h2>AI reading</h2>
       <div class="aiwait"><span class="dot load"></span>Asking the engine AI's card readers…</div></div>
     ${goldenHTML(d.golden)}`;
@@ -1150,6 +1233,14 @@ async function loadAiReading(name, scroll = false) {
   const [sum, body] = aiReadingHTML(d);
   el("aisum").outerHTML = sum;
   el("aiblock").innerHTML = "<h2>AI reading</h2>" + body;
+  if (d.rating) {
+    const [rsum, rbody] = aiRatingHTML(d.rating, d.source === "preview", d.reading ? d.reading.abilities.length : null);
+    el("ratesum").outerHTML = rsum;
+    el("rateblock").innerHTML = rbody;
+    el("rateblock").hidden = false;
+    el("ratesum").onclick = () => el("rateblock").scrollIntoView({ behavior: "smooth", block: "start" });
+    if (el("rate2read")) el("rate2read").onclick = () => el("aiblock").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
   // The panel sits below Assay's (often long) reading; the chip up top jumps to it.
   el("aisum").onclick = () => el("aiblock").scrollIntoView({ behavior: "smooth", block: "start" });
   if (scroll) el("aiblock").scrollIntoView({ block: "start" });
@@ -1240,6 +1331,181 @@ function aiFindingHTML(f) {
   const cls = f.read ? "ok" : "gap";
   return `<div class="aif ${cls}"><span class="ic ${cls}" aria-label="${f.read ? "understood" : "not understood"}">${f.read ? "✓" : "✕"}</span>
     <span><span class="why">${esc(f.reason)}</span><span class="dev">${where.join(" · ")}</span></span></div>`;
+}
+
+/* =========================== AI rating =========================== */
+
+/* The limited pick scale's bands, as docs/limited-card-ratings.md draws them: the scorer's absolute
+   cutoffs (bomb at 3.9), not a per-set curve. */
+const PICK_BANDS = [
+  { to: 1.0, word: "Unplayable" },
+  { to: 2.2, word: "Marginal" },
+  { to: 3.0, word: "Solid" },
+  { to: 3.9, word: "Premium" },
+  { to: 5.0, word: "Bomb" },
+];
+const pickBand = (r) => { const i = PICK_BANDS.findIndex((b) => r < b.to); return i < 0 ? PICK_BANDS.length - 1 : i; };
+const f1 = (x) => (Math.round(x * 10) / 10).toFixed(1);
+const f2 = (x) => (Math.round(x * 100) / 100).toFixed(2);
+const signed = (x, f = f1) => (x > 0 ? "+" : x < 0 ? "−" : "±") + f(Math.abs(x));
+
+/* A 0–[max] track with coloured zones and markers; [marks] are {at, label, cls}. */
+function gaugeHTML(max, zones, marks, active) {
+  const pct = (x) => Math.max(0, Math.min(100, (x * 100) / max));
+  let from = 0;
+  const track = zones.map((z, i) => {
+    const w = pct(z.to) - pct(from); from = z.to;
+    const mix = 10 + i * 18;
+    return `<span class="zone" style="width:${w}%;background:color-mix(in srgb, var(--accent) ${mix}%, var(--sunken))"></span>`;
+  }).join("");
+  from = 0;
+  const words = zones.map((z, i) => {
+    const w = pct(z.to) - pct(from); from = z.to;
+    return `<span style="width:${w}%" class="${i === active ? "on" : ""}">${esc(z.word)}</span>`;
+  }).join("");
+  const mk = marks.map((m) => {
+    const at = pct(m.at);
+    const edge = at < 8 ? " edge-l" : at > 92 ? " edge-r" : "";
+    return `<span class="mk ${m.cls || ""}${edge}" style="left:${at}%"><span>${esc(m.label)}</span></span>`;
+  }).join("");
+  const plain = !zones.some((z) => z.word);
+  return `<div class="gauge${plain ? " plain" : ""}" role="img" aria-label="${esc(marks.map((m) => m.label).join(", "))}">
+    <div class="track">${track}</div>${zones.some((z) => z.word) ? '<div class="zones">' + words + "</div>" : ""}${mk}</div>`;
+}
+
+/* A waterfall: each part a bar from where the running total stood to where it ends. The axis is
+   [max] wide (or the total, if larger); [cap] marks a clamp the parts may overshoot. */
+function waterfallHTML(title, parts, total, max, opts = {}) {
+  let run = 0, lo = 0, hi = 0;
+  for (const p of parts) { run += p.value; lo = Math.min(lo, run); hi = Math.max(hi, run); }
+  const span = Math.max(max, hi) - lo;
+  const pos = (x) => ((x - lo) * 100) / span;
+  run = 0;
+  const cap = opts.cap != null && hi > opts.cap ? `<span class="cap" style="left:${pos(opts.cap)}%" title="clamped to ${opts.cap}"></span>` : "";
+  const rows = parts.map((p) => {
+    const a = run, b = run + p.value; run = b;
+    const l = pos(Math.min(a, b)), w = Math.max(.8, Math.abs(pos(b) - pos(a)));
+    const tip = p.label + (p.detail ? " — " + p.detail : "") + ": " + signed(p.value, opts.fmt);
+    return `<div class="wrow" title="${esc(tip)}"><span class="wl">${esc(p.label)}${p.detail ? ' <span class="d">' + esc(p.detail) + "</span>" : ""}</span>
+      <span class="wt"><i class="${p.value < 0 ? "neg" : ""}" style="left:${l}%;width:${w}%"></i>${cap}</span>
+      <span class="wv">${signed(p.value, opts.fmt)}</span></div>`;
+  }).join("");
+  const tl = pos(Math.min(0, total)), tw = Math.max(.8, Math.abs(pos(total) - pos(0)));
+  return `<div class="wf"><div class="wh"><span>${esc(title)}</span>${opts.aside ? "<span>" + opts.aside + "</span>" : ""}</div>${rows}
+    <div class="wrow tot"><span class="wl">${esc(opts.totalLabel || "Total")}</span>
+      <span class="wt"><i style="left:${tl}%;width:${tw}%"></i>${cap}</span>
+      <span class="wv">${(opts.fmt || f1)(total)}</span></div></div>`;
+}
+
+const PICK_SOURCE = {
+  basicLand: () => "Basic lands rate <b>0</b> — every deck gets them for free.",
+  land: () => "Non-basic lands are flat <b>1.5</b> filler for decks built outside a draft.",
+  winRate: (p) => `From <b>17Lands</b>: a ${(p.winRate * 100).toFixed(1)}% game-in-hand win rate over ${Number(p.games).toLocaleString()} games.`,
+  table: (p) => `From the <b>${esc(p.tableSet || "")}</b> pick table — Draftsim's ratings, or a first-party table on the same scale.`,
+  heuristic: () => "Estimated by the <b>effect heuristic</b> from what the card does.",
+};
+
+function aiRatingHTML(r, preview, abilities) {
+  const p = r.pick, b = pickBand(p.rating);
+  const guess = p.source === "heuristic";
+  const chip = '<button class="tag ai-sum ' + (guess ? "gap" : b >= 3 ? "ok" : "wait") + '" id="ratesum" title="' +
+    (guess ? "no draft rating — the AI estimates it with the effect heuristic" : "how the engine AI rates this card") + ' — jump to it">Pick ' +
+    f1(p.rating) + " · " + (guess ? "heuristic" : PICK_BANDS[b].word) + "</button>";
+
+  const marks = [{ at: p.rating, label: f1(p.rating) }];
+  if (p.source !== "heuristic" && p.heuristic.length && Math.abs(p.heuristicRating - p.rating) >= 0.15) {
+    marks.push({ at: Math.min(5, p.heuristicRating), label: "heuristic " + f1(p.heuristicRating), cls: "ghost" });
+  }
+  const zones = PICK_BANDS.map((z) => ({ to: z.to, word: z.word }));
+  let draft = `<div class="rcard"><h3>Draft &amp; deckbuilding</h3>
+    <div class="rhead"><span class="rnum">${f1(p.rating)}<small>/ 5</small></span><span class="rband" data-b="${b}">${PICK_BANDS[b].word}</span></div>
+    ${gaugeHTML(5, zones, marks, b)}
+    <p class="rsrc">${PICK_SOURCE[p.source] ? PICK_SOURCE[p.source](p) : esc(p.source)}</p>`;
+  if (p.source === "heuristic") {
+    draft += `<div class="callout preview" style="margin:.6rem 0 0"><span class="h">No draft rating</span><p>No 17Lands data and no
+      pick table rates this card, in any set. The AI falls back to the effect heuristic below — a structural guess that can't
+      see synergy or how the format plays, so treat this number with care.</p></div>`;
+  }
+
+  if (p.sets.length) {
+    // A set whose own table rates the card gets a row; every set that falls back to the limited
+    // rater gets the same number, so they share one row instead of repeating it a dozen times.
+    const own = p.sets.filter((s) => s.fromTable || s.rating == null);
+    const filled = p.sets.filter((s) => !s.fromTable && s.rating != null);
+    const rows = own.map((s) => ({ ...s, label: s.set, title: s.set }));
+    if (filled.length) {
+      const one = filled.length === 1;
+      rows.push({ ...filled[0], removal: filled.some((s) => s.removal), archetypes: [],
+        label: one ? filled[0].set : filled.length + " sets", title: filled.map((s) => s.set).join(", ") });
+    }
+    const fb = filled.length > 0;
+    draft += '<div class="wf"><div class="wh"><span>Where the draft AI starts, by set</span></div></div><div class="psets">' + rows.map((s) => {
+      const fallback = p.source === "heuristic" ? '<span class="tag w" title="no table rates it: the effect heuristic">heuristic</span>'
+        : p.source === "winRate" ? '<span class="tag" title="no rating in this set: 17Lands win rate">17Lands</span>'
+        : '<span class="tag" title="no rating in this set: borrowed from another set\'s table">from ' + esc(p.tableSet || "table") + "</span>";
+      const tags = [s.rating == null ? '<span class="tag">land handling</span>' : !s.fromTable ? fallback : ""];
+      if (s.removal) tags.push('<span class="tag k">removal</span>');
+      (s.archetypes || []).slice(0, 3).forEach((a) => tags.push('<span class="tag">' + esc(a) + "</span>"));
+      const tip = s.rating == null ? "the set's table doesn't rate this land; the drafter's land handling picks it"
+        : s.fromTable ? "rated by the set's own pick table"
+        : p.source === "heuristic" ? "no draft rating — the effect heuristic fills it in"
+        : "no rating in this set's table — the limited rater fills it in";
+      return `<div class="pset" title="${esc(s.title + ": " + tip)}"><span class="sc">${esc(s.label)}</span>
+        <span class="bar">${s.rating != null ? '<i class="' + (s.fromTable ? "" : "fb") + '" style="width:' + (s.rating * 20) + '%"></i>' : ""}</span>
+        <span class="v">${s.rating != null ? f1(s.rating) : "—"}</span><span class="tags">${tags.join("")}</span></div>`;
+    }).join("") + "</div>";
+    if (fb) draft += '<div class="rlegend"><span><i></i>rated in the set\'s own table</span><span><i class="fb"></i>no rating there — ' +
+      (p.source === "heuristic" ? "heuristic guess" : p.source === "winRate" ? "17Lands win rate" : "borrowed from " + esc(p.tableSet || "another table")) + "</span></div>";
+    draft += '<p class="note" style="margin-top:.45rem">The pick scorer then weighs colour commitment, archetype fit and removal against the picks so far.</p>';
+  }
+  if (p.heuristic.length) {
+    const heurTitle = p.source === "heuristic" ? "What the heuristic adds up" : "What the heuristic would say";
+    draft += waterfallHTML(heurTitle, p.heuristic, Math.min(5, Math.max(0, p.heuristicRating)), 5, { cap: 5, totalLabel: "Heuristic" });
+  }
+  draft += "</div>";
+
+  const bd = r.board;
+  let play = '<div class="rcard"><h3>In play</h3>';
+  if (bd.value != null) {
+    // Familiar reference points on the evaluator's own scale, so a bare number means something.
+    const refs = [{ at: 0.6, label: "land" }, { at: 2.8, label: "2/2" }, { at: 4.9, label: "2/2 flier" }, { at: 8.3, label: "4/4 flier" }];
+    const max = Math.max(10, Math.ceil(bd.value + 1));
+    play += `<div class="rhead"><span class="rnum">${f1(bd.value)}<small>board points</small></span></div>
+      ${gaugeHTML(max, [{ to: max, word: "" }], [...refs.map((x) => ({ ...x, cls: "ref" })), { at: bd.value, label: f1(bd.value) }], -1)}
+      <p class="rsrc">What the evaluator counts this card for on an empty battlefield${bd.kind === "creature" ? ", before damage, tapping or summoning sickness" : ""}.
+      Ticks for scale: an untapped land and three vanilla creatures. A removal permanent like Oblivion Ring is 3.5.</p>`;
+    if (bd.parts.length > 1) play += waterfallHTML("Where it comes from", bd.parts, bd.value, max, { fmt: f1, totalLabel: "Board value" });
+    else if (bd.parts.length) play += `<div class="wf"><div class="wh"><span>Priced as</span></div><div class="wrow"><span class="wl">${esc(bd.parts[0].label)}</span><span class="wt"><i style="left:0;width:${(bd.parts[0].value * 100) / max}%"></i></span><span class="wv">${f1(bd.parts[0].value)}</span></div></div>`;
+    if (bd.rule) play += '<p class="note" style="margin-top:.45rem">' + esc(bd.rule) + "</p>";
+  } else {
+    play += '<div class="rempty">' + esc(bd.rule || "No board value") + "</div>";
+  }
+  const it = r.intent;
+  // A creature's main job is its body, which the evaluator prices from stats (above) — that is a
+  // reading, not a gap. Intent tags are about its abilities, so "not recognised" is only said when
+  // there are abilities the analyzer couldn't place. Sorcery speed is every card's default and goes
+  // unsaid; instant speed and a static or activated payoff are worth a chip.
+  const creature = bd.kind === "creature" || bd.kind === "variableCreature";
+  const chips = [];
+  if (creature) chips.push('<span class="itag sp" title="attacks and blocks — valued from its stats and keywords, under In play">Creature body</span>');
+  it.tags.forEach((t) => chips.push('<span class="itag" title="' + esc(t.key) + '">' + esc(t.label) + "</span>"));
+  if (!it.tags.length && abilities !== 0) {
+    chips.push('<button class="itag none" id="rate2read" title="the intent analyzer recognised none of its abilities — see the AI reading below">' +
+      (creature ? "Abilities not recognised" : "Not recognised") + "</button>");
+  } else if (!it.tags.length && !creature) {
+    chips.push('<span class="itag sp" title="no spell effect or abilities for the analyzer to read">Nothing to read</span>');
+  }
+  if (it.speed !== "Sorcery speed") chips.push('<span class="itag sp">' + esc(it.speed) + "</span>");
+  if (r.advisor) chips.push('<span class="itag sp" title="a hand-written card advisor the live AI consults">Advisor: ' + esc(r.advisor) + "</span>");
+  play += '<div class="wf"><div class="wh"><span>What the AI thinks it is for</span></div></div><div class="itags" style="margin-top:.2rem">' +
+    chips.join("") + "</div>";
+  if (it.facts.length) play += '<ul class="ifacts">' + it.facts.map((x) => "<li>" + esc(x) + "</li>").join("") + "</ul>";
+  play += "</div>";
+
+  const lead = preview
+    ? '<div class="callout preview"><span class="h">Preview — not implemented</span><p>Rated from Assay\'s compile of the card: the numbers the AI would use if it were written that way.</p></div>'
+    : '<p class="note">The numbers the engine AI uses, from the same code it calls when it drafts, builds a deck and evaluates a board.</p>';
+  return [chip, "<h2>How the AI rates it</h2>" + lead + '<div class="rgrid">' + draft + play + "</div>"];
 }
 
 /* The two panes: what Wizards printed, and what Assay makes of it. */

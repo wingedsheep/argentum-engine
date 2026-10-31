@@ -172,6 +172,16 @@ ai-reading-audit:
     scripts/gradle-locked :ai:test --tests "*.AiReadingAuditBenchmark" -Dbenchmark=true -DaiReadingAudit=true \
         -DaiReadingAuditDir={{justfile_directory()}}/ai/build/reports/ai-reading-audit
 
+# How the engine AI covers specific cards: what its readers understand, its draft pick rating and
+# where that comes from (flags a card no table rates, so the AI guesses from the effect heuristic),
+# its board value in play, and what it thinks the card is for. Separate names with "|":
+#   just ai-card "Serra Angel|Icy Manipulator"
+[group: 'ai']
+ai-card NAMES:
+    scripts/gradle-locked :ai:test --tests "*.AiCardReport" --rerun -q -DaiCard="{{NAMES}}" \
+        -DaiCardOut={{justfile_directory()}}/ai/build/reports/ai-card.txt
+    @cat {{justfile_directory()}}/ai/build/reports/ai-card.txt
+
 # Re-bless the AI card-reading ratchet's baseline (ai/src/test/resources/ai-reading-baseline.tsv) after
 # coverage rose, or to record a card that brings an effect type the AI can't read yet.
 # AiReadingRatchetTest (in :ai:test) fails when it is behind; docs/ai/reading-audit.md, "The ratchet".

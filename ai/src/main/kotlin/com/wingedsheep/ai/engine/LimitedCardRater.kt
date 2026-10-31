@@ -102,24 +102,73 @@ object LimitedCardRater {
         DraftsimData.tablesFor(DraftsimData.ratedSetCodes()).ratings
     }
 
-    fun rate(card: CardDefinition): Double {
-        if (card.typeLine.isBasicLand) return 0.0
-        if (card.typeLine.isLand) return 1.5 // non-basic lands are decent filler
+    fun rate(card: CardDefinition): Double = measured(card)?.rating ?: heuristicRate(card)
+
+    /** Where a [rate] came from — the first of the three sources that had an answer. */
+    enum class Source {
+        /** Basic lands are always 0. */
+        BASIC_LAND,
+        /** Non-basic lands are flat filler. */
+        LAND,
+        /** A 17Lands game-in-hand win rate with enough games behind it. */
+        WIN_RATE,
+        /** A Draftsim-scale pick table, vendored or first-party. */
+        TABLE,
+        /** The structural effect heuristic. */
+        HEURISTIC,
+    }
+
+    /** One additive term of the heuristic — what one part of the card adds to its rating. */
+    data class Term(val part: String, val value: Double, val detail: String? = null)
+
+    /**
+     * [rate], with its working shown, for a developer view. [rating] is exactly [rate]'s answer;
+     * [heuristic] is always the heuristic's breakdown, even when a table outranked it, so a view can
+     * show where the structural estimate disagrees with the measured one.
+     */
+    data class Explanation(
+        val rating: Double,
+        val source: Source,
+        /** [Source.TABLE]: the table that rated it — the first rated set, in code order. */
+        val tableSet: String? = null,
+        /** [Source.WIN_RATE]: the game-in-hand win rate, and the games behind it. */
+        val winRate: Double? = null,
+        val games: Int? = null,
+        val heuristic: List<Term>,
+        val heuristicRating: Double,
+    )
+
+    fun explain(card: CardDefinition): Explanation {
+        val terms = heuristicTerms(card)
+        val heuristic = terms.sumOf { it.value }.coerceIn(0.0, 5.0)
+        val measured = measured(card)
+        if (measured == null) return Explanation(heuristicRate(card), Source.HEURISTIC, heuristic = terms, heuristicRating = heuristic)
+        val tableSet = if (measured.source == Source.TABLE) {
+            val key = DraftsimData.nameKey(card.name)
+            DraftsimData.ratedSetCodes().sorted().firstOrNull { key in DraftsimData.tablesFor(listOf(it)).ratings }
+        } else null
+        return measured.copy(tableSet = tableSet, heuristic = terms, heuristicRating = heuristic)
+    }
+
+    /** The land rule, the win rate or the table — whichever answers first — else null. */
+    private fun measured(card: CardDefinition): Explanation? {
+        fun of(rating: Double, source: Source, winRate: Double? = null, games: Int? = null) =
+            Explanation(rating, source, winRate = winRate, games = games, heuristic = emptyList(), heuristicRating = 0.0)
+        if (card.typeLine.isBasicLand) return of(0.0, Source.BASIC_LAND)
+        if (card.typeLine.isLand) return of(1.5, Source.LAND) // non-basic lands are decent filler
 
         // Try 17Lands data first
         val dataRating = allRatings[card.name]
         if (dataRating != null) {
             val winRate = dataRating.gihWinRate ?: dataRating.winRate
             if (winRate != null && (dataRating.gameCount ?: 0) >= 50) {
-                return winRateToRating(winRate)
+                return of(winRateToRating(winRate), Source.WIN_RATE, winRate, dataRating.gameCount)
             }
         }
 
         // Then the curated pick rating, which covers far more sets than the win-rate data.
-        draftsimRatings[DraftsimData.nameKey(card.name)]?.let { return it.coerceIn(0.0, 5.0) }
-
-        // Fall back to heuristic
-        return heuristicRate(card)
+        draftsimRatings[DraftsimData.nameKey(card.name)]?.let { return of(it.coerceIn(0.0, 5.0), Source.TABLE) }
+        return null
     }
 
     /**
@@ -155,6 +204,48 @@ object LimitedCardRater {
         rating += rarityBonus(card)
         rating += curveBonus(card)
         return rating.coerceIn(0.0, 5.0)
+    }
+
+    /**
+     * [heuristicRate] term by term, uncapped: the base, each keyword that moves the number, each
+     * effect slot, rarity and curve. Sums to [heuristicRate] before its 0–5 clamp. Not on the hot
+     * path — [heuristicRate] stays the one the AI calls.
+     */
+    private fun heuristicTerms(card: CardDefinition): List<Term> = buildList {
+        add(Term("Base", baseRating(card), baseDetail(card)))
+        for (keyword in card.keywords.sortedBy { it.name }) {
+            val v = KEYWORD_BONUS[keyword] ?: continue
+            add(Term(keyword.displayName, v))
+        }
+        // The same slots [effectBonus] sums ([EffectWalker.slots]), numbered the way the AI-reading
+        // audit numbers abilities — activated abilities count the mana ones they skip.
+        fun slot(part: String, effect: Effect, origin: EffectWalker.Origin) {
+            val value = EffectWalker.fold(effect, LimitedScoreFold) * origin.discount
+            if (value != 0.0) add(Term(part, value, effect.description.takeIf { it.isNotBlank() }))
+        }
+        val script = card.script
+        script.spellEffect?.let { slot("Spell", it, EffectWalker.Origin.SPELL) }
+        script.triggeredAbilities.forEachIndexed { i, t -> slot("Triggered ability ${i + 1}", t.effect, EffectWalker.Origin.TRIGGERED) }
+        script.activatedAbilities.forEachIndexed { i, a ->
+            if (!a.isManaAbility) slot("Activated ability ${i + 1}", a.effect, EffectWalker.Origin.ACTIVATED)
+        }
+        rarityBonus(card).takeIf { it != 0.0 }?.let { add(Term("Rarity", it, card.metadata.rarity.name.lowercase())) }
+        curveBonus(card).takeIf { it != 0.0 }?.let { add(Term("Curve", it, "mana value ${card.cmc}")) }
+    }
+
+    private fun baseDetail(card: CardDefinition): String = when {
+        card.typeLine.isCreature -> {
+            val p = card.creatureStats?.basePower
+            val t = card.creatureStats?.baseToughness
+            if (p == null || t == null) "creature with variable stats"
+            else "creature, ${p + t} stats for ${card.cmc.coerceAtLeast(1)} mana"
+        }
+        CardType.PLANESWALKER in card.typeLine.cardTypes -> "planeswalker"
+        card.typeLine.isInstant -> "instant"
+        card.typeLine.isSorcery -> "sorcery"
+        card.typeLine.isEnchantment -> "enchantment"
+        card.typeLine.isArtifact -> "artifact"
+        else -> "other"
     }
 
     /**
@@ -206,46 +297,40 @@ object LimitedCardRater {
     /**
      * Bonus for combat-relevant keywords.
      */
-    private fun keywordBonus(card: CardDefinition): Double {
-        var bonus = 0.0
-        val keywords = card.keywords
+    private fun keywordBonus(card: CardDefinition): Double =
+        card.keywords.sumOf { KEYWORD_BONUS[it] ?: 0.0 }
 
+    /** What each combat-relevant keyword adds to a limited rating; one table, read by both paths. */
+    private val KEYWORD_BONUS: Map<Keyword, Double> = mapOf(
         // Evasion (most valuable in limited)
-        if (Keyword.FLYING in keywords) bonus += 0.8
-        if (Keyword.MENACE in keywords) bonus += 0.4
-        if (Keyword.INTIMIDATE in keywords) bonus += 0.4
-        if (Keyword.FEAR in keywords) bonus += 0.3
-        if (Keyword.SHADOW in keywords) bonus += 0.5
-        if (Keyword.TRAMPLE in keywords) bonus += 0.3
-
+        Keyword.FLYING to 0.8,
+        Keyword.MENACE to 0.4,
+        Keyword.INTIMIDATE to 0.4,
+        Keyword.FEAR to 0.3,
+        Keyword.SHADOW to 0.5,
+        Keyword.TRAMPLE to 0.3,
         // Combat keywords
-        if (Keyword.FIRST_STRIKE in keywords) bonus += 0.4
-        if (Keyword.DOUBLE_STRIKE in keywords) bonus += 0.8
-        if (Keyword.DEATHTOUCH in keywords) bonus += 0.5
-        if (Keyword.LIFELINK in keywords) bonus += 0.4
-        if (Keyword.VIGILANCE in keywords) bonus += 0.2
-
+        Keyword.FIRST_STRIKE to 0.4,
+        Keyword.DOUBLE_STRIKE to 0.8,
+        Keyword.DEATHTOUCH to 0.5,
+        Keyword.LIFELINK to 0.4,
+        Keyword.VIGILANCE to 0.2,
         // Speed
-        if (Keyword.HASTE in keywords) bonus += 0.3
-        if (Keyword.FLASH in keywords) bonus += 0.3
-
+        Keyword.HASTE to 0.3,
+        Keyword.FLASH to 0.3,
         // Defense
-        if (Keyword.INDESTRUCTIBLE in keywords) bonus += 0.6
-        if (Keyword.HEXPROOF in keywords) bonus += 0.4
-        if (Keyword.REACH in keywords) bonus += 0.2
-
+        Keyword.INDESTRUCTIBLE to 0.6,
+        Keyword.HEXPROOF to 0.4,
+        Keyword.REACH to 0.2,
         // Negative
-        if (Keyword.DEFENDER in keywords) bonus -= 0.5
-
+        Keyword.DEFENDER to -0.5,
         // Landwalk (situational but free wins)
-        if (Keyword.SWAMPWALK in keywords) bonus += 0.2
-        if (Keyword.FORESTWALK in keywords) bonus += 0.2
-        if (Keyword.ISLANDWALK in keywords) bonus += 0.2
-        if (Keyword.MOUNTAINWALK in keywords) bonus += 0.2
-        if (Keyword.PLAINSWALK in keywords) bonus += 0.2
-
-        return bonus
-    }
+        Keyword.SWAMPWALK to 0.2,
+        Keyword.FORESTWALK to 0.2,
+        Keyword.ISLANDWALK to 0.2,
+        Keyword.MOUNTAINWALK to 0.2,
+        Keyword.PLAINSWALK to 0.2,
+    )
 
     /**
      * Bonus for spell/ability effects. Walks the effect tree to detect

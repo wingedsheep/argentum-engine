@@ -776,29 +776,40 @@ object CardIntentAnalyzer {
             // see; a prior on top would double-count them.
             return CardIntent.UNKNOWN.staticPriorValue
         }
+        return priorLadder(intent).maxOfOrNull { it.value } ?: CardIntent.UNKNOWN.staticPriorValue
+    }
+
+    /** One rung of [priorLadder]: the claim in words, and what it prices the permanent at. */
+    data class PriorRung(val claim: String, val value: Double)
+
+    /**
+     * Every rung of a non-creature permanent's prior ladder that [intent] reaches — the highest is
+     * [CardIntent.staticPriorValue]. Public so a developer view can say *which* claim priced the
+     * card; [priorValueOf] is its only in-game reader.
+     */
+    fun priorLadder(intent: CardIntent): List<PriorRung> {
         val tags = intent.tags
         val repeatable = intent.repeatable
-
-        val candidates = buildList {
+        val removal = IntentTag.REMOVAL in tags || IntentTag.EXILE_REMOVAL in tags
+        return buildList {
             // Removal that can answer a *new* permanent every turn is the strongest thing a
             // non-creature permanent does.
-            if (repeatable && (IntentTag.REMOVAL in tags || IntentTag.EXILE_REMOVAL in tags)) add(4.0)
+            if (repeatable && removal) add(PriorRung("repeatable removal", 4.0))
             // A repeatable tapper answers the same permanent every turn, and an O-Ring answers one
             // permanent for as long as it lives. Different mechanisms, comparable worth — and both
             // are things you spend a Disenchant on.
-            if (repeatable && IntentTag.TAPPER in tags) add(3.5)
-            if (IntentTag.REMOVAL in tags || IntentTag.EXILE_REMOVAL in tags) add(3.5)
-            if (repeatable && IntentTag.DRAW in tags) add(3.0)
-            if (repeatable && IntentTag.TOKEN_MAKER in tags) add(3.0)
-            if (IntentTag.ANTHEM in tags) add(3.0)
-            if (IntentTag.SACRIFICE_OUTLET in tags) add(1.5)
-            if (IntentTag.EVASION_GRANT in tags || IntentTag.PROTECTION in tags) add(1.5)
+            if (repeatable && IntentTag.TAPPER in tags) add(PriorRung("repeatable tapper", 3.5))
+            if (removal) add(PriorRung("removal", 3.5))
+            if (repeatable && IntentTag.DRAW in tags) add(PriorRung("repeatable card draw", 3.0))
+            if (repeatable && IntentTag.TOKEN_MAKER in tags) add(PriorRung("repeatable token maker", 3.0))
+            if (IntentTag.ANTHEM in tags) add(PriorRung("anthem", 3.0))
+            if (IntentTag.SACRIFICE_OUTLET in tags) add(PriorRung("sacrifice outlet", 1.5))
+            if (IntentTag.EVASION_GRANT in tags || IntentTag.PROTECTION in tags) add(PriorRung("grants evasion or protection", 1.5))
             // A mana rock is worth about a land, and an untapped land is 0.6.
-            if (IntentTag.RAMP in tags) add(0.7)
-            if (repeatable) add(1.5)
-            if (intent.speed == Speed.STATIC && tags.isNotEmpty()) add(1.0)
+            if (IntentTag.RAMP in tags) add(PriorRung("mana source", 0.7))
+            if (repeatable) add(PriorRung("repeatable ability", 1.5))
+            if (intent.speed == Speed.STATIC && tags.isNotEmpty()) add(PriorRung("static effect", 1.0))
         }
-        return candidates.maxOrNull() ?: CardIntent.UNKNOWN.staticPriorValue
     }
 
     private val OPPONENT_FACING = setOf(

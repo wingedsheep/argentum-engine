@@ -15,6 +15,7 @@ import {
   fetchSetAiReading,
   type SetAiReading,
   type SetAiReadingDetail,
+  type SetDraftRatings,
   type SetCoverage,
   type CoverageSummary,
   type SetDetail,
@@ -881,6 +882,7 @@ function AiGapsPanel({
           </span>
         </span>
       </div>
+      {data.draft && data.draft.nonland > 0 && <DraftRatingsLine draft={data.draft} />}
       {data.groups.length === 0 ? (
         <div className={styles.aiGapsEmpty}>The AI reads every implemented card in this set.</div>
       ) : (
@@ -931,6 +933,52 @@ function AiGapsPanel({
         </>
       )}
     </section>
+  )
+}
+
+/**
+ * Where the draft AI's pick numbers for this set come from, as one bar: the share its own pick
+ * table rates (solid), the share borrowed from another set's table or 17Lands (hatched), and the
+ * share nothing rates at all, which the effect heuristic guesses (amber) — the part worth seeing
+ * before trusting how the AI drafts the set.
+ */
+function DraftRatingsLine({ draft }: { draft: SetDraftRatings }) {
+  const filled = draft.nonland - draft.rated
+  const borrowed = filled - draft.heuristic
+  const pct = (n: number) => (n * 100) / draft.nonland
+  return (
+    <div className={styles.draftRatings}>
+      <span className={styles.draftRatingsLabel}>Draft picks</span>
+      <span
+        className={styles.draftRatingsBar}
+        role="img"
+        aria-label={`${draft.rated} rated by the set's pick table, ${borrowed} borrowed, ${draft.heuristic} heuristic guesses`}
+      >
+        <span className={styles.draftRatingsTable} style={{ width: `${pct(draft.rated)}%` }} />
+        <span className={styles.draftRatingsFallback} style={{ width: `${pct(borrowed)}%` }} />
+        <span className={styles.draftRatingsGuess} style={{ width: `${pct(draft.heuristic)}%` }} />
+      </span>
+      <span className={styles.draftRatingsText}>
+        {draft.hasTable ? (
+          <>
+            Pick table rates <strong>{draft.rated}</strong> of {draft.nonland} nonland cards
+          </>
+        ) : (
+          <>No pick table for this set</>
+        )}
+        {borrowed > 0 && <> · {borrowed} borrowed from other sets or 17Lands</>}
+        {draft.heuristic > 0 && (
+          <span className={styles.draftRatingsWarn}>
+            {' · '}
+            {draft.heuristic} with no draft rating — heuristic guess
+          </span>
+        )}
+        {draft.archetypes && ' · archetype-aware'}
+        <span className={styles.assayNoteTip}>
+          <HelpTip topicId="ai-rating" size="sm" />
+        </span>
+      </span>
+    </div>
   )
 }
 

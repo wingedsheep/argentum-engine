@@ -56,6 +56,17 @@ Not every flag is a bug. Some effects legitimately carry no intent tag, and an u
 effect that is a drawback has nothing to time. A group is a list of places to look, ranked by how many
 cards a fix would reach.
 
+## One card at a time
+
+```bash
+just ai-card "Serra Angel|Icy Manipulator"
+```
+
+prints each card's reading (its `✕` gaps, with reason and effect type) next to how the AI rates it —
+the draft pick rating and its source, flagging a card no data rates, plus its board value and intent
+tags. The Assay explorer's card page draws the same thing; the `add-card` and `add-feature` skills run
+it before a PR.
+
 ## Where a flag is: the per-ability reading
 
 The flags above say *what* a reader missed on a card. `AiReadingAudit.read(card)` says *where*: one

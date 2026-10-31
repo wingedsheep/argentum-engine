@@ -632,6 +632,57 @@
 .aiGapsSummary strong {
   color: var(--text-primary);
 }
+.draftRatings {
+  display: grid;
+  grid-template-columns: auto 7rem minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+  font-size: var(--font-sm);
+}
+@media (max-width: 760px) {
+  .draftRatings {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .draftRatingsText {
+    grid-column: 1 / -1;
+  }
+}
+.draftRatingsLabel {
+  color: var(--text-muted);
+  font-size: var(--font-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.draftRatingsBar {
+  display: flex;
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.08);
+}
+.draftRatingsTable {
+  background: var(--color-success-light, #6fcf97);
+}
+.draftRatingsFallback {
+  background: repeating-linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-success-light, #6fcf97) 55%, transparent) 0 3px,
+    transparent 3px 6px
+  );
+}
+.draftRatingsGuess {
+  background: var(--color-warning, #f2b134);
+}
+.draftRatingsText {
+  color: var(--text-secondary);
+}
+.draftRatingsWarn {
+  color: var(--color-warning, #f2b134);
+}
+.draftRatingsText strong {
+  color: var(--text-primary);
+}
 .aiGapsLead {
   color: var(--text-muted);
   font-size: var(--font-sm);

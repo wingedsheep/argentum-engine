@@ -261,7 +261,36 @@ costs every later reader (and Assay's own grammar) a second spelling.
   set. A new `DIVERGENT` row means Assay and the corpus now disagree about a card you moved — classify it
   before committing rather than leaving it for the next set sweep.
 
-## Step 10: Build, verify, commit
+## Step 10: Make sure the AI can use it
+
+A new effect, trigger, cost or keyword is invisible to the engine AI until its readers classify it.
+The AI still plays a card that uses it, but on a generic default: it can't tell whether a target is
+helped or hurt, what the card is for, or when to hold it — and its draft heuristic scores the new
+effect at zero, so a card no table rates is underpicked. That is how a feature that works for players
+quietly makes the AI worse.
+
+Check a card that exercises the feature:
+
+```bash
+just ai-card "<a card using it>"
+```
+
+(or open it in the Assay Explorer, where **AI reading** and **How the AI rates it** draw the same
+answers). A `✕` naming your new type, or a heuristic breakdown with no term for the ability, is the gap.
+
+- **Teach the readers in the same change when the type is new.** A new effect type is exactly the
+  classifier entry `just ai-reading-loop` would otherwise have to come back for, and you know its
+  semantics best right now. The readers: `TargetPolarityAnalyzer` (does each target slot help or hurt),
+  `CardIntentAnalyzer.tagsOf` (what it is for), `CombatReach` / `ExpiringGrantWindow` (P/T and
+  until-end-of-turn grants), and `LimitedCardRater.scoreEffect` (its draft value). Prove the reading with
+  an AI test and re-bless `just ai-reading-baseline` so the cards it fixed move to read-fully. An
+  AI-behaviour change also gets its `ai/CHANGELOG.md` line.
+- **If you leave it for later**, `AiReadingRatchetTest` will fail on the new group: re-bless the
+  baseline in this PR and name the unread type in the PR body so it lands on the ai-reading-loop list.
+- **Widened an existing type?** Check one card on the old shape and one on the new — a reader matching
+  the old shape may silently stop reading it.
+
+## Step 11: Build, verify, commit
 
 1. Run the gates via the **`verify`** skill. Fix only failures your change caused; if a pre-existing or
    other-agent test fails, report it and stop.
