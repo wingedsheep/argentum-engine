@@ -281,8 +281,8 @@ internal class ResolutionTargetValidator(
         if (!state.hasEntity(target.playerId)) return false
         if (com.wingedsheep.engine.mechanics.targeting.ControllerShroud.appliesTo(
                 state, target.playerId, predicateEvaluator = predicateEvaluator)) return false
-        if (target.playerId != controllerId && com.wingedsheep.engine.mechanics.targeting.ControllerHexproof.appliesTo(
-                state, target.playerId, predicateEvaluator = predicateEvaluator)) return false
+        if (com.wingedsheep.engine.mechanics.targeting.ControllerHexproof.appliesAgainst(
+                state, target.playerId, controllerId, predicateEvaluator = predicateEvaluator)) return false
         if (com.wingedsheep.engine.mechanics.targeting.PlayerProtectionRules.blocksTargeting(
                 state, target.playerId, sourceId, controllerId, predicateEvaluator = predicateEvaluator)) return false
         // ...and (CR 608.2b) the player-target restriction still holds. A player who

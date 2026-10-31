@@ -10799,6 +10799,15 @@ staticAbility {
   creature** card grants protection from artifacts *and* from creatures. An empty pile grants nothing,
   which is the right reading of a declined "may" imprint — which is also why this can't be modelled as
   printed `Keyword.Protection` scopes. (Mirror Golem)
+- `SuppressHexproofForGroup(filter = AllCreaturesOpponentsControl, players = null)` — "[filter] (and the
+  [players]) can be the targets of spells and abilities you control as though they didn't have hexproof".
+  Only this permanent's controller gets the bypass; it reaches "hexproof from [quality]" too (CR 702.11e)
+  but never shroud. `filter` covers permanents (Nowhere to Run: `AllCreaturesOpponentsControl`); `players`
+  — a `Player` read relative to the controller — covers players' hexproof, every player-targeting reader
+  asking `ControllerHexproof.appliesAgainst`. **Kaya, Bane of the Dead** — "your opponents and permanents
+  your opponents control with hexproof …" — is `SuppressHexproofForGroup(GroupFilter(GameObjectFilter.Permanent
+  .opponentControls()), players = Player.EachOpponent)`. Checked again at resolution, so a target chosen
+  through it becomes illegal once the permanent leaves.
 - `GrantHexproofFromToGroup(scope, filter = attachedCreature())` — "[filter] have hexproof from [scope]"
   (CR 702.11d): adds the same projected `HEXPROOF_FROM_*` keyword a printed `KeywordAbility.Hexproof(scope)`
   uses (`HexproofFromRules.keywordsFor`), so it blocks targeting by matching spells and abilities

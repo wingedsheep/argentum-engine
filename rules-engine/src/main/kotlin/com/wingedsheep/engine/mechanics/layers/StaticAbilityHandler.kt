@@ -432,12 +432,17 @@ class StaticAbilityHandler(
             )
         }
 
-        // Add component for "creatures matching filter can be targeted as though they didn't have hexproof"
-        val suppressHexproofFilters = allStaticAbilities
+        // Add component for "permanents matching filter (and the named players) can be targeted as
+        // though they didn't have hexproof"
+        val suppressHexproof = allStaticAbilities
             .filterIsInstance<com.wingedsheep.sdk.scripting.SuppressHexproofForGroup>()
-            .map { it.filter }
-        if (suppressHexproofFilters.isNotEmpty()) {
-            result = result.with(SuppressesHexproofForGroupComponent(suppressHexproofFilters))
+        if (suppressHexproof.isNotEmpty()) {
+            result = result.with(
+                SuppressesHexproofForGroupComponent(
+                    filters = suppressHexproof.map { it.filter },
+                    players = suppressHexproof.mapNotNull { it.players }
+                )
+            )
         }
 
         // Add component for "each [filter] card you own that isn't on the battlefield has madness"

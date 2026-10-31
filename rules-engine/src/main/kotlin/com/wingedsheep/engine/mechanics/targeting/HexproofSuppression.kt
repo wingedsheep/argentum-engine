@@ -10,7 +10,9 @@ import com.wingedsheep.sdk.scripting.filters.unified.Scope
 
 /**
  * Shared check for "creatures matching filter F can be targeted as though they didn't have
- * hexproof" effects (e.g. Nowhere to Run). Consulted at three points:
+ * hexproof" effects (e.g. Nowhere to Run), and its player half — "your opponents … can be the
+ * targets … as though they didn't have hexproof" (Kaya, Bane of the Dead), read by
+ * [ControllerHexproof.appliesAgainst]. Consulted at three points:
  *  - cast-time legal-action enumeration ([com.wingedsheep.engine.legalactions.utils.TargetEnumerationUtils])
  *  - cast-time target validation ([TargetValidator])
  *  - resolution-time target legality ([com.wingedsheep.engine.mechanics.stack.StackResolver])
@@ -41,6 +43,27 @@ object HexproofSuppression {
                     )
                 }
             }
+        }
+    }
+
+    /**
+     * Whether a permanent controlled by [casterId] lets [casterId]'s spells and abilities target
+     * [playerId] as though that player didn't have hexproof ([SuppressesHexproofForGroupComponent.players]).
+     */
+    fun isPlayerSuppressedForCaster(
+        state: GameState,
+        playerId: EntityId,
+        casterId: EntityId,
+        predicateEvaluator: PredicateEvaluator
+    ): Boolean {
+        val projected = state.projectedState
+        return state.getBattlefield().any { suppressorId ->
+            if (projected.getController(suppressorId) != casterId) return@any false
+            val players = state.getEntity(suppressorId)
+                ?.get<SuppressesHexproofForGroupComponent>()?.players
+            if (players.isNullOrEmpty()) return@any false
+            val ctx = PredicateContext(controllerId = casterId, sourceId = suppressorId)
+            players.any { predicateEvaluator.matchesPlayer(state, projected, it, playerId, ctx) }
         }
     }
 }

@@ -63,10 +63,18 @@ object PlayerProtectionRules {
      * against the source [sourceId] controlled by [casterId] — Veil of Summer. Hexproof never
      * stops the player's own spells and abilities, and an unknown source matches no quality.
      */
-    fun hasHexproofFromSource(state: GameState, playerId: EntityId, sourceId: EntityId?, casterId: EntityId?): Boolean {
+    fun hasHexproofFromSource(
+        state: GameState,
+        playerId: EntityId,
+        sourceId: EntityId?,
+        casterId: EntityId?,
+        predicateEvaluator: PredicateEvaluator
+    ): Boolean {
         val grants = state.getEntity(playerId)?.get<PlayerHexproofFromComponent>()?.grants ?: return false
         if (casterId == null || casterId == playerId || sourceId == null) return false
-        return grants.any { scopeMatchesSource(state, playerId, it.scope, sourceId, casterId) }
+        return grants.any { scopeMatchesSource(state, playerId, it.scope, sourceId, casterId) } &&
+            // CR 702.11e: "as though it didn't have hexproof" reaches "hexproof from [quality]" too.
+            !HexproofSuppression.isPlayerSuppressedForCaster(state, playerId, casterId, predicateEvaluator = predicateEvaluator)
     }
 
     /**
@@ -82,7 +90,7 @@ object PlayerProtectionRules {
         casterId: EntityId?,
         predicateEvaluator: PredicateEvaluator
     ): Boolean = isProtectedFromSource(state, playerId, sourceId, casterId, predicateEvaluator) ||
-        hasHexproofFromSource(state, playerId, sourceId, casterId)
+        hasHexproofFromSource(state, playerId, sourceId, casterId, predicateEvaluator)
 
     private fun scopeMatchesSource(
         state: GameState,

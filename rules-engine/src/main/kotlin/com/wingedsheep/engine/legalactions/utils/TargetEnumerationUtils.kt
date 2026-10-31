@@ -72,7 +72,7 @@ class TargetEnumerationUtils(
                 !playerHasHexproofAgainst(state, it, playerId) && !playerHasProtectionFrom(state, it, sourceId, playerId) &&
                 PlayerTargetRestriction.isSatisfied(state, requirement.restriction, it, playerId, sourceId, predicateEvaluator = predicateEvaluator) }
             is TargetOpponent -> state.turnOrder.filter { it != playerId && state.hasEntity(it) && !playerHasShroud(state, it) &&
-                !playerHasHexproof(state, it) && !playerHasProtectionFrom(state, it, sourceId, playerId) &&
+                !playerHasHexproofAgainst(state, it, playerId) && !playerHasProtectionFrom(state, it, sourceId, playerId) &&
                 PlayerTargetRestriction.isSatisfied(state, requirement.restriction, it, playerId, sourceId, predicateEvaluator = predicateEvaluator) }
             is AnyTarget -> {
                 val projected = state.projectedState
@@ -107,7 +107,7 @@ class TargetEnumerationUtils(
             }
             is TargetOpponentOrPlaneswalker -> {
                 val opponents = state.turnOrder.filter { it != playerId && state.hasEntity(it) && !playerHasShroud(state, it) &&
-                    !playerHasHexproof(state, it) && !playerHasProtectionFrom(state, it, sourceId, playerId) }
+                    !playerHasHexproofAgainst(state, it, playerId) && !playerHasProtectionFrom(state, it, sourceId, playerId) }
                 val planeswalkers = findValidPermanentTargets(state, playerId, TargetFilter.Planeswalker, sourceId, targetingSourceType)
                 opponents + planeswalkers
             }
@@ -193,7 +193,9 @@ class TargetEnumerationUtils(
                 !HexproofSuppression.isSuppressedForCaster(state, projected, entityId, playerId, predicateEvaluator = predicateEvaluator)
             ) return@filter false
             if (entityController != playerId && sourceId != null &&
-                hasHexproofFromSource(state, entityId, sourceId)
+                hasHexproofFromSource(state, entityId, sourceId) &&
+                // CR 702.11e: a hexproof suppressor looks through "hexproof from" as well.
+                !HexproofSuppression.isSuppressedForCaster(state, projected, entityId, playerId, predicateEvaluator = predicateEvaluator)
             ) return@filter false
             if (projected.hasKeyword(entityId, Keyword.SHROUD)) return@filter false
             if (sourceId != null && hasColorProtectionFromSource(state, entityId, sourceId)) return@filter false
@@ -545,11 +547,8 @@ class TargetEnumerationUtils(
     fun playerHasShroud(state: GameState, playerId: EntityId): Boolean =
         ControllerShroud.appliesTo(state, playerId, predicateEvaluator = predicateEvaluator)
 
-    fun playerHasHexproof(state: GameState, playerId: EntityId): Boolean =
-        ControllerHexproof.appliesTo(state, playerId, predicateEvaluator = predicateEvaluator)
-
     fun playerHasHexproofAgainst(state: GameState, playerId: EntityId, controllerId: EntityId): Boolean {
-        return playerId != controllerId && playerHasHexproof(state, playerId)
+        return ControllerHexproof.appliesAgainst(state, playerId, controllerId, predicateEvaluator = predicateEvaluator)
     }
 
     /**

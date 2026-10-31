@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Color
@@ -672,14 +673,26 @@ data object GrantCantLoseGameFromLife : StaticAbility {
  * so [GroupFilter.AllCreaturesOpponentsControl] means "creatures opponents of the
  * controller of this permanent control" — which is what "your opponents" means.
  *
- * Does NOT suppress shroud (shroud still prevents targeting by all players).
+ * [players] widens it to players: the players it names (read relative to this permanent's
+ * controller) can be targeted as though they didn't have hexproof too. Kaya, Bane of the Dead —
+ * "Your opponents and permanents your opponents control with hexproof can be the targets of
+ * spells and abilities you control as though they didn't have hexproof" — is
+ * `players = Player.EachOpponent` over a permanents-opponents-control [filter]. Null (the
+ * default) leaves players' hexproof alone.
+ *
+ * Only spells and abilities this permanent's controller controls get the bypass, and it reaches
+ * "hexproof from [quality]" as well (CR 702.11e). Does NOT suppress shroud (shroud still prevents
+ * targeting by all players).
  */
 @SerialName("SuppressHexproofForGroup")
 @Serializable
 data class SuppressHexproofForGroup(
-    val filter: GroupFilter = GroupFilter.AllCreaturesOpponentsControl
+    val filter: GroupFilter = GroupFilter.AllCreaturesOpponentsControl,
+    val players: Player? = null
 ) : StaticAbility {
-    override val description: String = "${filter.description} can be targeted as though they didn't have hexproof"
+    override val description: String =
+        (players?.let { "${it.description.replaceFirstChar(Char::uppercase)} and " } ?: "") +
+            "${filter.description} can be targeted as though they didn't have hexproof"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
         return if (newFilter !== filter) copy(filter = newFilter) else this

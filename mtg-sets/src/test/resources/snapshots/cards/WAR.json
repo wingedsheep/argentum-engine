@@ -4605,6 +4605,71 @@
     ]
 }
 
+// Kaya, Bane of the Dead
+{
+    "name": "Kaya, Bane of the Dead",
+    "manaCost": "{3}{W/B}{W/B}{W/B}",
+    "typeLine": "Legendary Planeswalker — Kaya",
+    "oracleText": "Your opponents and permanents your opponents control with hexproof can be the targets of spells and abilities you control as though they didn't have hexproof.\n−3: Exile target creature.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kaya, Bane of the Dead:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Exile target creature."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "SuppressHexproofForGroup",
+                "filter": {
+                    "baseFilter": "permanent ctrl:opponent"
+                },
+                "players": "EachOpponent"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "231",
+        "rarity": "UNCOMMON",
+        "artist": "Magali Villeneuve",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a9b575d3-f3f9-4ff4-8e5c-da7c2ec69882.jpg?1783933378",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "If a spell or ability you control targets an opponent with hexproof or an opponent's permanent with hexproof, and Kaya leaves the battlefield while that spell or ability is on the stack, that player or permanent becomes an illegal target for that spell or ability. This includes Kaya's own loyalty ability."
+            }
+        ]
+    },
+    "startingLoyalty": 7,
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Kiora's Dambreaker
 {
     "name": "Kiora's Dambreaker",

@@ -1449,17 +1449,19 @@ data class CantBeBlockedWhilePropertyAtMostComponent(
 ) : Component
 
 /**
- * Marks a permanent as suppressing hexproof for creatures matching any of [filters].
+ * Marks a permanent as suppressing hexproof for permanents matching any of [filters] and for the
+ * players any of [players] names.
  *
- * Stores one filter per [SuppressHexproofForGroup] static ability on the permanent so
- * multiple such abilities stack correctly. Each filter is evaluated with the permanent's
- * controller as the "you" context.
+ * Stores one filter (and at most one player reference) per [SuppressHexproofForGroup] static
+ * ability on the permanent so multiple such abilities stack correctly. Each is evaluated with the
+ * permanent's controller as the "you" context.
  *
  * Created by [StaticAbilityHandler] from [SuppressHexproofForGroup] static abilities.
  */
 @Serializable
 data class SuppressesHexproofForGroupComponent(
-    val filters: List<GroupFilter>
+    val filters: List<GroupFilter>,
+    val players: List<com.wingedsheep.sdk.scripting.references.Player> = emptyList()
 ) : Component
 
 /**

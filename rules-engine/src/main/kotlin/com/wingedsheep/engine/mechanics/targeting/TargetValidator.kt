@@ -495,7 +495,7 @@ class TargetValidator(
             if (PlayerProtectionRules.isProtectedFromSource(state, target.playerId, sourceId, casterId, predicateEvaluator = predicateEvaluator)) {
                 return "Target player has protection from this source"
             }
-            if (PlayerProtectionRules.hasHexproofFromSource(state, target.playerId, sourceId, casterId)) {
+            if (PlayerProtectionRules.hasHexproofFromSource(state, target.playerId, sourceId, casterId, predicateEvaluator = predicateEvaluator)) {
                 return "Target player has hexproof from this source"
             }
         }
@@ -871,7 +871,7 @@ class TargetValidator(
         if (playerHasShroud(state, target.playerId)) {
             return "Target player has shroud"
         }
-        if (playerHasHexproof(state, target.playerId)) {
+        if (playerHasHexproofAgainst(state, target.playerId, casterId)) {
             return "Target player has hexproof"
         }
         if (!PlayerTargetRestriction.isSatisfied(state, requirement.restriction, target.playerId, casterId, sourceId, predicateEvaluator = predicateEvaluator)) {
@@ -963,7 +963,7 @@ class TargetValidator(
                 if (!state.hasEntity(target.playerId)) "Target player not found"
                 else if (target.playerId == casterId) "Target must be an opponent"
                 else if (playerHasShroud(state, target.playerId)) "Target player has shroud"
-                else if (playerHasHexproof(state, target.playerId)) "Target player has hexproof"
+                else if (playerHasHexproofAgainst(state, target.playerId, casterId)) "Target player has hexproof"
                 else null
             }
             is ChosenTarget.Permanent -> {
@@ -1224,10 +1224,7 @@ class TargetValidator(
     private fun playerHasShroud(state: GameState, playerId: EntityId): Boolean =
         ControllerShroud.appliesTo(state, playerId, predicateEvaluator = predicateEvaluator)
 
-    private fun playerHasHexproof(state: GameState, playerId: EntityId): Boolean =
-        ControllerHexproof.appliesTo(state, playerId, predicateEvaluator = predicateEvaluator)
-
     private fun playerHasHexproofAgainst(state: GameState, playerId: EntityId, casterId: EntityId): Boolean {
-        return playerId != casterId && playerHasHexproof(state, playerId)
+        return ControllerHexproof.appliesAgainst(state, playerId, casterId, predicateEvaluator = predicateEvaluator)
     }
 }

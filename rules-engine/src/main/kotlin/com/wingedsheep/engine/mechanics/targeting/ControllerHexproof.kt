@@ -41,9 +41,13 @@ object ControllerHexproof {
     }
 
     /**
-     * Whether [playerId] has hexproof *against* [casterId] — hexproof never stops the player's own
-     * spells and abilities (CR 702.11b), so this is false when they are the same player.
+     * Whether [playerId]'s hexproof stops [casterId]'s spells and abilities from targeting them —
+     * hexproof never stops the player's own (CR 702.11c), and a permanent [casterId] controls may
+     * let them target [playerId] as though [playerId] didn't have hexproof (Kaya, Bane of the
+     * Dead — [HexproofSuppression.isPlayerSuppressedForCaster]). Every targeting reader asks this,
+     * never [appliesTo], so the two exemptions can't drift between them.
      */
     fun appliesAgainst(state: GameState, playerId: EntityId, casterId: EntityId, predicateEvaluator: PredicateEvaluator): Boolean =
-        playerId != casterId && appliesTo(state, playerId, predicateEvaluator = predicateEvaluator)
+        playerId != casterId && appliesTo(state, playerId, predicateEvaluator = predicateEvaluator) &&
+            !HexproofSuppression.isPlayerSuppressedForCaster(state, playerId, casterId, predicateEvaluator = predicateEvaluator)
 }
