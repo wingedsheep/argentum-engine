@@ -23,6 +23,7 @@ import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
+import com.wingedsheep.sdk.scripting.effects.GatedEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
@@ -539,6 +540,12 @@ object AiReadingAudit {
      * training) flagged, which errs toward flagging.
      */
     private fun needsNoIntent(leaf: Effect): Boolean {
+        // A gate is read through its branches (CardIntentAnalyzer opens them), so a gate whose
+        // branches only grow its own source — "if you win the clash, put a +1/+1 counter on this
+        // creature" — needs no more reading than the counter would on its own.
+        if (leaf is GatedEffect) {
+            return listOfNotNull(leaf.then, leaf.otherwise).flatMap { EffectWalker.leaves(it) }.all(::needsNoIntent)
+        }
         val (counter, target) = when (leaf) {
             is AddCountersEffect -> leaf.counterType to leaf.target
             is AddDynamicCountersEffect -> leaf.counterType to leaf.target
