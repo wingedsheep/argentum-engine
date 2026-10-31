@@ -45,9 +45,8 @@ class MoveCountersEachKindMissingExecutor(
             ?: return EffectResult.success(state, emptyList())
         if (sourceId == destinationId) return EffectResult.success(state, emptyList())
 
-        if (!state.projectedState.canReceiveCounters(destinationId)) {
-            return EffectResult.success(state, emptyList())
-        }
+        // CR 122.5: a kind the destination can't have (all, or one — Blightbeetle) isn't moved.
+        val projected = state.projectedState
 
         val sourceCounters = state.getEntity(sourceId)?.get<CountersComponent>()
             ?: return EffectResult.success(state, emptyList())
@@ -55,7 +54,7 @@ class MoveCountersEachKindMissingExecutor(
 
         // Each kind present on the source that the destination does not already have.
         val kindsToMove = sourceCounters.counters
-            .filter { it.value > 0 && destCounters.getCount(it.key) == 0 }
+            .filter { it.value > 0 && destCounters.getCount(it.key) == 0 && projected.canReceiveCounters(destinationId, it.key) }
             .keys.toList()
 
         if (kindsToMove.isEmpty()) return EffectResult.success(state, emptyList())

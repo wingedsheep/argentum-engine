@@ -40,12 +40,11 @@ class MoveAllCountersExecutor(
         val destinationId = context.resolveTarget(effect.destination, state)
             ?: return EffectResult.success(state, emptyList())
         if (sourceId == destinationId) return EffectResult.success(state, emptyList())
-        if (!state.projectedState.canReceiveCounters(destinationId)) {
-            return EffectResult.success(state, emptyList())
-        }
+        // CR 122.5: kinds the destination can't have (all, or one — Blightbeetle) stay on the source.
+        val projected = state.projectedState
 
         val moving = state.getEntity(sourceId)?.get<CountersComponent>()?.counters
-            ?.filterValues { it > 0 }
+            ?.filter { (kind, count) -> count > 0 && projected.canReceiveCounters(destinationId, kind) }
             .orEmpty()
         if (moving.isEmpty()) return EffectResult.success(state, emptyList())
 
@@ -55,7 +54,10 @@ class MoveAllCountersExecutor(
 
         // Remove from the source first so a destination counter-placement modifier can't read
         // stale source state.
-        var newState = state.updateEntity(sourceId) { it.with(CountersComponent()) }
+        val sourceCounters = state.getEntity(sourceId)?.get<CountersComponent>() ?: CountersComponent()
+        var newState = state.updateEntity(sourceId) {
+            it.with(moving.entries.fold(sourceCounters) { acc, (kind, count) -> acc.withRemoved(kind, count) })
+        }
         moving.forEach { (counterType, count) ->
             events.add(CountersRemovedEvent(sourceId, counterType, count, sourceName, removedBy = context.controllerId))
         }

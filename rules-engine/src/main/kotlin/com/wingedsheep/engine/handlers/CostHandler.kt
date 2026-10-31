@@ -233,7 +233,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
                 // a legal blight target — CR 614.17b: the cost's event can't happen.
                 val projected = state.projectedState
                 projected.getBattlefieldControlledBy(controllerId)
-                    .any { projected.isCreature(it) && projected.canReceiveCounters(it, com.wingedsheep.sdk.core.CounterType.MINUS_ONE_MINUS_ONE) }
+                    .any { projected.isCreature(it) && projected.canReceiveCounters(it, CounterType.MINUS_ONE_MINUS_ONE) }
             }
             is AbilityCost.Craft -> {
                 // Source on battlefield + enough materials in the unified BF+GY pool (CR 702.167a-b).
@@ -618,7 +618,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
                 if (projected.getController(targetId) != controllerId || !projected.isCreature(targetId)) {
                     return CostPaymentResult.failure("Blight target must be a creature you control")
                 }
-                if (!projected.canReceiveCounters(targetId, com.wingedsheep.sdk.core.CounterType.MINUS_ONE_MINUS_ONE)) {
+                if (!projected.canReceiveCounters(targetId, CounterType.MINUS_ONE_MINUS_ONE)) {
                     return CostPaymentResult.failure("Blight target can't have counters put on it")
                 }
                 // A cost isn't an effect: placement replacements apply, Doubling Season's doesn't.

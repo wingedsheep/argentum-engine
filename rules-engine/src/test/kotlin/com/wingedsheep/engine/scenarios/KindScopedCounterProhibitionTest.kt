@@ -123,6 +123,26 @@ class KindScopedCounterProhibitionTest : FunSpec({
         result.events.filterIsInstance<CountersAddedEvent>().map { it.entityId } shouldBe listOf(mine)
     }
 
+    test("moving the prohibited kind onto a covered creature leaves it on the source (CR 122.5)") {
+        val d = driver()
+        val from = d.putCreatureOnBattlefield(d.player2, "Grizzly Bears")
+        d.addComponent(from, CountersComponent(mapOf(plus to 2, minus to 1)))
+        val onto = d.putCreatureOnBattlefield(d.player1, "Grizzly Bears")
+
+        val one = d.run(Effects.MoveCounters(plus, com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed(2),
+            EffectTarget.SpecificEntity(from), EffectTarget.SpecificEntity(onto)), d.player2)
+        one.state.count(from, plus) shouldBe 2
+        one.state.count(onto, plus) shouldBe 0
+        one.events shouldBe emptyList()
+
+        // Moving every counter moves only the kinds the destination can have.
+        val all = d.run(Effects.MoveAllCounters(EffectTarget.SpecificEntity(from), EffectTarget.SpecificEntity(onto)), d.player2)
+        all.state.count(from, plus) shouldBe 2
+        all.state.count(from, minus) shouldBe 0
+        all.state.count(onto, minus) shouldBe 1
+        all.state.count(onto, plus) shouldBe 0
+    }
+
     test("a cost that puts the prohibited kind on a covered permanent can't be paid; other kinds can") {
         val d = driver()
         d.passPriorityUntil(Step.PRECOMBAT_MAIN)

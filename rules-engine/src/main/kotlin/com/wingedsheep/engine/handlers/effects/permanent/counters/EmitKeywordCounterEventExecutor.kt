@@ -56,7 +56,7 @@ class EmitKeywordCounterEventExecutor(
 
         // "Puts one or more +1/+1 counters": mirror the placement AddCountersExecutor performed.
         // A "can't have counters put on it" prohibition means zero counters landed — no event.
-        if (!state.projectedState.canReceiveCounters(creatureId, com.wingedsheep.sdk.core.CounterType.PLUS_ONE_PLUS_ONE)) return EffectResult.success(state)
+        if (!state.projectedState.canReceiveCounters(creatureId, CounterType.PLUS_ONE_PLUS_ONE)) return EffectResult.success(state)
 
         val placed = ReplacementEffectUtils.applyCounterPlacementModifiers(
             state,

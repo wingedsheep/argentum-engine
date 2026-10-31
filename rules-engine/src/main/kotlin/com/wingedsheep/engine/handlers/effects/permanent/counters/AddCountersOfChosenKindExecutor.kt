@@ -71,7 +71,7 @@ class AddCountersOfChosenKindExecutor(
             effect.kinds.distinct().filterNot { it in present }
         } else {
             present
-        }
+        }.filter { state.projectedState.canReceiveCounters(recipientId, it) }
         if (kinds.isEmpty()) return EffectResult.success(state, emptyList())
 
         if (kinds.size == 1 || effect.atRandom) {

@@ -503,7 +503,7 @@ class ActivatedAbilityEnumerator(
                     is AbilityCost.Blight -> {
                         blightCost = effectiveCost
                         blightCreatures = projected.getBattlefieldControlledBy(playerId)
-                            .filter { projected.isCreature(it) && projected.canReceiveCounters(it, com.wingedsheep.sdk.core.CounterType.MINUS_ONE_MINUS_ONE) }
+                            .filter { projected.isCreature(it) && projected.canReceiveCounters(it, CounterType.MINUS_ONE_MINUS_ONE) }
                         if (blightCreatures.isEmpty()) continue
                     }
                     is AbilityCost.DiscardLastDrawnThisTurn -> {
@@ -854,7 +854,7 @@ class ActivatedAbilityEnumerator(
                                 is AbilityCost.Blight -> {
                                     blightCost = subCost
                                     blightCreatures = projected.getBattlefieldControlledBy(playerId)
-                                        .filter { projected.isCreature(it) && projected.canReceiveCounters(it, com.wingedsheep.sdk.core.CounterType.MINUS_ONE_MINUS_ONE) }
+                                        .filter { projected.isCreature(it) && projected.canReceiveCounters(it, CounterType.MINUS_ONE_MINUS_ONE) }
                                     if (blightCreatures.isEmpty()) {
                                         costCanBePaid = false
                                         break

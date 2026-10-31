@@ -6,6 +6,7 @@ import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.m20.cards.Blightbeetle
 import com.wingedsheep.mtg.sets.definitions.mrd.cards.Battlegrowth
+import com.wingedsheep.mtg.sets.definitions.shm.cards.Scar
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Step
@@ -22,7 +23,7 @@ import io.kotest.matchers.shouldBe
 class BlightbeetleScenarioTest : FunSpec({
 
     fun setup(): GameTestDriver = GameTestDriver().apply {
-        registerCards(TestCards.all + listOf(Blightbeetle, Battlegrowth))
+        registerCards(TestCards.all + listOf(Blightbeetle, Battlegrowth, Scar))
         initMirrorMatch(deck = Deck.of("Forest" to 40), skipMulligans = true)
     }
     fun GameTestDriver.plusCounters(id: EntityId) =
@@ -59,5 +60,22 @@ class BlightbeetleScenarioTest : FunSpec({
 
         d.plusCounters(ownBears) shouldBe 1
         d.state.projectedState.getPower(ownBears) shouldBe 3
+    }
+
+    test("other kinds of counter still go on an opponent's creature") {
+        val d = setup()
+        val you = d.activePlayer!!
+        val opponent = d.getOpponent(you)
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        d.putCreatureOnBattlefield(you, "Blightbeetle")
+        val theirBears = d.putCreatureOnBattlefield(opponent, "Grizzly Bears")
+
+        d.giveMana(you, Color.BLACK)
+        val scar = d.putCardInHand(you, "Scar")
+        d.castSpellWithTargets(you, scar, listOf(ChosenTarget.Permanent(theirBears))).error shouldBe null
+        d.bothPass()
+
+        d.state.getEntity(theirBears)?.get<CountersComponent>()?.getCount(CounterType.MINUS_ONE_MINUS_ONE) shouldBe 1
+        d.state.projectedState.getPower(theirBears) shouldBe 1
     }
 })

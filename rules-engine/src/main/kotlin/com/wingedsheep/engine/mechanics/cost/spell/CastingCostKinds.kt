@@ -93,7 +93,7 @@ private fun validateBlightTarget(check: SpellCostCheck, targetId: EntityId): Str
     if (!projected.isCreature(targetId)) {
         return "Blight target must be a creature"
     }
-    if (!projected.canReceiveCounters(targetId, com.wingedsheep.sdk.core.CounterType.MINUS_ONE_MINUS_ONE)) {
+    if (!projected.canReceiveCounters(targetId, CounterType.MINUS_ONE_MINUS_ONE)) {
         return "Blight target can't have counters put on it"
     }
     return null
@@ -103,7 +103,7 @@ private fun validateBlightTarget(check: SpellCostCheck, targetId: EntityId): Str
 private fun blightableCreatures(env: SpellCostEnumeration): List<EntityId> {
     val projected = env.state.projectedState
     return projected.getBattlefieldControlledBy(env.playerId)
-        .filter { projected.isCreature(it) && projected.canReceiveCounters(it, com.wingedsheep.sdk.core.CounterType.MINUS_ONE_MINUS_ONE) }
+        .filter { projected.isCreature(it) && projected.canReceiveCounters(it, CounterType.MINUS_ONE_MINUS_ONE) }
 }
 
 /**
@@ -525,7 +525,7 @@ internal object BlightVariableCostKind : SpellCostKind<AdditionalCost.BlightVari
             .filter { permId ->
                 projected.getController(permId) == check.playerId &&
                     projected.isCreature(permId) &&
-                    projected.canReceiveCounters(permId, com.wingedsheep.sdk.core.CounterType.MINUS_ONE_MINUS_ONE)
+                    projected.canReceiveCounters(permId, CounterType.MINUS_ONE_MINUS_ONE)
             }
             .maxOfOrNull { projected.getToughness(it) ?: 0 } ?: 0
         if (amount > maxToughness) {

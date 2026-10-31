@@ -154,6 +154,8 @@ object MoveChosenCountersFlow {
         predicates: PredicateEvaluator
     ): Pair<GameState, List<GameEvent>> {
         val sourceCounters = state.getEntity(move.sourceId)?.get<CountersComponent>() ?: return state to emptyList()
+        // CR 122.5: a counter the destination can't have isn't removed from the source either.
+        if (!state.projectedState.canReceiveCounters(move.destinationId, kind)) return state to emptyList()
         val removable = minOf(count, sourceCounters.getCount(kind))
         if (removable <= 0) return state to emptyList()
 

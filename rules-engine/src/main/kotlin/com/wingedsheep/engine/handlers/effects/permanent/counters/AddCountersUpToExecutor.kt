@@ -41,7 +41,7 @@ class AddCountersUpToExecutor(
         val targetId = context.resolveTarget(effect.target, state)
             ?: return EffectResult.success(state, emptyList())
 
-        if (!state.projectedState.canReceiveCounters(targetId)) {
+        if (!state.projectedState.canReceiveCounters(targetId, effect.counterType)) {
             return EffectResult.success(state, emptyList())
         }
 
