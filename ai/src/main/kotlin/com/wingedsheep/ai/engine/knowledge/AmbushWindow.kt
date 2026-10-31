@@ -1,5 +1,6 @@
 package com.wingedsheep.ai.engine.knowledge
 
+import com.wingedsheep.ai.engine.CombatMath
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -118,13 +119,23 @@ internal object AmbushWindow {
         // Under [readArrival], only what the card can cash in this turn: a loot on attacking is
         // no reason to land a no-haste body early — see [CardIntent.arrivalTags].
         val tags = if (readArrival) intent.tagsOnArrival else intent.tags
-        if (tags.any { it in PAYS_OFF_BEFORE_THE_AMBUSH }) return false
+        // Both payoffs below are "before we attack", and in our own upkeep or draw step our main
+        // phase is still ahead of the attack: casting there is the same payoff with a card more
+        // seen, so neither releases the hold yet (a Little Bear flashed in on our own upkeep).
+        val mainPhaseAhead = state.activePlayerId == playerId && state.step in BEFORE_OUR_MAIN
+        if (!mainPhaseAhead && tags.any { it in PAYS_OFF_BEFORE_THE_AMBUSH }) return false
 
         // An ETB that answers *their* board wants to happen before we attack. One that points only
         // at our own — a blink, a self-bounce — is worth exactly the same a step later, which is
         // Restoration Angel and is the position that started this. The tag alone cannot tell them
         // apart; see [CardIntent.targetsOnlyOurPermanents] for why.
-        if (tags.any { it in ANSWERS_THEIR_BOARD } && !intent.targetsOnlyOurPermanents) {
+        //
+        // Tapping is the one answer that is *only* about the attack: a blocker tapped on our turn
+        // with nothing of ours able to attack is untapped again before it matters (Glamermite's
+        // "tap target creature", game 6d7c6893).
+        val answers = tags.filter { it in ANSWERS_THEIR_BOARD }
+        val answerPaysNow = answers.any { it != IntentTag.TAPPER } || !tappedBlockerIsWasted(state, playerId)
+        if (!mainPhaseAhead && answers.isNotEmpty() && answerPaysNow && !intent.targetsOnlyOurPermanents) {
             return false
         }
 
@@ -324,6 +335,17 @@ internal object AmbushWindow {
      * token, three life, an opponent's discard and an outlet with nothing to feed it are all worth
      * exactly the same one window later.
      */
+    /** Our own turn's steps that come before our first main phase. */
+    private val BEFORE_OUR_MAIN = setOf(Step.UNTAP, Step.UPKEEP, Step.DRAW)
+
+    /**
+     * Whether tapping one of their creatures now buys nothing: it is our turn and nothing we
+     * control can attack. On their turn a tap still stops an attacker, so it never is.
+     */
+    private fun tappedBlockerIsWasted(state: GameState, playerId: EntityId): Boolean =
+        state.activePlayerId == playerId &&
+            CombatMath.getCreaturesThatCanAttack(state, state.projectedState, playerId).isEmpty()
+
     private val PAYS_OFF_BEFORE_THE_AMBUSH = setOf(
         IntentTag.PUMP, IntentTag.ANTHEM, IntentTag.EVASION_GRANT, IntentTag.PROTECTION,
         IntentTag.DRAW, IntentTag.TUTOR, IntentTag.RAMP, IntentTag.RECURSION,

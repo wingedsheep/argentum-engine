@@ -29,6 +29,9 @@ Format — newest first, one bullet each:
 ## Changes
 
 - #4151 Generated Commander decks now fill role quotas — about ten ramp (fixing ramp first for three-plus colours), eight interaction, seven card draw — and 25 cards on the commander's tribe, keywords or theme, and play 36 lands with the pool's on-colour duals instead of 38 basics split by pips
+- #4150 Reads "choose one" spells (charms, commands): in hand a charm is worth what any of its modes does, and a cast is judged by the modes it chose — it no longer spends a charm's team pump at the opponent's end step or its counter mode on an empty stack, and sees a tax-counter mode's tax
+- #4150 Reads +1/+1 counters put on another creature as a pump and -1/-1 counters on an opponent's creature as removal, so it flashes in a creature like Little Bear before combat when the counter makes its attack lethal; still holds a flash creature in its own upkeep, and one whose ETB only taps a blocker when it has nothing to attack with
+- #4150 Returns the best card from its graveyard ("return target card from your graveyard"), not the cheapest, and prices graveyard cards by what they would be on the battlefield
 - #4149 Limited decks run a non-basic land only when it makes nothing but deck colours (splash included) or fixes two of them — no more off-colour tapped duals — and at most one colourless utility land, only when the deck has something for it to do
 - #4147 Limited decks whose two colours can't fill the spell slots now splash a few single-pip cards in a third colour instead of padding the gap with basics, running 18 lands rather than 21–22
 - #4144 When removal ("destroy target land" and the like) would leave the board looking the same whichever side it hits, it hits the opponent's permanent, not its own

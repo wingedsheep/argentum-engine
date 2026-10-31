@@ -199,7 +199,9 @@ class HoldPolicy(
             .takeIf { it !is TimingVerdict.Neutral }
             ?.let { return it }
 
-        val intent = intents.forName(cardName) ?: return TimingVerdict.Neutral
+        // A modal cast is read off the modes it chose, not the union the card carries in hand.
+        val intent = (if (cast != null) intents.forCast(cardName, cast) else intents.forName(cardName))
+            ?: return TimingVerdict.Neutral
 
         // A permanent whose entry has nothing to point at — or an Aura whose entry is gated on a
         // creature it is not being cast onto — does nothing in any window. Nor does a sweep over

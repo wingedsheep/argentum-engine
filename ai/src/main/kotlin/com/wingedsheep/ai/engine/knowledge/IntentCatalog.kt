@@ -1,5 +1,6 @@
 package com.wingedsheep.ai.engine.knowledge
 
+import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.legalactions.utils.CastPermissionUtils
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
@@ -76,6 +77,21 @@ class IntentCatalog private constructor(private val registry: CardRegistry?) {
      */
     fun forName(name: String): CardIntent? {
         val definition = registry?.getCard(name) ?: return null
+        return CardIntentAnalyzer.analyze(definition)
+    }
+
+    /**
+     * The intent of casting the card called [cardName] the way [cast] does: for a modal spell with
+     * its modes chosen, what *those* modes do ([CardIntentAnalyzer.analyzeModes]); otherwise the
+     * card's own reading, exactly [forName]. The reading every "is this the window?" question about
+     * a materialized cast should ask — a charm's union of modes answers "what is it worth in hand",
+     * not "what does this cast do".
+     */
+    fun forCast(cardName: String, cast: CastSpell): CardIntent? {
+        val definition = registry?.getCard(cardName) ?: return null
+        if (cast.faceIndex == null && !cast.castFused) {
+            CardIntentAnalyzer.analyzeModes(definition, cast.chosenModes)?.let { return it }
+        }
         return CardIntentAnalyzer.analyze(definition)
     }
 

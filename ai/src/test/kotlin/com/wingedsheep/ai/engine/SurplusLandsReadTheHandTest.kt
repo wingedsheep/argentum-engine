@@ -16,10 +16,12 @@ import io.kotest.matchers.shouldBe
  * buys a land with nothing to cast off it; the fight mode has Centaur Courser (3/3) kill the
  * opponent's only creature and survive. The evaluator used to count every land within the next two
  * drops as a whole card, so the fetched Forest outscored the dead Llanowar Elves.
+ *
+ * The flag-off half of this test (it fetched the Forest) was retired once the AI could read a
+ * modal spell's modes: with the fight mode read as removal, it finds the fight even pricing every
+ * land as a card.
  */
 class SurplusLandsReadTheHandTest : ScenarioTestBase() {
-
-    private val before = AiProfile.LIVE.copy(id = "live-without-hand-read-lands", surplusLandsReadTheHand = false)
 
     /** Let the AI play out our precombat main, the opponent passing, until it leaves the step. */
     private fun TestGame.letAiPlayOutMain(profile: AiProfile, limit: Int = 20) {
@@ -60,15 +62,6 @@ class SurplusLandsReadTheHandTest : ScenarioTestBase() {
             game.isInGraveyard(2, "Llanowar Elves") shouldBe true
             // This turn's Forest was played; the other is still waiting for next turn's drop.
             game.findCardsInHand(1, "Forest").size shouldBe 1
-        }
-
-        test("pricing every land within two drops as a card, it fetched the Forest instead") {
-            val game = bushwhackPosition()
-            game.letAiPlayOutMain(before)
-
-            game.isInGraveyard(1, "Bushwhack") shouldBe true
-            game.isInGraveyard(2, "Llanowar Elves") shouldBe false
-            game.findCardsInHand(1, "Forest").size shouldBe 2
         }
     }
 }

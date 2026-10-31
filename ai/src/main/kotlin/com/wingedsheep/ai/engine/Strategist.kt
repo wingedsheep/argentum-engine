@@ -1177,7 +1177,7 @@ class Strategist(
         if (state.step != Step.PRECOMBAT_MAIN || simulator.resolvingNestedDecision) return null
         if (leafState.gameOver || leafState.pendingDecision != null) return null
         val isPump = when (val gameAction = action.action) {
-            is CastSpell -> intents.forName(cardName)?.let { IntentTag.COMBAT_TRICK in it.tags || it.expiringGroupPump } == true
+            is CastSpell -> intents.forCast(cardName, gameAction)?.let { IntentTag.COMBAT_TRICK in it.tags || it.expiringGroupPump } == true
             is ActivateAbility -> intents.activatedAbility(cardName, gameAction.abilityId)
                 ?.let(ExpiringGrantWindow::buysOnlyExpiringCreatureGrants) == true
             else -> false

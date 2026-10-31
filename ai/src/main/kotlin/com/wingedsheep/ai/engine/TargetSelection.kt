@@ -77,6 +77,13 @@ object TargetSelection {
             // Opponent creatures: higher value = better target for removal
             // Friendly creatures rank below opponents in this removal-oriented fallback.
             if (isOpponent) value + 10.0 else -value
+        } else if (card != null && intents.isEnabled && entityId !in state.getBattlefield()) {
+            // A card off the battlefield — in a graveyard, a recursion's or a graveyard hate
+            // spell's target — has no board presence to read, and [BoardPresence.permanentValue]
+            // priced a creature card there below a land. It is worth what it would be once it
+            // lands: [BoardPresence.spellValue]'s printed-stats reading, a land a flat little. It is
+            // nobody's permanent, so it keeps the sign of one of ours.
+            -(BoardPresence.spellValue(projected, card, playerId, intents) ?: if (card.isLand) OFF_BATTLEFIELD_LAND else 0.0)
         } else if (card != null && intents.isEnabled) {
             // Phase 6. This branch used to be a flat `0.0`, which meant an opponent's Oblivion
             // Ring ranked exactly as high as an untapped Forest and *equally* as high as nothing —
@@ -572,6 +579,9 @@ object TargetSelection {
 
     /** How many target lists [modeTargetVariants] offers for one mode at most. */
     const val MODE_TARGET_VARIANTS = 4
+
+    /** A land card off the battlefield, for [rank]: worth having back, less than any spell. */
+    private const val OFF_BATTLEFIELD_LAND = 0.5
 
     /**
      * Pay a non-mana escalate cost (CR 702.120a) for the modes just chosen — one cost per mode

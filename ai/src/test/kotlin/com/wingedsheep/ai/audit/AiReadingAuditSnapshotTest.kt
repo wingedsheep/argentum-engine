@@ -24,12 +24,13 @@ class AiReadingAuditSnapshotTest : FunSpec({
         "Smuggler's Copter" to emptyList(),
         // A +1/+1 counter on itself needs no intent tag (see AiReadingAudit.needsNoIntent).
         "Ajani's Pridemate" to emptyList(),
+        // A +1/+1 counter on a target creature is a pump that never wears off.
+        "Battlegrowth" to emptyList(),
         // Unread — the effect types the audit names as the work to do.
         "Adamant Will" to listOf("timing: GrantKeywordEffect"),
-        "Battlegrowth" to listOf("intent: AddCountersEffect"),
         "Abuna Acolyte" to listOf("timing: PreventDamageEffect"),
         "+2 Mace" to listOf("intent: AttachEquipmentEffect", "polarity: AttachEquipmentEffect"),
-        "Abzan Charm" to listOf("intent: ModalEffect", "polarity: DistributeCountersAmongTargetsEffect"),
+        "Abzan Charm" to listOf("polarity: DistributeCountersAmongTargetsEffect"),
         "Act on Impulse" to listOf("intent: GrantMayPlayFromExileEffect", "intent: Pipeline(TopOfLibrary→exile)"),
         "Alchemist's Vial" to listOf(
             "combat: CantBlockEffect", "intent: CantAttackEffect", "intent: CantBlockEffect",

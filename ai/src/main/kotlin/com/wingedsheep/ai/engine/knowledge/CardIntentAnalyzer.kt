@@ -1,5 +1,6 @@
 package com.wingedsheep.ai.engine.knowledge
 
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
@@ -48,7 +49,9 @@ import java.util.concurrent.ConcurrentHashMap
  * ## What it does not read
  *
  * Modal interiors, `ForEach` bodies and pipeline stages are leaves to the walk — see [EffectWalker]
- * for why widening it is a separate change. A card whose whole payoff is inside one of those reads
+ * for why widening it is a separate change. This analyzer opens the first two itself in [tagsOf]: a
+ * `ForEach` reads as its body, and a modal spell as the union of its modes (a cast of one reads as
+ * the modes it chose — [analyzeModes]). A card whose whole payoff is inside a pipeline still reads
  * as uninterpretable and gets [CardIntent.UNKNOWN]'s flat prior, which is exactly the value the AI
  * gave *every* non-creature permanent before this existed. The failure mode is "no better than
  * before", never "confidently wrong".
@@ -148,6 +151,27 @@ object CardIntentAnalyzer {
             reachOf(leaf)?.let { removalReach = maxOf(removalReach ?: 0, it) }
         }
         return CardIntent.UNKNOWN.copy(tags = tags, removalReach = removalReach)
+    }
+
+    /**
+     * What casting [card] with the modes at [modeIndices] does — the reading a *cast* of a modal
+     * spell needs, where [analyze] answers what the card could do with any of them.
+     *
+     * The two differ exactly where timing is decided: a charm that can counter a spell *or* shrink
+     * a creature is not dead on an empty stack once the shrink is the mode chosen, and a charm whose
+     * chosen mode is "creatures you control get +1/+2 until end of turn" is a combat trick to hold,
+     * which no union of its modes can say. Read as the card with that spell effect, so speed and
+     * everything structural come from the card as before.
+     *
+     * Null when [card] is not a single-face modal spell or an index names no mode — the caller then
+     * keeps the card's own reading. Not memoized: a few modes are one cheap pass.
+     */
+    fun analyzeModes(card: CardDefinition, modeIndices: List<Int>): CardIntent? {
+        if (card.cardFaces.isNotEmpty() || modeIndices.isEmpty()) return null
+        val modal = card.script.spellEffect as? ModalEffect ?: return null
+        val chosen = modeIndices.map { modal.modes.getOrNull(it)?.effect ?: return null }
+        val effect = chosen.singleOrNull() ?: CompositeEffect(chosen)
+        return compute(card, listOf(card.script.copy(spellEffect = effect)))
     }
 
     /**
@@ -402,6 +426,9 @@ object CardIntentAnalyzer {
             }
         }
 
+        is AddCountersEffect -> counterTags(effect.counterType, effect.target)
+        is AddDynamicCountersEffect -> counterTags(effect.counterType, effect.target)
+
         is TapUntapEffect -> if (effect.tap) setOf(IntentTag.TAPPER) else emptySet()
         is TapUntapCollectionEffect -> if (effect.tap) setOf(IntentTag.TAPPER) else emptySet()
 
@@ -441,7 +468,40 @@ object CardIntentAnalyzer {
             }
         }
 
+        // "Choose one —": the card can do whatever any one mode does, so it carries every mode's
+        // tags — a charm with a removal mode is removal in hand, as a ForEach body is read above.
+        // A tag *also* answers "is this card dead here?" for exactly one consumer: a counterspell
+        // with nothing on the stack is a discard ([HoldPolicy]). That is only true of a modal
+        // spell when every mode counters, so [IntentTag.COUNTERSPELL] alone needs all of them.
+        // A cast with its modes chosen is read off those modes instead — [analyzeModes].
+        is ModalEffect -> {
+            val perMode = effect.modes.map { mode -> EffectWalker.leaves(mode.effect).flatMapTo(HashSet()) { tagsOf(it) } }
+            val union = perMode.flatMapTo(HashSet()) { it }
+            if (perMode.all { IntentTag.COUNTERSPELL in it }) union else union - IntentTag.COUNTERSPELL
+        }
+
         else -> emptySet()
+    }
+
+    /**
+     * Counters put on [target]: +1/+1 is a [IntentTag.PUMP] that never wears off, -1/-1 on someone
+     * else's creature is removal by another name, and a keyword counter reads as the keyword does.
+     *
+     * A counter on the card's own source or on a player is left untagged, as the audit leaves it:
+     * a creature growing itself has no target to choose and no window to time, and tagging a
+     * self-grown flash creature [IntentTag.PUMP] would make [AmbushWindow] stop holding it.
+     */
+    private fun counterTags(type: CounterType, target: EffectTarget): Set<IntentTag> {
+        if (!hitsAnotherPermanent(target)) return emptySet()
+        type.ptDelta?.let { (power, toughness) ->
+            return when {
+                toughness < 0 && power <= 0 -> removalTags(target)
+                power >= 0 && toughness >= 0 && (power > 0 || toughness > 0) -> setOf(IntentTag.PUMP)
+                else -> emptySet()
+            }
+        }
+        if (type == CounterType.SHIELD) return setOf(IntentTag.PROTECTION)
+        return keywordTags(type.name)
     }
 
     /** Spot removal or a wrath, depending on whether the effect names a group. */
@@ -485,6 +545,10 @@ object CardIntentAnalyzer {
 
         is DividedDamageEffect -> effect.totalDamage
         is ModifyStatsEffect -> fixed(effect.toughnessModifier)?.takeIf { it < 0 }?.let { -it }
+        is AddCountersEffect ->
+            effect.counterType.ptDelta?.second?.takeIf { it < 0 && hitsAnotherPermanent(effect.target) }?.let { -it * effect.count }
+        // The largest creature any one mode answers, the union [tagsOf] reads for the tags.
+        is ModalEffect -> effect.modes.flatMap { EffectWalker.leaves(it.effect) }.mapNotNull { reachOf(it) }.maxOrNull()
         else -> null
     }
 
