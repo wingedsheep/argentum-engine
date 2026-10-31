@@ -10,7 +10,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * Hypnotic Sprite // Mesmeric Glare
  * {U}{U}
  * Creature — Faerie
- * 1/3
+ * 2/1
  *
  * Flying
  *
@@ -21,8 +21,8 @@ val HypnoticSprite = card("Hypnotic Sprite") {
     manaCost = "{U}{U}"
     colorIdentity = "U"
     typeLine = "Creature — Faerie"
-    power = 1
-    toughness = 3
+    power = 2
+    toughness = 1
     oracleText = "Flying"
 
     keywords(Keyword.FLYING)

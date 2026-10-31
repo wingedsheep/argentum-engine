@@ -4814,8 +4814,8 @@
     "typeLine": "Creature — Faerie",
     "oracleText": "Flying",
     "creatureStats": {
-        "power": 1,
-        "toughness": 3
+        "power": 2,
+        "toughness": 1
     },
     "keywords": [
         "FLYING"
