@@ -908,8 +908,8 @@ value class CounterType(val name: String) {
 
         /**
          * Task counter (THB — Heliod's Punishment). A passive countdown with no inherent rule: the
-         * Aura enters with four, its upkeep trigger removes one, then destroys the Aura once none are
-         * left.
+         * Aura enters with four, and the "{T}" ability it grants the enchanted creature removes one,
+         * then destroys the Aura once none are left.
          */
         val TASK = CounterType("TASK")
 

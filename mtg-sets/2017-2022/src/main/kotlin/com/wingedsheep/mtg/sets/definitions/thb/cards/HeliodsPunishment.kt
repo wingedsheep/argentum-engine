@@ -29,9 +29,9 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * Punishment."
  *
  * The granted ability names the Aura, not its bearer, so it reaches the Aura through
- * [EffectTarget.GrantingSource] — which also makes two Punishments on one creature each tick only
- * their own counters (ruling). The grant and the ability loss share the Aura's timestamp, so the
- * granted ability survives the loss while abilities gained later are kept (ruling).
+ * [EffectTarget.GrantingSource]. A creature under two Punishments has the ability once, granted by
+ * the most recently attached one, so only that Aura counts down (ruling) — duplicate grants keep
+ * the latest-timestamp granter.
  */
 val HeliodsPunishment = card("Heliod's Punishment") {
     manaCost = "{1}{W}"

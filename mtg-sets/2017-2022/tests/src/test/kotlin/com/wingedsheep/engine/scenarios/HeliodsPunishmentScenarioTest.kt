@@ -3,6 +3,7 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.untapOrConsumeStun
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
@@ -97,6 +98,36 @@ class HeliodsPunishmentScenarioTest : ScenarioTestBase() {
 
             game.execute(ActivateAbility(game.player1Id, drake, taskAbilityId)).error shouldNotBe null
             game.taskCounters(game.findPermanent("Heliod's Punishment")!!) shouldBe 4
+        }
+
+        test("under two Punishments only the most recently attached one counts down") {
+            val game = scenario()
+                .withPlayers("Player1", "Player2")
+                .withCardInHand(1, "Heliod's Punishment")
+                .withCardInHand(1, "Heliod's Punishment")
+                .withLandsOnBattlefield(1, "Plains", 4)
+                .withCardOnBattlefield(2, "Wind Drake")
+                .withCardInLibrary(1, "Plains")
+                .withCardInLibrary(2, "Plains")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            val drake = game.findPermanent("Wind Drake")!!
+            game.castSpell(1, "Heliod's Punishment", drake).error shouldBe null
+            game.resolveStack()
+            val first = game.findPermanent("Heliod's Punishment")!!
+            game.castSpell(1, "Heliod's Punishment", drake).error shouldBe null
+            game.resolveStack()
+            val second = game.state.getBattlefield().single {
+                it != first && game.state.getEntity(it)?.get<CardComponent>()?.name == "Heliod's Punishment"
+            }
+
+            game.passPriority()
+            game.execute(ActivateAbility(game.player2Id, drake, taskAbilityId)).error shouldBe null
+            game.resolveStack()
+
+            game.taskCounters(second) shouldBe 3
+            game.taskCounters(first) shouldBe 4
         }
     }
 }

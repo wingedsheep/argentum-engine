@@ -31,6 +31,7 @@ import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnCompon
 import com.wingedsheep.engine.state.components.battlefield.GraveyardPlayPermissionUsedComponent
 import com.wingedsheep.engine.state.components.battlefield.LoyaltyAllowance
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.battlefield.TimestampComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.EmblemActivatedAbilityComponent
@@ -1738,8 +1739,14 @@ class CastPermissionUtils(
         // and therefore reference the same ActivatedAbility instance (same `id`), so the
         // duplicate grants are functionally identical: the same one-shot ability surfaced as
         // two buttons confuses the UI and adds nothing in play (you can only tap once anyway).
-        // Collapse them to a single entry, keeping the first granter we found.
-        return result.distinctBy { it.ability.id }
+        // Collapse them to a single entry. The granter kept is the one with the latest layer
+        // timestamp (renewed when an Aura or Equipment becomes attached): two Heliod's Punishments
+        // on one creature leave it only the ability of the most recently attached one, so
+        // activating it ticks down only that Aura's counters (ruling 2020-01-24). Ties keep the
+        // first granter found.
+        return result.groupBy { it.ability.id }.values.map { grants ->
+            grants.maxBy { state.getEntity(it.granterId)?.get<TimestampComponent>()?.timestamp ?: Long.MIN_VALUE }
+        }
     }
 
     /**
