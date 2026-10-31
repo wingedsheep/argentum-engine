@@ -607,7 +607,7 @@ private const val MIN_PREPARE_CREATURES = 3
  * copy, per deck (2026-10-31 game aa98: a U/R deck ran two Dueling Arenas and no
  * prepare creature in its 17 lands).
  */
-private fun utilityLand(poolLands: List<CardDefinition>, deckColors: Set<Color>, spells: List<CardDefinition>): CardDefinition? {
+internal fun utilityLand(poolLands: List<CardDefinition>, deckColors: Set<Color>, spells: List<CardDefinition>): CardDefinition? {
     return poolLands.firstOrNull { land ->
         isColorlessUtilityLand(land) && land.colorIdentity.all { it in deckColors } &&
             land.script.activatedAbilities.any { !it.isManaAbility && hasPayoff(it.effect, spells) }

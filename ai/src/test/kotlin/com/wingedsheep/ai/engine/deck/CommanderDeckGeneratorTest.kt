@@ -3,6 +3,16 @@ package com.wingedsheep.ai.engine.deck
 import com.wingedsheep.engine.limited.BoosterGenerator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.Patterns
+import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.scripting.AbilityCost
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.TimingRule
+import com.wingedsheep.sdk.scripting.effects.SearchDestination
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.core.DeckFormat
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Subtype
@@ -14,6 +24,8 @@ import com.wingedsheep.sdk.model.ScryfallMetadata
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
+import io.kotest.matchers.ints.shouldBeInRange
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
@@ -275,5 +287,217 @@ class CommanderDeckGeneratorTest : FunSpec({
         val deck = generatorOver(monoGreen).generate(listOf("AAA"), DeckFormat.COMMANDER)!!
 
         deck.deckList.keys.contains("Sneaky Artifact") shouldBe false
+    }
+    // ---- Role quotas and synergy (2026-10-31: generated decks were 38 basics + unrelated singletons) ----
+
+    val legal = setOf(DeckFormat.COMMANDER, DeckFormat.BRAWL, DeckFormat.STANDARD_BRAWL)
+    fun colourOf(c: Char) = mapOf('W' to Color.WHITE, 'U' to Color.BLUE, 'B' to Color.BLACK, 'R' to Color.RED, 'G' to Color.GREEN).getValue(c)
+
+    /** A mana dork / rock: a permanent with a `{T}: Add` ability for each of [colours]. */
+    fun rock(name: String, cost: String, colours: String): CardDefinition = card(name) {
+        manaCost = cost
+        colorIdentity = colours
+        typeLine = "Artifact"
+        oracleText = colours.map { "{T}: Add {$it}." }.joinToString("\n")
+        colours.forEach { c ->
+            activatedAbility {
+                this.cost = AbilityCost.Tap
+                effect = Effects.AddMana(colourOf(c))
+                manaAbility = true
+                timing = TimingRule.ManaAbility
+            }
+        }
+    }.copy(legalFormats = legal)
+
+    /** Rampant Growth: fetch a basic onto the battlefield — ramp that fixes any colour. */
+    fun landFetch(name: String, cost: String): CardDefinition = card(name) {
+        manaCost = cost
+        typeLine = "Sorcery"
+        oracleText = "Search your library for a basic land card, put that card onto the battlefield tapped, then shuffle."
+        spell {
+            effect = Patterns.Library.searchLibrary(
+                filter = GameObjectFilter.BasicLand,
+                destination = SearchDestination.BATTLEFIELD,
+                entersTapped = true,
+            )
+        }
+    }.copy(legalFormats = legal)
+
+    fun removal(name: String, cost: String): CardDefinition = card(name) {
+        manaCost = cost
+        typeLine = "Instant"
+        oracleText = "Destroy target creature."
+        spell {
+            val t = target(TargetFilter.Creature)
+            effect = Effects.Move(t, Zone.GRAVEYARD, byDestruction = true)
+        }
+    }.copy(legalFormats = legal)
+
+    fun draw(name: String, cost: String): CardDefinition = card(name) {
+        manaCost = cost
+        typeLine = "Sorcery"
+        oracleText = "Draw two cards."
+        spell { effect = Effects.DrawCards(2) }
+    }.copy(legalFormats = legal)
+
+    /** An untapped dual: `{T}: Add {X}` / `{T}: Add {Y}`. */
+    fun dual(name: String, colours: String): CardDefinition = card(name) {
+        typeLine = "Land"
+        colorIdentity = colours
+        oracleText = colours.map { "{T}: Add {$it}." }.joinToString("\n")
+        colours.forEach { c ->
+            activatedAbility {
+                cost = AbilityCost.Tap
+                effect = Effects.AddMana(colourOf(c))
+                manaAbility = true
+                timing = TimingRule.ManaAbility
+            }
+        }
+    }.copy(legalFormats = legal)
+
+    /**
+     * A pool deep in [colours] with more of every role than a deck needs, so a quota the build
+     * misses is the builder's fault, not the pool's. Vanilla filler outnumbers the role cards
+     * four to one and is rated the same, so rating and curve alone would play about a fifth of
+     * each quota.
+     */
+    fun rolePool(colours: String, tag: String): List<CardDefinition> {
+        val pips = colours.toList()
+        fun pip(i: Int) = "{${pips[i % pips.size]}}"
+        return (1..240).map { spell("$tag Filler $it", "{${it % 6}}${pip(it)}") } +
+            (1..20).map { rock("$tag Rock $it", "{${1 + it % 3}}", "${pips[it % pips.size]}") } +
+            (1..20).map { removal("$tag Removal $it", "{${1 + it % 3}}${pip(it)}") } +
+            (1..20).map { draw("$tag Draw $it", "{${1 + it % 3}}${pip(it)}") }
+    }
+
+    fun roleCounts(deck: GeneratedDeck, registry: CardRegistry): Map<DeckRole, Int> {
+        val cards = deck.deckList.keys.mapNotNull { registry.getCard(baseName(it)) }
+        return DeckRole.entries.associateWith { role -> cards.count { role in CommanderDeckRoles.rolesOf(it) } }
+    }
+
+    fun landCount(deck: GeneratedDeck, registry: CardRegistry): Int =
+        deck.deckList.entries.sumOf { (key, n) -> if (registry.getCard(baseName(key))?.isLand == true) n else 0 }
+
+    fun registryOf(cards: List<CardDefinition>) = CardRegistry().apply { register(cards); register(basics) }
+
+    test("a mono-colour deck fills its ramp, interaction and draw quotas and plays 36-38 lands") {
+        val cards = rolePool("G", "Mono") + legend("Mono Green Legend", "{2}{G}")
+        val registry = registryOf(cards)
+
+        val deck = generatorOver(cards).generate(listOf("AAA"), DeckFormat.COMMANDER)!!
+        val roles = roleCounts(deck, registry)
+
+        withClue("roles $roles") {
+            roles.getValue(DeckRole.RAMP) shouldBeGreaterThanOrEqual 10
+            roles.getValue(DeckRole.REMOVAL) shouldBeGreaterThanOrEqual 8
+            roles.getValue(DeckRole.DRAW) shouldBeGreaterThanOrEqual 7
+        }
+        landCount(deck, registry) shouldBeInRange 36..38
+        deck.totalCards shouldBe 100
+    }
+
+    test("a two-colour deck meets the quotas and plays its on-colour duals") {
+        val duals = (1..12).map { dual("GU Dual $it", "GU") }
+        val offColour = (1..6).map { dual("GR Dual $it", "GR") }
+        val cards = rolePool("GU", "Simic") + duals + offColour + legend("Green Blue Legend", "{1}{G}{U}")
+        val registry = registryOf(cards)
+
+        val deck = generatorOver(cards).generate(listOf("AAA"), DeckFormat.COMMANDER)!!
+        val roles = roleCounts(deck, registry)
+        val names = deck.deckList.keys.map { baseName(it) }
+
+        withClue("roles $roles") {
+            roles.getValue(DeckRole.RAMP) shouldBeGreaterThanOrEqual 10
+            roles.getValue(DeckRole.REMOVAL) shouldBeGreaterThanOrEqual 8
+            roles.getValue(DeckRole.DRAW) shouldBeGreaterThanOrEqual 7
+        }
+        landCount(deck, registry) shouldBeInRange 36..38
+        withClue("on-colour duals in $names") { names.count { it.startsWith("GU Dual") } shouldBeGreaterThanOrEqual 6 }
+        withClue("off-colour duals break CR 903.5c") { names.none { it.startsWith("GR Dual") } shouldBe true }
+        names.filter { it in basicNames }.toSet() shouldBe setOf("Forest", "Island")
+    }
+
+    test("a three-colour deck fixes: half its ramp makes two colours or fetches basics, and it plays the pool's duals") {
+        val fixingRocks = (1..8).map { rock("Talisman $it", "{2}", listOf("GU", "UB", "BG")[it % 3]) }
+        val fetches = (1..6).map { landFetch("Rampant Fetch $it", "{1}{G}") }
+        val duals = listOf("GU", "UB", "BG").flatMap { pair -> (1..5).map { dual("$pair Dual $it", pair) } }
+        val cards = rolePool("GUB", "Sultai") + fixingRocks + fetches + duals + legend("Sultai Legend", "{G}{U}{B}")
+        val registry = registryOf(cards)
+
+        val deck = generatorOver(cards).generate(listOf("AAA"), DeckFormat.COMMANDER)!!
+        val deckCards = deck.deckList.keys.mapNotNull { registry.getCard(baseName(it)) }
+        val identity = setOf(Color.GREEN, Color.BLUE, Color.BLACK)
+        val fixingRamp = deckCards.count { DeckRole.RAMP in CommanderDeckRoles.rolesOf(it) && CommanderDeckRoles.fixes(it, identity) }
+        val basicCounts = deck.deckList.filterKeys { baseName(it) in basicNames }.mapKeys { baseName(it.key) }
+
+        withClue("roles ${roleCounts(deck, registry)}") {
+            roleCounts(deck, registry).getValue(DeckRole.RAMP) shouldBeGreaterThanOrEqual 10
+        }
+        fixingRamp shouldBeGreaterThanOrEqual 5
+        landCount(deck, registry) shouldBeInRange 36..38
+        withClue("duals in ${deck.deckList.keys}") { deckCards.count { it.isLand && !it.typeLine.isBasicLand } shouldBeGreaterThanOrEqual 10 }
+        withClue("basics $basicCounts") {
+            basicCounts.keys shouldBe setOf("Forest", "Island", "Swamp")
+            basicCounts.values.forEach { it shouldBeGreaterThanOrEqual 4 }
+        }
+    }
+
+    test("a tribal commander's deck is mostly its tribe when the pool allows") {
+        val elfLord = CardDefinition.creature(
+            name = "Elf Lord Legend",
+            manaCost = ManaCost.parse("{2}{G}"),
+            subtypes = setOf(Subtype("Elf")),
+            power = 2,
+            toughness = 2,
+            oracleText = "Other Elves you control get +1/+1.",
+            supertypes = setOf(Supertype.LEGENDARY),
+            metadata = ScryfallMetadata(collectorNumber = "999", rarity = Rarity.RARE),
+        ).copy(legalFormats = legal)
+        fun tribe(type: String, i: Int) = CardDefinition.creature(
+            name = "$type $i",
+            manaCost = ManaCost.parse("{${i % 6}}{G}"),
+            subtypes = setOf(Subtype(type)),
+            power = 2,
+            toughness = 2,
+            metadata = ScryfallMetadata(collectorNumber = "$type$i"),
+        ).copy(legalFormats = legal)
+        val cards = listOf("Elf", "Goblin", "Merfolk").flatMap { type -> (1..45).map { tribe(type, it) } } + elfLord
+
+        val deck = generatorOver(cards).generate(listOf("AAA"), DeckFormat.COMMANDER)!!
+        val typed = deck.deckList.keys.filter { baseName(it) !in basicNames }
+        val elves = typed.count { it.startsWith("Elf ") }
+
+        // A third of the pool is Elves; a deck that ignored the commander would be a third Elves.
+        withClue("$elves Elves of ${typed.size} typed creatures") { (elves * 2 > typed.size) shouldBe true }
+    }
+
+    test("a commander that rewards a keyword draws mostly cards with it") {
+        val skyLord = CardDefinition.creature(
+            name = "Sky Marshal Legend",
+            manaCost = ManaCost.parse("{2}{W}"),
+            subtypes = emptySet(),
+            power = 2,
+            toughness = 2,
+            oracleText = "Creatures you control with flying get +1/+1.",
+            supertypes = setOf(Supertype.LEGENDARY),
+            metadata = ScryfallMetadata(collectorNumber = "998", rarity = Rarity.RARE),
+        ).copy(legalFormats = legal)
+        fun keyworded(kw: Keyword, i: Int) = CardDefinition.creature(
+            name = "${kw.displayName} $i",
+            manaCost = ManaCost.parse("{${i % 6}}{W}"),
+            subtypes = emptySet(),
+            power = 2,
+            toughness = 2,
+            keywords = setOf(kw),
+            metadata = ScryfallMetadata(collectorNumber = "${kw.name}$i"),
+        ).copy(legalFormats = legal)
+        val cards = listOf(Keyword.FLYING, Keyword.VIGILANCE, Keyword.FIRST_STRIKE)
+            .flatMap { kw -> (1..45).map { keyworded(kw, it) } } + skyLord
+
+        val deck = generatorOver(cards).generate(listOf("AAA"), DeckFormat.COMMANDER)!!
+        val picks = deck.deckList.keys.filter { baseName(it) !in basicNames }
+        val flyers = picks.count { it.startsWith("Flying ") }
+
+        withClue("$flyers flyers of ${picks.size}") { (flyers * 2 > picks.size) shouldBe true }
     }
 })

@@ -1,12 +1,16 @@
 package com.wingedsheep.ai.engine.deck
 
 import com.wingedsheep.ai.draftsim.toScorerCard
+import com.wingedsheep.ai.engine.landFitsColors
+import com.wingedsheep.ai.engine.producedColors
+import com.wingedsheep.ai.engine.utilityLand
 import com.wingedsheep.engine.limited.BoosterGenerator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.DeckFormat
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CommanderEligibility
+import com.wingedsheep.sdk.scripting.EntersTapped
 import kotlin.math.roundToInt
 import kotlin.random.Random
 import org.slf4j.LoggerFactory
@@ -31,6 +35,16 @@ import org.slf4j.LoggerFactory
  * - **CR 903.5d** — a card with a basic land type is only legal if every colour it produces is in
  *   the commander's identity, so the manabase only ever uses the commander's own colours.
  *
+ * ## How the library is shaped
+ *
+ * A Commander deck is not its 63 best-rated cards. It is a commander, a theme that commander
+ * rewards, and the slots every deck fills whatever its theme: ramp, interaction, card draw, and a
+ * manabase that casts all of it. So the library is built quota-first — see [build] — with the jobs
+ * read by [CommanderDeckRoles] (over the AI's own [com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer])
+ * and every pick tilted towards the commander's tribe, keywords and theme by [CommanderSynergy].
+ * The manabase is basics plus the pool's on-colour duals and utility lands, picked by the same land
+ * rules the limited builder uses.
+ *
  * ## What it deliberately doesn't do
  *
  * - **Partners, Backgrounds, companions.** The deck model carries one commander; so does this.
@@ -38,11 +52,8 @@ import org.slf4j.LoggerFactory
  *   Brawl's escape hatch (CR 903.12e, "any number of basics of one type") doesn't exist in
  *   Commander. Rather than build a five-basic deck the validator would reject, an Eldrazi is simply
  *   never picked — see [commanderCandidates].
- * - **Non-basic manabases.** The library's lands are basics only. A commander pool's non-basic
- *   lands are mostly narrow utility lands that Draftsim doesn't rate, and every one of them is a
- *   fresh CR 903.5d question; a clean basics manabase is a better deck *and* an obviously legal one.
- * - **Synergy.** Cards are picked on raw rating and curve, not on whether they do what the commander
- *   wants. That is what makes this a legal deck rather than a good one.
+ * - **Combos and named staples.** Synergy is read from what the commander's text asks for, not
+ *   from a list of known packages.
  */
 class CommanderDeckGenerator(
     boosterGenerator: BoosterGenerator,
@@ -57,14 +68,15 @@ class CommanderDeckGenerator(
 
     /**
      * Build a deck legal in the commander-shaped [format], drawing from the cards printed in
-     * [setCodes] (empty means the whole format-legal card base).
+     * [setCodes] (empty means the whole format-legal card base), led by [commander] when one is
+     * named and by a drawn one otherwise.
      *
      * @throws IllegalArgumentException if [format] is not commander-shaped.
      * @return the deck, or null when the pool holds no legal commander with a buildable colour
      *         identity behind it — the caller decides what to do instead, because "no Commander deck
      *         from three Portal sets" is a lobby configuration, not a bug.
      */
-    fun generate(setCodes: List<String>, format: DeckFormat): GeneratedDeck? {
+    fun generate(setCodes: List<String>, format: DeckFormat, commander: String? = null): GeneratedDeck? {
         require(format.isCommanderShape) {
             "$format is not a commander-shape format; use ConstructedDeckGenerator."
         }
@@ -83,6 +95,7 @@ class CommanderDeckGenerator(
             deckSize = deckSizeFor(format),
             copyLimit = { 1 },
             label = format.displayName,
+            commanderName = commander,
         )
     }
 
@@ -93,8 +106,8 @@ class CommanderDeckGenerator(
      * Three things differ from [generate], all because the pool is the legality universe here (see
      * `DeckValidator.validateCommanderLimited`): [deckSize] is the lobby's minimum rather than a
      * format constant, copies are capped by how many the seat actually owns, and singleton is the
-     * lobby's own toggle rather than CR 903.5b. The commander choice, the colour-identity filter and
-     * the basics-only manabase are the same, so they are the same code.
+     * lobby's own toggle rather than CR 903.5b. The commander choice, the colour-identity filter,
+     * the role quotas and the manabase rules are the same, so they are the same code.
      *
      * The manabase stays on plain basic-land names here, deliberately: a limited lobby validates a
      * submitted deck card-by-card against the pool it dealt, and a `Plains#196` art variant is not a
@@ -123,11 +136,19 @@ class CommanderDeckGenerator(
     /**
      * Pick a commander, then fill a library inside its colour identity.
      *
+     * The library is built in the order a Commander player builds one: the role quotas first
+     * ([RAMP_QUOTA] ramp — fixing ramp first for a three-plus-colour commander — then
+     * [REMOVAL_QUOTA] interaction and [DRAW_QUOTA] card draw), the land count from how much ramp
+     * made it in, [THEME_QUOTA] cards on the commander's theme, then the rest of the curve. Every draw is weighted by rating *and* by how much the
+     * card does what the commander asks ([CommanderSynergy]), so the tribe and the theme come
+     * through without starving the deck of answers.
+     *
      * @param pool distinct candidate cards; already scoped to whatever legality the caller enforces.
      * @param basics basic-land printings whose art the manabase is pinned to.
      * @param deckSize total cards including the commander.
      * @param copyLimit how many copies of a card may be played — 1 for singleton, the pool count
      *        for limited.
+     * @param commanderName build around this commander instead of drawing one; null draws.
      */
     private fun build(
         pool: List<CardDefinition>,
@@ -135,43 +156,151 @@ class CommanderDeckGenerator(
         deckSize: Int,
         copyLimit: (CardDefinition) -> Int,
         label: String,
+        commanderName: String? = null,
     ): GeneratedDeck? {
-        val commander = pickCommander(pool) ?: run {
+        val commander = if (commanderName != null) {
+            commanderCandidates(pool).firstOrNull { it.name == commanderName }
+        } else {
+            pickCommander(pool)
+        } ?: run {
             logger.warn("No legal commander in a pool of {} cards ({})", pool.size, label)
             return null
         }
         val identity = commander.colorIdentity
 
-        val body = pool.filter { card ->
-            card.name != commander.name &&
-                !card.isLand &&
-                card.colorIdentity.all { it in identity }
+        val inIdentity = pool.filter { card ->
+            card.name != commander.name && card.colorIdentity.all { it in identity }
         }
+        val body = inIdentity.filterNot { it.isLand }
 
         val librarySize = deckSize - 1
-        val landCount = (librarySize * LAND_RATIO).roundToInt()
-        val spells = pickSpells(body, librarySize - landCount, copyLimit)
+        val scale = librarySize / SINGLETON_HUNDRED_LIBRARY.toDouble()
+        val synergy = CommanderSynergy(commander)
+        val weight = selectionWeight(synergy)
+        val roles = HashMap<String, Set<DeckRole>>()
+        fun rolesOf(card: CardDefinition) = roles.getOrPut(card.name) { CommanderDeckRoles.rolesOf(card) }
+
+        val quota = Quotas(
+            ramp = (RAMP_QUOTA * scale).roundToInt(),
+            removal = (REMOVAL_QUOTA * scale).roundToInt(),
+            draw = (DRAW_QUOTA * scale).roundToInt(),
+            theme = (THEME_QUOTA * scale).roundToInt(),
+        )
+        val chosen = mutableListOf<CardDefinition>()
+        fun fill(want: Int, candidates: List<CardDefinition>, extra: (CardDefinition) -> Double = { 1.0 }) {
+            if (want <= 0) return
+            val taken = chosen.mapTo(HashSet()) { it.name }
+            chosen += candidates.filterNot { it.name in taken }.weightedSample(want, random) { weight(it) * extra(it) }
+        }
+
+        val rampPool = body.filter { DeckRole.RAMP in rolesOf(it) }
+        if (identity.size >= FIXING_COLOURS) {
+            fill((quota.ramp + 1) / 2, rampPool.filter { CommanderDeckRoles.fixes(it, identity) }, ::rampCost)
+        }
+        fill(quota.ramp - chosen.size, rampPool, ::rampCost)
+        val rampCount = chosen.size
+
+        // Paper Commander's 37–38 lands of 99 assume a deck with no ramp in it; each few ramp
+        // pieces stand in for a land, down to a floor that still hits land drops on its own.
+        val landCount = ((librarySize * LAND_RATIO).roundToInt() - rampCount / RAMP_PER_LAND)
+            .coerceAtLeast((librarySize * MIN_LAND_RATIO).roundToInt())
+
+        fill(quota.removal, body.filter { DeckRole.REMOVAL in rolesOf(it) })
+        fill(quota.draw, body.filter { DeckRole.DRAW in rolesOf(it) })
+        // The theme gets slots of its own, not just better odds: in a whole-card-base pool the
+        // commander's 250 Vampires are a twentieth of the cards in its colours, and a weight alone
+        // left a Vampire commander with seven of them.
+        fill(quota.theme, body.filter { synergy.score(it) >= MIN_THEME_SCORE })
+
+        val spells = pickSpells(body, librarySize - landCount, copyLimit, weight, chosen)
+
+        val landSlots = librarySize - spells.size
+        val nonbasics = pickNonbasicLands(inIdentity.filter { it.isLand && !it.typeLine.isBasicLand }, identity, spells, landSlots, scale)
 
         // Whatever the pool couldn't fill becomes extra basics. They are the one card type with no
         // copy cap (CR 903.5b), so this always reaches the exact size the format demands — a deck
         // one card short is a deck the validator rejects and the seat can't play.
-        val basicsNeeded = librarySize - spells.size
+        val basicsNeeded = landSlots - nonbasics.size
         val manabase = basicLands(spells + commander, identity, basicsNeeded)
 
         val deckList = LinkedHashMap<String, Int>()
-        for (card in spells) deckList.merge(card.name, 1, Int::plus)
+        for (card in spells + nonbasics) deckList.merge(card.name, 1, Int::plus)
         for ((name, count) in manabase) deckList.merge(name, count, Int::plus)
 
         val pinned = BoosterGenerator.withBasicLandArt(deckList, basics.associateBy { it.name })
+        val distinctSpells = spells.distinctBy { it.name }
         logger.info(
-            "Built a {} deck for {} ({}): {} spells, {} lands",
+            "Built a {} deck for {} ({}): {} spells ({} ramp, {} interaction, {} draw), {} lands ({} non-basic)",
             label,
             commander.name,
             identity.joinToString("/") { it.name.first().toString() }.ifEmpty { "C" },
             spells.size,
-            basicsNeeded,
+            distinctSpells.count { DeckRole.RAMP in rolesOf(it) },
+            distinctSpells.count { DeckRole.REMOVAL in rolesOf(it) },
+            distinctSpells.count { DeckRole.DRAW in rolesOf(it) },
+            landSlots,
+            nonbasics.size,
         )
         return GeneratedDeck(deckList = pinned, commander = commander.name)
+    }
+
+    private data class Quotas(val ramp: Int, val removal: Int, val draw: Int, val theme: Int)
+
+    /**
+     * The sampling weight of a card: its rating cubed (so the bombs come out and the filler still
+     * varies), multiplied up by how much it does what the commander asks. Memoized per build — the
+     * same card is weighed once per quota it is a candidate for and again on the curve.
+     */
+    private fun selectionWeight(synergy: CommanderSynergy): (CardDefinition) -> Double {
+        val ops = ConstructedRatings.ops()
+        val cache = HashMap<String, Double>()
+        return { card ->
+            cache.getOrPut(card.name) {
+                val rating = ops.ratingFallback(card.toScorerCard()).coerceAtLeast(ConstructedRatings.MIN_WEIGHT)
+                rating * rating * rating * (1 + SYNERGY_WEIGHT * synergy.score(card).coerceAtMost(MAX_SYNERGY))
+            }
+        }
+    }
+
+    /** Ramp is worth most when it comes down early; a six-mana rock is a six-drop that taps for one. */
+    private fun rampCost(card: CardDefinition): Double = when {
+        card.cmc <= 2 -> 2.0
+        card.cmc == 3 -> 1.2
+        card.cmc == 4 -> 0.5
+        else -> 0.2
+    }
+
+    /**
+     * The non-basic lands worth a basic's slot: the [landFitsColors] rule the limited builder uses
+     * (a dual for two deck colours, or an untapped on-colour land), held to CR 903.5d — every colour
+     * it makes is in the commander's identity — plus at most one colourless utility land with a job
+     * in this deck ([utilityLand]). A fetch for "a basic land card" makes the cut only when there are
+     * three colours to fix; in a one- or two-colour deck it is a tapped basic.
+     *
+     * Lands that fix more of the deck's colours go first, untapped before tapped, so a three-colour
+     * deck's land slots fill with its tri-lands and duals before anything else.
+     */
+    private fun pickNonbasicLands(
+        lands: List<CardDefinition>,
+        identity: Set<Color>,
+        spells: List<CardDefinition>,
+        slots: Int,
+        scale: Double,
+    ): List<CardDefinition> {
+        val cap = minOf(slots, ((NONBASIC_LAND_CAP[identity.size] ?: MAX_NONBASIC_LANDS) * scale).roundToInt())
+        if (cap <= 0) return emptyList()
+        val fitting = lands.filter { land ->
+            val produced = producedColors(land)
+            produced.all { it in identity } &&
+                (produced.isNotEmpty() || identity.size >= FIXING_COLOURS) &&
+                landFitsColors(land, identity)
+        }
+        val ranked = fitting.shuffled(random).sortedWith(
+            compareByDescending<CardDefinition> { land -> producedColors(land).count { it in identity } }
+                .thenBy { land -> land.script.replacementEffects.any { it is EntersTapped } },
+        )
+        val utility = utilityLand(lands, identity, spells)
+        return ranked.take(if (utility != null) cap - 1 else cap) + listOfNotNull(utility)
     }
 
     /**
@@ -179,10 +308,10 @@ class CommanderDeckGenerator(
      * colour identities.
      *
      * The identity bias is the load-bearing half. Identity is a *deck-construction* constraint here,
-     * not a bonus: a five-colour commander opens the whole pool but hands the builder a manabase of
-     * five basics split five ways, which casts nothing. One and two colours are the shapes an
-     * all-basics manabase actually supports, three is playable, and four or five is a last resort
-     * for a pool with nothing narrower in it.
+     * not a bonus: a five-colour commander opens the whole pool but hands the builder a manabase
+     * split five ways, which casts little even with the pool's duals in it. One and two colours are
+     * the shapes a mostly-basic manabase supports, three is playable with fixing, and four or five
+     * is a last resort for a pool with nothing narrower in it.
      */
     private fun pickCommander(pool: List<CardDefinition>): CardDefinition? {
         val ops = ConstructedRatings.ops()
@@ -200,60 +329,64 @@ class CommanderDeckGenerator(
      * Colourless-identity commanders are excluded rather than supported: CR 903.5d allows a basic
      * land in the deck only if every colour it produces is in the commander's identity, so an
      * Eldrazi deck's manabase has to be Wastes or colourless utility lands — neither of which this
-     * builder's basics-only manabase can produce. Building one anyway would produce a deck the deck
+     * builder's basic-led manabase can produce. Building one anyway would produce a deck the deck
      * validator rejects for colour identity, which is worse than declining the commander.
      */
     private fun commanderCandidates(pool: List<CardDefinition>): List<CardDefinition> =
         pool.filter { CommanderEligibility.isLegalCommander(it) && it.colorIdentity.isNotEmpty() }
 
     /**
-     * Fill [slots] with the best cards [body] offers at each point on the curve.
+     * Fill [slots] with the [preselected] role cards plus the best cards [body] offers at each
+     * point on the curve.
      *
      * Bucket by mana value and draw each bucket's share separately, rather than taking the top
      * [slots] cards overall: rating alone would hand back a pile of six-drops, because Draftsim
-     * rates a card's power and not its cost. Within a bucket the draw is rating-weighted, so the
-     * bombs come out and the filler still varies between games.
+     * rates a card's power and not its cost. A bucket's share counts the role cards already in it,
+     * so a deck whose ramp is all two-drops plays fewer other two-drops.
      *
      * A bucket the pool can't fill spills its deficit forward into the next one, and anything left
      * at the end is taken from whatever remains at any cost — a slightly wrong curve beats a short
      * deck. What the pool genuinely cannot supply comes back as fewer cards than [slots]; the caller
-     * turns the difference into basics.
+     * turns the difference into lands.
      */
     private fun pickSpells(
         body: List<CardDefinition>,
         slots: Int,
         copyLimit: (CardDefinition) -> Int,
+        weight: (CardDefinition) -> Double,
+        preselected: List<CardDefinition>,
     ): List<CardDefinition> {
-        if (slots <= 0 || body.isEmpty()) return emptyList()
-        val ops = ConstructedRatings.ops()
-        val weight: (CardDefinition) -> Double = { card ->
-            val rating = ops.ratingFallback(card.toScorerCard()).coerceAtLeast(ConstructedRatings.MIN_WEIGHT)
-            rating * rating * rating
-        }
-        val byBucket = body.groupBy { minOf(it.cmc, TOP_CURVE_BUCKET) }
+        if (slots <= 0) return emptyList()
+        val fixed = preselected.take(slots)
+        val takenNames = fixed.mapTo(mutableSetOf()) { it.name }
+        val byBucket = body.filterNot { it.name in takenNames }.groupBy { minOf(it.cmc, TOP_CURVE_BUCKET) }
+        val fixedPerBucket = fixed.groupingBy { minOf(it.cmc, TOP_CURVE_BUCKET) }.eachCount()
 
-        val picked = mutableListOf<CardDefinition>()
-        val takenNames = mutableSetOf<String>()
+        var extras = mutableListOf<CardDefinition>()
         var carriedDeficit = 0
         for ((bucket, share) in CURVE) {
-            val want = (slots * share).roundToInt() + carriedDeficit
-            if (want <= 0) continue
+            val want = (slots * share).roundToInt() - (fixedPerBucket[bucket] ?: 0) + carriedDeficit
+            if (want <= 0) {
+                carriedDeficit = 0
+                continue
+            }
             val available = byBucket[bucket].orEmpty().filterNot { it.name in takenNames }
             val drawn = available.weightedSample(want, random, weight)
-            picked += drawn
+            extras += drawn
             drawn.forEach { takenNames += it.name }
             carriedDeficit = want - drawn.size
         }
 
         // Curve targets are fractions and the pool is lumpy, so the buckets rarely land exactly on
-        // `slots`. Trim the overshoot from the top of the curve (the most expendable cards) and top
-        // up any shortfall from whatever the pool still has.
-        if (picked.size > slots) return picked.sortedBy { it.cmc }.take(slots)
-        if (picked.size < slots) {
+        // `slots`. Trim the overshoot from the top of the curve (the most expendable cards — never
+        // a role card) and top up any shortfall from whatever the pool still has.
+        val open = slots - fixed.size
+        if (extras.size > open) extras = extras.sortedBy { it.cmc }.take(open).toMutableList()
+        if (extras.size < open) {
             val remaining = body.filterNot { it.name in takenNames }
-            picked += remaining.weightedSample(slots - picked.size, random, weight)
+            extras += remaining.weightedSample(open - extras.size, random, weight)
         }
-        return duplicateToFill(picked, body, slots, copyLimit, weight)
+        return duplicateToFill(fixed + extras, body, slots, copyLimit, weight)
     }
 
     /**
@@ -299,36 +432,31 @@ class CommanderDeckGenerator(
      * deck actually asks for.
      *
      * Only the commander's own colours appear, which is CR 903.5d: a basic land is legal in the deck
-     * only if every colour it can produce is in the commander's identity. Every colour in the
-     * identity gets at least one land even when nothing in the library happens to need it — the
-     * commander itself has to be castable.
+     * only if every colour it can produce is in the commander's identity. Every colour gets a floor
+     * of [MIN_COLOUR_SHARE] of the basics before the pips divide the rest — the commander itself has
+     * to be castable, and a pip count is a noisy read of a 60-card spell suite (2026-10-31: a
+     * three-colour deck ran 10 of its 38 basics in the colour of its double-pip six-drops).
      */
     private fun basicLands(cards: List<CardDefinition>, identity: Set<Color>, count: Int): Map<String, Int> {
         if (count <= 0 || identity.isEmpty()) return emptyMap()
         val ordered = identity.sortedBy { it.ordinal }
-        val pips = ordered.associateWith { color ->
-            cards.sumOf { it.manaCost.colorCount[color] ?: 0 }
-        }
+        val pips = ordered.associateWith { color -> cards.sumOf { it.manaCost.colorCount[color] ?: 0 } }
         val totalPips = pips.values.sum()
 
-        val lands = LinkedHashMap<String, Int>()
-        var assigned = 0
-        for ((index, color) in ordered.withIndex()) {
-            val name = COLOR_TO_BASIC.getValue(color)
-            val share = if (index == ordered.lastIndex) {
-                // The last colour absorbs the rounding so the counts sum to exactly `count`.
-                count - assigned
-            } else if (totalPips == 0) {
-                count / ordered.size
-            } else {
-                ((count * (pips.getValue(color).toDouble() / totalPips)).toInt()).coerceAtLeast(1)
-            }
-            // Clamped to what's left so a deck with fewer lands than colours still sums to `count`
-            // rather than overshooting on the "every colour gets one" floor.
-            lands[name] = share.coerceIn(0, count - assigned)
-            assigned += lands.getValue(name)
+        val floor = minOf((count * MIN_COLOUR_SHARE / ordered.size).toInt().coerceAtLeast(1), count / ordered.size)
+        val shares = ordered.associateWith { floor }.toMutableMap()
+        val rest = count - floor * ordered.size
+        // Largest-remainder split of what's left, so the counts sum to exactly `count`.
+        val exact = ordered.associateWith { color ->
+            if (totalPips == 0) rest.toDouble() / ordered.size else rest * pips.getValue(color).toDouble() / totalPips
         }
-        return lands.filterValues { it > 0 }
+        exact.forEach { (color, share) -> shares[color] = shares.getValue(color) + share.toInt() }
+        val leftover = count - shares.values.sum()
+        ordered.sortedByDescending { exact.getValue(it) - exact.getValue(it).toInt() }
+            .take(leftover)
+            .forEach { shares[it] = shares.getValue(it) + 1 }
+
+        return ordered.associate { COLOR_TO_BASIC.getValue(it) to shares.getValue(it) }.filterValues { it > 0 }
     }
 
     /** Total cards the format wants, counting the commander (CR 903.5a, CR 903.12d). */
@@ -349,13 +477,59 @@ class CommanderDeckGenerator(
         private const val SINGLETON_HUNDRED_DECK_SIZE = 100
         private const val STANDARD_BRAWL_DECK_SIZE = 60
 
+        /** The library of a hundred-card deck; the role quotas below are per 99 and scale with it. */
+        private const val SINGLETON_HUNDRED_LIBRARY = SINGLETON_HUNDRED_DECK_SIZE - 1
+
         /**
-         * Share of the library that is land. 38% is the paper-Commander consensus (37–38 of 99) and
-         * scales sanely down to the 60-card shapes (22 of 59). It runs a touch high for a 60-card
-         * deck by constructed standards, which is the right error for a builder that puts no ramp
-         * or card selection in the deck on purpose.
+         * Share of the library that is land before ramp is counted. 38% is the paper-Commander
+         * consensus for a deck with no ramp (37–38 of 99) and scales to the 60-card shapes (22 of 59).
          */
         private const val LAND_RATIO = 0.38
+
+        /** The floor the ramp discount can't take the land count below: 36 of 99, 21 of 59. */
+        private const val MIN_LAND_RATIO = 0.36
+
+        /** One land comes out of the manabase per this many ramp pieces in the deck. */
+        private const val RAMP_PER_LAND = 5
+
+        /**
+         * Role quotas per 99 cards — the shape most Commander deck-building guides give: about ten
+         * ramp, eight or so pieces of interaction, and a handful of real card draw. A pool that
+         * can't supply a quota leaves the slot to the curve.
+         */
+        private const val RAMP_QUOTA = 10
+        private const val REMOVAL_QUOTA = 8
+        private const val DRAW_QUOTA = 7
+
+        /**
+         * Slots per 99 reserved for cards that do what the commander asks ([CommanderSynergy] score
+         * of at least [MIN_THEME_SCORE] — one real hit, not just a shared evergreen keyword). With
+         * the role cards that happen to be on theme too, this makes a tribal deck mostly its tribe.
+         */
+        private const val THEME_QUOTA = 25
+        private const val MIN_THEME_SCORE = 1.0
+
+        /** From this many colours on, half the ramp quota goes to ramp that also fixes. */
+        private const val FIXING_COLOURS = 3
+
+        /**
+         * Most non-basic lands per 99 cards by identity size. Few in one colour — there is nothing
+         * to fix, only untapped utility lands earn a slot — and most of the lands' worth in three or
+         * more, where the duals and tri-lands are the fixing.
+         */
+        private val NONBASIC_LAND_CAP = mapOf(1 to 3, 2 to 8)
+        private const val MAX_NONBASIC_LANDS = 14
+
+        /** Share of the basics every identity colour gets before the pips divide the rest. */
+        private const val MIN_COLOUR_SHARE = 0.5
+
+        /**
+         * How far [CommanderSynergy] moves a card's sampling weight: weight × (1 + this × score),
+         * with the score capped at [MAX_SYNERGY]. A creature of the tribe the commander names (score 5)
+         * is eleven times as likely as an equally rated stranger: a tribal deck is mostly its tribe.
+         */
+        private const val SYNERGY_WEIGHT = 2.0
+        private const val MAX_SYNERGY = 6.0
 
         /** Mana values 7+ are one bucket; nothing above it curves differently enough to matter. */
         private const val TOP_CURVE_BUCKET = 7
@@ -376,7 +550,7 @@ class CommanderDeckGenerator(
 
         /**
          * How strongly a candidate commander's colour count counts against it. See [pickCommander]:
-         * an all-basics manabase supports one or two colours comfortably and three at a stretch.
+         * a mostly-basic manabase supports one or two colours comfortably and three with fixing.
          */
         private val IDENTITY_WEIGHT = mapOf(1 to 1.0, 2 to 0.9, 3 to 0.35)
         private const val LAST_RESORT_IDENTITY_WEIGHT = 0.05
