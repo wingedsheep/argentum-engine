@@ -624,7 +624,7 @@ class CastFromZoneEnumerator(
                         val effectiveScript = castDef?.script
                         val effectiveTypeLine = if (castDef != null && castDef !== cardDef) castDef.typeLine else cardComponent.typeLine
                         // "Cast it if it's a creature spell" (Vivien, Champion of the Wilds) is the
-                        // same face-level check on card types: an Adventurer's sorcery half is not a
+                        // same face-level check on card types: an Adventurer's instant half is not a
                         // creature spell.
                         if (permissions.none { it.authorizesSpell(castColors, effectiveTypeLine.cardTypes) }) {
                             continue

@@ -21,7 +21,7 @@ import io.kotest.matchers.string.shouldContain
  * A may-play permission's spell-type rider (`castSpellTypes`, "you may cast it if it's a creature
  * spell" — Vivien, Champion of the Wilds) is checked against the face actually being cast, not the
  * card in exile: an Adventurer card (Brightcap Badger // Fungus Frolic) is a creature card, but its
- * Adventure is a sorcery spell (CR 715.3), so a creature-only grant covers the creature half alone
+ * Adventure is an instant spell (CR 715.3), so a creature-only grant covers the creature half alone
  * and an instant-or-sorcery grant the Adventure alone. A spell needs only *one* of the listed types.
  *
  * Engine-level: the from-exile enumerator and the authoritative cast validator (the action is
@@ -59,7 +59,7 @@ class MayPlaySpellTypeRiderTest : ScenarioTestBase() {
             .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
             .build()
 
-        test("a creature-only grant offers an Adventurer card's creature half but not its sorcery Adventure") {
+        test("a creature-only grant offers an Adventurer card's creature half but not its instant Adventure") {
             val game = exiledWith("Brightcap Badger", "Forest", 4)
             val card = game.exiled("Brightcap Badger")
             game.grant(card, setOf(CardType.CREATURE))
