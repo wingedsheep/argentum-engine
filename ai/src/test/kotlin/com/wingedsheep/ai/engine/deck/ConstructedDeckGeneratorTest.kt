@@ -78,7 +78,7 @@ class ConstructedDeckGeneratorTest : FunSpec({
      * in twenty stacks no card to four copies, which failed the four-ofs test at random. Successive
      * builds from one generator still differ, as the seeded stream advances.
      */
-    fun generatorOver(vararg sets: Pair<String, List<CardDefinition>>): ConstructedDeckGenerator {
+    fun generatorOver(vararg sets: Pair<String, List<CardDefinition>>, random: Random = Random(SEED)): ConstructedDeckGenerator {
         val configs = sets.associate { (code, cards) ->
             code to BoosterGenerator.SetConfig(
                 setCode = code,
@@ -90,7 +90,7 @@ class ConstructedDeckGeneratorTest : FunSpec({
         val registry = CardRegistry()
         sets.forEach { (_, cards) -> registry.register(cards) }
         registry.register(basics())
-        return ConstructedDeckGenerator(BoosterGenerator(configs), registry, Random(SEED))
+        return ConstructedDeckGenerator(BoosterGenerator(configs), registry, random)
     }
 
     test("builds a 60-card deck from the chosen sets") {
@@ -245,6 +245,19 @@ class ConstructedDeckGeneratorTest : FunSpec({
         val gen = generatorOver("THN" to thin)
 
         shouldThrow<IllegalArgumentException> { gen.generateDeck(listOf("THN"), DeckFormat.LEGACY) }
+    }
+
+    test("never hands back a deck short of the format's size") {
+        // Seven distinct creatures: four copies each just meets the spell floor, but the random
+        // builder behind a failed Draftsim build filled 28 spells and 24 lands and called a 52-card
+        // pile a deck. Every build of this pool either reaches 60 or is refused.
+        val seven = (1..7).map { i -> card("Body $i", "{${i % 4}}{G}", Rarity.COMMON, setOf(DeckFormat.MODERN)) }
+
+        for (seed in 1..10) {
+            val gen = generatorOver("AAA" to seven, random = Random(seed))
+            val built = runCatching { gen.generate(listOf("AAA"), DeckFormat.MODERN) }.getOrNull() ?: continue
+            withClue("seed $seed") { built.values.sum() shouldBe deckSize }
+        }
     }
 
     test("refuses a build without enough creatures to play") {

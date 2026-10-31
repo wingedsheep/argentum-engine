@@ -188,15 +188,45 @@ class CommanderDeckGeneratorTest : FunSpec({
         deck shouldBe null
     }
 
-    test("still reaches the exact size when the identity-legal pool is tiny") {
-        // Ten castable spells and a 99-card library: the rest has to come back as basics, because a
-        // deck one card short is a deck the validator rejects.
-        val thin = (1..10).map { spell("Green $it", "{${it % 4}}{G}") } + legend("Mono Green Legend", "{2}{G}")
+    test("still reaches the exact size when the identity-legal pool runs a little short") {
+        // 55 castable spells for 61 spell slots: the gap has to come back as basics, because a deck
+        // one card short is a deck the validator rejects.
+        val short = (1..55).map { spell("Green $it", "{${it % 4}}{G}") } + legend("Mono Green Legend", "{2}{G}")
 
-        val deck = generatorOver(thin).generate(listOf("AAA"), DeckFormat.COMMANDER)!!
+        val deck = generatorOver(short).generate(listOf("AAA"), DeckFormat.COMMANDER)!!
 
         deck.totalCards shouldBe 100
         deck.deckList.keys.map { baseName(it) }.filter { it in basicNames }.toSet() shouldBe setOf("Forest")
+    }
+
+    test("a pool too thin to fill the spell slots returns null rather than padding it with basics") {
+        // Ten castable spells used to come back as a 100-card deck of 89 basics: legal, and
+        // unplayable. The resolver has better answers than that.
+        val thin = (1..10).map { spell("Green $it", "{${it % 4}}{G}") } + legend("Mono Green Legend", "{2}{G}")
+
+        generatorOver(thin).generate(listOf("AAA"), DeckFormat.COMMANDER) shouldBe null
+    }
+
+    test("passes over a commander whose identity can't fill the deck for one that can") {
+        // Only three blue spells, so the blue legend can't lead a deck; the green one can. Seeds
+        // vary which legend the weighted draw puts first, and every one must end on green.
+        val cards = (1..80).map { spell("Green $it", "{${it % 5}}{G}") } +
+            (1..3).map { spell("Blue $it", "{${it % 3}}{U}") } +
+            listOf(legend("Mono Blue Legend", "{2}{U}"), legend("Mono Green Legend", "{2}{G}"))
+
+        for (seed in 1..12) {
+            val deck = generatorOver(cards, kotlin.random.Random(seed)).generate(listOf("AAA"), DeckFormat.COMMANDER)!!
+            withClue("seed $seed") { deck.commander shouldBe "Mono Green Legend" }
+        }
+    }
+
+    test("a limited pool still builds when it is thin") {
+        // Everything the seat owns is all it has, so the limited path keeps its best effort.
+        val thin = (1..10).map { spell("Green $it", "{${it % 4}}{G}") } + legend("Mono Green Legend", "{2}{G}")
+
+        val deck = generatorOver(thin).generateFromPool(thin, deckSize = 60)!!
+
+        deck.totalCards shouldBe 60
     }
 
     test("refuses a non-commander format") {

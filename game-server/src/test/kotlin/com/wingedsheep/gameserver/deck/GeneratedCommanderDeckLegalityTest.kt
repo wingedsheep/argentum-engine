@@ -39,15 +39,11 @@ class GeneratedCommanderDeckLegalityTest(
         test("every generated ${format.displayName} deck passes the deck validator") {
             val decks = (1..builds).map { commanderDeckGenerator.generate(emptyList(), format) }
 
-            if (decks.all { it == null }) {
-                // A format the implemented card base can't supply a commander for. Only Standard
-                // Brawl is allowed to be in that position today — no implemented set is
-                // Standard-legal — and it stops being exempt the moment one is, because these
-                // assertions then start running against real decks.
-                withClue("no ${format.displayName} deck could be built from the whole card base") {
-                    format shouldBe DeckFormat.STANDARD_BRAWL
-                }
-                return@test
+            // Standard Brawl used to be exempted here as "no implemented set is Standard-legal".
+            // The real cause was the legality loader dropping Scryfall's `STANDARDBRAWL` key, so
+            // every format has to build now.
+            withClue("no ${format.displayName} deck could be built from the whole card base") {
+                decks.any { it != null } shouldBe true
             }
 
             decks.forEach { generated ->

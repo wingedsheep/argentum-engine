@@ -267,8 +267,8 @@ class RandomDeckResolver(
      * A generated deck for a seat with no submitted list, honouring the lobby's [format].
      *
      * Each branch falls back to the one below it rather than failing the game start: a commander
-     * build that can't find a legal commander in a narrow set selection drops to the constructed
-     * path, and a constructed build with too thin a legal pool drops to a sealed one. A deck the
+     * build that a narrow set selection can't support is retried from the whole format, then drops
+     * to the sealed path, and a constructed build with too thin a legal pool drops to a sealed one. A deck the
      * seat can actually play beats an error message — with one exception, noted at the commander
      * branch, where the fallback is itself unplayable.
      *
@@ -310,6 +310,21 @@ class RandomDeckResolver(
                 }
                 .getOrNull()
             if (built != null) return built
+            // Sets too thin for a commander deck of their own: a commander deck from the whole
+            // format still starts the game, where the commander-less fallback below cannot.
+            if (setCodes.isNotEmpty()) {
+                runCatching { commanderDeckGenerator.generate(emptyList(), commanderFormat) }
+                    .onFailure { logger.warn("Format-wide {} deck failed", commanderFormat.displayName, it) }
+                    .getOrNull()
+                    ?.let {
+                        logger.info(
+                            "{} too thin for a {} deck; built one from the whole format instead",
+                            setCodes.joinToString(", "),
+                            commanderFormat.displayName,
+                        )
+                        return it
+                    }
+            }
             logger.warn(
                 "No {} deck could be built from {}; falling back to a deck with no commander",
                 commanderFormat.displayName,

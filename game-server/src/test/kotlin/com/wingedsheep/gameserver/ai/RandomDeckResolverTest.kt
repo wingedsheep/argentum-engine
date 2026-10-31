@@ -205,11 +205,22 @@ class RandomDeckResolverTest : FunSpec({
         deck.totalCards shouldBe 100
     }
 
-    test("a commander-shape lobby whose pool holds no legal commander falls back") {
-        // Set BBB prints no legendary creatures, so there is nothing to lead a deck. The caller has
-        // to notice the missing commander and refuse the start; the resolver's job is not to throw.
+    test("a commander-shape lobby whose chosen sets hold no legal commander builds from the whole format") {
+        // Set BBB prints no legendary creatures, so it can't lead a deck of its own. A commander
+        // deck from the whole format still starts the game; a commander-less one would not.
         val deck = resolver()
             .resolve(AiDeckSpec.Sets(listOf("BBB")), format = DeckFormat.COMMANDER, fallbackSetCode = "BBB", commanderRules = true)
+
+        deck.commander shouldNotBe null
+        deck.totalCards shouldBe 100
+    }
+
+    test("a commander-shape lobby whose whole format holds no legal commander falls back") {
+        // Nothing in the synthetic pool is Brawl-legal, so neither the chosen sets nor the whole
+        // format can lead a deck. The caller has to notice the missing commander and refuse the
+        // start; the resolver's job is not to throw.
+        val deck = resolver()
+            .resolve(AiDeckSpec.Sets(listOf("BBB")), format = DeckFormat.BRAWL, fallbackSetCode = "BBB", commanderRules = true)
 
         deck.commander shouldBe null
         deck.deckList.values.sum() shouldBe sealedSize

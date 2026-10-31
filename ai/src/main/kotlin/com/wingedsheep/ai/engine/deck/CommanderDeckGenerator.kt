@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.DeckFormat
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CommanderEligibility
+import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.random.Random
 import org.slf4j.LoggerFactory
@@ -62,7 +63,9 @@ class CommanderDeckGenerator(
      * @throws IllegalArgumentException if [format] is not commander-shaped.
      * @return the deck, or null when the pool holds no legal commander with a buildable colour
      *         identity behind it — the caller decides what to do instead, because "no Commander deck
-     *         from three Portal sets" is a lobby configuration, not a bug.
+     *         from three Portal sets" is a lobby configuration, not a bug. "Buildable" means at
+     *         least [MIN_SPELL_SHARE] of the spell slots filled: a thin set's commander used to get
+     *         a library of three spells and ninety-six basics, which is not a deck.
      */
     fun generate(setCodes: List<String>, format: DeckFormat): GeneratedDeck? {
         require(format.isCommanderShape) {
@@ -83,6 +86,7 @@ class CommanderDeckGenerator(
             deckSize = deckSizeFor(format),
             copyLimit = { 1 },
             label = format.displayName,
+            minSpellShare = MIN_SPELL_SHARE,
         )
     }
 
@@ -123,6 +127,10 @@ class CommanderDeckGenerator(
     /**
      * Pick a commander, then fill a library inside its colour identity.
      *
+     * Commanders are tried in weighted-draw order until one's colour identity yields at least
+     * [minSpellShare] of the spell slots; the rest of the library is basics either way. A limited
+     * pool passes 0 — it is everything the seat owns, so a thin build is still the best it has.
+     *
      * @param pool distinct candidate cards; already scoped to whatever legality the caller enforces.
      * @param basics basic-land printings whose art the manabase is pinned to.
      * @param deckSize total cards including the commander.
@@ -135,9 +143,33 @@ class CommanderDeckGenerator(
         deckSize: Int,
         copyLimit: (CardDefinition) -> Int,
         label: String,
+        minSpellShare: Double = 0.0,
     ): GeneratedDeck? {
-        val commander = pickCommander(pool) ?: run {
+        val commanders = commanderOrder(pool)
+        if (commanders.isEmpty()) {
             logger.warn("No legal commander in a pool of {} cards ({})", pool.size, label)
+            return null
+        }
+        val librarySize = deckSize - 1
+        val landCount = (librarySize * LAND_RATIO).roundToInt()
+        val spellSlots = librarySize - landCount
+        val minSpells = (spellSlots * minSpellShare).toInt()
+
+        // Count the castable body before drawing, so a commander whose identity can't fill the
+        // deck is skipped without building it.
+        val commander = commanders.firstOrNull { candidate ->
+            val identity = candidate.colorIdentity
+            val available = pool.filter { card ->
+                card.name != candidate.name && !card.isLand && card.colorIdentity.all { it in identity }
+            }.sumOf { copyLimit(it) }
+            available >= minSpells
+        } ?: run {
+            logger.warn(
+                "No commander in a pool of {} cards ({}) has the {} spells a playable deck needs",
+                pool.size,
+                label,
+                minSpells,
+            )
             return null
         }
         val identity = commander.colorIdentity
@@ -148,9 +180,7 @@ class CommanderDeckGenerator(
                 card.colorIdentity.all { it in identity }
         }
 
-        val librarySize = deckSize - 1
-        val landCount = (librarySize * LAND_RATIO).roundToInt()
-        val spells = pickSpells(body, librarySize - landCount, copyLimit)
+        val spells = pickSpells(body, spellSlots, copyLimit)
 
         // Whatever the pool couldn't fill becomes extra basics. They are the one card type with no
         // copy cap (CR 903.5b), so this always reaches the exact size the format demands — a deck
@@ -175,8 +205,8 @@ class CommanderDeckGenerator(
     }
 
     /**
-     * Draw one commander from [pool], biased towards cards Draftsim rates highly and towards narrow
-     * colour identities.
+     * Every legal commander in [pool], in a weighted draw order biased towards cards Draftsim rates
+     * highly and towards narrow colour identities.
      *
      * The identity bias is the load-bearing half. Identity is a *deck-construction* constraint here,
      * not a bonus: a five-colour commander opens the whole pool but hands the builder a manabase of
@@ -184,14 +214,20 @@ class CommanderDeckGenerator(
      * all-basics manabase actually supports, three is playable, and four or five is a last resort
      * for a pool with nothing narrower in it.
      */
-    private fun pickCommander(pool: List<CardDefinition>): CardDefinition? {
+    private fun commanderOrder(pool: List<CardDefinition>): List<CardDefinition> {
         val ops = ConstructedRatings.ops()
         val candidates = commanderCandidates(pool)
-        if (candidates.isEmpty()) return null
-        return candidates.weightedSample(1, random) { card ->
-            val rating = ops.ratingFallback(card.toScorerCard()).coerceAtLeast(ConstructedRatings.MIN_WEIGHT)
-            rating * (IDENTITY_WEIGHT[card.colorIdentity.size] ?: LAST_RESORT_IDENTITY_WEIGHT)
-        }.firstOrNull()
+        // The same Efraimidis–Spirakis key `weightedSample` draws by, kept as a full ordering: the
+        // first entry is exactly the one-commander draw, and the rest are its fallbacks.
+        return candidates
+            .map { card ->
+                val rating = ops.ratingFallback(card.toScorerCard()).coerceAtLeast(ConstructedRatings.MIN_WEIGHT)
+                val weight = (rating * (IDENTITY_WEIGHT[card.colorIdentity.size] ?: LAST_RESORT_IDENTITY_WEIGHT))
+                    .coerceAtLeast(ConstructedRatings.MIN_WEIGHT)
+                card to random.nextDouble().pow(1.0 / weight)
+            }
+            .sortedByDescending { it.second }
+            .map { it.first }
     }
 
     /**
@@ -357,6 +393,12 @@ class CommanderDeckGenerator(
          */
         private const val LAND_RATIO = 0.38
 
+        /**
+         * Fewest spells a generated format deck may hold, as a share of its spell slots — the same
+         * four in five `ConstructedDeckGenerator` holds a 60-card build to.
+         */
+        private const val MIN_SPELL_SHARE = 0.8
+
         /** Mana values 7+ are one bucket; nothing above it curves differently enough to matter. */
         private const val TOP_CURVE_BUCKET = 7
 
@@ -375,7 +417,7 @@ class CommanderDeckGenerator(
         )
 
         /**
-         * How strongly a candidate commander's colour count counts against it. See [pickCommander]:
+         * How strongly a candidate commander's colour count counts against it. See [commanderOrder]:
          * an all-basics manabase supports one or two colours comfortably and three at a stretch.
          */
         private val IDENTITY_WEIGHT = mapOf(1 to 1.0, 2 to 0.9, 3 to 0.35)

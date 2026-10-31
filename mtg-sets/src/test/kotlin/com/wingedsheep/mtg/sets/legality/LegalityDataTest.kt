@@ -55,4 +55,10 @@ class LegalityDataTest : FunSpec({
         shahrazad shouldNotContain DeckFormat.HIGHLANDER
         shahrazad shouldNotContain DeckFormat.CANADIAN_HIGHLANDER
     }
+
+    test("Standard Brawl legality is read from Scryfall's concatenated key") {
+        // Stored as STANDARDBRAWL, not the enum name STANDARD_BRAWL.
+        LegalityData.forCard("Lightning Strike") shouldContain DeckFormat.STANDARD_BRAWL
+        LegalityData.forCard("Lightning Bolt") shouldNotContain DeckFormat.STANDARD_BRAWL
+    }
 })

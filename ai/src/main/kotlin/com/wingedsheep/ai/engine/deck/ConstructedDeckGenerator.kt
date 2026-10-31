@@ -126,9 +126,10 @@ class ConstructedDeckGenerator(
     }
 
     /**
-     * Refuse a deck the pool was too thin to really build: too few spells (the shortfall went to
-     * basics) or too few creatures to put a body on the board. Throwing is what lets
-     * `RandomDeckResolver` fall back to another answer instead of seating a 44-land pile.
+     * Refuse a deck the pool was too thin to really build: short of the shape's size (the random
+     * builder can't always fill its spell slots), too few spells (the shortfall went to basics), or
+     * too few creatures to put a body on the board. Throwing is what lets `RandomDeckResolver` fall
+     * back to another answer instead of seating a 44-land pile or a 52-card deck.
      */
     private fun requirePlayable(deckList: Map<String, Int>, pool: List<CardDefinition>, shape: DeckShape, format: DeckFormat) {
         val byName = pool.associateBy { it.name }
@@ -139,6 +140,10 @@ class ConstructedDeckGenerator(
             if (card.isLand) continue
             nonland += count
             if (card.typeLine.isCreature) creatures += count
+        }
+        val size = deckList.values.sum()
+        require(size >= shape.deckSize) {
+            "The ${format.displayName}-legal pool is too thin for a full deck: $size of ${shape.deckSize} cards"
         }
         require(nonland >= shape.minNonland && creatures >= shape.minCreatures) {
             "The ${format.displayName}-legal pool is too thin for a playable deck: " +

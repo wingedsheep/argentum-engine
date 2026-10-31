@@ -95,7 +95,15 @@ object LegalityData {
         return stream.use { it.readBytes().toString(Charsets.UTF_8) }
     }
 
-    private val formatsByName: Map<String, DeckFormat> = DeckFormat.entries.associateBy { it.name }
+    /**
+     * The bundled data stores each Scryfall legality key upper-cased (`STANDARDBRAWL`), which is
+     * the enum name for every format but [DeckFormat.STANDARD_BRAWL]. Keying by the enum name
+     * alone dropped Standard Brawl from every card, so no Standard Brawl deck could validate or be
+     * generated; key by the Scryfall form as well.
+     */
+    private val formatsByName: Map<String, DeckFormat> =
+        DeckFormat.entries.associateBy { it.name } +
+            DeckFormat.entries.mapNotNull { format -> format.scryfallKey?.let { it.uppercase() to format } }
 
     private fun parseRaw(text: String): Map<String, Set<DeckFormat>> {
         val raw: Map<String, List<String>> = parser.decodeFromString(mapSerializer, text)
