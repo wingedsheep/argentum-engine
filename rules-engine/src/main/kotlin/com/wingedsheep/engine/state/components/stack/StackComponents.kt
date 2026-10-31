@@ -531,6 +531,13 @@ data class ActivatedAbilityOnStackComponent(
      * reflexive triggers) that carry no restriction.
      */
     val sourceFaceChanges: Int? = null,
+    /**
+     * The source permanent's [com.wingedsheep.engine.state.components.battlefield.UntapCountComponent]
+     * clock the moment this ability was put onto the stack. Effects it creates "for as long as
+     * <source> remains tapped" hold only while the clock still reads this, so a source that
+     * untapped before resolution leaves them inert (CR 611.2b). Null for synthesized abilities.
+     */
+    val sourceUntapCount: Int? = null,
     val sourceBattlefieldTimestamp: Long? = null,
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment =
         com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),

@@ -73,7 +73,17 @@ data class ActiveFloatingEffect(
     /** Objects referred to by this effect, captured before later zone changes. Used for source choices. */
     @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
-    val referencedObjects: List<com.wingedsheep.engine.state.ObjectRef> = emptyList()
+    val referencedObjects: List<com.wingedsheep.engine.state.ObjectRef> = emptyList(),
+    /**
+     * For a source-tapped duration created by an activated ability, the source's
+     * [com.wingedsheep.engine.state.components.battlefield.UntapCountComponent] clock at activation:
+     * the effect holds only while the source is tapped *and* hasn't untapped since (CR 611.2b).
+     * Null otherwise — the gate then reads the tapped state alone. Read through
+     * [com.wingedsheep.engine.mechanics.durations.GrantDurationGate.sourceTapped].
+     */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val sourceUntapCount: Int? = null
 )
 
 /**

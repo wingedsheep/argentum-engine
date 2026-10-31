@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.mechanics.durations
 
+import com.wingedsheep.engine.core.untapCount
+import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
@@ -128,7 +130,20 @@ object GrantDurationGate {
         else -> false
     }
 
-    fun sourceTapped(state: GameState, sourceId: EntityId?): Boolean =
-        sourceId != null && state.getBattlefield().contains(sourceId) &&
-            state.getEntity(sourceId)?.has<TappedComponent>() == true
+    /**
+     * "For as long as <source> remains tapped": the source is on the battlefield and tapped, and —
+     * when [untapCountAtActivation] is known — has not untapped since the ability that created the
+     * effect was activated. A source that untaps and is tapped again before that ability resolves
+     * has already ended the duration, so the effect does nothing (CR 611.2b; Entrancing Lyre ruling).
+     */
+    fun sourceTapped(state: GameState, sourceId: EntityId?, untapCountAtActivation: Int? = null): Boolean {
+        if (sourceId == null || !state.getBattlefield().contains(sourceId)) return false
+        val source = state.getEntity(sourceId) ?: return false
+        return source.has<TappedComponent>() &&
+            (untapCountAtActivation == null || untapCount(source) == untapCountAtActivation)
+    }
+
+    /** [sourceTapped] for a floating effect, honouring the untap clock it was stamped with. */
+    fun sourceTapped(state: GameState, floating: ActiveFloatingEffect): Boolean =
+        sourceTapped(state, floating.sourceId, floating.sourceUntapCount)
 }

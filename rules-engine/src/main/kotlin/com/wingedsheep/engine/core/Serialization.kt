@@ -650,6 +650,7 @@ val engineSerializersModule = SerializersModule {
         subclass(DamageDealtThisTurnComponent::class)
         subclass(HasBecomeTappedComponent::class)
         subclass(com.wingedsheep.engine.state.components.battlefield.EntryTapStateComponent::class)
+        subclass(com.wingedsheep.engine.state.components.battlefield.UntapCountComponent::class)
         subclass(HasDealtCombatDamageToPlayerComponent::class)
         subclass(DealtCombatDamageToPlayersThisTurnComponent::class)
         subclass(DealtDamageToThisGameComponent::class)

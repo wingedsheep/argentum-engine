@@ -101,6 +101,12 @@ fun GameState.createFloatingEffect(
             Duration.EndOfYourNextUpkeep,
             Duration.EndOfAffectedControllersNextTurn -> turnNumber + 1
             else -> null
+        },
+        sourceUntapCount = when (duration) {
+            is Duration.WhileSourceTapped,
+            is Duration.WhileSourceTappedAndAffectedPowerAtMostSource,
+            is Duration.WhileYouControlSourceAndSourceTapped -> context.sourceUntapCount
+            else -> null
         }
     )
 }

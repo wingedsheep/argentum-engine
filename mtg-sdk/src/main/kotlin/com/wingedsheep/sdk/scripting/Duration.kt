@@ -322,7 +322,9 @@ sealed interface Duration {
     /**
      * Effect lasts while the source permanent remains tapped. One-way (CR 611.2b): once the
      * source untaps or leaves the battlefield the effect ends for good — `EndedDurationExpiryCheck`
-     * removes it, so a later re-tap does not restart it.
+     * removes it, so a later re-tap does not restart it. Created by an activated ability, the
+     * duration counts from activation: a source that untaps before the ability resolves (even if
+     * tapped again by then) has already ended it, so the effect does nothing (Entrancing Lyre ruling).
      * Example: Everglove Courier "for as long as Everglove Courier remains tapped"
      */
     @SerialName("WhileSourceTapped")

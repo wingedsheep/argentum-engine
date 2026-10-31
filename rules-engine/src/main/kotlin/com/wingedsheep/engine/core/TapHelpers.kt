@@ -10,6 +10,7 @@ import com.wingedsheep.engine.state.components.battlefield.HasBecomeTappedCompon
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.EntryTapStateComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.battlefield.UntapCountComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.core.AbilityFlag
@@ -304,6 +305,7 @@ fun untapOrConsumeStun(
             c.with(counters.withRemoved(CounterType.PLUS_ONE_PLUS_ONE, 1))
                 .withEntryTapState(enteredTapped = true)
                 .without<TappedComponent>()
+                .withUntapCounted()
         }
         return newState to listOf(
             CountersRemovedEvent(entityId, CounterType.PLUS_ONE_PLUS_ONE, 1, cardName),
@@ -312,7 +314,7 @@ fun untapOrConsumeStun(
     }
 
     val newState = state.updateEntity(entityId) {
-        it.withEntryTapState(enteredTapped = true).without<TappedComponent>()
+        it.withEntryTapState(enteredTapped = true).without<TappedComponent>().withUntapCounted()
     }
     return newState to listOf(UntappedEvent(entityId, cardName))
 }
@@ -324,6 +326,12 @@ fun untapOrConsumeStun(
  */
 fun enteredBattlefieldTapped(container: ComponentContainer): Boolean =
     container.get<EntryTapStateComponent>()?.enteredTapped ?: container.has<TappedComponent>()
+
+/** The permanent's [UntapCountComponent] clock — how many times it has untapped this battlefield visit. */
+fun untapCount(container: ComponentContainer?): Int = container?.get<UntapCountComponent>()?.count ?: 0
+
+private fun ComponentContainer.withUntapCounted(): ComponentContainer =
+    with(UntapCountComponent(untapCount(this) + 1))
 
 /** Freeze [enteredTapped] as the entry tap state, unless an earlier transition already did. */
 private fun ComponentContainer.withEntryTapState(enteredTapped: Boolean): ComponentContainer =

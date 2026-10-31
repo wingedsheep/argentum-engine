@@ -211,6 +211,7 @@ internal class AbilityResolver(
             modeTargetRequirementsOrdered = abilityComponent.modeTargetRequirementsOrdered,
             modeTargetRequirements = abilityComponent.modeTargetRequirements,
             sourceFaceChanges = abilityComponent.sourceFaceChanges,
+            sourceUntapCount = abilityComponent.sourceUntapCount,
             sourceBattlefieldTimestamp = abilityComponent.sourceBattlefieldTimestamp,
             objectReferences = abilityComponent.objectReferences,
             targets = activatedTargets,

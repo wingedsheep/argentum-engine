@@ -2331,7 +2331,11 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
 - `ModifyStats(power, toughness, target?, duration?)` — `±P/±T` for `duration` (default: until end of
   turn). Pass `Duration.WhileSourceTapped("…")` for the Antiquities "tap-locked" buffs (Ashnod's Battle
   Gear `+2/-2`, Tawnos's Weaponry `+1/+1`): the bonus persists for as long as the source artifact remains
-  tapped and the one-way latch drops it when it untaps.
+  tapped and the one-way latch drops it when it untaps. From an activated ability the duration counts
+  from activation (CR 611.2b): the stack object records the source's untap clock
+  (`UntapCountComponent`), so a source that untaps before the ability resolves — even if it is tapped
+  again by then — leaves the effect inert. The same holds for every source-tapped duration
+  (`WhileSourceTappedAndAffectedPowerAtMostSource`, `WhileYouControlSourceAndSourceTapped`).
 - `SetBasePower(target, power: DynamicAmount, duration, reevaluateContinuously = false)` — set base power
   to a dynamic value (Layer 7b), leaving toughness unchanged.
 - `SetBaseToughness(target, toughness: DynamicAmount, duration, reevaluateContinuously = false)` —
@@ -11137,7 +11141,9 @@ staticAbility {
     artifact. It doesn't untap during its controller's untap step for as long as Phyrexian Gremlins
     remains tapped" — compose `Effects.Tap(target) then Effects.GrantKeyword(AbilityFlag.DOESNT_UNTAP,
     target, Duration.WhileSourceTapped("…"))`: the one-way `WhileSourceTapped` latch drops the grant the
-    instant the source untaps.
+    instant the source untaps, and a source that untapped between activation and resolution never
+    locks the target at all (**Entrancing Lyre** — the X-bounded target is
+    `GameObjectFilter.Creature.compareNumericProperty(POWER, LTE, DynamicAmounts.xValue())`).
     For "doesn't untap during its controller's **next** untap step" pass
     `Duration.UntilAfterAffectedControllersNextUntap()` (Crippling Chill); for "… next **two** untap
     steps" pass `Duration.UntilAfterAffectedControllersNextUntap(count = 2)` (Telekinesis).

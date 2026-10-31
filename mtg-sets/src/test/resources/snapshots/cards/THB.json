@@ -5767,6 +5767,87 @@
     ]
 }
 
+// Entrancing Lyre
+{
+    "name": "Entrancing Lyre",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "You may choose not to untap this artifact during your untap step.\n{X}, {T}: Tap target creature with power X or less. It doesn't untap during its controller's untap step for as long as this artifact remains tapped.",
+    "flags": [
+        "MAY_NOT_UNTAP"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Entrancing Lyre:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{X}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": {
+                                "type": "WhileSourceTapped",
+                                "sourceDescription": "this artifact"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "CompareNumericProperty",
+                                        "property": "POWER",
+                                        "operator": "LTE",
+                                        "amount": "XValue"
+                                    }
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{X}, {T}: Tap target creature with power X or less. It doesn't untap during its controller's untap step for as long as this artifact remains tapped."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "233",
+        "rarity": "UNCOMMON",
+        "artist": "Yeong-Hao Han",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/064abee6-7394-4b75-946f-4ad9840034ac.jpg?1783931515"
+    }
+}
+
 // Erebos's Intervention
 {
     "name": "Erebos's Intervention",

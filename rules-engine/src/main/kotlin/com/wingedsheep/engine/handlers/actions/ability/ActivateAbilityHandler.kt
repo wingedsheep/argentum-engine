@@ -561,6 +561,9 @@ class ActivateAbilityHandler(
             sourceFaceChanges = stateBeforeActivation.getEntity(action.sourceId)
                 ?.get<DoubleFacedComponent>()
                 ?.faceChanges,
+            // "For as long as <source> remains tapped" counts from this moment: an untap before
+            // resolution ends it before it begins (CR 611.2b, Entrancing Lyre ruling).
+            sourceUntapCount = com.wingedsheep.engine.core.untapCount(stateBeforeActivation.getEntity(action.sourceId)),
             // Lock in the activation-time damage division (CR 601.2d) so removal in response
             // can't hand the controller a fresh division at resolution.
             damageDistribution = action.damageDistribution

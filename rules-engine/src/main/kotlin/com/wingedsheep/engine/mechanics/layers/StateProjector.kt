@@ -1000,19 +1000,11 @@ class StateProjector {
 
         // 2. Collect floating effects (from resolved spells like Giant Growth)
         for (floating in state.floatingEffects) {
-            if (floating.duration is Duration.WhileSourceTapped) {
-                val sourceId = floating.sourceId
-                if (sourceId == null || !state.getBattlefield().contains(sourceId) ||
-                    state.getEntity(sourceId)?.has<TappedComponent>() != true) {
-                    continue
-                }
-            }
-            if (floating.duration is Duration.WhileSourceTappedAndAffectedPowerAtMostSource) {
-                val sourceId = floating.sourceId
-                if (sourceId == null || !state.getBattlefield().contains(sourceId) ||
-                    state.getEntity(sourceId)?.has<TappedComponent>() != true) {
-                    continue
-                }
+            if ((floating.duration is Duration.WhileSourceTapped ||
+                    floating.duration is Duration.WhileSourceTappedAndAffectedPowerAtMostSource) &&
+                !GrantDurationGate.sourceTapped(state, floating)
+            ) {
+                continue
             }
             if (floating.duration is Duration.WhileSourceOnBattlefield) {
                 val sourceId = floating.sourceId
@@ -1031,13 +1023,10 @@ class StateProjector {
             }
             // Seasinger — both halves at once. The battlefield and tapped halves are checkable
             // here; the source-controller half joins WhileYouControlSource's post-Layer-2 sweep.
-            if (floating.duration is Duration.WhileYouControlSourceAndSourceTapped) {
-                val sourceId = floating.sourceId
-                if (sourceId == null || !state.getBattlefield().contains(sourceId) ||
-                    state.getEntity(sourceId)?.has<TappedComponent>() != true
-                ) {
-                    continue
-                }
+            if (floating.duration is Duration.WhileYouControlSourceAndSourceTapped &&
+                !GrantDurationGate.sourceTapped(state, floating)
+            ) {
+                continue
             }
             // "for as long as [the source Aura/Equipment] remains attached to it" — gate the whole
             // effect on the source still being on the battlefield (CR 611.2b). The per-affected

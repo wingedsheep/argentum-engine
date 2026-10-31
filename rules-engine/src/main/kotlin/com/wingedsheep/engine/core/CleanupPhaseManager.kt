@@ -24,7 +24,7 @@ import com.wingedsheep.engine.state.components.battlefield.ReceivedCountersThisT
 import com.wingedsheep.engine.state.components.battlefield.TriggeredAbilityEffectAppliedThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.TriggeredAbilityFiredThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.GraveyardPlayPermissionUsedComponent
-import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.mechanics.durations.GrantDurationGate
 import com.wingedsheep.engine.state.components.battlefield.TokenReplacementOfferedThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.BlockedOrWasBlockedByLegendaryThisTurnComponent
@@ -590,11 +590,8 @@ class CleanupPhaseManager(
             when (floatingEffect.duration) {
                 is Duration.WhileSourceTapped,
                 is Duration.WhileSourceTappedAndAffectedPowerAtMostSource,
-                is Duration.WhileYouControlSourceAndSourceTapped -> {
-                    val sourceId = floatingEffect.sourceId
-                    sourceId != null && state.getBattlefield().contains(sourceId) &&
-                        state.getEntity(sourceId)?.has<TappedComponent>() == true
-                }
+                is Duration.WhileYouControlSourceAndSourceTapped ->
+                    GrantDurationGate.sourceTapped(state, floatingEffect)
                 else -> true
             }
         }
@@ -749,9 +746,7 @@ class CleanupPhaseManager(
                     // of WhileSourceTappedAndAffectedPowerAtMostSource and the source-controller
                     // half of WhileYouControlSourceAndSourceTapped are gated per-frame by
                     // StateProjector, so cleanup only enforces the source-tapped condition.
-                    val sourceId = floatingEffect.sourceId
-                    sourceId != null && newState.getBattlefield().contains(sourceId) &&
-                        newState.getEntity(sourceId)?.has<TappedComponent>() == true
+                    GrantDurationGate.sourceTapped(newState, floatingEffect)
                 }
                 Duration.WhileSourceAttachedToAffected -> {
                     // Keep if the source (Aura/Equipment) is still on the battlefield. The
