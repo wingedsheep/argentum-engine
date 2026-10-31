@@ -46,6 +46,10 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * Conservative on purpose: only instants and sorceries are judged (a permanent has a body or a
  * static to fall back on), and only filters made of card types and subtypes are read — a filter
  * this can't read is "met", so an unfamiliar shape never cuts a card.
+ *
+ * The softer question — a payoff that *works* here but has too little fuel, Blood Artist with
+ * nothing to sacrifice — is [com.wingedsheep.ai.engine.knowledge.DeckSynergy]'s: such a card is
+ * *underfed* rather than inert, and loses part of its value instead of its slot.
  */
 internal object DeckDependencies {
 

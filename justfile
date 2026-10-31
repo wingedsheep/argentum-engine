@@ -133,6 +133,15 @@ arena A B GAMES="300" SET="BLB" SEED="20260727" ARTIFACT_DIR="":
         -DarenaGameTimeoutSec=${ARENA_GAME_TIMEOUT_SEC:-600} \
         -Dargentum.ai.apprentice.dir={{ARTIFACT_DIR}}
 
+# Deck strength of the synergy-aware sealed build: from each seeded pool, the Draftsim build with the
+# pool's synergy reading vs the same build without it, played LIVE vs LIVE with seats swapped. Pools
+# whose two builds come out identical are skipped (they can't differ). e.g. just arena-synergy-decks 200 BLB
+[group: 'ai']
+arena-synergy-decks GAMES="200" SET="BLB" SEED="20260727":
+    scripts/gradle-locked :ai:test --tests "*.SynergyDeckBenchmark" -Dbenchmark=true -DarenaSynergyDecks=true \
+        -DarenaGames={{GAMES}} -DarenaSet={{SET}} -DarenaSeed={{SEED}} \
+        -DarenaGameTimeoutSec=${ARENA_GAME_TIMEOUT_SEC:-600}
+
 # Rebuild the summary of an arena or arena-pod run from its results directory (or results.csv) —
 # the way to read a run that was killed or never finished. A partial report says PARTIAL up top.
 [group: 'ai']

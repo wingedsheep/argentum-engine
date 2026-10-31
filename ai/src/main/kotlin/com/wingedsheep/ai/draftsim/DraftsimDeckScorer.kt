@@ -33,6 +33,7 @@ data class DraftsimDeckScore(val score: Double, val manaBaseScore: Double)
 class DraftsimDeckScorer(private val tables: DraftsimSetTables) {
 
     private val ops = DraftsimCardOps(tables)
+    private val synergy = DraftsimSynergy(ops)
 
     private companion object {
         const val BOMB = 3.9
@@ -82,7 +83,12 @@ class DraftsimDeckScorer(private val tables: DraftsimSetTables) {
         val synergyScore: Double, val removalScore: Double,
     )
 
-    /** The six sub-scores over a nonland card set, given pre-counted enabler/payoff totals. */
+    /**
+     * The six sub-scores over a nonland card set, given pre-counted enabler/payoff totals. The
+     * synergy sub-score is the bundle's `min(enablers, payoffs)` over archetype-tagged cards plus the
+     * payoffs the set's *untagged* cards keep fed ([DraftsimSynergy.fedPayoffs]) — zero when the
+     * tables carry no synergy axes, which is the bundle's own number.
+     */
     private fun subScores(cards: List<ScorerCard>, enablers: Int, payoffs: Int): SubScores {
         val b = SET_BASELINE
         var quality = 0.0
@@ -106,7 +112,7 @@ class DraftsimDeckScorer(private val tables: DraftsimSetTables) {
             removalN >= expected * 0.5 -> 2.0
             else -> 0.0
         }
-        return SubScores(quality, count, curveScore(buckets, fill), bombs * 1.5, min(enablers, payoffs).toDouble(), removalScore)
+        return SubScores(quality, count, curveScore(buckets, fill), bombs * 1.5, min(enablers, payoffs) + synergy.fedPayoffs(cards), removalScore)
     }
 
     /** Mana penalty for 3+ color hypotheses (kf only). */

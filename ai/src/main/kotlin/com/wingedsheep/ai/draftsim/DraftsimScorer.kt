@@ -12,12 +12,17 @@ import kotlin.math.min
  *  - [score] / [scoreBooster] — the bundle's `jm`/`xs`, the archetype-aware path (added in the
  *    main-scorer stage of the port).
  *
+ * Both paths add one term of our own on top of the bundle: [DraftsimSynergy.pickAdjustment], which
+ * prices a card by the payoffs it feeds in the pool (or the fuel it lacks, as a payoff). It reads
+ * [DraftsimSetTables.axes] and is a no-op without them, so the bundle-parity tests still hold.
+ *
  * A scorer is bound to one pool's [tables] (ratings/removal/archetypes). It holds no mutable state;
  * `archColors` and the per-call flags are passed in. Bundle symbols are noted per function.
  */
 class DraftsimScorer(private val tables: DraftsimSetTables) {
 
     private val ops = DraftsimCardOps(tables)
+    private val synergy = DraftsimSynergy(ops)
 
     // ----- constants (SPEC_scoring.md §2) -----
     private companion object {
@@ -151,8 +156,11 @@ class DraftsimScorer(private val tables: DraftsimSetTables) {
             }
         }
 
+        val adjustment = synergy.pickAdjustment(card, pool.filter { !isLand(it) })
+        if (adjustment != null) { acc.total += adjustment.points; acc.emit(adjustment.reason) }
+
         return DraftsimCardScore(
-            total = round2(rawRating + h),
+            total = round2(rawRating + h + (adjustment?.points ?: 0.0)),
             rawRating = rawRating,
             reasons = acc.reasons,
             reasonPoints = acc.points,
@@ -440,6 +448,7 @@ class DraftsimScorer(private val tables: DraftsimSetTables) {
         // ----- §6.3 EARLY branch (h < ac) -----
         if (h < AC) {
             scoreEarlyBranch(card, nonland, v, h, acc, archColors, topBomb)
+            applySynergy(card, nonland, acc)
             val ctx = earlyDeckContext(nonland, archColors, topBomb)
             return finalize(acc, v, ctx, floorAtZero = true)
         }
@@ -480,6 +489,8 @@ class DraftsimScorer(private val tables: DraftsimSetTables) {
         scoreCurve(card, nonland, h, r, w, acc)
         // ----- §6.7 tail -----
         scoreTail(card, pool, v, acc)
+        // ----- synergy (ours, not the bundle's): off unless the tables carry axes -----
+        applySynergy(card, nonland, acc)
 
         val ctx = if (hasArch && (u.getOrNull(0)?.total ?: 0.0) > 0)
             DraftsimDeckContext(u[0].name, secondary?.name)
@@ -707,6 +718,13 @@ class DraftsimScorer(private val tables: DraftsimSetTables) {
                 copies >= 2 -> { acc.total -= 4; acc.emit("3rd copy; deck caps at 2") }
             }
         }
+    }
+
+    /** [DraftsimSynergy.pickAdjustment] into [acc]; a no-op when the tables carry no synergy axes. */
+    private fun applySynergy(card: ScorerCard, nonland: List<ScorerCard>, acc: Acc) {
+        val adjustment = synergy.pickAdjustment(card, nonland) ?: return
+        acc.total += adjustment.points
+        acc.emit(adjustment.reason)
     }
 
     private fun finalize(acc: Acc, rawRating: Double, ctx: DraftsimDeckContext, floorAtZero: Boolean = false): DraftsimCardScore {

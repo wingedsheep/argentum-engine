@@ -58,6 +58,7 @@ tasks.withType<Test>().configureEach {
     // is what relaxes TestHangGuard for a run that legitimately takes half an hour.
     for (prop in listOf(
         "arena", "arenaGauntlet", "arenaPod", "arenaBudgetScaling", "arenaTable", "arenaA", "arenaB",
+        "arenaSynergyDecks",
         "argentum.ai.apprentice.dir",
         "eclCollect", "eclCollectGames", "eclCollectSeed", "eclCollectOutput", "eclCollectBaseDir",
         "eclCollectRunId", "eclCollectStartIndex",

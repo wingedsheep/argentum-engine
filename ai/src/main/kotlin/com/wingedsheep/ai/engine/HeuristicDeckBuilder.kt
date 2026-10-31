@@ -1,7 +1,9 @@
 package com.wingedsheep.ai.engine
 
 import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
+import com.wingedsheep.ai.engine.knowledge.DeckSynergy
 import com.wingedsheep.ai.engine.knowledge.IntentTag
+import com.wingedsheep.ai.engine.knowledge.SynergyAxes
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.ManaSymbol
@@ -29,7 +31,8 @@ import kotlin.math.pow
  * 4. Select the top 23 on-color spells by rating — each copy valued at its marginal worth, so a
  *    legend's duplicates rank below its first copy ([rankByMarginalValue]) — then refine: drop
  *    spells that do nothing in this deck ([DeckDependencies]), reach [CREATURES_PER_40] creatures
- *    when the pool allows, and cut cards whose pips the mana base can't support ([PipDemand])
+ *    when the pool allows, swap toward a deck that feeds its own payoffs ([DeckSynergy]), and cut
+ *    cards whose pips the mana base can't support ([PipDemand])
  * 5. When the pair can't fill the spell slots, add a light splash ([lightSplash]) so the deck runs
  *    at most one land over the 17 rather than padding the gap with basics
  * 6. Fill to 40 cards with basic lands split by weighted pip demand, with per-color source floors
@@ -64,6 +67,19 @@ internal const val CREATURES_PER_40 = 14
 
 /** Creatures at mana value 3 or less a 40-card limited deck wants. */
 private const val CHEAP_CREATURES_PER_40 = 5
+
+/**
+ * Rating points a deck gives up per payoff-share it leaves unfed ([SpellSelection.feedPayoffs]):
+ * under one rarity step, so a payoff with no fuel falls toward a vanilla body of its cost, not off
+ * the bottom of the pool.
+ */
+internal const val UNDERFED_COST = 0.75
+
+/** Most synergy swaps [SpellSelection.feedPayoffs] makes; each one is the best swap left. */
+private const val SYNERGY_SWAPS = 6
+
+/** Smallest whole-deck gain worth a swap; below it a swap is noise between near-equal cards. */
+private const val MIN_SWAP_GAIN = 0.05
 
 /** Rounds of the mana-support repair before the builder settles for what it has. */
 private const val MANA_REPAIR_ROUNDS = 10
@@ -117,6 +133,7 @@ private fun buildFreshSealedDeck(pool: List<CardDefinition>, targetSize: Int): M
         minCreatures = targetSize * CREATURES_PER_40 / 40,
         minCheap = targetSize * CHEAP_CREATURES_PER_40 / 40,
     )
+    selection.feedPayoffs()
     selection.supportPips(bestColors, nonbasicCount = nonbasics.values.sum(), targetSize = targetSize, fixedSources = fixedSources)
 
     // A pool too thin in the pair fills the gap with a light splash before it reaches for a
@@ -294,6 +311,32 @@ private class SpellSelection(private val ranked: List<RankedCopy>, private val s
     }
 
     /**
+     * Swap cards while a swap raises the whole selection's worth — the sum of the cards' values,
+     * less [UNDERFED_COST] per payoff-share the deck leaves unfed ([DeckSynergy.shortfall]). So a
+     * payoff with too little fuel drops toward its body, a second sacrifice outlet earns its slot
+     * beside Blood Artist, and cutting the last outlet for a slightly better vanilla creature has a
+     * price. Swaps compare whole decks, never one card's score against another's.
+     *
+     * The feeding swaps go first, with every payoff kept; only then may a payoff still short of
+     * fuel be cut. Swaps keep a card's role ([bestSynergySwap]) and never bring in a card that does
+     * nothing in this deck.
+     */
+    fun feedPayoffs() {
+        var swaps = 0
+        // Feed first, cut second: one swap at a time, cutting an unfed payoff always beats feeding
+        // it a third of the way, though three feeding swaps beat the cut.
+        for (keepPayoffs in listOf(true, false)) {
+            while (swaps < SYNERGY_SWAPS) {
+                val candidates = ranked.map { it.slot }.filter { canTake(it) && !DeckDependencies.inert(it.card, cards()) }
+                val (out, inn) = bestSynergySwap(selected, candidates, keepPayoffs) { value[it] ?: 0.0 } ?: break
+                drop(out)
+                take(inn)
+                swaps++
+            }
+        }
+    }
+
+    /**
      * Cut the cards whose colored pips the mana base can't support. The most demanding card of
      * each color sets that color's source floor ([PipDemand.sourcesNeeded]); when the two floors
      * don't fit in the deck's lands, the heaviest card of the *less* demanded color goes, replaced
@@ -320,6 +363,37 @@ private class SpellSelection(private val ranked: List<RankedCopy>, private val s
             fill { strictPips(it.card, minor) < heaviest && !DeckDependencies.inert(it.card, cards()) }
         }
     }
+}
+
+/**
+ * The one swap of a [selected] card for a [candidates] card that most raises the selection's worth —
+ * the sum of [value], less [UNDERFED_COST] per payoff-share left unfed ([DeckSynergy.shortfall]) —
+ * or null when none gains [MIN_SWAP_GAIN]. A swap keeps the card's role (creature for creature,
+ * cheap creature for cheap creature), so it never undoes the creature minimum. With [keepPayoffs]
+ * no payoff is swapped out.
+ */
+internal fun bestSynergySwap(
+    selected: List<PoolSlot>,
+    candidates: List<PoolSlot>,
+    keepPayoffs: Boolean = false,
+    value: (PoolSlot) -> Double,
+): Pair<PoolSlot, PoolSlot>? {
+    fun cheap(card: CardDefinition) = card.typeLine.isCreature && card.cmc <= 3
+    fun sameRole(a: CardDefinition, b: CardDefinition) =
+        a.typeLine.isCreature == b.typeLine.isCreature && cheap(a) == cheap(b)
+    fun worth(slots: List<PoolSlot>) =
+        slots.sumOf(value) - UNDERFED_COST * DeckSynergy.shortfall(slots.map { SynergyAxes.of(it.card) })
+
+    val current = worth(selected)
+    var best: Pair<PoolSlot, PoolSlot>? = null
+    var bestGain = MIN_SWAP_GAIN
+    for (out in selected) for (inn in candidates) {
+        if (keepPayoffs && SynergyAxes.of(out.card).rewards.isNotEmpty()) continue
+        if (inn.card.name == out.card.name || !sameRole(inn.card, out.card)) continue
+        val gain = worth(selected.map { if (it == out) inn else it }) - current
+        if (gain > bestGain) { bestGain = gain; best = out to inn }
+    }
+    return best
 }
 
 /**

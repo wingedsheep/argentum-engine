@@ -6,6 +6,7 @@ import com.wingedsheep.ai.draftsim.DraftsimDeckBuilder
 import com.wingedsheep.ai.draftsim.DraftsimPoolCard
 import com.wingedsheep.ai.draftsim.toScorerCard
 import com.wingedsheep.ai.draftsim.withFallbackRatings
+import com.wingedsheep.ai.draftsim.withSynergyAxes
 
 /**
  * Deckbuild engine backed by the ported Draftsim autobuilder ([DraftsimDeckBuilder]): it ranks
@@ -17,7 +18,8 @@ import com.wingedsheep.ai.draftsim.withFallbackRatings
  * client can offer them as alternatives. When locked is non-empty (the "Complete Deck" button) it
  * switches the builder to completion mode: the locked cards are forced into the build, protected from
  * removal/swap, and the rest is filled around them in the locked cards' colors — a single completed
- * deck. (Draftsim still fixes its own 23/17 land split, so [DeckBuildRequest.targetSize] is not
+ * deck. The tables carry the pool's synergy reading ([withSynergyAxes]), so a build keeps its
+ * payoffs fed. (Draftsim still fixes its own 23/17 land split, so [DeckBuildRequest.targetSize] is not
  * honored.) Basics are reported by name so the client splits them out like any other result.
  */
 object DraftsimDeckBuildAdvisor : DeckBuildAdvisor {
@@ -29,8 +31,15 @@ object DraftsimDeckBuildAdvisor : DeckBuildAdvisor {
 
     private val COLOR_TO_BASIC = mapOf("W" to "Plains", "U" to "Island", "B" to "Swamp", "R" to "Mountain", "G" to "Forest")
 
-    override fun buildDeck(request: DeckBuildRequest): DeckBuildResult {
-        val builder = DraftsimDeckBuilder(DraftsimData.tablesFor(request.setCodes).withFallbackRatings(request.pool))
+    override fun buildDeck(request: DeckBuildRequest): DeckBuildResult = buildDeck(request, synergy = true)
+
+    /**
+     * [buildDeck] with the pool's synergy reading switched on or off — off is the ported bundle's
+     * build, which the synergy deck benchmark plays the synergy-aware build against.
+     */
+    internal fun buildDeck(request: DeckBuildRequest, synergy: Boolean): DeckBuildResult {
+        val rated = DraftsimData.tablesFor(request.setCodes).withFallbackRatings(request.pool)
+        val builder = DraftsimDeckBuilder(if (synergy) rated.withSynergyAxes(request.pool) else rated)
         val pool = request.pool.mapIndexed { i, def -> DraftsimPoolCard(def.toScorerCard(), "pool-$i") }
         val byId = pool.associateBy { it.instanceId }
 

@@ -1,5 +1,7 @@
 package com.wingedsheep.ai.draftsim
 
+import com.wingedsheep.ai.engine.knowledge.SynergyAxes
+import com.wingedsheep.ai.engine.knowledge.SynergyProfile
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -32,11 +34,15 @@ data class DraftsimArchetypeRecord(
  *  - [archetypes]: `nameKey → record`. Non-empty only for the sets whose upstream table ships
  *    archetype columns — whichever files exist under `draftai/archetypes/`, since the set of tagged
  *    sets moves with every data refresh; drives the `jm` path.
+ *  - [axes]: `nameKey → structural synergy reading` ([SynergyAxes]), filled by [withSynergyAxes]
+ *    from the pool's card definitions rather than loaded from a file. Empty means synergy-off: every
+ *    score matches the ported bundle exactly.
  */
 data class DraftsimSetTables(
     val ratings: Map<String, Double>,
     val removal: Set<String>,
     val archetypes: Map<String, DraftsimArchetypeRecord>,
+    val axes: Map<String, SynergyProfile> = emptyMap(),
 )
 
 /**

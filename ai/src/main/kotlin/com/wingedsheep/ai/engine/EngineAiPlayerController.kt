@@ -7,6 +7,7 @@ import com.wingedsheep.ai.draftsim.DraftsimScorer
 import com.wingedsheep.ai.draftsim.ScorerCard
 import com.wingedsheep.ai.draftsim.toScorerCard
 import com.wingedsheep.ai.draftsim.withFallbackRatings
+import com.wingedsheep.ai.draftsim.withSynergyAxes
 import com.wingedsheep.ai.insight.AiInsightSink
 import com.wingedsheep.ai.llm.BottomCardsInfo
 import com.wingedsheep.ai.llm.CardSummary
@@ -217,13 +218,14 @@ class EngineAiPlayerController(
     // Picks use the same Draftsim scorer and set tables that build the AI's deck from the drafted
     // pool (DraftsimDeckBuildAdvisor), so the bot drafts toward the deck it will actually build.
     // Cards the set's table leaves unrated — every card of a set we ship no ratings file for — are
-    // rated by [LimitedCardRater] off their definitions rather than by rarity alone.
+    // rated by [LimitedCardRater] off their definitions rather than by rarity alone, and every card
+    // carries its structural synergy reading, so a pick feeds the payoffs already taken.
 
     /** Pick value of each card in [cards] given what the bot has already taken. */
     private fun scoreCards(cards: List<CardSummary>, pickedSoFar: List<CardSummary>): Map<String, Double> {
         val setCodes = (cards + pickedSoFar).mapNotNull { it.setCode?.takeIf(String::isNotBlank) }.distinct()
         val definitions = (cards + pickedSoFar).mapNotNull { cardRegistry.getCard(it.name) }
-        val tables = DraftsimData.tablesFor(setCodes).withFallbackRatings(definitions)
+        val tables = DraftsimData.tablesFor(setCodes).withFallbackRatings(definitions).withSynergyAxes(definitions)
         val scores = DraftsimScorer(tables).scoreBoosterAuto(cards.map(::scorerCard), pickedSoFar.map(::scorerCard))
         return cards.associate { it.name to (scores[it.name]?.total ?: 0.0) }
     }
