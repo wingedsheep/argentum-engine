@@ -2270,6 +2270,159 @@
     ]
 }
 
+// Death's Oasis
+{
+    "name": "Death's Oasis",
+    "manaCost": "{W}{B}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a nontoken creature you control dies, mill two cards. Then return a creature card with lesser mana value than the creature that died from your graveyard to your hand.\n{1}, Sacrifice this enchantment: You gain life equal to the greatest mana value among creatures you control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Death's Oasis:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        },
+                                        "isMill": true
+                                    },
+                                    "storeAs": "milled"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "milled",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "ManaValueAtMostDynamic",
+                                            "amount": {
+                                                "type": "Subtract",
+                                                "left": {
+                                                    "type": "EntityProperty",
+                                                    "entity": "TriggeringEntity",
+                                                    "numericProperty": "ManaValue"
+                                                },
+                                                "right": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered1",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected2",
+                            "prompt": "Return a creature card with lesser mana value than the creature that died to your hand",
+                            "selectedLabel": "Return to hand",
+                            "remainderLabel": "Leave in graveyard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Death's Oasis:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature",
+                        "aggregation": "MAX",
+                        "property": "MANA_VALUE"
+                    }
+                },
+                "descriptionOverride": "{1}, Sacrifice this enchantment: You gain life equal to the greatest mana value among creatures you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "182",
+        "rarity": "RARE",
+        "artist": "Grzegorz Rutkowski",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/112e2cca-bae7-4296-9514-e6058f4b38a5.jpg?1783931026",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Because the triggered ability doesn't target the creature card in your graveyard, you may choose one of the two cards you put there from your library."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Use the mana value of the creature as it last existed on the battlefield and the mana value of the creature card as it exists in your graveyard to determine which cards may be returned to your hand. This may result in a creature's death bringing itself back to your hand; perhaps it was one card of a merged creature, or it had become a copy of a more expensive creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Dire Tactics
 {
     "name": "Dire Tactics",
@@ -2840,6 +2993,129 @@
         "WHITE",
         "BLACK",
         "GREEN"
+    ]
+}
+
+// Emergent Ultimatum
+{
+    "name": "Emergent Ultimatum",
+    "manaCost": "{B}{B}{G}{G}{G}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for up to three monocolored cards with different names and exile them. An opponent chooses one of those cards. Shuffle that card into your library. You may cast the other cards without paying their mana costs. Exile Emergent Ultimatum.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsMonocolored"
+                            ]
+                        }
+                    },
+                    "storeAs": "gathered0",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    },
+                    "storeSelected": "selected1",
+                    "prompt": "Search for up to three monocolored cards with different names",
+                    "restrictions": [
+                        "OnePerCardName"
+                    ]
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    },
+                    "storeMovedAs": "moved2"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "moved2",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "chooser": "Opponent",
+                    "storeSelected": "selected3",
+                    "storeRemainder": "remainder3",
+                    "prompt": "Choose one of the exiled cards. It's shuffled into its owner's library; they may cast the others without paying their mana costs.",
+                    "selectedLabel": "Shuffle into library",
+                    "remainderLabel": "May be cast for free"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected3",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library"
+                    }
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent",
+                {
+                    "type": "CastAnyNumberFromCollectionWithoutPayingCost",
+                    "from": "remainder3"
+                }
+            ]
+        },
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "185",
+        "rarity": "RARE",
+        "artist": "Zack Stella",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3a6a52ab-6d38-4429-9969-90064e615152.jpg?1783931025",
+        "rulings": [
+            {
+                "date": "2025-04-04",
+                "text": "A monocolored card is exactly one of white, blue, black, red, or green and no other colors. A colorless card isn't monocolored."
+            },
+            {
+                "date": "2025-04-04",
+                "text": "If you find only one card, you'll shuffle it into your library and exile Emergent Ultimatum without casting anything."
+            },
+            {
+                "date": "2025-04-04",
+                "text": "If you wish to cast any exiled cards, you do so as part of the resolution of Emergent Ultimatum. You can't wait to cast them later. Timing permissions based on a card's type are ignored."
+            },
+            {
+                "date": "2025-04-04",
+                "text": "Emergent Ultimatum is still on the stack while you cast the cards you found, so those spells could target it. However, once it's exiled, it will no longer be a legal target."
+            },
+            {
+                "date": "2025-04-04",
+                "text": "If you cast a spell \"without paying its mana cost,\" you can't choose to cast it for any alternative costs. You can, however, pay additional costs, such as kicker costs. If the spell has any mandatory additional costs, those must be paid to cast the spell."
+            },
+            {
+                "date": "2025-04-04",
+                "text": "If a spell has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN",
+        "BLUE"
     ]
 }
 
@@ -5105,6 +5381,119 @@
     ]
 }
 
+// Gyruda, Doom of Depths
+{
+    "name": "Gyruda, Doom of Depths",
+    "manaCost": "{4}{U/B}{U/B}",
+    "typeLine": "Legendary Creature — Demon Kraken",
+    "oracleText": "Companion — Your starting deck contains only cards with even mana values. (If this card is your chosen companion, you may put it into your hand from outside the game for {3} as a sorcery.)\nWhen Gyruda enters, each player mills four cards. Put a creature card with an even mana value from among the milled cards onto the battlefield under your control.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywordAbilities": [
+        {
+            "type": "Companion",
+            "condition": {
+                "type": "EachCard",
+                "filter": {
+                    "cardPredicates": [
+                        "ManaValueIsEven"
+                    ]
+                }
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gyruda, Doom of Depths:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "player": "Each",
+                                "isMill": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "Each"
+                            }
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "ManaValueIsEven"
+                                ]
+                            },
+                            "storeSelected": "selected2",
+                            "prompt": "Put a creature card with an even mana value from among the milled cards onto the battlefield under your control",
+                            "selectedLabel": "Put onto the battlefield",
+                            "remainderLabel": "Leave"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Gyruda enters, each player mills four cards. Put a creature card with an even mana value from among the milled cards onto the battlefield under your control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "221",
+        "rarity": "RARE",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/97eb1804-6fd8-4917-af36-87fdfce39d3a.jpg?1783931012",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "If a card in a player's graveyard has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "A card with mana value 0 has an even mana value."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If a replacement effect causes a player to exile the top four cards of their library instead of putting them into their graveyard as Gyruda's triggered ability resolves, the creature card you choose may be one of those cards in exile."
+            }
+        ]
+    }
+}
+
 // Hampering Snare
 {
     "name": "Hampering Snare",
@@ -7238,6 +7627,231 @@
     ]
 }
 
+// Lukka, Coppercoat Outcast
+{
+    "name": "Lukka, Coppercoat Outcast",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Legendary Planeswalker — Lukka",
+    "oracleText": "+1: Exile the top three cards of your library. Creature cards exiled this way gain \"You may cast this card from exile as long as you control a Lukka planeswalker.\"\n−2: Exile target creature you control, then reveal cards from the top of your library until you reveal a creature card with greater mana value. Put that card onto the battlefield and the rest on the bottom of your library in a random order.\n−7: Each creature you control deals damage equal to its power to each opponent.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Lukka, Coppercoat Outcast:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": "creature",
+                            "storeMatching": "matching2"
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "matching2",
+                            "expiry": "Permanent",
+                            "condition": {
+                                "type": "Exists",
+                                "player": "You",
+                                "zone": "Battlefield",
+                                "filter": "planeswalker Lukka"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Lukka, Coppercoat Outcast:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "StoreNumber",
+                            "name": "number0",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "numericProperty": "ManaValue"
+                            }
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "GatherUntilMatch",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "Not",
+                                        "predicate": {
+                                            "type": "ManaValueAtMostDynamic",
+                                            "amount": {
+                                                "type": "VariableReference",
+                                                "variableName": "number0"
+                                            }
+                                        }
+                                    }
+                                ]
+                            },
+                            "storeMatch": "matched2",
+                            "storeRevealed": "revealed2"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "revealed2",
+                            "fromZone": "Library",
+                            "toZone": "Battlefield"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "matched2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "revealed2",
+                            "collectionFilter": {
+                                "type": "ExcludeOtherCollection",
+                                "otherCollectionName": "matched2"
+                            },
+                            "storeMatching": "matching5"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "matching5",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Lukka, Coppercoat Outcast:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": "IterationEntity",
+                            "numericProperty": "Power"
+                        },
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "EachOpponent"
+                        },
+                        "damageSource": "IterationEntity"
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "125",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rallis",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/7/5798fdf0-d178-43d9-b821-8f3f654654b4.jpg?1783931048",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "You may cast creature cards exiled with Lukka's first ability as noncreature spells if a rule or effect allows you to do so. For example, adventurer cards from the Throne of Eldraine set may be cast as Adventures."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If a creature card in a player's library or a creature on the battlefield has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If you reveal your entire library without revealing a creature card with higher mana value, you put the library back in a random order and continue."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "You still pay any costs for spells cast from Lukka's first ability. You may pay alternative costs, such as mutate costs."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Once you begin to cast an exiled card, losing control of Lukka won't affect the spell. You can finish casting it as normal."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "For each creature card exiled with Lukka's first ability, you can cast it as long as you control any Lukka planeswalker, not just the one that exiled the card."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Luminous Broodmoth
 {
     "name": "Luminous Broodmoth",
@@ -8926,6 +9540,222 @@
     ]
 }
 
+// Narset of the Ancient Way
+{
+    "name": "Narset of the Ancient Way",
+    "manaCost": "{1}{U}{R}{W}",
+    "typeLine": "Legendary Planeswalker — Narset",
+    "oracleText": "+1: You gain 2 life. Add {U}, {R}, or {W}. Spend this mana only to cast a noncreature spell.\n−2: Draw a card, then you may discard a card. When you discard a nonland card this way, Narset deals damage equal to that card's mana value to target creature or planeswalker.\n−6: You get an emblem with \"Whenever you cast a noncreature spell, this emblem deals 2 damage to any target.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Narset of the Ancient Way:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "AddManaOfChoice",
+                            "colorSet": {
+                                "type": "ManaColorSet.Specific",
+                                "colors": [
+                                    "BLUE",
+                                    "RED",
+                                    "WHITE"
+                                ]
+                            },
+                            "restriction": {
+                                "type": "CardTypeSpellsOrAbilitiesOnly",
+                                "cardType": "CREATURE",
+                                "negated": true
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You gain 2 life. Add {U}, {R}, or {W}. Spend this mana only to cast a noncreature spell."
+            },
+            {
+                "id": "Narset of the Ancient Way:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered1",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected2",
+                            "prompt": "You may discard a card"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "selected2",
+                                    "filter": "nonland"
+                                }
+                            },
+                            "then": {
+                                "type": "ReflexiveTrigger",
+                                "action": {
+                                    "type": "Composite",
+                                    "effects": []
+                                },
+                                "optional": false,
+                                "reflexiveEffect": {
+                                    "type": "DealDamage",
+                                    "amount": {
+                                        "type": "StoredCardManaValue",
+                                        "collectionName": "selected2"
+                                    },
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                "reflexiveTargetRequirements": [
+                                    {
+                                        "type": "TargetCreatureOrPlaneswalker",
+                                        "id": "t0"
+                                    }
+                                ],
+                                "descriptionOverride": "Narset deals damage equal to the discarded card's mana value to target creature or planeswalker."
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Draw a card, then you may discard a card. When you discard a nonland card this way, Narset deals damage equal to that card's mana value to target creature or planeswalker."
+            },
+            {
+                "id": "Narset of the Ancient Way:4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -6
+                },
+                "effect": {
+                    "type": "CreateGlobalTriggeredAbility",
+                    "ability": {
+                        "id": "Narset of the Ancient Way:3",
+                        "trigger": {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    "IsNoncreature"
+                                ]
+                            }
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        },
+                        "targetRequirement": {
+                            "type": "AnyTarget",
+                            "id": "t1"
+                        },
+                        "descriptionOverride": "Whenever you cast a noncreature spell, this emblem deals 2 damage to any target."
+                    },
+                    "descriptionOverride": "Whenever you cast a noncreature spell, this emblem deals 2 damage to any target.",
+                    "emblem": true
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You get an emblem with \"Whenever you cast a noncreature spell, this emblem deals 2 damage to any target.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "195",
+        "rarity": "MYTHIC",
+        "artist": "Yongjae Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/a/fa7b28d8-b835-44a0-978d-cadfd392fff5.jpg?1783931021",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Because it's a loyalty ability, Narset's first ability isn't a mana ability. It can be activated only any time you could cast a sorcery. It uses the stack and can be responded to."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Narset's second ability goes on the stack without a target. While that ability is resolving, you draw a card and may choose to discard a card. When you discard a nonland card this way, the reflexive triggered ability triggers and you pick a target to be dealt damage. This is different from effects that say \"If you do . . .\" in that you choose a target after looking at the card you draw and players can respond to the reflexive triggered ability knowing how much damage will be dealt."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "You can discard a card even if Narset leaves the battlefield before her middle ability resolves. The reflexive triggered ability will still trigger if you discard a nonland card."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If a card you discard has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "The emblem created by Narset's last ability is colorless. The damage it deals is from a colorless source."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Necropanther
 {
     "name": "Necropanther",
@@ -9303,6 +10133,91 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Offspring's Revenge
+{
+    "name": "Offspring's Revenge",
+    "manaCost": "{2}{R}{W}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of combat on your turn, exile target red, white, or black creature card from your graveyard. Create a token that's a copy of that card, except it's 1/1. It gains haste until your next turn.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Offspring's Revenge:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile",
+                            "fromZone": "Graveyard"
+                        },
+                        {
+                            "type": "CreateTokenCopyOfTarget",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "overridePower": 1,
+                            "overrideToughness": 1
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "HASTE",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature red|white|black own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "198",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/78619ffb-f514-4f9f-9d77-3ab49e045f7c.jpg?1783931020",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "The token copies exactly what was printed on the original card and nothing else, except the characteristics it specifically modifies. It doesn't copy any information about the object the card was before it was put into your graveyard."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "The token's power and toughness are 1/1. These are copiable values of the token that other effects may copy. If the copied card has an ability that defines its power or toughness, that ability isn't copied. On the other hand, gaining haste after the token has been created is not a copiable value."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If the card copied by the token had any \"when [this permanent] enters the battlefield\" abilities, then the token also has those abilities and will trigger them when it's created. Similarly, any \"as [this permanent] enters the battlefield\" or \"[this permanent] enters the battlefield with\" abilities that the token has copied will also work."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE",
+        "BLACK"
     ]
 }
 
