@@ -1187,7 +1187,10 @@ class PredicateEvaluator(
                     val x = context?.xValue ?: return context?.resolution == null
                     return compareAmounts(value, predicate.operator, x)
                 }
-                val effectContext = context?.toEffectContext() ?: return false
+                // The candidate's controller is Player.Candidate, as in [evaluateDynamicCap].
+                val effectContext = context?.toEffectContext()
+                    ?.copy(candidatePlayerId = TargetResolutionUtils.controllerOf(state, entityId, projected))
+                    ?: return false
                 val amount = amounts.evaluate(state, predicate.amount, effectContext, projected)
                 compareAmounts(value, predicate.operator, amount)
             }

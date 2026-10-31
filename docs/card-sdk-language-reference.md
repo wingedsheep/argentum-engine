@@ -6112,7 +6112,8 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
 - `Player.ContextPlayer(i)` / `Player.Candidate` / `Player.Any` — positional target (engine- and
   pattern-internal; a card writes `handle.asPlayer`), CR 115 candidate during target-restriction
   evaluation, and "a player" matching. Inside an **object** filter's dynamic cap (`ManaValueAtMostDynamic`,
-  `ManaValueEqualsDynamic`, `PowerAtMostDynamic`, `PowerEqualsDynamic`, `ToughnessEqualsDynamic`) the
+  `ManaValueEqualsDynamic`, `PowerAtMostDynamic`, `PowerEqualsDynamic`, `ToughnessEqualsDynamic`,
+  `CompareNumericProperty`) the
   candidate is an object and `Player.Candidate` is **its controller** (a spell's caster, a permanent's
   controller), bound per candidate at targeting and at the CR 608.2b re-check: "target spell with mana
   value less than or equal to the number of cards in its controller's graveyard" (Drown in the Loch) is
