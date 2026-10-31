@@ -146,7 +146,7 @@ object CardIntentAnalyzer {
     fun analyzeEffect(effect: Effect): CardIntent {
         val tags = mutableSetOf<IntentTag>()
         var removalReach: Int? = null
-        for (leaf in EffectWalker.leaves(effect)) {
+        for (leaf in intentLeaves(effect)) {
             tags += tagsOf(leaf)
             reachOf(leaf)?.let { removalReach = maxOf(removalReach ?: 0, it) }
         }
@@ -189,7 +189,7 @@ object CardIntentAnalyzer {
         val leaves = scripts.flatMap { script ->
             EffectWalker.slots(script).map { it.effect } +
                 script.stateTriggeredAbilities.map { it.effect }
-        }.flatMap { EffectWalker.leaves(it) }
+        }.flatMap { intentLeaves(it) }
 
         val tags = mutableSetOf<IntentTag>()
         var removalReach: Int? = null
@@ -314,7 +314,7 @@ object CardIntentAnalyzer {
         val manaAbilities = scripts.flatMap { it.activatedAbilities }.filter { it.isManaAbility }
         val sickRamp = sick && manaAbilities.isNotEmpty() && manaAbilities.all { tapsOrUntapsItself(it.cost) }
         if (deferred.isEmpty() && !sickRamp) return tags
-        fun tagsOfRoots(roots: List<Effect>) = roots.flatMap { EffectWalker.leaves(it) }.flatMapTo(HashSet()) { tagsOf(it) }
+        fun tagsOfRoots(roots: List<Effect>) = roots.flatMap { intentLeaves(it) }.flatMapTo(HashSet()) { tagsOf(it) }
         val later = tagsOfRoots(deferred) + if (sickRamp) setOf(IntentTag.RAMP) else emptySet()
         val onlyLater = later - tagsOfRoots(immediate) -
             scripts.flatMap { it.staticAbilities }.flatMapTo(HashSet()) { tagsOf(it) }
@@ -360,6 +360,25 @@ object CardIntentAnalyzer {
             if (leaf !is GatedEffect) return@flatMap listOf(leaf)
             listOfNotNull((leaf.gate as? Gate.DoAction)?.action, leaf.then, leaf.otherwise)
                 .flatMap { handSelectionLeaves(it) }
+        }
+
+    /**
+     * [EffectWalker.leaves], with every gated effect it stops at opened into its branches — the
+     * leaves intent is read from.
+     *
+     * A gate ([Gate.MayPay], [Gate.DoAction], [Gate.MayPayX], a clash, a once-each-turn budget) is
+     * the condition its branches wait on, not what the card is for: "you may discard a card. If you
+     * do, draw two cards" is a draw spell, and "you may sacrifice a Food. If you do, +4/+4,
+     * otherwise +2/+2" is a combat trick either way. Only the branches are read — the gate's own
+     * cost or action (the discard, the sacrifice, the mana) is the price of the payoff, and reading
+     * it would tag a looter a discard spell. Kept off [EffectWalker] itself because widening the
+     * shared walk would move the rater's numbers; [handSelectionLeaves] reads the action as well,
+     * for the one question where the action *is* the payoff.
+     */
+    private fun intentLeaves(effect: Effect): List<Effect> =
+        EffectWalker.leaves(effect).flatMap { leaf ->
+            if (leaf !is GatedEffect) return@flatMap listOf(leaf)
+            listOfNotNull(leaf.then, leaf.otherwise).flatMap { intentLeaves(it) }
         }
 
     /** The filter of a gather from its controller's own sideboard — "from outside the game". */
@@ -458,7 +477,7 @@ object CardIntentAnalyzer {
         // there for why), which makes this the analyzer's own reading of the node: interpret the
         // body, and promote it to a sweeper when the iteration spans a whole group of permanents.
         is ForEachEffect -> {
-            val inner = EffectWalker.leaves(effect.body)
+            val inner = intentLeaves(effect.body)
                 .flatMap { tagsOf(it) }
                 .toSet()
             if (effect.space is IterationSpace.Group && IntentTag.REMOVAL in inner) {
@@ -475,7 +494,7 @@ object CardIntentAnalyzer {
         // spell when every mode counters, so [IntentTag.COUNTERSPELL] alone needs all of them.
         // A cast with its modes chosen is read off those modes instead — [analyzeModes].
         is ModalEffect -> {
-            val perMode = effect.modes.map { mode -> EffectWalker.leaves(mode.effect).flatMapTo(HashSet()) { tagsOf(it) } }
+            val perMode = effect.modes.map { mode -> intentLeaves(mode.effect).flatMapTo(HashSet()) { tagsOf(it) } }
             val union = perMode.flatMapTo(HashSet()) { it }
             if (perMode.all { IntentTag.COUNTERSPELL in it }) union else union - IntentTag.COUNTERSPELL
         }
@@ -548,7 +567,7 @@ object CardIntentAnalyzer {
         is AddCountersEffect ->
             effect.counterType.ptDelta?.second?.takeIf { it < 0 && hitsAnotherPermanent(effect.target) }?.let { -it * effect.count }
         // The largest creature any one mode answers, the union [tagsOf] reads for the tags.
-        is ModalEffect -> effect.modes.flatMap { EffectWalker.leaves(it.effect) }.mapNotNull { reachOf(it) }.maxOrNull()
+        is ModalEffect -> effect.modes.flatMap { intentLeaves(it.effect) }.mapNotNull { reachOf(it) }.maxOrNull()
         else -> null
     }
 
@@ -576,7 +595,7 @@ object CardIntentAnalyzer {
      */
     private fun isExpiringGroupPump(effect: Effect): Boolean =
         effect is ForEachEffect && effect.space is IterationSpace.Group &&
-            EffectWalker.leaves(effect.body).any {
+            intentLeaves(effect.body).any {
                 isExpiringPump(it) && (it as ModifyStatsEffect).target == EffectTarget.IterationEntity
             }
 
