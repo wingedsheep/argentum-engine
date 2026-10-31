@@ -7,11 +7,13 @@ import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.ManaSymbol
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.CardDefinition
+import com.wingedsheep.sdk.scripting.EntersTapped
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfChoiceEffect
 import com.wingedsheep.sdk.scripting.effects.AddOneManaOfEachColorAmongEffect
+import com.wingedsheep.sdk.scripting.effects.BecomePreparedEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.values.ManaColorSet
@@ -92,12 +94,15 @@ private fun buildFreshSealedDeck(pool: List<CardDefinition>, targetSize: Int): M
     // On-color non-basic lands (capped at 4 per name) are fixed first: the mana-support check
     // below needs to know which colors they already make.
     val nonbasics = mutableMapOf<String, Int>()
-    for (land in poolLands) {
-        if (!landFitsColors(land, bestColors)) continue
-        val current = nonbasics[land.name] ?: 0
-        if (current >= 4) continue
-        nonbasics[land.name] = current + 1
+    fun takeLands(fits: (CardDefinition) -> Boolean) {
+        for (land in poolLands) {
+            if (!fits(land)) continue
+            val current = nonbasics[land.name] ?: 0
+            if (current >= 4) continue
+            nonbasics[land.name] = current + 1
+        }
     }
+    takeLands { landFitsColors(it, bestColors) }
     val landDefs = poolLands.associateBy { it.name }
     val fixedSources: (Color) -> Int = { color ->
         nonbasics.entries.sumOf { (name, n) -> if (color in producedColors(landDefs.getValue(name))) n else 0 }
@@ -124,6 +129,15 @@ private fun buildFreshSealedDeck(pool: List<CardDefinition>, targetSize: Int): M
         taken = selection.selected.map { it.card },
         need = minOf(targetSize - maxLands - selection.selected.size, targetSize * SPLASH_CARDS_PER_40 / 40),
     )
+
+    // A splash colour is a deck colour for the lands too: a dual making it and a main colour is a
+    // splash source, not an off-colour land.
+    if (splash != null) {
+        val withSplash = bestColors + splash.color
+        takeLands { splash.color in producedColors(it) && !landFitsColors(it, bestColors) && landFitsColors(it, withSplash) }
+    }
+    val deckSpells = selection.selected.map { it.card } + splash?.cards.orEmpty()
+    utilityLand(poolLands, bestColors + listOfNotNull(splash?.color), deckSpells)?.let { nonbasics[it.name] = 1 }
 
     for (slot in selection.selected) {
         deck[slot.card.name] = (deck[slot.card.name] ?: 0) + 1
@@ -426,6 +440,11 @@ private fun completeSealedDeck(
         if (have >= minOf(4, available)) continue
         deck[land.name] = have + 1
     }
+    if (total() < targetSize && deck.keys.none { name -> defOf(name)?.let(::isColorlessUtilityLand) == true }) {
+        val spells = deck.keys.mapNotNull { defOf(it)?.takeIf { def -> !def.typeLine.isLand } }
+        utilityLand(pool.filter { it.typeLine.isLand && !it.typeLine.isBasicLand }, bestColors, spells)
+            ?.let { deck[it.name] = 1 }
+    }
 
     // Basic-land mana base for the rest, split by the deck's weighted colored-pip demand.
     val landsNeeded = (targetSize - total()).coerceAtLeast(0)
@@ -557,24 +576,61 @@ private val BASIC_TYPE_COLORS = mapOf(
 )
 
 /**
- * Whether a non-basic [land] belongs in a deck playing [deckColors]:
- *  - a land that taps for colored mana (its basic land types, CR 305.6, and the `Add …` effects of
- *    its activated abilities) fits when at least one of those colors is a deck color — Goblin-town
- *    ({B} or {R}) is in a B/x deck, never a G/W one; a five-color land fits everywhere;
- *  - a land that only fetches (Wooded Foothills) fits when a basic land type it names is on-color,
- *    or when it names none ("a basic land card", Evolving Wilds);
- *  - anything else (colorless mana, pure utility) fits when every colored symbol in its rules text
- *    — the cost of its other abilities — is a deck color.
+ * Whether a non-basic [land] that makes colored mana belongs in a deck playing [deckColors] — the
+ * splash colour included. A land earns its slot over a basic only when it is no worse than one:
+ *  - it makes at least two deck colors (a dual for the pair, a tri-land, a five-color land), or
+ *  - it makes only deck colors and enters untapped (an on-color utility land).
+ * The colors a land makes are what it taps for (its basic land types, CR 305.6, and the `Add …`
+ * effects of its activated abilities), else what it fetches (Wooded Foothills names Mountain and
+ * Forest). So an off-color tapped dual — Stingerquill Annex ({B} or {R}) in a B/G deck — is a
+ * tapped Swamp and stays out, whatever its "unless" condition, and a fetch naming one off-color
+ * type is a Forest that costs life. A fetch for "a basic land card" (Evolving Wilds) fits any
+ * deck. A land that makes no colored mana at all is a colorless utility land: see [utilityLand].
  */
 internal fun landFitsColors(land: CardDefinition, deckColors: Set<Color>): Boolean {
-    val produced = tappedColors(land)
-    if (produced.isNotEmpty()) return produced.any { it in deckColors }
-
-    val fetched = fetchedColors(land)
-    if (fetched.isNotEmpty()) return fetched.any { it in deckColors }
-
-    return land.colorIdentity.all { it in deckColors }
+    val produced = producedColors(land)
+    if (produced.isEmpty()) return fetchesAnyBasic(land)
+    val onColor = produced.count { it in deckColors }
+    if (onColor >= 2) return true
+    return onColor == 1 && produced.size == 1 && !entersTapped(land)
 }
+
+/** Creatures with a prepare spell a deck needs before a land that prepares them is worth its slot. */
+private const val MIN_PREPARE_CREATURES = 3
+
+/**
+ * The one colorless utility land from [poolLands] worth a basic's slot in a deck playing
+ * [deckColors] with [spells], or `null`. Such a land costs the deck a colored source, so it makes
+ * the cut only with a real payoff: a non-mana ability whose activation costs are on-color and
+ * which has something to do in this deck — Hexhaven Dueling Arena ("target creature becomes
+ * prepared") needs [MIN_PREPARE_CREATURES] creatures with prepare spells. At most one, and one
+ * copy, per deck (2026-10-31 game aa98: a U/R deck ran two Dueling Arenas and no
+ * prepare creature in its 17 lands).
+ */
+private fun utilityLand(poolLands: List<CardDefinition>, deckColors: Set<Color>, spells: List<CardDefinition>): CardDefinition? {
+    return poolLands.firstOrNull { land ->
+        isColorlessUtilityLand(land) && land.colorIdentity.all { it in deckColors } &&
+            land.script.activatedAbilities.any { !it.isManaAbility && hasPayoff(it.effect, spells) }
+    }
+}
+
+/** A land that makes no colored mana and fetches none: `{T}: Add {C}` plus whatever else it does. */
+internal fun isColorlessUtilityLand(land: CardDefinition): Boolean =
+    land.typeLine.isLand && !land.typeLine.isBasicLand && producedColors(land).isEmpty() && !fetchesAnyBasic(land)
+
+private fun hasPayoff(effect: Effect, spells: List<CardDefinition>): Boolean = when (effect) {
+    is BecomePreparedEffect -> spells.count { it.typeLine.isCreature && it.isPreparation } >= MIN_PREPARE_CREATURES
+    is CompositeEffect -> effect.effects.all { hasPayoff(it, spells) }
+    else -> true
+}
+
+/** Whether [land] enters tapped with no way to pay around it (a shock land's life payment doesn't count). */
+private fun entersTapped(land: CardDefinition): Boolean =
+    land.script.replacementEffects.any { it is EntersTapped && it.payLifeCost == null }
+
+/** "Search your library for a basic land card" — a fetch that finds whichever basic the deck plays. */
+private fun fetchesAnyBasic(land: CardDefinition): Boolean =
+    Regex("""(?i)search your library for a basic land card""").containsMatchIn(land.oracleText)
 
 /** The colors a non-basic [land] can put toward a spell: what it taps for, else what it fetches. */
 internal fun producedColors(land: CardDefinition): Set<Color> = tappedColors(land).ifEmpty { fetchedColors(land) }
