@@ -13,8 +13,9 @@ import kotlin.reflect.KClass
  * Executor for [MarkSpellExileOnResolveEffect].
  *
  * Tags the target spell on the stack with [AfterResolveDestinationComponent] carrying the effect's
- * [com.wingedsheep.sdk.scripting.effects.ExiledSpellRider], the marking ability's controller, and the
- * `onlyIfResolved` flag. When the spell actually resolves,
+ * [com.wingedsheep.sdk.scripting.effects.ExiledSpellRider] and the `onlyIfResolved` flag. The
+ * marking ability's controller is the card's owner (checked below), so the owner controls the
+ * delayed return. When the spell actually resolves,
  * [com.wingedsheep.engine.mechanics.stack.NonPermanentSpellResolver] sees the component, sends the
  * card to exile instead of the graveyard, and applies the rider (plot it, or schedule its return to
  * hand). If the spell is countered or fizzles, the component does not redirect it — it goes to its
@@ -40,12 +41,10 @@ class MarkSpellExileOnResolveExecutor : EffectExecutor<MarkSpellExileOnResolveEf
             // An existing exile rider (a cast-this-way "exile it instead", Dreadhorde Arcanist) keeps
             // its own on-counter / on-fizzle reach; the follow-up below only ever runs on resolution.
             val merged = existing?.copy(
-                exiledRider = effect.then,
-                exiledRiderControllerId = context.controllerId
+                exiledRider = effect.then
             ) ?: AfterResolveDestinationComponent(
                 onlyIfResolved = true,
-                exiledRider = effect.then,
-                exiledRiderControllerId = context.controllerId
+                exiledRider = effect.then
             )
             container.with(merged)
         }

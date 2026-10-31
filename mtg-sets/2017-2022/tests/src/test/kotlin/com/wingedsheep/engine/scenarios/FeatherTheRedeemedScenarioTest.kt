@@ -78,6 +78,38 @@ class FeatherTheRedeemedScenarioTest : ScenarioTestBase() {
             game.isInHand(1, "Giant Growth") shouldBe false
         }
 
+        test("the spell is still exiled and returned when Feather leaves the battlefield after triggering") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardOnBattlefield(1, "Feather, the Redeemed")
+                .withCardOnBattlefield(1, "Grizzly Bears")
+                .withLandsOnBattlefield(1, "Forest", 1)
+                .withLandsOnBattlefield(1, "Mountain", 2)
+                .withCardInHand(1, "Giant Growth")
+                .withCardsInHand(1, "Shock", 2)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            val bears = game.findPermanent("Grizzly Bears")!!
+            val feather = game.findPermanent("Feather, the Redeemed")!!
+            game.castSpell(1, "Giant Growth", bears).error shouldBe null
+            // In response, two Shocks on Feather herself: she dies before Giant Growth resolves.
+            game.castSpell(1, "Shock", feather).error shouldBe null
+            game.castSpell(1, "Shock", feather).error shouldBe null
+            game.resolveStack()
+
+            withClue("Feather died") { game.findPermanent("Feather, the Redeemed") shouldBe null }
+            withClue("Giant Growth resolved after Feather left, and was still exiled") {
+                game.state.projectedState.getPower(bears) shouldBe 5
+                game.isInExile(1, "Giant Growth") shouldBe true
+            }
+
+            game.passUntilPhase(Phase.ENDING, Step.END)
+            game.resolveStack()
+            withClue("it still comes back at the end step") { game.isInHand(1, "Giant Growth") shouldBe true }
+        }
+
         test("a spell that targets only an opponent's creature is not exiled") {
             val game = scenario()
                 .withPlayers("Player", "Opponent")

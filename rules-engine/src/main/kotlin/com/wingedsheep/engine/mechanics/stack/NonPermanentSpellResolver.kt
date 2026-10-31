@@ -718,7 +718,7 @@ internal class NonPermanentSpellResolver(
                 // next end step."
                 com.wingedsheep.sdk.scripting.effects.ExiledSpellRider.RETURN_TO_HAND_AT_NEXT_END_STEP ->
                     newState = scheduleEndStepReturnToHand(
-                        newState, spellId, exileAfterResolveComp.exiledRiderControllerId ?: ownerId,
+                        newState, spellId, ownerId,
                         cardComponent?.name ?: "Unknown"
                     )
                 null -> Unit

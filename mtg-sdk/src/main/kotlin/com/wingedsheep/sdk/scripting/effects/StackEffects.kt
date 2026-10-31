@@ -1602,7 +1602,7 @@ data class MarkSpellExileOnResolveEffect(
 @Serializable
 enum class ExiledSpellRider {
     /**
-     * The card becomes *plotted* for its owner (CR 718): it may be cast as a sorcery on a later turn
+     * The card becomes *plotted* for its owner (CR 702.170): it may be cast as a sorcery on a later turn
      * without paying its mana cost.
      */
     BECOMES_PLOTTED,
