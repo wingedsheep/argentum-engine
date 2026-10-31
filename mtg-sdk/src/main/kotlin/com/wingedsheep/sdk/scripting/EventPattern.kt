@@ -2310,6 +2310,16 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * one more pointed anywhere else does not. The becomes-target sibling of
      * [com.wingedsheep.sdk.scripting.events.SpellCastPredicate.TargetsOnlySource].
      *
+     * [batch] is the "**one or more** … become the target" template (CR 603.2c): the trigger fires
+     * **once per targeting spell or ability**, however many of the matching objects and players it
+     * targets — "Whenever you and/or one or more permanents you control become the target of a
+     * spell or ability an opponent controls" (Leyline of Combustion) fires once for a spell that
+     * targets you and two of your creatures. Every other axis still narrows which targets count;
+     * a batch only needs one of them. Handled by the dedicated batch pass (the per-event path
+     * skips it); ANY binding only. The first matching target is bound as the triggering entity,
+     * and the targeting object as [com.wingedsheep.sdk.scripting.targets.EffectTarget.TargetingSource]
+     * / [Player.ControllerOfCause].
+     *
      * Note that [spellsOnly] / [abilitiesOnly] / [sourceFilter] narrow *what did the targeting*,
      * while [includeSpellTargets] / [playerTargets] widen *what got targeted*; the two axes
      * are independent.
@@ -2327,7 +2337,8 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         val abilitiesOnly: Boolean = false,
         val sourceFilter: GameObjectFilter? = null,
         val backupAbilitiesOnly: Boolean = false,
-        val targetsOnlyIt: Boolean = false
+        val targetsOnlyIt: Boolean = false,
+        val batch: Boolean = false
     ) : EventPattern {
         init {
             require(!(spellsOnly && (abilitiesOnly || backupAbilitiesOnly))) {
@@ -2339,8 +2350,18 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         }
 
         override val description: String = buildString {
-            when (playerTargets) {
-                null -> append(describeObjectForEvent(targetFilter))
+            when {
+                // "you and/or one or more permanents you control become the target" (Leyline of
+                // Combustion) — the batch template names the objects in the plural.
+                batch -> {
+                    if (playerTargets != null) append("${playerTargets.description} and/or ")
+                    append("one or more ")
+                    append(
+                        if (targetFilter == GameObjectFilter.Any) "permanents"
+                        else describeObjectsForEvent(targetFilter)
+                    )
+                }
+                playerTargets == null -> append(describeObjectForEvent(targetFilter))
                 // "a player or permanent" (Loki) — deliberately not the generic
                 // `describeObjectForEvent(Any)` phrasing ("a card or permanent").
                 else -> {
@@ -2370,12 +2391,13 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
                     ?.takeIf { f.controllerPredicate == null && f.statePredicates.isEmpty() && f.anyOf.isEmpty() }
                 "${f.indefiniteArticle} ${subtype?.description ?: f.description} $kind"
             }
+            val verb = if (batch) " become the target of" else " becomes the target of"
             when {
-                sourceNoun != null -> append(" becomes the target of $sourceNoun")
-                backupAbilitiesOnly -> append(" becomes the target of a backup ability")
-                spellsOnly -> append(" becomes the target of a spell")
-                abilitiesOnly -> append(" becomes the target of an ability")
-                else -> append(" becomes the target of a spell or ability")
+                sourceNoun != null -> append("$verb $sourceNoun")
+                backupAbilitiesOnly -> append("$verb a backup ability")
+                spellsOnly -> append("$verb a spell")
+                abilitiesOnly -> append("$verb an ability")
+                else -> append("$verb a spell or ability")
             }
             if (byYou) append(" you control")
             if (byOpponent) append(" an opponent controls")

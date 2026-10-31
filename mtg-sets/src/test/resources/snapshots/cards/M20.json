@@ -3701,6 +3701,60 @@
     ]
 }
 
+// Leyline of Combustion
+{
+    "name": "Leyline of Combustion",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "If this card is in your opening hand, you may begin the game with it on the battlefield.\nWhenever you and/or at least one permanent you control becomes the target of a spell or ability an opponent controls, this enchantment deals 2 damage to that player.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Leyline of Combustion:1",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "targetFilter": "permanent ctrl:you",
+                    "byOpponent": true,
+                    "playerTargets": "You",
+                    "batch": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "ControllerOfCause"
+                    }
+                }
+            }
+        ],
+        "beginOnBattlefield": {}
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "rarity": "RARE",
+        "artist": "Noah Bradley",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3a93c8e2-fb27-43af-83a7-2bd4d40e0eff.jpg?1783932974",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "Leyline of Combustion's triggered ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If a spell targets you and/or a permanent you control multiple times, or if a spell targets you and one or more permanents you control, Leyline of Combustion's triggered ability triggers once."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Lightning Stormkin
 {
     "name": "Lightning Stormkin",

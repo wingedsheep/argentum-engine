@@ -268,7 +268,7 @@ class AttachmentTriggerDetector(
             // other axis (spellsOnly, sourceFilter, byYou, targetFilter) against the aura's own
             // controller — reusing it rather than restating it keeps the two paths from drifting.
             is EventPattern.BecomesTargetEvent -> {
-                event is BecomesTargetEvent && event.targetEntityId == attachedEntityId &&
+                !trigger.batch && event is BecomesTargetEvent && event.targetEntityId == attachedEntityId &&
                     matcher.matchesBecomesTargetTrigger(
                         trigger, TriggerBinding.ANY, event, auraId, auraControllerId, state
                     )

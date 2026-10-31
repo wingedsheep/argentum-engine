@@ -9539,6 +9539,17 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
   redirect makes it one. Pre-existing and orthogonal to the player axis, so it is pinned rather than
   fixed by `BecomesTargetPlayerAndAbilityAxesTest`, which characterizes current-and-wrong behaviour —
   when a later unit fixes it, invert that test rather than deleting it.
+- `Triggers.a(filter).becomesTarget(..., batch = true)` — the "**one or more** … become the target" template
+  (CR 603.2c): fires **once per targeting spell or ability**, however many of its targets match. Sets
+  `BecomesTargetEvent(batch = true)`; every other axis still decides which targets count, and one is
+  enough. ANY-bound only; a dedicated batch pass in `TriggerDetector` groups the per-target engine events
+  by the targeting object (the per-event path skips batch triggers). The first matching target is the
+  triggering entity; the targeting object is `EffectTarget.TargetingSource` / `Player.ControllerOfCause`.
+  Leyline of Combustion — "Whenever you and/or at least one permanent you control becomes the target of a
+  spell or ability an opponent controls, this enchantment deals 2 damage to that player" —
+  `Triggers.a(Permanent.youControl()).becomesTarget(byOpponent = true, players = Player.You, batch = true)`
+  + `Effects.DealDamage(2, EffectTarget.PlayerRef(Player.ControllerOfCause))`. Contrast Valkmira's per-target
+  "you or another permanent you control becomes the target", which fires once per matching target.
 - `Triggers.a(filter.youControl()).becomesTarget(byOpponent = true, includeSpellTargets)` — your creature
   gets targeted by an opponent's spell or ability. Permanent-only unless `includeSpellTargets = true`
   (Surrak), which also fires when an opponent targets a matching creature spell you control.

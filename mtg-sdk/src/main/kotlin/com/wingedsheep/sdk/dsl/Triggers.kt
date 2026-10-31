@@ -450,7 +450,9 @@ class ObjectTriggerSubject internal constructor(
      * "a player or permanent" (Loki, God of Mischief), `Player.You` for "you or another permanent you
      * control" (Valkmira, Protector's Shield); the subject's filter still narrows the object half. [ofBackupAbility] is "the target of a backup
      * ability" (Mirror-Shield Hoplite). [targetsOnlyIt] is "… that targets only it" — every target
-     * of the spell or ability is this object (Agrus Kos, Eternal Soldier).
+     * of the spell or ability is this object (Agrus Kos, Eternal Soldier). [batch] is the "one or
+     * more … become the target" template — once per targeting spell or ability, however many of
+     * its targets match (Leyline of Combustion); see [BecomesTargetEvent.batch].
      */
     fun becomesTarget(
         of: GameObjectFilter? = null,
@@ -463,6 +465,7 @@ class ObjectTriggerSubject internal constructor(
         players: Player? = null,
         ofBackupAbility: Boolean = false,
         targetsOnlyIt: Boolean = false,
+        batch: Boolean = false,
     ): TriggerSpec = spec(
         BecomesTargetEvent(
             targetFilter = filterOrAny,
@@ -476,6 +479,7 @@ class ObjectTriggerSubject internal constructor(
             sourceFilter = of,
             backupAbilitiesOnly = ofBackupAbility,
             targetsOnlyIt = targetsOnlyIt,
+            batch = batch,
         )
     )
 

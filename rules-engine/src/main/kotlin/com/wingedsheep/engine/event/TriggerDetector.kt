@@ -419,6 +419,11 @@ class TriggerDetector(
         // many matching permanents were tapped simultaneously; the per-event path skips batch taps.
         detectTapBatchTriggers(state, events, triggers, index)
 
+        // Detect "whenever you and/or one or more permanents you control become the target of a
+        // spell or ability …" batching triggers (BecomesTargetEvent(batch = true), e.g. Leyline of
+        // Combustion). Fires once per targeting spell or ability; the per-event path skips them.
+        detectBecomesTargetBatchTriggers(state, events, triggers, index)
+
         // Detect "whenever one or more [players] lose [exactly N] life" batching triggers
         // (LifeLossEvent(batch = true), e.g. Ob Nixilis, Captive Kingpin). Fires once per life-loss
         // occurrence (simultaneous damage summed per player); the per-event path skips them.
@@ -3482,6 +3487,55 @@ class TriggerDetector(
                         triggerContext = TriggerContext(triggeringEntityId = matched.first())
                     )
                 )
+            }
+        }
+    }
+
+    /**
+     * Detect "one or more … become the target of a spell or ability" batching triggers
+     * (`BecomesTargetEvent(batch = true)` — Leyline of Combustion).
+     *
+     * A spell or ability emits one engine `BecomesTargetEvent` per distinct target as it is put on
+     * the stack, so the events are grouped by the targeting object and the trigger fires once per
+     * group in which at least one target passes every per-target axis (the same matcher the
+     * per-event path uses). Two spells targeting in the same event list are two groups, so two
+     * firings. The first matching target is the triggering entity, and its event supplies the
+     * targeting object ("that spell or ability") the payoff reads.
+     */
+    private fun detectBecomesTargetBatchTriggers(
+        state: GameState,
+        events: List<EngineGameEvent>,
+        triggers: MutableList<PendingTrigger>,
+        index: TriggerIndex
+    ) {
+        val targetEvents = events.filterIsInstance<com.wingedsheep.engine.core.BecomesTargetEvent>()
+        if (targetEvents.isEmpty()) return
+        val byTargetingObject = targetEvents.groupBy { it.sourceEntityId }
+
+        for (entry in index.getEntitiesForCategory(TriggerCategory.BECOMES_TARGET)) {
+            for (ability in entry.abilities) {
+                val trigger = ability.trigger
+                if (trigger !is EventPattern.BecomesTargetEvent || !trigger.batch) continue
+                // "One or more … become the target" is an observer wording (ANY binding).
+                if (ability.binding != TriggerBinding.ANY) continue
+                val perTarget = trigger.copy(batch = false)
+
+                for (group in byTargetingObject.values) {
+                    val first = group.firstOrNull { event ->
+                        matcher.matchesBecomesTargetTrigger(
+                            perTarget, TriggerBinding.ANY, event, entry.entityId, entry.controllerId, state
+                        )
+                    } ?: continue
+                    triggers.add(
+                        PendingTrigger(
+                            ability = ability,
+                            sourceId = entry.entityId,
+                            sourceName = entry.cardComponent.name,
+                            controllerId = entry.controllerId,
+                            triggerContext = TriggerContext.fromEvent(first)
+                        )
+                    )
+                }
             }
         }
     }

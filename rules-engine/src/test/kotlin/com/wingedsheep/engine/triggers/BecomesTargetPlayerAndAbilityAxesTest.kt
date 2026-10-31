@@ -539,6 +539,16 @@ class BecomesTargetPlayerAndAbilityAxesTest : FunSpec({
                 ).description shouldBe
                     "you or a permanent you control becomes the target of a spell or ability an opponent controls"
             }
+
+            test("the batch template names the objects in the plural") {
+                EventPattern.BecomesTargetEvent(
+                    targetFilter = GameObjectFilter.Permanent.youControl(),
+                    byOpponent = true,
+                    playerTargets = Player.You,
+                    batch = true,
+                ).description shouldBe
+                    "you and/or one or more permanents you control become the target of a spell or ability an opponent controls"
+            }
         }
     }
 

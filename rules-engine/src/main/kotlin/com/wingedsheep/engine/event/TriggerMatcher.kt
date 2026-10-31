@@ -874,7 +874,10 @@ class TriggerMatcher(
                     matchesPlayer(state, trigger.player, event.playerId, controllerId, sourceId)
             }
             is EventPattern.BecomesTargetEvent -> {
-                event is BecomesTargetEvent && matchesBecomesTargetTrigger(trigger, binding, event, sourceId, controllerId, state)
+                // "One or more … become the target" fires once per targeting object, in
+                // TriggerDetector.detectBecomesTargetBatchTriggers — never once per target here.
+                !trigger.batch && event is BecomesTargetEvent &&
+                    matchesBecomesTargetTrigger(trigger, binding, event, sourceId, controllerId, state)
             }
             is EventPattern.MutateEvent -> {
                 if (event !is com.wingedsheep.engine.core.MutatedEvent) return false
