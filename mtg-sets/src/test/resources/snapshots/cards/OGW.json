@@ -703,6 +703,61 @@
     ]
 }
 
+// Pulse of Murasa
+{
+    "name": "Pulse of Murasa",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Return target creature or land card from a graveyard to its owner's hand. You gain 6 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 6
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|land",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "artist": "Matt Stewart",
+        "flavorText": "\"Little flower twirl and bloom, arise from this your rocky tomb. Little warrior slash and brawl, be born again to free us all.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c0c8057f-b45b-4f67-90cd-c808b5e9cbfa.jpg?1783937899",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "If the target card is an illegal target by the time Pulse of Murasa tries to resolve, the spell doesn't resolve. You won't gain 6 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Ruin in Their Wake
 {
     "name": "Ruin in Their Wake",

@@ -2451,6 +2451,135 @@
     ]
 }
 
+// Cavalier of Thorns
+{
+    "name": "Cavalier of Thorns",
+    "manaCost": "{2}{G}{G}{G}",
+    "typeLine": "Creature — Elemental Knight",
+    "oracleText": "Reach\nWhen this creature enters, reveal the top five cards of your library. Put a land card from among them onto the battlefield and the rest into your graveyard.\nWhen this creature dies, you may exile it. If you do, put another target card from your graveyard on top of your library.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 6
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cavalier of Thorns:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            },
+                            "storeAs": "gathered0",
+                            "revealed": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "land",
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "Put a land card from among them onto the battlefield",
+                            "selectedLabel": "Put onto battlefield",
+                            "remainderLabel": "Put into graveyard",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Cavalier of Thorns:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "MoveToZone",
+                                "target": "Self",
+                                "destination": "Exile",
+                                "fromZone": "Graveyard"
+                            }
+                        },
+                        "then": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Library",
+                            "placement": "Top"
+                        }
+                    },
+                    "descriptionOverride": "You may exile Cavalier of Thorns. If you do, put another target card from your graveyard on top of your library."
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "own:you",
+                        "zone": "Graveyard",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "167",
+        "rarity": "MYTHIC",
+        "artist": "Jehan Choo",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/4/e4662a9c-3cbd-41f7-8c15-d048a3826a42.jpg?1783932967"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Celestial Messenger
 {
     "name": "Celestial Messenger",
@@ -5475,6 +5604,85 @@
     ]
 }
 
+// Growth Cycle
+{
+    "name": "Growth Cycle",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +3/+3 until end of turn. It gets an additional +2/+2 until end of turn for each card named Growth Cycle in your graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "ModifyStats",
+            "powerModifier": {
+                "type": "Add",
+                "left": {
+                    "type": "Fixed",
+                    "amount": 3
+                },
+                "right": {
+                    "type": "Multiply",
+                    "amount": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": "name:Growth Cycle"
+                    },
+                    "multiplier": 2
+                }
+            },
+            "toughnessModifier": {
+                "type": "Add",
+                "left": {
+                    "type": "Fixed",
+                    "amount": 3
+                },
+                "right": {
+                    "type": "Multiply",
+                    "amount": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": "name:Growth Cycle"
+                    },
+                    "multiplier": 2
+                }
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "175",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"Shed your faded husk! Emerge sleeker and stronger!\"\n—Tyris, fauna shaman",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/e/1e619121-f2e8-4da5-8652-a2b5dae2e55c.jpg?1783932964",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "The size of the bonus is determined as Growth Cycle begins to resolve; it won't change later in the turn if the number of Growth Cycles in your graveyard changes."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Because Growth Cycle is still on the stack as you perform its instructions, it isn't in your graveyard and won't add to the bonus the creature gets."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Gruesome Scourger
 {
     "name": "Gruesome Scourger",
@@ -6566,6 +6774,66 @@
     ]
 }
 
+// Leafkin Druid
+{
+    "name": "Leafkin Druid",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Elemental Druid",
+    "oracleText": "{T}: Add {G}. If you control four or more creatures, add {G}{G} instead.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Leafkin Druid:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "creature"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 4
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "AddMana",
+                        "color": "GREEN",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "otherwise": {
+                        "type": "AddMana",
+                        "color": "GREEN"
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add {G}. If you control four or more creatures, add {G}{G} instead."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "178",
+        "artist": "Filip Burburan",
+        "flavorText": "\"I am rooted in the life of all that thrives around me. You cannot move me.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/8968a942-72f6-42ad-ae9d-418a1dff0ab3.jpg?1783932963"
+    }
+}
+
 // Legion's End
 {
     "name": "Legion's End",
@@ -6708,6 +6976,67 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Leyline of Abundance
+{
+    "name": "Leyline of Abundance",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "If this card is in your opening hand, you may begin the game with it on the battlefield.\nWhenever you tap a creature for mana, add an additional {G}.\n{6}{G}{G}: Put a +1/+1 counter on each creature you control.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Leyline of Abundance:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{6}{G}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "{6}{G}{G}: Put a +1/+1 counter on each creature you control."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "AdditionalManaOnSourceTap",
+                "sourceFilter": "creature ctrl:you",
+                "color": "GREEN"
+            }
+        ],
+        "beginOnBattlefield": {}
+    },
+    "metadata": {
+        "collectorNumber": "179",
+        "rarity": "RARE",
+        "artist": "Noah Bradley",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c68e8342-78d2-4826-a287-64c371b97d19.jpg?1783932962",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "An ability that triggers \"whenever you tap a creature for mana\" triggers only if you activate a mana ability of a creature including {T} in its cost. Mana abilities that don't include the {T} symbol and instead say \"Tap an untapped creature you control\" or similar won't cause Leyline of Abundance's second ability to trigger. Similarly, it won't trigger if you tap a creature to activate a mana ability of another object (even if that mana ability also includes {T})."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -8092,6 +8421,97 @@
     ]
 }
 
+// Overgrowth Elemental
+{
+    "name": "Overgrowth Elemental",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "When this creature enters, put a +1/+1 counter on another target Elemental you control.\nWhenever another creature you control dies, you gain 1 life. If that creature was an Elemental, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Overgrowth Elemental:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent Elemental ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Overgrowth Elemental:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "TriggeringEntityWas",
+                                    "filter": "creature Elemental"
+                                }
+                            },
+                            "then": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever another creature you control dies, you gain 1 life. If that creature was an Elemental, put a +1/+1 counter on this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "187",
+        "rarity": "UNCOMMON",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c9a13eb-2daf-43e0-b175-c6ec5b9e191e.jpg?1783932960",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "If Overgrowth Elemental dies at the same time as one or more other creatures you control, Overgrowth Elemental's last ability triggers for each of those other creatures. You will gain 1 life for each of them, but if any of those creatures were Elementals, Overgrowth Elemental won't get a +1/+1 counter since it's already left the battlefield."
+            }
+        ]
+    }
+}
+
 // Pattern Matcher
 {
     "name": "Pattern Matcher",
@@ -9031,6 +9451,75 @@
     ]
 }
 
+// Season of Growth
+{
+    "name": "Season of Growth",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a creature you control enters, scry 1. (Look at the top card of your library. You may put that card on the bottom.)\nWhenever you cast a spell that targets a creature you control, draw a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Season of Growth:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Scry",
+                    "count": 1
+                }
+            },
+            {
+                "id": "Season of Growth:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        {
+                            "type": "SpellTargetsMatching",
+                            "filter": "creature ctrl:you"
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "191",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Vargas",
+        "flavorText": "\"Awake, and lift your faces to the sun.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/5/65b9a718-01b9-46b2-85eb-55f6206ee5e4.jpg?1783932959",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "Season of Growth's last ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If multiple creatures enter the battlefield under your control simultaneously, you'll scry 1 for each of those creatures. You won't look at more than one card from your library at once."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Season of Growth's last ability triggers when you cast a spell that has multiple targets, as long as at least one of those targets is a creature you control. It doesn't trigger multiple times if you cast a spell that targets a creature you control multiple times or that targets multiple creatures you control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Sephara, Sky's Blade
 {
     "name": "Sephara, Sky's Blade",
@@ -9089,6 +9578,150 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Shared Summons
+{
+    "name": "Shared Summons",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Search your library for up to two creature cards with different names, reveal them, put them into your hand, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "creature"
+                    },
+                    "storeAs": "gathered0",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "storeSelected": "selected1",
+                    "prompt": "Search for up to two creature cards with different names",
+                    "restrictions": [
+                        "OnePerCardName"
+                    ]
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "revealed": true
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "193",
+        "rarity": "RARE",
+        "artist": "Aaron Miller",
+        "flavorText": "\"In times of need, the forest creates its own protectors.\"\n—Vivien Reid",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/e/1e1e49b6-ed0f-42f5-af22-6f4aa23ce4ef.jpg?1783932958"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Shifting Ceratops
+{
+    "name": "Shifting Ceratops",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "This spell can't be countered.\nProtection from blue (This creature can't be blocked, targeted, dealt damage, enchanted, or equipped by anything blue.)\n{G}: This creature gains your choice of reach, trample, or haste until end of turn.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.Color",
+                "color": "BLUE"
+            }
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Shifting Ceratops:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{G}"
+                    }
+                },
+                "effect": {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "It gains reach until end of turn",
+                            "effect": {
+                                "type": "GrantKeyword",
+                                "keyword": "REACH",
+                                "target": "Self"
+                            }
+                        },
+                        {
+                            "label": "It gains trample until end of turn",
+                            "effect": {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": "Self"
+                            }
+                        },
+                        {
+                            "label": "It gains haste until end of turn",
+                            "effect": {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE",
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{G}: This creature gains your choice of reach, trample, or haste until end of turn."
+            }
+        ],
+        "cantBeCountered": true
+    },
+    "metadata": {
+        "collectorNumber": "194",
+        "rarity": "RARE",
+        "artist": "Izzy",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/e/8e318600-21af-4003-bcfa-be926cd24c5c.jpg?1783932957",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "A spell or ability that counters spells can still target Shifting Ceratops. When that spell or ability resolves, Shifting Ceratops won't be countered, but any additional effects of that spell or ability will still happen."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Multiple instances of reach, trample, and/or haste on the same creature are redundant."
+            }
+        ]
+    }
 }
 
 // Silverback Shaman
@@ -10668,6 +11301,364 @@
         "artist": "Bayard Wu",
         "flavorText": "\"Regardless of where they come from, crocs are usually able to find their way home. For this one, home is me.\"\n—Vivien Reid",
         "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c51c6bd-2ecc-4d92-a406-fcb31e889b45.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Vivien, Arkbow Ranger
+{
+    "name": "Vivien, Arkbow Ranger",
+    "manaCost": "{1}{G}{G}{G}",
+    "typeLine": "Legendary Planeswalker — Vivien",
+    "oracleText": "+1: Distribute two +1/+1 counters among up to two target creatures. They gain trample until end of turn.\n−3: Target creature you control deals damage equal to its power to target creature or planeswalker.\n−5: You may reveal a creature card you own from outside the game and put it into your hand.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Vivien, Arkbow Ranger:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DistributeCountersAmongTargets",
+                            "totalCounters": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": "IterationSpace.Targets",
+                            "body": {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 2,
+                        "minCount": 0,
+                        "filter": {
+                            "baseFilter": "creature"
+                        }
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Distribute two +1/+1 counters among up to two target creatures. They gain trample until end of turn."
+            },
+            {
+                "id": "Vivien, Arkbow Ranger:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "damageSource": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    },
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature|planeswalker"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Target creature you control deals damage equal to its power to target creature or planeswalker."
+            },
+            {
+                "id": "Vivien, Arkbow Ranger:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -5
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Sideboard",
+                                "filter": "creature"
+                            },
+                            "storeAs": "wishable"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "wishable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "wishableFound"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "wishableFound",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You may reveal a creature card you own from outside the game and put it into your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "199",
+        "rarity": "MYTHIC",
+        "artist": "Yongjae Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/592c5e27-c538-425e-b41f-1d6708428853.jpg?1783932954",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "You choose how the counters will be distributed as you activate Vivien's first ability. Each target creature must be assigned at least one counter. This means that you can't put two counters on one creature but give two creatures trample."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "You can activate Vivien's first ability without choosing any target creatures. The counters won't be put on anything. This is a change from previous rules regarding distributing counters."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If one of the two target creatures becomes an illegal target in response to Vivien's first ability, the +1/+1 counter that would have been put on that creature is lost. It can't be put on the legal target."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If either target is an illegal target as Vivien's second ability tries to resolve, the creature you control won't deal damage."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "In a casual game, a card you choose from outside the game comes from your personal collection. In a tournament event, a card you choose from outside the game must come from your sideboard. You may look at your sideboard at any time."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Voracious Hydra
+{
+    "name": "Voracious Hydra",
+    "manaCost": "{X}{G}{G}",
+    "typeLine": "Creature — Hydra",
+    "oracleText": "Trample\nThis creature enters with X +1/+1 counters on it.\nWhen this creature enters, choose one —\n• Double the number of +1/+1 counters on this creature.\n• This creature fights target creature you don't control.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 1
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Voracious Hydra:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "DoubleCounters",
+                                "target": "Self"
+                            },
+                            "description": "Double the number of +1/+1 counters on this creature"
+                        },
+                        {
+                            "effect": {
+                                "type": "Fight",
+                                "target1": "Self",
+                                "target2": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": {
+                                            "cardPredicates": [
+                                                "IsCreature"
+                                            ],
+                                            "controllerPredicate": {
+                                                "type": "ControllerNot",
+                                                "predicate": "ControlledByYou"
+                                            }
+                                        }
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "This creature fights target creature you don't control"
+                        }
+                    ],
+                    "countsAsModalSpell": false
+                },
+                "descriptionOverride": "When this creature enters, choose one — Double the number of +1/+1 counters on this creature, or this creature fights target creature you don't control."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": "XValue"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "200",
+        "rarity": "RARE",
+        "artist": "Wayne Reynolds",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/74bbe44f-864a-446c-bfc9-5f5188e663b8.jpg?1783932954",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "Because fighting isn't combat damage, trample has no effect during the fight."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If the target of Voracious Hydra's second mode isn't a legal target as the ability resolves, or if Voracious Hydra has left the battlefield, neither creature will deal or be dealt damage. The ability won't change to the first mode if the target is illegal."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Wakeroot Elemental
+{
+    "name": "Wakeroot Elemental",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "{G}{G}{G}{G}{G}: Untap target land you control. It becomes a 5/5 Elemental creature with haste. It's still a land. (This effect lasts as long as that land remains on the battlefield.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Wakeroot Elemental:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{G}{G}{G}{G}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "tap": false
+                        },
+                        {
+                            "type": "BecomeCreature",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "power": {
+                                "type": "Fixed",
+                                "amount": 5
+                            },
+                            "toughness": {
+                                "type": "Fixed",
+                                "amount": 5
+                            },
+                            "keywords": [
+                                "HASTE"
+                            ],
+                            "creatureTypes": [
+                                "Elemental"
+                            ],
+                            "duration": "Permanent"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "land ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{G}{G}{G}{G}{G}: Untap target land you control. It becomes a 5/5 Elemental creature with haste. It's still a land."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "202",
+        "rarity": "RARE",
+        "artist": "Filip Burburan",
+        "flavorText": "\"When the forest walks, it's too late to run.\"\n—Horent, Khalni druid",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/02c9396d-28f2-40b7-908e-51db51da57a7.jpg?1783932955",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "Wakeroot Elemental's ability can target a land that's already a creature or a land that's already untapped. The ability will untap it if possible and set its base power and toughness to 5/5. Any counters or effects modifying that creature's power and toughness will continue to apply, and any effects that set the creature's power and toughness will be overwritten."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "GREEN"

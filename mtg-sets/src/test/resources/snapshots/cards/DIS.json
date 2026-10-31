@@ -375,6 +375,88 @@
     ]
 }
 
+// Loaming Shaman
+{
+    "name": "Loaming Shaman",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Centaur Shaman",
+    "oracleText": "When this creature enters, target player shuffles any number of target cards from their graveyard into their library.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Loaming Shaman:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.TargetsOf",
+                                "group": "t1"
+                            },
+                            "body": {
+                                "type": "MoveToZone",
+                                "target": "IterationEntity",
+                                "destination": "Library"
+                            }
+                        },
+                        {
+                            "type": "ShuffleLibrary",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "t0"
+                },
+                "additionalTargetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "unlimited": true,
+                        "filter": {
+                            "baseFilter": "own:target-player",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t1"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "rarity": "RARE",
+        "artist": "Carl Critchlow",
+        "flavorText": "His work determines who is remembered and who feeds the worms.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e34b3f97-1c00-4ad2-a28d-6f064f499761.jpg?1783943411",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "If Loaming Shaman's triggered ability targets a player but doesn't target any cards in that player's graveyard, that player just shuffles their library."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If the target cards become illegal targets, the target player shuffles their library. If the target player becomes an illegal target, Loaming Shaman's ability has no effect."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Macabre Waltz
 {
     "name": "Macabre Waltz",

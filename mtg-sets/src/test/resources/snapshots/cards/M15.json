@@ -2064,6 +2064,61 @@
     ]
 }
 
+// Netcaster Spider
+{
+    "name": "Netcaster Spider",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Spider",
+    "oracleText": "Reach (This creature can block creatures with flying.)\nWhenever this creature blocks a creature with flying, this creature gets +2/+0 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Netcaster Spider:1",
+                "trigger": {
+                    "type": "BlockEvent",
+                    "attackerFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasKeyword",
+                                "keyword": "FLYING"
+                            }
+                        ]
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "186",
+        "artist": "Yohann Schepacz",
+        "flavorText": "It is an expert at culling individuals who stray too far from the herd.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/8/a8702c15-5f32-453e-8d58-cadfcdaeb3dc.jpg?1783939165"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Nightfire Giant
 {
     "name": "Nightfire Giant",
