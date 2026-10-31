@@ -15264,6 +15264,132 @@
     ]
 }
 
+// Storm Herald
+{
+    "name": "Storm Herald",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "Haste\nWhen this creature enters, return any number of Aura cards from your graveyard to the battlefield attached to creatures you control. Exile those Auras at the beginning of your next end step. If those Auras would leave the battlefield, exile them instead of putting them anywhere else.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Storm Herald:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": "enchantment Aura"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected1",
+                            "prompt": "Choose any number of Aura cards to return"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "storeMovedAs": "returned",
+                            "auraHostFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "returned"
+                            },
+                            "body": {
+                                "type": "GrantExileOnLeave",
+                                "target": "IterationEntity"
+                            }
+                        },
+                        {
+                            "type": "CreateDelayedTrigger",
+                            "step": "END",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "returned",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Exile"
+                                        }
+                                    }
+                                ]
+                            },
+                            "timing": "NextEndStep",
+                            "fireOnPlayer": {
+                                "type": "PlayerRef",
+                                "player": "You"
+                            },
+                            "carryCollections": [
+                                "returned"
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, return any number of Aura cards from your graveyard to the battlefield attached to creatures you control. Exile those Auras at the beginning of your next end step. If those Auras would leave the battlefield, exile them instead of putting them anywhere else."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "156",
+        "rarity": "RARE",
+        "artist": "Aleksi Briclot",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e0594aa2-1c53-4271-a0d0-9002c07f3697.jpg?1783931544",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "Storm Herald itself is among the creatures that may be enchanted by the returning Auras."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If an Aura can't be attached to a creature you control, you can't return it to the battlefield."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "Only Auras that were returned to the battlefield will be exiled at the beginning of your next end step. Any that you choose to leave in your graveyard will remain."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If an effect exiles an Aura returned this way, that effect exiles it, not Storm Herald's effect. If that effect returns the Aura to the battlefield, it won't be affected by Storm Herald's effect anymore."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Storm's Wrath
 {
     "name": "Storm's Wrath",

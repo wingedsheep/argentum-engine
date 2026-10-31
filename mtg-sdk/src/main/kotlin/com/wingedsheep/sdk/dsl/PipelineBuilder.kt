@@ -995,6 +995,7 @@ class PipelineBuilder private constructor(private val shared: Shared) {
      * @param filter only the cards in [from] matching this move; the rest stay where they are.
      * @param lookableInExile the controller may keep looking at face-down exiled cards.
      * @param attachTo the permanent an Aura/Equipment entering the battlefield attaches to.
+     * @param auraHostFilter narrows the host each entering Aura's controller chooses.
      * @param attackDefender what each card put onto the battlefield tapped and attacking attacks.
      */
     fun move(
@@ -1014,6 +1015,7 @@ class PipelineBuilder private constructor(private val shared: Shared) {
         markEnteredViaSourceAbility: Boolean = false,
         filter: GameObjectFilter? = null,
         attachTo: EffectTarget? = null,
+        auraHostFilter: GameObjectFilter? = null,
         attackDefender: EnteringAttackDefender = EnteringAttackDefender.JOIN_SOURCE,
         entersWith: EntersWithCharacteristics? = null
     ) {
@@ -1035,6 +1037,7 @@ class PipelineBuilder private constructor(private val shared: Shared) {
             markEnteredViaSourceAbility = markEnteredViaSourceAbility,
             filter = filter,
             attachTo = attachTo,
+            auraHostFilter = auraHostFilter,
             attackDefender = attackDefender,
             entersWith = entersWith
         )
@@ -1062,6 +1065,7 @@ class PipelineBuilder private constructor(private val shared: Shared) {
         markEnteredViaSourceAbility: Boolean = false,
         filter: GameObjectFilter? = null,
         attachTo: EffectTarget? = null,
+        auraHostFilter: GameObjectFilter? = null,
         entersWith: EntersWithCharacteristics? = null,
         name: String? = null
     ): CollectionSlot {
@@ -1084,6 +1088,7 @@ class PipelineBuilder private constructor(private val shared: Shared) {
             markEnteredViaSourceAbility = markEnteredViaSourceAbility,
             filter = filter,
             attachTo = attachTo,
+            auraHostFilter = auraHostFilter,
             entersWith = entersWith
         )
         return slot

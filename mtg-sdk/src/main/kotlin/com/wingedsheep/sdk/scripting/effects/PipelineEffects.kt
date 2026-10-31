@@ -1488,6 +1488,15 @@ data class MoveCollectionEffect(
      */
     val attachTo: EffectTarget? = null,
     /**
+     * For a move onto the battlefield without [attachTo]: narrows the host each Aura card's
+     * controller chooses as it enters (CR 303.4f) to permanents that also match this filter, "you"
+     * being the effect's controller — "return any number of Aura cards … attached to creatures you
+     * control" (Storm Herald), "only creatures can be enchanted this way" (Retether). Each Aura still
+     * needs a host its own enchant ability allows; one with no host in the intersection stays where
+     * it is (CR 303.4g). Null (the default) offers every host the Aura's enchant ability allows.
+     */
+    val auraHostFilter: GameObjectFilter? = null,
+    /**
      * What each card put onto the battlefield [ZonePlacement.TappedAndAttacking] attacks. The
      * default, [EnteringAttackDefender.JOIN_SOURCE], joins a defending player already in this
      * combat; [EnteringAttackDefender.CONTROLLER_CHOOSES] is a bare "tapped and attacking" as
@@ -1509,6 +1518,9 @@ data class MoveCollectionEffect(
             attackDefender == EnteringAttackDefender.JOIN_SOURCE ||
                 (destination as? CardDestination.ToZone)?.placement == ZonePlacement.TappedAndAttacking
         ) { "attackDefender needs a ToZone destination with placement = TappedAndAttacking" }
+        require(auraHostFilter == null || attachTo == null) {
+            "auraHostFilter narrows a chosen host; attachTo names the host outright — set one, not both"
+        }
     }
 
     override val description: String = buildString {
@@ -1529,6 +1541,7 @@ data class MoveCollectionEffect(
         // (Safe Haven, Oblivion Ring's cousins). Dropping it from the generated text loses the
         // one detail that distinguishes it from a plain return to the battlefield.
         if (underOwnersControl) append(" under its owner's control")
+        auraHostFilter?.let { append(" attached to ${it.description}") }
         if (lookableInExile) append(". You may look at those cards for as long as they remain exiled")
     }
 }

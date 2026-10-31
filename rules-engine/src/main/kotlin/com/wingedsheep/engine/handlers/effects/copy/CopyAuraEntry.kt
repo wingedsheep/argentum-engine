@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers.effects.copy
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.TargetFinder
+import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.mechanics.targeting.PlayerProtectionRules
 import com.wingedsheep.engine.handlers.predicates.EnchantRestriction
@@ -52,13 +53,21 @@ object CopyAuraEntry {
     ): Preparation {
         var prepared = context
         val order = state.apnapOrder.withIndex().associate { it.value to it.index }
+        // "… attached to creatures you control" (MoveCollectionEffect.auraHostFilter): the host is
+        // still chosen per Aura (CR 303.4f), among the hosts that also match; "you" is the effect's
+        // controller whoever ends up controlling the Aura.
+        val hostFilter = (effect as? MoveCollectionEffect)?.auraHostFilter
+        val hostFilterContext = PredicateContext(controllerId = context.controllerId, sourceId = context.sourceId)
         for ((id, controller) in entrants.entries.sortedBy { order[it.value] ?: Int.MAX_VALUE }) {
             val choice = context.entryCopies[id]?.takeIf { it.copiedCard != null }
             if (id in prepared.entryAuraHosts) continue
             val card = (if (choice != null) EffectCopyEntry.apply(state, id, choice) else state)
                 .getEntity(id)?.get<CardComponent>() ?: continue
             if (!card.isAura) continue
-            val hosts = legalHosts(state, id, card, controller, registry, finder, evaluator).filter { it !in entrants }
+            val hosts = legalHosts(state, id, card, controller, registry, finder, evaluator).filter { host ->
+                host !in entrants && (hostFilter == null ||
+                    evaluator.matches(state, state.projectedState, host, hostFilter, hostFilterContext))
+            }
             val specified = (effect as? MoveCollectionEffect)?.attachTo
             if (specified != null || hosts.isEmpty()) {
                 val host = specified?.let { context.resolveTarget(it, state) }?.takeIf { it in hosts }

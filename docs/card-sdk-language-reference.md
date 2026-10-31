@@ -4030,7 +4030,14 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   (a noncreature host, protection, its own `EquipmentAttachRestriction`, a creature card) **enters
   unattached** (CR 301.5e, Danitha's ruling), and every other card moves normally. When the wording keeps the
   unattachable ones behind instead ("any targets that couldn't be legally attached … stay in your
-  graveyard", Mantle of the Ancients), add `filter = GameObjectFilter.Any.couldAttachTo(host)`. `markEnteredViaSourceAbility = true` stamps each
+  graveyard", Mantle of the Ancients), add `filter = GameObjectFilter.Any.couldAttachTo(host)`. `auraHostFilter = <GameObjectFilter>`
+  (battlefield destination, exclusive with `attachTo`) keeps the per-Aura host choice of CR 303.4f but
+  narrows it to permanents that also match the filter ("you" = the effect's controller): "return any
+  number of Aura cards from your graveyard to the battlefield attached to creatures you control"
+  (Storm Herald: `auraHostFilter = Creature.youControl()`). Each Aura still needs a host its own enchant
+  ability allows; one with no host in the intersection stays where it is (CR 303.4g). Every host is
+  chosen before anything moves, so the batch still enters at once and `storeMovedAs` holds only the cards
+  that actually entered. `markEnteredViaSourceAbility = true` stamps each
   card that lands on the battlefield with `EnteredViaAbilityComponent(this source)` so a later
   `GatherCards(CardSource.EnteredViaThisResolution)` can re-collect them from live battlefield state.
   `lookableInExile = true` is the "**You may look at that card for as long as it remains exiled**"
