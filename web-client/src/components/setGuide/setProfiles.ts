@@ -517,7 +517,7 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
     tips: [
       'Value Adventure cards highly: a removal spell or trick that later becomes a creature is two cards in one.',
       'Respect the Knight aggro decks; a curve of cheap creatures backed by Searing Barrage or Scorching Dragonfire ends games by turn six.',
-      'Count your devotion: cards that check for mono-coloured permanents or adamant ({W}{W}{W} spent) are much better in a deck heavy in one colour.',
+      'Lean into one colour: adamant cards get their bonus when three mana of one colour is spent, so they shine in a deck heavy in that colour.',
     ],
     tryIf: 'Adventure value, Knight aggro and fairy-tale flavour',
     power: 3, speed: 4, complexity: 3,
