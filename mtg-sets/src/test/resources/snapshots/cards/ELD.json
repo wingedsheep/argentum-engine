@@ -180,6 +180,108 @@
     ]
 }
 
+// Animating Faerie
+{
+    "name": "Animating Faerie",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Faerie",
+    "oracleText": "Flying",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "metadata": {
+        "collectorNumber": "38",
+        "rarity": "UNCOMMON",
+        "artist": "Joseph Meehan",
+        "flavorText": "A true puppet master has no need for strings.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/32158458-42eb-41bc-a15a-11af28463eb0.jpg?1783932662",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "Bring to Life's effect lasts indefinitely. It doesn't wear off during the cleanup step."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "An artifact that becomes a creature due to Bring to Life can't attack unless you've controlled it continuously since your turn began."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "An Equipment that's also a creature can't be attached to anything. You can activate its equip ability, but it won't become attached. If it's attached as it becomes a creature, it becomes unattached."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If another effect later causes the artifact to become a creature and sets its power and toughness as it does so, that creature will have that base power and toughness; it won't be 0/0. Notably, crewing a Vehicle does not set its power and toughness, so a Vehicle's base power and toughness remain 0/0 if you crew it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "Bring to Life",
+            "manaCost": "{2}{U}",
+            "typeLine": "Sorcery — Adventure",
+            "oracleText": "Target noncreature artifact you control becomes a 0/0 artifact creature. Put four +1/+1 counters on it. (Then exile this card. You may cast the creature later from exile.)",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "BecomeCreature",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "power": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "toughness": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "duration": "Permanent"
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 4,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsArtifact",
+                                    {
+                                        "type": "Not",
+                                        "predicate": "IsCreature"
+                                    }
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        }
+    ]
+}
+
 // Arcane Signet
 {
     "name": "Arcane Signet",
@@ -956,6 +1058,75 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Brazen Borrower
+{
+    "name": "Brazen Borrower",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Creature — Faerie Rogue",
+    "oracleText": "Flash\nFlying\nThis creature can block only creatures with flying.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CanOnlyBlockCreaturesWith",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "HasKeyword",
+                            "keyword": "FLYING"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "rarity": "MYTHIC",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c2089ec9-0665-448f-bfe9-d181de127814.jpg?1783932663"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "Petty Theft",
+            "manaCost": "{1}{U}",
+            "typeLine": "Instant — Adventure",
+            "oracleText": "Return target nonland permanent an opponent controls to its owner's hand. (Then exile this card. You may cast the creature later from exile.)",
+            "script": {
+                "spellEffect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "nonland permanent ctrl:opponent"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        }
     ]
 }
 
@@ -2185,6 +2356,80 @@
     ]
 }
 
+// Didn't Say Please
+{
+    "name": "Didn't Say Please",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell. Its controller mills three cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                "Counter",
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "player": {
+                                    "type": "ControllerOf",
+                                    "targetDescription": "target spell"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "ControllerOf",
+                                    "targetDescription": "target spell"
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "artist": "Jason A. Engle",
+        "flavorText": "\"If you're in our home, we expect you to mind your manners.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/7/77500b53-0852-4d6a-bfe3-b1e8ef5a12cd.jpg?1783932660",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "A spell that can't be countered is a legal target for Didn't Say Please. The spell won't be countered when Didn't Say Please resolves, but its controller still puts the top three cards of their library into their graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Drown in the Loch
 {
     "name": "Drown in the Loch",
@@ -2572,6 +2817,118 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Fae of Wishes
+{
+    "name": "Fae of Wishes",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Faerie Wizard",
+    "oracleText": "Flying\n{1}{U}, Discard two cards: Return this creature to its owner's hand.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Fae of Wishes:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{U}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomDiscard",
+                                "count": 2
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand"
+                },
+                "descriptionOverride": "{1}{U}, Discard two cards: Return this creature to its owner's hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "rarity": "RARE",
+        "artist": "Magali Villeneuve",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e3435fd6-8f51-4d99-a278-4ddb088acfe1.jpg?1783932659",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "The activated ability of Fae of Wishes can be activated only while Fae of Wishes is on the battlefield."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "In a casual game, a card you choose from outside the game comes from your personal collection. In a tournament event, a card you choose from outside the game must come from your sideboard. You may look at your sideboard any time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "Granted",
+            "manaCost": "{3}{U}",
+            "typeLine": "Sorcery — Adventure",
+            "oracleText": "You may reveal a noncreature card you own from outside the game and put it into your hand. (Then exile this card. You may cast the creature later from exile.)",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Sideboard",
+                                "filter": "noncreature"
+                            },
+                            "storeAs": "wishable"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "wishable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "wishableFound"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "wishableFound",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        }
+                    ]
+                }
+            }
+        }
     ]
 }
 
@@ -3169,6 +3526,130 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Frogify
+{
+    "name": "Frogify",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature loses all abilities and is a blue Frog creature with base power and toughness 1/1. (It loses all other card types and creature types.)",
+    "script": {
+        "staticAbilities": [
+            "LoseAllAbilities",
+            {
+                "type": "TransformPermanent",
+                "setCardTypes": [
+                    "CREATURE"
+                ],
+                "setSubtypes": [
+                    "Frog"
+                ],
+                "setColors": [
+                    "BLUE"
+                ]
+            },
+            {
+                "type": "SetBasePowerToughnessStatic",
+                "power": 1,
+                "toughness": 1
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Seaman",
+        "flavorText": "That gnat was still hovering by the venison, and now both looked delicious.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/6/b69cbb20-3c4e-480b-a330-9c6d6b39d12f.jpg?1783932656"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Gadwick, the Wizened
+{
+    "name": "Gadwick, the Wizened",
+    "manaCost": "{X}{U}{U}{U}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "When Gadwick enters, draw X cards.\nWhenever you cast a blue spell, tap target nonland permanent an opponent controls.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gadwick, the Wizened:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": "CastX"
+                },
+                "descriptionOverride": "When Gadwick enters, draw X cards."
+            },
+            {
+                "id": "Gadwick, the Wizened:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "HasColor",
+                                "color": "BLUE"
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "nonland permanent ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever you cast a blue spell, tap target nonland permanent an opponent controls."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "rarity": "RARE",
+        "artist": "Colin Boyer",
+        "flavorText": "His name is spoken only in whispers—but he hears just the same.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/62ddce0d-f22a-4fcd-9a4a-d71938750ba1.jpg?1783932660",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "If Gadwick enters the battlefield without being cast, or if it was cast for a cost other than its mana cost, the value of X for its first ability is 0."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Gadwick's second ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4326,6 +4807,52 @@
     ]
 }
 
+// Hypnotic Sprite
+{
+    "name": "Hypnotic Sprite",
+    "manaCost": "{U}{U}",
+    "typeLine": "Creature — Faerie",
+    "oracleText": "Flying",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "metadata": {
+        "collectorNumber": "49",
+        "rarity": "UNCOMMON",
+        "artist": "Irina Nordsol",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/a/7acbd812-b994-4e68-8f95-04222796e994.jpg?1783932656"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "Mesmeric Glare",
+            "manaCost": "{2}{U}",
+            "typeLine": "Instant — Adventure",
+            "oracleText": "Counter target spell with mana value 3 or less. (Then exile this card. You may cast the creature later from exile.)",
+            "script": {
+                "spellEffect": "Counter",
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "mv<=3",
+                            "zone": "Stack"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        }
+    ]
+}
+
 // Improbable Alliance
 {
     "name": "Improbable Alliance",
@@ -4515,6 +5042,85 @@
     "colorIdentityOverride": [
         "RED",
         "WHITE"
+    ]
+}
+
+// Into the Story
+{
+    "name": "Into the Story",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "This spell costs {3} less to cast if an opponent has seven or more cards in their graveyard.\nDraw four cards.",
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "Fixed",
+                "amount": 4
+            }
+        },
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "Dynamic",
+                        "amount": {
+                            "type": "Multiply",
+                            "amount": {
+                                "type": "Min",
+                                "left": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "right": {
+                                    "type": "IfPositive",
+                                    "amount": {
+                                        "type": "Subtract",
+                                        "left": {
+                                            "type": "GreatestAmongPlayers",
+                                            "players": "EachOpponent",
+                                            "inner": {
+                                                "type": "Count",
+                                                "player": "You",
+                                                "zone": "Graveyard"
+                                            }
+                                        },
+                                        "right": {
+                                            "type": "Fixed",
+                                            "amount": 6
+                                        }
+                                    }
+                                }
+                            },
+                            "multiplier": 3
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "50",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Rainville",
+        "flavorText": "The boundary between real and imaginary is as thin as the page, and just as easily torn.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/8/c838f08e-7fb6-46e7-83bb-dce8877d6c87.jpg?1783932655",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying, add any cost increases, then apply any cost reductions (such as that of Into the Story). The mana value of the spell remains unchanged, no matter what the total cost to cast it was."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "Into the Story's cost reduction can only reduce its cost by {3}. It doesn't reduce the cost further if more than one opponent has seven cards in their graveyard or if an opponent has fourteen cards in their graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -5623,6 +6229,75 @@
     ]
 }
 
+// Merfolk Secretkeeper
+{
+    "name": "Merfolk Secretkeeper",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Merfolk Wizard",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "artist": "Jana Schirmer",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/ceb7308d-608c-4ede-9496-d795fc5bb271.jpg?1783932659"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "Venture Deeper",
+            "manaCost": "{U}",
+            "typeLine": "Sorcery — Adventure",
+            "oracleText": "Target player mills four cards. (Then exile this card. You may cast the creature later from exile.)",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ]
+            }
+        }
+    ]
+}
+
 // Mirrormade
 {
     "name": "Mirrormade",
@@ -5663,6 +6338,64 @@
                 "text": "If Mirrormade somehow enters the battlefield at the same time as another artifact or enchantment, it can't become a copy of that permanent. You may choose only a permanent that's already on the battlefield."
             }
         ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Mistford River Turtle
+{
+    "name": "Mistford River Turtle",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Turtle",
+    "oracleText": "Whenever this creature attacks, another target attacking non-Human creature can't be blocked this turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mistford River Turtle:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "CANT_BE_BLOCKED",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOther",
+                    "baseRequirement": {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "NotSubtype",
+                                        "subtype": "Human"
+                                    }
+                                ],
+                                "statePredicates": [
+                                    "IsAttacking"
+                                ]
+                            }
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "artist": "Milivoj Ćeran",
+        "flavorText": "The fae raised the turtle from a tiny hatchling. They taught it whom to ferry—and whom to drown.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/c/0c78c386-c64b-4fab-a718-f18b46360e20.jpg?1783932653"
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -5719,6 +6452,64 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Mysterious Pathlighter
+{
+    "name": "Mysterious Pathlighter",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Faerie",
+    "oracleText": "Flying\nEach creature you control that has an Adventure enters with an additional +1/+1 counter on it. (It doesn't need to have gone on the adventure first.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "HasAdventure"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "to": "Battlefield"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "rarity": "UNCOMMON",
+        "artist": "Kimonas Theodossiou",
+        "flavorText": "For good or ill, most fae can't resist meddling in the adventures of any knight they meet.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/0/1028aa10-aded-4aeb-b70f-d7a9003ae846.jpg?1783932669",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "A creature with an Adventure you control that would enter the battlefield with no +1/+1 counters on it enters with one +1/+1 counter on it."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "An effect may refer to a card, spell, or permanent that \"has an Adventure.\" This refers to a card, spell, or permanent that has an adventurer card's set of alternative characteristics, even if they're not being used and even if that card was never cast as an Adventure."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If an effect refers to a card, spell, or permanent that has an Adventure, it won't find an instant or sorcery spell on the stack that's been cast as an Adventure."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -6302,6 +7093,97 @@
         "imageUri": "https://cards.scryfall.io/normal/front/5/8/58131bf2-2a9f-4b81-9eeb-810372f3896c.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Queen of Ice
+{
+    "name": "Queen of Ice",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Noble Wizard",
+    "oracleText": "Whenever this creature deals combat damage to a creature, tap that creature. It doesn't untap during its controller's next untap step.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Queen of Ice:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": "creature"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": "TriggeringEntity"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": "TriggeringEntity",
+                            "duration": "UntilAfterAffectedControllersNextUntap"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/de2f964a-e4e1-4321-92ad-34b781868e11.jpg?1783932654"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "Rage of Winter",
+            "manaCost": "{1}{U}",
+            "typeLine": "Sorcery — Adventure",
+            "oracleText": "Tap target creature. It doesn't untap during its controller's next untap step. (Then exile this card. You may cast the creature later from exile.)",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilAfterAffectedControllersNextUntap"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        }
+    ]
 }
 
 // Raging Redcap
@@ -9207,6 +10089,173 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Turn into a Pumpkin
+{
+    "name": "Turn into a Pumpkin",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Return target nonland permanent to its owner's hand. Draw a card.\nAdamant — If at least three blue mana was spent to cast this spell, create a Food token. (It's an artifact with \"{2}, {T}, Sacrifice this token: You gain 3 life.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "ManaOfColorSpent",
+                                "color": "BLUE"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "CreatePredefinedToken",
+                        "tokenType": "Food"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "nonland permanent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "rarity": "UNCOMMON",
+        "artist": "Vincent Proce",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f2a37dcb-4a18-4f03-b28c-27188a1a5ec1.jpg?1783932647"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Unexplained Vision
+{
+    "name": "Unexplained Vision",
+    "manaCost": "{4}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Draw three cards.\nAdamant — If at least three blue mana was spent to cast this spell, scry 3.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "ManaOfColorSpent",
+                                "color": "BLUE"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Scry",
+                        "count": 3
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "artist": "Bram Sels",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/1/c1de1d84-e548-409d-b9ec-d2665477b43d.jpg?1783932648"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Vantress Paladin
+{
+    "name": "Vantress Paladin",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Flying\nAdamant — If at least three blue mana was spent to cast this spell, this creature enters with a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "ManaOfColorSpent",
+                        "color": "BLUE"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "artist": "Lucas Graciano",
+        "flavorText": "\"Someone knows where the king is. They can't expect to keep it a secret from us.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/52dd633f-9a07-47df-adb1-36013fc2f43a.jpg?1783932646"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
