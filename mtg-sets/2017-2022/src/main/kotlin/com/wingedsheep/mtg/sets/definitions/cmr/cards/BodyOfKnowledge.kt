@@ -27,7 +27,7 @@ val BodyOfKnowledge = card("Body of Knowledge") {
     dynamicStats(DynamicAmounts.cardsInYourHand())
 
     staticAbility {
-        ability = NoMaximumHandSize
+        ability = NoMaximumHandSize()
     }
 
     triggeredAbility {

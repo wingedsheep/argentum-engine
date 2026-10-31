@@ -1573,19 +1573,30 @@ data class SkipStepOrPhase(
 }
 
 /**
- * Removes the maximum hand size limit for the controller.
- * Used for cards like Thought Vessel and Reliquary Tower: "You have no maximum hand size."
+ * Removes the maximum hand size limit for a scoped set of players, by default the controller.
+ * Used for cards like Thought Vessel and Reliquary Tower: "You have no maximum hand size";
+ * `NoMaximumHandSize(Player.Each)` is Folio of Fancies' "Players have no maximum hand size."
  *
  * The engine reads it from each permanent's *projected* static abilities
- * (`com.wingedsheep.engine.core.MaximumHandSize`), so it applies to whoever controls a
- * permanent that has it — printed, gained from a resolved effect, or granted by
+ * (`com.wingedsheep.engine.core.MaximumHandSize`), with [player] resolved relative to the
+ * holder's controller — so it applies to whoever controls a permanent that has it (or every
+ * player in scope) whether it is printed, gained from a resolved effect, or granted by
  * [GrantStaticAbility] ("Enchanted creature has 'You have no maximum hand size'", Nerd Rage) —
  * and stops applying when that permanent loses its abilities.
+ *
+ * @property player Who has no maximum hand size, relative to the holder's controller
+ *   (`You` / `EachOpponent` / `Each`).
  */
 @SerialName("NoMaximumHandSize")
 @Serializable
-data object NoMaximumHandSize : ProjectedStaticAbility {
-    override val description: String = "You have no maximum hand size"
+data class NoMaximumHandSize(val player: Player = Player.You) : ProjectedStaticAbility {
+    override val description: String
+        get() = when (player) {
+            Player.You -> "You have no maximum hand size"
+            Player.Each -> "Players have no maximum hand size"
+            Player.EachOpponent -> "Each opponent has no maximum hand size"
+            else -> "${player.description.replaceFirstChar { it.uppercase() }} has no maximum hand size"
+        }
 }
 
 /**

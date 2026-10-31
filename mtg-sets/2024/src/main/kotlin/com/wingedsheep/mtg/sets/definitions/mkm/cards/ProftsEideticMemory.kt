@@ -63,7 +63,7 @@ val ProftsEideticMemory = card("Proft's Eidetic Memory") {
     }
 
     staticAbility {
-        ability = NoMaximumHandSize
+        ability = NoMaximumHandSize()
     }
 
     triggeredAbility {

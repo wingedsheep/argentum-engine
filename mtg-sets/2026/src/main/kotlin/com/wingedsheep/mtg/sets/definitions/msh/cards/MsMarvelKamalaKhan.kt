@@ -63,7 +63,7 @@ val MsMarvelKamalaKhan = card("Ms. Marvel, Kamala Khan") {
     keywords(Keyword.REACH, Keyword.VIGILANCE)
 
     staticAbility {
-        ability = NoMaximumHandSize
+        ability = NoMaximumHandSize()
     }
 
     triggeredAbility {

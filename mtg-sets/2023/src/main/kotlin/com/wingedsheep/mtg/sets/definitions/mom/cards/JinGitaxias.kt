@@ -55,7 +55,7 @@ private val TheGreatSynthesis = card("The Great Synthesis") {
         "Exile this Saga, then return it to the battlefield (front face up)."
 
     staticAbility {
-        ability = NoMaximumHandSize
+        ability = NoMaximumHandSize()
     }
 
     // I — Draw cards equal to the number of cards in your hand (counted on resolution).

@@ -33,7 +33,7 @@ val Triskaidekaphile = card("Triskaidekaphile") {
         "{3}{U}: Draw a card."
 
     staticAbility {
-        ability = NoMaximumHandSize
+        ability = NoMaximumHandSize()
     }
 
     triggeredAbility {

@@ -10659,7 +10659,7 @@ staticAbility {
   one-shot `Effects.GrantStaticAbility`. Lowered to a Layer 6 (CR 613.1f) ability grant over `filter` (relative
   to the granter: `Filters.EnchantedCreature`, `GroupFilter.source()`, or a battlefield lord group), so the
   holder *has* the ability and its "you" is the holder's controller. Nerd Rage:
-  `GrantStaticAbility(NoMaximumHandSize, Filters.EnchantedCreature)` — an Aura on an opponent's creature frees
+  `GrantStaticAbility(NoMaximumHandSize(), Filters.EnchantedCreature)` — an Aura on an opponent's creature frees
   the opponent's hand. `ability` is typed `ProjectedStaticAbility` — the sealed marker for kinds whose engine
   read consults the holder's projected statics (`ProjectedState.getStaticAbilities`): today `NoMaximumHandSize`,
   `Enlist`, `GrantCantLoseGame`, `GrantOpponentsCantWinGame` and `ModifySpellCost` (Cloudsteel Kirin: "Equipped
@@ -12311,8 +12311,10 @@ staticAbility {
     skip it or preserve its durations.
   The resolving counterparts are `Effects.SkipNextStepOrPhase` (spent by the step it skips) and
   `Effects.SkipStepOrPhaseThisTurn` (dropped at end of turn) — one `SkipStepOrPhaseEffect` over a `SkipDuration`.
-- `NoMaximumHandSize` — controller has no hand-size limit *while this permanent is on the
-  battlefield and has the ability*. (Thought Vessel, Reliquary Tower) It is lowered into Layer 6 like any
+- `NoMaximumHandSize(player = Player.You)` — the `player` scope (resolved relative to the holder's
+  controller: `You` / `EachOpponent` / `Each`) has no hand-size limit *while this permanent is on the
+  battlefield and has the ability*. (Thought Vessel, Reliquary Tower: `NoMaximumHandSize()`; Folio of
+  Fancies' "Players have no maximum hand size": `NoMaximumHandSize(Player.Each)`) It is lowered into Layer 6 like any
   ability, and `MaximumHandSize` reads it off each permanent's **projected** static abilities, so the same
   read covers a printed one, one gained from `Effects.GrantStaticAbility`, and one granted by the
   `GrantStaticAbility` static (Nerd Rage: "Enchanted creature has 'You have no maximum hand size'" frees

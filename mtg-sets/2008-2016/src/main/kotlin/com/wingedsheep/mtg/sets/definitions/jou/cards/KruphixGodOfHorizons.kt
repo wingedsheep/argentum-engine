@@ -49,7 +49,7 @@ val KruphixGodOfHorizons = card("Kruphix, God of Horizons") {
         ability = RemoveCardType("CREATURE", GroupFilter.source())
     }
 
-    staticAbility { ability = NoMaximumHandSize }
+    staticAbility { ability = NoMaximumHandSize() }
 
     staticAbility { ability = ConvertEmptyingMana(null) }
 

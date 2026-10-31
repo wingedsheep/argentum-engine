@@ -20,7 +20,7 @@ val GracefulAdept = card("Graceful Adept") {
     toughness = 3
 
     staticAbility {
-        ability = NoMaximumHandSize
+        ability = NoMaximumHandSize()
     }
 
     metadata {

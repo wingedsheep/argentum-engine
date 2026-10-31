@@ -53,7 +53,7 @@ val RoaringFurnaceSteamingSauna = card("Roaring Furnace // Steaming Sauna") {
         oracleText = "You have no maximum hand size.\nAt the beginning of your end step, draw a card."
 
         staticAbility {
-            ability = NoMaximumHandSize
+            ability = NoMaximumHandSize()
         }
 
         triggeredAbility {

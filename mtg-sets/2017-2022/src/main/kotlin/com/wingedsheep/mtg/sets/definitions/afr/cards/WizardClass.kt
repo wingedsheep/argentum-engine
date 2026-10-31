@@ -32,7 +32,7 @@ val WizardClass = card("Wizard Class") {
 
     // Level 1: no maximum hand size.
     staticAbility {
-        ability = NoMaximumHandSize
+        ability = NoMaximumHandSize()
     }
 
     // Level 2: when this Class becomes level 2, draw two cards.

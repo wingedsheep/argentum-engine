@@ -38,7 +38,7 @@ val NivMizzetVisionary = card("Niv-Mizzet, Visionary") {
     keywords(Keyword.FLYING)
 
     staticAbility {
-        ability = NoMaximumHandSize
+        ability = NoMaximumHandSize()
     }
 
     triggeredAbility {

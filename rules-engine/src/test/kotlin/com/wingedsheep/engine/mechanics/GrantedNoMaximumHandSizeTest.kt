@@ -35,17 +35,17 @@ import io.kotest.matchers.shouldBe
 class GrantedNoMaximumHandSizeTest : FunSpec({
     val aura = card("Test No-Max Aura") {
         typeLine = "Enchantment — Aura"
-        staticAbility { ability = GrantStaticAbility(NoMaximumHandSize, filter = Filters.EnchantedCreature) }
+        staticAbility { ability = GrantStaticAbility(NoMaximumHandSize(), filter = Filters.EnchantedCreature) }
     }
     val lord = card("Test No-Max Lord") {
         typeLine = "Enchantment"
         staticAbility {
-            ability = GrantStaticAbility(NoMaximumHandSize, filter = GroupFilter(GameObjectFilter.Creature.youControl()))
+            ability = GrantStaticAbility(NoMaximumHandSize(), filter = GroupFilter(GameObjectFilter.Creature.youControl()))
         }
     }
     val tower = card("Test No-Max Tower") {
         typeLine = "Artifact"
-        staticAbility { ability = NoMaximumHandSize }
+        staticAbility { ability = NoMaximumHandSize() }
     }
     val twenty = card("Test Twenty Max") {
         typeLine = "Enchantment"
@@ -132,7 +132,7 @@ class GrantedNoMaximumHandSizeTest : FunSpec({
         val bears = d.putCreatureOnBattlefield(me, "Grizzly Bears")
         val result = d.services.effectExecutorRegistry.execute(
             d.state,
-            Effects.GrantStaticAbility(NoMaximumHandSize, EffectTarget.ContextTarget(0), Duration.EndOfTurn),
+            Effects.GrantStaticAbility(NoMaximumHandSize(), EffectTarget.ContextTarget(0), Duration.EndOfTurn),
             EffectContext(sourceId = bears, controllerId = me, targets = listOf(ChosenTarget.Permanent(bears)))
         )
         result.error shouldBe null

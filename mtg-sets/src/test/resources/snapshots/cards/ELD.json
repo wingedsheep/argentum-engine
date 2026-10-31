@@ -2639,6 +2639,109 @@
     ]
 }
 
+// Folio of Fancies
+{
+    "name": "Folio of Fancies",
+    "manaCost": "{1}{U}",
+    "typeLine": "Artifact — Book",
+    "oracleText": "Players have no maximum hand size.\n{X}{X}, {T}: Each player draws X cards.\n{2}{U}, {T}: Each opponent mills cards equal to the number of cards in their hand.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Folio of Fancies:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{X}{X}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "ActivePlayerFirst"
+                    },
+                    "body": {
+                        "type": "DrawCards",
+                        "count": "XValue"
+                    }
+                }
+            },
+            {
+                "id": "Folio of Fancies:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{U}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Count",
+                                        "player": "You",
+                                        "zone": "Hand"
+                                    },
+                                    "isMill": true
+                                },
+                                "storeAs": "milled"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "milled",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "NoMaximumHandSize",
+                "player": "Each"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "RARE",
+        "artist": "Colin Boyer",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/a/6afc67d1-1018-4a15-ab5f-377fd11dcd3d.jpg?1783932658"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Fortifying Provisions
 {
     "name": "Fortifying Provisions",

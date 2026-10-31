@@ -45,7 +45,7 @@ class ModifyMaximumHandSizeTest : FunSpec({
     }
     val tower = card("Test Mod No-Max Tower") {
         typeLine = "Artifact"
-        staticAbility { ability = NoMaximumHandSize }
+        staticAbility { ability = NoMaximumHandSize() }
     }
     val lord = card("Test Reducer Lord") {
         typeLine = "Enchantment"

@@ -13,7 +13,7 @@ val LibraryOfLeng = card("Library of Leng") {
     typeLine = "Artifact"
     oracleText = "You have no maximum hand size.\nIf an effect causes you to discard a card, discard it, but you may put it on top of your library instead of into your graveyard."
 
-    staticAbility { ability = NoMaximumHandSize }
+    staticAbility { ability = NoMaximumHandSize() }
     replacementEffect(OptionalEffectDiscardDestination(CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Top)))
 
     metadata {

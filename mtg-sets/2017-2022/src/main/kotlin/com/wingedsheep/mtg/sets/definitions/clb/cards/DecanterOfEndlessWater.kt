@@ -21,7 +21,7 @@ val DecanterOfEndlessWater = card("Decanter of Endless Water") {
     oracleText = "You have no maximum hand size.\n{T}: Add one mana of any color."
 
     staticAbility {
-        ability = NoMaximumHandSize
+        ability = NoMaximumHandSize()
     }
 
     activatedAbility {

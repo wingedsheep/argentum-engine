@@ -51,7 +51,7 @@ val VnwxtVerboseHost = card("Vnwxt, Verbose Host") {
     startYourEngines()
 
     staticAbility {
-        ability = NoMaximumHandSize
+        ability = NoMaximumHandSize()
     }
 
     maxSpeed {

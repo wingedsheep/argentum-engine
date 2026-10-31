@@ -37,7 +37,7 @@ val NezahalPrimalTide = card("Nezahal, Primal Tide") {
     cantBeCountered = true
 
     staticAbility {
-        ability = NoMaximumHandSize
+        ability = NoMaximumHandSize()
     }
 
     triggeredAbility {

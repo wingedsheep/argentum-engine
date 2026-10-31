@@ -29,7 +29,7 @@ val CuriosityCrafter = card("Curiosity Crafter") {
     keywords(Keyword.FLYING)
 
     staticAbility {
-        ability = NoMaximumHandSize
+        ability = NoMaximumHandSize()
     }
 
     triggeredAbility {

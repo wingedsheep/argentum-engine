@@ -20,7 +20,7 @@ val ReliquaryTower = card("Reliquary Tower") {
     oracleText = "You have no maximum hand size.\n{T}: Add {C}."
 
     staticAbility {
-        ability = NoMaximumHandSize
+        ability = NoMaximumHandSize()
     }
 
     activatedAbility {

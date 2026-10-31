@@ -44,7 +44,7 @@ val NerdRage = card("Nerd Rage") {
     }
 
     staticAbility {
-        ability = GrantStaticAbility(NoMaximumHandSize, filter = Filters.EnchantedCreature)
+        ability = GrantStaticAbility(NoMaximumHandSize(), filter = Filters.EnchantedCreature)
     }
 
     staticAbility {

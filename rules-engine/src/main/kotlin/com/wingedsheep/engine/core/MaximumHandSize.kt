@@ -50,8 +50,9 @@ object MaximumHandSize {
      *   [ConditionalStaticAbility] wrapper is unwrapped and its condition evaluated against the
      *   source's controller, so "as long as …" gates (Winter's Delirium) are honored. A set effect
      *   can raise the limit above [DEFAULT] as readily as lower it (Doctor Octopus sets eight).
-     * - [NoMaximumHandSize] abilities of permanents [playerId] controls — printed (Reliquary
-     *   Tower) or granted (Nerd Rage) — read from projection by [projectedTimestamps].
+     * - [NoMaximumHandSize] abilities on the battlefield whose player scope (relative to the
+     *   holder's controller) includes [playerId] — printed (Reliquary Tower; Folio of Fancies for
+     *   every player) or granted (Nerd Rage) — read from projection by [projectedTimestamps].
      * - The rest-of-game [PlayerNoMaximumHandSizeComponent] (Wisdom of Ages).
      * - [ModifyMaximumHandSize] abilities on the battlefield, read from projection like
      *   [NoMaximumHandSize], whose player scope (relative to the holder's controller) includes
@@ -79,7 +80,10 @@ object MaximumHandSize {
             val context = EffectContext(sourceId = permanentId, controllerId = controllerId)
             for ((ability, timestamp) in projectedTimestamps(state, permanentId)) {
                 when (ability) {
-                    is NoMaximumHandSize -> if (controllerId == playerId) candidates += timestamp to Op.NoMaximum
+                    is NoMaximumHandSize ->
+                        if (playerScopeIncludes(ability.player, playerId, controllerId, state, permanentId)) {
+                            candidates += timestamp to Op.NoMaximum
+                        }
                     is ModifyMaximumHandSize ->
                         if (playerScopeIncludes(ability.player, playerId, controllerId, state, permanentId)) {
                             candidates += timestamp to Op.Modify(dynamicAmountEvaluator.evaluate(state, ability.amount, context))

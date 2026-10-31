@@ -42,7 +42,7 @@ val MarinaVendrellsGrimoire = card("Marina Vendrell's Grimoire") {
 
     // You have no maximum hand size.
     staticAbility {
-        ability = NoMaximumHandSize
+        ability = NoMaximumHandSize()
     }
 
     // ...and don't lose the game for having 0 or less life.
