@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.blb.cards
+package com.wingedsheep.mtg.sets.definitions.eld.cards
 
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Conditions
@@ -65,10 +65,10 @@ val FabledPassage = card("Fabled Passage") {
 
     metadata {
         rarity = Rarity.RARE
-        collectorNumber = "252"
-        artist = "Adam Paquette"
-        flavorText = "Beyond Valley lies danger—and promise."
-        imageUri = "https://cards.scryfall.io/normal/front/8/8/8809830f-d8e1-4603-9652-0ad8b00234e9.jpg?1721427315"
+        collectorNumber = "244"
+        artist = "Howard Lyon"
+        flavorText = "From here, the path to anywhere may be found."
+        imageUri = "https://cards.scryfall.io/normal/front/b/8/b841bfa8-7c17-4df2-8466-780ab9a4a53a.jpg?1783932578"
         ruling("2020-06-23", "The land that you put onto the battlefield will be counted when determining whether you control four or more lands, but Fabled Passage will not.")
         ruling("2020-06-23", "If you control four or more lands, the basic land doesn't enter untapped; it enters tapped and then you untap it.")
     }
