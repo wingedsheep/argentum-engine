@@ -15,7 +15,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * Diamond Knight
  * {3}
  * Artifact Creature — Knight
- * 2/2
+ * 1/1
  *
  * Vigilance
  * As this creature enters, choose a color.
@@ -28,8 +28,8 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
 val DiamondKnight = card("Diamond Knight") {
     manaCost = "{3}"
     typeLine = "Artifact Creature — Knight"
-    power = 2
-    toughness = 2
+    power = 1
+    toughness = 1
     oracleText = "Vigilance (Attacking doesn't cause this creature to tap.)\n" +
         "As this creature enters, choose a color.\n" +
         "Whenever you cast a spell of the chosen color, put a +1/+1 counter on this creature."
