@@ -231,7 +231,7 @@ Agonasaur Rex
 Agonizing Demise
 Agonizing Remorse	intent: Pipeline(FromMultipleZones→exile); intent: RevealHandEffect; polarity: Pipeline(FromMultipleZones→exile); polarity: RevealHandEffect
 Agonizing Syphon
-Agrus Kos, Eternal Soldier	intent: CopyForEachOtherPossibleTargetEffect
+Agrus Kos, Eternal Soldier	intent: CopyForOtherPossibleTargetsEffect
 Agrus Kos, Spirit of Justice
 Agrus Kos, Wojek Veteran
 Ahn-Crop Invader
@@ -1319,6 +1319,7 @@ Beacon of Destiny	intent: RedirectDamageFromChosenSourceEffect; timing: Redirect
 Beacon of Immortality	intent: SetLifeTotalEffect; polarity: SetLifeTotalEffect
 Beaming Defiance
 Beamsaw Prospector
+Beamsplitter Mage	intent: CopyForOtherPossibleTargetsEffect
 Beamtown Beatstick
 Beanstalk Giant
 Beanstalk Wurm
@@ -8418,7 +8419,7 @@ Ivorytusk Fortress
 Ivy Dancer
 Ivy Elemental
 Ivy Lane Denizen
-Ivy, Gleeful Spellthief	intent: CopyForEachOtherPossibleTargetEffect
+Ivy, Gleeful Spellthief	intent: CopyForOtherPossibleTargetsEffect
 Ixalli's Keeper
 Ixalli's Lorekeeper
 Ixhel, Scion of Atraxa	intent: ForEach>GrantMayPlayFromExileEffect; intent: ForEach>Pipeline(TopOfLibrary→exile)
@@ -10444,7 +10445,7 @@ Mirrormade
 Mirrormere Guardian	intent: TheRingTemptsYouEffect
 Mirrormind Crown	polarity: AttachEquipmentEffect
 Mirrorshell Crab
-Mirrorwing Dragon	intent: CopyForEachOtherPossibleTargetEffect
+Mirrorwing Dragon	intent: CopyForOtherPossibleTargetsEffect
 Miscalculation
 Miscast
 Mischievous Catgeist

@@ -802,7 +802,7 @@ Families:
 - `CopyCollectionIntoCollectionEffect(from: String, storeAs: String)` — Copy **every** card in the pipeline collection from and store all the copies' entity ids in the collection storeAs.
 - `CopyEachSpellCastEffect(copies: Int, spellFilter: GameObjectFilter)` — Until end of turn, whenever you cast a spell matching spellFilter, copy it.
 - `CopyEachTargetSpellEffect(keywordsForCopy: List<String>, removeLegendary: Boolean)` — Copy each spell targeted by this effect (CR 707.10).
-- `CopyForEachOtherPossibleTargetEffect(target: EffectTarget, candidates: GameObjectFilter, copier: Player)` — Copy a spell or ability once **for each other object it could target** (CR 707.10d), auto-assigning every copy a distinct one of those objects as its target.
+- `CopyForOtherPossibleTargetsEffect(target: EffectTarget, candidates: GameObjectFilter, copier: Player, selection: PossibleTargetCopies)`
 - `CopyNextSpellCastEffect(copies: Int, spellFilter: GameObjectFilter)` — When you next cast a spell matching spellFilter this turn, copy that spell.
 - `CopyTargetSpellEffect(target: EffectTarget, keywordsForCopy: List<String>, removeLegendary: Boolean, addedTokenKeywords: Set<Keyword>, sacrificeTokenAtStep: Step?, sacrificeTokenOnlyOnControllersTurn: Boolean, copies: DynamicAmount, exceptions: CopyExceptions, tokenStartingLoyalty: DynamicAmount?, mayChooseNewTargets: Boolean)`
 - `CopyTargetSpellOrAbilityEffect(target: EffectTarget, copies: DynamicAmount)` — Copy target spell **or** ability on the stack, dispatching at resolution on the chosen object's kind: an instant/sorcery spell copies via the spell-copy path; an activated or triggered ability copi…

@@ -1,9 +1,13 @@
 package com.wingedsheep.engine.handlers.effects.stack
 
+import com.wingedsheep.engine.core.CopyForChosenPossibleTargetContinuation
+import com.wingedsheep.engine.core.DecisionContext
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.Outcome
+import com.wingedsheep.engine.core.SelectCardsDecision
+import com.wingedsheep.engine.core.suspendForDecision
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -16,19 +20,21 @@ import com.wingedsheep.engine.mechanics.stack.StackPlacement
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CantBeCopiedComponent
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TargetsComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.effects.CopyForEachOtherPossibleTargetEffect
+import com.wingedsheep.sdk.scripting.effects.CopyForOtherPossibleTargetsEffect
 import com.wingedsheep.sdk.scripting.effects.CopyTargetSpellEffect
+import com.wingedsheep.sdk.scripting.effects.PossibleTargetCopies
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import kotlin.reflect.KClass
 
 /**
- * Executor for [CopyForEachOtherPossibleTargetEffect] — CR 707.10d, the Zada / Mirrorwing Dragon /
+ * Executor for [CopyForOtherPossibleTargetsEffect] — CR 707.10d, the Zada / Mirrorwing Dragon /
  * Agrus Kos shape: copy a spell or ability once for each *other* object it could target, each copy
  * auto-assigned a distinct one of those objects.
  *
@@ -52,21 +58,26 @@ import kotlin.reflect.KClass
  * simultaneously-created copies — so they go on in battlefield order rather than costing the player a
  * decision.
  *
+ * With [PossibleTargetCopies.ONE_CHOSEN] (Beamsplitter Mage) the same candidate set is computed, but
+ * only one copy is made: aimed at the sole candidate, or — when there are several — at the one the
+ * copier picks from a board selection ([CopyForChosenPossibleTargetContinuation] resumes into
+ * [copyOnto]).
+ *
  * An object flagged can't-be-copied yields no copies at all.
  */
-class CopyForEachOtherPossibleTargetExecutor(
+class CopyForOtherPossibleTargetsExecutor(
     private val targetFinder: TargetFinder,
     private val predicateEvaluator: PredicateEvaluator
-) : EffectExecutor<CopyForEachOtherPossibleTargetEffect> {
+) : EffectExecutor<CopyForOtherPossibleTargetsEffect> {
 
-    override val effectType: KClass<CopyForEachOtherPossibleTargetEffect> =
-        CopyForEachOtherPossibleTargetEffect::class
+    override val effectType: KClass<CopyForOtherPossibleTargetsEffect> =
+        CopyForOtherPossibleTargetsEffect::class
 
     private val spellCopier = CopyTargetSpellExecutor(predicateEvaluator.amounts, targetFinder)
 
     override fun execute(
         state: GameState,
-        effect: CopyForEachOtherPossibleTargetEffect,
+        effect: CopyForOtherPossibleTargetsEffect,
         context: EffectContext
     ): EffectResult {
         // The object may have left the stack (countered, or it resolved before this trigger did), in
@@ -110,13 +121,58 @@ class CopyForEachOtherPossibleTargetExecutor(
         )
         if (candidates.isEmpty()) return EffectResult.success(state)
 
+        if (effect.selection == PossibleTargetCopies.ONE_CHOSEN && candidates.size > 1) {
+            val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
+            val copiedName = container.get<CardComponent>()?.name ?: "that spell"
+            val continuation = CopyForChosenPossibleTargetContinuation(
+                effect = effect,
+                effectContext = context,
+                originalId = originalId,
+                copierId = copierId,
+                candidates = candidates
+            )
+            return EffectResult.from(state.suspendForDecision({ decisionId ->
+                SelectCardsDecision(
+                    id = decisionId,
+                    playerId = copierId,
+                    prompt = "Choose the target for the copy of $copiedName",
+                    context = DecisionContext(sourceId = context.sourceId, sourceName = sourceName),
+                    options = candidates,
+                    minSelections = 1,
+                    maxSelections = 1,
+                    useTargetingUI = true
+                )
+            }, continuation))
+        }
+
+        val copyTargets = if (effect.selection == PossibleTargetCopies.ONE_CHOSEN) candidates.take(1) else candidates
+        return copyOnto(state, effect, context, originalId, copierId, copyTargets)
+    }
+
+    /**
+     * Put one copy of [originalId] on the stack per entry of [copyTargets], each filling every target
+     * slot with that object, then add any copies a copy-count replacement (Twinning Staff) asks for.
+     */
+    fun copyOnto(
+        state: GameState,
+        effect: CopyForOtherPossibleTargetsEffect,
+        context: EffectContext,
+        originalId: EntityId,
+        copierId: EntityId,
+        copyTargets: List<EntityId>
+    ): EffectResult {
+        val container = state.getEntity(originalId) ?: return EffectResult.success(state)
+        val isAbility = container.has<TriggeredAbilityOnStackComponent>() ||
+            container.has<ActivatedAbilityOnStackComponent>()
+        val requirements = container.get<TargetsComponent>()?.targetRequirements ?: emptyList()
+
         var currentState = state
         val allEvents = mutableListOf<GameEvent>()
-        candidates.forEachIndexed { index, candidateId ->
+        copyTargets.forEachIndexed { index, candidateId ->
             val copyResult = if (isAbility) {
                 pushAbilityCopy(currentState, container, originalId, copierId, candidateId, requirements)
             } else {
-                pushSpellCopy(currentState, container, originalId, copierId, candidateId, requirements, index, candidates.size)
+                pushSpellCopy(currentState, container, originalId, copierId, candidateId, requirements, index, copyTargets.size)
             }
             if (copyResult.outcome is Outcome.Done) {
                 currentState = copyResult.newState
@@ -128,8 +184,8 @@ class CopyForEachOtherPossibleTargetExecutor(
         // adds copies to it. Those aren't aimed at a candidate: each is an ordinary copy of the
         // original, keeping its targets unless the copier chooses new ones.
         val additional = if (isAbility) 0 else KeywordActionAmountModifier.copySpell(
-            state, copierId, originalId, candidates.size, predicateEvaluator
-        ) - candidates.size
+            state, copierId, originalId, copyTargets.size, predicateEvaluator
+        ) - copyTargets.size
         if (additional > 0) {
             val extra = spellCopier.copySpellTimes(
                 currentState, CopyTargetSpellEffect(target = effect.target), context.copy(controllerId = copierId),
@@ -143,7 +199,7 @@ class CopyForEachOtherPossibleTargetExecutor(
 
     private fun candidatesFor(
         state: GameState,
-        effect: CopyForEachOtherPossibleTargetEffect,
+        effect: CopyForOtherPossibleTargetsEffect,
         requirements: List<TargetRequirement>,
         targetsComponent: TargetsComponent?,
         copierId: EntityId,

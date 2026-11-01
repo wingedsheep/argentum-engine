@@ -75,7 +75,7 @@ class CopyTargetSpellExecutor(
     /**
      * Put [copyCount] copies of [spellEntityId] on the stack under `context.controllerId`, each of
      * which may be given new targets — the body of "copy target spell", after the count (and any
-     * copy-count replacement) is settled. [CopyForEachOtherPossibleTargetExecutor] calls it for the
+     * copy-count replacement) is settled. [CopyForOtherPossibleTargetsExecutor] calls it for the
      * additional copies a replacement adds to its own auto-targeted ones, so it must not resize again.
      */
     internal fun copySpellTimes(

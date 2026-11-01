@@ -367,6 +367,95 @@
     ]
 }
 
+// Beamsplitter Mage
+{
+    "name": "Beamsplitter Mage",
+    "manaCost": "{U}{R}",
+    "typeLine": "Creature — Vedalken Wizard",
+    "oracleText": "Whenever you cast an instant or sorcery spell that targets only this creature, if you control one or more other creatures that spell could target, choose one of those creatures. Copy that spell. The copy targets the chosen creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Beamsplitter Mage:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    },
+                    "requires": [
+                        "SpellTargetsOnlySource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CopyForOtherPossibleTargets",
+                    "candidates": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "selection": "ONE_CHOSEN"
+                },
+                "descriptionOverride": "Whenever you cast an instant or sorcery spell that targets only this creature, if you control one or more other creatures that spell could target, choose one of those creatures. Copy that spell. The copy targets the chosen creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "155",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "The Izzet love replicating results.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8f1801f2-ea6e-4196-858e-2afc456cf6a0.jpg?1783934141",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "The ability triggers whenever you cast an instant or sorcery spell that targets only Beamsplitter Mage and no other object or player, and only if you control another creature that spell could target. If you cast an instant or sorcery spell that has multiple targets and Beamsplitter Mage is chosen as the target in each instance, Beamsplitter Mage's ability will trigger."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If you don't control another creature the spell could target as Beamsplitter Mage's triggered ability resolves, you don't copy that spell."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If Beamsplitter Mage leaves the battlefield or becomes an illegal target for the spell that caused its ability to trigger, that spell is still copied."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If you copy a spell, you control the copy. It will resolve before the original spell does."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "The copy is created on the stack, so it's not cast. Abilities that trigger when a player casts a spell (like Beamsplitter Mage's ability itself) won't trigger."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If the spell that's copied is modal (that is, it says \"Choose one —\" or the like), the copy will have the same mode. A different mode cannot be chosen."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If the spell that's copied has an X whose value was determined as it was cast (like Selective Snare does), the copy has the same value of X."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Beast Whisperer
 {
     "name": "Beast Whisperer",

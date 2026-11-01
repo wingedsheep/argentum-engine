@@ -30,7 +30,7 @@
                         }
                     },
                     "then": {
-                        "type": "CopyForEachOtherPossibleTarget",
+                        "type": "CopyForOtherPossibleTargets",
                         "target": "TargetingSource",
                         "candidates": {
                             "cardPredicates": [

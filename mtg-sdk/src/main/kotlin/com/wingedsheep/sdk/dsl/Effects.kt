@@ -5933,10 +5933,32 @@ object Effects {
         target: EffectTarget = EffectTarget.TriggeringEntity,
         copier: Player = Player.You
     ): Effect =
-        com.wingedsheep.sdk.scripting.effects.CopyForEachOtherPossibleTargetEffect(
+        com.wingedsheep.sdk.scripting.effects.CopyForOtherPossibleTargetsEffect(
             target = target,
             candidates = candidates,
             copier = copier
+        )
+
+    /**
+     * Choose one **other** object matching [candidates] that [target] could target, then copy
+     * [target] once with the chosen object filling every target slot (the CR 707.10d legality
+     * rules of [CopyForEachOtherPossibleTarget], one copy instead of one per object). The copier is
+     * prompted only when more than one object qualifies; none qualifying makes no copy.
+     *
+     * Models Beamsplitter Mage: "if you control one or more other creatures that spell could
+     * target, choose one of those creatures. Copy that spell. The copy targets the chosen
+     * creature."
+     */
+    fun CopyForChosenOtherPossibleTarget(
+        candidates: GameObjectFilter,
+        target: EffectTarget = EffectTarget.TriggeringEntity,
+        copier: Player = Player.You
+    ): Effect =
+        com.wingedsheep.sdk.scripting.effects.CopyForOtherPossibleTargetsEffect(
+            target = target,
+            candidates = candidates,
+            copier = copier,
+            selection = com.wingedsheep.sdk.scripting.effects.PossibleTargetCopies.ONE_CHOSEN
         )
 
     /**

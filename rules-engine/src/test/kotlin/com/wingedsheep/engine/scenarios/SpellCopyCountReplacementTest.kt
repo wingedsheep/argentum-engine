@@ -6,7 +6,7 @@ import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.TargetFinder
-import com.wingedsheep.engine.handlers.effects.stack.CopyForEachOtherPossibleTargetExecutor
+import com.wingedsheep.engine.handlers.effects.stack.CopyForOtherPossibleTargetsExecutor
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.identity.CopyOfComponent
 import com.wingedsheep.engine.state.components.stack.TargetsComponent
@@ -24,7 +24,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.ModifyKeywordActionAmount
-import com.wingedsheep.sdk.scripting.effects.CopyForEachOtherPossibleTargetEffect
+import com.wingedsheep.sdk.scripting.effects.CopyForOtherPossibleTargetsEffect
 import com.wingedsheep.sdk.scripting.effects.CopyRecipient
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -240,9 +240,9 @@ class SpellCopyCountReplacementTest : FunSpec({
         val original = d.cast(ping.name, listOf(ChosenTarget.Permanent(aimed)))
 
         val predicates = PredicateEvaluator(cardRegistry = d.cardRegistry)
-        val result = CopyForEachOtherPossibleTargetExecutor(TargetFinder(predicates), predicates).execute(
+        val result = CopyForOtherPossibleTargetsExecutor(TargetFinder(predicates), predicates).execute(
             d.state,
-            CopyForEachOtherPossibleTargetEffect(
+            CopyForOtherPossibleTargetsEffect(
                 target = EffectTarget.ContextTarget(0),
                 candidates = GameObjectFilter.Creature.youControl()
             ),

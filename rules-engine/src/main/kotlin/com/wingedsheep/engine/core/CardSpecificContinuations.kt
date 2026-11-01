@@ -471,6 +471,20 @@ data class StormCopyTargetContinuation(
 ) : AnswerContinuation
 
 /**
+ * Resume a [com.wingedsheep.sdk.scripting.effects.CopyForOtherPossibleTargetsEffect] with
+ * `selection = ONE_CHOSEN` (Beamsplitter Mage) once the copier has picked which of [candidates] the
+ * single copy of [originalId] targets.
+ */
+@Serializable
+data class CopyForChosenPossibleTargetContinuation(
+    val effect: com.wingedsheep.sdk.scripting.effects.CopyForOtherPossibleTargetsEffect,
+    val effectContext: com.wingedsheep.engine.handlers.EffectContext,
+    val originalId: EntityId,
+    val copierId: EntityId,
+    val candidates: List<EntityId>
+) : AnswerContinuation
+
+/**
  * Resume copying a list of targeted spells one at a time (CR 707.10).
  *
  * Used by [com.wingedsheep.sdk.scripting.effects.CopyEachTargetSpellEffect] (Display of

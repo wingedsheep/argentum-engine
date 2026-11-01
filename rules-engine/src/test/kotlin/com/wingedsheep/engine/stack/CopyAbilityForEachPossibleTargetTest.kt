@@ -37,7 +37,7 @@ import io.kotest.matchers.shouldBe
  *
  *  - the `targetsOnlyIt` axis on the becomes-target trigger — "becomes the target of an ability that
  *    targets only it": every chosen target of the ability (players included) must be the observer;
- *  - [com.wingedsheep.sdk.scripting.effects.CopyForEachOtherPossibleTargetEffect] on an **ability**
+ *  - [com.wingedsheep.sdk.scripting.effects.CopyForOtherPossibleTargetsEffect] on an **ability**
  *    (CR 707.10d): one copy per other creature the copier controls that the ability could target,
  *    each copy filling every target slot with its one creature, all copies controlled by the copier
  *    whoever controlled the original.

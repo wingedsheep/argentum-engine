@@ -1078,7 +1078,8 @@ data class CopyTargetSpellEffect(
 
 /**
  * Copy a spell or ability once **for each other object it could target** (CR 707.10d), auto-assigning
- * every copy a distinct one of those objects as its target. Models the Zada family:
+ * every copy a distinct one of those objects as its target — or, with [selection] `ONE_CHOSEN`, once
+ * for the one such object the copier chooses. Models the Zada family:
  *
  *  - Zada, Hedron Grinder — "copy it for each other creature you control that the spell could target"
  *  - Mirrorwing Dragon — "that player copies that spell for each other creature they control that
@@ -1086,7 +1087,8 @@ data class CopyTargetSpellEffect(
  *  - Agrus Kos, Eternal Soldier — "copy that ability for each other creature you control that ability
  *    could target"
  *
- * This is the 707.10d shape, not the 707.10c one: **no player decision is involved.** Contrast
+ * This is the 707.10d shape, not the 707.10c one: **no retarget decision is involved** (only
+ * `ONE_CHOSEN`'s pick of which candidate, made from the board's legal set). Contrast
  * [CopyTargetSpellEffect] with a `copies` count, which makes N copies and pauses so the controller
  * *may choose* new targets for each — here both the number of copies and each copy's target fall out
  * of the board, so the copies go straight onto the stack.
@@ -1106,27 +1108,53 @@ data class CopyTargetSpellEffect(
  * seat and is [Player.TriggeringPlayer], the caster. Either way `GameObjectFilter.Creature.youControl()`
  * reads as "creature the copier controls".
  *
+ * [selection] says how many of the candidates get a copy. [PossibleTargetCopies.EACH] is the Zada
+ * family above; [PossibleTargetCopies.ONE_CHOSEN] is Beamsplitter Mage's "choose one of those
+ * creatures. Copy that spell. The copy targets the chosen creature." — the copier picks one candidate
+ * (no prompt when there is only one) and gets a single copy aimed at it.
+ *
  * An object flagged "can't be copied" yields no copies.
  *
  * @property target The spell or ability to copy — [EffectTarget.TriggeringEntity] for "copy that
  *   spell", [EffectTarget.TargetingSource] for "copy that ability" in a becomes-the-target trigger.
- * @property candidates Which objects the copies are distributed over, one copy each.
+ * @property candidates Which objects the copies are aimed at, one copy each.
  * @property copier Who copies: controls the copies, and the reference player for [candidates].
+ * @property selection Every candidate gets a copy, or only the one the copier chooses.
  */
-@SerialName("CopyForEachOtherPossibleTarget")
+/** How many of a [CopyForOtherPossibleTargetsEffect]'s candidates get a copy. */
 @Serializable
-data class CopyForEachOtherPossibleTargetEffect(
+enum class PossibleTargetCopies {
+    /** One copy for each candidate (CR 707.10d — Zada, Mirrorwing Dragon, Agrus Kos). */
+    EACH,
+    /** The copier chooses one candidate; one copy targets it (Beamsplitter Mage). */
+    ONE_CHOSEN
+}
+
+@SerialName("CopyForOtherPossibleTargets")
+@Serializable
+data class CopyForOtherPossibleTargetsEffect(
     val target: EffectTarget = EffectTarget.TriggeringEntity,
     val candidates: GameObjectFilter,
-    val copier: Player = Player.You
+    val copier: Player = Player.You,
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val selection: PossibleTargetCopies = PossibleTargetCopies.EACH
 ) : Effect {
     override val description: String = buildString {
-        if (copier != Player.You) append("${copier.description.replaceFirstChar { it.uppercase() }} copies ")
-        else append("Copy ")
-        append(if (target == EffectTarget.TargetingSource) "that ability" else "that spell")
         // [candidates] reads "you" as the copier, so another copier is "they".
         val phrase = TargetFilter(candidates).targetPhrase()
         val candidateText = if (copier == Player.You) phrase else phrase.replace("you control", "they control")
+        val copied = if (target == EffectTarget.TargetingSource) "that ability" else "that spell"
+        if (selection == PossibleTargetCopies.ONE_CHOSEN) {
+            append("Choose another $candidateText $copied could target. ")
+            append(if (copier != Player.You) "${copier.description.replaceFirstChar { it.uppercase() }} copies " else "Copy ")
+            append(copied)
+            append(". The copy targets the chosen one")
+            return@buildString
+        }
+        if (copier != Player.You) append("${copier.description.replaceFirstChar { it.uppercase() }} copies ")
+        else append("Copy ")
+        append(copied)
         append(" for each other $candidateText it could target")
     }
 
