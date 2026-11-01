@@ -622,11 +622,10 @@ class TriggerMatcher(
                 // detectTapBatchTriggers — never once per event here.
                 if (trigger.batch) return false
                 if (binding == TriggerBinding.SELF && event.entityId != sourceId) return false
-                // "… becomes tapped **to pay a teamwork cost**" — only a tap the engine classified
-                // with that cause counts. A null asks for no particular cause and matches every tap,
-                // which is what every cause-agnostic "becomes tapped" trigger keeps meaning.
-                val reason = trigger.reason
-                if (reason != null && event.reason != reason) return false
+                // "… becomes tapped **to pay a teamwork cost**" / "…, **if it isn't being declared as
+                // an attacker**" — the tap's classified cause against the pattern's cause axes. Null
+                // axes ask for no particular cause and match every tap.
+                if (!trigger.matchesCause(event.reason)) return false
                 // "… if it's the **first time** that permanent has become tapped this turn" — the
                 // per-permanent window, computed on the event by `tap()` before it stamped this tap.
                 if (trigger.firstTimeEachTurn && !event.firstThisTurn) return false

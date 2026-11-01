@@ -369,10 +369,15 @@ class ObjectTriggerSubject internal constructor(
      * "becomes tapped". [reason] restricts why ([TapReason.TEAMWORK] — "to pay a teamwork cost",
      * CR 702.194a); [firstTimeEachTurn] is per *permanent* ("if it's the first time that creature has
      * become tapped this turn"), not per ability — that is `oncePerTurn`. The "one or more … become
-     * tapped" batch is [BatchTriggerSubject.becomeTapped].
+     * tapped" batch is [BatchTriggerSubject.becomeTapped]. [exceptReason] excludes one cause
+     * ([TapReason.ATTACK] — "if it isn't being declared as an attacker", Verity Circle).
      */
-    fun becomesTapped(reason: TapReason? = null, firstTimeEachTurn: Boolean = false): TriggerSpec =
-        spec(TapEvent(filter = filter, reason = reason, firstTimeEachTurn = firstTimeEachTurn))
+    fun becomesTapped(
+        reason: TapReason? = null,
+        firstTimeEachTurn: Boolean = false,
+        exceptReason: TapReason? = null,
+    ): TriggerSpec =
+        spec(TapEvent(filter = filter, reason = reason, firstTimeEachTurn = firstTimeEachTurn, exceptReason = exceptReason))
 
     /** "becomes untapped". */
     fun becomesUntapped(): TriggerSpec = spec(UntapEvent(filter = filter))
@@ -837,9 +842,9 @@ class BatchTriggerSubject internal constructor(
      * "become tapped". A batch mixing causes is narrowed to the taps matching [reason], not
      * discarded. There is no first-time-each-turn rider: it's per-permanent and has no batch reading.
      */
-    fun becomeTapped(reason: TapReason? = null): TriggerSpec {
+    fun becomeTapped(reason: TapReason? = null, exceptReason: TapReason? = null): TriggerSpec {
         noOther("becomeTapped")
-        return spec(TapEvent(filter = filter, batch = true, reason = reason))
+        return spec(TapEvent(filter = filter, batch = true, reason = reason, exceptReason = exceptReason))
     }
 
     /**

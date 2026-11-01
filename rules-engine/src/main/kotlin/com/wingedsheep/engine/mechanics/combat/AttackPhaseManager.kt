@@ -42,6 +42,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.engine.mechanics.battle.Battles
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.sdk.scripting.TapReason
 
 /**
  * Handles the declare attackers step of combat.
@@ -201,7 +202,7 @@ internal class AttackPhaseManager(
         for (attacker in attackers.keys) {
             // Vigilance, or a rule modification saying attacking doesn't tap it (Johan).
             if (!projected.hasKeyword(attacker, Keyword.VIGILANCE) && !projected.attacksWithoutTapping(attacker)) {
-                val (next, tapped) = tap(tappedState, attacker)
+                val (next, tapped) = tap(tappedState, attacker, reason = TapReason.ATTACK)
                 tappedState = next
                 events.addAll(tapped)
             }
