@@ -324,7 +324,7 @@
 {
     "name": "Arboreal Grazer",
     "manaCost": "{G}",
-    "typeLine": "Creature — Beast",
+    "typeLine": "Creature — Sloth Beast",
     "oracleText": "Reach\nWhen this creature enters, you may put a land card from your hand onto the battlefield tapped.",
     "creatureStats": {
         "power": 0,

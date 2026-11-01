@@ -9,7 +9,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 
 /**
  * Arboreal Grazer — War of the Spark #149
- * {G} · Creature — Beast · 0/3
+ * {G} · Creature — Sloth Beast · 0/3
  *
  * Reach
  * When this creature enters, you may put a land card from your hand onto the battlefield tapped.
@@ -17,7 +17,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 val ArborealGrazer = card("Arboreal Grazer") {
     manaCost = "{G}"
     colorIdentity = "G"
-    typeLine = "Creature — Beast"
+    typeLine = "Creature — Sloth Beast"
     power = 0
     toughness = 3
     oracleText = "Reach\nWhen this creature enters, you may put a land card from your hand onto the battlefield tapped."
