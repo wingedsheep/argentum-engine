@@ -86,6 +86,32 @@ class GallopingLizrogScenarioTest : FunSpec({
         d.plusCounters(bare) shouldBe 0
     }
 
+    test("its own +1/+1 counters count among creatures you control") {
+        val d = driver()
+        val you = d.activePlayer!!
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val bears = d.putCreatureOnBattlefield(you, "Grizzly Bears")
+        d.setCounters(bears, CounterType.PLUS_ONE_PLUS_ONE, 1)
+
+        val card = d.putCardInHand(you, "Galloping Lizrog")
+        d.giveMana(you, Color.GREEN, 4)
+        d.giveMana(you, Color.BLUE, 1)
+        d.castSpell(you, card).outcome shouldBe Outcome.Done
+        d.bothPass() // Lizrog resolves; its trigger goes on the stack
+        val lizrog = d.findPermanent(you, "Galloping Lizrog")!!
+        d.setCounters(lizrog, CounterType.PLUS_ONE_PLUS_ONE, 2) // e.g. placed in response
+        d.bothPass() // the trigger resolves
+
+        val decision = d.pendingDecision.shouldBeInstanceOf<DistributeDecision>()
+        decision.targets shouldContainExactlyInAnyOrder listOf(bears, lizrog)
+        d.submitDecision(you, DistributionResponse(decision.id, mapOf(lizrog to 2, bears to 1)))
+
+        // 3 removed (2 of them its own), 6 put back: 2 - 2 + 6.
+        d.plusCounters(lizrog) shouldBe 6
+        d.plusCounters(bears) shouldBe 0
+    }
+
     test("removing none puts no counters on it") {
         val d = driver()
         val you = d.activePlayer!!

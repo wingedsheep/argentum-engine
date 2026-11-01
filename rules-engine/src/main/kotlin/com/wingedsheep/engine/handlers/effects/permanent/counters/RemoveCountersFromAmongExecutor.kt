@@ -18,7 +18,7 @@ import kotlin.reflect.KClass
 
 /**
  * Executor for [RemoveCountersFromAmongEffect] — "you may remove any number of +1/+1 counters from
- * among other creatures you control" (Galloping Lizrog).
+ * among creatures you control" (Galloping Lizrog).
  *
  * Resolves the filtered group on the battlefield (projected state), keeps the permanents carrying at
  * least one counter of the kind, and asks the controller one [DistributeDecision] over them: each

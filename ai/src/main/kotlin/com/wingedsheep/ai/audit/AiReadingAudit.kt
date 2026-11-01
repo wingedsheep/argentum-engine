@@ -656,7 +656,8 @@ object AiReadingAudit {
         // "Remove any number of counters from among creatures you control" (Galloping Lizrog) takes
         // counters off its controller's own permanents to pay for a payoff beside it (the doubled
         // counters, read on their own leaf): no target, nothing to hold, and how many to move is the
-        // DistributeDecision the responder answers on the board. From among others' stays flagged.
+        // DistributeDecision answered at resolution (the responders fill every share, i.e. move every
+        // eligible counter, which suits a doubling payoff). From among others' stays flagged.
         if (leaf is RemoveCountersFromAmongEffect &&
             leaf.filter.controllerPredicate == ControllerPredicate.ControlledByYou
         ) return true
