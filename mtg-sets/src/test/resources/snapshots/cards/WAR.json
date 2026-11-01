@@ -2412,6 +2412,57 @@
     ]
 }
 
+// Charmed Stray
+{
+    "name": "Charmed Stray",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Cat",
+    "oracleText": "Lifelink\nWhen this creature enters, put a +1/+1 counter on each other creature you control named Charmed Stray.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Charmed Stray:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature name:Charmed Stray ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "artist": "Chris Rahn",
+        "flavorText": "\"There's something peculiar about the cats today.\"\n—Janoc, Tin Street tinker",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/357513b9-0505-4b67-9a29-36a705a175b1.jpg?1783933486"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Command the Dreadhorde
 {
     "name": "Command the Dreadhorde",
@@ -2863,6 +2914,123 @@
         "flavorText": "Shadows coiled around the witness's mind. Then the moment vanished, leaving only the sting of its loss.",
         "imageUri": "https://cards.scryfall.io/normal/front/0/9/09c8fe63-37a7-478d-b9ba-33a0f6519cf1.jpg?1783933451"
     },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Davriel, Rogue Shadowmage
+{
+    "name": "Davriel, Rogue Shadowmage",
+    "manaCost": "{2}{B}",
+    "typeLine": "Legendary Planeswalker — Davriel",
+    "oracleText": "At the beginning of each opponent's upkeep, if that player has one or fewer cards in hand, Davriel deals 2 damage to them.\n−1: Target player discards a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Davriel, Rogue Shadowmage:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "Count",
+                        "player": "TriggeringPlayer",
+                        "zone": "Hand"
+                    },
+                    "operator": "LTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Davriel, Rogue Shadowmage:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "TargetPlayer",
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Target player discards a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "83",
+        "rarity": "UNCOMMON",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5b1a44f0-1db8-406a-b7d9-f883f947f7bd.jpg?1783933448"
+    },
+    "startingLoyalty": 3,
     "colorIdentityOverride": [
         "BLACK"
     ]
@@ -4646,6 +4814,197 @@
     ]
 }
 
+// Finale of Eternity
+{
+    "name": "Finale of Eternity",
+    "manaCost": "{X}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy up to three target creatures with toughness X or less. If X is 10 or more, return all creature cards from your graveyard to the battlefield.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": "XValue",
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 10
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Graveyard",
+                                    "filter": "creature"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 3,
+                "optional": true,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "CompareNumericProperty",
+                                "property": "TOUGHNESS",
+                                "operator": "LTE",
+                                "amount": "XValue"
+                            }
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "91",
+        "rarity": "MYTHIC",
+        "artist": "Daarken",
+        "flavorText": "When you rule by fear, your greatest weakness is one who's no longer afraid.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/5/85c60177-8b71-4e24-87e7-395d5e4f93ff.jpg?1783933444",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "Finale of Eternity can target up to three creatures that each have toughness X or less. That is, their total toughness doesn't have to be X or less."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If some but not all of the target creatures you choose are illegal targets as Finale of Eternity resolves, the legal targets are still destroyed and, if X is 10 or more, you still return cards to the battlefield."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If some or all of the targets are legal targets but aren't destroyed, most likely because they have indestructible, you'll still return cards to the battlefield if X is 10 or more."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If you target a creature you own and X is 10 or more, that card will be among those returned to the battlefield."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "You may cast Finale of Eternity without choosing any target creatures. If X is 10 or more, you'll just return all creature cards from your graveyard to the battlefield. However, if you choose any targets and all of those targets become illegal before the spell tries to resolve, the spell won't resolve and you won't put any cards onto the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Finale of Glory
+{
+    "name": "Finale of Glory",
+    "manaCost": "{X}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create X 2/2 white Soldier creature tokens with vigilance. If X is 10 or more, also create X 4/4 white Angel creature tokens with flying and vigilance.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "count": "XValue",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Soldier"
+                    ],
+                    "keywords": [
+                        "VIGILANCE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/c/a/ca11c711-93fe-45ca-b393-3851148defc4.jpg?1783933355"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": "XValue",
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 10
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "CreateToken",
+                        "count": "XValue",
+                        "power": 4,
+                        "toughness": 4,
+                        "colors": [
+                            "WHITE"
+                        ],
+                        "creatureTypes": [
+                            "Angel"
+                        ],
+                        "keywords": [
+                            "FLYING",
+                            "VIGILANCE"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/b/1/b16b81e0-5525-4be3-96db-807146fdc5b3.jpg?1783933355"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "MYTHIC",
+        "artist": "Stanton Feng",
+        "flavorText": "The sky boiled over the citadel, dire and dark. Then the angels brought the dawn.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/c/4ccacb84-2b8e-40b8-8d53-d1b97bb2971f.jpg?1783933484"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Finale of Promise
 {
     "name": "Finale of Promise",
@@ -5069,6 +5428,204 @@
     ]
 }
 
+// Gideon Blackblade
+{
+    "name": "Gideon Blackblade",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Legendary Planeswalker — Gideon",
+    "oracleText": "During your turn, Gideon Blackblade is a 4/4 Human Soldier creature with indestructible that's still a planeswalker.\nPrevent all damage that would be dealt to Gideon Blackblade during your turn.\n+1: Up to one other target creature you control gains your choice of vigilance, lifelink, or indestructible until end of turn.\n−6: Exile target nonland permanent.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Gideon Blackblade:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "Vigilance until end of turn",
+                            "effect": {
+                                "type": "GrantKeyword",
+                                "keyword": "VIGILANCE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        },
+                        {
+                            "label": "Lifelink until end of turn",
+                            "effect": {
+                                "type": "GrantKeyword",
+                                "keyword": "LIFELINK",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        },
+                        {
+                            "label": "Indestructible until end of turn",
+                            "effect": {
+                                "type": "GrantKeyword",
+                                "keyword": "INDESTRUCTIBLE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Gideon Blackblade:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -6
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "nonland permanent"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantCardType",
+                    "cardType": "CREATURE"
+                },
+                "condition": "IsYourTurn"
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantSubtype",
+                    "subtype": "Human"
+                },
+                "condition": "IsYourTurn"
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantSubtype",
+                    "subtype": "Soldier"
+                },
+                "condition": "IsYourTurn"
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "SetBasePowerToughnessStatic",
+                    "power": 4,
+                    "toughness": 4,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "IsYourTurn"
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "IsYourTurn"
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "PreventDamage",
+                "restrictions": [
+                    "IsYourTurn"
+                ],
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": {
+                            "statePredicates": [
+                                "IsSource"
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "rarity": "MYTHIC",
+        "artist": "Viktor Titov",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/39d51c5e-26cb-4276-a676-fabfef866248.jpg?1783933482",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "If an effect causes Gideon to lose all abilities during your turn, he's still a Human Soldier creature and a Gideon planeswalker. This is because his first ability applies before that ability is lost."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If an Equipment becomes attached to Gideon while he's a creature, it'll become unattached during the next upkeep that isn't yours. The same is true of any Auras that become attached to Gideon that can't enchant a noncreature planeswalker."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Any counters that are put on Gideon remain on him while he's not a creature, even if they have no effect on a noncreature planeswalker."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If damage that can't be prevented is dealt to Gideon during your turn, that damage will have all applicable results: specifically, the damage is marked on Gideon (since he's a creature) and that damage causes that many loyalty counters to be removed from him (since he's a planeswalker). Even though he has indestructible, if Gideon has no loyalty counters on him, he's put into his owner's graveyard."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "You choose which ability the target creature gains as Gideon's first loyalty ability resolves, not as you activate it."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Gideon's Company
 {
     "name": "Gideon's Company",
@@ -5131,6 +5688,92 @@
         "flavorText": "\"For the Legion! For Ravnica!\"",
         "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0a64d2e-8b89-4642-84c2-b01dfe11312e.jpg",
         "inBooster": false
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Gideon's Triumph
+{
+    "name": "Gideon's Triumph",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Target opponent sacrifices a creature of their choice that attacked or blocked this turn. If you control a Gideon planeswalker, that player sacrifices two of those creatures of their choice instead.",
+    "script": {
+        "spellEffect": {
+            "type": "ForceSacrifice",
+            "filter": {
+                "cardPredicates": [
+                    "IsCreature"
+                ],
+                "statePredicates": [
+                    {
+                        "type": "StateOr",
+                        "predicates": [
+                            "AttackedThisTurn",
+                            "BlockedThisTurn"
+                        ]
+                    }
+                ]
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "dynamicCount": {
+                "type": "Conditional",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "planeswalker Gideon"
+                },
+                "ifTrue": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "ifFalse": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "rarity": "UNCOMMON",
+        "artist": "Kieran Yanner",
+        "flavorText": "His triumph came not from victory over his enemies, but from the salvation of those who survived.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d6610c6a-717f-406e-a49d-b6e548880946.jpg?1783933481",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "Gideon's Triumph can be cast after combat damage has been dealt. In this case, the target player chooses one or two creatures that attacked or blocked this turn and have survived combat damage."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "A creature that was put onto the battlefield attacking didn't attack, so it can't be sacrificed."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "A creature that attacked and was removed from combat (such as by Spires of Orazca) still attacked, so it can be sacrificed."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Gideon's Triumph targets the player, not the creature or creatures to be sacrificed. A creature with hexproof may be sacrificed this way."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Whether you control an appropriate planeswalker is checked only as the spell resolves."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -5507,6 +6150,119 @@
     ]
 }
 
+// God-Eternal Oketra
+{
+    "name": "God-Eternal Oketra",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Legendary Creature — Zombie God",
+    "oracleText": "Double strike\nWhenever you cast a creature spell, create a 4/4 black Zombie Warrior creature token with vigilance.\nWhen God-Eternal Oketra dies or is put into exile from the battlefield, you may put it into its owner's library third from the top.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 6
+    },
+    "keywords": [
+        "DOUBLE_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "God-Eternal Oketra:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie",
+                        "Warrior"
+                    ],
+                    "keywords": [
+                        "VIGILANCE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/2/e/2e06aa97-1611-4af6-8bad-32051927fcfd.jpg?1783933349"
+                },
+                "descriptionOverride": "Whenever you cast a creature spell, create a 4/4 black Zombie Warrior creature token with vigilance."
+            },
+            {
+                "id": "God-Eternal Oketra:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Put God-Eternal Oketra into its owner's library third from the top?"
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Library",
+                        "fromZone": "Graveyard",
+                        "positionFromTop": 2
+                    }
+                },
+                "descriptionOverride": "When God-Eternal Oketra dies, you may put it into its owner's library third from the top."
+            },
+            {
+                "id": "God-Eternal Oketra:3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Exile"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Put God-Eternal Oketra into its owner's library third from the top?"
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Library",
+                        "fromZone": "Exile",
+                        "positionFromTop": 2
+                    }
+                },
+                "descriptionOverride": "When God-Eternal Oketra is put into exile from the battlefield, you may put it into its owner's library third from the top."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "rarity": "MYTHIC",
+        "artist": "Grzegorz Rutkowski",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/df70f155-2336-421c-8a9d-69772d2b51a8.jpg?1783933481",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "Oketra's first triggered ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If the God's owner has two or fewer cards in their library, the God is put on the bottom of their library as its last ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // God-Eternal Rhonas
 {
     "name": "God-Eternal Rhonas",
@@ -5678,6 +6434,62 @@
         "artist": "Igor Kieryluk",
         "flavorText": "A dictator's infuriating smirk, an affront to everything Ravnica stood for.",
         "imageUri": "https://cards.scryfall.io/normal/front/7/d/7dce06ba-c1e1-45ec-82a7-fc10b0fa8870.jpg?1783933372"
+    }
+}
+
+// Grateful Apparition
+{
+    "name": "Grateful Apparition",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Flying\nWhenever this creature deals combat damage to a player or planeswalker, proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Grateful Apparition:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientAnyOf",
+                        "options": [
+                            {
+                                "type": "RecipientPlayer",
+                                "player": "Any"
+                            },
+                            {
+                                "type": "RecipientObject",
+                                "filter": "planeswalker"
+                            }
+                        ]
+                    }
+                },
+                "effect": "Proliferate"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "rarity": "UNCOMMON",
+        "artist": "Izzy",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/d/7dcb1f9d-105d-48c6-bd66-d7e8839de9e1.jpg?1783933482",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "You don't have to choose every permanent or player that has a counter, only the ones you want to add another counter to. Since \"any number\" includes zero, you don't have to choose any permanents at all, and you don't have to choose any players at all."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "If a player or permanent has more than one kind of counter on it, and you choose for it to get additional counters, it must get one of each kind of counter it already has. You can't have it get just one kind of counter it already has and not the others."
+            }
+        ]
     }
 }
 
@@ -8181,6 +8993,107 @@
     ]
 }
 
+// Liliana's Triumph
+{
+    "name": "Liliana's Triumph",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Each opponent sacrifices a creature of their choice. If you control a Liliana planeswalker, each opponent also discards a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForceSacrifice",
+                    "filter": "creature",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "planeswalker Liliana"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "player": "EachOpponent"
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "chooser": "Opponent",
+                                "storeSelected": "discarded",
+                                "prompt": "Choose 1 card to discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard",
+                                    "player": "EachOpponent"
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "98",
+        "rarity": "UNCOMMON",
+        "artist": "Kieran Yanner",
+        "flavorText": "Her triumph came not from escaping her death, but in claiming her independence.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/84803db8-fdb0-462b-92f6-33d591593d2d.jpg?1783933442",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "As Liliana's Triumph resolves, the opponent whose turn it is (or, if it's your turn, the next opponent in turn order) chooses a creature to sacrifice, then each other opponent in turn order does the same, knowing the choices made before them. Then all the chosen creatures are sacrificed at the same time. Then, if you control a Liliana planeswalker, in the same order, each opponent chooses a card in their hand without revealing it, and those cards are discarded at the same time."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "You can cast Liliana's Triumph even if some or all of your opponents will be unable to sacrifice a creature. If you control a Liliana planeswalker, they'll still discard a card, even if they couldn't sacrifice a creature."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Whether you control an appropriate planeswalker is checked only as the spell resolves."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Controlling more than one planeswalker of the appropriate type won't have any more of a benefit than just controlling one."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Liliana, Dreadhorde General
 {
     "name": "Liliana, Dreadhorde General",
@@ -8650,6 +9563,106 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Massacre Girl
+{
+    "name": "Massacre Girl",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Legendary Creature — Human Assassin",
+    "oracleText": "Menace\nWhen Massacre Girl enters, each other creature gets -1/-1 until end of turn. Whenever a creature dies this turn, each creature other than Massacre Girl gets -1/-1 until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Massacre Girl:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature",
+                                    "excludeSelf": true
+                                }
+                            },
+                            "body": {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": -1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": -1
+                                },
+                                "target": "IterationEntity"
+                            }
+                        },
+                        {
+                            "type": "CreateGlobalTriggeredAbility",
+                            "ability": {
+                                "id": "Massacre Girl:1",
+                                "trigger": {
+                                    "type": "ZoneChangeEvent",
+                                    "filter": "creature",
+                                    "from": "Battlefield",
+                                    "to": "Graveyard"
+                                },
+                                "binding": "ANY",
+                                "effect": {
+                                    "type": "ForEach",
+                                    "space": {
+                                        "type": "IterationSpace.Group",
+                                        "filter": {
+                                            "baseFilter": "creature",
+                                            "excludeSelf": true
+                                        }
+                                    },
+                                    "body": {
+                                        "type": "ModifyStats",
+                                        "powerModifier": {
+                                            "type": "Fixed",
+                                            "amount": -1
+                                        },
+                                        "toughnessModifier": {
+                                            "type": "Fixed",
+                                            "amount": -1
+                                        },
+                                        "target": "IterationEntity"
+                                    }
+                                }
+                            },
+                            "duration": "EndOfTurn",
+                            "descriptionOverride": "Whenever a creature dies this turn, each creature other than Massacre Girl gets -1/-1 until end of turn."
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Massacre Girl enters, each other creature gets -1/-1 until end of turn. Whenever a creature dies this turn, each creature other than Massacre Girl gets -1/-1 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "rarity": "RARE",
+        "artist": "Chris Rallis",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/e/be8ec9e1-2c8e-496d-9111-4d453b75b578.jpg?1783933441"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -10450,6 +11463,58 @@
     ]
 }
 
+// Price of Betrayal
+{
+    "name": "Price of Betrayal",
+    "manaCost": "{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Remove up to five counters from target artifact, creature, planeswalker, or opponent.",
+    "script": {
+        "spellEffect": {
+            "type": "RemoveAnyNumberOfCounters",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "maxTotal": {
+                "type": "Fixed",
+                "amount": 5
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPermanentOrPlayer",
+                "id": "t0",
+                "permanentFilter": {
+                    "baseFilter": "artifact|creature|planeswalker"
+                },
+                "descriptionOverride": "target artifact, creature, planeswalker, or opponent",
+                "opponentsOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "102",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Yee",
+        "flavorText": "The moment Liliana defied Nicol Bolas, her contract was broken, and her life was forfeit. But she was free to choose her fate, and she decided it was worth the price.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd68e918-5089-46c9-8836-b05a3da3c7a3.jpg?1783933440",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "Price of Betrayal has only one target. You may remove different kinds of counters from that one target, and you may also remove multiples of the same kind of counter from that one target."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Players don't normally have counters, but some cards in other sets say that a player \"gets\" a counter of a certain kind. Notably, emblems aren't counters."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Prismite
 {
     "name": "Prismite",
@@ -11926,6 +12991,56 @@
     }
 }
 
+// Spark Harvest
+{
+    "name": "Spark Harvest",
+    "manaCost": "{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "As an additional cost to cast this spell, sacrifice a creature or pay {3}{B}.\nDestroy target creature or planeswalker.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|planeswalker"
+                },
+                "id": "t0"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "OrPay",
+                "cost": {
+                    "type": "AdditionalAtom",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "creature"
+                    }
+                },
+                "alternativeManaCost": "{3}{B}"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "105",
+        "artist": "Kieran Yanner",
+        "flavorText": "With the harvest of Domri's spark, the Elderspell began to fuel Bolas's ascension to godhood.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/2013a138-f8e2-4a67-91e8-759288d985a7.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Spark Reaper
 {
     "name": "Spark Reaper",
@@ -13020,6 +14135,109 @@
     ]
 }
 
+// The Elderspell
+{
+    "name": "The Elderspell",
+    "manaCost": "{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy any number of target planeswalkers. Choose a planeswalker you control. Put two loyalty counters on it for each planeswalker destroyed this way.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy",
+                    "storeMovedAs": "moved1"
+                },
+                {
+                    "type": "StoreNumber",
+                    "name": "number2",
+                    "amount": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "VariableReference",
+                            "variableName": "moved1_count"
+                        },
+                        "multiplier": 2
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "ControlledPermanents",
+                        "filter": "planeswalker"
+                    },
+                    "storeAs": "gathered3"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered3",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected4",
+                    "prompt": "Choose a planeswalker you control to put loyalty counters on",
+                    "useTargetingUI": true
+                },
+                {
+                    "type": "AddCountersToCollection",
+                    "collectionName": "selected4",
+                    "counterType": "LOYALTY",
+                    "amount": {
+                        "type": "VariableReference",
+                        "variableName": "number2"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": "planeswalker"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "89",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "flavorText": "The path to power is often paved with atrocities.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a3b16625-7faf-4de6-abf7-d397988e32fb.jpg?1783933446",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "You choose the target planeswalkers to destroy as you cast The Elderspell, but you don't choose a planeswalker to receive loyalty counters until The Elderspell is resolving."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "You can cast The Elderspell without controlling any planeswalkers. The target planeswalkers will still be destroyed. You can also cast it without targeting any planeswalkers if you really want to do so."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Thunder Drake
 {
     "name": "Thunder Drake",
@@ -13392,6 +14610,97 @@
         "artist": "Wisnu Tan",
         "flavorText": "\"I've always said full war chests win wars, but I didn't mean by bashing enemy skulls with them.\"\n—Teysa",
         "imageUri": "https://cards.scryfall.io/normal/front/3/c/3c305ccb-62f5-496a-a205-e818e34ead82.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Toll of the Invasion
+{
+    "name": "Toll of the Invasion",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent reveals their hand. You choose a nonland card from it. That player discards that card.\nAmass Zombies 1. (Put a +1/+1 counter on an Army you control. It's also a Zombie. If you don't control an Army, create a 0/0 black Zombie Army creature token first.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "RevealHand",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "nonland",
+                    "storeSelected": "selected2",
+                    "prompt": "Choose a nonland card to discard",
+                    "showAllCards": true,
+                    "alwaysPrompt": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "moveType": "Discard"
+                },
+                {
+                    "type": "Amass",
+                    "subtype": "Zombie"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "artist": "Joe Slucher",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/4471c2a5-aa2c-47e2-8238-1eb366c8adc9.jpg?1783933438",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "You still amass 1 even if that player has no nonland cards to discard."
+            },
+            {
+                "date": "2023-06-16",
+                "text": "Some spells and abilities that amass Zombies may require targets. If each target chosen is an illegal target as that spell or ability tries to resolve, it won't resolve. You won't amass Zombies."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -14424,6 +15733,58 @@
     "startingLoyalty": 4,
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Vizier of the Scorpion
+{
+    "name": "Vizier of the Scorpion",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Zombie Wizard",
+    "oracleText": "When this creature enters, amass Zombies 1. (Put a +1/+1 counter on an Army you control. It's also a Zombie. If you don't control an Army, create a 0/0 black Zombie Army creature token first.)\nZombie tokens you control have deathtouch.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vizier of the Scorpion:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Amass",
+                    "subtype": "Zombie"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DEATHTOUCH",
+                "filter": {
+                    "baseFilter": "Zombie token ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "rarity": "UNCOMMON",
+        "artist": "Zack Stella",
+        "flavorText": "His blessing is a curse.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/2444c7dc-7aa1-4476-8660-19d26607306d.jpg?1783933436",
+        "rulings": [
+            {
+                "date": "2023-06-16",
+                "text": "Some cards that cause you to amass Zombies also provide bonuses to \"Zombie tokens.\" These affect any token that happens to be a Zombie, not just a Zombie Army you've amassed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
