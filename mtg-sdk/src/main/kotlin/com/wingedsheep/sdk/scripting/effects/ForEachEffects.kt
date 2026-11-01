@@ -320,6 +320,25 @@ fun ForEachPlayerCollectingEffect(
 )
 
 /**
+ * Run a sub-pipeline once per battlefield entity matching [filter] (snapshotted before any
+ * iteration, the visited entity bound as [EffectTarget.IterationEntity]) and append selected
+ * collection outputs across every iteration — the group twin of [ForEachPlayerCollectingEffect].
+ * [collectCollections] maps each body-local output name to the aggregate name exposed to
+ * following effects, so one follow-up acts on every member at once ("flip a coin for each
+ * creature … destroy each creature whose coin comes up tails": Rakdos, the Showstopper).
+ */
+@Suppress("FunctionName")
+fun ForEachInGroupCollectingEffect(
+    filter: GroupFilter,
+    effects: List<Effect>,
+    collectCollections: Map<String, String>
+): ForEachEffect = ForEachEffect(
+    IterationSpace.Group(filter),
+    effects.asBody(),
+    collectCollections
+)
+
+/**
  * Run [effect] once per entity in a named pipeline collection, with the current entity
  * bound as [EffectTarget.IterationEntity] (Fight or Flight). Lowers to [ForEachEffect]
  * over [IterationSpace.Collection].

@@ -11016,6 +11016,123 @@
     ]
 }
 
+// Rakdos, the Showstopper
+{
+    "name": "Rakdos, the Showstopper",
+    "manaCost": "{4}{B}{R}",
+    "typeLine": "Legendary Creature — Demon",
+    "oracleText": "Flying, trample\nWhen Rakdos enters, flip a coin for each creature that isn't a Demon, Devil, or Imp. Destroy each creature whose coin comes up tails.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING",
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rakdos, the Showstopper:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": {
+                                        "cardPredicates": [
+                                            "IsCreature",
+                                            {
+                                                "type": "NotSubtype",
+                                                "subtype": "Demon"
+                                            },
+                                            {
+                                                "type": "NotSubtype",
+                                                "subtype": "Devil"
+                                            },
+                                            {
+                                                "type": "NotSubtype",
+                                                "subtype": "Imp"
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "FlipCoins",
+                                        "count": 1,
+                                        "storeHeadsAs": "storedNumber1"
+                                    },
+                                    {
+                                        "type": "Gated",
+                                        "gate": {
+                                            "type": "Gate.WhenCondition",
+                                            "condition": {
+                                                "type": "Compare",
+                                                "left": {
+                                                    "type": "VariableReference",
+                                                    "variableName": "storedNumber1"
+                                                },
+                                                "operator": "EQ",
+                                                "right": {
+                                                    "type": "Fixed",
+                                                    "amount": 0
+                                                }
+                                            }
+                                        },
+                                        "then": {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "Entity",
+                                                "entity": "IterationEntity"
+                                            },
+                                            "storeAs": "entities2"
+                                        }
+                                    }
+                                ]
+                            },
+                            "collectCollections": {
+                                "entities2": "collected3"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "collected3",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Rakdos enters, flip a coin for each creature that isn't a Demon, Devil, or Imp. Destroy each creature whose coin comes up tails."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "199",
+        "rarity": "MYTHIC",
+        "artist": "Viktor Titov",
+        "flavorText": "\"Entertain me.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4e3c30c7-c52e-41a0-b7c2-21d39c05160b.jpg?1783933639"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Rally to Battle
 {
     "name": "Rally to Battle",
