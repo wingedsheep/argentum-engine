@@ -35,6 +35,8 @@ data class DraftPickAdviceRequest(
      * removal / archetype tables. Empty for engines that don't need it (the heuristic).
      */
     val setCodes: List<String> = emptyList(),
+    /** Drafters at the table, or null when unknown. Drives how much denying a bomb is worth. */
+    val podSize: Int? = null,
 )
 
 /** A single card's evaluation, surfaced as a badge + tooltip in the draft UI. */

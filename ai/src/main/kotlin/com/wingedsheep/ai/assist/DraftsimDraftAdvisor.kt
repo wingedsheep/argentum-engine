@@ -19,7 +19,7 @@ object DraftsimDraftAdvisor : DraftAdvisor {
         val scorer = DraftsimScorer(DraftsimData.tablesFor(request.setCodes))
         val pack = request.pack.map { it.toScorerCard() }
         val picks = request.pickedSoFar.map { it.toScorerCard() }
-        val scores = scorer.scoreBoosterAuto(pack, picks)
+        val scores = scorer.scoreBoosterAuto(pack, picks, request.podSize ?: 0)
 
         // Display normalization: scale totals to 0–100 relative to the pack's best pick.
         val maxTotal = scores.values.maxOfOrNull { it.total }?.takeIf { it > 0 } ?: 1.0
