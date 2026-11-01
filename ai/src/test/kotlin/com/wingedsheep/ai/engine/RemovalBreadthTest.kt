@@ -34,14 +34,26 @@ class RemovalBreadthTest : FunSpec({
         RemovalBreadth.isNarrow(card("Flashfires")) shouldBe true
         RemovalBreadth.isNarrow(card("Wrath of God")) shouldBe false
         RemovalBreadth.isNarrow(card("Pyroclasm")) shouldBe false
+        // A graveyard target answers nothing on the table — but that is no reason to discount it.
+        RemovalBreadth.answersOnTable(card("Coffin Purge")) shouldBe false
+        RemovalBreadth.isNarrow(card("Coffin Purge")) shouldBe false
+        RemovalBreadth.answersOnTable(card("Murder")) shouldBe true
+        // A counter for any spell is wide.
+        RemovalBreadth.isNarrow(card("Counterspell")) shouldBe false
         // Not removal at all.
         RemovalBreadth.of(card("Raging Goblin")) shouldBe 1.0
     }
 
-    test("a hoser fills no interaction slot") {
+    test("a hoser or a pinger fills no interaction slot") {
         CommanderDeckRoles.rolesOf(card("Execute")) shouldNotContain DeckRole.REMOVAL
         CommanderDeckRoles.rolesOf(card("Choking Sands")) shouldNotContain DeckRole.REMOVAL
         CommanderDeckRoles.rolesOf(card("Perish")) shouldNotContain DeckRole.REMOVAL
+        CommanderDeckRoles.rolesOf(card("Coffin Purge")) shouldNotContain DeckRole.REMOVAL
+        CommanderDeckRoles.rolesOf(card("Treasured Find")) shouldNotContain DeckRole.REMOVAL
+        CommanderDeckRoles.rolesOf(card("Counterspell")) shouldContain DeckRole.REMOVAL
+        // A one-damage pinger kills X/1s, not threats; Shock still counts.
+        CommanderDeckRoles.rolesOf(card("Thorn Thallid")) shouldNotContain DeckRole.REMOVAL
+        CommanderDeckRoles.rolesOf(card("Shock")) shouldContain DeckRole.REMOVAL
         CommanderDeckRoles.rolesOf(card("Murder")) shouldContain DeckRole.REMOVAL
         CommanderDeckRoles.rolesOf(card("Wrath of God")) shouldContain DeckRole.REMOVAL
     }

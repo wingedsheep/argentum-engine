@@ -98,8 +98,10 @@ internal object SynergyStrength {
         }
         for (static in script.staticAbilities.flatMap(::unwrap)) value += staticValue(static)
         for (ability in script.activatedAbilities) {
-            if (sacrificesNarrow(ability.cost)) {
-                value += LimitedCardRater.effectValue(ability.effect) * ACTIVATED_DISCOUNT
+            // Per card fed: Piper of the Swarm's steal costs three Rats, so each Rat buys a third.
+            val sacrificed = narrowSacrifices(ability.cost)
+            if (sacrificed > 0) {
+                value += LimitedCardRater.effectValue(ability.effect) * ACTIVATED_DISCOUNT / sacrificed
             }
         }
         return value
@@ -174,11 +176,12 @@ internal object SynergyStrength {
             }
         }.filterTo(mutableSetOf()) { it.value in CREATURE_TYPES }
 
-    private fun sacrificesNarrow(cost: AbilityCost): Boolean = when (cost) {
-        is AbilityCost.Atom -> (cost.atom as? CostAtom.Sacrifice)?.filter
-            ?.let { PrintedFilter.isNarrow(it, spells = false) == true } == true
-        is AbilityCost.Composite -> cost.costs.any(::sacrificesNarrow)
-        else -> false
+    /** How many permanents of a narrow kind [cost] sacrifices; 0 when it sacrifices none. */
+    private fun narrowSacrifices(cost: AbilityCost): Int = when (cost) {
+        is AbilityCost.Atom -> (cost.atom as? CostAtom.Sacrifice)
+            ?.takeIf { PrintedFilter.isNarrow(it.filter, spells = false) == true }?.count ?: 0
+        is AbilityCost.Composite -> cost.costs.sumOf(::narrowSacrifices)
+        else -> 0
     }
 
     private fun unwrap(ability: StaticAbility): List<StaticAbility> = when (ability) {

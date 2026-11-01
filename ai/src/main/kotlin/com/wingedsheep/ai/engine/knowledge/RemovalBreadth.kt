@@ -2,6 +2,7 @@ package com.wingedsheep.ai.engine.knowledge
 
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardSource
@@ -18,21 +19,23 @@ import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * How much of what an opponent might have on the battlefield a card's removal can actually aim at:
- * Murder hits every creature, Doom Blade all but the black ones, Execute only the white ones, and
- * Choking Sands no creature at all — it destroys a land.
+ * How much of what an opponent might have a card's answers can actually aim at: Murder hits every
+ * creature, Doom Blade all but the black ones, Execute only the white ones, Perish only the green
+ * ones, Choking Sands no creature at all (it destroys a land), and Coffin Purge nothing on the
+ * table (it exiles a card from a graveyard).
  *
- * Read off the target filters beside each removal effect, and the group a sweeper sweeps, matched against a fixed set of probe
- * permanents ([PrintedFilter]): a vanilla creature of each colour and colourless at three sizes,
- * plus an artifact, an enchantment and a planeswalker. [of] is the larger of the share of creature
- * probes and the share of noncreature probes the best removal slot can target — so a Naturalize,
- * which answers two of the three noncreature threats, is wide, and a hoser that names one colour
- * is narrow.
+ * Read off each removal or counterspell slot: the target filters beside it and the group a sweeper
+ * sweeps, matched ([PrintedFilter]) against a fixed set of probes — a vanilla creature of each
+ * colour and colourless at three sizes, plus an artifact, an enchantment and a planeswalker (for a
+ * counterspell's spell target, an instant and a sorcery instead of the planeswalker). A target in a
+ * graveyard, hand or library is no answer at all ([answersOnTable]). [of] is the larger of the creature share and the
+ * noncreature share for the widest slot, so Naturalize, which answers two of the three
+ * noncreature threats, is wide, and a hoser that names one colour is narrow.
  *
- * It fails open: a slot with no permanent target or swept group (an edict, "any target"), a filter the
- * probes can't read, and a predicate only a game can answer (tapped, attacking) all count as
- * reaching everything. Being wrong in that direction leaves a card where it was; the reading only
- * ever discounts a card whose filter plainly excludes most of the table.
+ * It fails open: a slot with no target or swept group (an edict, "any target"), a filter the probes
+ * can't read, and a predicate only a game can answer (tapped, attacking, "a spell that targets…")
+ * all count as reaching everything. Being wrong in that direction leaves a card where it was; the
+ * reading only ever discounts a card whose filter plainly excludes most of the table.
  *
  * Not [CardIntent.removalReach], which is how *big* a creature a damage spell kills; this is how
  * many *kinds* of permanent the removal may aim at.
@@ -48,32 +51,56 @@ object RemovalBreadth {
 
     /** 0–1, the breadth of [card]'s widest removal slot; 1.0 for a card with no removal. */
     fun of(card: CardDefinition): Double = cache.getOrPut(card.name) {
-        val scripts = listOf(card.script) + card.cardFaces.map { it.script }
-        scripts.flatMap(EffectWalker::slots)
-            .filter { isRemoval(it.effect) }
-            .maxOfOrNull(::ofSlot)
-            ?: 1.0
+        removalSlots(card).mapNotNull(::ofSlot).maxOrNull() ?: 1.0
     }
 
     /** Whether [card]'s removal is too narrow to count as an answer ([NARROW_BELOW]). */
     fun isNarrow(card: CardDefinition): Boolean = of(card) < NARROW_BELOW
 
     /**
-     * The breadth of one slot: the widest thing it aims across the table — a permanent target, or
-     * the group a sweeper sweeps ("destroy all white creatures") — or 1.0 when it names neither (a
-     * bound or untargeted effect, which this can't read).
+     * False when every removal slot of [card] aims only at cards off the table — Coffin Purge's
+     * "card in a graveyard", Treasured Find's own card — so whatever [IntentTag.REMOVAL] the
+     * analyzer reads off it answers nothing an opponent has in play. True when any slot aims at the
+     * table, and for a card whose removal sits outside the slots this reads.
      */
-    fun ofSlot(slot: EffectWalker.Slot): Double {
-        val aimed = slot.targets.filterIsInstance<TargetObject>().filterNot { ours(it.filter) }
-            .map { listOf(it.filter.baseFilter) + it.filter.alternatives.map { alt -> alt.baseFilter } }
-        val swept = EffectWalker.leaves(slot.effect).mapNotNull(::sweptGroup).filterNot(::ours).map { listOf(it) }
-        val reads = aimed + swept
-        if (reads.isEmpty()) return 1.0
-        return reads.maxOf(::breadth)
+    fun answersOnTable(card: CardDefinition): Boolean = onTable.getOrPut(card.name) {
+        val slots = removalSlots(card)
+        slots.isEmpty() || slots.any { ofSlot(it) != null }
     }
 
-    /** Whether [effect] takes a permanent away — what [IntentTag.REMOVAL] is read from. */
-    fun isRemoval(effect: Effect): Boolean = IntentTag.REMOVAL in CardIntentAnalyzer.analyzeEffect(effect).tags
+    private val onTable = ConcurrentHashMap<String, Boolean>()
+
+    private fun removalSlots(card: CardDefinition): List<EffectWalker.Slot> =
+        (listOf(card.script) + card.cardFaces.map { it.script }).flatMap(EffectWalker::slots).filter { isRemoval(it.effect) }
+
+    /**
+     * The breadth of one slot: the widest thing it aims across the table — a permanent target, a
+     * spell target, or the group a sweeper sweeps ("destroy all white creatures") — or 1.0 when it
+     * names none (a bound or untargeted effect, which this can't read). Null when it aims only at
+     * cards off the table (a graveyard, hand or library): there is no breadth to speak of, and the
+     * removal reading itself is suspect.
+     */
+    fun ofSlot(slot: EffectWalker.Slot): Double? {
+        val aimed = slot.targets.filterIsInstance<TargetObject>().filterNot { ours(it.filter) }
+        val swept = EffectWalker.leaves(slot.effect).mapNotNull(::sweptGroup).filterNot(::ours)
+        if (aimed.isEmpty() && swept.isEmpty()) return 1.0
+        val breadths = aimed.mapNotNull { target ->
+            val filters = listOf(target.filter.baseFilter) + target.filter.alternatives.map { it.baseFilter }
+            when (target.filter.zone) {
+                Zone.BATTLEFIELD -> breadth(filters, PERMANENT_PROBES)
+                Zone.STACK -> breadth(filters, SPELL_PROBES)
+                else -> null
+            }
+        } + swept.map { breadth(listOf(it), PERMANENT_PROBES) }
+        return breadths.maxOrNull()
+    }
+
+    /**
+     * Whether [effect] answers something — takes a permanent away ([IntentTag.REMOVAL]) or counters
+     * a spell ([IntentTag.COUNTERSPELL]).
+     */
+    fun isRemoval(effect: Effect): Boolean =
+        CardIntentAnalyzer.analyzeEffect(effect).tags.let { IntentTag.REMOVAL in it || IntentTag.COUNTERSPELL in it }
 
     /**
      * The battlefield group a sweeper iterates or gathers: Wrath of God's "for each creature",
@@ -87,13 +114,18 @@ object RemovalBreadth {
         else -> null
     }
 
-    /** The share of the probes any of [filters] can hit (a union: "creature or planeswalker"). */
-    private fun breadth(filters: List<GameObjectFilter>): Double {
+    /**
+     * The share of [probes] any of [filters] can hit (a union: "creature or planeswalker"): the
+     * larger of the creature share and the noncreature share.
+     */
+    private fun breadth(filters: List<GameObjectFilter>, probes: Probes): Double {
         fun hits(probe: CardDefinition): Boolean = filters.any { PrintedFilter.matches(probe, it) != false }
-        val creatures = CREATURE_PROBES.count(::hits).toDouble() / CREATURE_PROBES.size
-        val others = NONCREATURE_PROBES.count(::hits).toDouble() / NONCREATURE_PROBES.size
+        val creatures = probes.creatures.count(::hits).toDouble() / probes.creatures.size
+        val others = probes.others.count(::hits).toDouble() / probes.others.size
         return maxOf(creatures, others)
     }
+
+    private class Probes(val creatures: List<CardDefinition>, val others: List<CardDefinition>)
 
     private fun ours(filter: TargetFilter): Boolean = filter.alternatives.isEmpty() && ours(filter.baseFilter)
 
@@ -108,10 +140,27 @@ object RemovalBreadth {
         }
     }
 
-    /** The noncreature permanents removal is played to answer. */
-    private val NONCREATURE_PROBES: List<CardDefinition> = listOf(
-        CardDefinition.artifact("Breadth probe artifact", ManaCost.parse("{3}")),
-        CardDefinition.enchantment("Breadth probe enchantment", ManaCost.parse("{2}{G}")),
-        CardDefinition.planeswalker("Breadth probe planeswalker", ManaCost.parse("{3}{U}"), setOf(Subtype("Jace")), 4),
+    private val ARTIFACT = CardDefinition.artifact("Breadth probe artifact", ManaCost.parse("{3}"))
+    private val ENCHANTMENT = CardDefinition.enchantment("Breadth probe enchantment", ManaCost.parse("{2}{G}"))
+
+    /** The permanents removal is played to answer: creatures, plus the noncreature threats. */
+    private val PERMANENT_PROBES = Probes(
+        CREATURE_PROBES,
+        listOf(
+            ARTIFACT,
+            ENCHANTMENT,
+            CardDefinition.planeswalker("Breadth probe planeswalker", ManaCost.parse("{3}{U}"), setOf(Subtype("Jace")), 4),
+        ),
+    )
+
+    /** The spells a counterspell is played to answer: creature spells, plus the rest. */
+    private val SPELL_PROBES = Probes(
+        CREATURE_PROBES,
+        listOf(
+            ARTIFACT,
+            ENCHANTMENT,
+            CardDefinition.instant("Breadth probe instant", ManaCost.parse("{1}{U}"), ""),
+            CardDefinition.sorcery("Breadth probe sorcery", ManaCost.parse("{2}{B}"), ""),
+        ),
     )
 }

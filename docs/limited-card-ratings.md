@@ -90,7 +90,7 @@ how a format plays. It is the floor, not the goal.
 | AI deck from a tournament pool (`HeuristicDeckBuilder`) | `LimitedCardRater.rate` |
 | "Draftsim" Suggest Pick advisor | Draftsim tables only (rarity ladder for unrated cards) |
 | "Heuristic" Suggest Pick advisor (`LimitedPickScorer`) | Rarity and oracle-text keywords — no tables |
-| Constructed and Commander generators (`ConstructedRatings`) | Every manifest table merged, cube tables excluded; a narrow hoser keeps 60% of its rating, and fills no interaction slot |
+| Constructed and Commander generators (`ConstructedRatings`) | Every manifest table merged, cube tables excluded; a narrow hoser keeps 60% of its rating. A hoser, a one-damage pinger, or a card that only aims into a graveyard (Coffin Purge) fills no interaction slot |
 
 `LimitedCardRater.rate` chains the three sources: 17Lands, then any manifest table (so a reprint
 inherits its rating from wherever it was rated), then the heuristic.

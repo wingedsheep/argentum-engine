@@ -369,7 +369,9 @@ object LimitedCardRater {
      * its value: in a deck that doesn't know its opponent, the card is usually a cantrip.
      */
     private fun narrowDiscount(slot: EffectWalker.Slot): Double {
-        val breadth = RemovalBreadth.ofSlot(slot)
+        // A slot aiming only off the table (null) isn't removal to discount: the heuristic prices
+        // its graveyard or hand effect as whatever it is.
+        val breadth = RemovalBreadth.ofSlot(slot) ?: return 1.0
         if (breadth >= FULL_BREADTH) return 1.0
         if (!RemovalBreadth.isRemoval(slot.effect)) return 1.0
         return NARROWEST_SHARE + (1 - NARROWEST_SHARE) * breadth / FULL_BREADTH

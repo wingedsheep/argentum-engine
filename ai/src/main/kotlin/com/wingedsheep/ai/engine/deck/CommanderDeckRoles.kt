@@ -34,7 +34,8 @@ internal enum class DeckRole {
 
     /**
      * Answers something the opponents have: removal, a sweeper, a counterspell, a fight — one that
-     * can aim at most of the table, not a hoser ([RemovalBreadth.isNarrow]).
+     * can aim at most of the table, not a hoser ([RemovalBreadth.isNarrow]), and that kills more
+     * than an X/1.
      */
     REMOVAL,
 
@@ -43,6 +44,9 @@ internal enum class DeckRole {
 }
 
 internal object CommanderDeckRoles {
+
+    /** The smallest toughness a damage or -N/-N answer must kill to fill an interaction slot. */
+    private const val MIN_REMOVAL_REACH = 2
 
     private val INTERACTION = setOf(
         IntentTag.REMOVAL, IntentTag.EXILE_REMOVAL, IntentTag.SWEEPER,
@@ -62,8 +66,12 @@ internal object CommanderDeckRoles {
             // A ritual's mana is gone by end of turn; only a permanent's mana, or a land, ramps.
             if ((IntentTag.RAMP in tags && permanent) || landSearch(card) != null) add(DeckRole.RAMP)
             // A hoser — Execute's "white creature", Choking Sands' "non-Swamp land" — answers too
-            // little of what an unknown opponent plays to fill an interaction slot.
-            if (tags.any { it in INTERACTION } && !intent.targetsOnlyOurPermanents && !RemovalBreadth.isNarrow(card)) {
+            // little of what an unknown opponent plays to fill an interaction slot, and so does a
+            // one-damage pinger (Thorn Thallid, D'Avenant Archer): it kills X/1s, not threats.
+            if (tags.any { it in INTERACTION } && !intent.targetsOnlyOurPermanents && !RemovalBreadth.isNarrow(card) &&
+                RemovalBreadth.answersOnTable(card) &&
+                (intent.removalReach ?: Int.MAX_VALUE) >= MIN_REMOVAL_REACH
+            ) {
                 add(DeckRole.REMOVAL)
             }
             if (IntentTag.DRAW in tags && ((intent.cardsDrawn ?: 0) >= 2 || intent.repeatable)) add(DeckRole.DRAW)
