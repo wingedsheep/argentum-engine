@@ -381,8 +381,13 @@ object CardIntentAnalyzer {
     private fun effectTags(root: Effect): Set<IntentTag> =
         readingLeaves(root).flatMapTo(HashSet()) { tagsOf(it) } + pipelineTags(root)
 
-    /** What the gather → move pipelines in [root] add up to, which no single leaf of them says. */
-    private fun pipelineTags(root: Effect): Set<IntentTag> = digTags(root) + destroyAllTags(root)
+    /**
+     * What the gather → move pipelines in [root] add up to, which no single leaf of them says.
+     *
+     * Internal so [com.wingedsheep.ai.engine.LimitedCardRater] can price the same reading: its leaf
+     * fold sees a gather and a move, each worth nothing alone.
+     */
+    internal fun pipelineTags(root: Effect): Set<IntentTag> = digTags(root) + destroyAllTags(root)
 
     /**
      * "Destroy all creatures" — a gather of the battlefield moved to the graveyard by destruction or
@@ -487,6 +492,12 @@ object CardIntentAnalyzer {
     // ═════════════════════════════════════════════════════════════════════════
     // Effect → tags
     // ═════════════════════════════════════════════════════════════════════════
+
+    /**
+     * The tags one effect leaf reads as on its own, for [com.wingedsheep.ai.engine.LimitedCardRater]:
+     * a leaf the rater prices by its own fields (a -N/-N) asks here whether it is an answer.
+     */
+    internal fun leafTags(effect: Effect): Set<IntentTag> = tagsOf(effect)
 
     private fun tagsOf(effect: Effect): Set<IntentTag> = when (effect) {
         is MoveToZoneEffect -> when {

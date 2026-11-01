@@ -1,7 +1,9 @@
 package com.wingedsheep.ai.engine
 
 import com.wingedsheep.ai.draftsim.DraftsimData
+import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
 import com.wingedsheep.ai.engine.knowledge.EffectWalker
+import com.wingedsheep.ai.engine.knowledge.IntentTag
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
@@ -220,7 +222,7 @@ object LimitedCardRater {
         // The same slots [effectBonus] sums ([EffectWalker.slots]), numbered the way the AI-reading
         // audit numbers abilities — activated abilities count the mana ones they skip.
         fun slot(part: String, effect: Effect, origin: EffectWalker.Origin) {
-            val value = EffectWalker.fold(effect, LimitedScoreFold) * origin.discount
+            val value = slotValue(effect, origin)
             if (value != 0.0) add(Term(part, value, effect.description.takeIf { it.isNotBlank() }))
         }
         val script = card.script
@@ -342,9 +344,27 @@ object LimitedCardRater {
      * this rater's own.
      */
     private fun effectBonus(card: CardDefinition): Double =
-        EffectWalker.slots(card.script).sumOf { slot ->
-            EffectWalker.fold(slot.effect, LimitedScoreFold) * slot.origin.discount
-        }
+        EffectWalker.slots(card.script).sumOf { slotValue(it.effect, it.origin) }
+
+    /** One effect slot's worth: its leaves folded, plus what its pipelines add up to, discounted by origin. */
+    private fun slotValue(effect: Effect, origin: EffectWalker.Origin): Double =
+        (EffectWalker.fold(effect, LimitedScoreFold) + pipelineScore(effect)) * origin.discount
+
+    /**
+     * What the gather → move pipelines in a slot are worth. [EffectWalker] stops at pipeline stages,
+     * and a gather or a move is worth nothing alone, so "destroy all creatures" and "look at the top
+     * three, put one into your hand" scored zero. [CardIntentAnalyzer.pipelineTags] reads what the
+     * stages add up to; this prices that reading like the leaf it stands for — a wrath or a picked
+     * destroy like a destroy, a dig like one card drawn.
+     */
+    private fun pipelineScore(root: Effect): Double {
+        val tags = CardIntentAnalyzer.pipelineTags(root)
+        if (tags.isEmpty()) return 0.0
+        var score = 0.0
+        if (IntentTag.REMOVAL in tags) score += DESTROY_SCORE
+        if (IntentTag.DRAW in tags) score += DRAW_PER_CARD
+        return score
+    }
 
     /** How a limited rating folds an effect tree. See [EffectWalker.Fold]. */
     private object LimitedScoreFold : EffectWalker.Fold<Double> {
@@ -368,7 +388,7 @@ object LimitedCardRater {
         return when (effect) {
             // Removal — the most valuable effect type in limited
             is MoveToZoneEffect -> when {
-                effect.byDestruction -> 1.5               // destroy
+                effect.byDestruction -> DESTROY_SCORE     // destroy
                 effect.destination == Zone.EXILE -> 1.6    // exile (better than destroy)
                 effect.destination == Zone.HAND -> 0.8     // bounce
                 effect.destination == Zone.LIBRARY -> 1.0  // tuck
@@ -385,22 +405,15 @@ object LimitedCardRater {
             is PutOnLibraryPositionOfChoiceEffect -> 1.0    // tuck
 
             // Damage — removal or reach
-            is DealDamageEffect -> {
-                val amount = (effect.amount as? com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed)?.amount ?: 3
-                when {
-                    amount >= 5 -> 1.4
-                    amount >= 3 -> 1.2
-                    amount >= 2 -> 0.8
-                    else -> 0.4
-                }
-            }
+            is DealDamageEffect ->
+                damageScore((effect.amount as? com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed)?.amount ?: 3)
             is DividedDamageEffect -> 1.3
             is FightEffect -> 1.0
 
             // Card advantage
             is DrawCardsEffect -> {
                 val count = (effect.count as? com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed)?.amount ?: 1
-                count * 0.6
+                count * DRAW_PER_CARD
             }
             is DrawUpToEffect -> effect.maxCards * 0.4
 
@@ -411,11 +424,24 @@ object LimitedCardRater {
                 count * statValue * 0.5
             }
 
-            // Stat boosts
+            // A wrath spelled "for each creature: …" — [EffectWalker] stops at a ForEach, so price
+            // the analyzer's sweeper reading of it like the pipeline spelling (see [pipelineScore]).
+            is ForEachEffect ->
+                if (IntentTag.SWEEPER in CardIntentAnalyzer.leafTags(effect)) DESTROY_SCORE else 0.0
+
+            // Card selection — scry and surveil see cards but draw none
+            is ScryEffect -> (effect.count * SELECTION_PER_CARD).coerceAtMost(SELECTION_CAP)
+            is SurveilEffect -> (effect.count * SELECTION_PER_CARD).coerceAtMost(SELECTION_CAP)
+
+            // Stat boosts — or, as -N/-N on another creature, removal
             is ModifyStatsEffect -> {
-                val p = (effect.powerModifier as? com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed)?.amount ?: 0
-                val t = (effect.toughnessModifier as? com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed)?.amount ?: 0
-                (p + t) * 0.15
+                val p = (effect.powerModifier as? com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed)?.amount
+                val t = (effect.toughnessModifier as? com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed)?.amount
+                // A shrink the intent reader calls removal kills like damage to toughness: -N/-N is
+                // N damage, and a dynamic -X/-X (Death Wind, Defile) the unknown-X damage default.
+                // Summing it as stats priced Grasp of Darkness below a vanilla instant.
+                if (IntentTag.REMOVAL in CardIntentAnalyzer.leafTags(effect)) damageScore(t?.let { -it } ?: 3)
+                else ((p ?: 0) + (t ?: 0)) * 0.15
             }
 
             // Life gain — low value in limited
@@ -440,6 +466,21 @@ object LimitedCardRater {
             else -> 0.0
         }
     }
+
+    /** A removal spell dealing [amount] damage, or giving -[amount]/-[amount]. */
+    private fun damageScore(amount: Int): Double = when {
+        amount >= 5 -> 1.4
+        amount >= 3 -> 1.2
+        amount >= 2 -> 0.8
+        else -> 0.4
+    }
+
+    private const val DESTROY_SCORE = 1.5
+    private const val DRAW_PER_CARD = 0.6
+
+    /** Scry or surveil, per card looked at: a fraction of a draw, capped well below one. */
+    private const val SELECTION_PER_CARD = 0.1
+    private const val SELECTION_CAP = 0.3
 
     /**
      * Rarity bonus — rares and mythics tend to be more powerful.
