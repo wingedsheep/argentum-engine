@@ -148,6 +148,23 @@ object TargetSelection {
     }
 
     /**
+     * The ranking for one slot of a multi-slot action. [ranker] reads one polarity per action, so
+     * a slot whose own reading is [TargetPolarity.BENEFICIAL] beside a harmful one ("target creature
+     * you control deals damage equal to its power to target creature you don't control") would
+     * keep the removal ranking, which orders our own creatures worst first. That slot ranks our
+     * best first instead; every other slot keeps [actionRanker].
+     */
+    fun slotRanker(
+        state: GameState,
+        playerId: EntityId,
+        intents: IntentCatalog,
+        actionRanker: (EntityId) -> Double,
+        slotPolarity: TargetPolarity?,
+    ): (EntityId) -> Double =
+        if (slotPolarity == TargetPolarity.BENEFICIAL) { entityId -> -rank(state, entityId, playerId, intents) }
+        else actionRanker
+
+    /**
      * [TargetPolarity] of each of [action]'s target slots, in [targetInfosFor] order — or empty
      * when it cannot be read: no card knowledge, a choose-N modal spell whose modes are not yet
      * chosen, a face-down cast, or a definition whose requirements do not line up one-to-one with the slots
@@ -407,7 +424,7 @@ object TargetSelection {
                 counts += 0
                 continue
             }
-            val picks = pick(state, info, worth, rankTarget)
+            val picks = pick(state, info, worth, slotRanker(state, playerId, intents, rankTarget, slotPolarities.getOrNull(index)))
             if (picks.isEmpty()) {
                 return if (targetInfos.drop(index).all { it.minTargets == 0 }) {
                     finish()

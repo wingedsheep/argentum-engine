@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- #PRNUM Bites with its best creature: reads the source of a one-sided bite ("target creature you control deals damage equal to its power to target creature you don't control": Rabid Bite, Bite Down, Ram Through) as the creature it lends, and picks its strongest one instead of its weakest
 - #4235 Reads a pump scaled by a creature's power ("double target creature's power", "+X/+X where X is this creature's power": Bulk Up, Unleash Fury, Auriok Bladewarden) as a pump: aims it at its own creature instead of the opponent's, holds it as a combat trick, and reads "-X/-X where X is its power" as removal; drafts a heuristic-rated card with a dynamic +X pump (Wildwood Mentor) a little higher
 - #4232 Casts a protective trick (Fake Your Own Death, Feign Death, Blossoming Defense) in response to removal aimed at its creature instead of holding it for combat, and reads a granted "when this dies, return it to the battlefield" as protection
 - #4230 Reads amass (War of the Spark, Lord of the Rings) as making a creature token: aims removal at a permanent that amasses every turn (Dreadhorde Invasion) over an idle one, and values amass cards in drafts and on the board as token makers
