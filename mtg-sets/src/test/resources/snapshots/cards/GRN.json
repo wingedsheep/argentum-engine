@@ -255,6 +255,55 @@
     ]
 }
 
+// Attendant of Vraska
+{
+    "name": "Attendant of Vraska",
+    "manaCost": "{1}{B}{G}",
+    "typeLine": "Creature — Zombie Soldier",
+    "oracleText": "When this creature dies, if you control a Vraska planeswalker, you gain life equal to this creature's power.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Attendant of Vraska:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    }
+                },
+                "interveningIf": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "planeswalker Vraska"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "271",
+        "rarity": "UNCOMMON",
+        "artist": "Magali Villeneuve",
+        "flavorText": "When the Erstwhile were unearthed from their tombs, they became a ready-made army for Vraska.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f4840f1-3db3-4ba6-b75b-bbd87251a3af.jpg?1783934093"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Barrier of Bones
 {
     "name": "Barrier of Bones",
@@ -705,6 +754,85 @@
     ]
 }
 
+// Citywide Bust
+{
+    "name": "Citywide Bust",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy all creatures with toughness 4 or greater.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "creature tou>=4"
+                    },
+                    "storeAs": "destroyAll_gathered"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "destroyAll_gathered",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "rarity": "RARE",
+        "artist": "Victor Adame Minguez",
+        "flavorText": "\"Oh, you fellas are going to love the lockup. Excellent gruel. Very low ceilings.\"\n—Libuse, Boros sergeant",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a995200f-1e9d-4ff3-9e04-4a4309e0e09c.jpg?1783934204"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Collar the Culprit
+{
+    "name": "Collar the Culprit",
+    "manaCost": "{3}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target creature with toughness 4 or greater.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature tou>=4"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "artist": "Victor Adame Minguez",
+        "flavorText": "\"Reports of Gruul rioters in four districts. Start with the big ones and work your way up.\"\n—Libuse, Boros sergeant",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cdf305b7-d1f7-4770-9201-8f3fb6735cd9.jpg?1783934203"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Command the Storm
 {
     "name": "Command the Storm",
@@ -741,6 +869,223 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Conclave Cavalier
+{
+    "name": "Conclave Cavalier",
+    "manaCost": "{G}{G}{W}{W}",
+    "typeLine": "Creature — Centaur Knight",
+    "oracleText": "Vigilance\nWhen this creature dies, create two 2/2 green and white Elf Knight creature tokens with vigilance.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Conclave Cavalier:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "GREEN",
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Elf",
+                        "Knight"
+                    ],
+                    "keywords": [
+                        "VIGILANCE"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "161",
+        "rarity": "UNCOMMON",
+        "artist": "Tomasz Jedruszek",
+        "flavorText": "\"Just as leaves fall and the tree blooms again, one day I will fall and the Conclave will endure.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/6/b658a309-d14c-4e20-8c76-e7b3c5156bf2.jpg?1783934140"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
+// Conclave Guildmage
+{
+    "name": "Conclave Guildmage",
+    "manaCost": "{G}{W}",
+    "typeLine": "Creature — Elf Cleric",
+    "oracleText": "{G}, {T}: Creatures you control gain trample until end of turn.\n{5}{W}, {T}: Create a 2/2 green and white Elf Knight creature token with vigilance.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Conclave Guildmage:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{G}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "TRAMPLE",
+                        "target": "IterationEntity"
+                    }
+                }
+            },
+            {
+                "id": "Conclave Guildmage:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "GREEN",
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Elf",
+                        "Knight"
+                    ],
+                    "keywords": [
+                        "VIGILANCE"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Rainville",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/279e551d-3ac3-48d5-9822-1d05159c8905.jpg?1783934139"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
+// Conclave Tribunal
+{
+    "name": "Conclave Tribunal",
+    "manaCost": "{3}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Convoke (Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature's color.)\nWhen this enchantment enters, exile target nonland permanent an opponent controls until this enchantment leaves the battlefield.",
+    "keywords": [
+        "CONVOKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Conclave Tribunal:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ExileUntilLeaves",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "nonland permanent ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Conclave Tribunal:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "linked_return"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "linked_return",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "rarity": "UNCOMMON",
+        "artist": "Seb McKinnon",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9d9fda5d-df8f-45d6-b8f0-33f903c4bf83.jpg?1783934204"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -1318,6 +1663,80 @@
     ]
 }
 
+// Drowned Secrets
+{
+    "name": "Drowned Secrets",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you cast a blue spell, target player mills two cards.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Drowned Secrets:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "HasColor",
+                                "color": "BLUE"
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "rarity": "RARE",
+        "artist": "Alexander Forssberg",
+        "flavorText": "Beneath Ravnica's streets runs a layer of tunnels, then caverns and waterways, then terrors and nightmares.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bfc98428-7a0f-445f-9d48-eeb76c3e10d6.jpg?1783934187"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Electrostatic Field
 {
     "name": "Electrostatic Field",
@@ -1373,6 +1792,51 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Emmara, Soul of the Accord
+{
+    "name": "Emmara, Soul of the Accord",
+    "manaCost": "{G}{W}",
+    "typeLine": "Legendary Creature — Elf Cleric",
+    "oracleText": "Whenever Emmara becomes tapped, create a 1/1 white Soldier creature token with lifelink.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Emmara, Soul of the Accord:1",
+                "trigger": "TapEvent",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Soldier"
+                    ],
+                    "keywords": [
+                        "LIFELINK"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "168",
+        "rarity": "RARE",
+        "artist": "Mark Winters",
+        "flavorText": "\"Whatever hatred destroys, a single act of trust can revive.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/41b930ee-e16b-4612-87de-c03ecc6ff6db.jpg?1783934136"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
     ]
 }
 
@@ -2163,6 +2627,86 @@
     ]
 }
 
+// House Guildmage
+{
+    "name": "House Guildmage",
+    "manaCost": "{U}{B}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "{1}{U}, {T}: Target creature doesn't untap during its controller's next untap step.\n{2}{B}, {T}: Surveil 2. (Look at the top two cards of your library, then put any number of them into your graveyard and the rest on top of your library in any order.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "House Guildmage:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{U}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "DOESNT_UNTAP",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "UntilAfterAffectedControllersNextUntap"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            },
+            {
+                "id": "House Guildmage:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{B}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Surveil",
+                    "count": 2
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "177",
+        "rarity": "UNCOMMON",
+        "artist": "Winona Nelson",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/45ee7bc8-d5cf-47b1-93c2-7e1d5f536c85.jpg?1783934131"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Hunted Witness
 {
     "name": "Hunted Witness",
@@ -2320,6 +2864,61 @@
         "artist": "Even Amundsen",
         "flavorText": "There are two lives: the life you live before you see a unicorn, and the life you live after.",
         "imageUri": "https://cards.scryfall.io/normal/front/c/e/ce8b745e-1e62-4c54-9e73-e2d0a40568a0.jpg?1783934199"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Intrusive Packbeast
+{
+    "name": "Intrusive Packbeast",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "Vigilance\nWhen this creature enters, tap up to two target creatures your opponents control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Intrusive Packbeast:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "TapUntap",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 2,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "artist": "Jason Felix",
+        "flavorText": "Good at carrying things. Really good at knocking them down.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/49266f3c-4b43-4175-8bac-16789ba6f4b9.jpg?1783934198"
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -2709,6 +3308,58 @@
     ]
 }
 
+// Lava Coil
+{
+    "name": "Lava Coil",
+    "manaCost": "{1}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Lava Coil deals 4 damage to target creature. If that creature would die this turn, exile it instead.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "MarkExileOnDeath",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "rarity": "UNCOMMON",
+        "artist": "Wesley Burt",
+        "flavorText": "\"Commander, we caught the Dimir spy and took her ashes into custody.\"\n—Kramm, Wojek security officer",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f6135cf4-50c2-4e44-b9b0-96e1187a2200.jpg?1783934161"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Ledev Guardian
 {
     "name": "Ledev Guardian",
@@ -2729,6 +3380,92 @@
         "imageUri": "https://cards.scryfall.io/normal/front/c/b/cbeb4ae3-2a7a-44e1-923b-20c772fd1b8b.jpg?1783934198"
     },
     "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Legion Guildmage
+{
+    "name": "Legion Guildmage",
+    "manaCost": "{R}{W}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "{5}{R}, {T}: This creature deals 3 damage to each opponent.\n{2}{W}, {T}: Tap another target creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Legion Guildmage:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}{R}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            },
+            {
+                "id": "Legion Guildmage:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "187",
+        "rarity": "UNCOMMON",
+        "artist": "Zack Stella",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b03423b2-faca-4b2e-8328-8b9b7fdb7ce3.jpg?1783934128"
+    },
+    "colorIdentityOverride": [
+        "RED",
         "WHITE"
     ]
 }
@@ -3121,6 +3858,65 @@
     ]
 }
 
+// Murmuring Mystic
+{
+    "name": "Murmuring Mystic",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Whenever you cast an instant or sorcery spell, create a 1/1 blue Bird Illusion creature token with flying.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Murmuring Mystic:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Bird",
+                        "Illusion"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Winters",
+        "flavorText": "Rumors float through the city like crows, alighting on citizens seemingly at random.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5fc6adff-dcb3-456d-a8c2-0e77b784ff89.jpg?1783934187"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Muse Drake
 {
     "name": "Muse Drake",
@@ -3379,6 +4175,53 @@
     "colorIdentityOverride": [
         "RED",
         "BLUE"
+    ]
+}
+
+// Notion Rain
+{
+    "name": "Notion Rain",
+    "manaCost": "{1}{U}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Surveil 2, then draw two cards. Notion Rain deals 2 damage to you. (To surveil 2, look at the top two cards of your library, then put any number of them into your graveyard and the rest on top of your library in any order.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Surveil",
+                    "count": 2
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "You"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "193",
+        "artist": "Lius Lasahido",
+        "flavorText": "City air is a constant drizzle of private thoughts.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/4/f4db287e-34c1-459b-882d-3db58f13eade.jpg?1783934125"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 
@@ -4344,6 +5187,73 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Sprouting Renewal
+{
+    "name": "Sprouting Renewal",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Convoke (Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature's color.)\nChoose one —\n• Create a 2/2 green and white Elf Knight creature token with vigilance.\n• Destroy target artifact or enchantment.",
+    "keywords": [
+        "CONVOKE"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 2,
+                        "toughness": 2,
+                        "colors": [
+                            "GREEN",
+                            "WHITE"
+                        ],
+                        "creatureTypes": [
+                            "Elf",
+                            "Knight"
+                        ],
+                        "keywords": [
+                            "VIGILANCE"
+                        ]
+                    },
+                    "description": "Create a 2/2 green and white Elf Knight creature token with vigilance"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact|enchantment"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Destroy target artifact or enchantment"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "rarity": "UNCOMMON",
+        "artist": "James Paick",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/668232ab-5e58-49f3-804a-c938252ff177.jpg?1783934146"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 

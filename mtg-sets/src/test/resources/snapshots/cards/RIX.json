@@ -2080,6 +2080,47 @@
     ]
 }
 
+// Luminous Bonds
+{
+    "name": "Luminous Bonds",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature can't attack or block.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "CantBlock",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "artist": "Steve Argyle",
+        "flavorText": "\"Your part in this fight is done, vampire. Get used to your thirst.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2ca3a547-ef22-4b87-b90f-e8ffb42f73ac.jpg?1783935337"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Martyr of Dusk
 {
     "name": "Martyr of Dusk",
