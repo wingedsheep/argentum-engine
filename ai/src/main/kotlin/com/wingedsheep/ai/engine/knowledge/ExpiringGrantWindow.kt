@@ -315,6 +315,28 @@ internal object ExpiringGrantWindow {
         }
     }
 
+    /**
+     * Whether a **spell**'s whole payoff is keywords granted until end of turn — "target creature
+     * gains flying until end of turn" (Jump, Defy Gravity, Temur Battle Rage). Such a spell buys
+     * a keyword for a fight, and [canStillFight] knows when the turn has none left: cast at their
+     * end step or in our second main phase, it is a card thrown away (an AI that cast Jump on a
+     * Hill Giant at the opponent's end step). [castBuysNothing] reads it under
+     * [com.wingedsheep.ai.engine.AiProfile.refuseUnspendableGrants].
+     *
+     * Left out: a stat pump, which is [HoldPolicy]'s combat trick; a keyword-less evasion grant or an
+     * animation, whose fight [canStillFight] reads only for a creature already in play; and haste,
+     * whose payoff is lifting the summoning sickness [canStillFight] would count against it.
+     *
+     * Public for the AI card-reading audit, which asks it of the whole spell.
+     */
+    fun readsSpellKeywordGrant(effect: Effect): Boolean {
+        val payoffs = expiringPayoffs(effect, readShrinks = true) ?: return false
+        val grants = payoffs.filter { it.kind == PayoffKind.CREATURE }
+        return grants.isNotEmpty() && grants.all { it.keyword != null && it.keyword != HASTE && !it.animates }
+    }
+
+    private val HASTE = Keyword.HASTE.name
+
     /** Whether the same ability from the same source is already on the stack. */
     private fun selfGrantPending(state: GameState, sourceId: EntityId, ability: ActivatedAbility): Boolean =
         state.stack.any { stackId ->
@@ -351,6 +373,8 @@ internal object ExpiringGrantWindow {
         readBorrows: Boolean = false,
         /** Read an end-of-turn shrink — the reading this was added for. */
         readShrinks: Boolean = true,
+        /** Read a spell whose payoff is an end-of-turn keyword grant — see [readsSpellKeywordGrant]. */
+        readKeywordGrants: Boolean = false,
     ): Boolean = effects.isNotEmpty() && effects.all { effect ->
         nothingCanSpend(
             state, playerId, effect,
@@ -359,7 +383,7 @@ internal object ExpiringGrantWindow {
             sourceTaps = false,
             pendingSelfGrant = false,
             intents = intents,
-            readGrants = false,
+            readGrants = readKeywordGrants && readsSpellKeywordGrant(effect),
             readShrinks = readShrinks,
             readBorrows = readBorrows,
         )
@@ -486,8 +510,9 @@ internal object ExpiringGrantWindow {
     /**
      * Whether [effect] has an end-of-turn timing reading at all — every shape [holds] and
      * [castBuysNothing] can judge under some profile flag. With [creatureGrants] false the
-     * creature-grant kind is left out, which is what a *spell* gets: [castBuysNothing] never reads
-     * grants (a pump spell's reading is [HoldPolicy]'s combat-trick tag instead).
+     * creature-grant kind is left out, which is what a *spell* gets: [castBuysNothing] reads a
+     * grant only when the whole spell is one ([readsSpellKeywordGrant], which the audit asks of the
+     * spell); a pump spell's reading is [HoldPolicy]'s combat-trick tag instead.
      *
      * Read only by the AI card-reading audit (`just ai-reading-audit`); nothing decides on it.
      */
