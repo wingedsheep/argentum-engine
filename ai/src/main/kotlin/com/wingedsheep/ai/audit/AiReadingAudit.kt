@@ -31,6 +31,7 @@ import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
+import com.wingedsheep.sdk.scripting.effects.ScryEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
@@ -398,7 +399,9 @@ object AiReadingAudit {
      */
     private fun intent(root: Effect, sink: Sink) {
         val tags = CardIntentAnalyzer.analyzeEffect(root).tags
-        if (tags.isNotEmpty()) {
+        // Card selection alone doesn't read an ability: scry is a rider on half the cards that
+        // carry it, so a scry beside an unread payoff must not hide that payoff from the audit.
+        if ((tags - IntentTag.CARD_SELECTION).isNotEmpty()) {
             sink += Finding(Check.INTENT, read = true, reason = "knows what it's for: ${tags.sorted().joinToString(", ", transform = ::tagPhrase)}")
             return
         }
@@ -416,7 +419,9 @@ object AiReadingAudit {
         }
         // Every untagged step needed no tag: say so, so the ability reads as understood rather
         // than as one nobody asked about.
-        if (sink.findings.size == before) {
+        if (sink.findings.size == before && tags.isNotEmpty()) {
+            sink += Finding(Check.INTENT, read = true, reason = "knows what it's for: ${tags.sorted().joinToString(", ", transform = ::tagPhrase)}")
+        } else if (sink.findings.size == before) {
             sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, untaps, attaches or moves its own source, adds counters for its controller, damages a player, makes one lose life, or mills one")
         }
     }
@@ -571,6 +576,8 @@ object AiReadingAudit {
         // Life loss always lands on a player, so it is the same clock — or, on "you lose N life",
         // a drawback the simulation already prices on resolution. Either way there is nothing to tag.
         if (leaf is LoseLifeEffect) return true
+        // Scry is read (card selection); it is skipped here only so a sibling leaf is still asked about.
+        if (leaf is ScryEffect) return true
         val (counter, target) = when (leaf) {
             is AddCountersEffect -> leaf.counterType to leaf.target
             is AddDynamicCountersEffect -> leaf.counterType to leaf.target

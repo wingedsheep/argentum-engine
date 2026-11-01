@@ -406,7 +406,7 @@ class HoldPolicy(
         val tags = CardIntentAnalyzer.analyzeEffect(ability.effect).tags
         if (tags.isEmpty() || !tags.all { it in ACTIVATION_FLOW_TAGS }) return null
         if (isOpponentEndStep(state, playerId)) {
-            return TimingVerdict.Adjust(END_STEP_WINDOW, reason = "draw at their end step")
+            return TimingVerdict.Adjust(END_STEP_WINDOW, reason = "card flow at their end step")
         }
         if (state.stack.isNotEmpty()) return null
         if (!holdsInstantSpeedCard(state, playerId)) return null
@@ -437,7 +437,8 @@ class HoldPolicy(
     ): Boolean {
         if (cast == null) return false
         if (!intent.tags.all { it in CARD_FLOW_TAGS }) return false
-        if (intent.tags.isEmpty() && !intent.selectsIntoHand) return false
+        // A scry beside an unread payoff (a bounce, a discard) is a rider, not the spell's purpose.
+        if ((intent.tags - IntentTag.CARD_SELECTION).isEmpty() && !intent.selectsIntoHand) return false
         val card = state.getEntity(cast.cardId)?.get<CardComponent>() ?: return false
         if (card.typeLine.isPermanent) return false
         if (intent.wishFilters.isNotEmpty() && !holdsWishableCard(state, playerId, intent)) return false
@@ -776,7 +777,7 @@ class HoldPolicy(
 
         val REMOVAL_TAGS = setOf(IntentTag.REMOVAL, IntentTag.EXILE_REMOVAL, IntentTag.SWEEPER)
 
-        /** Tags of a spell whose whole payoff is cards into hand — see [idleDrawWindow]. */
+        /** Tags of a spell whose whole payoff is card flow — cards into hand, or a scry — see [idleDrawWindow]. */
         val CARD_FLOW_TAGS = setOf(IntentTag.DRAW, IntentTag.TUTOR, IntentTag.CARD_SELECTION)
 
         /** What [drawActivationVerdict] cashes at the opponent's end step: a draw, or a look at the top (scry). */

@@ -46,10 +46,28 @@ class ScryReadingAiTest : ScenarioTestBase() {
             .advanceToPriority(1, Step.END)
     }
 
+    /** Crystal Ball, one Forest and a Giant Growth for the Bears facing a Hill Giant — our precombat main. */
+    private val crystalBallWithATrickInHand = { s: ScenarioBuilder ->
+        s.withPlayers()
+            .withLandsOnBattlefield(1, "Forest", 1)
+            .withCardOnBattlefield(1, "Crystal Ball")
+            .withCardOnBattlefield(1, "Grizzly Bears")
+            .withCardOnBattlefield(2, "Hill Giant")
+            .withCardInHand(1, "Giant Growth")
+            .build()
+    }
+
     init {
         test("an idle scry activation is used at the opponent's end step") {
             val result = decide(crystalBallAtTheirEndStep) { shouldActivate("Crystal Ball") }
             withClue("scry reads as card selection, cashed at their end step like a draw activation: chose ${result.move} — ${result.failure}") {
+                result.passed shouldBe true
+            }
+        }
+
+        test("a scry activation is held in our main phase while an instant wants the mana") {
+            val result = decide(crystalBallWithATrickInHand) { shouldNotActivate("Crystal Ball") }
+            withClue("scry reads as card selection, held for the trick like a draw activation: chose ${result.move} — ${result.failure}") {
                 result.passed shouldBe true
             }
         }

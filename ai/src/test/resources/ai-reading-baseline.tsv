@@ -14,7 +14,7 @@ A-The One Ring	intent: GrantPlayerProtectionEffect
 A.I.M. Labs
 A.I.M. Scientists
 A.I.M. Synthoids	intent: SurveilEffect
-Aang's Iceberg	intent: Pipeline(FromLinkedExile→battlefield)
+Aang's Iceberg	intent: Pipeline(FromLinkedExile→battlefield); intent: SacrificeSelfEffect
 Aang's Journey
 Aang, Airbending Master	intent: EmitBendEventEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→exile); polarity: EmitBendEventEffect; polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets→exile)
 Aang, Swift Savior	intent: EmitBendEventEffect; intent: ExileTargetSpellEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→exile); intent: TransformEffect
@@ -2560,7 +2560,7 @@ Chain of Plasma	intent: ChainCopyEffect; polarity: ChainCopyEffect
 Chain of Silence	intent: ChainCopyEffect; polarity: ChainCopyEffect
 Chain of Smog	intent: ChainCopyEffect; polarity: ChainCopyEffect
 Chain of Vapor	intent: ChainCopyEffect; polarity: ChainCopyEffect
-Chain to Memory
+Chain to Memory	intent: ModifyStatsEffect
 Chained Brute
 Chainer's Edict	polarity: ForceSacrificeEffect
 Chainer's Torment
@@ -3973,7 +3973,7 @@ Destiny Spinner	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect; ti
 Destroy Evil
 Destructive Digger
 Destructive Tampering
-Desynchronize	polarity: PutOnLibraryPositionOfChoiceEffect
+Desynchronize	intent: PutOnLibraryPositionOfChoiceEffect; polarity: PutOnLibraryPositionOfChoiceEffect
 Detective's Phoenix
 Detective's Satchel
 Detention Chariot	intent: Pipeline(FromLinkedExile→battlefield)
@@ -4184,7 +4184,7 @@ Djinn of Fool's Fall
 Djinn of Wishes	intent: Pipeline(TopOfLibrary→exile); intent: PlayFromCollectionWithoutPayingCostEffect
 Djinn of the Fountain
 Djinn of the Lamp
-Djinni Windseer
+Djinni Windseer	intent: RollDiceEffect
 Do or Die	intent: ChoosePileEffect; intent: Pipeline(BattlefieldMatching→graveyard); polarity: Pipeline(BattlefieldMatching→graveyard)
 Doc Aurlock, Grizzled Genius
 Doc Ock's Henchmen
@@ -4796,7 +4796,7 @@ Elite Vanguard
 Elixir
 Elixir of Vitality
 Ellywick Tumblestrum	intent: CreatePermanentEmblemEffect; intent: VentureIntoTheDungeonEffect
-Elrond, Lord of Rivendell
+Elrond, Lord of Rivendell	intent: IncrementAbilityResolutionCountEffect; intent: TheRingTemptsYouEffect
 Elrond, Master of Healing
 Elrond, Moon-Reader
 Elspeth Conquers Death
@@ -4815,7 +4815,7 @@ Elven Ambush
 Elven Bow
 Elven Cache
 Elven Chorus
-Elven Farsight
+Elven Farsight	intent: Pipeline(TopOfLibrary→hand)
 Elven Fortress
 Elven Lyre
 Elven Passage
@@ -5618,7 +5618,7 @@ Filigree Angel
 Filigree Attendant
 Filigree Familiar
 Filigree Sages	intent: TapUntapEffect
-Fill with Fright	polarity: Pipeline(hand→graveyard)
+Fill with Fright	intent: Pipeline(hand→graveyard); polarity: Pipeline(hand→graveyard)
 Filter Out	intent: Pipeline(BattlefieldMatching→hand)
 Fin Fang Foom	intent: CopyTargetSpellEffect
 Final Death
@@ -6772,7 +6772,7 @@ God-Eternal Bontu
 Goddric, Cloaked Reveler
 Godless Shrine
 Godo, Bandit Warlord	intent: AddCombatPhaseEffect; intent: ForEach>TapUntapEffect
-Gods Willing	polarity: ChooseColorThenEffect
+Gods Willing	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
 Gods' Hall Guardian
 Godtoucher	timing: PreventDamageEffect
 Gogo, Master of Mimicry	intent: CopyTargetSpellOrAbilityEffect; polarity: CopyTargetSpellOrAbilityEffect
@@ -9541,7 +9541,7 @@ Lost Jitte	polarity: AttachEquipmentEffect
 Lost Legion
 Lost Soul
 Lost in Space	intent: PutOnLibraryPositionOfChoiceEffect; intent: SurveilEffect; polarity: PutOnLibraryPositionOfChoiceEffect
-Lost in a Labyrinth
+Lost in a Labyrinth	intent: ModifyStatsEffect
 Lost in the Maze
 Lost in the Mist	polarity: CounterEffect; polarity: MoveToZoneEffect
 Lost to Legend	polarity: MoveToZoneEffect
@@ -11570,7 +11570,7 @@ Paladin of the Bloodstained
 Paladin's Arms
 Paladin's Shield
 Palani's Hatcher
-Palantír of Orthanc	polarity: GatedEffect
+Palantír of Orthanc	intent: GatedEffect; polarity: GatedEffect
 Pale Bears
 Paleoloth
 Palinchron	intent: Pipeline(BattlefieldMatching→?); intent: TapUntapCollectionEffect
@@ -13512,7 +13512,7 @@ Ryusei, the Falling Star
 S.H.I.E.L.D. Deployment Drone
 S.H.I.E.L.D. Flying Car
 S.H.I.E.L.D. Helicarrier
-S.H.I.E.L.D. Spy Kit
+S.H.I.E.L.D. Spy Kit	intent: TapUntapEffect
 SP//dr, Piloted by Peni
 Sab-Sunen, Luxa Embodied
 Saber-Tooth Moose-Lion
@@ -16745,7 +16745,7 @@ Thrashing Brontodon
 Thrashing Frontliner
 Thrashing Mudspawn
 Thrashing Wumpus
-Thrasios, Triton Hero
+Thrasios, Triton Hero	intent: ConditionalOnCollectionEffect; intent: Pipeline(TopOfLibrary→?)
 Thraxodemon
 Threadbind Clique
 Threaten	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
@@ -17090,7 +17090,7 @@ Trailblazer's Boots	polarity: AttachEquipmentEffect
 Trailblazing Historian	intent: GrantKeywordEffect
 Trailtracker Scout
 Trained Armodon
-Trained Arynx
+Trained Arynx	intent: GrantKeywordEffect
 Trained Caracal
 Trained Cheetah
 Trained Jackal

@@ -333,7 +333,8 @@ internal object AmbushWindow {
      * So are [IntentTag.LIFEGAIN], [IntentTag.TOKEN_MAKER], [IntentTag.DISCARD] and
      * [IntentTag.SACRIFICE_OUTLET], and those are the deliberate inclusions in the floor: a Blood
      * token, three life, an opponent's discard and an outlet with nothing to feed it are all worth
-     * exactly the same one window later.
+     * exactly the same one window later — as is [IntentTag.CARD_SELECTION]: a scry arranges the
+     * same top of library whichever window it lands in.
      */
     /** Our own turn's steps that come before our first main phase. */
     private val BEFORE_OUR_MAIN = setOf(Step.UNTAP, Step.UPKEEP, Step.DRAW)
@@ -366,7 +367,7 @@ internal object AmbushWindow {
 
     /**
      * The tags of an instant whose whole payoff is what it leaves on the battlefield — see
-     * [holdsInstantDeploy]. Life gained is worth the same a window later, as [holds] argues.
+     * [holdsInstantDeploy]. Life gained, or a scry, is worth the same a window later, as [holds] argues.
      */
     private val BODY_ONLY = setOf(IntentTag.TOKEN_MAKER, IntentTag.LIFEGAIN, IntentTag.CARD_SELECTION)
 
