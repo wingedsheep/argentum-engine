@@ -91,4 +91,12 @@ class AiReadingByAbilityTest : FunSpec({
         trigger.checked shouldBe true
         trigger.findings.single { it.check == Check.INTENT }.reason shouldContain "needs no intent"
     }
+
+    test("a permanent untapping itself needs no intent, but untapping a chosen target stays flagged") {
+        val monolith = AiReadingAudit.read(card("Basalt Monolith"))
+        monolith.readFully shouldBe true
+        monolith.abilities.filter { it.ability.kind == AbilityKind.ACTIVATED }
+            .flatMap { it.findings }.single { it.check == Check.INTENT }.reason shouldContain "needs no intent"
+        AiReadingAudit.audit(card("Arbor Elf")).map { it.key } shouldBe listOf("intent: TapUntapEffect")
+    }
 })

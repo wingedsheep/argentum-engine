@@ -31,6 +31,7 @@ import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
+import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import java.util.Locale
@@ -416,7 +417,7 @@ object AiReadingAudit {
         // Every untagged step needed no tag: say so, so the ability reads as understood rather
         // than as one nobody asked about.
         if (sink.findings.size == before) {
-            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, attaches or moves its own source, adds counters for its controller, or damages a player or makes one lose life")
+            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, untaps, attaches or moves its own source, adds counters for its controller, or damages a player or makes one lose life")
         }
     }
 
@@ -539,7 +540,7 @@ object AiReadingAudit {
     }
 
     /**
-     * The leaves that need no intent tag: equip / attach, a card moving itself, damage to a
+     * The leaves that need no intent tag: equip / attach, a card moving or untapping itself, damage to a
      * player and life loss (commented inline below), and a counter the effect puts on its own source or its own
      * controller — a creature growing itself, a charge, oil, quest or loyalty counter, `{E}` for you. There is no target to choose and nothing
      * to hold it for, and its payoff is already on the board (the evaluator reads a grown creature's
@@ -558,6 +559,10 @@ object AiReadingAudit {
         // "shuffle it into its owner's library" — has no target to aim and is no spell to time:
         // whether it is worth doing is the simulation's call on the activation or trigger.
         if (leaf is MoveToZoneEffect && leaf.target == EffectTarget.Self) return true
+        // A permanent untapping itself (a mana rock untapping for more, a boast's "untap it") has no
+        // target and nothing to hold: the untap is worth only what the ability that taps it again
+        // buys, and that ability carries its own reading. Untapping a *chosen* target stays flagged.
+        if (leaf is TapUntapEffect && !leaf.tap && leaf.target == EffectTarget.Self) return true
         // Damage to a player is a clock: the evaluator prices the life it takes on resolution, it
         // answers nothing on the board, and life lost now or one window later is the same life.
         // Which player a targeted one aims at is the polarity check's question, not intent's.
