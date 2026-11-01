@@ -1571,6 +1571,7 @@ Bleachbone Verge
 Bleak Coven Vampires
 Blech, Loafing Pest
 Bleed Dry	timing: MarkExileOnDeathEffect
+Bleeding Edge
 Bleeding Woods
 Blessed Breath	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
 Blessed Defiance
@@ -1835,6 +1836,7 @@ Bond of Discipline
 Bond of Flourishing
 Bond of Insight	intent: Pipeline(TopOfLibrary|graveyard→graveyard|hand)
 Bond of Passion	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
+Bond of Revival
 Bonded Herdbeast
 Bonders' Enclave
 Bonds of Faith	polarity: Aura>ConditionalStaticAbility
@@ -3032,6 +3034,7 @@ Command Decision
 Command Subadjunct
 Command Tower
 Command of Unsummoning	polarity: ForEachEffect
+Command the Dreadhorde	intent: Pipeline(ChosenTargets→battlefield); polarity: DealDamageEffect; polarity: Pipeline(ChosenTargets→battlefield)
 Command the Stage
 Command the Storm
 Commandeer
@@ -3680,6 +3683,7 @@ Dauthi Marauder
 Dauthi Mercenary
 Dauthi Slayer
 Dauthi Voidwalker	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithoutPayingCostEffect; intent: Pipeline(exile→?)
+Davriel's Shadowfugue	intent: Pipeline(hand→graveyard)
 Dawn Elemental
 Dawn Evangel
 Dawn of Hope
@@ -3887,6 +3891,7 @@ Delif's Cone	intent: CreateDelayedTriggerEffect; polarity: CreateDelayedTriggerE
 Delif's Cube	intent: CreateDelayedTriggerEffect; polarity: CreateDelayedTriggerEffect
 Delighted Halfling
 Delina, Wild Mage	intent: RepeatWhileEffect; polarity: RepeatWhileEffect
+Deliver Unto Evil	intent: Pipeline(ChosenTargets→hand); polarity: Pipeline(ChosenTargets→hand)
 Delivery Moogle	intent: ChooseActionEffect
 Delney, Streetwise Lookout
 Delta Bloodflies
@@ -4906,6 +4911,7 @@ Embrace the Paradox
 Emerald Dragonfly	intent: GrantKeywordEffect
 Emerald Medallion
 Emerge from the Cocoon
+Emergence Zone	intent: GrantFlashToSpellsEffect; timing: GrantFlashToSpellsEffect
 Emergency Eject
 Emergency Medical Hologram
 Emergency Phytomedic
@@ -5125,6 +5131,7 @@ Etched Slith	intent: ReflexiveTriggerEffect
 Eternal Dragon
 Eternal Flame
 Eternal Isolation	polarity: MoveToZoneEffect
+Eternal Skylord	intent: AmassEffect
 Eternal Student
 Eternal Taskmaster
 Eternal Warrior
@@ -6790,6 +6797,7 @@ Goblinslide
 God-Eternal Bontu
 God-Eternal Kefnet
 God-Eternal Rhonas	intent: ForEach>GrantKeywordEffect; intent: ForEach>ModifyStatsEffect
+God-Pharaoh's Statue
 Goddric, Cloaked Reveler
 Godless Shrine
 Godo, Bandit Warlord	intent: AddCombatPhaseEffect; intent: ForEach>TapUntapEffect
@@ -7475,6 +7483,7 @@ Herald of Eternal Dawn
 Herald of Faith
 Herald of Hadar
 Herald of War
+Herald of the Dreadhorde	intent: AmassEffect
 Herald of the Fair
 Herald of the Pantheon
 Herald of the Sun
@@ -8375,6 +8384,7 @@ Jace's Archivist
 Jace's Ingenuity
 Jace's Machinations	timing: GrantLoyaltyActivationPermissionEffect
 Jace's Projection	intent: AddCountersEffect
+Jace's Ruse	polarity: ForEachEffect
 Jace's Scrutiny
 Jace's Triumph
 Jace, Arcane Strategist	combat: CantBeBlockedGroupEffect; intent: CantBeBlockedGroupEffect
@@ -9212,6 +9222,7 @@ Lazav, Familiar Stranger	intent: EachPermanentBecomesCopyOfTargetEffect; intent:
 Lazav, Wearer of Faces	intent: EachPermanentBecomesCopyOfTargetEffect; intent: Pipeline(FromLinkedExile→?)
 Lazotep Behemoth
 Lazotep Plating	timing: ForEach>GrantKeywordEffect; timing: GrantEvasionKeywordEffect
+Lazotep Reaver	intent: AmassEffect
 Lead Astray
 Lead Pipe
 Lead the Stampede
@@ -10457,6 +10468,7 @@ Mob Lookout
 Mobile Homestead	intent: Pipeline(TopOfLibrary→battlefield)
 Mobilization
 Mobilize	intent: ForEach>TapUntapEffect
+Mobilized District	timing: BecomeCreatureEffect
 Mobilizer Mech	intent: AddCardTypeEffect; polarity: AddCardTypeEffect
 Mocking Sprite
 Mockingbird
@@ -13607,6 +13619,7 @@ Sagu Pummeler
 Sagu Wildling
 Sahagin	intent: GrantKeywordEffect
 Saheeli's Lattice	intent: ReturnSelfFromExileTransformedEffect
+Saheeli's Silverwing	intent: Pipeline(TopOfLibrary→?); polarity: Pipeline(TopOfLibrary→?)
 Saheeli, Consul of Oversight
 Saheeli, Filigree Master	intent: CreatePermanentEmblemEffect
 Saheeli, Jewel of Avishkar
@@ -17434,9 +17447,11 @@ U.S.Agent, John Walker
 Uba Mask
 Uchbenbak, the Great Mistake
 Ugin's Binding	intent: ReflexiveTriggerEffect; polarity: MoveToZoneEffect
+Ugin's Conjurant
 Ugin's Labyrinth	intent: Pipeline(FromLinkedExile→hand); intent: Pipeline(hand→exile)
 Ugin's Nexus
 Ugin, Eye of the Storms
+Ugin, the Ineffable
 Ugin, the Spirit Dragon
 Uglúk of the White Hand
 Uktabi Faerie
