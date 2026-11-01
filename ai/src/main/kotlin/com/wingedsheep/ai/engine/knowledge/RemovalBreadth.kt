@@ -3,7 +3,14 @@ package com.wingedsheep.ai.engine.knowledge
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.CardDefinition
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.ForEachEffect
+import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
+import com.wingedsheep.sdk.scripting.effects.IterationSpace
+import com.wingedsheep.sdk.scripting.filters.unified.Scope
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.targets.TargetObject
@@ -15,14 +22,14 @@ import java.util.concurrent.ConcurrentHashMap
  * Murder hits every creature, Doom Blade all but the black ones, Execute only the white ones, and
  * Choking Sands no creature at all — it destroys a land.
  *
- * Read off the target filters beside each removal effect, matched against a fixed set of probe
+ * Read off the target filters beside each removal effect, and the group a sweeper sweeps, matched against a fixed set of probe
  * permanents ([PrintedFilter]): a vanilla creature of each colour and colourless at three sizes,
  * plus an artifact, an enchantment and a planeswalker. [of] is the larger of the share of creature
  * probes and the share of noncreature probes the best removal slot can target — so a Naturalize,
  * which answers two of the three noncreature threats, is wide, and a hoser that names one colour
  * is narrow.
  *
- * It fails open: a slot with no permanent target (a sweeper, an edict, "any target"), a filter the
+ * It fails open: a slot with no permanent target or swept group (an edict, "any target"), a filter the
  * probes can't read, and a predicate only a game can answer (tapped, attacking) all count as
  * reaching everything. Being wrong in that direction leaves a card where it was; the reading only
  * ever discounts a card whose filter plainly excludes most of the table.
@@ -43,8 +50,8 @@ object RemovalBreadth {
     fun of(card: CardDefinition): Double = cache.getOrPut(card.name) {
         val scripts = listOf(card.script) + card.cardFaces.map { it.script }
         scripts.flatMap(EffectWalker::slots)
-            .filter { slot -> EffectWalker.leaves(slot.effect).any(::isRemoval) }
-            .maxOfOrNull { ofTargets(it.targets) }
+            .filter { isRemoval(it.effect) }
+            .maxOfOrNull(::ofSlot)
             ?: 1.0
     }
 
@@ -52,28 +59,45 @@ object RemovalBreadth {
     fun isNarrow(card: CardDefinition): Boolean = of(card) < NARROW_BELOW
 
     /**
-     * The breadth of one slot's [targets]: the widest permanent target it aims across the table, or
-     * 1.0 when it aims at none (a bound or untargeted effect, which this can't read).
+     * The breadth of one slot: the widest thing it aims across the table — a permanent target, or
+     * the group a sweeper sweeps ("destroy all white creatures") — or 1.0 when it names neither (a
+     * bound or untargeted effect, which this can't read).
      */
-    fun ofTargets(targets: List<TargetRequirement>): Double {
-        val aimed = targets.filterIsInstance<TargetObject>().filterNot { ours(it.filter) }
-        if (aimed.isEmpty()) return 1.0
-        return aimed.maxOf { breadth(it.filter) }
+    fun ofSlot(slot: EffectWalker.Slot): Double {
+        val aimed = slot.targets.filterIsInstance<TargetObject>().filterNot { ours(it.filter) }
+            .map { listOf(it.filter.baseFilter) + it.filter.alternatives.map { alt -> alt.baseFilter } }
+        val swept = EffectWalker.leaves(slot.effect).mapNotNull(::sweptGroup).filterNot(::ours).map { listOf(it) }
+        val reads = aimed + swept
+        if (reads.isEmpty()) return 1.0
+        return reads.maxOf(::breadth)
     }
 
-    /** Whether [leaf] takes a permanent away — the leaves [IntentTag.REMOVAL] is read from. */
-    fun isRemoval(leaf: Effect): Boolean = IntentTag.REMOVAL in CardIntentAnalyzer.analyzeEffect(leaf).tags
+    /** Whether [effect] takes a permanent away — what [IntentTag.REMOVAL] is read from. */
+    fun isRemoval(effect: Effect): Boolean = IntentTag.REMOVAL in CardIntentAnalyzer.analyzeEffect(effect).tags
 
-    private fun breadth(filter: TargetFilter): Double {
-        fun hits(probe: CardDefinition): Boolean =
-            (listOf(filter) + filter.alternatives).any { PrintedFilter.matches(probe, it.baseFilter) != false }
+    /**
+     * The battlefield group a sweeper iterates or gathers: Wrath of God's "for each creature",
+     * Virtue's Ruin's "destroy all white creatures" pipeline.
+     */
+    private fun sweptGroup(leaf: Effect): GameObjectFilter? = when (leaf) {
+        is ForEachEffect -> (leaf.space as? IterationSpace.Group)?.filter
+            ?.takeIf { it.scope is Scope.Battlefield }?.baseFilter
+        is GatherCardsEffect -> (leaf.source as? CardSource.BattlefieldMatching)
+            ?.takeIf { it.player != Player.You }?.filter
+        else -> null
+    }
+
+    /** The share of the probes any of [filters] can hit (a union: "creature or planeswalker"). */
+    private fun breadth(filters: List<GameObjectFilter>): Double {
+        fun hits(probe: CardDefinition): Boolean = filters.any { PrintedFilter.matches(probe, it) != false }
         val creatures = CREATURE_PROBES.count(::hits).toDouble() / CREATURE_PROBES.size
         val others = NONCREATURE_PROBES.count(::hits).toDouble() / NONCREATURE_PROBES.size
         return maxOf(creatures, others)
     }
 
-    private fun ours(filter: TargetFilter): Boolean =
-        filter.alternatives.isEmpty() && filter.baseFilter.controllerPredicate == ControllerPredicate.ControlledByYou
+    private fun ours(filter: TargetFilter): Boolean = filter.alternatives.isEmpty() && ours(filter.baseFilter)
+
+    private fun ours(filter: GameObjectFilter): Boolean = filter.controllerPredicate == ControllerPredicate.ControlledByYou
 
     /** A vanilla creature of each colour and colourless, at three sizes. */
     private val CREATURE_PROBES: List<CardDefinition> = buildList {

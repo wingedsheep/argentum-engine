@@ -28,6 +28,12 @@ class RemovalBreadthTest : FunSpec({
         RemovalBreadth.isNarrow(card("Doom Blade")) shouldBe false
         // Artifact and enchantment removal answers the noncreature threats.
         RemovalBreadth.isNarrow(card("Naturalize")) shouldBe false
+        // One-colour sweepers are hosers too; a real wrath is not.
+        RemovalBreadth.isNarrow(card("Perish")) shouldBe true
+        RemovalBreadth.isNarrow(card("Virtue's Ruin")) shouldBe true
+        RemovalBreadth.isNarrow(card("Flashfires")) shouldBe true
+        RemovalBreadth.isNarrow(card("Wrath of God")) shouldBe false
+        RemovalBreadth.isNarrow(card("Pyroclasm")) shouldBe false
         // Not removal at all.
         RemovalBreadth.of(card("Raging Goblin")) shouldBe 1.0
     }
@@ -35,7 +41,9 @@ class RemovalBreadthTest : FunSpec({
     test("a hoser fills no interaction slot") {
         CommanderDeckRoles.rolesOf(card("Execute")) shouldNotContain DeckRole.REMOVAL
         CommanderDeckRoles.rolesOf(card("Choking Sands")) shouldNotContain DeckRole.REMOVAL
+        CommanderDeckRoles.rolesOf(card("Perish")) shouldNotContain DeckRole.REMOVAL
         CommanderDeckRoles.rolesOf(card("Murder")) shouldContain DeckRole.REMOVAL
+        CommanderDeckRoles.rolesOf(card("Wrath of God")) shouldContain DeckRole.REMOVAL
     }
 
     test("the effect heuristic rates a hoser below the same spell aimed at any creature") {

@@ -72,9 +72,10 @@ For a card no table rates, a structural estimate from its `CardDefinition`:
 - **Effects** — `EffectWalker` walks the script and sums what each effect is worth: removal (exile
   above destroy above bounce), damage by amount, card draw, tokens, pumps, control magic, counters.
   A composite is capped, a "may" is discounted. Removal that can only aim at a sliver of the
-  table — Execute's "white creature", Choking Sands' "non-Swamp land" — keeps a share of its slot's
-  value by how much it can reach (`RemovalBreadth`: the vanilla creatures of every colour and size,
-  plus an artifact, an enchantment and a planeswalker, that its target filter can hit).
+  table — Execute's "white creature", Perish's "destroy all green creatures", Choking Sands'
+  "non-Swamp land" — keeps a share of its slot's value by how much it can reach (`RemovalBreadth`:
+  the vanilla creatures of every colour and size, plus an artifact, an enchantment and a
+  planeswalker, that its target filter or swept group can hit).
 - **Rarity and curve** — small nudges (mythic +0.8, a 2-drop +0.3, a 6-drop −0.2).
 
 It reads what a card *does*, so it tells removal from a vanilla body, but it can't see synergy or

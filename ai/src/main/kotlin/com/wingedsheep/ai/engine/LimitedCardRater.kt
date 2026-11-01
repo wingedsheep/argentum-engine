@@ -363,14 +363,15 @@ object LimitedCardRater {
     /**
      * 1.0 for removal that can aim at most of the table ([RemovalBreadth] of [FULL_BREADTH] or more)
      * and for every non-removal slot; down to [NARROWEST_SHARE] for removal that can aim at nothing
-     * an opponent is likely to have. Execute ("destroy target white creature") reaches three of the
+     * an opponent is likely to have — a spot spell or a sweeper ("destroy all white creatures").
+     * Execute ("destroy target white creature") reaches three of the
      * eighteen probe creatures, so its slot — the removal and the card it draws — keeps under half
      * its value: in a deck that doesn't know its opponent, the card is usually a cantrip.
      */
     private fun narrowDiscount(slot: EffectWalker.Slot): Double {
-        val breadth = RemovalBreadth.ofTargets(slot.targets)
+        val breadth = RemovalBreadth.ofSlot(slot)
         if (breadth >= FULL_BREADTH) return 1.0
-        if (EffectWalker.leaves(slot.effect).none(RemovalBreadth::isRemoval)) return 1.0
+        if (!RemovalBreadth.isRemoval(slot.effect)) return 1.0
         return NARROWEST_SHARE + (1 - NARROWEST_SHARE) * breadth / FULL_BREADTH
     }
 
