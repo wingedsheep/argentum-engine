@@ -189,6 +189,7 @@ internal object ExpiringGrantWindow {
             everyPayoffExpiresThisTurn(ability.effect)
         }
         if (!expires) return false
+        if (shieldFacesTheStack(state, expiringPayoffs(ability.effect).orEmpty())) return false
 
         val untilBlocks = lifelinkWaitsForBlocks && waitsForBlocks(ability.effect)
         if (!laterWindowIsStillAhead(state, playerId, untilBlocks)) return false
@@ -269,6 +270,7 @@ internal object ExpiringGrantWindow {
         val borrows = payoffs.any { it.kind == PayoffKind.BORROW }
         if (!readGrants && !borrows && payoffs.any { it.kind != PayoffKind.SHRINK }) return false
         if (somethingOnTheStackThreatensUs(state, playerId, intents)) return false
+        if (shieldFacesTheStack(state, payoffs)) return false
 
         val projected = state.projectedState
         return payoffs.none { payoff ->
@@ -630,8 +632,9 @@ internal object ExpiringGrantWindow {
      * the recipient cannot be told — which keeps the leaf in charge.
      *
      * A creature of ours is the same question as a pump on it: [canStillFight]. Our own life is
-     * attacked only on the opponent's turn, until combat damage is dealt. A shield on anything of
-     * theirs is a shape this does not judge, and counts as spendable.
+     * attacked only on the opponent's turn, until combat damage is dealt. A shield on anything else —
+     * a planeswalker or battle of ours, anything of theirs — is a shape this does not judge, and
+     * counts as spendable. Damage on the stack is [shieldFacesTheStack]'s, read before this.
      */
     private fun shieldCanStillPrevent(
         state: GameState,
@@ -658,7 +661,7 @@ internal object ExpiringGrantWindow {
             when {
                 id == playerId -> !state.isActiveTurnFor(playerId) &&
                     (state.step in UNTIL_ATTACKERS_DECLARED || state.step in FIGHT_STILL_AHEAD)
-                id in state.getBattlefield() && projected.getController(id) == playerId ->
+                id in state.getBattlefield() && projected.getController(id) == playerId && projected.isCreature(id) ->
                     canStillFight(state, projected, playerId, id, sourceId, sourceTaps)
                 else -> true
             }
@@ -759,13 +762,24 @@ internal object ExpiringGrantWindow {
          * any target this turn" (Samite Healer, Abuna Acolyte, Benevolent Ancestor). Its payoff
          * is damage that does not happen, so it buys something only while damage can still come
          * to its recipient this turn: a fight the creature is in, an attack on us, or a spell or
-         * ability on the stack (which releases the floor outright). Raised before it is needed,
+         * ability on the stack (which releases the floor outright — see [shieldFacesTheStack]). Raised before it is needed,
          * it is the same shield raised later — at the same cost, with the source still untapped
          * to block in between. Read with the grants, under
          * [com.wingedsheep.ai.engine.AiProfile.refuseUnspendableGrants].
          */
         SHIELD,
     }
+
+    /**
+     * Whether a [PayoffKind.SHIELD] is among [payoffs] while anything at all is on the stack. A
+     * shield answers damage, and [somethingOnTheStackThreatensUs] sees only part of it: burn aimed at
+     * our face reads as removal (Lava Axe), but a damage trigger without that tag ("deals 2 damage
+     * to each opponent") names no permanent of ours, and our own burn (an Earthquake) is excluded
+     * as ours. So any stack object hands the shield back to the leaf, whose simulation resolves the
+     * stack and prices what it prevents.
+     */
+    private fun shieldFacesTheStack(state: GameState, payoffs: List<Payoff>): Boolean =
+        state.stack.isNotEmpty() && payoffs.any { it.kind == PayoffKind.SHIELD }
 
     /** The payoffs [holds]' deferral holds for a later window this turn. */
     private val DEFERRABLE = setOf(PayoffKind.CREATURE, PayoffKind.SHIELD)
@@ -852,7 +866,7 @@ internal object ExpiringGrantWindow {
      * which is the conservative reading: an ability that *might* make a token is an ability that
      * buys something permanent.
      *
-     * Only the three duration-carrying grant leaves are recognized as expiring. Everything else —
+     * Only the three duration-carrying grant leaves and a damage shield ([isShield]) are recognized as expiring. Everything else —
      * including an unrecognized effect — fails the test, so a shape this cannot read keeps the
      * pre-flag behaviour rather than earning a veto. That is the same fail-safe direction
      * [IntentCatalog] takes about a card it has never seen.
