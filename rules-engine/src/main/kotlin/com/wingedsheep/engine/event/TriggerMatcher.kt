@@ -170,7 +170,7 @@ class TriggerMatcher(
             is EventPattern.AttackEvent -> {
                 event is AttackersDeclaredEvent &&
                     checkBinding(binding, sourceId, event.attackers) &&
-                    attackPredicatesHold(trigger, binding, event, sourceId, state)
+                    attackPredicatesHold(trigger, binding, event, sourceId, controllerId, state)
             }
             is EventPattern.YouAttackEvent -> {
                 if (event !is AttackersDeclaredEvent) return false
@@ -1377,22 +1377,22 @@ class TriggerMatcher(
      * its source. An `ANY`/`OTHER` trigger fans out per attacker ([matchingAttackers]), so a
      * per-attacker predicate ("whenever a creature you control attacks a player alone",
      * CR 506.6) is about the attacker it fires for, not the trigger's source: it holds when some
-     * attacker the trigger can fire for satisfies every predicate. Whole-declaration predicates
-     * ([AttackPredicate.Alone], the attacker counts) read the same either way.
+     * attacker the trigger fans out to — the same attacker passing the filter and every predicate —
+     * exists. Whole-declaration predicates ([AttackPredicate.Alone], the attacker counts) read the
+     * same either way.
      */
     private fun attackPredicatesHold(
         trigger: EventPattern.AttackEvent,
         binding: TriggerBinding,
         event: AttackersDeclaredEvent,
         sourceId: EntityId,
+        controllerId: EntityId,
         state: GameState
     ): Boolean {
         if (trigger.requires.isEmpty()) return true
         return when (binding) {
-            TriggerBinding.ANY, TriggerBinding.OTHER -> event.attackers.any { attackerId ->
-                (binding != TriggerBinding.OTHER || attackerId != sourceId) &&
-                    trigger.requires.all { matchesAttackPredicate(it, event, attackerId, state) }
-            }
+            TriggerBinding.ANY, TriggerBinding.OTHER ->
+                matchingAttackers(trigger, binding, event, sourceId, controllerId, state).isNotEmpty()
             else -> trigger.requires.all { matchesAttackPredicate(it, event, sourceId, state) }
         }
     }
