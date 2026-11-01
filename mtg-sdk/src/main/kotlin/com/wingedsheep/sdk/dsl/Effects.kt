@@ -2796,6 +2796,19 @@ object Effects {
         com.wingedsheep.sdk.scripting.effects.DistributeCountersAmongFilteredEffect(totalCounters, counterType, filter, minPerTarget)
 
     /**
+     * "You may remove any number of [counterType] counters from among [filter]" — chosen at
+     * resolution, any total including none; the total removed is stored under [storeAmountAs] for
+     * `DynamicAmount.VariableReference(storeAmountAs)`. Galloping Lizrog:
+     * `RemoveCountersFromAmong(CounterType.PLUS_ONE_PLUS_ONE, Filters.Creature.youControl(), "removed")`.
+     */
+    fun RemoveCountersFromAmong(
+        counterType: CounterType,
+        filter: com.wingedsheep.sdk.scripting.GameObjectFilter,
+        storeAmountAs: String,
+    ): Effect =
+        com.wingedsheep.sdk.scripting.effects.RemoveCountersFromAmongEffect(counterType, filter, storeAmountAs)
+
+    /**
      * Proliferate — choose any number of permanents and/or players with counters,
      * then give each another counter of each kind already there (CR 701.34).
      *

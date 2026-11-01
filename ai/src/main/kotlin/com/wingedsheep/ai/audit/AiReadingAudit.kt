@@ -35,6 +35,8 @@ import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveCountersEffect
+import com.wingedsheep.sdk.scripting.effects.RemoveCountersFromAmongEffect
+import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.effects.PhaseOutEffect
 import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -651,6 +653,14 @@ object AiReadingAudit {
         // +1/+0 wearing off, a -1/-1 counter shed) has no target and nothing to hold: it is
         // bookkeeping or a grow the simulation sees on the board. Removing them from another stays flagged.
         if (leaf is RemoveCountersEffect && leaf.target == EffectTarget.Self) return true
+        // "Remove any number of counters from among creatures you control" (Galloping Lizrog) takes
+        // counters off its controller's own permanents to pay for a payoff beside it (the doubled
+        // counters, read on their own leaf): no target, nothing to hold, and how many to move is the
+        // DistributeDecision answered at resolution (the responders fill every share, i.e. move every
+        // eligible counter, which suits a doubling payoff). From among others' stays flagged.
+        if (leaf is RemoveCountersFromAmongEffect &&
+            leaf.filter.controllerPredicate == ControllerPredicate.ControlledByYou
+        ) return true
         val (counter, target) = when (leaf) {
             is AddCountersEffect -> leaf.counterType to leaf.target
             is AddDynamicCountersEffect -> leaf.counterType to leaf.target

@@ -2742,6 +2742,14 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   DynamicAmounts.lifeGainedThisTurn(Player.You))` with
   `DistributeCountersAmongTargets(DynamicAmounts.lifeGainedThisTurn(Player.You), upTo = true)`.
 - `DistributeCountersAmongFiltered(total, type?, filter, minPerTarget?)` — distribute N **new** counters among permanents matching `filter`, chosen at resolution (not the spell's targets); `minPerTarget = 0` models "among any number of". `total` is an `Int` or a `DynamicAmount` evaluated once at resolution — Feast of the Victorious Dead's "distribute that many +1/+1 counters" passes `DynamicAmounts.creaturesDiedThisTurn(Player.Each)`. Unlike `DistributeCountersFromSelf` nothing is removed from a source. Crashing Wave: `DistributeCountersAmongFiltered(3, CounterType.STUN, Filters.Creature.tapped().opponentControls())` — "distribute three stun counters among any number of tapped creatures your opponents control."
+- `RemoveCountersFromAmong(counterType, filter, storeAmountAs)` — "you may **remove any number of** `counterType`
+  counters **from among** permanents matching `filter`": one `DistributeDecision` over the matching battlefield
+  permanents that carry the kind (projected state), each share capped at that permanent's count, any total including
+  none. Emits a `CountersRemovedEvent` per permanent and stores the total actually removed under `storeAmountAs`
+  (read with `DynamicAmounts.storedNumber(storeAmountAs)`); with nothing eligible it stores 0 without asking. Galloping
+  Lizrog: `RemoveCountersFromAmong(PLUS_ONE_PLUS_ONE, Creature.youControl(), "removed") then
+  AddDynamicCounters(PLUS_ONE_PLUS_ONE, storedNumber("removed") * 2, Self)`. A one-target, every-kind removal is
+  `RemoveAnyNumberOfCounters`; a removal *cost* "from among" is `Costs.RemoveXCounters(type, filter)`.
 - `Proliferate(target?)` — give one more counter of each kind already there. With no argument it is
   proliferate proper (CR 701.34): the controller chooses any number of permanents and/or players with
   a counter when the effect *resolves*, nothing is targeted. Pass a `target` for the targeted

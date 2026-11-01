@@ -773,6 +773,45 @@ data class DistributeCountersAmongFilteredEffect(
 }
 
 /**
+ * "You may remove any number of [counterType] counters from among [filter]" — the controller picks,
+ * at resolution, how many of each matching permanent's [counterType] counters to take off (0 up to
+ * what it carries, any total including none), and the total actually removed is stored in the
+ * pipeline under [storeAmountAs] for a composed follow-up to read through
+ * `DynamicAmount.VariableReference(storeAmountAs)`. The eligible group is the battlefield
+ * permanents matching [filter] (projected state) that carry at least one such counter. No-op that
+ * stores 0 when none does.
+ *
+ * Galloping Lizrog: "you may remove any number of +1/+1 counters from among creatures you
+ * control. If you do, put twice that many +1/+1 counters on this creature." —
+ * `Composite(RemoveCountersFromAmong(PLUS_ONE_PLUS_ONE, Creature.youControl(), "removed"),
+ * AddDynamicCounters(PLUS_ONE_PLUS_ONE, Multiply(VariableReference("removed"), 2), Self))`.
+ *
+ * Closest existing types, and why neither takes the axis:
+ * - [RemoveAnyNumberOfCountersEffect] removes from ONE resolved target, one `ChooseNumber` prompt per
+ *   counter *kind*; "from among" is a group of permanents of one kind — a distribution across
+ *   objects, not a walk over kinds — and that effect records no count.
+ * - [DistributeCountersAmongFilteredEffect] resolves the same filtered group and asks the same
+ *   `DistributeDecision`, but it *creates* a fixed pool of counters; here the pool is what the
+ *   permanents carry, each one's share is capped by its own count, the total is the player's choice,
+ *   and the result is a recorded number.
+ *
+ * @property counterType The kind of counter removed.
+ * @property filter Which permanents counters may be removed from (resolved at execution).
+ * @property storeAmountAs Pipeline name the total removed is stored under.
+ */
+@SerialName("RemoveCountersFromAmong")
+@Serializable
+data class RemoveCountersFromAmongEffect(
+    val counterType: CounterType,
+    val filter: GameObjectFilter,
+    val storeAmountAs: String,
+) : Effect {
+    override val description: String =
+        "Remove any number of ${counterType.printed} counters from among " +
+            com.wingedsheep.sdk.scripting.describeObjectsForEvent(filter)
+}
+
+/**
  * Install a temporary, duration-scoped counter-placement-*modifier* replacement effect,
  * controlled by the resolving ability's controller.
  *

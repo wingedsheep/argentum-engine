@@ -2629,6 +2629,67 @@
     ]
 }
 
+// Galloping Lizrog
+{
+    "name": "Galloping Lizrog",
+    "manaCost": "{3}{G}{U}",
+    "typeLine": "Creature — Frog Lizard",
+    "oracleText": "Trample\nWhen this creature enters, you may remove any number of +1/+1 counters from among creatures you control. If you do, put twice that many +1/+1 counters on this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Galloping Lizrog:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RemoveCountersFromAmong",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "filter": "creature ctrl:you",
+                            "storeAmountAs": "removed"
+                        },
+                        {
+                            "type": "AddDynamicCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "amount": {
+                                "type": "Multiply",
+                                "amount": {
+                                    "type": "VariableReference",
+                                    "variableName": "removed"
+                                },
+                                "multiplier": 2
+                            },
+                            "target": "Self"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "175",
+        "rarity": "UNCOMMON",
+        "artist": "Lius Lasahido",
+        "flavorText": "\"I might have overfed him.\"\n—Gulistan, Simic biomancer",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc2b7cfe-4696-4448-93d2-33be596e32d9.jpg?1783933649"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Gate Colossus
 {
     "name": "Gate Colossus",
