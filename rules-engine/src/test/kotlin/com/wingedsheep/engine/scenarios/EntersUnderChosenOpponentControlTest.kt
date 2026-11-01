@@ -28,8 +28,8 @@ import kotlinx.serialization.json.Json
  * The rules it pins:
  *  - CR 110.2: a permanent's controller is by default the player under whose control it entered —
  *    here the chosen opponent, with no control-changing effect in play (layer 2 stays empty);
- *  - CR 614.12a: the choice is part of the replacement and is made before it enters, by the player
- *    who would otherwise control it (the caster, or the owner an effect returns it for);
+ *  - CR 614.12a: the choice is made before it enters; "you" (who chooses) is read as the player who
+ *    would otherwise control it — the caster, or the owner an effect returns it for;
  *  - CR 603.3a: its own "when this enters" trigger is controlled by the player controlling it as it
  *    entered — the opponent;
  *  - it arrives summoning sick for the opponent, and its owner is still the caster (CR 108.3).

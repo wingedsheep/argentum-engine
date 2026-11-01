@@ -2942,7 +2942,7 @@ data class EntersWithChoice(
     /**
      * When true, the chosen opponent is who the permanent **enters under the control of** — "This
      * enters under the control of an opponent of your choice" (Captive Audience, Xantcha, Sleeper
-     * Agent). It is part of the same replacement (CR 614.1c / 614.12a): the choice is made before the
+     * Agent). It is part of the same replacement (CR 614.1d / 614.12a): the choice is made before the
      * permanent enters, by the player who would otherwise control it, and the permanent arrives on
      * the chosen player's battlefield already controlled by them — no control-changing effect is
      * created, its "enters" triggers are controlled by that player, and it is that player's

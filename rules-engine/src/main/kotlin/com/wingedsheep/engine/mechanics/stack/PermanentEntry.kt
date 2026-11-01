@@ -73,7 +73,8 @@ internal class PermanentEntry(
         cardComponent: CardComponent?,
         cardDef: com.wingedsheep.sdk.model.CardDefinition?
     ): Pair<GameState, List<GameEvent>> {
-        // A permanent spell enters under its caster's control (CR 110.2) unless it says otherwise:
+        // A resolving permanent spell enters under its controller's control (CR 608.3a) unless it
+        // says otherwise:
         // "enters under the control of an opponent of your choice" was answered as it resolved,
         // and the answer rides the stack object's as-enters choices.
         val controllerId = com.wingedsheep.engine.handlers.effects.ChosenEntryController.of(

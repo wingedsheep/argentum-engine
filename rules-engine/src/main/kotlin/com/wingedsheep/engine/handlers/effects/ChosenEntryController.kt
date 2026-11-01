@@ -32,13 +32,14 @@ object ChosenEntryController {
         else (choices?.get(ChoiceSlot.OPPONENT) as? ChoiceValue.EntityChoice)?.entityId
 
     /**
-     * Hand a permanent that was placed on [from]'s battlefield before its as-enters choices were
+     * Hand a permanent that was placed on its would-be controller's battlefield before its as-enters choices were
      * answered (a token, a land played, a leyline) to [to], as if it had entered there: its
      * battlefield zone, base controller and this turn's "entered under your control" record all
      * move. Nothing has seen the entry yet — its [com.wingedsheep.engine.core.ZoneChangeEvent] is
      * emitted after the last choice — so this is part of the entry, not a control change.
      */
-    fun enterUnder(state: GameState, entityId: EntityId, from: EntityId, to: EntityId): GameState {
+    fun enterUnder(state: GameState, entityId: EntityId, to: EntityId): GameState {
+        val from = state.getEntity(entityId)?.get<ControllerComponent>()?.playerId ?: return state
         if (from == to) return state
         var newState = state.removeFromZone(ZoneKey(from, Zone.BATTLEFIELD), entityId)
             .addToZone(ZoneKey(to, Zone.BATTLEFIELD), entityId)

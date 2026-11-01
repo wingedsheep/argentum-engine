@@ -1138,7 +1138,7 @@ class ModalAndCloneContinuationResumer(
             cardDef, newState.getEntity(entityId)?.get<com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent>()?.chosen,
         )?.let { chosen ->
             newState = com.wingedsheep.engine.handlers.effects.ChosenEntryController
-                .enterUnder(newState, entityId, continuation.controllerId, chosen)
+                .enterUnder(newState, entityId, chosen)
         }
 
         // Emit the entry event, so the permanent's enters triggers (landfall, "when ~ enters") fire
