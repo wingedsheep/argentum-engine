@@ -56,6 +56,17 @@ class DraftsimDataTest : FunSpec({
         tmt.archetypes[DraftsimData.nameKey("The Last Ronin")] shouldNotBe null
     }
 
+    // TRK writes its tags as `[Land Diversity (UG) - Enabler]`, a form the bundle's own tag regex
+    // can't read, so a faithful re-import yields records with flags but no tags. The importer reads
+    // that form deliberately; this pins the result so a regression to the old regex shows up here.
+    test("TRK's colour-pair archetype tags are read") {
+        val trk = DraftsimData.tablesFor(listOf("TRK"))
+        val names = trk.archetypes.values.flatMap { r -> r.archetypes.map { it.archetype } }.toSet()
+        names.size shouldBe 10
+        trk.archetypes[DraftsimData.nameKey("Highly Illogical")]?.archetypes shouldBe
+            listOf(DraftsimArchetypeTag("Noncreature Payoffs", "enabler"))
+    }
+
     test("MSH loads ratings, removal and archetypes") {
         val msh = DraftsimData.tablesFor(listOf("MSH"))
 
