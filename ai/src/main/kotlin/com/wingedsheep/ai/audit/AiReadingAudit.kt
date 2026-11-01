@@ -34,6 +34,7 @@ import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
+import com.wingedsheep.sdk.scripting.effects.RemoveCountersEffect
 import com.wingedsheep.sdk.scripting.effects.PhaseOutEffect
 import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -75,7 +76,7 @@ import java.util.Locale
  *  - [Check.INTENT] — [CardIntentAnalyzer.analyzeEffect] per effect slot (the spell, each trigger,
  *    each non-mana ability): a slot that earns no [IntentTag] at all is invisible to every intent
  *    consumer, and is attributed to each of its leaves — except the leaves that need no tag
- *    ([needsNoIntent]: a non-keyword counter on the source itself, any counter on a player, damage to a
+ *    ([needsNoIntent]: a non-keyword counter on the source itself or one it removes from itself, any counter on a player, damage to a
  *    player, life loss, a permanent untapping, moving, transforming or animating itself, a creature
  *    shifting its own P/T with a loss on either side, an upkeep cost its controller pays or suffers
  *    on its own source, an "unless" whose suffer is life loss).
@@ -458,7 +459,7 @@ object AiReadingAudit {
         if (sink.findings.size == before && tags.isNotEmpty()) {
             sink += Finding(Check.INTENT, read = true, reason = "knows what it's for: ${tags.sorted().joinToString(", ", transform = ::tagPhrase)}")
         } else if (sink.findings.size == before) {
-            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, shifts the P/T of, untaps, attaches, moves, transforms or animates its own source, adds counters for its controller, damages a player, makes one lose life, mills one, or is an unless-clause its payer suffers as an upkeep cost or life loss")
+            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, shifts the P/T of, untaps, attaches, moves, transforms or animates its own source, adds counters for its controller or removes them from itself, damages a player, makes one lose life, mills one, or is an unless-clause its payer suffers as an upkeep cost or life loss")
         }
     }
 
@@ -646,6 +647,10 @@ object AiReadingAudit {
         }
         // Scry and surveil are read (card selection); skipped here only so a sibling leaf is still asked about.
         if (leaf is ScryEffect || leaf is SurveilEffect) return true
+        // A permanent removing counters from itself (a time/oil/charge tick, Clockwork Beast's
+        // +1/+0 wearing off, a -1/-1 counter shed) has no target and nothing to hold: it is
+        // bookkeeping or a grow the simulation sees on the board. Removing them from another stays flagged.
+        if (leaf is RemoveCountersEffect && leaf.target == EffectTarget.Self) return true
         val (counter, target) = when (leaf) {
             is AddCountersEffect -> leaf.counterType to leaf.target
             is AddDynamicCountersEffect -> leaf.counterType to leaf.target
