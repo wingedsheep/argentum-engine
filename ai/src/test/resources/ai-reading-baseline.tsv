@@ -14,7 +14,7 @@ A-The One Ring	intent: GrantPlayerProtectionEffect
 A.I.M. Labs
 A.I.M. Scientists
 A.I.M. Synthoids
-Aang's Iceberg	intent: SacrificeSelfEffect
+Aang's Iceberg
 Aang's Journey
 Aang, Airbending Master	intent: EmitBendEventEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→exile); polarity: EmitBendEventEffect; polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets→exile)
 Aang, Swift Savior	intent: EmitBendEventEffect; intent: ExileTargetSpellEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→exile)
@@ -650,7 +650,7 @@ Arboretum Elemental
 Arboria
 Arc Lightning	polarity: DividedDamageEffect
 Arc Reactor
-Arc Runner	intent: SacrificeSelfEffect
+Arc Runner
 Arc Spitter
 Arc-Slogger
 Arcade Gannon
@@ -1126,7 +1126,7 @@ Baleful Stare	polarity: RevealHandEffect
 Baleful Strix
 Balemurk Leech
 Balin, Loremaster
-Ball Lightning	intent: SacrificeSelfEffect
+Ball Lightning
 Ballista Charger
 Ballista Squad
 Ballista Watcher	combat: CantBlockEffect; timing: CantBlockEffect
@@ -1632,7 +1632,7 @@ Blister Beetle
 Blistergrub
 Blistering Barrier
 Blistering Dieflyn
-Blistering Firecat	intent: SacrificeSelfEffect
+Blistering Firecat
 Blisterpod
 Blisterspit Gremlin
 Blitz Automaton
@@ -1806,7 +1806,7 @@ Boggart Forager	intent: Pipeline(?→?); polarity: Pipeline(?→?)
 Boggart Harbinger
 Boggart Loggers
 Boggart Mischief
-Boggart Mob	intent: EmitChampionedEventEffect; intent: SacrificeSelfEffect
+Boggart Mob	intent: EmitChampionedEventEffect
 Boggart Prankster
 Boggart Ram-Gang
 Boggart Shenanigans
@@ -2295,7 +2295,7 @@ Call the Mountain Chocobo
 Call the Spirit Dragons
 Call to Glory
 Call to the Feast
-Call to the Grave	intent: SacrificeSelfEffect
+Call to the Grave
 Call to the Netherworld
 Callaphe, Beloved of the Sea
 Caller of Gales
@@ -2641,10 +2641,10 @@ Chandra, Spark Hunter	intent: AddCardTypeEffect; intent: CreateGlobalTriggeredAb
 Chandra, Torch of Defiance	intent: CreateGlobalTriggeredAbilityEffect
 Change of Fortune
 Change the Equation
-Changeling Berserker	intent: EmitChampionedEventEffect; intent: SacrificeSelfEffect
-Changeling Hero	intent: EmitChampionedEventEffect; intent: SacrificeSelfEffect
+Changeling Berserker	intent: EmitChampionedEventEffect
+Changeling Hero	intent: EmitChampionedEventEffect
 Changeling Outcast
-Changeling Titan	intent: EmitChampionedEventEffect; intent: SacrificeSelfEffect
+Changeling Titan	intent: EmitChampionedEventEffect
 Changeling Wayfinder
 Channel	intent: GrantPlayerActionEffect
 Channel the Suns
@@ -2750,7 +2750,7 @@ Choking Tethers
 Chomping Changeling
 Chomping Kavu
 Choose Your Weapon
-Chorale of the Void	intent: MoveToZoneEffect; intent: SacrificeSelfEffect; polarity: Aura>MoveToZoneEffect; polarity: Aura>SacrificeSelfEffect
+Chorale of the Void	intent: MoveToZoneEffect; polarity: Aura>MoveToZoneEffect; polarity: Aura>SacrificeSelfEffect
 Chord of Calling
 Choreographed Sparks	intent: ModalEffect; polarity: CopyTargetSpellEffect
 Chorus of Woe
@@ -3581,7 +3581,7 @@ Dampen Thought	polarity: Pipeline(TopOfLibrary→graveyard)
 Damping Field
 Damping Matrix
 Damping Sphere
-Dance of Many	intent: Pipeline(BattlefieldMatching→exile); intent: SacrificeSelfEffect; polarity: CreateTokenCopyOfTargetEffect
+Dance of Many	intent: Pipeline(BattlefieldMatching→exile); polarity: CreateTokenCopyOfTargetEffect
 Dance of Shadows
 Dance of the Manse	intent: Pipeline(ChosenTargets→battlefield); polarity: Pipeline(ChosenTargets→battlefield)
 Dance of the Tumbleweeds
@@ -4273,7 +4273,7 @@ Doran, Besieged by Time	intent: ModifyStatsEffect
 Doran, the Siege Tower
 Dori, Bearer of Friends
 Dormant Grove
-Dorothea, Vengeful Victim	intent: SacrificeSelfEffect
+Dorothea, Vengeful Victim
 Dosan the Falling Leaf
 Dose of Dawnglow	intent: AddCountersToCollectionEffect; intent: MoveToZoneEffect; intent: Pipeline(ControlledPermanents→?)
 Double Down	intent: CopyTargetSpellEffect
@@ -5600,7 +5600,7 @@ Festering Thicket
 Festerleech
 Festival	intent: CantAttackGroupEffect; timing: CantAttackGroupEffect
 Festival Crasher
-Festival of Embers	intent: SacrificeSelfEffect
+Festival of Embers
 Festival of Trokin
 Festival of the Guildpact
 Festive Funeral	timing: ModifyStatsEffect
@@ -6237,6 +6237,7 @@ Gallantry
 Gallia of the Endless Dance
 Gallia, Tragic Host
 Gallia, the Merrymaker
+Galloping Lizrog
 Gallows Warden
 Galuf's Final Act
 Galvanic Arc
@@ -6605,7 +6606,7 @@ Glimmerburst
 Glimmerdust Nap
 Glimmering Angel
 Glimmerlight
-Glimmervoid	intent: SacrificeSelfEffect
+Glimmervoid
 Glimpse of Freedom
 Glimpse of Nature
 Glimpse the Core
@@ -7101,7 +7102,7 @@ Grotesque Demise
 Grotesque Mutation
 Grothama, All-Devouring	intent: EachPlayerDrawsForDamageDealtToSourceEffect
 Ground Rift	intent: CantBlockEffect
-Groundbreaker	intent: SacrificeSelfEffect
+Groundbreaker
 Groundchuck & Dirtbag
 Grounded for Life
 Groundshaker Sliver
@@ -7357,7 +7358,7 @@ Hateful Eidolon
 Haughty Djinn
 Haunt of the Dead Marshes
 Haunt the Network
-Haunted Cadaver	intent: ForEach>Pipeline(hand→graveyard); intent: SacrificeSelfEffect
+Haunted Cadaver	intent: ForEach>Pipeline(hand→graveyard)
 Haunted Cloak
 Haunted Dead
 Haunted Guardian
@@ -7714,8 +7715,8 @@ Hop to It
 Hope Estheim
 Hope-Ender Coatl
 Hopeful Initiate	intent: EmitKeywordCounterEventEffect
-Hopeful Vigil	intent: SacrificeSelfEffect
-Hopeless Nightmare	intent: ForEach>Pipeline(hand→graveyard); intent: SacrificeSelfEffect
+Hopeful Vigil
+Hopeless Nightmare	intent: ForEach>Pipeline(hand→graveyard)
 Hopping Automaton
 Horde Ambusher	intent: CantBlockEffect
 Horde of Boggarts
@@ -9095,7 +9096,7 @@ Krotiq Nestguard	intent: CanAttackDespiteDefenderThisTurnEffect
 Krovikan Scoundrel
 Krovod Haunch
 Kroxa and Kunoros	intent: ReflexiveTriggerEffect
-Kroxa, Titan of Death's Hunger	intent: ForEach>Pipeline(hand→?); intent: ForEach>StorePlayerEffect; intent: Pipeline(?→graveyard); intent: SacrificeSelfEffect
+Kroxa, Titan of Death's Hunger	intent: ForEach>Pipeline(hand→?); intent: ForEach>StorePlayerEffect; intent: Pipeline(?→graveyard)
 Kruin Outlaw
 Kruin Striker
 Krumar Bond-Kin
@@ -9945,7 +9946,7 @@ Marchesa, Dealer of Death
 Marcus, Mutant Mayor
 Mardu Ascendancy
 Mardu Banner
-Mardu Blazebringer	intent: SacrificeSelfEffect
+Mardu Blazebringer
 Mardu Charm	polarity: Pipeline(hand→graveyard); polarity: RevealHandEffect
 Mardu Devotee
 Mardu Hateblade	intent: GrantKeywordEffect
@@ -10339,7 +10340,7 @@ Mindsparker
 Mindsplice Apparatus
 Mindspring Merfolk
 Mindstab	intent: Pipeline(hand→graveyard); polarity: Pipeline(hand→graveyard)
-Mindstab Thrull	intent: Pipeline(hand→graveyard); intent: SacrificeSelfEffect
+Mindstab Thrull	intent: Pipeline(hand→graveyard)
 Mindstorm Crown
 Mindswipe
 Mindwhip Sliver
@@ -10445,7 +10446,7 @@ Misshapen Fiend
 Mist Raven	polarity: MoveToZoneEffect
 Mist-Cloaked Herald
 Mist-Syndicate Naga
-Mistbind Clique	intent: EmitChampionedEventEffect; intent: SacrificeSelfEffect; polarity: Pipeline(BattlefieldMatching→?)
+Mistbind Clique	intent: EmitChampionedEventEffect; polarity: Pipeline(BattlefieldMatching→?)
 Mistblade Shinobi	polarity: MoveToZoneEffect
 Mistbreath Elder	intent: Pipeline(BattlefieldMatching→hand)
 Mistcutter Hydra
@@ -11173,7 +11174,7 @@ Not Forgotten	polarity: MoveToZoneEffect
 Not on My Watch
 Notorious Assassin
 Nourish
-Nova Chaser	intent: EmitChampionedEventEffect; intent: SacrificeSelfEffect
+Nova Chaser	intent: EmitChampionedEventEffect
 Nova Cleric
 Nova Hellkite
 Nova Pentacle	intent: RedirectDamageFromChosenSourceEffect; polarity: RedirectDamageFromChosenSourceEffect; timing: RedirectDamageFromChosenSourceEffect
@@ -11864,7 +11865,7 @@ Phelia, Exuberant Shepherd	intent: Pipeline(ChosenTargets→battlefield|exile); 
 Pheres-Band Brawler
 Pheres-Band Centaurs
 Phial of Galadriel
-Phlage, Titan of Fire's Fury	intent: SacrificeSelfEffect
+Phlage, Titan of Fire's Fury
 Phoenix Chick
 Phoenix Down
 Phoenix Fleet Airship
@@ -12863,7 +12864,7 @@ Reckoner's Bargain
 Reclaim the Wastes
 Reclamation Sage
 Reclusive Taxidermist
-Reclusive Wight	intent: SacrificeSelfEffect
+Reclusive Wight
 Recoil	polarity: MoveToZoneEffect
 Recollect
 Recommission
@@ -13449,7 +13450,7 @@ Rot Farm Mortipede
 Rot-Curse Rakshasa	intent: ForEach>AddCountersEffect; polarity: ForEachEffect
 Rot-Tide Gargantua
 Rotcrown Ghoul	polarity: Pipeline(TopOfLibrary→graveyard)
-Rotisserie Elemental	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile); intent: SacrificeSelfEffect
+Rotisserie Elemental	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Rotlung Reanimator
 Rotted Hulk
 Rotted Hystrix
@@ -13532,7 +13533,7 @@ Run Over
 Run Wild	timing: GrantActivatedAbilityEffect; timing: GrantKeywordEffect
 Runadi, Behemoth Caller
 Runaway Boulder
-Runaway Carriage	intent: SacrificeSelfEffect
+Runaway Carriage
 Runaway Trash-Bot
 Rundvelt Hordemaster	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Rune of Flight
@@ -14736,13 +14737,13 @@ Skirsdag Supplicant
 Skithiryx, the Blight Dragon	intent: GrantKeywordEffect
 Skitterbeam Battalion
 Skittering Heartstopper	intent: GrantKeywordEffect
-Skittering Horror	intent: SacrificeSelfEffect
+Skittering Horror
 Skittering Precursor
-Skittering Skirge	intent: SacrificeSelfEffect
+Skittering Skirge
 Skittering Surveyor
 Skittish Kavu
 Skittish Valesk	intent: FlipCoinEffect
-Skizzik	intent: SacrificeSelfEffect
+Skizzik
 Skoa, Embermage
 Skola Grovedancer
 Skophos Maze-Warden
@@ -15072,7 +15073,7 @@ Sorin, Vampire Lord	intent: GrantActivatedAbilityToGroupEffect
 Sorin, Vengeful Bloodlord	intent: AddCreatureTypeEffect; intent: MoveToZoneEffect
 Sorrow's Path	combat: SwapBlockingAssignmentsEffect; intent: SwapBlockingAssignmentsEffect; polarity: SwapBlockingAssignmentsEffect
 Sosuke, Son of Seshiro
-Sothera, the Supervoid	intent: AddCountersToCollectionEffect; intent: ForEach>Pipeline(BattlefieldMatching→exile); intent: Pipeline(FromLinkedExile→battlefield); intent: SacrificeSelfEffect
+Sothera, the Supervoid	intent: AddCountersToCollectionEffect; intent: ForEach>Pipeline(BattlefieldMatching→exile); intent: Pipeline(FromLinkedExile→battlefield)
 Soul Burn
 Soul Collector	intent: MoveToZoneEffect
 Soul Diviner
@@ -15145,7 +15146,7 @@ Spara's Headquarters
 Spare Dagger
 Spare Supplies
 Spark Double
-Spark Elemental	intent: SacrificeSelfEffect
+Spark Elemental
 Spark Harvest
 Spark Jolt
 Spark Reaper
@@ -16823,7 +16824,7 @@ Thoughtseize	intent: Pipeline(hand→graveyard); intent: RevealHandEffect; polar
 Thoughtweft Charge
 Thoughtweft Imbuer
 Thoughtweft Lieutenant
-Thoughtweft Trio	intent: EmitChampionedEventEffect; intent: SacrificeSelfEffect
+Thoughtweft Trio	intent: EmitChampionedEventEffect
 Thousand Moons Crackshot
 Thousand Moons Infantry
 Thousand Moons Smithy
@@ -16990,7 +16991,7 @@ Timberland Guide
 Timberland Ruins
 Timberwatch Elf
 Time Ebb	polarity: MoveToZoneEffect
-Time Elemental	intent: SacrificeSelfEffect; polarity: MoveToZoneEffect
+Time Elemental	polarity: MoveToZoneEffect
 Time Sieve	intent: TakeExtraTurnEffect
 Time Stop	intent: EndTheTurnEffect
 Time Vault	intent: TakeExtraTurnEffect
@@ -17151,7 +17152,7 @@ Touch of Invisibility
 Touch the Spirit Realm
 Tough Cookie	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
 Tourach's Chant
-Tourach's Gate	intent: SacrificeSelfEffect; polarity: Aura>AddCountersEffect; polarity: Aura>ForEachEffect; polarity: Aura>RemoveCountersEffect; polarity: Aura>SacrificeSelfEffect; timing: ForEach>ModifyStatsEffect
+Tourach's Gate	polarity: Aura>AddCountersEffect; polarity: Aura>ForEachEffect; polarity: Aura>RemoveCountersEffect; polarity: Aura>SacrificeSelfEffect; timing: ForEach>ModifyStatsEffect
 Tournament Grounds
 Tovolar's Huntmaster	polarity: FightEffect
 Tovolar, Dire Overlord	intent: ForEach>TransformEffect; intent: Pipeline(ControlledPermanents→?); intent: SetDayNightEffect
@@ -17596,7 +17597,7 @@ Undersea Invader
 Undertaker
 Undertow
 Underwater Tunnel // Slimy Aquarium
-Underworld Breach	intent: SacrificeSelfEffect
+Underworld Breach
 Underworld Charger
 Underworld Dreams
 Underworld Fires
@@ -17729,7 +17730,7 @@ Urgent Exorcism
 Urgent Necropsy	intent: Pipeline(ChosenTargets→graveyard); polarity: Pipeline(ChosenTargets→graveyard)
 Urgoros, the Empty One
 Urn of Godfire
-Uro, Titan of Nature's Wrath	intent: SacrificeSelfEffect
+Uro, Titan of Nature's Wrath
 Ursapine
 Uruk-hai Berserker	intent: TheRingTemptsYouEffect
 Urza Assembles the Titans
@@ -18368,7 +18369,7 @@ Wandertale Mentor
 Wanderwine Distracter	intent: ModifyStatsEffect
 Wanderwine Farewell	polarity: ForEachEffect
 Wanderwine Hub
-Wanderwine Prophets	intent: EmitChampionedEventEffect; intent: SacrificeSelfEffect; intent: TakeExtraTurnEffect
+Wanderwine Prophets	intent: EmitChampionedEventEffect; intent: TakeExtraTurnEffect
 Waning Wurm
 Wanted Griffin
 War Balloon
@@ -18974,7 +18975,7 @@ Wreckage Wickerfolk
 Wrecking Beast
 Wrecking Crew
 Wrecking Gecko
-Wren's Run Packmaster	intent: EmitChampionedEventEffect; intent: SacrificeSelfEffect
+Wren's Run Packmaster	intent: EmitChampionedEventEffect
 Wren's Run Vanquisher
 Wrench
 Wrench Mind	intent: Pipeline(hand→graveyard); polarity: Pipeline(hand→graveyard)

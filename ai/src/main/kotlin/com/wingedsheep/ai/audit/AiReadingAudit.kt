@@ -79,7 +79,7 @@ import java.util.Locale
  *    each non-mana ability): a slot that earns no [IntentTag] at all is invisible to every intent
  *    consumer, and is attributed to each of its leaves — except the leaves that need no tag
  *    ([needsNoIntent]: a non-keyword counter on the source itself or one it removes from itself, any counter on a player, damage to a
- *    player, life loss, a permanent untapping, moving, transforming or animating itself, a creature
+ *    player, life loss, a permanent untapping, moving, transforming, animating or sacrificing itself, a creature
  *    shifting its own P/T with a loss on either side, an upkeep cost its controller pays or suffers
  *    on its own source, an "unless" whose suffer is life loss).
  *  - [Check.COMBAT] — [CombatReach] over each leaf of a non-mana activated ability that changes
@@ -466,7 +466,7 @@ object AiReadingAudit {
         if (sink.findings.size == before && tags.isNotEmpty()) {
             sink += Finding(Check.INTENT, read = true, reason = "knows what it's for: ${tags.sorted().joinToString(", ", transform = ::tagPhrase)}")
         } else if (sink.findings.size == before) {
-            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, shifts the P/T of, untaps, attaches, moves, transforms or animates its own source, adds counters for its controller or removes them from itself, damages a player, makes one lose life, mills one, or is an unless-clause its payer suffers as an upkeep cost or life loss")
+            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, shifts the P/T of, untaps, attaches, moves, transforms or animates or sacrifices its own source, adds counters for its controller or removes them from itself, damages a player, makes one lose life, mills one, or is an unless-clause its payer suffers as an upkeep cost or life loss")
         }
     }
 
@@ -589,7 +589,7 @@ object AiReadingAudit {
     }
 
     /**
-     * The leaves that need no intent tag: equip / attach, a card moving, untapping, transforming or animating itself, damage to a
+     * The leaves that need no intent tag: equip / attach, a card moving, untapping, transforming, animating or sacrificing itself, damage to a
      * player and life loss (commented inline below), and a counter the effect puts on its own source or its own
      * controller — a creature growing itself, a charge, oil, quest or loyalty counter, `{E}` for you. There is no target to choose and nothing
      * to hold it for, and its payoff is already on the board (the evaluator reads a grown creature's
@@ -626,6 +626,13 @@ object AiReadingAudit {
         // that it can block is CombatReach's; what it is worth is the creature the simulation then sees.
         // Animating another permanent stays flagged.
         if (leaf is BecomeCreatureEffect && leaf.target == EffectTarget.Self) return true
+        // A permanent sacrificing itself has no target: on a trigger it is a drawback its controller
+        // doesn't choose (Ball Lightning's end step, Glimmervoid with no artifacts, Skittering Horror);
+        // on an activation its payoff is the permanent's own leaves trigger (Hopeful Vigil's scry) or
+        // the board without its statics (Festival of Embers). Whether and when to activate it, in
+        // response to removal too, is the simulation's call; no intent tag would change it.
+        // Sacrificing another stays flagged.
+        if (leaf == SacrificeSelfEffect) return true
         // A creature shifting its own P/T with a loss on either side — Flowstone's "+1/-1", Morphling's
         // "+1/-1", Blind Creeper's "-1/-1" drawback — has no target and is no trick to hold: it is a
         // trade on its own body the simulation prices on the board. A pure self pump already reads
