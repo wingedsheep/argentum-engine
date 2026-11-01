@@ -34,6 +34,10 @@ data class AiMatchGame(
      * decks span whatever sets their cards' canonical printings sit in.
      */
     val setCodes: List<String> = emptyList(),
+    /** The colour identity of each AI seat's deck (canonical WUBRG, "" colourless); null when none was recorded. */
+    val aiColors: List<String?> = emptyList(),
+    /** `match_results.game_id` when the game's replay is stored, so the report can link to it; else null. */
+    val replayGameId: String? = null,
 )
 
 /**
@@ -70,6 +74,8 @@ data class AiMatchHumanSeat(
     val displayName: String,
     val isGuest: Boolean,
     val won: Boolean,
+    /** The seat's deck colour identity (canonical WUBRG, "" colourless); null when none was recorded. */
+    val colors: String? = null,
 )
 
 /** A win/loss/draw tally from the AI's side, with its decisive win rate and a 95% Wilson interval. */
@@ -191,7 +197,38 @@ data class AiChangeLog(
     val changes: List<AiChangeEntry>,
 )
 
-data class AiRecentGame(val endedAt: String, val gameMode: String?, val format: String?, val outcome: AiMatchOutcome)
+/**
+ * One AI-vs-human game as the report lists it: who played, with which colours, and how it went.
+ * [matchId] opens both seats' decks (`/api/stats/admin/matches/{matchId}/decks`); [replayGameId]
+ * opens the replay, null when none was stored.
+ */
+data class AiRecentGame(
+    val matchId: Long,
+    val endedAt: String,
+    val gameMode: String?,
+    val format: String?,
+    val outcome: AiMatchOutcome,
+    val humans: List<AiRecentHuman> = emptyList(),
+    val aiColors: List<String?> = emptyList(),
+    val replayGameId: String? = null,
+)
+
+/** A human seat of an [AiRecentGame]. [key] is the [AiHumanRecord.key] it belongs to. */
+data class AiRecentHuman(
+    val key: String,
+    val name: String,
+    @get:JsonProperty("isGuest") val isGuest: Boolean,
+    val won: Boolean,
+    val colors: String?,
+)
+
+/** One human's games against the AI in a slice of the range, newest first — the human's drawer on the report. */
+data class AiHumanGames(
+    /** The human's record over the slice; null when they have no games in it. */
+    val human: AiHumanRecord?,
+    /** Newest first, at most [AiVsHumanAggregator.MAX_HUMAN_GAMES]. */
+    val games: List<AiRecentGame>,
+)
 
 /** A human's record against the AI, from the human's side. */
 data class AiHumanRecord(
@@ -253,6 +290,7 @@ object AiVsHumanAggregator {
     const val RECENT_GAMES = 40
     const val MAX_HUMANS = 10
     const val MAX_MODE_SERIES = 6
+    const val MAX_HUMAN_GAMES = 100
 
     /**
      * @param games every AI-vs-human game since `now - 2 × days` (the range plus the window before
@@ -335,8 +373,10 @@ object AiVsHumanAggregator {
                 }
                 .sortedByDescending { it.firstSeen }
                 .take(MAX_BUILDS),
-            recent = inRange.takeLast(RECENT_GAMES).map {
-                AiRecentGame(it.endedAt.toString(), it.gameMode, it.format, it.outcome)
+            recent = inRange.takeLast(RECENT_GAMES).let { recent ->
+                val ids = recent.mapTo(HashSet()) { it.matchId }
+                val seatsById = humanSeats.filter { it.matchId in ids }.groupBy { it.matchId }
+                recent.map { recentGame(it, seatsById[it.matchId].orEmpty()) }
             },
             topHumans = humanRecords(humanSeats.filter { it.matchId in inRangeIds }, outcomeById).take(MAX_HUMANS),
             filter = AiAppliedFilter(
@@ -366,6 +406,44 @@ object AiVsHumanAggregator {
             ),
         )
     }
+
+    /**
+     * [playerKey]'s games against the AI in the range, under [filter]'s mode/format/set slice — the
+     * same games their row in [AiVsHumanReport.topHumans] counts. The filter's human exclusions don't
+     * apply: the drawer is about this one human.
+     */
+    fun humanGames(
+        allGames: List<AiMatchGame>,
+        humanSeats: List<AiMatchHumanSeat>,
+        playerKey: String,
+        days: Int?,
+        now: Instant,
+        filter: AiVsHumanFilter = AiVsHumanFilter.NONE,
+    ): AiHumanGames {
+        val rangeStart = days?.let { now.minusSeconds(it * 86_400L) }
+        val ownIds = humanSeats.filter { it.playerKey == playerKey }.mapTo(HashSet()) { it.matchId }
+        val games = allGames
+            .filter { it.matchId in ownIds && filter.matchesSlice(it) && (rangeStart == null || !it.endedAt.isBefore(rangeStart)) }
+            .sortedByDescending { it.endedAt }
+        val ids = games.mapTo(HashSet()) { it.matchId }
+        val seats = humanSeats.filter { it.matchId in ids }
+        val seatsById = seats.groupBy { it.matchId }
+        return AiHumanGames(
+            human = humanRecords(seats.filter { it.playerKey == playerKey }, games.associate { it.matchId to it.outcome }).firstOrNull(),
+            games = games.take(MAX_HUMAN_GAMES).map { recentGame(it, seatsById[it.matchId].orEmpty()) },
+        )
+    }
+
+    private fun recentGame(game: AiMatchGame, seats: List<AiMatchHumanSeat>) = AiRecentGame(
+        matchId = game.matchId,
+        endedAt = game.endedAt.toString(),
+        gameMode = game.gameMode,
+        format = game.format,
+        outcome = game.outcome,
+        humans = seats.map { AiRecentHuman(it.playerKey, it.displayName, it.isGuest, it.won, it.colors) },
+        aiColors = game.aiColors,
+        replayGameId = game.replayGameId,
+    )
 
     /** Each human's record over [seats], most games first. */
     private fun humanRecords(seats: List<AiMatchHumanSeat>, outcomeById: Map<Long, AiMatchOutcome>): List<AiHumanRecord> =

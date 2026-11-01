@@ -11,6 +11,9 @@
  * The headline trend is only as honest as the game mix behind it: a shift toward a harder mode, one set,
  * or a few strong regulars moves it without the AI changing at all. So the screen slices — by mode,
  * set, and with the busiest humans left out — and shows each mode's own trend and the mix over time.
+ *
+ * Every number opens onto the games behind it: the recent games list, the recent-form pips and each
+ * human in the humans table lead to the decks that were played (see {@link AiVsHumanGames}).
  */
 import { useEffect, useMemo, useState } from 'react'
 import type React from 'react'
@@ -41,6 +44,8 @@ import type { AdminAuth } from '@/api/adminAuth'
 import { pageStyles } from '@/components/ui/PageShell'
 import { GITHUB_REPOSITORY_URL } from '@/utils/links'
 import { gameModeLabel } from './statFormat'
+import { useAdminParam } from './adminNav'
+import { GameList, HumanGamesModal, MatchDecksModal } from './AiVsHumanGames'
 import { AdminScreen, Panel, StatCard, Table, cellStyle } from './adminUi'
 import css from './aiVsHuman.module.css'
 
@@ -91,6 +96,10 @@ export function AdminAiVsHuman({ auth, onBack }: { auth: AdminAuth; onBack: () =
   const [report, setReport] = useState<AiVsHumanReport | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [gameParam, openGame, closeGame] = useAdminParam('game')
+  const [humanParam, openHuman, closeHuman] = useAdminParam('human')
+  const openMatchId = gameParam != null && /^\d+$/.test(gameParam) ? Number(gameParam) : null
+  const onOpenGame = (matchId: number) => openGame(String(matchId))
 
   useEffect(() => {
     let cancelled = false
@@ -183,9 +192,28 @@ export function AdminAiVsHuman({ auth, onBack }: { auth: AdminAuth; onBack: () =
             </div>
           </Panel>
         ) : (
-          <ReportView report={report} range={range} onExcludeHuman={excludeHuman} onPickMode={pickMode} />
+          <ReportView
+            report={report}
+            range={range}
+            onExcludeHuman={excludeHuman}
+            onPickMode={pickMode}
+            onOpenGame={onOpenGame}
+            onOpenHuman={openHuman}
+          />
         )}
       </div>
+      {humanParam && (
+        <HumanGamesModal
+          auth={auth}
+          humanKey={humanParam}
+          days={range.days}
+          rangeLabel={range.label}
+          filter={filter}
+          onOpenGame={onOpenGame}
+          onClose={closeHuman}
+        />
+      )}
+      {openMatchId != null && <MatchDecksModal auth={auth} matchId={openMatchId} onClose={closeGame} />}
     </AdminScreen>
   )
 }
@@ -195,11 +223,15 @@ function ReportView({
   range,
   onExcludeHuman,
   onPickMode,
+  onOpenGame,
+  onOpenHuman,
 }: {
   report: AiVsHumanReport
   range: Range
   onExcludeHuman: (h: AiHumanRecord) => void
   onPickMode: (gameMode: string | null, format: string | null) => void
+  onOpenGame: (matchId: number) => void
+  onOpenHuman: (key: string) => void
 }) {
   const { overall } = report
   /** A bucket picked on the trend chart narrows the AI-changes list to it. */
@@ -291,13 +323,22 @@ function ReportView({
       </div>
 
       <div className={css.twoCol}>
-        <Panel title="Recent form" subtitle={`The last ${report.recent.length} games, oldest to newest`} action={<OutcomeLegend />}>
-          <RecentForm recent={report.recent} />
+        <Panel
+          title="Recent form"
+          subtitle={`The last ${report.recent.length} games, oldest to newest · click one for its decks`}
+          action={<OutcomeLegend />}
+        >
+          <RecentForm recent={report.recent} onOpenGame={onOpenGame} />
         </Panel>
-        <Panel title="Humans vs the AI" subtitle="The players who have faced the AI most in this range — leave one out to see the AI without them">
-          <HumansTable humans={report.topHumans} onExclude={onExcludeHuman} />
+        <Panel
+          title="Humans vs the AI"
+          subtitle="The players who have faced the AI most in this range — open one for their games and decks, or leave them out to see the AI without them"
+        >
+          <HumansTable humans={report.topHumans} onExclude={onExcludeHuman} onOpen={onOpenHuman} />
         </Panel>
       </div>
+
+      <RecentGamesPanel recent={report.recent} onOpenGame={onOpenGame} onOpenHuman={onOpenHuman} />
 
       <p className={css.footnote}>
         Counts every recorded game with at least one AI seat and one human seat. Win rates are over decisive games — a
@@ -900,7 +941,39 @@ function ForestRows({ rows }: { rows: ForestRow[] }) {
 
 const OUTCOME_TEXT = { AI: 'AI won', HUMAN: 'Human won', DRAW: 'Draw' } as const
 
-function RecentForm({ recent }: { recent: AiVsHumanReport['recent'] }) {
+/** Rows of the recent-games list shown before "Show all". */
+const RECENT_PREVIEW = 8
+
+function RecentGamesPanel({
+  recent,
+  onOpenGame,
+  onOpenHuman,
+}: {
+  recent: AiVsHumanReport['recent']
+  onOpenGame: (matchId: number) => void
+  onOpenHuman: (key: string) => void
+}) {
+  const [expanded, setExpanded] = useState(false)
+  const newestFirst = useMemo(() => [...recent].reverse(), [recent])
+  const shown = expanded ? newestFirst : newestFirst.slice(0, RECENT_PREVIEW)
+  return (
+    <Panel
+      title="Recent games"
+      subtitle="Newest first — open a game to compare the decks both sides brought, or a player for all their games"
+      action={
+        newestFirst.length > RECENT_PREVIEW ? (
+          <button type="button" className={css.linkButton} onClick={() => setExpanded((v) => !v)}>
+            {expanded ? `Show latest ${RECENT_PREVIEW}` : `Show all ${newestFirst.length}`}
+          </button>
+        ) : undefined
+      }
+    >
+      <GameList games={shown} onOpenGame={onOpenGame} onOpenHuman={onOpenHuman} />
+    </Panel>
+  )
+}
+
+function RecentForm({ recent, onOpenGame }: { recent: AiVsHumanReport['recent']; onOpenGame: (matchId: number) => void }) {
   const lastTen = recent.slice(-10)
   const lastTenAi = lastTen.filter((g) => g.outcome === 'AI').length
   const lastTenHuman = lastTen.filter((g) => g.outcome === 'HUMAN').length
@@ -913,8 +986,19 @@ function RecentForm({ recent }: { recent: AiVsHumanReport['recent'] }) {
           const { primary, variant } = gameModeLabel(g.gameMode, g.format)
           const label = `${new Date(g.endedAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })} · ${
             variant ? `${primary} › ${variant}` : primary
-          } · ${OUTCOME_TEXT[g.outcome]}`
-          return <span key={i} role="listitem" className={css.pip} data-outcome={g.outcome} title={label} aria-label={label} />
+          } · ${OUTCOME_TEXT[g.outcome]}${g.humans.length ? ` vs ${g.humans.map((h) => h.name).join(', ')}` : ''}`
+          return (
+            <span key={g.matchId ?? i} role="listitem">
+              <button
+                type="button"
+                className={css.pip}
+                data-outcome={g.outcome}
+                title={`${label} — click for the decks`}
+                aria-label={`${label}. Open the decks`}
+                onClick={() => onOpenGame(g.matchId)}
+              />
+            </span>
+          )
         })}
       </div>
       <div className={css.formFoot}>
@@ -975,7 +1059,15 @@ function streakText(outcome: AiMatchOutcome): string {
   return outcome === 'AI' ? 'AI wins in a row' : outcome === 'HUMAN' ? 'Human wins in a row' : 'Draws in a row'
 }
 
-function HumansTable({ humans, onExclude }: { humans: AiVsHumanReport['topHumans']; onExclude: (h: AiHumanRecord) => void }) {
+function HumansTable({
+  humans,
+  onExclude,
+  onOpen,
+}: {
+  humans: AiVsHumanReport['topHumans']
+  onExclude: (h: AiHumanRecord) => void
+  onOpen: (key: string) => void
+}) {
   if (humans.length === 0) return <p style={cellStyle.muted}>No human players in this range.</p>
   return (
     <Table head={['Player', 'Games', 'W–L–D', 'Beats the AI', '']}>
@@ -985,7 +1077,14 @@ function HumansTable({ humans, onExclude }: { humans: AiVsHumanReport['topHumans
         return (
           <tr key={h.key}>
             <td style={cellStyle.td}>
-              <span style={{ color: '#f1f3f9' }}>{h.name}</span>
+              <button
+                type="button"
+                className={css.playerLink}
+                onClick={() => onOpen(h.key)}
+                title={`${h.name}'s games against the AI, with their decks`}
+              >
+                {h.name}
+              </button>
               {h.isGuest && <span className={css.guest}>guest</span>}
             </td>
             <td style={cellStyle.tdNum}>{h.games}</td>

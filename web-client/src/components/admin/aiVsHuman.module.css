@@ -1,6 +1,16 @@
 /* Admin "AI vs humans" screen. Series colours are a validated diverging pair (CVD-safe on the dark
    panel): the AI is red, humans blue, draws a neutral grey. */
 
+/* The game lists also render inside modals, outside .root, so they carry the palette themselves. */
+.root,
+.games {
+  --ai: #e66767;
+  --human: #3987e5;
+  --draw: #6b7080;
+  --change: #199e70;
+  --track: rgba(255, 255, 255, 0.06);
+  --gap: rgba(10, 12, 20, 0.95);
+}
 .root {
   --ai: #e66767;
   --human: #3987e5;
@@ -471,3 +481,132 @@
 .multipleSub { color: #8f98ac; font-size: 12px; font-variant-numeric: tabular-nums; }
 .mixHead { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 16px; margin-top: 10px; }
 .mixHead .subchartLabel { margin: 4px 0; }
+
+/* ── Game lists (recent games, a human's games) ────────────────────────── */
+
+.games { display: flex; flex-direction: column; }
+.gameRow {
+  display: grid;
+  grid-template-columns: 112px minmax(110px, 1fr) minmax(80px, 0.7fr) minmax(150px, 1.4fr) 104px 158px;
+  grid-template-areas: 'when mode ai human result actions';
+  align-items: center;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 13px;
+  color: #b4bccd;
+}
+.gameRow:last-child { border-bottom: none; }
+.gameRow > :nth-child(1) { grid-area: when; }
+.gameRow > :nth-child(2) { grid-area: mode; }
+.gameRow > :nth-child(3) { grid-area: ai; }
+.gameRow > :nth-child(4) { grid-area: human; }
+.gameRow > :nth-child(5) { grid-area: result; }
+.gameRow > :nth-child(6) { grid-area: actions; }
+.gameHead {
+  padding-top: 0;
+  color: #6f778a;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.gameWhen { color: #8f98ac; font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.gameMode { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gameSide { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.gameSideLabel { display: none; color: #8f98ac; font-size: 11px; }
+.gameHumans { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; min-width: 0; }
+.gameHuman { display: inline-flex; align-items: center; gap: 7px; min-width: 0; }
+.gameWith { color: #8f98ac; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.humanLink,
+.humanName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #f1f3f9;
+  font: inherit;
+  font-size: 13px;
+}
+.humanLink {
+  /* Room under the text, or overflow:hidden clips the underline. */
+  padding: 0 0 3px;
+  margin-bottom: -3px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: rgba(241, 243, 249, 0.4);
+  text-underline-offset: 3px;
+}
+.humanLink:hover { color: #f2c97a; text-decoration-color: currentColor; }
+.humanLink[data-won='true'],
+.humanName[data-won='true'] { font-weight: 600; }
+.pips { display: inline-flex; align-items: center; gap: 1px; flex: none; }
+.pipsNone { color: #6f778a; }
+.outcome {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.outcome::before { content: ''; width: 8px; height: 8px; border-radius: 2px; flex: none; }
+.outcome[data-outcome='AI'] { color: #f09a9a; }
+.outcome[data-outcome='AI']::before { background: var(--ai); }
+.outcome[data-outcome='HUMAN'] { color: #8dbcf2; }
+.outcome[data-outcome='HUMAN']::before { background: var(--human); }
+.outcome[data-outcome='DRAW'] { color: #b4bccd; }
+.outcome[data-outcome='DRAW']::before { box-shadow: inset 0 0 0 2px var(--draw); }
+.gameActions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; white-space: nowrap; }
+.deckButton {
+  padding: 3px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(242, 201, 122, 0.4);
+  background: rgba(242, 201, 122, 0.1);
+  color: #f2c97a;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.deckButton:hover { background: rgba(242, 201, 122, 0.2); }
+.noReplay { color: #6f778a; font-size: 11px; min-width: 66px; text-align: center; }
+.listNote { margin: 10px 0 0; color: #8f98ac; font-size: 12px; }
+.vsAi { color: #8f98ac; font-weight: 500; }
+.sliceNote { color: #6f778a; }
+button.pip { padding: 0; border: none; cursor: pointer; }
+button.pip:focus-visible { outline: 2px solid #f2c97a; outline-offset: 2px; }
+.playerLink {
+  padding: 0;
+  border: none;
+  background: none;
+  color: #f1f3f9;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: rgba(241, 243, 249, 0.25);
+  text-underline-offset: 3px;
+}
+.playerLink:hover { color: #f2c97a; text-decoration-color: currentColor; }
+
+@media (max-width: 760px) {
+  .gameHead { display: none; }
+  .gameRow {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'human result'
+      'ai ai'
+      'when mode'
+      'actions actions';
+    gap: 6px 12px;
+    padding: 12px 0;
+  }
+  .gameRow > :nth-child(5) { justify-self: end; }
+  .gameMode { text-align: right; color: #8f98ac; font-size: 12px; }
+  .gameSideLabel { display: inline; }
+  .gameActions { justify-content: flex-start; }
+  .gameRow > :nth-child(6) { width: auto; }
+}
