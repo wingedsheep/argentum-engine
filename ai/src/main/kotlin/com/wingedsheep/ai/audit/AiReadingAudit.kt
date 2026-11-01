@@ -560,8 +560,9 @@ object AiReadingAudit {
         // whether it is worth doing is the simulation's call on the activation or trigger.
         if (leaf is MoveToZoneEffect && leaf.target == EffectTarget.Self) return true
         // A permanent untapping itself (a mana rock untapping for more, a boast's "untap it") has no
-        // target and nothing to hold: the untap is worth only what the ability that taps it again
-        // buys, and that ability carries its own reading. Untapping a *chosen* target stays flagged.
+        // target and nothing to hold: the untap is worth what tapping it again buys (another mana
+        // ability, or a blocker after it attacked), which the simulation already sees on the board.
+        // Untapping a *chosen* target stays flagged.
         if (leaf is TapUntapEffect && !leaf.tap && leaf.target == EffectTarget.Self) return true
         // Damage to a player is a clock: the evaluator prices the life it takes on resolution, it
         // answers nothing on the board, and life lost now or one window later is the same life.
