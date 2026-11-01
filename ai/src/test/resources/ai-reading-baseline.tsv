@@ -98,7 +98,7 @@ Acid Rain
 Aclazotz, Deepest Betrayal	intent: ReturnSelfFromZoneTransformedEffect
 Acolyte of Aclazotz
 Acolyte of Affliction	intent: Pipeline(TopOfLibrary|graveyard→graveyard|hand)
-Acquired Mutation	intent: AddCountersEffect
+Acquired Mutation
 Acquisition Octopus	intent: UnattachEquipmentEffect; polarity: AttachEquipmentEffect
 Acquisitions Expert	intent: Pipeline(hand→graveyard); polarity: Pipeline(hand→graveyard)
 Acrobatic Cheerleader	intent: AddCountersEffect
@@ -1716,7 +1716,7 @@ Bloodpyre Elemental
 Bloodrage Brawler	intent: Pipeline(hand→graveyard)
 Bloodrite Invoker
 Bloodrock Cyclops
-Bloodroot Apothecary	intent: AddCountersEffect
+Bloodroot Apothecary
 Bloodscent	intent: MustBeBlockedEffect; polarity: MustBeBlockedEffect
 Bloodshot Cyclops
 Bloodsky Berserker
@@ -5128,7 +5128,7 @@ Essenceknit Scholar
 Estrid's Invocation
 Estwald Shieldbasher
 Etali's Favor	intent: DiscoverEffect
-Etali, Primal Conqueror	intent: AddDynamicCountersEffect; intent: CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: GatherUntilMatchEffect; intent: Pipeline(?→exile)
+Etali, Primal Conqueror	intent: CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: GatherUntilMatchEffect; intent: Pipeline(?→exile)
 Etali, Primal Storm	intent: CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→exile)
 Etched Cornfield
 Etched Familiar
@@ -6177,7 +6177,7 @@ Fyndhorn Bow	intent: GrantKeywordEffect
 Fyndhorn Brownie	intent: TapUntapEffect
 Fyndhorn Elder
 Fyndhorn Elves
-Fynn, the Fangbearer	intent: AddCountersEffect
+Fynn, the Fangbearer
 Fíli the Pathfinder
 G'raha Tia
 G'raha Tia, Scion Reborn
@@ -6648,7 +6648,7 @@ Gloryheath Lynx
 Glowcap Lantern	polarity: AttachEquipmentEffect
 Glowering Rogon
 Glowing Anemone	polarity: MoveToZoneEffect
-Glowing One	intent: AddCountersEffect
+Glowing One
 Glowrider
 Glowstone Recluse
 Gluntch, the Bestower
@@ -7920,7 +7920,7 @@ Icewind Elemental
 Icewrought Sentry
 Ichneumon Druid
 Ichor Drinker
-Ichor Rats	intent: ForEach>AddCountersEffect
+Ichor Rats
 Ichor Shade
 Ichor Synthesizer
 Ichor Wellspring
@@ -8096,7 +8096,7 @@ Infest
 Infestation Expert
 Infestation Sage
 Infested Fleshcutter
-Infesting Radroach	intent: AddDynamicCountersEffect
+Infesting Radroach
 Infiltrate	intent: GrantKeywordEffect; timing: GrantKeywordEffect
 Infiltration Lens	polarity: AttachEquipmentEffect
 Infinite Authority	polarity: Aura>CreateDelayedTriggerEffect; polarity: Aura>GatherCardsEffect
@@ -9979,7 +9979,7 @@ Marsh Flitter	combat: SetBaseStatsEffect; intent: SetBaseStatsEffect; timing: Se
 Marsh Gas	intent: ForEach>ModifyStatsEffect
 Marsh Goblins
 Marsh Lurker
-Marsh Viper	intent: AddCountersEffect
+Marsh Viper
 Marshal of Zhalfir
 Marshal of the Lost
 Marshal's Anthem
@@ -10367,7 +10367,7 @@ Mire Blight
 Mire Boa
 Mire Triton
 Mire's Grasp
-Mirelurk Queen	intent: AddCountersEffect; polarity: AddCountersEffect
+Mirelurk Queen	polarity: AddCountersEffect
 Miriam, Herd Whisperer
 Mirkwood
 Mirkwood Bats
@@ -10915,7 +10915,7 @@ Necroduality
 Necrogen Censer
 Necrogen Communion	polarity: Aura>GrantKeyword; polarity: Aura>MoveToZoneEffect
 Necrogen Mists	intent: Pipeline(hand→graveyard)
-Necrogen Rotpriest	intent: AddCountersEffect; intent: GrantKeywordEffect
+Necrogen Rotpriest	intent: GrantKeywordEffect
 Necrogen Scudder
 Necrogen Spellbomb	intent: Pipeline(hand→graveyard); polarity: Pipeline(hand→graveyard)
 Necromancer's Stockpile
@@ -11043,7 +11043,7 @@ Nightfire Giant
 Nightguard Patrol
 Nighthawk Scavenger
 Nighthowl Pursuer
-Nightkin Ambusher	intent: AddCountersEffect; polarity: AddCountersEffect
+Nightkin Ambusher	polarity: AddCountersEffect
 Nightmare
 Nightmare Lash
 Nightmare Shepherd
@@ -11142,7 +11142,7 @@ Nori, Teller of Tales	intent: GrantKeywordEffect
 Norika Yamazaki, the Poet	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→?); polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets→?)
 Norin, Swift Survivalist	intent: GrantMayPlayFromExileEffect; intent: Pipeline(Entity→exile)
 Norman Osborn
-Norn's Decree	intent: AddCountersEffect
+Norn's Decree
 Norn's Inquisitor
 Norn's Wellspring
 North Pole Gates
@@ -11184,7 +11184,7 @@ Noxious Toad	intent: ForEach>Pipeline(hand→graveyard)
 Nuclear Fallout
 Nuisance Engine
 Nuka-Cola Vending Machine
-Nuka-Nuke Launcher	intent: AddCountersEffect
+Nuka-Nuke Launcher
 Null Elemental Blast
 Null Group Biological Assets
 Null Summoner	intent: Pipeline(hand→exile); intent: RevealHandEffect; polarity: Pipeline(hand→exile); polarity: RevealHandEffect
@@ -11805,7 +11805,7 @@ Personal Incarnation	intent: RedirectNextDamageEffect; timing: RedirectNextDamag
 Personal Tutor
 Personify	polarity: MoveToZoneEffect
 Persuasion
-Persuasive Interrogators	intent: AddCountersEffect; polarity: AddCountersEffect
+Persuasive Interrogators	polarity: AddCountersEffect
 Pest Control
 Pest Infestation
 Pest Mascot
@@ -11973,7 +11973,7 @@ Pit Automaton	intent: CopyTargetSpellOrAbilityEffect
 Pit Imp
 Pit Keeper
 Pit Raptor
-Pit Scorpion	intent: AddCountersEffect
+Pit Scorpion
 Pit Trap
 Pit of Offerings
 Pitchburn Devils
@@ -15747,7 +15747,7 @@ Stronghold Machinist
 Stronghold Overseer
 Stronghold Zeppelin
 Structural Assault
-Struggle for Project Purity	intent: AddDynamicCountersEffect
+Struggle for Project Purity
 Struggle for Sanity	intent: Pipeline(?→graveyard|hand); intent: RepeatWhileEffect; intent: RevealHandEffect; polarity: Pipeline(?→graveyard|hand); polarity: RepeatWhileEffect; polarity: RevealHandEffect
 Struggle for Skemfar
 Stubborn Burrowfiend
@@ -16610,7 +16610,7 @@ The Lunar Whale
 The Magic Mirror
 The Masamune
 The Master of Lake-town
-The Master, Transcendent	combat: SetBaseStatsEffect; intent: AddCountersEffect; polarity: AddCountersEffect
+The Master, Transcendent	combat: SetBaseStatsEffect; polarity: AddCountersEffect
 The Masters of Evil
 The Meathook Massacre
 The Mechanist, Aerial Artisan	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect; timing: BecomeCreatureEffect
@@ -17896,7 +17896,7 @@ Venerable Kumo
 Venerable Lammasu
 Venerable Monk
 Venerable Warsinger
-Venerated Rotpriest	intent: AddCountersEffect; polarity: AddCountersEffect
+Venerated Rotpriest	polarity: AddCountersEffect
 Venerated Stormsinger
 Vengeance
 Vengeant Earth	intent: AddSubtypeEffect; intent: BecomeCreatureEffect; intent: MustBeBlockedEffect; polarity: AddSubtypeEffect; polarity: BecomeCreatureEffect; polarity: MustBeBlockedEffect; timing: AddSubtypeEffect; timing: BecomeCreatureEffect
@@ -17970,7 +17970,7 @@ Vexing Beetle
 Vexing Devil
 Vexing Drone
 Vexing Gull
-Vexing Radgull	intent: AddCountersEffect; intent: ProliferateEffect
+Vexing Radgull	intent: ProliferateEffect
 Veyran, Voice of Duality
 Vial Smasher the Fierce
 Vial Smasher, Gleeful Grenadier
@@ -18069,7 +18069,7 @@ Virtue of Strength
 Virtue's Ruin
 Virtuous Charge
 Virulent Emissary
-Virulent Silencer	intent: AddCountersEffect
+Virulent Silencer
 Virulent Swipe
 Virus Beetle	intent: ForEach>Pipeline(hand→graveyard)
 Visage Bandit
@@ -18234,7 +18234,7 @@ Vraska's Contempt
 Vraska's Fall
 Vraska's Final Mercy
 Vraska's Finisher
-Vraska, Betrayal's Sting	intent: AddDynamicCountersEffect; intent: BecomeArtifactEffect; polarity: AddDynamicCountersEffect; polarity: BecomeArtifactEffect
+Vraska, Betrayal's Sting	intent: BecomeArtifactEffect; polarity: AddDynamicCountersEffect; polarity: BecomeArtifactEffect
 Vraska, Soul of Stone
 Vraska, Swarm's Eminence
 Vraska, the Cutting Glare
