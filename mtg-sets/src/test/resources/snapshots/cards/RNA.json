@@ -373,6 +373,78 @@
     ]
 }
 
+// Awaken the Erstwhile
+{
+    "name": "Awaken the Erstwhile",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each player discards all the cards in their hand, then creates that many 2/2 black Zombie creature tokens.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Players",
+                "players": "Each"
+            },
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "FromZone",
+                            "zone": "Hand"
+                        },
+                        "storeAs": "gathered0"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "gathered0",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Graveyard"
+                        },
+                        "moveType": "Discard"
+                    },
+                    {
+                        "type": "CreateToken",
+                        "count": {
+                            "type": "VariableReference",
+                            "variableName": "gathered0_count"
+                        },
+                        "power": 2,
+                        "toughness": 2,
+                        "colors": [
+                            "BLACK"
+                        ],
+                        "creatureTypes": [
+                            "Zombie"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/2/7/27b69e52-f394-4863-943b-239e96b5cc95.jpg?1783933604",
+                        "controller": "Controller"
+                    }
+                ]
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "RARE",
+        "artist": "Jason A. Engle",
+        "flavorText": "In preparation for the conflict all foresaw, the Golgari called upon an army that had slept for millennia beneath the city.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/a/ea166114-2f9b-4ca6-b573-1f49f7485580.jpg?1783933700",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "The number of Zombie tokens each player creates is equal to the number of cards that player discarded, not the total number of cards discarded."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Axebane Beast
 {
     "name": "Axebane Beast",
@@ -1005,6 +1077,76 @@
     ]
 }
 
+// Blade Juggler
+{
+    "name": "Blade Juggler",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "Spectacle {2}{B} (You may cast this spell for its spectacle cost rather than its mana cost if an opponent lost life this turn.)\nWhen this creature enters, it deals 1 damage to you and you draw a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Blade Juggler:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "You"
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "selfAlternativeCost": {
+            "manaCost": "{2}{B}",
+            "condition": {
+                "type": "Compare",
+                "left": {
+                    "type": "TurnTracking",
+                    "player": "EachOpponent",
+                    "tracker": "LIFE_LOST"
+                },
+                "operator": "GTE",
+                "right": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "artist": "Dmitry Burmak",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/9/099bc474-e656-4167-b105-3a3a36c0b23e.jpg?1783933699"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Bladebrand
 {
     "name": "Bladebrand",
@@ -1047,6 +1189,53 @@
         "artist": "Winona Nelson",
         "flavorText": "\"The pain of searing iron and razor edges pales beside the pleasure of performance.\"\n—Judith",
         "imageUri": "https://cards.scryfall.io/normal/front/f/7/f738545d-5483-45ec-bb31-d62b0fae9ea7.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Bloodmist Infiltrator
+{
+    "name": "Bloodmist Infiltrator",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Vampire",
+    "oracleText": "Whenever this creature attacks, you may sacrifice another creature. If you do, this creature can't be blocked this turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bloodmist Infiltrator:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "Sacrifice",
+                            "filter": "creature",
+                            "excludeSource": true
+                        }
+                    },
+                    "then": {
+                        "type": "GrantKeyword",
+                        "keyword": "CANT_BE_BLOCKED",
+                        "target": "Self"
+                    }
+                },
+                "descriptionOverride": "Whenever this creature attacks, you may sacrifice another creature. If you do, this creature can't be blocked this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "rarity": "UNCOMMON",
+        "artist": "Mitchell Malloy",
+        "flavorText": "Blood seeks blood, and nothing shall hold back its hunger.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/909489a9-2678-4b6f-9d5e-2c04bb4cbd66.jpg?1783933698"
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -1356,6 +1545,76 @@
     "colorIdentityOverride": [
         "BLACK",
         "RED"
+    ]
+}
+
+// Carrion Imp
+{
+    "name": "Carrion Imp",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Imp",
+    "oracleText": "Flying\nWhen this creature enters, you may exile target creature card from a graveyard. If you do, you gain 2 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Carrion Imp:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Exile",
+                                "fromZone": "Graveyard"
+                            },
+                            {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "When this creature enters, you may exile target creature card from a graveyard. If you do, you gain 2 life."
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, you may exile target creature card from a graveyard. If you do, you gain 2 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "artist": "Kev Walker",
+        "flavorText": "No scrap of nutrition goes to waste in the undercity.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/958caf1d-b159-4c27-8248-00c345f880be.jpg?1783933698"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -1722,6 +1981,88 @@
     ]
 }
 
+// Clear the Stage
+{
+    "name": "Clear the Stage",
+    "manaCost": "{4}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets -3/-3 until end of turn. If you control a creature with power 4 or greater, you may return up to one target creature card from your graveyard to your hand.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -3
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "creature pow>=4"
+                        }
+                    },
+                    "then": {
+                        "type": "Gated",
+                        "gate": "Gate.MayDecide",
+                        "then": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "destination": "Hand"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "rarity": "UNCOMMON",
+        "artist": "Lucas Graciano",
+        "flavorText": "\"Make way! It's time for the final act!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0ac65975-6ff5-4863-b7b7-d7dbea213b50.jpg?1783933695"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Code of Constraint
 {
     "name": "Code of Constraint",
@@ -1890,6 +2231,109 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Cry of the Carnarium
+{
+    "name": "Cry of the Carnarium",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "All creatures get -2/-2 until end of turn. Exile all creature cards in all graveyards that were put there from the battlefield this turn. If a creature would die this turn, exile it instead.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -2
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "player": "Each",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        "PutIntoGraveyardFromBattlefieldThisTurn"
+                                    ]
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "GrantReplacementEffect",
+                    "replacement": {
+                        "type": "RedirectZoneChange",
+                        "newDestination": "Exile",
+                        "appliesTo": {
+                            "type": "ZoneChangeEvent",
+                            "filter": "creature",
+                            "from": "Battlefield",
+                            "to": "Graveyard"
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "rarity": "UNCOMMON",
+        "artist": "Johann Bodin",
+        "flavorText": "If your ears bleed, it's a party. If your eyes bleed, it's a Rakdos party.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/1/715a14a3-046e-45ca-b943-dd630e5202b7.jpg?1783933695",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "Cry of the Carnarium's power-and-toughness-reducing effect affects only creatures on the battlefield at the time it resolves. Creatures that enter the battlefield later in the turn won't get -2/-2."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "Cry of the Carnarium's replacement effect affects any creature that would die in the turn, even creatures not on the battlefield as it resolves."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "Creatures that would die after getting -2/-2 will still be on the battlefield when cards are exiled from graveyards. They won't die, and will instead be exiled after Cry of the Carnarium is entirely finished resolving."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -4894,6 +5338,145 @@
     ]
 }
 
+// Mass Manipulation
+{
+    "name": "Mass Manipulation",
+    "manaCost": "{X}{X}{U}{U}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Gain control of X target creatures and/or planeswalkers.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "GainControl",
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|planeswalker"
+                },
+                "id": "t0",
+                "dynamicMaxCount": "XValue",
+                "dynamicMinCount": "XValue"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "rarity": "RARE",
+        "artist": "Anthony Palumbo",
+        "flavorText": "Those who cross the Dimir find enemies everywhere they turn.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/782760d7-59cc-4d40-a885-6a7980094fee.jpg?1783933708"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Mesmerizing Benthid
+{
+    "name": "Mesmerizing Benthid",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Octopus",
+    "oracleText": "When this creature enters, create two 0/2 blue Illusion creature tokens with \"Whenever this token blocks a creature, that creature doesn't untap during its controller's next untap step.\"\nThis creature has hexproof as long as you control an Illusion.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mesmerizing Benthid:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 0,
+                    "toughness": 2,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Illusion"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/c/c/ccc3d8da-9005-44d9-bb10-18cdac7a32f5.jpg?1783933605",
+                    "triggeredAbilities": [
+                        {
+                            "id": "Mesmerizing Benthid:1",
+                            "trigger": {
+                                "type": "BlockEvent",
+                                "attackerFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ]
+                                }
+                            },
+                            "effect": {
+                                "type": "GrantKeyword",
+                                "keyword": "DOESNT_UNTAP",
+                                "target": "TriggeringEntity",
+                                "duration": "UntilAfterAffectedControllersNextUntap"
+                            },
+                            "descriptionOverride": "Whenever this token blocks a creature, that creature doesn't untap during its controller's next untap step."
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "HEXPROOF",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent Illusion"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "rarity": "MYTHIC",
+        "artist": "Kev Walker",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5bed7c69-1302-4c1a-b410-b4e6c4ef4c0c.jpg?1783933708",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "Mesmerizing Benthid has hexproof as long as you control any Illusion, not just Illusion tokens like the ones created by its first ability."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "The triggered ability of the Illusion tokens doesn't tap the attacking creature if it's untapped, most likely because it has vigilance."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Ministrant of Obligation
 {
     "name": "Ministrant of Obligation",
@@ -5105,6 +5688,135 @@
     ]
 }
 
+// Persistent Petitioners
+{
+    "name": "Persistent Petitioners",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Advisor",
+    "oracleText": "{1}, {T}: Target player mills a card. (They put the top card of their library into their graveyard.)\nTap four untapped Advisors you control: Target player mills twelve cards.\nA deck can have any number of cards named Persistent Petitioners.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Persistent Petitioners:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ]
+            },
+            {
+                "id": "Persistent Petitioners:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomTapPermanents",
+                        "count": 4,
+                        "filter": "creature Advisor"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 12
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t1"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "artist": "Jason Rainville",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/9/e93f0c57-eb80-4dde-bdb0-326970491621.jpg?1783933707"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Pitiless Pontiff
 {
     "name": "Pitiless Pontiff",
@@ -5252,6 +5964,67 @@
         "artist": "Jedd Chevrier",
         "imageUri": "https://cards.scryfall.io/normal/front/0/7/07f2ae00-206d-4984-84eb-d10ab75d3791.jpg?1783933616"
     }
+}
+
+// Precognitive Perception
+{
+    "name": "Precognitive Perception",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Draw three cards.\nAddendum — If you cast this spell during your main phase, instead scry 3, then draw three cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "All",
+                    "conditions": [
+                        "WasCast",
+                        {
+                            "type": "IsInPhase",
+                            "phases": [
+                                "PRECOMBAT_MAIN",
+                                "POSTCOMBAT_MAIN"
+                            ]
+                        }
+                    ]
+                }
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "Scry",
+                        "count": 3
+                    },
+                    {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    }
+                ]
+            },
+            "otherwise": {
+                "type": "DrawCards",
+                "count": {
+                    "type": "Fixed",
+                    "amount": 3
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "rarity": "RARE",
+        "artist": "Chris Rallis",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/2/724fd1ea-05ad-497c-9989-825ada48e684.jpg?1783933707"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Priest of Forgotten Gods
@@ -5457,6 +6230,69 @@
         "artist": "Magali Villeneuve",
         "flavorText": "\"Citizen! Your crime has been recorded. Cease movement and await arrest, or further penalties will be immediately imposed.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/1/1/11ee2c64-68f1-434b-8092-ae80d6575666.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Pteramander
+{
+    "name": "Pteramander",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Salamander Drake",
+    "oracleText": "Flying\n{7}{U}: Adapt 4. This ability costs {1} less to activate for each instant and sorcery card in your graveyard. (If this creature has no +1/+1 counters on it, put four +1/+1 counters on it.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Pteramander:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{7}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Adapt",
+                    "amount": 4
+                },
+                "descriptionOverride": "{7}{U}: Adapt 4. This ability costs {1} less to activate for each instant and sorcery card in your graveyard.",
+                "genericCostReduction": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Graveyard",
+                    "filter": "instant|sorcery"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "rarity": "UNCOMMON",
+        "artist": "Simon Dominic",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/280f2a85-1900-460b-a768-164fc2dea636.jpg?1783933707",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "Pteramander's activated ability can't reduce itself to less than {U} to activate."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "You can always activate an ability that will cause a creature to adapt. As that ability resolves, if the creature has a +1/+1 counter on it for any reason, you simply won't put any +1/+1 counters on it."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If a creature somehow loses all of its +1/+1 counters, it can adapt again and get more +1/+1 counters."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -6737,6 +7573,115 @@
     ]
 }
 
+// Skatewing Spy
+{
+    "name": "Skatewing Spy",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Vedalken Rogue Mutant",
+    "oracleText": "{5}{U}: Adapt 2. (If this creature has no +1/+1 counters on it, put two +1/+1 counters on it.)\nEach creature you control with a +1/+1 counter on it has flying.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Skatewing Spy:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Adapt",
+                    "amount": 2
+                },
+                "descriptionOverride": "{5}{U}: Adapt 2."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeywordByCounter",
+                "keyword": "FLYING",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "controllerOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "rarity": "UNCOMMON",
+        "artist": "Grzegorz Rutkowski",
+        "flavorText": "\"A better Ravnica begins with a better Simic.\"\n—Vannifar",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/f/ef4a517c-515b-4adc-8ea6-fb86820f22ed.jpg?1783933702",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "You can always activate an ability that will cause a creature to adapt. As that ability resolves, if the creature has a +1/+1 counter on it for any reason, you simply won't put any +1/+1 counters on it."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If a creature somehow loses all of its +1/+1 counters, it can adapt again and get more +1/+1 counters."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Skitter Eel
+{
+    "name": "Skitter Eel",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Fish Crab",
+    "oracleText": "{2}{U}: Adapt 2. (If this creature has no +1/+1 counters on it, put two +1/+1 counters on it.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Skitter Eel:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Adapt",
+                    "amount": 2
+                },
+                "descriptionOverride": "{2}{U}: Adapt 2."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "artist": "Mathias Kollros",
+        "flavorText": "\"Life has no mistakes, only experiments.\"\n—Yolov, Simic bioengineer",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/b/db328f03-7dae-445b-8e71-99dd88f26a9e.jpg?1783933702",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "You can always activate an ability that will cause a creature to adapt. As that ability resolves, if the creature has a +1/+1 counter on it for any reason, you simply won't put any +1/+1 counters on it."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If a creature somehow loses all of its +1/+1 counters, it can adapt again and get more +1/+1 counters."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Sky Tether
 {
     "name": "Sky Tether",
@@ -6924,6 +7869,69 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Sphinx of Foresight
+{
+    "name": "Sphinx of Foresight",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Creature — Sphinx",
+    "oracleText": "You may reveal this card from your opening hand. If you do, scry 3 at the beginning of your first upkeep.\nFlying\nAt the beginning of your upkeep, scry 1.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sphinx of Foresight:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Scry",
+                    "count": 1
+                }
+            }
+        ],
+        "openingHandReveal": {
+            "type": "CreateDelayedTrigger",
+            "step": "UPKEEP",
+            "effect": {
+                "type": "Scry",
+                "count": 3
+            },
+            "fireOnPlayer": {
+                "type": "PlayerRef",
+                "player": "You"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "rarity": "RARE",
+        "artist": "Titus Lunter",
+        "flavorText": "\"I do not understand the future I see: the guilds subverted, the world at war, armies bent to a cruel conqueror's will.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/f/cf2386fd-edc0-4731-8f4e-7a7c45548bf3.jpg?1783933703",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "A player's \"opening hand\" is the hand of cards the player has after all players have taken mulligans. If players have any cards in hand that allow actions to be taken with them from a player's opening hand, the starting player takes all such actions first in any order, followed by each other player in turn order. Then the first turn begins."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If you reveal two Sphinxes of Foresight from your opening hand, you'll scry 3 twice; you won't scry 6. Any cards you put on top of your library the first time you scry 3 will be part of the second time you scry 3."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -7707,6 +8715,80 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Thought Collapse
+{
+    "name": "Thought Collapse",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell. Its controller mills three cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                "Counter",
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "player": {
+                                    "type": "ControllerOf",
+                                    "targetDescription": "target spell"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "ControllerOf",
+                                    "targetDescription": "target spell"
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "artist": "Sara Winters",
+        "flavorText": "\"I can think of no greater punishment than answering your question in full.\"\n—Lazav",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/4/948b569b-6341-418b-99b5-f79dfb3fe8dd.jpg?1783933703",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "A spell that can't be countered is a legal target for Thought Collapse. The spell won't be countered when Thought Collapse resolves, but its controller will still put the top three cards of their library into their graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
