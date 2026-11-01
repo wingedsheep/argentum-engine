@@ -99,4 +99,12 @@ class AiReadingByAbilityTest : FunSpec({
             .flatMap { it.findings }.single { it.check == Check.INTENT }.reason shouldContain "needs no intent"
         AiReadingAudit.audit(card("Arbor Elf")).map { it.key } shouldBe listOf("intent: TapUntapEffect")
     }
+
+    test("an upkeep cost its controller pays or sacrifices for needs no intent, but an opponent's tax on our draw stays flagged") {
+        val djinn = AiReadingAudit.read(card("Drifting Djinn"))
+        djinn.readFully shouldBe true
+        djinn.abilities.single { it.ability.kind == AbilityKind.TRIGGERED }
+            .findings.single { it.check == Check.INTENT }.reason shouldContain "needs no intent"
+        AiReadingAudit.audit(card("Rhystic Study")).map { it.key } shouldBe listOf("intent: PayOrSufferEffect")
+    }
 })

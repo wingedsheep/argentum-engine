@@ -31,12 +31,17 @@ import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
+import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
+import com.wingedsheep.sdk.scripting.effects.PhaseOutEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
+import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
+import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
 import com.wingedsheep.sdk.scripting.effects.ScryEffect
 import com.wingedsheep.sdk.scripting.effects.SurveilEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.effects.TransformEffect
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import java.util.Locale
@@ -66,7 +71,8 @@ import java.util.Locale
  *    each non-mana ability): a slot that earns no [IntentTag] at all is invisible to every intent
  *    consumer, and is attributed to each of its leaves — except the leaves that need no tag
  *    ([needsNoIntent]: a non-keyword counter on the source itself or on its controller, damage to a
- *    player, life loss, a permanent untapping, moving, transforming or animating itself).
+ *    player, life loss, a permanent untapping, moving, transforming or animating itself, an upkeep
+ *    cost its controller pays or suffers on its own source, an "unless" whose suffer is life loss).
  *  - [Check.COMBAT] — [CombatReach] over each leaf of a non-mana activated ability that changes
  *    power/toughness, keywords, P/T counters or blocking, and that combat simulation cannot see.
  *  - [Check.TIMING] — an until-end-of-turn leaf on an instant-speed activation or an instant-speed
@@ -429,7 +435,7 @@ object AiReadingAudit {
         if (sink.findings.size == before && tags.isNotEmpty()) {
             sink += Finding(Check.INTENT, read = true, reason = "knows what it's for: ${tags.sorted().joinToString(", ", transform = ::tagPhrase)}")
         } else if (sink.findings.size == before) {
-            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, untaps, attaches, moves, transforms or animates its own source, adds counters for its controller, damages a player, makes one lose life, or mills one")
+            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, untaps, attaches, moves, transforms or animates its own source, adds counters for its controller, damages a player, makes one lose life, mills one, or is an unless-clause its payer suffers as an upkeep cost or life loss")
         }
     }
 
@@ -596,6 +602,18 @@ object AiReadingAudit {
         // Life loss always lands on a player, so it is the same clock — or, on "you lose N life",
         // a drawback the simulation already prices on resolution. Either way there is nothing to tag.
         if (leaf is LoseLifeEffect) return true
+        // "Sacrifice it unless you pay {1}{U}" (an upkeep cost, a land's "sacrifice it unless you pay {1}") is a drawback its
+        // controller chooses to pay or take: no target, nothing to hold, and whether to pay is the
+        // simulation's call when the trigger resolves. A suffer that needs no intent of its own (life
+        // loss, damage to a player) needs none behind an "unless" either, whoever pays. An opponent
+        // paying to stop *our* payoff (Rhystic Study's draw) stays flagged.
+        if (leaf is PayOrSufferEffect) {
+            val paidByController = leaf.player == EffectTarget.Controller || leaf.player == EffectTarget.PlayerRef(Player.You)
+            // Scry/surveil needsNoIntent only because CardIntentAnalyzer reads them, and nothing reads inside a suffer.
+            return EffectWalker.payoffLeaves(leaf.suffer).all {
+                (it !is ScryEffect && it !is SurveilEffect && needsNoIntent(it)) || (paidByController && harmsOnlyItsSource(it))
+            }
+        }
         // Scry and surveil are read (card selection); skipped here only so a sibling leaf is still asked about.
         if (leaf is ScryEffect || leaf is SurveilEffect) return true
         val (counter, target) = when (leaf) {
@@ -605,6 +623,15 @@ object AiReadingAudit {
         }
         if (target != EffectTarget.Self && target != EffectTarget.Controller) return false
         return Keyword.entries.none { it.name == counter.name }
+    }
+
+    /** A leaf that only sacrifices, taps or phases out its own source — the "suffer" of an upkeep cost. */
+    private fun harmsOnlyItsSource(leaf: Effect): Boolean = when (leaf) {
+        SacrificeSelfEffect -> true
+        is SacrificeTargetEffect -> leaf.target == EffectTarget.Self
+        is TapUntapEffect -> leaf.target == EffectTarget.Self
+        is PhaseOutEffect -> leaf.target == EffectTarget.Self
+        else -> false
     }
 
     /** The targets [CardIntentAnalyzer] reads as a player rather than a permanent (its `hitsAnotherPermanent`). */
