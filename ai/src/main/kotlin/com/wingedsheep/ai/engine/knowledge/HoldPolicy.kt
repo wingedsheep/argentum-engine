@@ -709,8 +709,9 @@ class HoldPolicy(
                     .filter { projected.getController(it) == playerId }
             }
 
-            // Null reach on a card we *did* read is destruction, exile or bounce — see
-            // [CardIntent.removalReach]. Toughness is no defence against any of them.
+            // Null reach on a card we *did* read is destruction, exile or bounce — toughness is no
+            // defence against any of them — or a dynamic amount (X burn, a -X/-X) whose size the
+            // static reading cannot bound; see [CardIntent.removalReach]. No pump is priced against either.
             val reach = threat.removalReach ?: continue
             if (victims.any { savedByPump(state, projected, it, reach, pump) }) {
                 return TimingVerdict.Adjust(RESPONSE_WINDOW)

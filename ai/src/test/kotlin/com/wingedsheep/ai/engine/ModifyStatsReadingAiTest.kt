@@ -63,7 +63,7 @@ class ModifyStatsReadingAiTest : ScenarioTestBase() {
             val ai = AIPlayer.create(cardRegistry, game.player1Id, AiProfile.LIVE)
             val pitched = (ai.respondToDecision(game.state, decision) as CardsSelectedResponse)
                 .selectedCards.map { game.state.getEntity(it)?.get<CardComponent>()?.name }
-            withClue("discarded $pitched — Death Wind reads as removal, worth more than a vanilla 3/3 facing a 6/4") {
+            withClue("discarded $pitched — Death Wind reads as removal, worth more in hand than a vanilla 3/3") {
                 pitched shouldBe listOf("Hill Giant")
             }
         }

@@ -28,7 +28,8 @@ data class CardIntent(
      * Null is therefore two different claims, and [HoldPolicy] has to tell them apart: "toughness
      * is no defence" and "we could not read this card". The one case where null means neither is a
      * fight, whose reach is the *other* creature's power and so cannot be a property of the card —
-     * it carries [IntentTag.FIGHT] to say so.
+     * it carries [IntentTag.FIGHT] to say so. A dynamic amount (X burn, Death Wind's -X/-X) also
+     * leaves reach null: its size is only known on the stack, so no static reading can bound it.
      */
     val removalReach: Int?,
     /** Cards drawn on a single resolution, or null when the card draws none. */
