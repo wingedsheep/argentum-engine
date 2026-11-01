@@ -878,7 +878,7 @@ Families:
 - `FilterCollectionEffect(from: String, filter: GameObjectFilter, collectionFilter: CollectionFilter?, storeMatching: String, storeNonMatching: String?)` — Filter a named collection, splitting it into matching and non-matching subsets.
 - `FlipCoinEffect(wonEffect: Effect?, lostEffect: Effect?)` — Flip a coin.
 - `FlipCoinsEffect(count: Int, storeHeadsAs: String)` — Flip count coins, then store the number that came up heads under storeHeadsAs in pipeline `storedNumbers` so a later sub-effect in the same composite can scale off it via com.wingedsheep.sdk.script…
-- `FlipCoinsUntilLossEffect(storeWinsAs: String)` — Flip coins one at a time until the flipper *loses* a flip or chooses to stop, then store how many flips they won under storeWinsAs in pipeline `storedNumbers`.
+- `FlipCoinsUntilLossEffect(storeWinsAs: String, mayStop: Boolean)` — Flip coins one at a time until the flipper *loses* a flip or chooses to stop, then store how many flips they won under storeWinsAs in pipeline `storedNumbers`.
 - `FlipEffect(target: EffectTarget)` — Flip a flip-card permanent (CR 710) — "flip this creature".
 - `FlipOntoBattlefieldEffect(storeTouchedAs: String, filter: GameObjectFilter)` — "Flip this card onto the battlefield from a height of at least one foot.
 - `FlipTwoCoinsEffect(bothHeadsEffect: Effect?, bothTailsEffect: Effect?, mixedEffect: Effect?)` — Flip two coins.

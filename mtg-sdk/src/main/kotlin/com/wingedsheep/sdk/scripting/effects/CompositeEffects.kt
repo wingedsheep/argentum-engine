@@ -1240,16 +1240,23 @@ data class FlipCoinsEffect(
  *
  * Used by Fiery Gambit ("Flip a coin until you lose a flip or choose to stop flipping"), whose three
  * payoff tiers are then plain `Compare(VariableReference(storeWinsAs), GTE, Fixed(n))` gates over the
- * one tally.
+ * one tally, and — with [mayStop] `false` — by Mirror March ("flip a coin until you lose a flip"),
+ * whose run has no stop option at all: a won flip is followed by the next flip with no prompt.
  *
  * @property storeWinsAs Pipeline `storedNumbers` key the won-flip tally is written to.
+ * @property mayStop Whether the flipper is offered "stop flipping" after each won flip ("…or choose
+ *   to stop flipping"). `false` is the mandatory form: only a lost flip ends the run (bounded by the
+ *   engine's coin-flip backstop when a forced-win effect means no flip can be lost).
  */
 @SerialName("FlipCoinsUntilLoss")
 @Serializable
 data class FlipCoinsUntilLossEffect(
-    val storeWinsAs: String = "wins"
+    val storeWinsAs: String = "wins",
+    val mayStop: Boolean = true
 ) : Effect {
-    override val description: String = "Flip a coin until you lose a flip or choose to stop flipping"
+    override val description: String =
+        if (mayStop) "Flip a coin until you lose a flip or choose to stop flipping"
+        else "Flip a coin until you lose a flip"
 }
 
 // =============================================================================

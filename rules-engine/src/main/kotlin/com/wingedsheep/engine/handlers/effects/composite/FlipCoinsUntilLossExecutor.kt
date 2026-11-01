@@ -22,8 +22,10 @@ import kotlin.reflect.KClass
  * Executor for [FlipCoinsUntilLossEffect] — "flip a coin until you lose a flip or choose to stop
  * flipping", tallying the flips won (Fiery Gambit).
  *
- * One call flips exactly **one** coin, so the executor can never spin: a lost flip finishes the run
- * synchronously, and a won flip pauses on "flip again?". Every later flip arrives through
+ * In the optional form (`mayStop = true`) one call flips exactly **one** coin: a lost flip finishes
+ * the run synchronously, and a won flip pauses on "flip again?". The mandatory form
+ * (`mayStop = false`, Mirror March) has no question to ask, so a won flip is followed by the next
+ * flip in the same call, bounded by [GameLimits.MAX_COIN_FLIPS_PER_EFFECT]. Every later optional flip arrives through
  * [FlipCoinsUntilLossContinuation] on the resume path, and the running tally rides *in that frame* —
  * not in the pipeline. That is deliberate: pipeline `storedNumbers` only reach a consumer when they
  * are published on the finishing result, so a tally threaded through the pipeline would be lost on
@@ -105,6 +107,7 @@ class FlipCoinsUntilLossExecutor(
                     context = context,
                     won = resolution.results.firstOrNull() == true,
                     winsSoFar = winsSoFar,
+                    cardRegistry = cardRegistry,
                     decisionHandler = decisionHandler,
                     priorEvents = priorEvents + resolution.events
                 )
@@ -113,7 +116,7 @@ class FlipCoinsUntilLossExecutor(
 
         /**
          * Continue the run now that one coin has settled: a lost flip ends it, a won flip asks
-         * whether to keep going. Shared with the resume path so a coin that paused for a Krark's
+         * whether to keep going (or, when the effect's `mayStop` is false, flips again). Shared with the resume path so a coin that paused for a Krark's
          * Thumb choice rejoins the run exactly where an unreplaced coin would have.
          */
         fun afterFlip(
@@ -122,6 +125,7 @@ class FlipCoinsUntilLossExecutor(
             context: EffectContext,
             won: Boolean,
             winsSoFar: Int,
+            cardRegistry: CardRegistry,
             decisionHandler: DecisionHandler,
             priorEvents: List<GameEvent>
         ): EffectResult {
@@ -134,15 +138,31 @@ class FlipCoinsUntilLossExecutor(
 
             val wins = winsSoFar + 1
 
-            // Backstop, not a game rule: the loop is only bounded by the flipper answering "stop", and
-            // a forced-win replacement plus an always-yes automated answer would never produce one.
+            // Backstop, not a game rule: under a forced-win replacement no flip can be lost, so the run
+            // is bounded only by the flipper answering "stop" — which an always-yes automated answer
+            // never gives, and the mandatory form (mayStop = false) never offers.
             // Far above any real run — the card that motivates this pays out fully at three.
             if (wins >= GameLimits.MAX_COIN_FLIPS_PER_EFFECT) {
                 System.err.println(
                     "GameLimits: flip-until-loss reached $wins won flips — stopping " +
-                        "(likely a forced-win replacement with an automated 'continue' answer)."
+                        "(likely a forced-win replacement with a mandatory run or an automated 'continue' answer)."
                 )
                 return finish(state, effect.storeWinsAs, wins, priorEvents)
+            }
+
+            // The mandatory form ("flip a coin until you lose a flip") has no choice to offer: a won
+            // flip is simply followed by the next one. Each coin still goes through flipOnce, so a
+            // Krark's Thumb pause mid-run keeps this effect (and its mayStop) in its frame.
+            if (!effect.mayStop) {
+                return flipOnce(
+                    state = state,
+                    effect = effect,
+                    context = context,
+                    winsSoFar = wins,
+                    cardRegistry = cardRegistry,
+                    decisionHandler = decisionHandler,
+                    priorEvents = priorEvents
+                )
             }
 
             val sourceId = context.sourceId

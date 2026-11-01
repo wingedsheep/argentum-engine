@@ -6629,6 +6629,73 @@
     ]
 }
 
+// Mirror March
+{
+    "name": "Mirror March",
+    "manaCost": "{5}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a nontoken creature you control enters, flip a coin until you lose a flip. For each flip you won, create a token that's a copy of that creature. Those tokens gain haste. Exile them at the beginning of the next end step.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mirror March:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "FlipCoinsUntilLoss",
+                            "storeWinsAs": "mirrorMarchWins",
+                            "mayStop": false
+                        },
+                        {
+                            "type": "CreateTokenCopyOfTarget",
+                            "target": "TriggeringEntity",
+                            "count": {
+                                "type": "VariableReference",
+                                "variableName": "mirrorMarchWins"
+                            },
+                            "addedKeywords": [
+                                "HASTE"
+                            ],
+                            "exileAtStep": "END"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever a nontoken creature you control enters, flip a coin until you lose a flip. For each flip you won, create a token that's a copy of that creature. Those tokens gain haste. Exile them at the beginning of the next end step."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "rarity": "RARE",
+        "artist": "Johannes Voss",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/50a27943-f08c-4cbd-affb-8e59411b3d4f.jpg?1783933678",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "All of the tokens enter the battlefield at the same time."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If the entering creature leaves the battlefield before Mirror March's ability resolves, use that creature's last known existence on the battlefield to determine the token's characteristics."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "Any enters-the-battlefield abilities of the copied creature will trigger when the token enters the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Noxious Groodion
 {
     "name": "Noxious Groodion",
