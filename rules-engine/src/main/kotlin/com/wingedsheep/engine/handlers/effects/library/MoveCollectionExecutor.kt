@@ -83,15 +83,26 @@ class MoveCollectionExecutor(
         } else {
             allCards
         }
-        // "Spells and abilities your opponents control can't cause you to discard cards" (Tamiyo,
-        // Collector of Tales): a protected player's share of the discard stays in their hand, and
-        // leaves this collection, so a later "the discarded card" step sees only what was really
-        // discarded. A discard paid as a cost is the payer's own act and passes through.
-        if (effect.moveType == MoveType.Discard && !context.discardIsCost) {
+        // "Spells and abilities your opponents control can't cause you to discard cards or sacrifice
+        // permanents" (Tamiyo, Collector of Tales; Sigarda, Host of Herons): a protected player's
+        // share of the discard stays in their hand, and of the sacrifice on the battlefield. Those
+        // cards leave this collection too, so a later "the discarded / sacrificed" step sees only
+        // what really moved. A discard paid as a cost is the payer's own act and passes through.
+        val compelled = when (effect.moveType) {
+            MoveType.Discard -> com.wingedsheep.sdk.scripting.CompelledAction.DISCARD.takeUnless { context.discardIsCost }
+            MoveType.Sacrifice -> com.wingedsheep.sdk.scripting.CompelledAction.SACRIFICE
+            else -> null
+        }
+        if (compelled != null && cards.isNotEmpty()) {
             val causeControllerId = context.effectControllerId ?: context.controllerId
-            val kept = discardsByPlayer(state, cards, context.controllerId).filter { (discarderId, _) ->
+            val byPlayer = if (compelled == com.wingedsheep.sdk.scripting.CompelledAction.DISCARD) {
+                discardsByPlayer(state, cards, context.controllerId)
+            } else {
+                cards.groupBy { state.projectedState.getController(it) ?: context.controllerId }
+            }
+            val kept = byPlayer.filter { (playerId, _) ->
                 !com.wingedsheep.engine.mechanics.CompelledActionImmunity.appliesTo(
-                    state, discarderId, causeControllerId, com.wingedsheep.sdk.scripting.CompelledAction.DISCARD, predicateEvaluator
+                    state, playerId, causeControllerId, compelled, predicateEvaluator
                 )
             }.values.flatten().toHashSet()
             if (kept.size < cards.size) {

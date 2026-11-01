@@ -348,14 +348,16 @@ class StaticAbilityHandler(
         allStaticAbilities.controllerGrant<GrantHexproofToController>()?.let {
             result = result.with(GrantsControllerHexproofComponent(it.condition))
         }
-        // One marker per compelled action, each carrying the gate of the first ability naming it.
+        // One marker per compelled action. An ungated grant wins over a gated one (as
+        // controllerGrant does); otherwise the first gated grant naming the action supplies the gate.
         val compelledGrants = allStaticAbilities.controllerGrants<OpponentsCantCauseYouTo>()
-        compelledGrants.firstOrNull { (ability, _) -> CompelledAction.SACRIFICE in ability.actions }?.let { (_, condition) ->
-            result = result.with(GrantsSacrificeImmunityComponent(condition))
+        fun compelledGate(action: CompelledAction): ControllerGrant? {
+            val naming = compelledGrants.filter { (ability, _) -> action in ability.actions }
+            if (naming.isEmpty()) return null
+            return ControllerGrant(naming.firstOrNull { it.second == null }?.second ?: naming.first().second)
         }
-        compelledGrants.firstOrNull { (ability, _) -> CompelledAction.DISCARD in ability.actions }?.let { (_, condition) ->
-            result = result.with(GrantsDiscardImmunityComponent(condition))
-        }
+        compelledGate(CompelledAction.SACRIFICE)?.let { result = result.with(GrantsSacrificeImmunityComponent(it.condition)) }
+        compelledGate(CompelledAction.DISCARD)?.let { result = result.with(GrantsDiscardImmunityComponent(it.condition)) }
         allStaticAbilities.controllerGrant<GrantCantLoseGame>()?.let {
             result = result.with(GrantsCantLoseGameComponent(it.condition))
         }

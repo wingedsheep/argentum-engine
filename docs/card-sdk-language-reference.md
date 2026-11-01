@@ -11098,11 +11098,12 @@ staticAbility {
   `GrantsDiscardImmunityComponent`) and read by `CompelledActionImmunity.appliesTo(state, playerId,
   effectControllerId, action)`, which every site consults: sacrifices in `ForceSacrificeExecutor`
   (edicts — a protected player is dropped before anyone is prompted), `SacrificeExecutor`,
-  `SacrificeTargetExecutor`; discards in `MoveCollectionExecutor` (a non-cost `MoveType.Discard` keeps
-  a protected player's cards in hand and drops them from the moved collection, so "the discarded
-  card" steps see only real discards), `SelectFromCollectionExecutor` (the "choose cards to discard"
+  `SacrificeTargetExecutor` and a pipeline's `MoveType.Sacrifice` move (Sacrifice All); discards in
+  `MoveCollectionExecutor` (a non-cost `MoveType.Discard` keeps a protected player's cards in hand and
+  drops them from the moved collection, so "the discarded card" steps see only real discards), `SelectFromCollectionExecutor` (the "choose cards to discard"
   question isn't asked when every owner is protected) and `ZoneTransitionService.discardCards` with a
-  cause; plus the `PayOrSuffer` and ward cost checks. Pass the *overall* effect's controller
+  cause; plus the `PayOrSuffer` and ward cost checks, and `ChooseAction`, which doesn't offer an option
+  whose effect would discard or sacrifice (Thornplate Intimidator's "sacrifice, discard or lose 3 life"). Pass the *overall* effect's controller
   (`context.effectControllerId ?: controllerId`), not the player a per-player iteration is currently
   bound to, so a `ForEachPlayer` wrapper (Killing Wave, Mind Rot cast on each opponent) still reports
   the caster. Game rules are untouched: lethal damage, 0 toughness, the legend rule, destruction and

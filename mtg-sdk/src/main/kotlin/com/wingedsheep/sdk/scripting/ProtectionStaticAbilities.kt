@@ -403,9 +403,9 @@ enum class CompelledAction(val phrase: String) {
 }
 
 /**
- * Spells and abilities your opponents control can't cause you to [actions] — "… to sacrifice
- * permanents" (Sigarda, Host of Herons), "… to discard cards or sacrifice permanents" (Tamiyo,
- * Collector of Tales).
+ * Spells and abilities your opponents control can't cause you to discard cards and/or sacrifice
+ * permanents, per [actions] — Sigarda, Host of Herons (sacrifice), Tamiyo, Collector of Tales
+ * (both).
  *
  * A player-scoped "can't" that outranks the instruction (CR 101.2): as an opponent's spell or
  * ability resolves, the discard or sacrifice it would impose on this permanent's controller simply
@@ -417,7 +417,8 @@ enum class CompelledAction(val phrase: String) {
  *
  * Stamped as one marker per action (`GrantsDiscardImmunityComponent`,
  * `GrantsSacrificeImmunityComponent`) by the static-ability handler and read by
- * `CompelledActionImmunity`, which every discard and sacrifice site consults; it is not a Rule 613
+ * `CompelledActionImmunity`, which every discard and sacrifice site consults (including a
+ * `ChooseAction` option that would discard or sacrifice); it is not a Rule 613
  * continuous effect.
  */
 @SerialName("OpponentsCantCauseYouTo")

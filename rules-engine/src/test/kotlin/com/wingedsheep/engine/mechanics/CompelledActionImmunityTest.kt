@@ -17,7 +17,10 @@ import com.wingedsheep.sdk.scripting.CompelledAction
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.OpponentsCantCauseYouTo
+import com.wingedsheep.sdk.scripting.effects.EffectChoice
+import com.wingedsheep.sdk.scripting.effects.FeasibilityCheck
 import com.wingedsheep.sdk.scripting.effects.WardCost
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
@@ -103,10 +106,39 @@ class CompelledActionImmunityTest : FunSpec({
         keywordAbility(KeywordAbility.Ward(WardCost.Discard()))
     }
 
+    val intimidation = card("Test Intimidation") {
+        manaCost = "{B}"
+        typeLine = "Sorcery"
+        spell {
+            val opponent = target(Targets.Player)
+            effect = Effects.ChooseAction(
+                choices = listOf(
+                    EffectChoice(
+                        label = "Sacrifice a nonland permanent",
+                        effect = Effects.Sacrifice(GameObjectFilter.NonlandPermanent, 1, opponent),
+                        feasibilityCheck = FeasibilityCheck.ControlsPermanentMatching(GameObjectFilter.NonlandPermanent)
+                    ),
+                    EffectChoice(
+                        label = "Discard a card",
+                        effect = Patterns.Hand.discardCards(1, opponent),
+                        feasibilityCheck = FeasibilityCheck.HasCardsInZone(Zone.HAND)
+                    ),
+                    EffectChoice(label = "Lose 3 life", effect = Effects.LoseLife(3, opponent)),
+                ),
+                player = opponent
+            )
+        }
+    }
+    val sweep = card("Test Sacrifice Sweep") {
+        manaCost = "{B}"
+        typeLine = "Sorcery"
+        spell { effect = Effects.SacrificeAll(GameObjectFilter.Creature) }
+    }
+
     fun newDriver(): GameTestDriver {
         val driver = GameTestDriver()
         driver.registerCards(
-            TestCards.all + listOf(warden, mindRot, raidersWake, hymn, quandary, tribute, selfDiscard, wardedSage)
+            TestCards.all + listOf(warden, mindRot, raidersWake, hymn, quandary, tribute, selfDiscard, wardedSage, intimidation, sweep)
         )
         driver.initMirrorMatch(deck = Deck.of("Swamp" to 40), skipMulligans = true, startingPlayer = 0)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
@@ -194,6 +226,41 @@ class CompelledActionImmunityTest : FunSpec({
         driver.pendingDecision shouldBe null
         driver.getLifeTotal(defender) shouldBe 17
         driver.findPermanent(defender, "Centaur Courser") shouldNotBe null
+    }
+
+    test("an opponent's 'sacrifice, discard or lose life' offers neither forbidden option, so life is lost") {
+        val driver = newDriver()
+        val caster = driver.activePlayer!!
+        val defender = driver.getOpponent(caster)
+        driver.putCreatureOnBattlefield(defender, "Discard Warden")
+        val handBefore = driver.getHandSize(defender)
+
+        driver.castAt(caster, "Test Intimidation", defender)
+
+        withClue("only 'Lose 3 life' remains, a forced pick answered without a prompt") {
+            driver.pendingDecision shouldBe null
+        }
+        driver.getLifeTotal(defender) shouldBe 17
+        driver.getHandSize(defender) shouldBe handBefore
+        driver.findPermanent(defender, "Discard Warden") shouldNotBe null
+    }
+
+    test("an opponent's 'sacrifice all creatures' pipeline spares only the protected player's") {
+        val driver = newDriver()
+        val caster = driver.activePlayer!!
+        val defender = driver.getOpponent(caster)
+        driver.putCreatureOnBattlefield(caster, "Centaur Courser")
+        driver.putCreatureOnBattlefield(defender, "Discard Warden")
+        driver.putCreatureOnBattlefield(defender, "Centaur Courser")
+
+        val spell = driver.putCardInHand(caster, "Test Sacrifice Sweep")
+        driver.giveMana(caster, Color.BLACK, 1)
+        driver.castSpell(caster, spell).outcome shouldBe Outcome.Done
+        driver.bothPass()
+
+        driver.findPermanent(caster, "Centaur Courser") shouldBe null
+        driver.findPermanent(defender, "Centaur Courser") shouldNotBe null
+        driver.findPermanent(defender, "Discard Warden") shouldNotBe null
     }
 
     test("a ward—discard cost can't be paid, so the protected player's spell is countered unasked") {

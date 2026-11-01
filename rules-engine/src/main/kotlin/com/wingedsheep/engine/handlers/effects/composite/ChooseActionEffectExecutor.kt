@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.EffectChoice
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.scripting.effects.FeasibilityCheck
+import com.wingedsheep.engine.mechanics.CompelledActionImmunity
 import kotlin.reflect.KClass
 
 /**
@@ -63,7 +64,14 @@ class ChooseActionEffectExecutor(
         // question offers reads the truth. So "sacrifice an artifact or discard a nonland card"
         // with an artifact and a hand of lands is asked, offering only the sacrifice, a forced
         // pick answered without a prompt.
-        val publiclyFeasible = labelled.filter { choice ->
+        // An opponent's "sacrifice or discard or …" can't be answered by an action the chooser is
+        // protected from (Tamiyo, Collector of Tales) — that option isn't offered. Public.
+        val cause = context.effectControllerId ?: context.controllerId
+        val allowed = labelled.filterNot { choice ->
+            val action = CompelledActionImmunity.actionCompelledBy(choice.effect) ?: return@filterNot false
+            CompelledActionImmunity.appliesTo(state, choosingPlayerId, cause, action, predicateEvaluator)
+        }
+        val publiclyFeasible = allowed.filter { choice ->
             checkFeasibility(state, choosingPlayerId, choice.feasibilityCheck, predicateEvaluator, manaSolver, publicOnly = true)
         }
         val feasibleChoices = publiclyFeasible.filter { choice ->
