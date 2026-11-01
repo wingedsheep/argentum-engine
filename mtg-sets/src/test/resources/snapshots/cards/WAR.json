@@ -1,3 +1,77 @@
+// Ahn-Crop Invader
+{
+    "name": "Ahn-Crop Invader",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Zombie Minotaur Warrior",
+    "oracleText": "During your turn, this creature has first strike.\n{1}, Sacrifice another creature: This creature gets +2/+0 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ahn-Crop Invader:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "IsYourTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "artist": "Tomasz Jedruszek",
+        "flavorText": "\"Give me a crew like this one and I'd rule any sea I sailed.\"\n—Angrath",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2dea2466-5c7f-40ce-b749-100ae89d2c90.jpg?1783933435"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Aid the Fallen
 {
     "name": "Aid the Fallen",
@@ -801,6 +875,74 @@
     "colorIdentityOverride": []
 }
 
+// Blindblast
+{
+    "name": "Blindblast",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Blindblast deals 1 damage to target creature. That creature can't block this turn.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "CantBlockTargetCreatures",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "artist": "Sidharth Chaturvedi",
+        "flavorText": "\"Peril is in the eye of the beholder. At least, if your aim is good.\"\n—Jaya Ballard",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/d/1d49637b-2255-4f16-8f24-140145966bfa.jpg?1783933434",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "Casting Blindblast after a creature has blocked won't remove the blocking creature from combat unless the damage Blindblast deals causes that creature to die. It won't cause the creature it blocked to become unblocked even if the blocking creature does die."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If the target creature is an illegal target by the time Blindblast tries to resolve, the spell doesn't resolve. You won't draw a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Bloom Hulk
 {
     "name": "Bloom Hulk",
@@ -1095,6 +1237,90 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Bond of Passion
+{
+    "name": "Bond of Passion",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Gain control of target creature until end of turn. Untap that creature. It gains haste until end of turn. Bond of Passion deals 2 damage to any other target.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetOther",
+                "baseRequirement": "AnyTarget",
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "116",
+        "rarity": "UNCOMMON",
+        "artist": "Izzy",
+        "flavorText": "\"Why don't we fight for what's right and let bureaucrats argue over details?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/e/ae644e9d-9bc4-4ccd-aef4-3d0559948aa6.jpg?1783933433",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "If either target becomes illegal after Bond of Passion is cast but before it resolves, the other is still affected as appropriate."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "In some rare cases, gaining control of the target creature may cause the second target to become illegal. As long as the second target is a legal target as Bond of Passion begins to resolve (before the target creature changes control) it will attempt to deal damage to the second target."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -1457,6 +1683,59 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Chandra's Triumph
+{
+    "name": "Chandra's Triumph",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Chandra's Triumph deals 3 damage to target creature or planeswalker an opponent controls. Chandra's Triumph deals 5 damage instead if you control a Chandra planeswalker.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Conditional",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "planeswalker Chandra"
+                },
+                "ifTrue": {
+                    "type": "Fixed",
+                    "amount": 5
+                },
+                "ifFalse": {
+                    "type": "Fixed",
+                    "amount": 3
+                }
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|planeswalker ctrl:opponent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "rarity": "UNCOMMON",
+        "artist": "Kieran Yanner",
+        "flavorText": "Her triumph came not from achieving her ideal self, but from rejecting the idea of perfection.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/0/70f43c17-7022-4052-86b8-90b74382b7bf.jpg?1783933431"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -1973,6 +2252,61 @@
     ]
 }
 
+// Devouring Hellion
+{
+    "name": "Devouring Hellion",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Hellion",
+    "oracleText": "As this creature enters, you may sacrifice any number of creatures and/or planeswalkers. If you do, it enters with twice that many +1/+1 counters on it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithDevour",
+                "multiplier": 2,
+                "sacrificeFilter": {
+                    "cardPredicates": [
+                        {
+                            "type": "Or",
+                            "predicates": [
+                                "IsCreature",
+                                "IsPlaneswalker"
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "rarity": "UNCOMMON",
+        "artist": "Bayard Wu",
+        "flavorText": "There's no crisis a hellion can't make worse.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/88205574-bf2b-46e7-aac7-4b8ea217f94c.jpg?1783933430",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "You choose how many and which creatures and planeswalkers to sacrifice for Devouring Hellion's ability while it's entering the battlefield. No player may take actions between the time you choose which permanents to sacrifice and the time Devouring Hellion is on the battlefield with those counters."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If any of the sacrificed permanents have abilities that trigger when Devouring Hellion enters the battlefield (such as that of Kronch Wrangler), those abilities won't trigger."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If Devouring Hellion somehow enters the battlefield at the same time as another creature or planeswalker, you can't sacrifice that creature or planeswalker. You may choose only permanents that are already on the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Divine Arrow
 {
     "name": "Divine Arrow",
@@ -2202,6 +2536,107 @@
     ]
 }
 
+// Dreadhorde Arcanist
+{
+    "name": "Dreadhorde Arcanist",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Zombie Wizard",
+    "oracleText": "Trample\nWhenever this creature attacks, you may cast target instant or sorcery card with mana value less than or equal to this creature's power from your graveyard without paying its mana cost. If that spell would be put into your graveyard, exile it instead.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dreadhorde Arcanist:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "CastFromCollectionWithoutPayingCost",
+                                "from": "gathered0",
+                                "insteadOfGraveyard": "EXILE"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "Or",
+                                    "predicates": [
+                                        "IsInstant",
+                                        "IsSorcery"
+                                    ]
+                                },
+                                {
+                                    "type": "ManaValueAtMostDynamic",
+                                    "amount": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": "Power"
+                                    }
+                                }
+                            ],
+                            "controllerPredicate": "OwnedByYou"
+                        },
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this creature attacks, you may cast target instant or sorcery card with mana value less than or equal to this creature's power from your graveyard without paying its mana cost. If that spell would be put into your graveyard, exile it instead."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "125",
+        "rarity": "RARE",
+        "artist": "G-host Lee",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd97b3cf-924e-4f77-bb82-0bf19592389f.jpg?1783933429",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "The instant or sorcery card you target must have mana value less than or equal to Dreadhorde Arcanist's power immediately after Dreadhorde Arcanist has attacked. Any other abilities that trigger when creatures you control attack won't have resolved yet."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "If Dreadhorde Arcanist leaves the battlefield before its triggered ability resolves, use its power as it last existed on the battlefield to check whether the card is still a legal target."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "If you cast the card, you do so as part of the resolution of Dreadhorde Arcanist's triggered ability. You can't wait to cast it later in the turn. Timing permissions based on a card's type are ignored, and the spell will resolve before blockers are declared."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "If you cast a card \"without paying its mana cost,\" you can't choose to cast it for any alternative costs. You can, however, pay additional costs. If the card has any mandatory additional costs, you must pay those to cast the card."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "If the card has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Dreadhorde Invasion
 {
     "name": "Dreadhorde Invasion",
@@ -2272,6 +2707,61 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Dreadhorde Twins
+{
+    "name": "Dreadhorde Twins",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Zombie Jackal Warrior",
+    "oracleText": "When this creature enters, amass Zombies 2. (Put two +1/+1 counters on an Army you control. It's also a Zombie. If you don't control an Army, create a 0/0 black Zombie Army creature token first.)\nZombie tokens you control have trample.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dreadhorde Twins:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Amass",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "subtype": "Zombie"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE",
+                "filter": {
+                    "baseFilter": "Zombie token ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "126",
+        "rarity": "UNCOMMON",
+        "artist": "Johannes Voss",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/2/82017bf6-352f-4e81-8fd5-c1b0daf05b01.jpg?1783933428",
+        "rulings": [
+            {
+                "date": "2023-06-16",
+                "text": "Some cards that cause you to amass Zombies also provide bonuses to \"Zombie tokens.\" These affect any token that happens to be a Zombie, not just a Zombie Army you've amassed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -3057,6 +3547,205 @@
     ]
 }
 
+// Finale of Promise
+{
+    "name": "Finale of Promise",
+    "manaCost": "{X}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "You may cast up to one target instant card and/or up to one target sorcery card from your graveyard each with mana value X or less without paying their mana costs. If a spell cast this way would be put into your graveyard, exile it instead. If X is 10 or more, copy each of those spells twice. You may choose new targets for the copies.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": "XValue",
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 10
+                    }
+                }
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": "ChosenTargets",
+                        "storeAs": "gathered0"
+                    },
+                    {
+                        "type": "CastAnyNumberFromCollectionWithoutPayingCost",
+                        "from": "gathered0",
+                        "maxCasts": 2,
+                        "insteadOfGraveyard": "EXILE"
+                    },
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "FromZone",
+                            "zone": "Graveyard"
+                        },
+                        "storeAs": "gathered2"
+                    },
+                    {
+                        "type": "FilterCollection",
+                        "from": "gathered0",
+                        "collectionFilter": {
+                            "type": "ExcludeOtherCollection",
+                            "otherCollectionName": "gathered2"
+                        },
+                        "storeMatching": "matching3"
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "matching3",
+                        "selection": {
+                            "type": "ChooseExactly",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        "storeSelected": "selected4",
+                        "storeRemainder": "remainder4",
+                        "prompt": "Choose the spell to copy first (its copies resolve after the other's)"
+                    },
+                    {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Collection",
+                            "collection": "selected4"
+                        },
+                        "body": {
+                            "type": "CopyTargetSpell",
+                            "target": "IterationEntity",
+                            "copies": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    },
+                    {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Collection",
+                            "collection": "remainder4"
+                        },
+                        "body": {
+                            "type": "CopyTargetSpell",
+                            "target": "IterationEntity",
+                            "copies": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    }
+                ]
+            },
+            "otherwise": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": "ChosenTargets",
+                        "storeAs": "gathered0"
+                    },
+                    {
+                        "type": "CastAnyNumberFromCollectionWithoutPayingCost",
+                        "from": "gathered0",
+                        "maxCasts": 2,
+                        "insteadOfGraveyard": "EXILE"
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsInstant",
+                            {
+                                "type": "ManaValueAtMostDynamic",
+                                "amount": "XValue"
+                            }
+                        ],
+                        "controllerPredicate": "OwnedByYou"
+                    },
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsSorcery",
+                            {
+                                "type": "ManaValueAtMostDynamic",
+                                "amount": "XValue"
+                            }
+                        ],
+                        "controllerPredicate": "OwnedByYou"
+                    },
+                    "zone": "Graveyard"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "rarity": "MYTHIC",
+        "artist": "Jaime Jones",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/811b2dda-e1b7-4a46-83cc-5cdc17554836.jpg?1783933429",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "As Finale of Promise resolves, first you cast the target instant card and/or the target sorcery card in either order. Then, if X is 10 or more, you copy each of those twice and put the copies on the stack in any order. The copies will resolve before the original spells."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "A split card that's an instant and a sorcery card may be the target of Finale of Promise twice. However, once you cast that card once, it can't be cast a second time."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If a spell has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If you cast a card \"without paying its mana cost,\" you can't choose to cast it for any alternative costs. You can, however, pay additional costs. If the card has any mandatory additional costs, such as that of Spark Harvest, you must pay those to cast the card."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If the spell that's copied is modal (that is, it says \"Choose one—\" or the like), the copies will have the same mode or modes. You can't choose different ones."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If the spell has damage divided as it was cast, the division can't be changed (although the targets receiving that damage still can). The same is true of spells that distribute counters."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "You can't choose to pay any additional costs for the copies. However, effects based on any additional costs that were paid for the original spell are copied as though those same costs were paid for the copy too."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "The copies that Finale of Promise creates are created on the stack, so they're not \"cast.\" Abilities that trigger when a player casts a spell won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Finale of Revelation
 {
     "name": "Finale of Revelation",
@@ -3682,6 +4371,51 @@
     ]
 }
 
+// Grim Initiate
+{
+    "name": "Grim Initiate",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Zombie Warrior",
+    "oracleText": "First strike\nWhen this creature dies, amass Zombies 1. (Put a +1/+1 counter on an Army you control. It's also a Zombie. If you don't control an Army, create a 0/0 black Zombie Army creature token first.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Grim Initiate:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Amass",
+                    "subtype": "Zombie"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "130",
+        "artist": "Jason Felix",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/29b6ec9d-3861-48bf-a198-dc7efba5d89c.jpg?1783933428",
+        "rulings": [
+            {
+                "date": "2023-06-16",
+                "text": "To amass Zombies N, if you don't control an Army creature, create a 0/0 black Zombie Army creature token. Then you choose an Army creature you control and put N +1/+1 counters on it. If that Army isn't already a Zombie, it becomes a Zombie in addition to its other types."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Guild Globe
 {
     "name": "Guild Globe",
@@ -3795,6 +4529,47 @@
     ]
 }
 
+// Honor the God-Pharaoh
+{
+    "name": "Honor the God-Pharaoh",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "As an additional cost to cast this spell, discard a card.\nDraw two cards. Amass Zombies 1. (Put a +1/+1 counter on an Army you control. It's also a Zombie. If you don't control an Army, create a 0/0 black Zombie Army creature token first.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                {
+                    "type": "Amass",
+                    "subtype": "Zombie"
+                }
+            ]
+        },
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": "AtomDiscard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "artist": "David Palumbo",
+        "flavorText": "In life, they revered a diverse pantheon of gods. Now they revere only the God-Pharaoh.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/5/75844d13-74f5-4008-9bc6-2f6d04f378aa.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Huatli's Raptor
 {
     "name": "Huatli's Raptor",
@@ -3893,6 +4668,162 @@
     ]
 }
 
+// Ilharg, the Raze-Boar
+{
+    "name": "Ilharg, the Raze-Boar",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Legendary Creature — Boar God",
+    "oracleText": "Trample\nWhenever Ilharg attacks, you may put a creature card from your hand onto the battlefield tapped and attacking. Return that creature to your hand at the beginning of the next end step.\nWhen Ilharg dies or is put into exile from the battlefield, you may put it into its owner's library third from the top.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ilharg, the Raze-Boar:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "creature"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "You may put a creature card onto the battlefield tapped and attacking",
+                            "selectedLabel": "Put onto the battlefield tapped and attacking"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "TappedAndAttacking"
+                            },
+                            "attackDefender": "CONTROLLER_CHOOSES"
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "selected1"
+                            },
+                            "body": {
+                                "type": "CreateDelayedTrigger",
+                                "step": "END",
+                                "effect": {
+                                    "type": "MoveToZone",
+                                    "target": "IterationEntity",
+                                    "destination": "Hand",
+                                    "fromZone": "Battlefield"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever Ilharg attacks, you may put a creature card from your hand onto the battlefield tapped and attacking. Return that creature to your hand at the beginning of the next end step."
+            },
+            {
+                "id": "Ilharg, the Raze-Boar:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Put Ilharg, the Raze-Boar into its owner's library third from the top?"
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Library",
+                        "fromZone": "Graveyard",
+                        "positionFromTop": 2
+                    }
+                },
+                "descriptionOverride": "When Ilharg dies, you may put it into its owner's library third from the top."
+            },
+            {
+                "id": "Ilharg, the Raze-Boar:3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Exile"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Put Ilharg, the Raze-Boar into its owner's library third from the top?"
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Library",
+                        "fromZone": "Exile",
+                        "positionFromTop": 2
+                    }
+                },
+                "descriptionOverride": "When Ilharg is put into exile from the battlefield, you may put it into its owner's library third from the top."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "rarity": "MYTHIC",
+        "artist": "Filip Burburan",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c0109b60-09aa-4a03-92e7-0c651d976d51.jpg?1783933428",
+        "rulings": [
+            {
+                "date": "2024-01-12",
+                "text": "You choose which player, planeswalker, or battle the new creature is attacking. It doesn't have to be attacking the same player, planeswalker, or battle that Ilharg is attacking."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If the new creature leaves the battlefield before the end step, most likely because it died in combat, that card remains in its current zone. It won't return to your hand."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Although the new creature is attacking, it was never declared as an attacking creature (for the purposes of abilities that trigger whenever a creature attacks, for example, such as those of Trusted Pegasus and Makeshift Battalion)."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If one of these Gods leaves the graveyard or exile while its last ability is on the stack, it will remain in its new zone, even if that zone is a graveyard or exile."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If the God's owner has two or fewer cards in their library, the God is put on the bottom of their library as its last ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Interplanar Beacon
 {
     "name": "Interplanar Beacon",
@@ -3980,6 +4911,51 @@
         "artist": "Adam Paquette",
         "imageUri": "https://cards.scryfall.io/normal/front/1/3/132d8e2a-e1dd-4867-8e8c-e48b9450b350.jpg?1783933367"
     }
+}
+
+// Invading Manticore
+{
+    "name": "Invading Manticore",
+    "manaCost": "{5}{R}",
+    "typeLine": "Creature — Zombie Manticore",
+    "oracleText": "When this creature enters, amass Zombies 2. (Put two +1/+1 counters on an Army you control. It's also a Zombie. If you don't control an Army, create a 0/0 black Zombie Army creature token first.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invading Manticore:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Amass",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "subtype": "Zombie"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "134",
+        "artist": "Jehan Choo",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/674e408b-f052-451c-9bf9-ac6f98753a9d.jpg?1783933427",
+        "rulings": [
+            {
+                "date": "2023-06-16",
+                "text": "To amass Zombies N, if you don't control an Army creature, create a 0/0 black Zombie Army creature token. Then you choose an Army creature you control and put N +1/+1 counters on it. If that Army isn't already a Zombie, it becomes a Zombie in addition to its other types."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Iron Bully
@@ -4415,6 +5391,93 @@
         "flavorText": "\"We have visitors? Well, it'd be rude not to give them a traditional Keral Keep welcome.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/e/c/ec66f169-5cf9-4d7c-a5ab-c64fc4801358.jpg"
     },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Jaya, Venerated Firemage
+{
+    "name": "Jaya, Venerated Firemage",
+    "manaCost": "{4}{R}",
+    "typeLine": "Legendary Planeswalker — Jaya",
+    "oracleText": "If another red source you control would deal damage to a permanent or player, it deals that much damage plus 1 to that permanent or player instead.\n−2: Jaya deals 2 damage to any target.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Jaya, Venerated Firemage:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Jaya deals 2 damage to any target."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "ModifyDamageAmount",
+                "modifier": 1,
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "source": {
+                        "cardPredicates": [
+                            {
+                                "type": "HasColor",
+                                "color": "RED"
+                            }
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "StateNot",
+                                "predicate": "IsSource"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "rarity": "UNCOMMON",
+        "artist": "Yongjae Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/2/129dc8a8-9fbc-4300-b559-243395dc6ed5.jpg?1783933424",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "Jaya's first ability doesn't cause Jaya to deal damage; it affects the amount of damage dealt by the original red source."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If another effect modifies how much damage your red source would deal, including preventing some of it, the player being dealt damage or the controller of the permanent being dealt damage chooses an order in which to apply those effects. If all of the damage is prevented, Jaya's effect no longer applies."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If damage dealt by a source you control is being divided or assigned among multiple permanents an opponent controls or among an opponent and one or more permanents they control simultaneously, divide the original amount before adding 1. For example, if you attack with a 5/5 red creature with trample and your opponent blocks with a 2/2 creature, you can assign 2 damage to the blocker and 3 damage to the defending player. These amounts are then modified to 3 and 4, respectively."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
     "colorIdentityOverride": [
         "RED"
     ]
@@ -5812,6 +6875,77 @@
     ]
 }
 
+// Mizzium Tank
+{
+    "name": "Mizzium Tank",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Trample\nWhenever you cast a noncreature spell, this Vehicle becomes an artifact creature and gets +1/+1 until end of turn.\nCrew 1 (Tap any number of creatures you control with total power 1 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "TRAMPLE",
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 1
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mizzium Tank:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCardType",
+                            "cardType": "CREATURE",
+                            "target": "Self",
+                            "duration": "EndOfTurn"
+                        },
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Self"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "rarity": "RARE",
+        "artist": "Wayne Reynolds",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/6/5643253b-0996-45a8-9488-5bcc9192f867.jpg?1783933423"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Naga Eternal
 {
     "name": "Naga Eternal",
@@ -6052,6 +7186,111 @@
     "startingLoyalty": 5,
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Neheb, Dreadhorde Champion
+{
+    "name": "Neheb, Dreadhorde Champion",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Legendary Creature — Zombie Minotaur Warrior",
+    "oracleText": "Trample\nWhenever Neheb deals combat damage to a player or planeswalker, you may discard any number of cards. If you do, draw that many cards and add that much {R}. Until end of turn, you don't lose this mana as steps and phases end.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Neheb, Dreadhorde Champion:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientAnyOf",
+                        "options": [
+                            {
+                                "type": "RecipientPlayer",
+                                "player": "Any"
+                            },
+                            {
+                                "type": "RecipientObject",
+                                "filter": "planeswalker"
+                            }
+                        ]
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "stored0_candidates"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "stored0_candidates",
+                                    "selection": "ChooseAnyNumber",
+                                    "storeSelected": "stored0",
+                                    "prompt": "Choose any number of cards to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "stored0",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "VariableReference",
+                                "variableName": "stored0_count"
+                            }
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "RED",
+                            "amount": {
+                                "type": "VariableReference",
+                                "variableName": "stored0_count"
+                            },
+                            "expiry": "KEPT_UNTIL_END_OF_TURN"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever Neheb deals combat damage to a player or planeswalker, you may discard any number of cards. If you do, draw that many cards and add that much {R}. Until end of turn, you don't lose this mana as steps and phases end."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "140",
+        "rarity": "RARE",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/0/60c90d5d-7b3b-48d2-85f6-d6a2a452c0e9.jpg?1783933423",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "Other effects may cause you to draw more or fewer cards than the number of cards you discarded. In these cases, the amount of mana you add is equal to the number of cards you discarded, not the number of cards you drew."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

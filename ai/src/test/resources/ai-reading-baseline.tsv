@@ -234,6 +234,7 @@ Agonizing Syphon
 Agrus Kos, Eternal Soldier	intent: CopyForEachOtherPossibleTargetEffect
 Agrus Kos, Spirit of Justice
 Agrus Kos, Wojek Veteran
+Ahn-Crop Invader
 Ahriman
 Aid the Fallen
 Aim High
@@ -1607,6 +1608,7 @@ Blind Phantasm
 Blind Seer	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
 Blind with Anger	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect); timing: GrantKeywordEffect
 Blind-Spot Giant
+Blindblast	timing: CantBlockEffect
 Blinding Beam	polarity: SkipUntapEffect
 Blinding Fog	timing: ForEach>GrantKeywordEffect; timing: PreventDamageEffect
 Blinding Light
@@ -1827,6 +1829,7 @@ Bombard
 Bombur, Gentle Dreamer
 Bond of Discipline
 Bond of Flourishing
+Bond of Passion	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
 Bonded Herdbeast	intent: TransformEffect
 Bonders' Enclave
 Bonds of Faith	polarity: Aura>ConditionalStaticAbility
@@ -2608,6 +2611,7 @@ Chandra's Pyreling
 Chandra's Pyrohelix	polarity: DividedDamageEffect
 Chandra's Regulator	intent: CopyTargetSpellOrAbilityEffect
 Chandra's Spitfire
+Chandra's Triumph
 Chandra, Acolyte of Flame	intent: CastFromCollectionWithoutPayingCostEffect; intent: ForEach>AddCountersEffect; intent: Pipeline(ChosenTargets→?); polarity: CastFromCollectionWithoutPayingCostEffect; polarity: Pipeline(ChosenTargets→?)
 Chandra, Awakened Inferno	intent: ForEach>CreateGlobalTriggeredAbilityEffect
 Chandra, Chill of Compliance	intent: CreateGlobalTriggeredAbilityEffect
@@ -3999,6 +4003,7 @@ Devourer of Destiny
 Devourer of Memory
 Devouring Deep
 Devouring Greed
+Devouring Hellion
 Devouring Light
 Devouring Rage
 Devouring Strossus	intent: SacrificeEffect
@@ -4381,7 +4386,9 @@ Dreaded Bat-Cloud
 Dreadfeast Demon
 Dreadful Apathy
 Dreadful as the Storm	intent: SetBaseStatsEffect; intent: TheRingTemptsYouEffect; polarity: SetBaseStatsEffect; timing: SetBaseStatsEffect
+Dreadhorde Arcanist	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(ChosenTargets→?); polarity: CastFromCollectionWithoutPayingCostEffect; polarity: Pipeline(ChosenTargets→?)
 Dreadhorde Invasion	intent: AmassEffect; intent: GrantKeywordEffect
+Dreadhorde Twins	intent: AmassEffect
 Dreadhound
 Dreadlight Monstrosity	intent: GrantKeywordEffect
 Dreadmalkin
@@ -5633,6 +5640,7 @@ Final Showdown
 Final Strike
 Final Vengeance
 Finale of Devastation
+Finale of Promise	intent: CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: ForEach>CopyTargetSpellEffect; intent: Pipeline(ChosenTargets|graveyard→?); polarity: CastAnyNumberFromCollectionWithoutPayingCostEffect; polarity: ForEachEffect; polarity: Pipeline(ChosenTargets|graveyard→?)
 Finale of Revelation
 Finch Formation
 Find // Finality
@@ -7009,6 +7017,7 @@ Grim Bounty
 Grim Discovery
 Grim Draugr
 Grim Haruspex
+Grim Initiate	intent: AmassEffect
 Grim Javelineer
 Grim Physician
 Grim Reaper's Sprint	intent: AddCombatPhaseEffect; intent: ForEach>TapUntapEffect
@@ -7640,6 +7649,7 @@ Honor
 Honor Guard
 Honor Troll
 Honor of the Pure
+Honor the God-Pharaoh
 Honor-Worn Shaku
 Honorable Scout	polarity: GainLifeEffect
 Honorbound Page
@@ -7904,6 +7914,7 @@ Ignite the Future	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithoutP
 Ignoble Hierarch
 Iguana Parrot
 Il Mheg Pixie	intent: SurveilEffect
+Ilharg, the Raze-Boar	intent: ForEach>CreateDelayedTriggerEffect; intent: Pipeline(hand→battlefield)
 Ill-Gotten Inheritance
 Ill-Tempered Loner
 Ill-Timed Explosion
@@ -8175,6 +8186,7 @@ Introduction to Prophecy
 Intrude on the Mind
 Intruder Alarm	intent: ForEach>TapUntapEffect
 Intruding Soulrager
+Invading Manticore	intent: AmassEffect
 Invasion Reinforcements
 Invasion Submersible	intent: AddCardTypeEffect; polarity: MoveToZoneEffect
 Invasion Tactics
@@ -8408,6 +8420,7 @@ Jaya's Firenado
 Jaya's Greeting
 Jaya's Immolating Inferno
 Jaya, Fiery Negotiator	intent: CreateDelayedTriggerEffect; intent: CreateGlobalTriggeredAbilityEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→?); intent: Pipeline(TopOfLibrary→exile); polarity: CreateDelayedTriggerEffect; polarity: Pipeline(ChosenTargets→?)
+Jaya, Venerated Firemage
 Jayemdae Tome
 Jazal Goldmane
 Jecht, Reluctant Guardian	intent: ExileAndReturnTransformedEffect
@@ -10409,6 +10422,7 @@ Misty Palms Oasis
 Misty Rainforest
 Mite Overseer
 Mithril Coat
+Mizzium Tank
 Mizzix's Mastery	polarity: CastFromCollectionWithoutPayingCostEffect; polarity: CopyCollectionIntoCollectionEffect; polarity: Pipeline(ChosenTargets→exile)
 Mizzix, Replica Rider	intent: CopyTargetSpellEffect
 Mjölnir, Hammer of Thor	polarity: AttachEquipmentEffect
@@ -10884,6 +10898,7 @@ Nefashu
 Negate
 Neglected Heirloom	intent: TransformEffect
 Neglected Manor
+Neheb, Dreadhorde Champion
 Neighborhood Guardian
 Nekrataal
 Nekusar, the Mindrazer
@@ -16975,6 +16990,7 @@ Tome Shredder
 Tome of Legends
 Tome of the Guildpact
 Tomebound Lich
+Tomik, Distinguished Advokist
 Tomik, Izzet Sparkmage
 Tomik, Orzhov Lawmage
 Tomik, Wielder of Law
