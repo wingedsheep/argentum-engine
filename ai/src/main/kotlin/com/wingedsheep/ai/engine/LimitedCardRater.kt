@@ -1,14 +1,19 @@
 package com.wingedsheep.ai.engine
 
 import com.wingedsheep.ai.draftsim.DraftsimData
+import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
 import com.wingedsheep.ai.engine.knowledge.EffectWalker
+import com.wingedsheep.ai.engine.knowledge.IntentTag
 import com.wingedsheep.ai.engine.knowledge.RemovalBreadth
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.ModifyStats
+import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.effects.*
+import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.util.concurrent.ConcurrentHashMap
@@ -202,6 +207,8 @@ object LimitedCardRater {
         var rating = baseRating(card)
         rating += keywordBonus(card)
         rating += effectBonus(card)
+        rating += staticBonus(card)
+        rating += manaAbilityBonus(card)
         rating += rarityBonus(card)
         rating += curveBonus(card)
         return rating.coerceIn(0.0, 5.0)
@@ -238,6 +245,11 @@ object LimitedCardRater {
         script.activatedAbilities.forEachIndexed { i, a ->
             if (!a.isManaAbility) slot("Activated ability ${i + 1}", slots.next())
         }
+        script.staticAbilities.forEachIndexed { i, static ->
+            val v = staticScore(static)
+            if (v != 0.0) add(Term("Static ability ${i + 1}", v, static.description.takeIf { it.isNotBlank() }))
+        }
+        manaAbilityBonus(card).takeIf { it != 0.0 }?.let { add(Term("Mana ability", it, "a mana source that isn't a land")) }
         rarityBonus(card).takeIf { it != 0.0 }?.let { add(Term("Rarity", it, card.metadata.rarity.name.lowercase())) }
         curveBonus(card).takeIf { it != 0.0 }?.let { add(Term("Curve", it, "mana value ${card.cmc}")) }
     }
@@ -348,17 +360,19 @@ object LimitedCardRater {
      * The traversal — which script slots count, how much each is discounted, how gates and
      * composites fold — lives in [EffectWalker], shared with
      * [com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer]. Only the leaf scoring below is
-     * this rater's own.
+     * this rater's own — plus opening a pipeline's "if those cards include" leaf onto both branches,
+     * which [EffectWalker.leaves] keeps whole.
      */
     private fun effectBonus(card: CardDefinition): Double =
         EffectWalker.slots(card.script).sumOf(::slotValue)
 
     /**
-     * One slot's effect value, discounted for where it lives and — when it is removal that can aim
+     * One slot's effect value — its leaves folded, plus what its pipelines add up to — discounted
+     * for where it lives and, when it is removal that can aim
      * at only a sliver of what an opponent plays — for how narrow it is ([narrowDiscount]).
      */
     private fun slotValue(slot: EffectWalker.Slot): Double =
-        EffectWalker.fold(slot.effect, LimitedScoreFold) * slot.origin.discount * narrowDiscount(slot)
+        (EffectWalker.fold(slot.effect, LimitedScoreFold) + pipelineScore(slot.effect)) * slot.origin.discount * narrowDiscount(slot)
 
     /**
      * 1.0 for removal that can aim at most of the table ([RemovalBreadth] of [FULL_BREADTH] or more)
@@ -389,12 +403,81 @@ object LimitedCardRater {
     /** What a keyword adds to a limited rating, or 0 for one the table doesn't price. */
     internal fun keywordValue(keyword: Keyword): Double = KEYWORD_BONUS[keyword] ?: 0.0
 
+    /**
+     * What the card's static abilities are worth — an Aura's or Equipment's bonus, an anthem, a
+     * keyword it grants, a Pacifism lock. [EffectWalker.slots] leaves statics out, so before this a
+     * card whose whole text is a static scored its base alone.
+     */
+    private fun staticBonus(card: CardDefinition): Double = card.script.staticAbilities.sumOf { staticScore(it) }
+
+    /**
+     * One static ability, priced by [CardIntentAnalyzer]'s reading of it. A stat bonus is priced by
+     * its size: on the creature it is attached to like a pump, battlefield-wide like an anthem.
+     */
+    private fun staticScore(static: StaticAbility): Double {
+        if (static is ModifyStats) {
+            val total = static.powerBonus + static.toughnessBonus
+            if (total > 0) {
+                return if (static.filter.scope == Scope.Battlefield) {
+                    (total * ANTHEM_PER_STAT).coerceAtMost(ANTHEM_CAP)
+                } else {
+                    total * PUMP_PER_STAT
+                }
+            }
+        }
+        return tagValue(CardIntentAnalyzer.staticTags(static))
+    }
+
+    /**
+     * A non-land card with a mana ability is a mana source — [EffectWalker.slots] skips mana
+     * abilities, as cost rather than payoff, so a mana rock or a dork read as [IntentTag.RAMP]
+     * and was rated as its body alone.
+     */
+    private fun manaAbilityBonus(card: CardDefinition): Double =
+        if (!card.typeLine.isLand && card.script.activatedAbilities.any { it.isManaAbility }) TAG_VALUE.getValue(IntentTag.RAMP)
+        else 0.0
+
+    /**
+     * What a reading is worth when no leaf below prices the effect by its own fields: the highest
+     * value among [tags]. This is what keeps the rating following the intent readers — teach
+     * [CardIntentAnalyzer] a new effect and it is priced here with no second edit.
+     */
+    private fun tagValue(tags: Set<IntentTag>): Double = tags.maxOfOrNull { TAG_VALUE[it] ?: 0.0 } ?: 0.0
+
+    /**
+     * What the gather → move pipelines in a slot are worth. [EffectWalker] stops at pipeline stages,
+     * and a gather or a move is worth nothing alone, so "destroy all creatures" and "look at the top
+     * three, put one into your hand" scored zero. [CardIntentAnalyzer.pipelineTags] reads what the
+     * stages add up to; this prices that reading like the leaf it stands for — a wrath or a picked
+     * destroy like a destroy, a dig like one card drawn.
+     */
+    private fun pipelineScore(root: Effect): Double {
+        val tags = CardIntentAnalyzer.pipelineTags(root)
+        if (tags.isEmpty()) return 0.0
+        var score = 0.0
+        if (IntentTag.REMOVAL in tags) score += DESTROY_SCORE
+        if (IntentTag.DRAW in tags) score += DRAW_PER_CARD
+        return score
+    }
+
     /** How a limited rating folds an effect tree. See [EffectWalker.Fold]. */
     private object LimitedScoreFold : EffectWalker.Fold<Double> {
-        override fun leaf(effect: Effect): Double = scoreEffect(effect)
+        /**
+         * A pipeline's "if those cards include …" branch scores as a conditional over both sides —
+         * the same reading [EffectWalker.payoffLeaves] gives the intent and polarity readers.
+         */
+        override fun leaf(effect: Effect): Double =
+            if (effect is ConditionalOnCollectionEffect) {
+                conditional(
+                    EffectWalker.fold(effect.ifNotEmpty, this),
+                    effect.ifEmpty?.let { EffectWalker.fold(it, this) },
+                )
+            } else {
+                scoreEffect(effect)
+            }
 
         /** Composite — sum children, capped so a long pipeline can't run away with the rating. */
-        override fun composite(parts: List<Double>): Double = parts.sum().coerceAtMost(2.5)
+        override fun composite(parts: List<Double>): Double = parts.sum().coerceAtMost(COMPOSITE_CAP)
 
         /** Conditional — discount both branches; neither is guaranteed. */
         override fun conditional(thenValue: Double, elseValue: Double?): Double =
@@ -411,7 +494,7 @@ object LimitedCardRater {
         return when (effect) {
             // Removal — the most valuable effect type in limited
             is MoveToZoneEffect -> when {
-                effect.byDestruction -> 1.5               // destroy
+                effect.byDestruction -> DESTROY_SCORE     // destroy
                 effect.destination == Zone.EXILE -> 1.6    // exile (better than destroy)
                 effect.destination == Zone.HAND -> 0.8     // bounce
                 effect.destination == Zone.LIBRARY -> 1.0  // tuck
@@ -428,22 +511,15 @@ object LimitedCardRater {
             is PutOnLibraryPositionOfChoiceEffect -> 1.0    // tuck
 
             // Damage — removal or reach
-            is DealDamageEffect -> {
-                val amount = (effect.amount as? com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed)?.amount ?: 3
-                when {
-                    amount >= 5 -> 1.4
-                    amount >= 3 -> 1.2
-                    amount >= 2 -> 0.8
-                    else -> 0.4
-                }
-            }
+            is DealDamageEffect ->
+                damageScore((effect.amount as? com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed)?.amount ?: 3)
             is DividedDamageEffect -> 1.3
             is FightEffect -> 1.0
 
             // Card advantage
             is DrawCardsEffect -> {
                 val count = (effect.count as? com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed)?.amount ?: 1
-                count * 0.6
+                count * DRAW_PER_CARD
             }
             is DrawUpToEffect -> effect.maxCards * 0.4
 
@@ -454,11 +530,33 @@ object LimitedCardRater {
                 count * statValue * 0.5
             }
 
-            // Stat boosts
+            // A wrath spelled "for each creature: …" — [EffectWalker] stops at a ForEach, so price
+            // the analyzer's sweeper reading of it like the pipeline spelling (see [pipelineScore]).
+            is ForEachEffect ->
+                if (IntentTag.SWEEPER in CardIntentAnalyzer.leafTags(effect)) DESTROY_SCORE
+                else EffectWalker.fold(effect.body, LimitedScoreFold)
+
+            // "Choose one —" is worth its best mode(s), plus a little for the choice.
+            is ModalEffect -> {
+                val modes = effect.modes.map { EffectWalker.fold(it.effect, LimitedScoreFold) }.sortedDescending()
+                val chosen = modes.take(effect.chooseCount.coerceAtLeast(1)).sum()
+                val flexibility = if (modes.size > effect.chooseCount) MODAL_FLEXIBILITY else 0.0
+                (chosen + flexibility).coerceAtMost(COMPOSITE_CAP)
+            }
+
+            // Card selection — scry and surveil see cards but draw none
+            is ScryEffect -> (effect.count * SELECTION_PER_CARD).coerceAtMost(SELECTION_CAP)
+            is SurveilEffect -> (effect.count * SELECTION_PER_CARD).coerceAtMost(SELECTION_CAP)
+
+            // Stat boosts — or, as -N/-N on another creature, removal
             is ModifyStatsEffect -> {
-                val p = (effect.powerModifier as? com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed)?.amount ?: 0
-                val t = (effect.toughnessModifier as? com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed)?.amount ?: 0
-                (p + t) * 0.15
+                val p = (effect.powerModifier as? com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed)?.amount
+                val t = (effect.toughnessModifier as? com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed)?.amount
+                // A shrink the intent reader calls removal kills like damage to toughness: -N/-N is
+                // N damage, and a dynamic -X/-X (Death Wind, Defile) the unknown-X damage default.
+                // Summing it as stats priced Grasp of Darkness below a vanilla instant.
+                if (IntentTag.REMOVAL in CardIntentAnalyzer.leafTags(effect)) damageScore(t?.let { -it } ?: 3)
+                else ((p ?: 0) + (t ?: 0)) * 0.15
             }
 
             // Life gain — low value in limited
@@ -478,11 +576,59 @@ object LimitedCardRater {
             // Counterspells
             is CounterEffect -> 0.8
 
-            // Everything else — including modal interiors and pipeline stages, which
-            // [EffectWalker] deliberately does not descend into.
-            else -> 0.0
+            // Everything else — a tutor, a tapper, recursion, discard, a new reading: priced by what
+            // the intent reader makes of it. Pipeline stages read as nothing alone (see [pipelineScore]).
+            else -> tagValue(CardIntentAnalyzer.leafTags(effect))
         }
     }
+
+    /** A removal spell dealing [amount] damage, or giving -[amount]/-[amount]. */
+    private fun damageScore(amount: Int): Double = when {
+        amount >= 5 -> 1.4
+        amount >= 3 -> 1.2
+        amount >= 2 -> 0.8
+        else -> 0.4
+    }
+
+    private const val DESTROY_SCORE = 1.5
+    private const val COMPOSITE_CAP = 2.5
+    private const val MODAL_FLEXIBILITY = 0.2
+    private const val PUMP_PER_STAT = 0.15
+    private const val ANTHEM_PER_STAT = 0.4
+    private const val ANTHEM_CAP = 1.6
+
+    /**
+     * A reading's worth in [tagValue], sized against the leaves above that price the same effect by
+     * its fields: removal by a destroy or a 3-damage burn, draw by one card, a pump by a +1/+1.
+     */
+    private val TAG_VALUE: Map<IntentTag, Double> = mapOf(
+        IntentTag.SWEEPER to 1.5,
+        IntentTag.EXILE_REMOVAL to 1.4,
+        IntentTag.REMOVAL to 1.2,
+        IntentTag.NEUTRALIZE to 1.0,
+        IntentTag.FIGHT to 1.0,
+        IntentTag.COUNTERSPELL to 0.8,
+        IntentTag.ANTHEM to 0.8,
+        IntentTag.DRAW to 0.6,
+        IntentTag.TUTOR to 0.6,
+        IntentTag.RECURSION to 0.6,
+        IntentTag.TAPPER to 0.5,
+        IntentTag.TOKEN_MAKER to 0.5,
+        IntentTag.DISCARD to 0.4,
+        IntentTag.RAMP to 0.4,
+        IntentTag.PUMP to 0.3,
+        IntentTag.COMBAT_TRICK to 0.3,
+        IntentTag.EVASION_GRANT to 0.3,
+        IntentTag.PROTECTION to 0.3,
+        IntentTag.SACRIFICE_OUTLET to 0.2,
+        IntentTag.CARD_SELECTION to 0.15,
+        IntentTag.LIFEGAIN to 0.1,
+    )
+    private const val DRAW_PER_CARD = 0.6
+
+    /** Scry or surveil, per card looked at: a fraction of a draw, capped well below one. */
+    private const val SELECTION_PER_CARD = 0.1
+    private const val SELECTION_CAP = 0.3
 
     /**
      * Rarity bonus — rares and mythics tend to be more powerful.

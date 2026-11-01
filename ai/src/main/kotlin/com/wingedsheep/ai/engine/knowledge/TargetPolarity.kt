@@ -33,6 +33,7 @@ import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.IterationSpace
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
+import com.wingedsheep.sdk.scripting.effects.LookAtTargetHandEffect
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.StaticAbility
@@ -411,6 +412,10 @@ object TargetPolarityAnalyzer {
             is DrawCardsEffect -> if (leaf.target.isSlot()) leaf.target to TargetPolarity.BENEFICIAL else return emptyList()
             is GainLifeEffect -> if (leaf.target.isSlot()) leaf.target to TargetPolarity.BENEFICIAL else return emptyList()
             is LoseLifeEffect -> if (leaf.target.isSlot()) leaf.target to TargetPolarity.HARMFUL else return emptyList()
+            // "Look at target player's hand" reveals what it holds — information only worth having
+            // about someone else. Beside a "that player draws" (Vendilion Clique, Oildeep Gearhulk)
+            // the two disagree and the slot stays two-sided, as Sign in Blood's does.
+            is LookAtTargetHandEffect -> if (leaf.target.isSlot()) leaf.target to TargetPolarity.HARMFUL else return emptyList()
             // "Target player creates two Treasure tokens" (Ashling's Command): a Treasure, Food,
             // Clue or Gold is the controller's to use, and the board evaluator does not price one —
             // so without this the slot is a coin toss between giving it to us or to them.

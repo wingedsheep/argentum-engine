@@ -52,13 +52,15 @@ class CardIntentAnalyzerTest : ScenarioTestBase() {
             }
         }
 
-        test("a mana rock is ramp, and is worth about a land") {
+        test("a mana rock is ramp, and is worth about a land plus the card it can still cash in") {
             val intent = intentOf("Mind Stone")
             intent.tags shouldContain IntentTag.RAMP
             withClue("the draw ability sacrifices the rock, so it is not a repeatable engine") {
                 intent.repeatable shouldBe false
             }
-            intent.staticPriorValue shouldBeLessThan 1.0
+            withClue("a rock alone is the mana-source rung (0.7); the draw its sacrifice still holds is the one-shot rung") {
+                intent.staticPriorValue shouldBe 1.0
+            }
         }
 
         test("an anthem carries its per-creature bonus separately from its prior") {

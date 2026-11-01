@@ -5,6 +5,7 @@ import com.wingedsheep.engine.handlers.effects.composite.asMayDecide
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.scripting.effects.CreateTokenBatchEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.ConditionalOnCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.ConniveEffect
 import com.wingedsheep.sdk.scripting.effects.LearnEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -30,10 +31,11 @@ import com.wingedsheep.sdk.scripting.targets.TargetRequirement
  *    would hide the pipeline's `DrawCardsEffect` from every conniving or learning card and silently
  *    move their ratings and intent tags — the wrapper was introduced after this walk existed, and
  *    descending is what keeps the numbers identical to the pre-wrapper composite.
- *  - **Everything else is a leaf**, including [com.wingedsheep.sdk.scripting.effects.ModalEffect]
- *    modes, `ForEach` bodies and pipeline stages. Widening the walk into those would change the
- *    rater's numbers — and therefore every generated sealed deck — so it is a deliberate follow-up
- *    rather than a free improvement. [CardIntentAnalyzer] compensates by reading the script's
+ *  - **Everything else is a leaf**, including [ConditionalOnCollectionEffect] (which
+ *    [payoffLeaves] and the rater's fold open onto both branches), [com.wingedsheep.sdk.scripting.effects.ModalEffect]
+ *    modes, `ForEach` bodies and pipeline stages. Each consumer opens those in its own leaf instead:
+ *    the rater folds a modal spell's best modes and a `ForEach` body and prices a pipeline by the
+ *    analyzer's reading of it, and [CardIntentAnalyzer] reads them in `tagsOf` and by reading the script's
  *    *structural* slots (static abilities, activation costs, triggers) directly.
  *
  * The fold is generic because the two consumers combine children differently: the rater sums with
@@ -131,7 +133,9 @@ object EffectWalker {
      * [leaves], with every gate the walk stops at opened onto its payoff: the `then` and
      * `otherwise` of "you may pay {E}. If you do, …" ([com.wingedsheep.sdk.scripting.effects.Gate.MayPay]),
      * "you may discard a card. If you do, …" ([com.wingedsheep.sdk.scripting.effects.Gate.DoAction]),
-     * a pay-X or pay-life gate, and a "you may …, otherwise …" choice.
+     * a pay-X or pay-life gate, and a "you may …, otherwise …" choice. A pipeline's "if those cards
+     * include …" branch ([ConditionalOnCollectionEffect]) opens the same way, both sides: whether it
+     * fires depends on what the earlier steps gathered, but what it does is the card's payoff.
      *
      * The gate's own cost or action is left out on purpose: discarding or sacrificing to pay for
      * the payoff is the price, not what the ability is for, and reading it would call Pia's
@@ -144,9 +148,12 @@ object EffectWalker {
      * numbers — the same reason it stops at modes and `ForEach` bodies.
      */
     fun payoffLeaves(effect: Effect): List<Effect> = leaves(effect).flatMap { leaf ->
-        val gated = leaf as? GatedEffect
-        if (gated == null || gated.decisionMaker != null) listOf(leaf)
-        else listOfNotNull(gated.then, gated.otherwise).flatMap { payoffLeaves(it) }
+        when {
+            leaf is ConditionalOnCollectionEffect ->
+                listOfNotNull(leaf.ifNotEmpty, leaf.ifEmpty).flatMap { payoffLeaves(it) }
+            leaf !is GatedEffect || leaf.decisionMaker != null -> listOf(leaf)
+            else -> listOfNotNull(leaf.then, leaf.otherwise).flatMap { payoffLeaves(it) }
+        }
     }
 
     private object LeafCollector : Fold<List<Effect>> {

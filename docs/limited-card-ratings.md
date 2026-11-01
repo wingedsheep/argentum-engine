@@ -70,12 +70,22 @@ For a card no table rates, a structural estimate from its `CardDefinition`:
   spells by type (instant 2.2, sorcery 2.0, …).
 - **Keywords** — evasion and combat keywords add value.
 - **Effects** — `EffectWalker` walks the script and sums what each effect is worth: removal (exile
-  above destroy above bounce), damage by amount, card draw, tokens, pumps, control magic, counters.
-  A composite is capped, a "may" is discounted. Removal that can only aim at a sliver of the
-  table — Execute's "white creature", Perish's "destroy all green creatures", Choking Sands'
-  "non-Swamp land" — keeps a share of its slot's value by how much it can reach (`RemovalBreadth`:
-  the vanilla creatures of every colour and size, plus an artifact, an enchantment and a
-  planeswalker, that its target filter or swept group can hit).
+  above destroy above bounce), damage by amount, card draw, scry and surveil, tokens, pumps, control
+  magic, counters. A composite is capped, a "may" is discounted; a modal spell is worth its best
+  mode(s) plus 0.2 for the choice, and a `ForEach` its body. Static abilities count too (an Aura's
+  or Equipment's bonus by its size, an anthem, a granted keyword, a Pacifism lock), and a non-land
+  card with a mana ability adds a ramp term. Removal that can only aim at a sliver of the table —
+  Execute's "white creature", Perish's "destroy all green creatures", Choking Sands' "non-Swamp
+  land" — keeps a share of its slot's value by how much it can reach (`RemovalBreadth`: the vanilla
+  creatures of every colour and size, plus an artifact, an enchantment and a planeswalker, that its
+  target filter or swept group can hit).
+- **Following the readers** — any leaf the rater has no case for is priced by what
+  `CardIntentAnalyzer` reads it as (`TAG_VALUE` in `LimitedCardRater`: removal, tutor, tapper,
+  recursion, …), so teaching a reader an effect moves the rating with no second edit. Where the
+  analyzer's reading beats the leaf's own fields, the reading wins: a -N/-N it reads as removal
+  scores like N damage (a dynamic -X/-X like unknown-X damage), a gather → move pipeline it reads
+  as a wrath or a picked destroy scores like a destroy, and one it reads as card draw ("look at the
+  top, put one into your hand") like a card drawn.
 - **Rarity and curve** — small nudges (mythic +0.8, a 2-drop +0.3, a 6-drop −0.2).
 
 It reads what a card *does*, so it tells removal from a vanilla body, but it can't see synergy or
