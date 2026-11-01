@@ -7,6 +7,7 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -138,5 +139,11 @@ class AiReadingByAbilityTest : FunSpec({
         AiReadingAudit.audit(card("Aetherize")).map { it.key } shouldContain "intent: Pipeline(BattlefieldMatching→hand)"
         // Over each player, "you" is the player iterated: the opponent returns their own land.
         AiReadingAudit.audit(card("Confounding Conundrum")).map { it.key } shouldContain "intent: ForEach>Pipeline(BattlefieldMatching→hand)"
+    }
+
+    test("a permanent setting its own base P/T needs no intent, but setting a target's stays flagged") {
+        AiReadingAudit.audit(card("Bramblefort Fink")).map { it.key } shouldNotContain "intent: SetBaseStatsEffect"
+        AiReadingAudit.audit(card("Master of Winds")).map { it.key } shouldNotContain "intent: SetBaseStatsEffect"
+        AiReadingAudit.audit(card("Square Up")).map { it.key } shouldContain "intent: SetBaseStatsEffect"
     }
 })

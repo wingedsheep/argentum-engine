@@ -44,6 +44,7 @@ import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
+import com.wingedsheep.sdk.scripting.effects.SetBaseStatsEffect
 import com.wingedsheep.sdk.scripting.effects.ScryEffect
 import com.wingedsheep.sdk.scripting.effects.SurveilEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
@@ -596,7 +597,7 @@ object AiReadingAudit {
     }
 
     /**
-     * The leaves that need no intent tag: equip / attach, a card moving, untapping, transforming, animating or sacrificing itself, damage to a
+     * The leaves that need no intent tag: equip / attach, a card moving, untapping, transforming, animating, sacrificing or setting the base P/T of itself, damage to a
      * player and life loss (commented inline below), and a counter the effect puts on its own source or its own
      * controller — a creature growing itself, a charge, oil, quest or loyalty counter, `{E}` for you. There is no target to choose and nothing
      * to hold it for, and its payoff is already on the board (the evaluator reads a grown creature's
@@ -647,6 +648,11 @@ object AiReadingAudit {
         if (leaf is ModifyStatsEffect && leaf.target == EffectTarget.Self &&
             (AmountSign.of(leaf.powerModifier) == AmountSign.LOSS || AmountSign.of(leaf.toughnessModifier) == AmountSign.LOSS)
         ) return true
+        // A permanent setting its own base P/T (Bramblefort Fink's 10/10, Master of Winds' 4/1 or
+        // 1/4, Surge Engine's 5/4, Ascendant Spirit's levels) has no target and is no trick to hold:
+        // when to activate it is the timing check's question, and what it is worth is the body the
+        // simulation then sees. Setting a target's base stays flagged (a gift or a curse by creature).
+        if (leaf is SetBaseStatsEffect && leaf.target == EffectTarget.Self) return true
         // Damage to a player is a clock: the evaluator prices the life it takes on resolution, it
         // answers nothing on the board, and life lost now or one window later is the same life.
         // Which player a targeted one aims at is the polarity check's question, not intent's.
