@@ -72,7 +72,7 @@ import java.util.Locale
  *    consumer, and is attributed to each of its leaves — except the leaves that need no tag
  *    ([needsNoIntent]: a non-keyword counter on the source itself or on its controller, damage to a
  *    player, life loss, a permanent untapping, moving, transforming or animating itself, an upkeep
- *    cost its controller pays or suffers on its own source).
+ *    cost its controller pays or suffers on its own source, an "unless" whose suffer is life loss).
  *  - [Check.COMBAT] — [CombatReach] over each leaf of a non-mana activated ability that changes
  *    power/toughness, keywords, P/T counters or blocking, and that combat simulation cannot see.
  *  - [Check.TIMING] — an until-end-of-turn leaf on an instant-speed activation or an instant-speed
@@ -435,7 +435,7 @@ object AiReadingAudit {
         if (sink.findings.size == before && tags.isNotEmpty()) {
             sink += Finding(Check.INTENT, read = true, reason = "knows what it's for: ${tags.sorted().joinToString(", ", transform = ::tagPhrase)}")
         } else if (sink.findings.size == before) {
-            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, untaps, attaches, moves, transforms or animates its own source, adds counters for its controller, damages a player, makes one lose life, mills one, or is an upkeep cost on itself")
+            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, untaps, attaches, moves, transforms or animates its own source, adds counters for its controller, damages a player, makes one lose life, mills one, or is an unless-clause its payer suffers as an upkeep cost or life loss")
         }
     }
 
@@ -602,14 +602,17 @@ object AiReadingAudit {
         // Life loss always lands on a player, so it is the same clock — or, on "you lose N life",
         // a drawback the simulation already prices on resolution. Either way there is nothing to tag.
         if (leaf is LoseLifeEffect) return true
-        // "Sacrifice it unless you pay {1}{U}" (an upkeep cost, a bounce land's tax) is a drawback its
+        // "Sacrifice it unless you pay {1}{U}" (an upkeep cost, a land's "sacrifice it unless you pay {1}") is a drawback its
         // controller chooses to pay or take: no target, nothing to hold, and whether to pay is the
         // simulation's call when the trigger resolves. A suffer that needs no intent of its own (life
         // loss, damage to a player) needs none behind an "unless" either, whoever pays. An opponent
         // paying to stop *our* payoff (Rhystic Study's draw) stays flagged.
         if (leaf is PayOrSufferEffect) {
             val paidByController = leaf.player == EffectTarget.Controller || leaf.player == EffectTarget.PlayerRef(Player.You)
-            return EffectWalker.payoffLeaves(leaf.suffer).all { needsNoIntent(it) || (paidByController && harmsOnlyItsSource(it)) }
+            // Scry/surveil needsNoIntent only because CardIntentAnalyzer reads them, and nothing reads inside a suffer.
+            return EffectWalker.payoffLeaves(leaf.suffer).all {
+                (it !is ScryEffect && it !is SurveilEffect && needsNoIntent(it)) || (paidByController && harmsOnlyItsSource(it))
+            }
         }
         // Scry and surveil are read (card selection); skipped here only so a sibling leaf is still asked about.
         if (leaf is ScryEffect || leaf is SurveilEffect) return true
