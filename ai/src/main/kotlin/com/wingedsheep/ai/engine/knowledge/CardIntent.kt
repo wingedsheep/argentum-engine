@@ -211,6 +211,13 @@ data class CardIntent(
      * [com.wingedsheep.ai.engine.AiProfile.taxCountersReadTheirMana].
      */
     val counterTax: Int? = null,
+    /**
+     * What this card's non-mana activated abilities do — the payoffs a permanent still holds while
+     * it sits on the battlefield (a Spellbomb's draw, a Bauble's land search). Unlike an ETB, which
+     * has paid out by then, these are value the board still carries even when they can be used only
+     * once; `CardIntentAnalyzer.priorLadder` prices them.
+     */
+    val cashableTags: Set<IntentTag> = emptySet(),
 ) {
     /** [arrivalTags], falling back to [tags] where the analyzer did not split them. */
     val tagsOnArrival: Set<IntentTag> get() = arrivalTags ?: tags

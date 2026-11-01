@@ -32,9 +32,9 @@ import com.wingedsheep.sdk.scripting.effects.GatedEffect
  *    descending is what keeps the numbers identical to the pre-wrapper composite.
  *  - **Everything else is a leaf**, including [ConditionalOnCollectionEffect] (which
  *    [payoffLeaves] and the rater's fold open onto both branches), [com.wingedsheep.sdk.scripting.effects.ModalEffect]
- *    modes, `ForEach` bodies and pipeline stages. Widening the walk into those would change the
- *    rater's numbers — and therefore every generated sealed deck — so it is a deliberate follow-up
- *    rather than a free improvement. [CardIntentAnalyzer] compensates by reading the script's
+ *    modes, `ForEach` bodies and pipeline stages. Each consumer opens those in its own leaf instead:
+ *    the rater folds a modal spell's best modes and a `ForEach` body and prices a pipeline by the
+ *    analyzer's reading of it, and [CardIntentAnalyzer] reads them in `tagsOf` and by reading the script's
  *    *structural* slots (static abilities, activation costs, triggers) directly.
  *
  * The fold is generic because the two consumers combine children differently: the rater sums with
