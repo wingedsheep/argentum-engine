@@ -5,7 +5,6 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
-import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockedComponent
@@ -186,7 +185,9 @@ internal object ExpiringGrantWindow {
         val expires = if (refuseUnspendable) {
             // Only creature grants and damage shields defer. A land-type change is bought to deny
             // or fix mana, and mana is spent in the main phase this floor would defer it past.
-            expiringPayoffs(ability.effect)?.all { it.kind in DEFERRABLE } == true
+            // An animation never defers: the attack planner reads the board as it stands, so a
+            // manland still a land when attackers are chosen is never in the attack it was for.
+            expiringPayoffs(ability.effect)?.all { it.kind in DEFERRABLE && !it.animates } == true
         } else {
             everyPayoffExpiresThisTurn(ability.effect)
         }
@@ -288,11 +289,10 @@ internal object ExpiringGrantWindow {
                     // Already in force, or already on its way: a second grant of the same keyword
                     // adds nothing. Pending is read for a self-grant only, where "the same ability
                     // from the same source" can only mean the same creature.
+                    val pendingOnSelf = pendingSelfGrant && payoff.target == EffectTarget.Self
                     val fresh = affected.filterNot { id ->
-                        (keyword != null || payoff.animates) && (
-                            (keyword != null && projected.hasKeyword(id, keyword)) ||
-                                (pendingSelfGrant && payoff.target == EffectTarget.Self)
-                            )
+                        val alreadyHas = keyword != null && projected.hasKeyword(id, keyword)
+                        alreadyHas || (pendingOnSelf && (keyword != null || payoff.animates))
                     }
                     fresh.any {
                         canStillFight(state, projected, playerId, it, sourceId, sourceTaps, keyword, payoff.animates)
@@ -479,7 +479,9 @@ internal object ExpiringGrantWindow {
      * planned-attack floor ([com.wingedsheep.ai.engine.AiProfile.activatedPumpsNeedAPlannedAttack]).
      */
     fun buysOnlyExpiringCreatureGrants(ability: ActivatedAbility): Boolean =
-        !ability.isManaAbility && expiringPayoffs(ability.effect)?.all { it.kind == PayoffKind.CREATURE } == true
+        // An animation is left out: the land it animates is in no planned attack until it is a creature.
+        !ability.isManaAbility &&
+            expiringPayoffs(ability.effect)?.all { it.kind == PayoffKind.CREATURE && !it.animates } == true
 
     /**
      * Whether [effect] has an end-of-turn timing reading at all — every shape [holds] and
@@ -537,8 +539,10 @@ internal object ExpiringGrantWindow {
         keyword: String? = null,
         /**
          * The payoff *makes* [creature] a creature ("until end of turn, this land becomes a 2/1"):
-         * it is not one yet, so it is judged as the creature it is about to be — untapped, and on
-         * our turn not summoning sick. An animated permanent is never already in the fight.
+         * it is not one yet, so it is judged as the creature it is about to be: untapped, before
+         * attackers are declared (or, on their turn, with their attack still to block). Summoning
+         * sickness is left to the leaf — the animation may grant haste (Avalanche Caller), or a lord
+         * may once it is a creature — so a fresh land counts as able to attack, the generous side.
          */
         animates: Boolean = false,
     ): Boolean {
@@ -547,8 +551,7 @@ internal object ExpiringGrantWindow {
         if (animates && !projected.isCreature(creature)) {
             if (tapsAway || entity.has<TappedComponent>()) return false
             return if (state.isActiveTurnFor(playerId)) {
-                state.step in UNTIL_ATTACKERS_DECLARED &&
-                    (!entity.has<SummoningSicknessComponent>() || projected.canAttackAsThoughHasty(creature))
+                state.step in UNTIL_ATTACKERS_DECLARED
             } else {
                 when (state.step) {
                     in UNTIL_ATTACKERS_DECLARED -> true
@@ -914,7 +917,6 @@ internal object ExpiringGrantWindow {
             when (leaf) {
                 is GrantKeywordEffect -> leaf.duration == Duration.EndOfTurn
                 is GrantEvasionKeywordEffect -> leaf.duration == Duration.EndOfTurn
-                is BecomeCreatureEffect -> leaf.duration == Duration.EndOfTurn
                 is ModifyStatsEffect ->
                     leaf.duration == Duration.EndOfTurn && isPump(leaf)
                 is PreventDamageEffect -> isShield(leaf)

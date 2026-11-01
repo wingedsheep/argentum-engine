@@ -63,5 +63,21 @@ class BecomeCreatureReadingAiTest : ScenarioTestBase() {
                 result.passed shouldBe true
             }
         }
+
+        test("a manland is still animated in our precombat main to attack for lethal") {
+            val result = decide({ s ->
+                s.withPlayers()
+                    .withLifeTotal(2, 2)
+                    .withLandsOnBattlefield(1, "Island", 1)
+                    .withLandsOnBattlefield(1, "Mountain", 1)
+                    .withCardOnBattlefield(1, "Restless Spire")
+                    .build()
+            }) {
+                shouldActivate("Restless Spire")
+            }
+            withClue("an end-of-turn animation with our attack still ahead is not refused: chose ${result.move} — ${result.failure}") {
+                result.passed shouldBe true
+            }
+        }
     }
 }
