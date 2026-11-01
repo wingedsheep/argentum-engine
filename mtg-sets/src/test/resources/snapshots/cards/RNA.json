@@ -1,3 +1,69 @@
+// Angel of Grace
+{
+    "name": "Angel of Grace",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flash\nFlying\nWhen this creature enters, until end of turn, damage that would reduce your life total to less than 1 reduces it to 1 instead.\n{4}{W}{W}, Exile this card from your graveyard: Your life total becomes 10.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Angel of Grace:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GrantReplacementEffect",
+                    "replacement": "LifeLossFloor"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Angel of Grace:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}{W}{W}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "SetLifeTotal",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 10
+                    }
+                },
+                "activateFromZone": "Graveyard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "MYTHIC",
+        "artist": "Ryan Yee",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/80164e61-3e94-4e10-9bd1-518b8dc7fc4c.jpg?1783933727"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Applied Biomancy
 {
     "name": "Applied Biomancy",
@@ -2093,6 +2159,52 @@
     "colorIdentityOverride": [
         "BLACK",
         "RED"
+    ]
+}
+
+// Forbidding Spirit
+{
+    "name": "Forbidding Spirit",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Creature — Spirit Cleric",
+    "oracleText": "When this creature enters, until your next turn, creatures can't attack you or planeswalkers you control unless their controller pays {2} for each of those creatures.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Forbidding Spirit:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GrantStaticAbility",
+                    "ability": {
+                        "type": "AttackTax",
+                        "amountPerAttacker": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "coversPlaneswalkers": true
+                    },
+                    "target": "Controller",
+                    "duration": "UntilYourNextTurn"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "9",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Yee",
+        "flavorText": "\"You will respect the dead.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/1/c17056e7-95c6-4bed-a747-3b40dcda275a.jpg?1783933722"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
