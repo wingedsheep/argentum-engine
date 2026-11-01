@@ -30,9 +30,6 @@ interface ScorerCard {
     /** `"mythic"|"rare"|"uncommon"|"common"`, or null when unknown. */
     val rarity: String?
 
-    /** USD price (hate-draft signal); null when unavailable — that branch then stays inert. */
-    val priceUsd: Double?
-
     /** Declared colors (WUBRG letters). Empty ⇒ scorer parses [manaCost]. */
     val colors: List<String>
 
@@ -55,7 +52,6 @@ private class CardDefinitionScorerCard(private val def: CardDefinition) : Scorer
     // bonus, …) lowercases to a key the ladder lacks and falls to the common floor. Acceptable —
     // those rarities don't appear in normal limited packs — but rate via the name table, not this.
     override val rarity: String = def.metadata.rarity.name.lowercase()
-    override val priceUsd: Double? = null
     override val colors: List<String> = def.colors.map { it.symbol.toString() }
     override val colorIdentity: List<String> = def.colorIdentity.map { it.symbol.toString() }
 }
@@ -66,7 +62,6 @@ private class CardSummaryScorerCard(private val summary: CardSummary) : ScorerCa
     override val typeLine: String = summary.typeLine ?: ""
     override val cmc: Double = DraftsimMana.cmc(summary.manaCost ?: "")
     override val rarity: String? = summary.rarity?.lowercase()
-    override val priceUsd: Double? = null
     override val colors: List<String> = emptyList()
     override val colorIdentity: List<String> = emptyList()
 }

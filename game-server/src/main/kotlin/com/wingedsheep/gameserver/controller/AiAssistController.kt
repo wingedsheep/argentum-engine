@@ -73,6 +73,7 @@ class AiAssistController(
             pickNumber = body.pickNumber,
             picksRequired = body.picksRequired.coerceAtLeast(1),
             setCodes = setCodesFor(body.lobbyId, body.setCodes),
+            podSize = lobbyFor(body.lobbyId)?.players?.size,
         )
         return advisor.suggestPick(request)
     }
@@ -119,10 +120,10 @@ class AiAssistController(
     }
 
     /** Prefer the lobby's authoritative set codes; fall back to the client's list (practice / no lobby). */
-    private fun setCodesFor(lobbyId: String?, fromBody: List<String>): List<String> {
-        val lobby = lobbyId?.takeIf { it.isNotBlank() }?.let { lobbyRepository.findLobbyById(it) }
-        return lobby?.setCodes ?: fromBody
-    }
+    private fun lobbyFor(lobbyId: String?) = lobbyId?.takeIf { it.isNotBlank() }?.let { lobbyRepository.findLobbyById(it) }
+
+    private fun setCodesFor(lobbyId: String?, fromBody: List<String>): List<String> =
+        lobbyFor(lobbyId)?.setCodes ?: fromBody
 
     private fun CardDefinition.toCardSummary() = CardSummary(
         name = name,

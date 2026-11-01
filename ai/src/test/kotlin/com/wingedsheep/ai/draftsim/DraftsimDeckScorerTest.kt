@@ -16,7 +16,6 @@ private data class TestCard(
     override val colorIdentity: List<String> = emptyList(),
     override val cmc: Double = DraftsimMana.cmc(manaCost),
     override val rarity: String? = "common",
-    override val priceUsd: Double? = null,
 ) : ScorerCard
 
 /**

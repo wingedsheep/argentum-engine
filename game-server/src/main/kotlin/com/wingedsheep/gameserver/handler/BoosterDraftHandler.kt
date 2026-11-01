@@ -164,7 +164,8 @@ class BoosterDraftHandler(
             passDirection = lobby.getPassDirection().name,
             picksPerRound = minOf(lobby.picksPerRound, pack.size),
             pickedCards = playerState.cardPool.map { cardToSealedCardInfo(it) },
-            queuedPacks = playerState.packQueue.size
+            queuedPacks = playerState.packQueue.size,
+            podSize = lobby.players.size
         ))
     }
 
@@ -181,7 +182,8 @@ class BoosterDraftHandler(
                     passDirection = lobby.getPassDirection().name,
                     picksPerRound = minOf(lobby.picksPerRound, pack.size),
                     pickedCards = playerState.cardPool.map { cardToSealedCardInfo(it) },
-                    queuedPacks = playerState.packQueue.size
+                    queuedPacks = playerState.packQueue.size,
+                    podSize = lobby.players.size
                 ))
             }
         }
@@ -282,7 +284,8 @@ class BoosterDraftHandler(
             passDirection = lobby.getPassDirection().name,
             picksPerRound = if (pack != null) minOf(lobby.picksPerRound, pack.size) else lobby.picksPerRound,
             pickedCards = playerState.cardPool.map { cardToSealedCardInfo(it) },
-            queuedPacks = playerState.packQueue.size
+            queuedPacks = playerState.packQueue.size,
+            podSize = lobby.players.size
         ))
 
         // Also send current pack counts so reconnected player sees the draft table state

@@ -1970,6 +1970,7 @@ export interface DraftPackReceivedMessage {
   readonly picksPerRound: number  // Cards to pick this round (1 or 2)
   readonly pickedCards?: readonly SealedCardInfo[]  // Cards already picked (for reconnect)
   readonly queuedPacks?: number  // Number of additional packs queued behind this one
+  readonly podSize?: number  // Drafters at the table (0 = unknown); read by the AI drafter
 }
 
 /**
