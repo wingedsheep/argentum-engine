@@ -270,6 +270,7 @@ object CardIntentAnalyzer {
             arrivalTags = arrivalTags.takeIf { it != tags },
             grantsInstantSpeedLoyalty = leaves.any { it is GrantLoyaltyActivationPermissionEffect && it.instantSpeed },
             counterTax = counterTaxOf(leaves),
+            cashableTags = activated.filterNot { it.isManaAbility }.flatMapTo(HashSet()) { effectTags(it.effect) },
         )
         return intent.copy(staticPriorValue = priorValueOf(card, intent))
     }
@@ -381,8 +382,13 @@ object CardIntentAnalyzer {
     private fun effectTags(root: Effect): Set<IntentTag> =
         readingLeaves(root).flatMapTo(HashSet()) { tagsOf(it) } + pipelineTags(root)
 
-    /** What the gather → move pipelines in [root] add up to, which no single leaf of them says. */
-    private fun pipelineTags(root: Effect): Set<IntentTag> = digTags(root) + destroyAllTags(root)
+    /**
+     * What the gather → move pipelines in [root] add up to, which no single leaf of them says.
+     *
+     * Internal so [com.wingedsheep.ai.engine.LimitedCardRater] can price the same reading: its leaf
+     * fold sees a gather and a move, each worth nothing alone.
+     */
+    internal fun pipelineTags(root: Effect): Set<IntentTag> = digTags(root) + destroyAllTags(root)
 
     /**
      * "Destroy all creatures" — a gather of the battlefield moved to the graveyard by destruction or
@@ -487,6 +493,12 @@ object CardIntentAnalyzer {
     // ═════════════════════════════════════════════════════════════════════════
     // Effect → tags
     // ═════════════════════════════════════════════════════════════════════════
+
+    /**
+     * The tags one effect leaf reads as on its own, for [com.wingedsheep.ai.engine.LimitedCardRater]:
+     * a leaf the rater prices by its own fields (a -N/-N) asks here whether it is an answer.
+     */
+    internal fun leafTags(effect: Effect): Set<IntentTag> = tagsOf(effect)
 
     private fun tagsOf(effect: Effect): Set<IntentTag> = when (effect) {
         is MoveToZoneEffect -> when {
@@ -715,6 +727,9 @@ object CardIntentAnalyzer {
     // Static abilities
     // ═════════════════════════════════════════════════════════════════════════
 
+    /** The tags one static ability reads as, for [com.wingedsheep.ai.engine.LimitedCardRater]. */
+    internal fun staticTags(static: StaticAbility): Set<IntentTag> = tagsOf(static)
+
     private fun tagsOf(static: StaticAbility): Set<IntentTag> = when (static) {
         is ModifyStats -> when {
             static.filter.scope != Scope.Battlefield -> setOf(IntentTag.PUMP)
@@ -931,7 +946,22 @@ object CardIntentAnalyzer {
             // A mana rock is worth about a land, and an untapped land is 0.6.
             if (IntentTag.RAMP in tags) add(PriorRung("mana source", 0.7))
             if (repeatable) add(PriorRung("repeatable ability", 1.5))
+            // An Aura that stops a creature attacking and blocking answers it for as long as it
+            // stays, like an O-Ring that leaves the body on the board.
+            if (IntentTag.NEUTRALIZE in tags) add(PriorRung("neutralizes a creature", 3.0))
+            if (IntentTag.TAPPER in tags) add(PriorRung("tapper", 1.5))
             if (intent.speed == Speed.STATIC && tags.isNotEmpty()) add(PriorRung("static effect", 1.0))
+            // A one-shot payoff still waiting to be cashed — a Spellbomb, a Bauble, an Omen, an
+            // incubator — is a card's worth of value sitting on the board, below any repeatable
+            // engine but above a permanent nothing reads (0.5).
+            // Only an activated ability's payoff is still waiting: an ETB has already paid out by
+            // the time the permanent is on the board.
+            val cashable = intent.cashableTags
+            if (IntentTag.DRAW in cashable || IntentTag.TOKEN_MAKER in cashable) add(PriorRung("one-shot card or token", 1.0))
+            if (IntentTag.TUTOR in cashable || IntentTag.RECURSION in cashable) add(PriorRung("one-shot tutor or recursion", 0.8))
+            if (IntentTag.CARD_SELECTION in cashable) add(PriorRung("one-shot card selection", 0.7))
+            if (IntentTag.LIFEGAIN in cashable) add(PriorRung("one-shot life gain", 0.6))
+            if (IntentTag.PUMP in tags) add(PriorRung("pump", 1.0))
         }
     }
 
