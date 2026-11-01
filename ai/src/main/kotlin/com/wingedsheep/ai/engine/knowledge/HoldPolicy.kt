@@ -230,8 +230,11 @@ class HoldPolicy(
             // An end-of-turn shrink with no fight left to shrink — the spell twin of the
             // activation reading in [activationVerdictFor].
             val resolves = definition?.let { castEffects(it, cast) }
+            // So does a keyword granted until end of turn (Jump's flying) with no fight left to
+            // spend it in. A combat trick keeps its own reading in [windowVerdictFor].
             if (resolves != null && ExpiringGrantWindow.castBuysNothing(
                     state, playerId, resolves, cast.targets + cast.modeTargetsOrdered.flatten(), intents,
+                    readKeywordGrants = refuseUnspendableGrants && IntentTag.COMBAT_TRICK !in intent.tags,
                 )
             ) {
                 return TimingVerdict.NoWindow
