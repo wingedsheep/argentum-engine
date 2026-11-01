@@ -955,6 +955,108 @@
     ]
 }
 
+// Captive Audience
+{
+    "name": "Captive Audience",
+    "manaCost": "{5}{B}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "This enchantment enters under the control of an opponent of your choice.\nAt the beginning of your upkeep, choose one that hasn't been chosen —\n• Your life total becomes 4.\n• Discard your hand.\n• Each opponent creates five 2/2 black Zombie creature tokens.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Captive Audience:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "SetLifeTotal",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            },
+                            "description": "Your life total becomes 4"
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "discardedHand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discardedHand",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            },
+                            "description": "Discard your hand"
+                        },
+                        {
+                            "effect": {
+                                "type": "CreateToken",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                },
+                                "power": 2,
+                                "toughness": 2,
+                                "colors": [
+                                    "BLACK"
+                                ],
+                                "creatureTypes": [
+                                    "Zombie"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/2/7/27b69e52-f394-4863-943b-239e96b5cc95.jpg?1783933604",
+                                "controller": {
+                                    "type": "PlayerRef",
+                                    "player": "EachOpponent"
+                                }
+                            },
+                            "description": "Each opponent creates five 2/2 black Zombie creature tokens"
+                        }
+                    ],
+                    "excludePreviouslyChosenModes": true,
+                    "countsAsModalSpell": false
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "OPPONENT",
+                "chosenOpponentControls": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "160",
+        "rarity": "MYTHIC",
+        "artist": "Dmitry Burmak",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/065f63b2-472e-4148-8294-88ed38a5685f.jpg?1783933656"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Catacomb Crocodile
 {
     "name": "Catacomb Crocodile",

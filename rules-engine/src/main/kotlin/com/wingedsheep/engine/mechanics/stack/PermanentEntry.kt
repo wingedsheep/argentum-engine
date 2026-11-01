@@ -73,7 +73,14 @@ internal class PermanentEntry(
         cardComponent: CardComponent?,
         cardDef: com.wingedsheep.sdk.model.CardDefinition?
     ): Pair<GameState, List<GameEvent>> {
-        val controllerId = spellComponent.casterId
+        // A resolving permanent spell enters under its controller's control (CR 608.3a) unless it
+        // says otherwise:
+        // "enters under the control of an opponent of your choice" was answered as it resolved,
+        // and the answer rides the stack object's as-enters choices.
+        val controllerId = com.wingedsheep.engine.handlers.effects.ChosenEntryController.of(
+            cardDef,
+            state.getEntity(spellId)?.get<com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent>()?.chosen,
+        ) ?: spellComponent.casterId
         // A cast-this-way entry rider frozen on this spell at cast time (The Tomb of Aclazotz,
         // Kaldring, the Rimestaff).
         // Captured before the `updateEntity` block below strips it; applied on entry further down.
