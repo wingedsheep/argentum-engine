@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.blc.cards
+package com.wingedsheep.mtg.sets.definitions.rna.cards
 
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.dsl.Conditions
@@ -31,8 +31,8 @@ val SimicAscendancy = card("Simic Ascendancy") {
     typeLine = "Enchantment"
     oracleText = "{1}{G}{U}: Put a +1/+1 counter on target creature you control.\n" +
         "Whenever one or more +1/+1 counters are put on a creature you control, " +
-        "put that many growth counters on Simic Ascendancy.\n" +
-        "At the beginning of your upkeep, if Simic Ascendancy has twenty or more " +
+        "put that many growth counters on this enchantment.\n" +
+        "At the beginning of your upkeep, if this enchantment has twenty or more " +
         "growth counters on it, you win the game."
 
     activatedAbility {
@@ -65,9 +65,9 @@ val SimicAscendancy = card("Simic Ascendancy") {
 
     metadata {
         rarity = Rarity.RARE
-        collectorNumber = "260"
+        collectorNumber = "207"
         artist = "Izzy"
-        imageUri = "https://cards.scryfall.io/normal/front/9/3/9300abb9-2750-4de8-8c1d-dbae48a86037.jpg?1721429509"
+        imageUri = "https://cards.scryfall.io/normal/front/f/f/ff824392-fb5c-496c-be2f-6dfa6e04e3a2.jpg?1783933635"
 
         ruling("2019-01-25", "An ability that triggers when counters are put on a permanent will trigger if that permanent somehow enters the battlefield with those counters.")
         ruling("2019-01-25", "If Simic Ascendancy doesn't have twenty or more growth counters on it as your upkeep begins, its last ability won't trigger. You can't take any actions during your turn before your upkeep begins.")
