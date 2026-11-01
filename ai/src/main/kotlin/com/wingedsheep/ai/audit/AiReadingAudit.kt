@@ -673,9 +673,10 @@ object AiReadingAudit {
                 (it !is ScryEffect && it !is SurveilEffect && needsNoIntent(it)) || (paidByController && harmsOnlyItsSource(it))
             }
         }
-        // Untargeted proliferate has no target to aim and nothing to hold: which permanents and players
-        // get another counter is a choice made at resolution, and the counters it adds are on the board
-        // the simulation prices. A targeted one ("each kind of counter on target permanent") stays flagged.
+        // Untargeted proliferate has no target to aim and no consistent window to hold it for (+1/+1
+        // counters want precombat, poison or loyalty don't care): which permanents and players get another
+        // counter is chosen at resolution, and the counters it adds are on the board the simulation prices.
+        // A targeted one ("each kind of counter on target permanent") stays flagged.
         if (leaf is ProliferateEffect && leaf.target == null) return true
         // Scry and surveil are read (card selection); skipped here only so a sibling leaf is still asked about.
         if (leaf is ScryEffect || leaf is SurveilEffect) return true
