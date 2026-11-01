@@ -233,6 +233,45 @@
     ]
 }
 
+// Azorius Skyguard
+{
+    "name": "Azorius Skyguard",
+    "manaCost": "{4}{W}{U}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Flying, first strike\nCreatures your opponents control get -1/-0.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": -1,
+                "toughnessBonus": 0,
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "155",
+        "rarity": "UNCOMMON",
+        "artist": "Gabor Szikszai",
+        "flavorText": "\"These new thopters are all well and good, but four eyes are better than none.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c2fddecd-e660-43de-bccc-52f60a089052.jpg?1783933657"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "WHITE"
+    ]
+}
+
 // Bankrupt in Blood
 {
     "name": "Bankrupt in Blood",
@@ -393,6 +432,97 @@
     "colorIdentityOverride": [
         "BLACK",
         "RED"
+    ]
+}
+
+// Biogenic Ooze
+{
+    "name": "Biogenic Ooze",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Ooze",
+    "oracleText": "When this creature enters, create a 2/2 green Ooze creature token.\nAt the beginning of your end step, put a +1/+1 counter on each Ooze you control.\n{1}{G}{G}{G}: Create a 2/2 green Ooze creature token.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Biogenic Ooze:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Ooze"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/0/2/0260e0ae-bf09-430a-a449-c16219d84b63.jpg?1783933602"
+                }
+            },
+            {
+                "id": "Biogenic Ooze:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "permanent Ooze ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Biogenic Ooze:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{G}{G}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Ooze"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/0/2/0260e0ae-bf09-430a-a449-c16219d84b63.jpg?1783933602"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "rarity": "MYTHIC",
+        "artist": "Lake Hurwitz",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/f/6f11029a-b24d-4248-834f-b852b56857f6.jpg?1783933671"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -631,6 +761,134 @@
     ]
 }
 
+// Burning-Tree Vandal
+{
+    "name": "Burning-Tree Vandal",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "Riot (This creature enters with your choice of a +1/+1 counter or haste.)\nWhenever this creature attacks, you may discard a card. If you do, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "RIOT"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Burning-Tree Vandal:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        },
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "haste"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "modeOptions": [
+                    {
+                        "id": "counter",
+                        "label": "A +1/+1 counter",
+                        "iconKey": "plusOneCounter"
+                    },
+                    {
+                        "id": "haste",
+                        "label": "Haste",
+                        "iconKey": "haste"
+                    }
+                ]
+            },
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "counter"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "artist": "Aaron Miller",
+        "flavorText": "The ostentatious splendor of the Orzhov church was just asking to be smashed.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c5674753-17e4-4e35-a12c-13e1e077ec70.jpg?1783933685"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Catacomb Crocodile
 {
     "name": "Catacomb Crocodile",
@@ -712,6 +970,69 @@
     "colorIdentityOverride": [
         "GREEN",
         "RED"
+    ]
+}
+
+// Chillbringer
+{
+    "name": "Chillbringer",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Flying\nWhen this creature enters, tap target creature an opponent controls. It doesn't untap during its controller's next untap step.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Chillbringer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilAfterAffectedControllersNextUntap"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "artist": "Eytan Zana",
+        "flavorText": "If you can see your breath, it's too late to run.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/158547fa-7313-4e77-949f-afc68ebfb022.jpg?1783933712"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -2551,6 +2872,52 @@
     ]
 }
 
+// Gyre Engineer
+{
+    "name": "Gyre Engineer",
+    "manaCost": "{1}{G}{U}",
+    "typeLine": "Creature — Vedalken Wizard",
+    "oracleText": "{T}: Add {G}{U}.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Gyre Engineer:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "GREEN"
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "BLUE"
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "180",
+        "rarity": "UNCOMMON",
+        "artist": "Anthony Palumbo",
+        "flavorText": "\"As I contemplate what is, I dive ever deeper into the depths of possibility. Then I set an experiment in motion and watch the truth rise to the surface.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/6/26dd6a1d-4dcb-4392-9856-c0e4140efbd7.jpg?1783933647"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Haazda Officer
 {
     "name": "Haazda Officer",
@@ -3029,6 +3396,69 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Judith, the Scourge Diva
+{
+    "name": "Judith, the Scourge Diva",
+    "manaCost": "{1}{B}{R}",
+    "typeLine": "Legendary Creature — Human Shaman",
+    "oracleText": "Other creatures you control get +1/+0.\nWhenever a nontoken creature you control dies, Judith deals 1 damage to any target.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Judith, the Scourge Diva:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0,
+                "filter": {
+                    "baseFilter": "creature ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "185",
+        "rarity": "RARE",
+        "artist": "Wesley Burt",
+        "flavorText": "At the end of the show, she stands alone on a stage brilliant with blood.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0a742125-730d-4082-bfd8-5feb7733def4.jpg?1783933645"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
     ]
 }
 
@@ -3732,6 +4162,42 @@
     ]
 }
 
+// Quench
+{
+    "name": "Quench",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell unless its controller pays {2}.",
+    "script": {
+        "spellEffect": {
+            "type": "Counter",
+            "condition": {
+                "type": "CounterCondition.UnlessPaysMana",
+                "cost": "{2}"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "artist": "Jason Rainville",
+        "flavorText": "\"When properly invoked, the plasma globule encloses the offensive spell with a satisfying slurp.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/ee0ba01b-de96-4f8f-9405-ff3ad288afac.jpg?1783933706"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Ragefire
 {
     "name": "Ragefire",
@@ -4271,6 +4737,246 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Savage Smash
+{
+    "name": "Savage Smash",
+    "manaCost": "{1}{R}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature you control gets +2/+2 until end of turn. It fights target creature you don't control. (Each deals damage equal to its power to the other.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Fight",
+                    "target1": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControllerNot",
+                            "predicate": "ControlledByYou"
+                        }
+                    }
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "203",
+        "artist": "Zoltan Boros",
+        "flavorText": "A Gruul berserker is never unarmed.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/c/4ca942d7-a3a3-429f-a159-fc2363d9bca6.jpg?1783933639"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "RED"
+    ]
+}
+
+// Scorchmark
+{
+    "name": "Scorchmark",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Scorchmark deals 2 damage to target creature. If that creature would die this turn, exile it instead.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "MarkExileOnDeath",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "artist": "Jason Felix",
+        "flavorText": "\"Have you seen your face? Trust me, this will be an improvement.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/a/2a14834f-78ae-4ca5-9ce0-5b928ad3d76c.jpg?1783933677"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Screaming Shield
+{
+    "name": "Screaming Shield",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +0/+3 and has \"{2}, {T}: Target player mills three cards.\"\nEquip {3} ({3}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Screaming Shield:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 0,
+                "toughnessBonus": 3
+            },
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Screaming Shield:1",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{2}"
+                                }
+                            },
+                            "CostTap"
+                        ]
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    },
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "isMill": true
+                                },
+                                "storeAs": "milled"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "milled",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "t0"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "239",
+        "rarity": "UNCOMMON",
+        "artist": "Titus Lunter",
+        "flavorText": "Shhh . . .",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/ebb42a80-0442-4850-b0e7-41182d5633ff.jpg?1783933621"
+    },
+    "colorIdentityOverride": []
 }
 
 // Senate Courier
@@ -5194,6 +5900,54 @@
     ]
 }
 
+// Tenth District Veteran
+{
+    "name": "Tenth District Veteran",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Vigilance\nWhenever this creature attacks, untap another target creature you control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tenth District Veteran:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "artist": "Volkan Baǵa",
+        "flavorText": "\"I keep reminding myself we do this because others can't, because we love this city. If we don't save it, no one will.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/f/ef573e92-3106-4b42-90e8-0e165de0659f.jpg?1783933715"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Territorial Boar
 {
     "name": "Territorial Boar",
@@ -5591,6 +6345,122 @@
     ]
 }
 
+// Undercity's Embrace
+{
+    "name": "Undercity's Embrace",
+    "manaCost": "{2}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target opponent sacrifices a creature of their choice. If you control a creature with power 4 or greater, you gain 4 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForceSacrifice",
+                    "filter": "creature",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "creature pow>=4"
+                        }
+                    },
+                    "then": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "89",
+        "artist": "Tyler Walpole",
+        "flavorText": "The undercity is always hungry.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bfcb9805-eca0-476c-9480-0c958acdb50f.jpg?1783933687"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Vindictive Vampire
+{
+    "name": "Vindictive Vampire",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Vampire",
+    "oracleText": "Whenever another creature you control dies, this creature deals 1 damage to each opponent and you gain 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vindictive Vampire:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "90",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Gallegos",
+        "flavorText": "In theory, the Guildpact keeps guild feuds from spiraling out of control. Personal feuds, however, are not covered.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c0bfb47-c753-42fa-969b-7b10b87b0462.jpg?1783933686"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Vizkopa Vampire
 {
     "name": "Vizkopa Vampire",
@@ -5613,6 +6483,79 @@
     "colorIdentityOverride": [
         "BLACK",
         "WHITE"
+    ]
+}
+
+// Wall of Lost Thoughts
+{
+    "name": "Wall of Lost Thoughts",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Wall",
+    "oracleText": "Defender (This creature can't attack.)\nWhen this creature enters, target player mills four cards. (They put the top four cards of their library into their graveyard.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wall of Lost Thoughts:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "rarity": "UNCOMMON",
+        "artist": "Adam Paquette",
+        "flavorText": "Those who intrude upon the Dimir seldom remember that they have done so.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/03a0a627-ea7a-48bb-bf30-60b2677dd8ae.jpg?1783933701"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
