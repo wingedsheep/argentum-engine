@@ -76,16 +76,21 @@ object CombatDefenders {
      *
      * A planeswalker/battle is attackable iff its controller/protector is in this set (the caller
      * maps it). Departed players are already skipped by the seat helpers, so in Free-for-All the
-     * left/right neighbour is always an opponent exactly one seat away.
+     * left/right neighbour is always an opponent exactly one seat away. In a team game it can be a
+     * teammate: then the nearest opponent on that side is more than one seat away and the player
+     * can't attack at all (CR 803.1a / 803.1b).
      */
     fun legalDefendingPlayers(state: GameState, attackingPlayer: EntityId): Set<EntityId> =
         when (state.attackMode) {
             com.wingedsheep.sdk.core.AttackMode.MULTIPLE -> state.getOpponents(attackingPlayer).toSet()
             com.wingedsheep.sdk.core.AttackMode.LEFT ->
-                setOf(state.getNextPlayer(attackingPlayer)).minus(attackingPlayer)
+                adjacentOpponent(state, attackingPlayer, state.getNextPlayer(attackingPlayer))
             com.wingedsheep.sdk.core.AttackMode.RIGHT ->
-                setOf(state.getPreviousPlayer(attackingPlayer)).minus(attackingPlayer)
+                adjacentOpponent(state, attackingPlayer, state.getPreviousPlayer(attackingPlayer))
         }
+
+    private fun adjacentOpponent(state: GameState, attackingPlayer: EntityId, neighbour: EntityId): Set<EntityId> =
+        if (neighbour in state.getOpponents(attackingPlayer)) setOf(neighbour) else emptySet()
 
     /**
      * Everything [attackingPlayer] may declare an attack on this combat, before any per-creature
