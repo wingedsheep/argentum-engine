@@ -287,9 +287,10 @@ object AiReadingAudit {
                         ExpiringGrantWindow.hasExpiringReading(leaf, creatureGrants = false) ||
                             (heldWhole || (leaf is ModifyStatsEffect && IntentTag.COMBAT_TRICK in intent.tags)) ||
                             (leaf is ForEachEffect && intent.expiringGroupPump) ||
-                            // A prevention spell needs no hold: cast before any damage it could stop,
-                            // it leaves the simulated board unchanged for a card, and cast into the
-                            // damage, simulation through that damage prices it.
+                            // A prevention shield on a spell needs no hold: cast before any damage it
+                            // could stop, the shield leaves the simulated board unchanged, and cast into
+                            // the damage, simulation through that damage prices it. Its other leaves
+                            // (a counter, an untap) keep their own timing findings.
                             leaf is PreventDamageEffect
                     }
                 }

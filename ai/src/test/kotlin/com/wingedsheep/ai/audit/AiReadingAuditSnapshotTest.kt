@@ -41,6 +41,8 @@ class AiReadingAuditSnapshotTest : FunSpec({
         "Angelsong" to emptyList(),
         // Unread — the effect types the audit names as the work to do.
         "Defy Gravity" to listOf("timing: GrantKeywordEffect"),
+        // The spell-only prevention rule stops at activations: a sacrifice-for-a-shield stays unread.
+        "Burrenton Forge-Tender" to listOf("timing: PreventDamageEffect"),
         "Abzan Charm" to listOf("polarity: DistributeCountersAmongTargetsEffect"),
         "Act on Impulse" to listOf("intent: GrantMayPlayFromExileEffect", "intent: Pipeline(TopOfLibrary→exile)"),
         "Alchemist's Vial" to listOf(
