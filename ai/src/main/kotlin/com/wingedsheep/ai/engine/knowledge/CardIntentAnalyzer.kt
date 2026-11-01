@@ -725,6 +725,12 @@ object CardIntentAnalyzer {
             }
         }
 
+        // "Target creature gains 'When this creature dies, return it to the battlefield'" (Feign
+        // Death, Undying Malice, earthbend's return): the creature outlives the removal aimed at it,
+        // so the grant is protection, as a regeneration shield is.
+        is GrantTriggeredAbilityEffect ->
+            if (returnsItselfWhenItLeaves(effect.ability)) setOf(IntentTag.PROTECTION) else emptySet()
+
         // "Choose one —": the card can do whatever any one mode does, so it carries every mode's
         // tags — a charm with a removal mode is removal in hand, as a ForEach body is read above.
         // A tag *also* answers "is this card dead here?" for exactly one consumer: a counterspell
@@ -738,6 +744,19 @@ object CardIntentAnalyzer {
         }
 
         else -> emptySet()
+    }
+
+    /**
+     * Whether [ability] is a trigger of the permanent itself leaving the battlefield that puts that
+     * same permanent back onto it — "when this creature dies, return it to the battlefield".
+     */
+    private fun returnsItselfWhenItLeaves(ability: TriggeredAbility): Boolean {
+        if (ability.binding != TriggerBinding.SELF) return false
+        val pattern = ability.trigger as? EventPattern.ZoneChangeEvent ?: return false
+        if (pattern.from != Zone.BATTLEFIELD) return false
+        return EffectWalker.payoffLeaves(ability.effect).any {
+            it is MoveToZoneEffect && it.target == EffectTarget.Self && it.destination == Zone.BATTLEFIELD
+        }
     }
 
     /**
