@@ -4,6 +4,8 @@ import com.wingedsheep.engine.core.CardRevealedFromDrawEvent
 import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.core.pendingQuestionIsPrivate
 import com.wingedsheep.engine.support.GameTestDriver
+import com.wingedsheep.engine.view.ClientEvent
+import com.wingedsheep.engine.view.ClientEventTransformer
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.Effects
@@ -118,6 +120,12 @@ class OptionalFirstDrawRevealTest : FunSpec({
         val reveal = driver.reveals().single()
         reveal.cardEntityId shouldBe forest
         reveal.revealedBy shouldBe listOf(source)
+        withClue("the table's reveal overlay names the revealing permanent as its source card") {
+            val shown = ClientEventTransformer.transform(listOf(reveal), driver.getOpponent(me), driver.state)
+                .filterIsInstance<ClientEvent.CardsRevealed>().single()
+            shown.cardNames shouldBe listOf("Forest")
+            shown.source shouldBe "Test Optional Revealer"
+        }
         driver.drain()
         driver.getLifeTotal(me) shouldBe life + 2
     }

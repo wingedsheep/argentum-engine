@@ -1831,7 +1831,11 @@ is PermanentsSacrificedEvent -> {
                     revealingPlayerId = event.playerId,
                     cardIds = listOf(event.cardEntityId),
                     cardNames = listOf(event.cardName),
-                    source = "first draw reveal"
+                    // The overlay shows `source` as a card (its art and hover preview), so name the
+                    // permanent whose reveal this is — Primitive Etchings, God-Eternal Kefnet.
+                    source = event.revealedBy.firstNotNullOfOrNull { id ->
+                        state?.getEntity(id)?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()?.name
+                    }
                 )
             }
 
