@@ -39,8 +39,11 @@ class AiReadingAuditSnapshotTest : FunSpec({
         "Abuna Acolyte" to emptyList(),
         // A prevention spell's shield is timed by simulation through the damage it stops.
         "Angelsong" to emptyList(),
+        // A keyword-only end-of-turn grant spell is floored where no fight is left this turn.
+        "Defy Gravity" to emptyList(),
         // Unread — the effect types the audit names as the work to do.
-        "Defy Gravity" to listOf("timing: GrantKeywordEffect"),
+        // A draw beside the trample outlasts the turn, so the keyword floor does not read the spell.
+        "Charge Through" to listOf("timing: GrantKeywordEffect"),
         // The spell-only prevention rule stops at activations: a sacrifice-for-a-shield stays unread.
         "Burrenton Forge-Tender" to listOf("timing: PreventDamageEffect"),
         "Abzan Charm" to listOf("polarity: DistributeCountersAmongTargetsEffect"),

@@ -294,7 +294,10 @@ object AiReadingAudit {
                             // could stop, the shield leaves the simulated board unchanged, and cast into
                             // the damage, simulation through that damage prices it. Its other leaves
                             // (a counter, an untap) keep their own timing findings.
-                            leaf is PreventDamageEffect
+                            leaf is PreventDamageEffect ||
+                            // A spell that only grants keywords until end of turn is floored where no
+                            // fight is left; the floor asks it of the whole spell, not one leaf.
+                            ExpiringGrantWindow.readsSpellKeywordGrant(spell)
                     }
                 }
                 modal(spell, sink)

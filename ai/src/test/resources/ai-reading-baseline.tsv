@@ -1781,7 +1781,7 @@ Body Dropper
 Body Launderer
 Body of Knowledge
 Body of Research
-Bofur, Reliable Guardian	timing: GrantKeywordEffect
+Bofur, Reliable Guardian
 Bog Badger
 Bog Elemental
 Bog Glider
@@ -3350,7 +3350,7 @@ Crimson Manticore
 Crimson Operative	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Crippling Chill
 Crippling Fear
-Critical Hit	intent: GrantKeywordEffect; timing: GrantKeywordEffect
+Critical Hit	intent: GrantKeywordEffect
 Croaking Counterpart	polarity: CreateTokenCopyOfTargetEffect
 Crocodile of the Crossing
 Crookclaw Elder
@@ -3892,7 +3892,7 @@ Defossilize	intent: ExploreEffect; intent: MoveToZoneEffect
 Deft Duelist
 Deftblade Elite	intent: ProvokeEffect; polarity: ProvokeEffect; timing: PreventDamageEffect
 Defy Death
-Defy Gravity	timing: GrantKeywordEffect
+Defy Gravity
 Dega Disciple	intent: ModifyStatsEffect
 Deification
 Deliberate
@@ -4241,6 +4241,7 @@ Dominating Vampire	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntap
 Domineer
 Domri's Ambush
 Domri, Anarch of Bolas	polarity: FightEffect
+Domri, Chaos Bringer	intent: CreateGlobalTriggeredAbilityEffect
 Don & Leo, Problem Solvers	polarity: MoveToZoneEffect
 Don & Raph, Hard Science	intent: GrantNextSpellAffinityEffect
 Don't Make a Sound
@@ -4969,7 +4970,7 @@ Enchanted Carriage
 Enchanted River's Grasp
 Enchantment Alteration	intent: AttachToChosenHostEffect; polarity: AttachToChosenHostEffect
 Enchantress's Presence
-Encouraging Aviator	intent: BecomePreparedEffect; timing: GrantKeywordEffect
+Encouraging Aviator	intent: BecomePreparedEffect
 Encroaching Dragonstorm
 Encroaching Mycosynth
 Encroaching Wastes
@@ -7399,7 +7400,7 @@ Head of the Hunt
 Headhunter	intent: Pipeline(hand→graveyard)
 Headless Horseman
 Headless Rider
-Headlong Rush	intent: ForEach>GrantKeywordEffect; timing: ForEach>GrantKeywordEffect
+Headlong Rush	intent: ForEach>GrantKeywordEffect
 Headwater Sentries
 Heal the Scars
 Healer of the Glade
@@ -8105,7 +8106,7 @@ Infestation Expert
 Infestation Sage
 Infested Fleshcutter
 Infesting Radroach
-Infiltrate	intent: GrantKeywordEffect; timing: GrantKeywordEffect
+Infiltrate	intent: GrantKeywordEffect
 Infiltration Lens	polarity: AttachEquipmentEffect
 Infinite Authority	polarity: Aura>CreateDelayedTriggerEffect; polarity: Aura>GatherCardsEffect
 Infinite Coursework
@@ -8587,7 +8588,7 @@ Jukai Naturalist
 Jukai Preserver
 Jukai Trainee
 Jumbo Cactuar
-Jump	timing: GrantKeywordEffect
+Jump
 Jump Scare
 Jund Battlemage
 June, Bounty Hunter
@@ -9262,7 +9263,7 @@ Leaf Gilder
 Leaf-Crowned Visionary
 Leafkin Avenger
 Leafkin Druid
-Leap of Faith	timing: GrantKeywordEffect
+Leap of Faith
 Leaping Ambush
 Leaping Master
 Leashling
@@ -9382,7 +9383,7 @@ Lifesmith
 Lifespark Spellbomb	intent: AnimateLandEffect; polarity: AnimateLandEffect; timing: AnimateLandEffect
 Lifespring Druid
 Lifetap
-Lifted by Clouds	timing: GrantKeywordEffect
+Lifted by Clouds
 Light 'Em Up
 Light Up the Night
 Light Up the Stage	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
@@ -9799,7 +9800,7 @@ Magmatic Sinkhole
 Magmatic Sprinter	intent: AddCountersEffect; polarity: AddCountersEffect
 Magmaw
 Magnanimous Magistrate	intent: MoveToZoneEffect
-Magnetic Flux	timing: ForEach>GrantKeywordEffect
+Magnetic Flux
 Magnetic Mountain	intent: GatedEffect; intent: Pipeline(ControlledPermanents→?)
 Magnetic Snuffler	intent: AttachTargetEquipmentToCreatureEffect; intent: MoveToZoneEffect
 Magnificent End
@@ -12624,7 +12625,7 @@ Rakdos, Lord of Riots
 Rakdos, Patron of Chaos	intent: ChooseActionEffect; polarity: ChooseActionEffect
 Rakdos, the Muscle	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile); polarity: Pipeline(TopOfLibrary→exile)
 Rakeclaw Gargantuan	intent: GrantKeywordEffect
-Raking Claws	intent: GrantKeywordEffect; timing: GrantKeywordEffect
+Raking Claws	intent: GrantKeywordEffect
 Rakish Crew
 Rakish Revelers	intent: GrantActivatedAbilityEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(exile→?); polarity: GrantActivatedAbilityEffect
 Rakish Scoundrel
@@ -12712,7 +12713,7 @@ Raphael, Ninja Destroyer
 Raphael, Tough Turtle
 Raphael, the Nightwatcher
 Rapid Augmenter	intent: GrantKeywordEffect
-Rapid Fire	intent: GrantKeywordEffect; polarity: GrantKeywordEffect; timing: GrantKeywordEffect
+Rapid Fire	intent: GrantKeywordEffect; polarity: GrantKeywordEffect
 Rapid Hybridization
 Rapid Rescue
 Rapier Wit
@@ -14513,7 +14514,7 @@ Shredder's Technique
 Shredder, Unrelenting	intent: GrantKeywordEffect
 Shredding Winds
 Shrewd Storyteller
-Shriek of Dread	timing: GrantKeywordEffect
+Shriek of Dread
 Shriek, Treblemaker	intent: ReflexiveTriggerEffect
 Shriekdiver	intent: GrantKeywordEffect
 Shrieking Drake	intent: Pipeline(BattlefieldMatching→hand)
@@ -16288,7 +16289,7 @@ Teachings of the Archaics
 Teachings of the Kirin	polarity: ReflexiveTriggerEffect
 Team Avatar
 Team Pennant
-Team Tactics	timing: GrantKeywordEffect
+Team Tactics
 Teapot Slinger
 Tear Asunder
 Technodrome
@@ -16328,7 +16329,7 @@ Tel-Jilad Stylus	polarity: MoveToZoneEffect
 Telekinesis
 Telekinetic Sliver
 Telepathic Spies	intent: LookAtTargetHandEffect
-Teleport	intent: GrantKeywordEffect; timing: GrantKeywordEffect
+Teleport	intent: GrantKeywordEffect
 Teleportation Circle	polarity: MoveToZoneEffect
 Telethopter
 Telim'Tor
@@ -16387,7 +16388,7 @@ Tempting Witch
 Tempting Wurm	intent: ForEach>Pipeline(hand→battlefield)
 Temur Ascendancy
 Temur Banner
-Temur Battle Rage	timing: GrantKeywordEffect
+Temur Battle Rage
 Temur Battlecrier
 Temur Charger
 Temur Charm
@@ -17199,7 +17200,7 @@ Tragic Slip
 Tragic Trajectory
 Trail of Crumbs
 Trail of Mystery
-Trailblazer	intent: GrantKeywordEffect; timing: GrantKeywordEffect
+Trailblazer	intent: GrantKeywordEffect
 Trailblazer's Boots	polarity: AttachEquipmentEffect
 Trailblazing Historian	intent: GrantKeywordEffect
 Trailtracker Scout
@@ -17285,7 +17286,7 @@ Treeshaker Chimera
 Treespring Lorian
 Treetop Ambusher
 Treetop Bracers
-Treetop Defense	intent: ForEach>GrantKeywordEffect; timing: ForEach>GrantKeywordEffect
+Treetop Defense	intent: ForEach>GrantKeywordEffect
 Treetop Freedom Fighters
 Treetop Rangers
 Treetop Scout
@@ -17472,7 +17473,7 @@ Twitching Doll
 Two-Headed Cerberus
 Two-Headed Giant	intent: FlipTwoCoinsEffect
 Two-Headed Giant of Foriys
-Two-Headed Hunter	intent: GrantKeywordEffect; timing: GrantKeywordEffect
+Two-Headed Hunter	intent: GrantKeywordEffect
 Two-Headed Sliver
 Two-Headed Zombie
 Ty Lee, Artful Acrobat	intent: ReflexiveTriggerEffect
