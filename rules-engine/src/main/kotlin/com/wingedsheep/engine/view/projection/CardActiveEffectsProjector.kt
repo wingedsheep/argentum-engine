@@ -596,7 +596,7 @@ internal class CardActiveEffectsProjector(
 
     /**
      * A class-wide redirection shield ("all damage that would be dealt to creatures you control is
-     * dealt to that creature instead", Ascent of the Worthy) protects no listed entity, so nothing
+     * dealt to that creature instead", Ascent of the Worthy) protects no listed permanent, so nothing
      * would show it. Badge the permanent that soaks the damage instead, worded as the card words it.
      */
     private fun redirectRecipientBadges(state: GameState, entityId: EntityId): List<ClientCardEffect> =
@@ -607,11 +607,13 @@ internal class CardActiveEffectsProjector(
             if (mod.redirectToId != entityId) return@mapNotNull null
             val verb = if (mod.optional) "may be dealt" else "is dealt"
             val source = publicSourceName(state, floating)?.let { "$it: " }.orEmpty()
+            // A listed player rides alongside the class (Gideon's Sacrifice: "you and permanents you control").
+            val you = if (floating.controllerId in floating.effect.affectedEntities) "you and " else ""
             ClientCardEffect(
                 effectId = "redirect_recipient_${floating.id}",
                 name = "Takes damage",
                 description = "${source}All damage that would be dealt to " +
-                    "${filter.pluralPermanentDescription} $verb to this instead",
+                    "$you${filter.pluralPermanentDescription} $verb to this instead",
                 icon = "redirect"
             ).lasting(durationPhrase(state, floating))
         }

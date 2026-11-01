@@ -1069,14 +1069,17 @@ internal class CombatDamageManager(
         var workingState = state
         val redirected = assignments.map { assignment ->
             var current = assignment
+            // Each shield gets one opportunity at this damage (CR 614.5), so a chain always ends.
+            var applied = emptySet<EntityId>()
             while (workingState.getEntity(current.targetId)?.has<DamageUnpreventableThisTurnComponent>() != true) {
-                val (next, target, amount) = DamageUtils.checkDamageRedirection(
+                val (next, target, amount, shield) = DamageUtils.checkDamageRedirection(
                     workingState, current.targetId, current.amount, inBatch = true,
-                    sourceId = current.sourceId, chosenSourcesOnly = true,
+                    sourceId = current.sourceId, chosenSourcesOnly = true, appliedShields = applied,
                     predicateEvaluator = predicateEvaluator
                 )
                 workingState = next
-                if (target == null) break
+                if (target == null || shield == null) break
+                applied = applied + shield
                 current = current.copy(targetId = target, amount = amount)
             }
             current
@@ -1136,11 +1139,11 @@ internal class CombatDamageManager(
             )
             isPlaneswalker -> applyDamageByRemovingCounters(
                 state, assignment.sourceId, assignment.targetId, amplifiedAmount,
-                com.wingedsheep.sdk.core.CounterType.LOYALTY, events, preventionLifeGains
+                com.wingedsheep.sdk.core.CounterType.LOYALTY, events, healProcessedTargets, preventionLifeGains
             )
             isBattle -> applyDamageByRemovingCounters(
                 state, assignment.sourceId, assignment.targetId, amplifiedAmount,
-                com.wingedsheep.sdk.core.CounterType.DEFENSE, events, preventionLifeGains
+                com.wingedsheep.sdk.core.CounterType.DEFENSE, events, healProcessedTargets, preventionLifeGains
             )
             else -> applyDamageToCreature(
                 state, assignment.sourceId, assignment.targetId, amplifiedAmount, events, healProcessedTargets,
@@ -1350,23 +1353,9 @@ internal class CombatDamageManager(
         shieldResult.lifeGains.forEach { (controllerId, gained) -> preventionLifeGains.merge(controllerId, gained, Int::plus) }
         if (effectiveAmount <= 0) return newState
 
-        // Damage redirection (Glarecaster, Zealous Inquisitor). inBatch=true so a one-shot
-        // "next moment" shield (Glarecaster) survives to redirect every instance of this
-        // simultaneous combat-damage step (CR 510.2); it is consumed once afterwards by
-        // consumeBatchRedirectShields.
-        val (redirectState, redirectTargetId, redirectAmount) = DamageUtils.checkDamageRedirection(
-            newState, targetId, effectiveAmount, inBatch = true, sourceId = sourceId,
-            predicateEvaluator = predicateEvaluator
-        )
-        newState = redirectState
-        if (redirectTargetId != null && redirectAmount > 0) {
-            newState = dealFinalDamage(newState, sourceId, redirectTargetId, redirectAmount, events, healProcessedTargets)
-            val remaining = effectiveAmount - redirectAmount
-            if (remaining > 0) {
-                newState = dealFinalDamage(newState, sourceId, targetId, remaining, events, healProcessedTargets)
-            }
-            return newState
-        }
+        // Damage redirection (Glarecaster, Zealous Inquisitor) — see redirectThroughShields.
+        redirectThroughShields(newState, sourceId, targetId, effectiveAmount, events, healProcessedTargets)
+            ?.let { return it }
 
         // Reduce life. Per CR 120.3a, damage to a player without infect causes that
         // player to lose that much life, so life-loss replacements (Bloodletter of
@@ -1460,6 +1449,7 @@ internal class CombatDamageManager(
         amplifiedAmount: Int,
         counterType: com.wingedsheep.sdk.core.CounterType,
         events: MutableList<GameEvent>,
+        healProcessedTargets: MutableSet<EntityId>,
         preventionLifeGains: MutableMap<EntityId, Int>
     ): GameState {
         if (targetId !in state.getBattlefield()) return state
@@ -1475,6 +1465,10 @@ internal class CombatDamageManager(
         val effectiveAmount = shieldResult.remainingDamage
         shieldResult.lifeGains.forEach { (controllerId, gained) -> preventionLifeGains.merge(controllerId, gained, Int::plus) }
         if (effectiveAmount <= 0) return newState
+
+        // Damage redirection — Gideon's Sacrifice covers planeswalkers as well as creatures.
+        redirectThroughShields(newState, sourceId, targetId, effectiveAmount, events, healProcessedTargets)
+            ?.let { return it }
 
         val counterPrevention = DamageUtils.applyPerPointCounterPrevention(
             newState, targetId, effectiveAmount, sourceId, isCombatDamage = true, predicateEvaluator = predicateEvaluator
@@ -1598,24 +1592,47 @@ internal class CombatDamageManager(
             return newState
         }
 
-        // Damage redirection (Glarecaster, Zealous Inquisitor). See applyDamageToPlayer for why
-        // inBatch=true — a Glarecaster shield protects its controller's creatures too, so a blocked
-        // attacker's damage to a protected blocker is redirected as part of the same batch.
-        val (redirectState, redirectTargetId, redirectAmount) = DamageUtils.checkDamageRedirection(
-            newState, targetId, effectiveAmount, inBatch = true, sourceId = sourceId,
-            predicateEvaluator = predicateEvaluator
-        )
-        newState = redirectState
-        if (redirectTargetId != null && redirectAmount > 0) {
-            newState = dealFinalDamage(newState, sourceId, redirectTargetId, redirectAmount, events, healProcessedTargets)
-            val remaining = effectiveAmount - redirectAmount
-            if (remaining > 0) {
-                newState = dealFinalDamage(newState, sourceId, targetId, remaining, events, healProcessedTargets)
-            }
-            return newState
-        }
+        // Damage redirection (Glarecaster, Ascent of the Worthy) — see redirectThroughShields.
+        redirectThroughShields(newState, sourceId, targetId, effectiveAmount, events, healProcessedTargets)
+            ?.let { return it }
 
         return dealFinalDamage(newState, sourceId, targetId, effectiveAmount, events, healProcessedTargets)
+    }
+
+    /**
+     * Apply the redirection shields covering [targetId] (Glarecaster, Ascent of the Worthy, Gideon's
+     * Sacrifice) to combat damage that survived prevention. `inBatch = true` so a one-shot "next
+     * moment" shield survives to redirect every instance of this simultaneous combat-damage step
+     * (CR 510.2); it is consumed once afterwards by consumeBatchRedirectShields.
+     *
+     * The redirected damage is then checked against the remaining shields — once the chosen one
+     * has applied, any other that now applies to the modified event does (CR 616.1f) — with each
+     * shield getting one opportunity (CR 614.5), so two shields pointing at each other end instead
+     * of looping. Returns null when no shield redirects anything, leaving the caller to deal the
+     * damage to [targetId] itself.
+     */
+    private fun redirectThroughShields(
+        state: GameState,
+        sourceId: EntityId,
+        targetId: EntityId,
+        amount: Int,
+        events: MutableList<GameEvent>,
+        healProcessedTargets: MutableSet<EntityId>,
+        appliedShields: Set<EntityId> = emptySet()
+    ): GameState? {
+        val (redirectState, redirectTargetId, redirectAmount, shield) = DamageUtils.checkDamageRedirection(
+            state, targetId, amount, inBatch = true, sourceId = sourceId, appliedShields = appliedShields,
+            predicateEvaluator = predicateEvaluator
+        )
+        if (redirectTargetId == null || shield == null || redirectAmount <= 0) return null
+        val applied = appliedShields + shield
+        var newState = redirectThroughShields(redirectState, sourceId, redirectTargetId, redirectAmount, events, healProcessedTargets, applied)
+            ?: dealFinalDamage(redirectState, sourceId, redirectTargetId, redirectAmount, events, healProcessedTargets)
+        val remaining = amount - redirectAmount
+        if (remaining > 0) {
+            newState = dealFinalDamage(newState, sourceId, targetId, remaining, events, healProcessedTargets)
+        }
+        return newState
     }
 
     /**

@@ -5694,6 +5694,85 @@
     ]
 }
 
+// Gideon's Sacrifice
+{
+    "name": "Gideon's Sacrifice",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Choose a creature or planeswalker you control. All damage that would be dealt this turn to you and permanents you control is dealt to the chosen permanent instead (if it's still on the battlefield).",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "SelectTarget",
+                    "requirement": {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature|planeswalker ctrl:you"
+                        }
+                    },
+                    "storeAs": "target0",
+                    "nonTargeting": true,
+                    "prompt": "Choose a creature or planeswalker you control to be dealt the damage dealt to you and your permanents"
+                },
+                {
+                    "type": "RedirectNextDamage",
+                    "protectedTargets": [
+                        "Controller"
+                    ],
+                    "redirectTo": {
+                        "type": "PipelineTarget",
+                        "collectionName": "target0"
+                    },
+                    "scope": "CONTINUOUS",
+                    "protectedFilter": {
+                        "cardPredicates": [
+                            "IsPermanent"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "artist": "Chris Rallis",
+        "flavorText": "To Liliana's surprise, the cost of betraying Bolas did not fall on her.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/849c79ad-8bfc-4512-ab41-f213b6b285ab.jpg?1783933481",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "Gideon's Sacrifice has no effect on damage already dealt earlier in the turn."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If you control no creatures or planeswalkers as Gideon's Sacrifice resolves, nothing happens. The damage redirection effect won't be able to be applied to any damage events."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If the chosen creature or planeswalker isn't on the battlefield or isn't a creature or planeswalker at the time damage would be dealt, the damage won't be redirected."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "More damage can be redirected to the chosen creature than it has toughness or to the chosen planeswalker than it has loyalty, as long as that damage is all dealt at once (like combat damage is) or is all dealt while a single spell or ability is resolving."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Gideon's Sacrifice doesn't change the source of the damage or whether the damage is combat damage."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If you cast more than one Gideon's Sacrifice in one turn, all damage that would be dealt at once to you and/or permanents you control is dealt to one of the chosen permanents of your choice. It's not dealt to all of them, and you can't split the damage between them. The next time damage would be dealt to you, you may choose a different one of those permanents to be dealt that damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Gideon's Triumph
 {
     "name": "Gideon's Triumph",
