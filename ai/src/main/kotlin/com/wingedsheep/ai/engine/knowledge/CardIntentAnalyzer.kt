@@ -216,6 +216,7 @@ object CardIntentAnalyzer {
         }
 
         for (root in roots) tags += pipelineTags(root)
+        if (roots.any(::isExpiringProtectionTrick)) expiringPump = true
         for (effect in leaves) {
             tags += tagsOf(effect)
             reachOf(effect)?.let { removalReach = maxOf(removalReach ?: 0, it) }
@@ -224,7 +225,6 @@ object CardIntentAnalyzer {
                 expiringPump = true
                 pumpToughness = maxOf(pumpToughness, expiringToughnessOf(effect))
             }
-            if (isExpiringProtection(effect)) expiringPump = true
             if (isExpiringGroupPump(effect)) expiringGroupPump = true
         }
 
@@ -852,6 +852,22 @@ object CardIntentAnalyzer {
             IntentTag.PROTECTION in keywordTags(effect.keyword)
 
     /**
+     * An ability whose payoff ends at cleanup: an [isExpiringProtection] grant (one creature's or,
+     * through a group `ForEach`, the team's), and every other leaf is one too — another expiring
+     * keyword or pump, or a rider spent on resolution (a scry, a little life). Anything else may
+     * last — Snakeskin Veil's +1/+1 counter, Oblivion's Hunger's draw, Royal Treatment's Role — and
+     * a spell with a lasting payoff is worth casting whenever, so it is no trick to hold.
+     */
+    private fun isExpiringProtectionTrick(root: Effect): Boolean {
+        val leaves = readingLeaves(root).flatMap { if (it is ForEachEffect) readingLeaves(it.body) else listOf(it) }
+        return leaves.any(::isExpiringProtection) && leaves.all { leaf ->
+            isExpiringPump(leaf) ||
+                (leaf is GrantKeywordEffect && leaf.duration == Duration.EndOfTurn) ||
+                tagsOf(leaf).let { it.isNotEmpty() && it.all { tag -> tag in SPENT_ON_RESOLUTION } }
+        }
+    }
+
+    /**
      * Whether a stat modifier only ever adds. A dynamic "+X" (a count, a mana value) counts: reading
      * only [DynamicAmount.Fixed] left Accelerated Mutation's +X/+X out of [IntentTag.COMBAT_TRICK].
      */
@@ -1132,6 +1148,9 @@ object CardIntentAnalyzer {
         Keyword.FLYING, Keyword.MENACE, Keyword.FEAR, Keyword.INTIMIDATE, Keyword.SHADOW,
         Keyword.TRAMPLE,
     ) + Keyword.LANDWALK
+
+    /** Riders that leave nothing behind once resolved — see [isExpiringProtectionTrick]. */
+    private val SPENT_ON_RESOLUTION = setOf(IntentTag.CARD_SELECTION, IntentTag.LIFEGAIN)
 
     private val PROTECTIVE_KEYWORDS = setOf(
         Keyword.HEXPROOF, Keyword.SHROUD, Keyword.INDESTRUCTIBLE, Keyword.PROTECTION,

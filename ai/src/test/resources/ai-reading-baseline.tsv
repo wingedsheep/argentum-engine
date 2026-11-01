@@ -1469,7 +1469,7 @@ Biomathematician
 Biomechan Engineer
 Biorganic Carapace
 Biorhythm	intent: ForEach>SetLifeTotalEffect
-Biosynthic Burst
+Biosynthic Burst	timing: GrantKeywordEffect
 Biotech Specialist
 Birchlore Rangers
 Bird Admirer
@@ -4727,7 +4727,7 @@ Eerie Procession
 Eerie Soultender
 Eerie Ultimatum	intent: Pipeline(graveyard→battlefield)
 Efficient Construction
-Efflorescence
+Efflorescence	timing: GrantKeywordEffect
 Effortless Master
 Efreet Flamepainter	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(ChosenTargets→?); polarity: CastFromCollectionWithoutPayingCostEffect; polarity: Pipeline(ChosenTargets→?)
 Efreet Weaponmaster
@@ -5030,7 +5030,7 @@ Ent's Fury
 Ent-Draught Basin
 Entangler	polarity: Aura>CanBlockAnyNumber
 Entangling Trap
-Enter the Avatar State
+Enter the Avatar State	timing: AddCreatureTypeEffect; timing: GrantKeywordEffect
 Enter the Enigma
 Enter the God-Eternals	polarity: Pipeline(TopOfLibrary→graveyard)
 Enterprising Scallywag
@@ -5810,7 +5810,7 @@ Flashback	intent: GrantFlashbackEffect; polarity: GrantFlashbackEffect; timing: 
 Flashfires
 Flashfreeze
 Flatten
-Flawless Maneuver	timing: ForEach>GrantKeywordEffect
+Flawless Maneuver
 Flaxen Intruder
 Flayed Nim
 Fledgling Dragon
@@ -6200,7 +6200,7 @@ Gaea's Blessing	intent: Pipeline(graveyard→library); polarity: DrawCardsEffect
 Gaea's Bounty
 Gaea's Courser
 Gaea's Cradle
-Gaea's Gift
+Gaea's Gift	timing: GrantKeywordEffect
 Gaea's Liege	intent: SetLandTypeEffect; polarity: SetLandTypeEffect
 Gaea's Might
 Gaea's Protector	intent: MustBeBlockedEffect
@@ -7547,7 +7547,7 @@ Heroes' Podium
 Heroes' Reunion
 Heroic Charge
 Heroic Feast
-Heroic Intervention	timing: ForEach>GrantKeywordEffect
+Heroic Intervention
 Heroic Reinforcements
 Heroism	intent: ForEach>PayOrSufferEffect
 Heron of Hope	intent: GrantKeywordEffect
@@ -9394,7 +9394,7 @@ Light the Way	polarity: MoveToZoneEffect
 Light-Paws, Emperor's Voice
 Lightbringer
 Lightfoot Rogue
-Lightfoot Technique
+Lightfoot Technique	timing: GrantKeywordEffect
 Lightless Evangel
 Lightning Angel
 Lightning Axe
@@ -10077,7 +10077,7 @@ Mavren Fein, Dusk Apostle
 Maw of the Mire
 Mawcor
 Maximum Carnage
-Maximum Overdrive
+Maximum Overdrive	timing: GrantKeywordEffect
 Mayhem Devil
 Mayhem Patrol
 Mayor of Avabruck
@@ -11264,7 +11264,7 @@ Obliterate
 Obliterating Bolt
 Oblivion Ring
 Oblivion Stone	intent: AddCountersEffect; polarity: AddCountersEffect
-Oblivion's Hunger
+Oblivion's Hunger	timing: GrantKeywordEffect
 Oblivious Bookworm	intent: Pipeline(hand→graveyard)
 Obosh, the Preypiercer
 Obscura Ascendancy
@@ -13135,7 +13135,7 @@ Reverse Damage
 Reverse Polarity
 Reverse the Sands	intent: RedistributeLifeTotalsEffect
 Revitalize
-Revitalizing Repast
+Revitalizing Repast	timing: GrantKeywordEffect
 Revival of the Ancestors
 Revive
 Revive the Shire
@@ -13481,7 +13481,7 @@ Roxanne, Starfall Savant
 Roxxon Brutes
 Royal Assassin
 Royal Falcon
-Royal Treatment
+Royal Treatment	timing: GrantKeywordEffect
 Royal Trooper
 Rubble Reading
 Rubble Rouser
@@ -13823,7 +13823,7 @@ Savannah
 Savannah Lions
 Savannah Sage
 Savanti Romero, Time's Exile
-Saved by the Shell
+Saved by the Shell	timing: GrantKeywordEffect
 Savior of Ollenbock	intent: EmitKeywordCounterEventEffect
 Savior of the Sleeping
 Savior of the Small
@@ -14946,7 +14946,7 @@ Smothering Tithe	intent: PayOrSufferEffect
 Smuggler's Copter
 Smuggler's Surprise
 Sméagol, Helpful Guide	intent: GatherUntilMatchEffect; intent: Pipeline(?→battlefield|graveyard); intent: TheRingTemptsYouEffect; polarity: GatherUntilMatchEffect; polarity: Pipeline(?→battlefield|graveyard)
-Snakeskin Veil
+Snakeskin Veil	timing: GrantKeywordEffect
 Snap	polarity: MoveToZoneEffect
 Snapcaster Mage	intent: GrantFlashbackEffect; polarity: GrantFlashbackEffect
 Snapdax, Apex of the Hunt
@@ -15727,7 +15727,7 @@ Strength of Arms
 Strength of Cedars
 Strength of Solidarity
 Strength of Unity
-Strength of Will
+Strength of Will	timing: GrantKeywordEffect; timing: GrantTriggeredAbilityEffect
 Strength of the Coalition
 Strength of the Harvest
 Stress Dream
@@ -16152,7 +16152,7 @@ Take Flight
 Take Heart
 Take Out the Trash
 Take Up Arms
-Take Up the Shield
+Take Up the Shield	timing: GrantKeywordEffect
 Take Vengeance
 Take for a Ride	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
 Take the Fall
@@ -17137,7 +17137,7 @@ Torrent Sculptor	intent: Pipeline(graveyard→exile)
 Torrent of Fire
 Torrential Gearhulk	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(ChosenTargets→?); polarity: CastFromCollectionWithoutPayingCostEffect; polarity: Pipeline(ChosenTargets→?)
 Torsten Von Ursus
-Tortoise Formation	timing: ForEach>GrantKeywordEffect
+Tortoise Formation
 Tortured Existence
 Toski, Bearer of Secrets
 Totally Lost	polarity: MoveToZoneEffect
@@ -18475,7 +18475,7 @@ Water Elemental
 Water Servant
 Water Tribe Captain
 Water Tribe Rallier
-Water Wings
+Water Wings	timing: GrantKeywordEffect; timing: SetBaseStatsEffect
 Water Wurm
 Waterbender Ascension	intent: GrantKeywordEffect
 Waterbender's Restoration

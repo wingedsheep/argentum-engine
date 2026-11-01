@@ -1,5 +1,7 @@
 package com.wingedsheep.ai.engine
 
+import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
+import com.wingedsheep.ai.engine.knowledge.IntentTag
 import com.wingedsheep.ai.puzzles.AiPuzzle
 import com.wingedsheep.ai.puzzles.PuzzleCategory
 import com.wingedsheep.ai.puzzles.PuzzleMove
@@ -10,6 +12,8 @@ import com.wingedsheep.ai.puzzles.advanceToStackResponse
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
+import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 
 /**
@@ -47,6 +51,19 @@ class ProtectionGrantReadingAiTest : ScenarioTestBase() {
         .build()
 
     init {
+        test("a protection grant is held as a trick only when nothing it does outlasts the turn") {
+            val tags = { card: String -> CardIntentAnalyzer.analyze(cardRegistry.requireCard(card)).tags }
+            withClue("hexproof + indestructible + a scry ends at cleanup: a trick to hold") {
+                tags("Loran's Escape") shouldContain IntentTag.COMBAT_TRICK
+            }
+            withClue("a +1/+1 counter beside the hexproof lasts: castable whenever, not held") {
+                tags("Snakeskin Veil") shouldNotContain IntentTag.COMBAT_TRICK
+            }
+            withClue("a card drawn beside the grant lasts: castable whenever, not held") {
+                tags("Oblivion's Hunger") shouldNotContain IntentTag.COMBAT_TRICK
+            }
+        }
+
         test("an indestructible grant answers burn on our creature, though it adds no toughness") {
             val result = decide(PuzzleCategory.STACK_RESPONSE, { s ->
                 s.withPlayers()
