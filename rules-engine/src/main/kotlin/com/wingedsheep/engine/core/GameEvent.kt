@@ -548,13 +548,16 @@ data class ClashedEvent(
  * @property count Number of cards actually looked at (equals surveil N unless the library held
  *   fewer cards). Surfaced via `TRIGGER_SCRY_COUNT` ("the number of cards looked at").
  * @property sourceName The card/ability that caused the surveil (for display).
+ * @property firstThisTurn true when this is [playerId]'s first surveil this turn — read before the
+ *   surveil marks `SurveiledThisTurnComponent`; backs `EventPattern.SurveiledEvent.firstTimeEachTurn`.
  */
 @Serializable
 @SerialName("SurveiledEvent")
 data class SurveiledEvent(
     val playerId: EntityId,
     val count: Int,
-    val sourceName: String
+    val sourceName: String,
+    val firstThisTurn: Boolean = true
 ) : GameEvent
 
 /**

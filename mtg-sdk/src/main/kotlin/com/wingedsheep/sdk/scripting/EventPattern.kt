@@ -731,13 +731,18 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * N parameter unless the library had fewer cards). Read this count via
      * [com.wingedsheep.sdk.scripting.values.ContextPropertyKey.TRIGGER_SCRY_COUNT] ("the number of
      * cards looked at"). A literal "surveil 0" produces no event (CR 701.25c).
+     *
+     * [firstTimeEachTurn] is "surveils for the first time each turn" (Whispering Snitch): only the
+     * player's first surveil event of the turn matches.
      */
     @SerialName("SurveiledEvent")
     @Serializable
     data class SurveiledEvent(
-        val player: Player = Player.You
+        val player: Player = Player.You,
+        val firstTimeEachTurn: Boolean = false
     ) : EventPattern {
-        override val description: String = "${player.description} surveils"
+        override val description: String = "${player.description} surveils" +
+            if (firstTimeEachTurn) " for the first time each turn" else ""
     }
 
     /**

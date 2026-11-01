@@ -2384,6 +2384,10 @@ object Conditions {
     val ScriedOrSurveiledThisTurn: ConditionInterface =
         trackerAtLeast(com.wingedsheep.sdk.scripting.values.TurnTracker.SCRIED_OR_SURVEILED)
 
+    /** "If you've surveilled this turn" / "as long as you've surveilled this turn" — Darkblade Agent. */
+    val SurveiledThisTurn: ConditionInterface =
+        trackerAtLeast(com.wingedsheep.sdk.scripting.values.TurnTracker.SURVEILED)
+
     /**
      * If you put a counter on a creature this turn.
      * Used for Lasting Tarfire.

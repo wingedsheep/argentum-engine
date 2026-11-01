@@ -9916,7 +9916,8 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
   and travels in `TriggerContext.scryBottomCount`. Surveil and non-scry contexts read zero.
 - `Triggers.you.surveils()` — the surveil twin (CR 701.25), fired once per surveil resolution.
   Automatically emitted by `Patterns.Library.surveil(N)`. Reads the same `TRIGGER_SCRY_COUNT`
-  ("cards looked at"). Used by Golbez.
+  ("cards looked at"). Used by Golbez. `surveils(firstTimeEachTurn = true)` is "whenever you surveil
+  for the first time each turn" (Whispering Snitch): only the player's first surveil event that turn.
 - `Triggers.you.scriesOrSurveils()` — the combined look-at-top trigger; fires once per scry **and**
   once per surveil (Matoya, Archon Elder).
 - `Triggers.you.proliferates()` — fires once per proliferate (CR 701.34), after the counters are
@@ -16162,6 +16163,8 @@ answer it and would silently return `false`.
   `TurnTracker.PERMANENT_DEALT_EXCESS_DAMAGE`.
 - `ScriedOrSurveiledThisTurn` — you scried or surveilled this turn (Surveillance Phantasm, Desperate
   Futurescribe, Proctor of Potential), read through the `SCRIED_OR_SURVEILED` turn tracker.
+- `SurveiledThisTurn` — you surveilled this turn (a scry doesn't count; Darkblade Agent), read through
+  the `SURVEILED` turn tracker.
 - `PutCounterOnCreatureThisTurn` — you put ≥1 counter of *any* kind on a creature this turn (Lasting
   Tarfire), read through the `COUNTERS_PUT_ON_CREATURE` turn tracker.
 - `PutCounterKindOnCreatureThisTurn(counterType, player = Player.You)` — the **kind-scoped** reading
@@ -18350,6 +18353,9 @@ this turn").
   the executors that emit `ScriedEvent` / `SurveiledEvent`, so it is set exactly when a "whenever you
   scry or surveil" trigger would fire: scry 0 / surveil 0 never marks it (CR 701.22b / 701.25c); a
   scry into an empty library still does. Backs `Conditions.ScriedOrSurveiledThisTurn`.
+- `SURVEILED` — the surveil-only half of `SCRIED_OR_SURVEILED`: indicator (0 or 1) that the player
+  surveilled this turn, marked by the executor that emits `SurveiledEvent` (surveil 0 never marks it).
+  Backs `Conditions.SurveiledThisTurn`.
 - `ARTIFACT_SACRIFICED` — indicator (0 or 1) that the player sacrificed an artifact this turn, read
   off the projected type line at sacrifice time. Backs `Conditions.SacrificedArtifactThisTurn`
   (Suspicious Detonation, Furtive Courier).

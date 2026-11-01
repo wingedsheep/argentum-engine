@@ -853,6 +853,7 @@ val engineSerializersModule = SerializersModule {
         subclass(PlayerShroudComponent::class)
         subclass(SacrificedFoodThisTurnComponent::class)
         subclass(ScriedOrSurveiledThisTurnComponent::class)
+        subclass(SurveiledThisTurnComponent::class)
         subclass(SacrificedArtifactThisTurnComponent::class)
         subclass(PermanentsEnteredUnderControlThisTurnComponent::class)
         subclass(com.wingedsheep.engine.state.components.player.NontokenPermanentsPutOntoBattlefieldThisTurnComponent::class)

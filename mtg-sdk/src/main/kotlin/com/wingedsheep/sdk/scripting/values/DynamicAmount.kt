@@ -202,6 +202,13 @@ enum class TurnTracker {
      */
     SCRIED_OR_SURVEILED,
     /**
+     * Indicator (0 or 1) that the player surveilled this turn — the surveil-only half of
+     * [SCRIED_OR_SURVEILED] ("if you've surveilled this turn", Darkblade Agent). Marked by the same
+     * executor that emits the surveil event, so a surveil 0 (CR 701.25c) never sets it and a surveil
+     * into an empty library still does; a scry never does.
+     */
+    SURVEILED,
+    /**
      * Indicator (0 or 1) that the player sacrificed at least one artifact this turn — the
      * card-type sibling of [FOOD_SACRIFICED], recorded by the same central sacrifice hook and
      * read off the projected type line, so a permanent that was only an artifact through a
@@ -457,6 +464,7 @@ enum class TurnTracker {
         TOKENS_CREATED -> "the number of tokens ${player.description} created this turn"
         FOOD_SACRIFICED -> "whether ${player.description} sacrificed a Food this turn"
         SCRIED_OR_SURVEILED -> "whether ${player.description} scried or surveilled this turn"
+        SURVEILED -> "whether ${player.description} surveilled this turn"
         ARTIFACT_SACRIFICED -> "whether ${player.description} sacrificed an artifact this turn"
         CARDS_LEFT_GRAVEYARD -> "the number of cards that left ${player.possessive} graveyard this turn"
         PERMANENTS_PUT_INTO_HAND_FROM_BATTLEFIELD ->

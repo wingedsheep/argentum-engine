@@ -1786,6 +1786,16 @@ data object SacrificedFoodThisTurnComponent : Component
 data object ScriedOrSurveiledThisTurnComponent : Component
 
 /**
+ * Marker: this player surveilled this turn — the surveil-only half of
+ * [ScriedOrSurveiledThisTurnComponent]. Set by `EmitSurveiledEventExecutor` alongside it, cleared at
+ * end of turn by CleanupPhaseManager. Read through `TurnTracker.SURVEILED` ("if you've surveilled
+ * this turn", Darkblade Agent) and, before it is set, to stamp `SurveiledEvent.firstThisTurn`
+ * ("whenever you surveil for the first time each turn", Whispering Snitch).
+ */
+@Serializable
+data object SurveiledThisTurnComponent : Component
+
+/**
  * Marker component indicating that this player has sacrificed an artifact this turn.
  * Cleared at end of turn by CleanupPhaseManager.
  *
