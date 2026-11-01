@@ -1281,7 +1281,7 @@ Families:
 - `EventPattern.StepEvent(step: Step, player: Player)` — At the beginning of a step.
 - `EventPattern.SurveilEvent(player: Player)` — When a player would surveil a number of cards (CR 701.25).
 - `EventPattern.SurveiledEvent(player: Player)` — Whenever a player surveils (CR 701.25).
-- `EventPattern.TapEvent(filter: GameObjectFilter?, batch: Boolean, tapper: Player?, reason: TapReason?, firstTimeEachTurn: Boolean)` — When a permanent becomes tapped.
+- `EventPattern.TapEvent(filter: GameObjectFilter?, batch: Boolean, tapper: Player?, reason: TapReason?, exceptReason: TapReason?, firstTimeEachTurn: Boolean)` — When a permanent becomes tapped.
 - `EventPattern.TargetsChosenEvent(player: Player)` — When a player chooses one or more targets.
 - `EventPattern.TokenCreationEvent(controller: Player, tokenFilter: GameObjectFilter?)` — When tokens would be created.
 - `EventPattern.TrainedEvent` — When a creature trains (CR 702.149c) — "'When this creature trains' means 'When a resolving training ability puts one or more +1/+1 counters on this creature.'" The training payoff of Savior of Oll…

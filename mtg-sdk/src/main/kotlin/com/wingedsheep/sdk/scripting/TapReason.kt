@@ -22,7 +22,7 @@ import kotlinx.serialization.Serializable
  * so report [UNSPECIFIED] — the honest answer for a mana tap today — but neither inherits a change
  * made to the atom, so anyone classifying a mana-flavoured cause must update all three by hand.
  *
- * **Only [TEAMWORK] is classified today; every other tap site reports [UNSPECIFIED].** That is the
+ * **Only [TEAMWORK] and [ATTACK] are classified today; every other tap site reports [UNSPECIFIED].** That is the
  * honest default rather than an approximation: a tap whose cause the engine has not been taught to
  * name must not silently masquerade as some other cause. Under-claiming makes a "becomes tapped for
  * reason X" trigger stay silent when it should have fired only if X is one of the *unclassified*
@@ -50,13 +50,35 @@ enum class TapReason {
      * cost declared under [ChoiceSlot.TEAMWORK], and read by "whenever this becomes tapped to pay a
      * teamwork cost" (Agent Maria Hill).
      */
-    TEAMWORK;
+    TEAMWORK,
+
+    /**
+     * The permanent was tapped because it was **declared as an attacker** (CR 508.1f — declaring
+     * attackers taps each chosen creature without vigilance). Stamped by `AttackPhaseManager` on the
+     * declaration tap. Read negatively by "becomes tapped, **if it isn't being declared as an
+     * attacker**" (Verity Circle) through [EventPattern.TapEvent.exceptReason]. A creature put onto
+     * the battlefield tapped and attacking was never declared and never *became* tapped, so it
+     * emits no tap event at all.
+     */
+    ATTACK;
 
     /** Trailing clause for a trigger's printed description ("… becomes tapped **to pay a teamwork cost**"). */
     val description: String
         get() = when (this) {
             UNSPECIFIED -> ""
             TEAMWORK -> "to pay a teamwork cost"
+            ATTACK -> "as it is declared as an attacker"
+        }
+
+    /**
+     * Trailing clause for a trigger that excludes this cause ("… becomes tapped, **if it isn't being
+     * declared as an attacker**") — [EventPattern.TapEvent.exceptReason].
+     */
+    val exceptDescription: String
+        get() = when (this) {
+            UNSPECIFIED -> ""
+            TEAMWORK -> "if it isn't being tapped to pay a teamwork cost"
+            ATTACK -> "if it isn't being declared as an attacker"
         }
 
     companion object {

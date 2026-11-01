@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.combat
 
+import com.wingedsheep.sdk.scripting.TapReason
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.mana.ManaPool
@@ -201,7 +202,7 @@ internal class AttackPhaseManager(
         for (attacker in attackers.keys) {
             // Vigilance, or a rule modification saying attacking doesn't tap it (Johan).
             if (!projected.hasKeyword(attacker, Keyword.VIGILANCE) && !projected.attacksWithoutTapping(attacker)) {
-                val (next, tapped) = tap(tappedState, attacker)
+                val (next, tapped) = tap(tappedState, attacker, reason = TapReason.ATTACK)
                 tappedState = next
                 events.addAll(tapped)
             }

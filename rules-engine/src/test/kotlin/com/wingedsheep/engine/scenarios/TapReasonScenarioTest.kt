@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TapReason
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldNotBeEmpty
@@ -43,8 +44,13 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * The claim that matters is the negative one. Teamwork, crew, attacking and a mana payment are all
  * taps performed by the permanent's own controller, so `TappedEvent.tappedById` is identical across
  * them; if the reason were not carried, or were guessed at, a "becomes tapped to pay a teamwork
- * cost" trigger would fire on all four. Only teamwork is classified today (CR 702.194a), and each
- * unclassified site is asserted to report [TapReason.UNSPECIFIED] rather than anything else.
+ * cost" trigger would fire on all four. Teamwork (CR 702.194a) and the attack declaration tap
+ * (CR 508.1f) are classified; each unclassified site is asserted to report [TapReason.UNSPECIFIED]
+ * rather than anything else.
+ *
+ * [EventPattern.TapEvent.exceptReason] is the negative axis ("becomes tapped, if it isn't being
+ * declared as an attacker" — Verity Circle, whose own behaviour lives in `VerityCircleScenarioTest`).
+ * It is covered at the same three match sites with the `Quiet …` test-only cards.
  */
 class TapReasonScenarioTest : ScenarioTestBase() {
 
@@ -83,9 +89,50 @@ class TapReasonScenarioTest : ScenarioTestBase() {
         }
     }
 
+    /** Per-event reader of the negative axis: any creature you control, unless it is attacking. */
+    private val quietVigil = card("Quiet Vigil") {
+        manaCost = "{W}"
+        typeLine = "Enchantment"
+        oracleText = "Whenever a creature you control becomes tapped, if it isn't being declared as an " +
+            "attacker, draw a card."
+        triggeredAbility {
+            trigger = Triggers.a(GameObjectFilter.Creature.youControl()).becomesTapped(exceptReason = TapReason.ATTACK)
+            effect = Effects.DrawCards(1)
+        }
+    }
+
+    /** ATTACHED reader of the negative axis. */
+    private val quietTether = card("Quiet Tether") {
+        manaCost = "{W}"
+        typeLine = "Enchantment — Aura"
+        oracleText = "Enchant creature\n" +
+            "Whenever enchanted creature becomes tapped, if it isn't being declared as an attacker, draw a card."
+        auraTarget = TargetObject(filter = TargetFilter.Creature)
+        triggeredAbility {
+            trigger = Triggers.attached.becomesTapped(exceptReason = TapReason.ATTACK)
+            effect = Effects.DrawCards(1)
+        }
+    }
+
+    /** Batch reader of the negative axis. */
+    private val quietRollCall = card("Quiet Roll Call") {
+        manaCost = "{W}"
+        typeLine = "Enchantment"
+        oracleText = "Whenever one or more creatures you control become tapped, if they aren't being " +
+            "declared as attackers, draw a card."
+        triggeredAbility {
+            trigger = Triggers.oneOrMore(GameObjectFilter.Creature.youControl())
+                .becomeTapped(exceptReason = TapReason.ATTACK)
+            effect = Effects.DrawCards(1)
+        }
+    }
+
     init {
         cardRegistry.register(teamworkTether)
         cardRegistry.register(teamworkRollCall)
+        cardRegistry.register(quietVigil)
+        cardRegistry.register(quietTether)
+        cardRegistry.register(quietRollCall)
 
         context("tap reason") {
 
@@ -145,7 +192,7 @@ class TapReasonScenarioTest : ScenarioTestBase() {
                 }
             }
 
-            test("declaring an attacker names no cause") {
+            test("declaring an attacker carries TapReason.ATTACK") {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")
                     .withCardOnBattlefield(1, "Craw Wurm")
@@ -161,8 +208,8 @@ class TapReasonScenarioTest : ScenarioTestBase() {
 
                 val tap = result.events.tapsOf(wurm).single()
                 withClue("the attacker tap is performed by the same player as a teamwork tap, so " +
-                    "only the cause separates them — and this cause is not classified") {
-                    tap.reason shouldBe TapReason.UNSPECIFIED
+                    "only the cause separates them") {
+                    tap.reason shouldBe TapReason.ATTACK
                     tap.tappedById shouldBe game.player1Id
                 }
             }
@@ -322,9 +369,135 @@ class TapReasonScenarioTest : ScenarioTestBase() {
                 game.declareAttackers(mapOf("Craw Wurm" to 2, "Grizzly Bears" to 2)).error shouldBe null
                 game.resolveStack()
 
-                withClue("declaring attackers taps both at once — a batch with no named cause") {
+                withClue("declaring attackers taps both at once — a batch of attack taps, not teamwork") {
                     game.handSize(1) shouldBe 0
                     game.librarySize(1) shouldBe 1
+                }
+            }
+
+            test("exceptReason: a per-event trigger skips the attack tap and fires on any other tap") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Quiet Vigil")
+                    .withCardOnBattlefield(1, "Craw Wurm")
+                    .withCardOnBattlefield(1, "Grizzly Bears")
+                    .withCardOnBattlefield(1, "Careening Mine Cart")
+                    .withCardInLibrary(1, "Island")
+                    .withCardInLibrary(1, "Plains")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val bears = game.findPermanent("Grizzly Bears").shouldNotBeNull()
+                val cart = game.findPermanent("Careening Mine Cart").shouldNotBeNull()
+                game.execute(CrewVehicle(game.player1Id, cart, listOf(bears))).error shouldBe null
+                game.resolveStack()
+                withClue("a crew tap is not an attack declaration, so it fires") {
+                    game.handSize(1) shouldBe 1
+                }
+
+                game.advanceToPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.declareAttackers(mapOf("Craw Wurm" to 2)).error shouldBe null
+                game.resolveStack()
+                withClue("the attack declaration tap is excluded") {
+                    game.handSize(1) shouldBe 1
+                }
+            }
+
+            test("exceptReason: an ATTACHED trigger skips the attack tap and fires on a crew tap") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Craw Wurm")
+                    .withCardOnBattlefield(1, "Careening Mine Cart")
+                    .withCardInHand(1, "Quiet Tether")
+                    .withLandsOnBattlefield(1, "Plains", 1)
+                    .withCardInLibrary(1, "Island")
+                    .withCardInLibrary(1, "Plains")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val wurm = game.findPermanent("Craw Wurm").shouldNotBeNull()
+                val cart = game.findPermanent("Careening Mine Cart").shouldNotBeNull()
+                game.castSpell(1, "Quiet Tether", targetId = wurm).error shouldBe null
+                game.resolveStack()
+
+                game.execute(CrewVehicle(game.player1Id, cart, listOf(wurm))).error shouldBe null
+                game.resolveStack()
+                game.handSize(1) shouldBe 1
+            }
+
+            test("exceptReason: an ATTACHED trigger stays silent when the enchanted creature attacks") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Craw Wurm")
+                    .withCardInHand(1, "Quiet Tether")
+                    .withLandsOnBattlefield(1, "Plains", 1)
+                    .withCardInLibrary(1, "Island")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val wurm = game.findPermanent("Craw Wurm").shouldNotBeNull()
+                game.castSpell(1, "Quiet Tether", targetId = wurm).error shouldBe null
+                game.resolveStack()
+
+                game.advanceToPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.declareAttackers(mapOf("Craw Wurm" to 2)).error shouldBe null
+                game.resolveStack()
+                game.handSize(1) shouldBe 0
+            }
+
+            test("exceptReason: a batch trigger skips an attack batch and fires once on a crew batch") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Quiet Roll Call")
+                    .withCardOnBattlefield(1, "Craw Wurm")
+                    .withCardOnBattlefield(1, "Grizzly Bears")
+                    .withCardOnBattlefield(1, "Careening Mine Cart")
+                    .withCardInLibrary(1, "Island")
+                    .withCardInLibrary(1, "Plains")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val wurm = game.findPermanent("Craw Wurm").shouldNotBeNull()
+                val bears = game.findPermanent("Grizzly Bears").shouldNotBeNull()
+                val cart = game.findPermanent("Careening Mine Cart").shouldNotBeNull()
+                game.execute(CrewVehicle(game.player1Id, cart, listOf(wurm, bears))).error shouldBe null
+                game.resolveStack()
+                withClue("two creatures crewing together is one batch, so one card") {
+                    game.handSize(1) shouldBe 1
+                }
+            }
+
+            test("exceptReason: a batch trigger stays silent on an attack batch") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Quiet Roll Call")
+                    .withCardOnBattlefield(1, "Craw Wurm")
+                    .withCardOnBattlefield(1, "Grizzly Bears")
+                    .withCardInLibrary(1, "Island")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.advanceToPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.declareAttackers(mapOf("Craw Wurm" to 2, "Grizzly Bears" to 2)).error shouldBe null
+                game.resolveStack()
+                game.handSize(1) shouldBe 0
+            }
+
+            test("exceptReason renders its clause and cannot be paired with reason") {
+                EventPattern.TapEvent(
+                    filter = GameObjectFilter.Creature.opponentControls(),
+                    exceptReason = TapReason.ATTACK,
+                ).description shouldContain ", if it isn't being declared as an attacker"
+                EventPattern.TapEvent().matchesCause(TapReason.ATTACK) shouldBe true
+                EventPattern.TapEvent(exceptReason = TapReason.ATTACK).matchesCause(TapReason.ATTACK) shouldBe false
+                EventPattern.TapEvent(exceptReason = TapReason.ATTACK).matchesCause(TapReason.UNSPECIFIED) shouldBe true
+                shouldThrow<IllegalArgumentException> {
+                    EventPattern.TapEvent(reason = TapReason.TEAMWORK, exceptReason = TapReason.ATTACK)
                 }
             }
 

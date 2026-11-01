@@ -2485,6 +2485,17 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
          */
         val reason: TapReason? = null,
         /**
+         * A cause that does **not** count — the negative of [reason]: "whenever a creature an
+         * opponent controls becomes tapped, **if it isn't being declared as an attacker**" is
+         * `exceptReason = TapReason.ATTACK` (Verity Circle). Null, the default, excludes nothing.
+         *
+         * The clause reads like an intervening "if" but names the tap's own cause, which is fixed
+         * the moment the tap happens, so it is checked against the event only — there is nothing to
+         * re-check at resolution. Mutually exclusive with [reason]: asking for one cause already
+         * excludes every other, so pairing them is either redundant or never matches.
+         */
+        val exceptReason: TapReason? = null,
+        /**
          * Restrict to the **first time each permanent became tapped this turn** — the per-permanent
          * "if it's the first time that creature has become tapped this turn" rider (Captain America,
          * Living Legend).
@@ -2519,7 +2530,17 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
                 "TapEvent: firstTimeEachTurn is per-permanent and has no settled batch reading; " +
                     "see the field's documentation"
             }
+            require(reason == null || exceptReason == null) {
+                "TapEvent: reason and exceptReason are mutually exclusive"
+            }
         }
+
+        /**
+         * Whether a tap made for [tapCause] passes this pattern's cause axes ([reason] /
+         * [exceptReason]). The one check every tap match site (per-event, ATTACHED, batch) shares.
+         */
+        fun matchesCause(tapCause: TapReason): Boolean =
+            (reason == null || tapCause == reason) && (exceptReason == null || tapCause != exceptReason)
 
         override val description: String = buildString {
             if (tapper != null) {
@@ -2536,6 +2557,10 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
                 append(reason.description)
             }
             if (firstTimeEachTurn) append(" for the first time each turn")
+            if (exceptReason != null && exceptReason != TapReason.UNSPECIFIED) {
+                append(", ")
+                append(exceptReason.exceptDescription)
+            }
         }
         override fun applyTextReplacement(replacer: TextReplacer): EventPattern {
             val newFilter = filter?.applyTextReplacement(replacer)
