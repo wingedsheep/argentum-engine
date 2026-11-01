@@ -64,6 +64,53 @@
     ]
 }
 
+// Angelic Exaltation
+{
+    "name": "Angelic Exaltation",
+    "manaCost": "{3}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a creature you control attacks alone, it gets +X/+X until end of turn, where X is the number of creatures you control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Angelic Exaltation:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": "creature ctrl:you",
+                    "requires": [
+                        "AttacksAlone"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature"
+                    },
+                    "toughnessModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature"
+                    },
+                    "target": "TriggeringEntity"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "UNCOMMON",
+        "artist": "John Severin Brassell",
+        "flavorText": "\"If we cannot have peace, we will have justice.\"\n—Aurelia",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/ee7b5ae5-0f6b-4f45-8597-4e6212d2ad0e.jpg?1783933727"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Applied Biomancy
 {
     "name": "Applied Biomancy",
@@ -179,6 +226,147 @@
         "artist": "Milivoj Ćeran",
         "flavorText": "A ray of hope breaks through the shroud of rain.",
         "imageUri": "https://cards.scryfall.io/normal/front/b/2/b209d219-b946-4226-a8b4-65a5f3837fac.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Arrester's Admonition
+{
+    "name": "Arrester's Admonition",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Return target creature to its owner's hand.\nAddendum — If you cast this spell during your main phase, draw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "All",
+                            "conditions": [
+                                "WasCast",
+                                {
+                                    "type": "IsInPhase",
+                                    "phases": [
+                                        "PRECOMBAT_MAIN",
+                                        "POSTCOMBAT_MAIN"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "artist": "Lucas Graciano",
+        "flavorText": "Law is the voice of reason.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/637c2d6a-e6b8-4dc5-81aa-da1b7384e006.jpg?1783933714"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Arrester's Zeal
+{
+    "name": "Arrester's Zeal",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +2/+2 until end of turn.\nAddendum — If you cast this spell during your main phase, that creature gains flying until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "All",
+                            "conditions": [
+                                "WasCast",
+                                {
+                                    "type": "IsInPhase",
+                                    "phases": [
+                                        "PRECOMBAT_MAIN",
+                                        "POSTCOMBAT_MAIN"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "GrantKeyword",
+                        "keyword": "FLYING",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "artist": "Izzy",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b075a6f2-5196-45e9-b062-f131f7b1a347.jpg?1783933726"
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -498,6 +686,120 @@
     "colorIdentityOverride": [
         "BLACK",
         "RED"
+    ]
+}
+
+// Benthic Biomancer
+{
+    "name": "Benthic Biomancer",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Merfolk Wizard Mutant",
+    "oracleText": "{1}{U}: Adapt 1. (If this creature has no +1/+1 counters on it, put a +1/+1 counter on it.)\nWhenever one or more +1/+1 counters are put on this creature, draw a card, then discard a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Benthic Biomancer:2",
+                "trigger": {
+                    "type": "CountersPlacedEvent",
+                    "counterType": "PLUS_ONE_PLUS_ONE"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Benthic Biomancer:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Adapt",
+                    "amount": 1
+                },
+                "descriptionOverride": "{1}{U}: Adapt 1."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7b0cb4d6-350b-4e66-b035-dac7b3ba77cc.jpg?1783933714",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "An ability that triggers when counters are put on a permanent will trigger if that permanent somehow enters the battlefield with those counters."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "You draw a card and discard a card all while Benthic Biomancer's triggered ability is resolving. Nothing can happen between the two, and no player may choose to take actions."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "You can always activate an ability that will cause a creature to adapt. As that ability resolves, if the creature has a +1/+1 counter on it for any reason, you simply won't put any +1/+1 counters on it."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If a creature somehow loses all of its +1/+1 counters, it can adapt again and get more +1/+1 counters."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -1345,6 +1647,173 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Clear the Mind
+{
+    "name": "Clear the Mind",
+    "manaCost": "{2}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player shuffles their graveyard into their library.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "graveyardCards"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "graveyardCards",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "placement": "Shuffled"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "artist": "David Palumbo",
+        "flavorText": "\"The best way to keep a secret is to forget it.\"\n—Lazav",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a7da6982-9e57-41d2-a052-f2a3bb646436.jpg?1783933712",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "Clear the Mind can target a player with no cards in their graveyard. That player shuffles their library and then you draw a card."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If you choose yourself as the target for Clear the Mind, Clear the Mind will end up as the only card in your graveyard after it’s done resolving."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Code of Constraint
+{
+    "name": "Code of Constraint",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets -4/-0 until end of turn.\nDraw a card.\nAddendum — If you cast this spell during your main phase, tap that creature and it doesn't untap during its controller's next untap step.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -4
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "All",
+                            "conditions": [
+                                "WasCast",
+                                {
+                                    "type": "IsInPhase",
+                                    "phases": [
+                                        "PRECOMBAT_MAIN",
+                                        "POSTCOMBAT_MAIN"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "TapUntap",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "DOESNT_UNTAP",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "duration": "UntilAfterAffectedControllersNextUntap"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "rarity": "UNCOMMON",
+        "artist": "Ekaterina Burmak",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/5/258aeef1-565a-4f19-b12c-d46d54ba231d.jpg?1783933710"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -2225,6 +2694,84 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Eyes Everywhere
+{
+    "name": "Eyes Everywhere",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your upkeep, scry 1.\n{5}{U}: Exchange control of this enchantment and target nonland permanent. Activate only as a sorcery.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Eyes Everywhere:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Scry",
+                    "count": 1
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Eyes Everywhere:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "ExchangeControl",
+                    "target1": "Self",
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "nonland permanent"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "rarity": "UNCOMMON",
+        "artist": "Nils Hamm",
+        "flavorText": "\"They've got eyes inside my head!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/f/1fdbf073-3ee6-402b-bd40-4781f40a6cae.jpg?1783933710",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "The effect of Eyes Everywhere's last ability lasts indefinitely. It doesn't wear off during the cleanup step, and it doesn't expire if Eyes Everywhere leaves the battlefield."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "As Eyes Everywhere's last ability resolves, Eyes Everywhere must be on the battlefield and the target nonland permanent must be a legal target. If either of these things isn't true, the ability does nothing."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "In a multiplayer game, if a player leaves the game, all cards that player owns leave as well. If you leave the game, the effect giving you control of the target nonland permanent ends."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3982,6 +4529,71 @@
     ]
 }
 
+// Knight of Sorrows
+{
+    "name": "Knight of Sorrows",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "This creature can block an additional creature each combat.\nAfterlife 1 (When this creature dies, create a 1/1 white and black Spirit creature token with flying.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Knight of Sorrows:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE",
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Spirit"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/4/5/45b3bdd7-b093-4bfd-8a9a-965e72bfefb3.jpg?1783933602"
+                },
+                "descriptionOverride": "Afterlife 1 (When this creature dies, create a 1/1 white and black Spirit creature token with flying.)"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CanBlockAdditionalForCreatureGroup",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "artist": "Zezhou Chen",
+        "flavorText": "The helmet reveals no eyes to witness your penance, no mouth to offer absolution.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/c/6ce239e9-9b35-4dde-8a44-6c7ce4eb2d1a.jpg?1783933721",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "Because blockers are chosen all at once, you can't block with a creature with afterlife, wait for it to die, then block with the resulting Spirit tokens."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Lavinia, Azorius Renegade
 {
     "name": "Lavinia, Azorius Renegade",
@@ -4123,6 +4735,162 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Lumbering Battlement
+{
+    "name": "Lumbering Battlement",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "Vigilance\nWhen this creature enters, exile any number of other nontoken creatures you control until it leaves the battlefield.\nThis creature gets +2/+2 for each card exiled with it.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lumbering Battlement:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "ControlledPermanents",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        "IsNontoken"
+                                    ],
+                                    "statePredicates": [
+                                        {
+                                            "type": "StateNot",
+                                            "predicate": "IsSource"
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected1",
+                            "prompt": "Exile any number of other nontoken creatures you control until Lumbering Battlement leaves the battlefield",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "selected1"
+                            },
+                            "body": {
+                                "type": "ExileUntilLeaves",
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, exile any number of other nontoken creatures you control until it leaves the battlefield."
+            },
+            {
+                "id": "Lumbering Battlement:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "linked_return"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "linked_return",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "Multiply",
+                    "amount": {
+                        "type": "Count",
+                        "player": "Each",
+                        "zone": "Exile",
+                        "filter": {
+                            "statePredicates": [
+                                "ExiledWithSource"
+                            ]
+                        }
+                    },
+                    "multiplier": 2
+                },
+                "toughnessBonus": {
+                    "type": "Multiply",
+                    "amount": {
+                        "type": "Count",
+                        "player": "Each",
+                        "zone": "Exile",
+                        "filter": {
+                            "statePredicates": [
+                                "ExiledWithSource"
+                            ]
+                        }
+                    },
+                    "multiplier": 2
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "rarity": "RARE",
+        "artist": "Simon Dominic",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/2469bc93-57ca-4077-bda2-160b4160adad.jpg?1783933721",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "If Lumbering Battlement leaves the battlefield before its triggered ability resolves, you can't exile any nontoken creatures."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "Auras attached to the exiled creatures will be put into their owners' graveyards. Any Equipment will become unattached and remain on the battlefield. Any counters on the exiled creatures will cease to exist. When the cards return to the battlefield, they will be new objects with no connection to the cards that were exiled."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If a card you chose to exile leaves exile or somehow never moved to the exile zone in the first place, Lumbering Battlement doesn't get +2/+2 for that card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -4884,6 +5652,66 @@
     "colorIdentityOverride": [
         "BLACK",
         "RED"
+    ]
+}
+
+// Rally to Battle
+{
+    "name": "Rally to Battle",
+    "manaCost": "{3}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Creatures you control get +1/+3 until end of turn. Untap them.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "TapUntap",
+                        "target": "IterationEntity",
+                        "tap": false
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "rarity": "UNCOMMON",
+        "artist": "Ben Wootten",
+        "flavorText": "The guildmasters loom large in the political sphere, but in the end, the rulers of Ravnica are its people.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/0/d0798546-1ef4-485e-b094-cba12a12c67c.jpg?1783933720"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -5708,6 +6536,73 @@
     ]
 }
 
+// Sentinel's Mark
+{
+    "name": "Sentinel's Mark",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Flash\nEnchant creature\nEnchanted creature gets +1/+2 and has vigilance.\nAddendum — When this Aura enters, if you cast it during your main phase, enchanted creature gains lifelink until end of turn.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sentinel's Mark:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "LIFELINK",
+                    "target": "EnchantedCreature"
+                },
+                "interveningIf": {
+                    "type": "All",
+                    "conditions": [
+                        "WasCast",
+                        {
+                            "type": "IsInPhase",
+                            "phases": [
+                                "PRECOMBAT_MAIN",
+                                "POSTCOMBAT_MAIN"
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "Addendum — When this Aura enters, if you cast it during your main phase, enchanted creature gains lifelink until end of turn."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "20",
+        "rarity": "UNCOMMON",
+        "artist": "Zezhou Chen",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e6f4f661-ee4b-4fa5-99c4-106731d117ce.jpg?1783933718"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Shimmer of Possibility
 {
     "name": "Shimmer of Possibility",
@@ -5839,6 +6734,52 @@
     "colorIdentityOverride": [
         "GREEN",
         "BLUE"
+    ]
+}
+
+// Sky Tether
+{
+    "name": "Sky Tether",
+    "manaCost": "{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature has defender and loses flying.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DEFENDER"
+            },
+            {
+                "type": "RemoveKeywordStatic",
+                "keyword": "FLYING"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "UNCOMMON",
+        "artist": "Zezhou Chen",
+        "flavorText": "\"If you can't control your mount, I will control it for you.\"\n—Mirela, Azorius hussar",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/39c47be3-0228-46de-b4b5-911fb86d4596.jpg?1783933718",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "Sky Tether can enchant a creature that never had flying at all."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "The enchanted creature can later gain flying from another effect."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -6234,6 +7175,64 @@
     ]
 }
 
+// Summary Judgment
+{
+    "name": "Summary Judgment",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Summary Judgment deals 3 damage to target tapped creature.\nAddendum — If you cast this spell during your main phase, it deals 5 damage instead.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Conditional",
+                "condition": {
+                    "type": "All",
+                    "conditions": [
+                        "WasCast",
+                        {
+                            "type": "IsInPhase",
+                            "phases": [
+                                "PRECOMBAT_MAIN",
+                                "POSTCOMBAT_MAIN"
+                            ]
+                        }
+                    ]
+                },
+                "ifTrue": {
+                    "type": "Fixed",
+                    "amount": 5
+                },
+                "ifFalse": {
+                    "type": "Fixed",
+                    "amount": 3
+                }
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature tapped"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "artist": "Deruchenko Alexander",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c0b20fec-8373-4c6c-b3c1-ee7cff64dd37.jpg?1783933716"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Swirling Torrent
 {
     "name": "Swirling Torrent",
@@ -6429,6 +7428,59 @@
     },
     "colorIdentityOverride": [
         "BLACK",
+        "WHITE"
+    ]
+}
+
+// Syndicate Messenger
+{
+    "name": "Syndicate Messenger",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Bird",
+    "oracleText": "Flying\nAfterlife 1 (When this creature dies, create a 1/1 white and black Spirit creature token with flying.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Syndicate Messenger:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE",
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Spirit"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/4/5/45b3bdd7-b093-4bfd-8a9a-965e72bfefb3.jpg?1783933602"
+                },
+                "descriptionOverride": "Afterlife 1 (When this creature dies, create a 1/1 white and black Spirit creature token with flying.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "artist": "Viktor Titov",
+        "flavorText": "\"Many wings haunt the skies these days. Few of them bear good tidings.\"\n—Lavinia",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/0/10273046-4c74-42d8-afaa-6cfbe0bd4e8f.jpg?1783933716"
+    },
+    "colorIdentityOverride": [
         "WHITE"
     ]
 }
@@ -6968,6 +8020,88 @@
     },
     "colorIdentityOverride": [
         "BLACK",
+        "WHITE"
+    ]
+}
+
+// Unbreakable Formation
+{
+    "name": "Unbreakable Formation",
+    "manaCost": "{2}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Creatures you control gain indestructible until end of turn.\nAddendum — If you cast this spell during your main phase, put a +1/+1 counter on each of those creatures and they gain vigilance until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "INDESTRUCTIBLE",
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "All",
+                            "conditions": [
+                                "WasCast",
+                                {
+                                    "type": "IsInPhase",
+                                    "phases": [
+                                        "PRECOMBAT_MAIN",
+                                        "POSTCOMBAT_MAIN"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        "body": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "AddCounters",
+                                    "counterType": "PLUS_ONE_PLUS_ONE",
+                                    "count": 1,
+                                    "target": "IterationEntity"
+                                },
+                                {
+                                    "type": "GrantKeyword",
+                                    "keyword": "VIGILANCE",
+                                    "target": "IterationEntity"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "rarity": "RARE",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/6/46cc8574-7b8c-492c-8a36-75cb0192f853.jpg?1783933714"
+    },
+    "colorIdentityOverride": [
         "WHITE"
     ]
 }
