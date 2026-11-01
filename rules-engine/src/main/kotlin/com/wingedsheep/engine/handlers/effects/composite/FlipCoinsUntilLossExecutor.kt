@@ -22,8 +22,10 @@ import kotlin.reflect.KClass
  * Executor for [FlipCoinsUntilLossEffect] — "flip a coin until you lose a flip or choose to stop
  * flipping", tallying the flips won (Fiery Gambit).
  *
- * One call flips exactly **one** coin, so the executor can never spin: a lost flip finishes the run
- * synchronously, and a won flip pauses on "flip again?". Every later flip arrives through
+ * In the optional form (`mayStop = true`) one call flips exactly **one** coin: a lost flip finishes
+ * the run synchronously, and a won flip pauses on "flip again?". The mandatory form
+ * (`mayStop = false`, Mirror March) has no question to ask, so a won flip is followed by the next
+ * flip in the same call, bounded by [GameLimits.MAX_COIN_FLIPS_PER_EFFECT]. Every later optional flip arrives through
  * [FlipCoinsUntilLossContinuation] on the resume path, and the running tally rides *in that frame* —
  * not in the pipeline. That is deliberate: pipeline `storedNumbers` only reach a consumer when they
  * are published on the finishing result, so a tally threaded through the pipeline would be lost on
@@ -114,7 +116,7 @@ class FlipCoinsUntilLossExecutor(
 
         /**
          * Continue the run now that one coin has settled: a lost flip ends it, a won flip asks
-         * whether to keep going. Shared with the resume path so a coin that paused for a Krark's
+         * whether to keep going (or, when the effect's `mayStop` is false, flips again). Shared with the resume path so a coin that paused for a Krark's
          * Thumb choice rejoins the run exactly where an unreplaced coin would have.
          */
         fun afterFlip(
