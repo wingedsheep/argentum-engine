@@ -239,19 +239,21 @@ object DamageUtils {
         // Check for damage redirection (Glarecaster, Zealous Inquisitor). Whippoorwill's clause
         // shuts this half off too — "…or dealt instead to another permanent or player" — so a
         // recipient marked unpreventable is never redirected away from.
-        val (redirectState, redirectTargetId, redirectAmount) =
+        val (redirectState, redirectTargetId, redirectAmount, redirectShield) =
             if (state.getEntity(targetId)?.has<DamageUnpreventableThisTurnComponent>() == true) {
-                Triple(state, null, 0)
+                ShieldRedirection(state, null, 0, null)
             } else {
-                checkDamageRedirection(state, targetId, amount, sourceId = sourceId, damageSourceRef = damageSourceRef, predicateEvaluator = zones.predicateEvaluator)
+                checkDamageRedirection(state, targetId, amount, sourceId = sourceId, damageSourceRef = damageSourceRef, appliedShields = appliedRedirects, predicateEvaluator = zones.predicateEvaluator)
             }
-        if (redirectTargetId != null) {
-            val redirectResult = dealDamageToTarget(zones, redirectState, redirectTargetId, redirectAmount, sourceId, cantBePrevented, isCombatDamage, appliedRedirects, damageSourceRef = damageSourceRef)
+        if (redirectTargetId != null && redirectShield != null) {
+            // The shield has had its one opportunity at this event (CR 614.5).
+            val applied = appliedRedirects + redirectShield
+            val redirectResult = dealDamageToTarget(zones, redirectState, redirectTargetId, redirectAmount, sourceId, cantBePrevented, isCombatDamage, applied, damageSourceRef = damageSourceRef)
             val remainingDamage = amount - redirectAmount
             return if (remainingDamage > 0) {
                 // Partial redirection — deal remaining damage to original target
                 val afterRedirect = redirectResult.state
-                val remainingResult = dealDamageToTarget(zones, afterRedirect, targetId, remainingDamage, sourceId, cantBePrevented, isCombatDamage, appliedRedirects, damageSourceRef = damageSourceRef)
+                val remainingResult = dealDamageToTarget(zones, afterRedirect, targetId, remainingDamage, sourceId, cantBePrevented, isCombatDamage, applied, damageSourceRef = damageSourceRef)
                 EffectResult.success(remainingResult.state, redirectResult.events + remainingResult.events)
             } else {
                 redirectResult
@@ -2011,7 +2013,13 @@ object DamageUtils {
      * @param damageAmount The amount of damage about to be dealt
      * @param sourceId The source of the damage — identifies the instance an optional shield was
      *   answered for; a null source can never match a recorded answer
-     * @return Triple of (updated state with consumed/decremented shield, redirect target ID or null, amount to redirect)
+     * @param appliedShields shields that already redirected this damage event (or a modified event
+     *   that replaced it). A replacement effect gets only one opportunity to affect an event (CR 614.5),
+     *   so two "all damage to your creatures is dealt to X instead" shields pointing at different
+     *   permanents hand the damage on once each instead of bouncing it back and forth forever.
+     * @return the updated state with the consumed/decremented shield, the redirect target (null when
+     *   nothing redirects), the amount to redirect, and the shield that did it — callers add it to
+     *   [appliedShields] before the redirected damage looks for further shields.
      */
     fun checkDamageRedirection(
         state: GameState,
@@ -2021,14 +2029,31 @@ object DamageUtils {
         sourceId: EntityId? = null,
         damageSourceRef: com.wingedsheep.engine.state.ObjectRef? = sourceId?.let(state::objectRef),
         chosenSourcesOnly: Boolean = false,
+        appliedShields: Set<EntityId> = emptySet(),
         predicateEvaluator: PredicateEvaluator
-    ): Triple<GameState, EntityId?, Int> {
-        if (damageAmount <= 0) return Triple(state, null, 0)
+    ): ShieldRedirection {
+        if (damageAmount <= 0) return ShieldRedirection(state, null, 0, null)
         var workingState = state
         var shieldIndex = -1
-        for ((index, effect) in state.floatingEffects.withIndex()) {
+        // A route the affected player chose in OptionalDamageRedirect's pre-pass (several mandatory
+        // shields that end the damage in different places, CR 616.1e) names the shield for this hop.
+        if (!chosenSourcesOnly && state.optionalDamageRedirectChoices.isNotEmpty()) {
+            for ((index, effect) in state.floatingEffects.withIndex()) {
+                val modification = effect.effect.modification
+                if (modification !is SerializableModification.RedirectNextDamage || modification.optional) continue
+                if (effect.id in appliedShields) continue
+                val key = OptionalDamageRedirect.choiceKey(effect.id, sourceId, targetId)
+                if (workingState.optionalDamageRedirectChoices[key] != true) continue
+                if (!OptionalDamageRedirect.redirectShieldCovers(workingState, effect, modification, targetId, predicateEvaluator)) continue
+                workingState = OptionalDamageRedirect.consume(workingState, key).first
+                shieldIndex = index
+                break
+            }
+        }
+        if (shieldIndex == -1) for ((index, effect) in state.floatingEffects.withIndex()) {
             val modification = effect.effect.modification
             if (modification !is SerializableModification.RedirectNextDamage) continue
+            if (effect.id in appliedShields) continue
             if (chosenSourcesOnly && modification.chosenSource == null) continue
             if (modification.chosenSource != null && modification.chosenSource.reference != damageSourceRef) continue
             if (!OptionalDamageRedirect.redirectShieldCovers(workingState, effect, modification, targetId, predicateEvaluator)) continue
@@ -2048,7 +2073,7 @@ object DamageUtils {
                 break
             }
         }
-        if (shieldIndex == -1) return Triple(workingState, null, 0)
+        if (shieldIndex == -1) return ShieldRedirection(workingState, null, 0, null)
 
         val shield = workingState.floatingEffects[shieldIndex]
         val mod = shield.effect.modification as SerializableModification.RedirectNextDamage
@@ -2081,8 +2106,16 @@ object DamageUtils {
             }
         }
 
-        return Triple(workingState.copy(floatingEffects = updatedEffects), mod.redirectToId, redirectAmount)
+        return ShieldRedirection(workingState.copy(floatingEffects = updatedEffects), mod.redirectToId, redirectAmount, shield.id)
     }
+
+    /** What [checkDamageRedirection] found: destructures as (state, redirectTo, amount, shield). */
+    data class ShieldRedirection(
+        val state: GameState,
+        val redirectTo: EntityId?,
+        val amount: Int,
+        val shieldId: EntityId?
+    )
 
     /**
      * Find a static [RedirectDamage] replacement effect that applies to the in-flight

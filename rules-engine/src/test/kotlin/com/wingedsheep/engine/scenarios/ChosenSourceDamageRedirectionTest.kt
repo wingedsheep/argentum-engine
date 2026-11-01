@@ -139,24 +139,24 @@ class ChosenSourceDamageRedirectionTest : ScenarioTestBase() {
             val game = board(); val bear = game.findPermanent("Grizzly Bears")!!
             val giant = game.findPermanent("Hill Giant")!!; val mountain = game.findPermanent("Mountain")!!
             install(game)
-            redirect(game.state, mountain, bear).second shouldBe null
-            redirect(game.state, giant, game.player1Id).second shouldBe null
+            redirect(game.state, mountain, bear).redirectTo shouldBe null
+            redirect(game.state, giant, game.player1Id).redirectTo shouldBe null
             val result = redirect(game.state, giant, bear)
-            result.second shouldBe game.player1Id; result.third shouldBe 3
-            redirect(result.first, giant, bear).second shouldBe null
+            result.redirectTo shouldBe game.player1Id; result.amount shouldBe 3
+            redirect(result.state, giant, bear).redirectTo shouldBe null
         }
         test("zero damage does not consume a next-instance shield") {
             val game = board(); install(game)
             val source = game.findPermanent("Hill Giant")!!; val bear = game.findPermanent("Grizzly Bears")!!
             val zero = redirect(game.state, source, bear, 0)
-            zero.first.floatingEffects shouldBe game.state.floatingEffects
-            redirect(zero.first, source, bear).second shouldBe game.player1Id
+            zero.state.floatingEffects shouldBe game.state.floatingEffects
+            redirect(zero.state, source, bear).redirectTo shouldBe game.player1Id
         }
         test("a land with no damage ability is a legal source choice") {
             val game = board(); val mountain = game.findPermanent("Mountain")!!
             damageSourceChoices(game.state).map { it.reference.entityId } shouldContain mountain
             install(game, mountain)
-            redirect(game.state, mountain, game.findPermanent("Grizzly Bears")!!).second shouldBe game.player1Id
+            redirect(game.state, mountain, game.findPermanent("Grizzly Bears")!!).redirectTo shouldBe game.player1Id
         }
         test("the chosen source cannot follow a later battlefield visit") {
             val game = board(); val giant = game.findPermanent("Hill Giant")!!; install(game)
@@ -165,7 +165,7 @@ class ChosenSourceDamageRedirectionTest : ScenarioTestBase() {
                 .addToZone(ZoneKey(owner, Zone.HAND), giant)
                 .removeFromZone(ZoneKey(owner, Zone.HAND), giant)
                 .addToZone(ZoneKey(owner, Zone.BATTLEFIELD), giant)
-            redirect(moved, giant, game.findPermanent("Grizzly Bears")!!).second shouldBe null
+            redirect(moved, giant, game.findPermanent("Grizzly Bears")!!).redirectTo shouldBe null
         }
         test("the protected object cannot follow a later battlefield visit") {
             val game = board(); val bear = game.findPermanent("Grizzly Bears")!!; install(game)
@@ -174,7 +174,7 @@ class ChosenSourceDamageRedirectionTest : ScenarioTestBase() {
                 .addToZone(ZoneKey(owner, Zone.HAND), bear)
                 .removeFromZone(ZoneKey(owner, Zone.HAND), bear)
                 .addToZone(ZoneKey(owner, Zone.BATTLEFIELD), bear)
-            redirect(moved, game.findPermanent("Hill Giant")!!, bear).second shouldBe null
+            redirect(moved, game.findPermanent("Hill Giant")!!, bear).redirectTo shouldBe null
         }
         test("a departed redirect recipient leaves damage and shield unchanged") {
             val game = board(); val giant = game.findPermanent("Hill Giant")!!
@@ -182,7 +182,7 @@ class ChosenSourceDamageRedirectionTest : ScenarioTestBase() {
             val moved = game.state.removeFromZone(ZoneKey(game.player2Id, Zone.BATTLEFIELD), giant)
                 .addToZone(ZoneKey(game.player2Id, Zone.GRAVEYARD), giant)
             val result = redirect(moved, giant, game.findPermanent("Grizzly Bears")!!)
-            result.second shouldBe null; result.first.floatingEffects shouldBe moved.floatingEffects
+            result.redirectTo shouldBe null; result.state.floatingEffects shouldBe moved.floatingEffects
         }
         test("pending ability source remains choosable after departure with its original identity") {
             val game = board(); val giant = game.findPermanent("Hill Giant")!!
@@ -220,15 +220,15 @@ class ChosenSourceDamageRedirectionTest : ScenarioTestBase() {
             val game = board(); install(game); install(game)
             val giant = game.findPermanent("Hill Giant")!!; val bear = game.findPermanent("Grizzly Bears")!!
             val first = redirect(game.state, giant, bear)
-            first.first.floatingEffects.size shouldBe 1
-            redirect(first.first, giant, bear).first.floatingEffects.size shouldBe 0
+            first.state.floatingEffects.size shouldBe 1
+            redirect(first.state, giant, bear).state.floatingEffects.size shouldBe 0
         }
         test("shield and paused source decision serialize with object identities") {
             val game = board(); install(game, duration = Duration.EndOfCombat)
             val json = Json { serializersModule = engineSerializersModule; allowStructuredMapKeys = true; encodeDefaults = true }
             val restored = json.decodeFromString<GameState>(json.encodeToString(game.state))
             restored.floatingEffects shouldBe game.state.floatingEffects
-            redirect(restored, game.findPermanent("Hill Giant")!!, game.findPermanent("Grizzly Bears")!!).second shouldBe game.player1Id
+            redirect(restored, game.findPermanent("Hill Giant")!!, game.findPermanent("Grizzly Bears")!!).redirectTo shouldBe game.player1Id
             val paused = RedirectDamageFromChosenSourceExecutor().execute(game.state,
                 RedirectDamageFromChosenSourceEffect(EffectTarget.Controller, EffectTarget.Controller),
                 EffectContext(sourceId = null, controllerId = game.player1Id))
@@ -313,12 +313,12 @@ class ChosenSourceDamageRedirectionTest : ScenarioTestBase() {
             val game = board(); val giant = game.findPermanent("Hill Giant")!!; install(game, recipient = giant)
             val card = game.state.getEntity(giant)!!.get<com.wingedsheep.engine.state.components.identity.CardComponent>()!!
             val changed = game.state.updateEntity(giant) { it.with(card.copy(typeLine = TypeLine(cardTypes = setOf(CardType.ARTIFACT)))) }
-            redirect(changed, giant, game.findPermanent("Grizzly Bears")!!).second shouldBe null
+            redirect(changed, giant, game.findPermanent("Grizzly Bears")!!).redirectTo shouldBe null
         }
         test("a phased-out recipient cannot receive redirection") {
             val game = board(); val giant = game.findPermanent("Hill Giant")!!; install(game, recipient = giant)
             val phased = game.state.updateEntity(giant) { it.with(com.wingedsheep.engine.state.components.battlefield.PhasedOutComponent(game.player2Id)) }
-            redirect(phased, giant, game.findPermanent("Grizzly Bears")!!).second shouldBe null
+            redirect(phased, giant, game.findPermanent("Grizzly Bears")!!).redirectTo shouldBe null
         }
         test("cleanup expires an unused shield") {
             val game = board(); install(game)
