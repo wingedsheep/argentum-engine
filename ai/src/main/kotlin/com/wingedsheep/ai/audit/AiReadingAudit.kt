@@ -458,7 +458,7 @@ object AiReadingAudit {
         if (sink.findings.size == before && tags.isNotEmpty()) {
             sink += Finding(Check.INTENT, read = true, reason = "knows what it's for: ${tags.sorted().joinToString(", ", transform = ::tagPhrase)}")
         } else if (sink.findings.size == before) {
-            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, untaps, attaches, moves, transforms or animates its own source, adds counters for its controller, damages a player, makes one lose life, mills one, or is an unless-clause its payer suffers as an upkeep cost or life loss")
+            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, shifts the P/T of, untaps, attaches, moves, transforms or animates its own source, adds counters for its controller, damages a player, makes one lose life, mills one, or is an unless-clause its payer suffers as an upkeep cost or life loss")
         }
     }
 
@@ -621,7 +621,7 @@ object AiReadingAudit {
         // A creature shifting its own P/T with a loss on either side — Flowstone's "+1/-1", Morphling's
         // "+1/-1", Blind Creeper's "-1/-1" drawback — has no target and is no trick to hold: it is a
         // trade on its own body the simulation prices on the board. A pure self pump already reads
-        // PUMP; a target's shift, and a self amount of unknown sign, stay flagged.
+        // PUMP; a target's shift, and a self shift with no side known to be a loss, stay flagged.
         if (leaf is ModifyStatsEffect && leaf.target == EffectTarget.Self &&
             (AmountSign.of(leaf.powerModifier) == AmountSign.LOSS || AmountSign.of(leaf.toughnessModifier) == AmountSign.LOSS)
         ) return true
