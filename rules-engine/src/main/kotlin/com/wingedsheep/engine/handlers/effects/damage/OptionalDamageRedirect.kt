@@ -12,8 +12,8 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.DamageUnpreventableThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.engine.state.components.identity.PlayerComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.Effect
 
@@ -105,7 +105,7 @@ object OptionalDamageRedirect {
      *
      * A filter shield protects a *class* and is read off projected state from its controller's side,
      * so a creature that arrived after the shield was created is covered, an animated land counts
-     * while it is one, a player never is, and neither is the shield's own recipient — "all damage
+     * while it is one, a player only when the shield lists it, and never the shield's own recipient — "all damage
      * that would be dealt to creatures you control is dealt to that creature instead" leaves the
      * damage already headed for that creature where it is. Any other shield protects the entities
      * it was created with (an empty list meaning "anything").
@@ -134,8 +134,7 @@ object OptionalDamageRedirect {
         }
         // The recipient as an object: one that left and came back is a new object (CR 400.7).
         if (mod.redirectToRef != null && !state.isCurrentObject(mod.redirectToRef)) return false
-        val recipient = state.getEntity(mod.redirectToId) ?: return false
-        if (!recipient.has<PlayerComponent>() && mod.redirectToId !in state.getBattlefield()) return false
+        if (state.getEntity(mod.redirectToId) == null) return false
         // CR 614.9: damage isn't redirected to a permanent that has left the battlefield or is no
         // longer a battle, creature or planeswalker — Gideon's Sacrifice's "(if it's still a creature
         // or planeswalker)", and every other redirection shield's unprinted equivalent.
@@ -176,6 +175,8 @@ object OptionalDamageRedirect {
         // Sacrifices that chose different permanents): the affected player picks the order (CR 616.1e).
         val routeChoices = instances
             .filter { it.amount > 0 }
+            // A recipient whose damage can't be redirected away (Whippoorwill) has no route to pick.
+            .filter { state.getEntity(it.targetId)?.has<DamageUnpreventableThisTurnComponent>() != true }
             .mapNotNull { instance ->
                 val routes = routesFor(state, instance, predicateEvaluator)
                 if (routes.size < 2) null else instance to routes
@@ -258,6 +259,14 @@ object OptionalDamageRedirect {
             }
         }
         if (state.floatingEffects.none { it.effect.modification is SerializableModification.RedirectNextDamage }) return emptyList()
+        // An optional ("you may") or source-keyed shield on the same damage answers through its own
+        // path; a route chosen here would override it, so such an instance keeps timestamp order.
+        val otherKindCovers = state.floatingEffects.any { floating ->
+            val mod = floating.effect.modification
+            mod is SerializableModification.RedirectNextDamage && (mod.optional || mod.chosenSource != null) &&
+                redirectShieldCovers(state, floating, mod, instance.targetId, predicateEvaluator)
+        }
+        if (otherKindCovers) return emptyList()
         return walk(instance.targetId, emptySet()).distinctBy { it.recipient }
     }
 
@@ -275,7 +284,9 @@ object OptionalDamageRedirect {
      * [DamageUtils.checkDamageRedirection] applies exactly those shields, in that order.
      */
     private fun chooseRoutes(state: GameState, routeChoices: List<Pair<Instance, List<Route>>>): Check {
-        var working = state
+        val working = state
+        val spent = mutableSetOf<String>()
+        val hops = mutableListOf<Pair<String, Boolean>>()
         for ((instance, routes) in routeChoices) {
             val answers = working.optionalDamageRedirectChoices
             var chosen: Route? = null
@@ -288,13 +299,15 @@ object OptionalDamageRedirect {
                 }
             }
             val route = chosen ?: continue
-            val hopKeys = routes.flatMap { r -> r.hops.map { (shield, at) -> choiceKey(shield, instance.sourceId, at) } }
-            working = working.copy(
-                optionalDamageRedirectChoices = working.optionalDamageRedirectChoices - hopKeys.toSet() +
-                    route.hops.map { (shield, at) -> choiceKey(shield, instance.sourceId, at) to true }
-            )
+            // The answers are spent once the route is settled: a later event with the same source,
+            // recipient and shields (a double striker's second hit) asks again. The chosen route's
+            // hops carry the decision into the damage pipeline, which consumes them as it applies.
+            // Stripped only once every instance is settled — an Ask for a later instance must keep
+            // this one's answer.
+            spent += routeKeys(instance, routes)
+            hops += route.hops.map { (shield, at) -> choiceKey(shield, instance.sourceId, at) to true }
         }
-        return Check.Ready(working)
+        return Check.Ready(working.copy(optionalDamageRedirectChoices = working.optionalDamageRedirectChoices - spent + hops))
     }
 
     /** "Which permanent is dealt it?" as a yes/no over the first of [remaining], buttons named by recipient. */
@@ -310,7 +323,7 @@ object OptionalDamageRedirect {
             id = decisionId,
             playerId = decider,
             prompt = "$sourceName would deal ${instance.amount} damage to ${nameOf(instance.targetId)} — " +
-                "which permanent is dealt it instead?",
+                "which one is dealt it instead?",
             context = DecisionContext(
                 sourceId = shieldSource?.sourceId,
                 sourceName = shieldSource?.sourceName ?: "Damage redirection",

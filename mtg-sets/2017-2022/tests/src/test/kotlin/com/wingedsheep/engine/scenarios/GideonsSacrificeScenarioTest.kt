@@ -202,10 +202,56 @@ class GideonsSacrificeScenarioTest : ScenarioTestBase() {
                     game.getLifeTotal(1) shouldBe 20
                     val (dealt, spared) = if ((firstOffered == "Grizzly Bears") == pickFirst) bears to giant else giant to bears
                     withClue("picked ${if (pickFirst) firstOffered else decision.noText}") {
-                        (game.findPermanent(if (dealt == bears) "Grizzly Bears" else "Hill Giant") == null ||
-                            game.damageOn(dealt) == 2) shouldBe true
+                        if (dealt == bears) {
+                            withClue("2 damage on the 2/2 Bears killed them") { game.findPermanent("Grizzly Bears") shouldBe null }
+                        } else {
+                            game.damageOn(giant) shouldBe 2
+                        }
                         game.damageOn(spared) shouldBe 0
                     }
+                }
+            }
+
+            test("combat damage asks once per damage step — a double striker's second hit is a new choice") {
+                val game = scenario()
+                    .withPlayers("Gideon", "Opponent")
+                    .withCardInHand(1, "Gideon's Sacrifice")
+                    .withCardInHand(1, "Gideon's Sacrifice")
+                    .withLandsOnBattlefield(1, "Plains", 2)
+                    .withCardOnBattlefield(1, "Grizzly Bears")
+                    .withCardOnBattlefield(1, "Hill Giant")
+                    .withCardOnBattlefield(2, "Boros Swiftblade")
+                    .withActivePlayer(2)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .apply { repeat(4) { withCardInLibrary(1, "Plains"); withCardInLibrary(2, "Mountain") } }
+                    .build()
+                val bears = game.findPermanent("Grizzly Bears")!!
+                val giant = game.findPermanent("Hill Giant")!!
+                game.passPriority()
+                game.castAndChoose(bears)
+                game.passPriority()
+                game.castAndChoose(giant)
+
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.declareAttackers(mapOf("Boros Swiftblade" to 1)).error shouldBe null
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+                game.declareNoBlockers().error shouldBe null
+
+                // Pass priority until each damage step stops to ask; never through passUntilPhase,
+                // which would answer the question itself.
+                val answers = listOf(true, false)
+                for (answer in answers) {
+                    repeat(6) { if (!game.hasPendingDecision()) game.passPriority() }
+                    val decision = game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
+                    decision.playerId shouldBe game.player1Id
+                    game.answerYesNo(answer).error shouldBe null
+                }
+                game.hasPendingDecision() shouldBe false
+
+                withClue("the player took none of it") { game.getLifeTotal(1) shouldBe 20 }
+                withClue("asked once per strike and answered differently, each chosen permanent took 1") {
+                    game.damageOn(bears) shouldBe 1
+                    game.damageOn(giant) shouldBe 1
                 }
             }
         }
