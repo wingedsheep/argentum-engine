@@ -538,9 +538,9 @@ object AiReadingAudit {
     }
 
     /**
-     * The leaves that need no intent tag: equip / attach, a card moving itself and damage to a player (commented
-     * inline below), and a counter the effect puts on its own source or its own controller — a creature growing itself,
-     * a charge, oil, quest or loyalty counter, `{E}` for you. There is no target to choose and nothing
+     * The leaves that need no intent tag: equip / attach, a card moving itself and damage to a
+     * player (commented inline below), and a counter the effect puts on its own source or its own
+     * controller — a creature growing itself, a charge, oil, quest or loyalty counter, `{E}` for you. There is no target to choose and nothing
      * to hold it for, and its payoff is already on the board (the evaluator reads a grown creature's
      * projected stats) or belongs to the ability that later spends it, so it needs no intent tag. A
      * keyword counter stays flagged: it grants a keyword the way [com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect]
