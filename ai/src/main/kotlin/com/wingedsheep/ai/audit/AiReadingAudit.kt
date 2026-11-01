@@ -26,6 +26,7 @@ import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
+import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -257,11 +258,14 @@ object AiReadingAudit {
             if (spell != null) {
                 intent(spell, sink)
                 if (face.instantSpeed) {
+                    // HoldPolicy holds a COMBAT_TRICK spell whole, so every expiring leaf on it (the
+                    // keyword beside the pump, too) waits for the same fight or response. Not a
+                    // modal one: its tags are the union of its modes, the hold reads the chosen ones.
+                    val heldWhole = IntentTag.COMBAT_TRICK in intent.tags &&
+                        EffectWalker.leaves(spell).none { it is ModalEffect }
                     timing(spell, sink) { leaf ->
-                        // HoldPolicy holds a COMBAT_TRICK spell whole, so every expiring leaf on it
-                        // (the keyword beside the pump, too) waits for the same fight or response.
                         ExpiringGrantWindow.hasExpiringReading(leaf, creatureGrants = false) ||
-                            IntentTag.COMBAT_TRICK in intent.tags ||
+                            (heldWhole || (leaf is ModifyStatsEffect && IntentTag.COMBAT_TRICK in intent.tags)) ||
                             (leaf is ForEachEffect && intent.expiringGroupPump)
                     }
                 }
