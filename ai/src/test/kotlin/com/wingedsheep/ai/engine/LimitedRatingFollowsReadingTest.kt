@@ -4,6 +4,7 @@ import com.wingedsheep.mtg.sets.MtgSetCatalog
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.doubles.plusOrMinus
+import io.kotest.matchers.doubles.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 
 /**
@@ -55,5 +56,28 @@ class LimitedRatingFollowsReadingTest : FunSpec({
         withClue("Crystal Ball: scry 2 on an activated ability (x0.6)") {
             term("Crystal Ball", "Activated ability 1") shouldBe (0.12 plusOrMinus 1e-9)
         }
+    }
+
+    test("a tutor and a tapper are priced by their reading") {
+        withClue("Gaea's Bounty: search for two Forests") { term("Gaea's Bounty", "Spell") shouldBe (0.6 plusOrMinus 1e-9) }
+        withClue("Sidar Jabari: tap target creature on attack, a trigger (x0.8)") {
+            term("Sidar Jabari", "Triggered ability 1") shouldBe (0.4 plusOrMinus 1e-9)
+        }
+    }
+
+    test("a modal spell is worth its best mode plus a little for the choice") {
+        withClue("Thunderbolt: 3 damage to a player, or 4 to a flier") {
+            term("Thunderbolt", "Spell") shouldBe (1.4 plusOrMinus 1e-9)
+        }
+    }
+
+    test("static abilities are priced: an Aura's bonus, an anthem, a granted keyword") {
+        term("Coat of Arms", "Static ability 1") shouldBeGreaterThan 0.0
+        term("Wings of Aesthir", "Static ability 1") shouldBeGreaterThan 0.0
+    }
+
+    test("a non-land mana source is priced as ramp") {
+        term("Mox Diamond", "Mana ability") shouldBe (0.4 plusOrMinus 1e-9)
+        term("Llanowar Elves", "Mana ability") shouldBe (0.4 plusOrMinus 1e-9)
     }
 })
