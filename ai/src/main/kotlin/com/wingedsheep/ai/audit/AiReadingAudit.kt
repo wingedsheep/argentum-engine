@@ -76,7 +76,7 @@ import java.util.Locale
  *  - [Check.INTENT] — [CardIntentAnalyzer.analyzeEffect] per effect slot (the spell, each trigger,
  *    each non-mana ability): a slot that earns no [IntentTag] at all is invisible to every intent
  *    consumer, and is attributed to each of its leaves — except the leaves that need no tag
- *    ([needsNoIntent]: a non-keyword counter on the source itself, any counter on a player, damage to a
+ *    ([needsNoIntent]: a non-keyword counter on the source itself or one it removes from itself, any counter on a player, damage to a
  *    player, life loss, a permanent untapping, moving, transforming or animating itself, a creature
  *    shifting its own P/T with a loss on either side, an upkeep cost its controller pays or suffers
  *    on its own source, an "unless" whose suffer is life loss).
