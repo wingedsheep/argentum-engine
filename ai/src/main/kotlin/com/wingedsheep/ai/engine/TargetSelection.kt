@@ -116,10 +116,9 @@ object TargetSelection {
         polarityFromEffect: Boolean = false,
     ): (EntityId) -> Double {
         if (polarityFromEffect) {
-            // One polarity per action, not per slot: the ranker is shared by every requirement of
-            // the action. A multi-slot action whose slots disagree ("target creature you control
-            // fights target creature you don't") reads UNKNOWN and keeps the removal ranking —
-            // which is what it got before, and its filters already split the sides.
+            // One polarity per action: a multi-slot action whose slots disagree ("target creature
+            // you control fights target creature you don't") reads UNKNOWN here and keeps the
+            // removal ranking; [slotRanker] then gives a slot read as beneficial its own order.
             val polarity = polarities(state, action, intents).distinct().singleOrNull()
             if (polarity == TargetPolarity.BENEFICIAL) {
                 // Our best permanent first, theirs last; ourselves ahead of an opponent.

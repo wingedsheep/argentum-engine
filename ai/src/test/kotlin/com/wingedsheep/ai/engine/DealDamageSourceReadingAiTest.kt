@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 
 /**
  * The damage *source* slot of a one-sided "bite" ([com.wingedsheep.sdk.scripting.effects.DealDamageEffect]
@@ -33,6 +34,12 @@ class DealDamageSourceReadingAiTest : ScenarioTestBase() {
         test("a bite's source reads as ours to lend; its victim as harmful") {
             withClue("Rabid Bite: target creature you control deals damage to target creature you don't control") {
                 intents.spellTargetPolarities("Rabid Bite") shouldBe listOf(TargetPolarity.BENEFICIAL, TargetPolarity.HARMFUL)
+            }
+            withClue("Self-Destruct: the source is dealt the damage back, so it is not a free lend") {
+                intents.spellTargetPolarities("Self-Destruct").first() shouldNotBe TargetPolarity.BENEFICIAL
+            }
+            withClue("Burn Together: the source is sacrificed afterwards, so it is not a free lend") {
+                intents.spellTargetPolarities("Callous Sell-Sword", faceIndex = 0).first() shouldNotBe TargetPolarity.BENEFICIAL
             }
         }
 

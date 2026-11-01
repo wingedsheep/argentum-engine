@@ -2306,7 +2306,7 @@ Callous Dismissal	polarity: MoveToZoneEffect
 Callous Giant
 Callous Inspector
 Callous Oppressor
-Callous Sell-Sword
+Callous Sell-Sword	polarity: SacrificeTargetEffect
 Caltrops	intent: DealDamageEffect
 Camel
 Camellia, the Seedmiser
