@@ -68,6 +68,11 @@ enum class SynergyAxis {
  *
  * A payoff that [standsAlone] is also an answer — removal, a Pacifism, a counterspell — so its
  * synergy is a rider: fuel makes it better, but it is worth its rating with none.
+ *
+ * [strength] is how much the payoff gives back per feeder, 1.0 for a typical one ([SynergyStrength]):
+ * [DeckSynergy] weighs a fed payoff by it, so a feeder beside a +2/+2 lord gains more than one
+ * beside a +1/+1 lord. [punishes] holds the creature types the card *shrinks*, each with how hard —
+ * every creature of that type beside it is a loss.
  */
 data class SynergyProfile(
     val feeds: Set<SynergyAxis>,
@@ -78,17 +83,22 @@ data class SynergyProfile(
     val asks: List<CardAsk> = emptyList(),
     val card: CardDefinition? = null,
     val standsAlone: Boolean = false,
+    val strength: Double = 1.0,
+    val punishes: Map<Subtype, Double> = emptyMap(),
 ) {
     /** No synergy reading at all — though [card] may still match another card's [asks]. */
     val isEmpty: Boolean
         get() = feeds.isEmpty() && rewards.isEmpty() && tribes.isEmpty() && tribesRewarded.isEmpty() &&
-            !everyTribe && asks.isEmpty()
+            !everyTribe && asks.isEmpty() && punishes.isEmpty()
 
     /** Rewards an axis or asks for a kind of card: a card whose value hangs on the rest of the deck. */
     val isPayoff: Boolean get() = rewards.isNotEmpty() || tribesRewarded.isNotEmpty() || asks.isNotEmpty()
 
     /** Feeds an axis, is (or makes) some creature type, or is a printed card some ask can match. */
     val isFeeder: Boolean get() = feeds.isNotEmpty() || tribes.isNotEmpty() || everyTribe || card != null
+
+    /** Shrinks some creature type: its members beside it count against the deck. */
+    val isPunisher: Boolean get() = punishes.isNotEmpty()
 
     /** Whether this card is one of the cards [ask] wants. */
     fun answers(ask: CardAsk): Boolean = card != null && !card.typeLine.isLand && SynergyAxes.matches(card, ask.filter)
@@ -159,6 +169,8 @@ object SynergyAxes {
             asks = CardAsks.of(card),
             card = card,
             standsAlone = CardIntentAnalyzer.analyze(card).tags.any { it in ANSWERS },
+            strength = SynergyStrength.of(card),
+            punishes = SynergyStrength.punished(card),
         )
     }
 

@@ -4,6 +4,7 @@ import com.wingedsheep.ai.draftsim.DraftsimData
 import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
 import com.wingedsheep.ai.engine.knowledge.EffectWalker
 import com.wingedsheep.ai.engine.knowledge.IntentTag
+import com.wingedsheep.ai.engine.knowledge.RemovalBreadth
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
@@ -224,17 +225,25 @@ object LimitedCardRater {
             val v = KEYWORD_BONUS[keyword] ?: continue
             add(Term(keyword.displayName, v))
         }
-        // The same slots [effectBonus] sums ([EffectWalker.slots]), numbered the way the AI-reading
-        // audit numbers abilities — activated abilities count the mana ones they skip.
-        fun slot(part: String, effect: Effect, origin: EffectWalker.Origin) {
-            val value = slotValue(effect, origin)
-            if (value != 0.0) add(Term(part, value, effect.description.takeIf { it.isNotBlank() }))
+        // The same slots [effectBonus] sums ([EffectWalker.slots]).
+        fun slot(part: String, slot: EffectWalker.Slot) {
+            val value = slotValue(slot)
+            if (value == 0.0) return
+            val breadth = narrowDiscount(slot)
+            val detail = listOfNotNull(
+                slot.effect.description.takeIf { it.isNotBlank() },
+                "narrow removal, ×${"%.2f".format(java.util.Locale.ROOT, breadth)}".takeIf { breadth < 1.0 },
+            ).joinToString(" — ").takeIf { it.isNotEmpty() }
+            add(Term(part, value, detail))
         }
+        // Numbered the way the AI-reading audit numbers abilities: activated abilities count the
+        // mana ones [EffectWalker.slots] skips.
         val script = card.script
-        script.spellEffect?.let { slot("Spell", it, EffectWalker.Origin.SPELL) }
-        script.triggeredAbilities.forEachIndexed { i, t -> slot("Triggered ability ${i + 1}", t.effect, EffectWalker.Origin.TRIGGERED) }
+        val slots = EffectWalker.slots(script).iterator()
+        script.spellEffect?.let { slot("Spell", slots.next()) }
+        script.triggeredAbilities.indices.forEach { i -> slot("Triggered ability ${i + 1}", slots.next()) }
         script.activatedAbilities.forEachIndexed { i, a ->
-            if (!a.isManaAbility) slot("Activated ability ${i + 1}", a.effect, EffectWalker.Origin.ACTIVATED)
+            if (!a.isManaAbility) slot("Activated ability ${i + 1}", slots.next())
         }
         script.staticAbilities.forEachIndexed { i, static ->
             val v = staticScore(static)
@@ -355,7 +364,44 @@ object LimitedCardRater {
      * which [EffectWalker.leaves] keeps whole.
      */
     private fun effectBonus(card: CardDefinition): Double =
-        EffectWalker.slots(card.script).sumOf { slotValue(it.effect, it.origin) }
+        EffectWalker.slots(card.script).sumOf(::slotValue)
+
+    /**
+     * One slot's effect value — its leaves folded, plus what its pipelines add up to — discounted
+     * for where it lives and, when it is removal that can aim
+     * at only a sliver of what an opponent plays — for how narrow it is ([narrowDiscount]).
+     */
+    private fun slotValue(slot: EffectWalker.Slot): Double =
+        (EffectWalker.fold(slot.effect, LimitedScoreFold) + pipelineScore(slot.effect)) * slot.origin.discount * narrowDiscount(slot)
+
+    /**
+     * 1.0 for removal that can aim at most of the table ([RemovalBreadth] of [FULL_BREADTH] or more)
+     * and for every non-removal slot; down to [NARROWEST_SHARE] for removal that can aim at nothing
+     * an opponent is likely to have — a spot spell or a sweeper ("destroy all white creatures").
+     * Execute ("destroy target white creature") reaches three of the
+     * eighteen probe creatures, so its slot — the removal and the card it draws — keeps under half
+     * its value: in a deck that doesn't know its opponent, the card is usually a cantrip.
+     */
+    private fun narrowDiscount(slot: EffectWalker.Slot): Double {
+        // A slot aiming only off the table (null) isn't removal to discount: the heuristic prices
+        // its graveyard or hand effect as whatever it is.
+        val breadth = RemovalBreadth.ofSlot(slot) ?: return 1.0
+        if (breadth >= FULL_BREADTH) return 1.0
+        if (!RemovalBreadth.isRemoval(slot.effect)) return 1.0
+        return NARROWEST_SHARE + (1 - NARROWEST_SHARE) * breadth / FULL_BREADTH
+    }
+
+    /** Removal breadth from which a slot is rated in full: Doom Blade (15/18), Smother (12/18). */
+    private const val FULL_BREADTH = 0.6
+
+    /** The share of its value a removal slot that can aim at nothing keeps. */
+    private const val NARROWEST_SHARE = 0.2
+
+    /** What one effect is worth to a limited rating — the leaf scores folded over its tree. */
+    internal fun effectValue(effect: Effect): Double = EffectWalker.fold(effect, LimitedScoreFold)
+
+    /** What a keyword adds to a limited rating, or 0 for one the table doesn't price. */
+    internal fun keywordValue(keyword: Keyword): Double = KEYWORD_BONUS[keyword] ?: 0.0
 
     /**
      * What the card's static abilities are worth — an Aura's or Equipment's bonus, an anthem, a
@@ -397,10 +443,6 @@ object LimitedCardRater {
      * [CardIntentAnalyzer] a new effect and it is priced here with no second edit.
      */
     private fun tagValue(tags: Set<IntentTag>): Double = tags.maxOfOrNull { TAG_VALUE[it] ?: 0.0 } ?: 0.0
-
-    /** One effect slot's worth: its leaves folded, plus what its pipelines add up to, discounted by origin. */
-    private fun slotValue(effect: Effect, origin: EffectWalker.Origin): Double =
-        (EffectWalker.fold(effect, LimitedScoreFold) + pipelineScore(effect)) * origin.discount
 
     /**
      * What the gather → move pipelines in a slot are worth. [EffectWalker] stops at pipeline stages,

@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.scripting.effects.ConniveEffect
 import com.wingedsheep.sdk.scripting.effects.LearnEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.GatedEffect
+import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 
 /**
  * The one traversal of a card's effect tree that both card scorers share.
@@ -92,8 +93,15 @@ object EffectWalker {
         ACTIVATED(0.6),
     }
 
-    /** One effect slot on a card: the root of an effect tree plus where it was found. */
-    data class Slot(val effect: Effect, val origin: Origin)
+    /**
+     * One effect slot on a card: the root of an effect tree, where it was found, and the target
+     * requirements declared beside it (what [RemovalBreadth] reads to tell Murder from Execute).
+     */
+    data class Slot(
+        val effect: Effect,
+        val origin: Origin,
+        val targets: List<TargetRequirement> = emptyList(),
+    )
 
     /**
      * Every effect slot on [script] that the walk knows how to read: the spell effect, each
@@ -105,11 +113,13 @@ object EffectWalker {
      * payoff and which the analyzer reads separately to recognize a mana rock.
      */
     fun slots(script: CardScript): List<Slot> = buildList {
-        script.spellEffect?.let { add(Slot(it, Origin.SPELL)) }
-        script.triggeredAbilities.forEach { add(Slot(it.effect, Origin.TRIGGERED)) }
+        script.spellEffect?.let { add(Slot(it, Origin.SPELL, script.targetRequirements)) }
+        script.triggeredAbilities.forEach {
+            add(Slot(it.effect, Origin.TRIGGERED, listOfNotNull(it.targetRequirement) + it.additionalTargetRequirements))
+        }
         script.activatedAbilities
             .filterNot { it.isManaAbility }
-            .forEach { add(Slot(it.effect, Origin.ACTIVATED)) }
+            .forEach { add(Slot(it.effect, Origin.ACTIVATED, it.targetRequirements)) }
     }
 
     /**

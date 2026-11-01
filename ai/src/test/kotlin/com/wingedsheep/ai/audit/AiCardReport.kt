@@ -111,6 +111,8 @@ private fun report(card: CardDefinition, reading: AiReadingAudit.CardReading, ra
             synergy.tribesRewarded.takeIf { it.isNotEmpty() }?.let { "asks for " + it.joinToString(", ") { t -> t.value } },
             synergy.asks.takeIf { it.isNotEmpty() }
                 ?.let { "asks for " + it.joinToString(", ") { ask -> "${ask.filter.description} (${ask.wanted.toInt()})" } },
+            "payoff strength ${"%.2f".format(java.util.Locale.ROOT, synergy.strength)}×".takeIf { synergy.isPayoff },
+            synergy.punishes.takeIf { it.isNotEmpty() }?.let { "shrinks " + it.keys.joinToString(", ") { t -> t.value } },
             "stands alone as an answer".takeIf { synergy.standsAlone && synergy.isPayoff },
         ).joinToString(" · "),
     )

@@ -66,11 +66,13 @@ class CardAsksTest : FunSpec({
         brights.asks shouldHaveSize 1
         brights.standsAlone shouldBe true
         DeckSynergy.shortfall(listOf(brights)) shouldBe 0.0
-        DeckSynergy.shortfall(listOf(read("Monastery Mentor"))) shouldBe 1.0
+        DeckSynergy.shortfall(listOf(read("Monastery Mentor"))) shouldBe read("Monastery Mentor").strength
     }
 
     test("a payoff is fed by the cards its filter matches, never by itself") {
-        fun fed(vararg names: String) = DeckSynergy.fedPayoffs(names.map(::read))
+        // Fed shares, before [DeckSynergy.fedPayoffs] weighs them by the payoff's strength.
+        val strength = read("Monastery Mentor").strength
+        fun fed(vararg names: String) = DeckSynergy.fedPayoffs(names.map(::read)) / strength
         fed("Monastery Mentor") shouldBe 0.0
         fed("Monastery Mentor", "Grizzly Bears", "Grizzly Bears", "Grizzly Bears") shouldBe 0.0
         fed("Monastery Mentor", "Bonesplitter", "Pacifism") shouldBe (2 / DeckSynergy.FEEDERS_WANTED).plusOrMinus(1e-9)
