@@ -320,6 +320,65 @@
     ]
 }
 
+// Angrath, Captain of Chaos
+{
+    "name": "Angrath, Captain of Chaos",
+    "manaCost": "{2}{B/R}{B/R}",
+    "typeLine": "Legendary Planeswalker — Angrath",
+    "oracleText": "Creatures you control have menace.\n−2: Amass Zombies 2. (Put two +1/+1 counters on an Army you control. It's also a Zombie. If you don't control an Army, create a 0/0 black Zombie Army creature token first.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Angrath, Captain of Chaos:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "Amass",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "subtype": "Zombie"
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "MENACE",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "227",
+        "rarity": "UNCOMMON",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aa3a4cb5-945e-4caf-8a18-1ef977879fe8.jpg?1783933380",
+        "rulings": [
+            {
+                "date": "2023-06-16",
+                "text": "To amass Zombies N, if you don't control an Army creature, create a 0/0 black Zombie Army creature token. Then you choose an Army creature you control and put N +1/+1 counters on it. If that Army isn't already a Zombie, it becomes a Zombie in addition to its other types."
+            },
+            {
+                "date": "2023-06-16",
+                "text": "In the rare case that you control multiple Army creatures (perhaps because you played a creature with changeling) while you amass Zombies, you choose which of your Army creatures to put the +1/+1 counters on. If that creature isn't a Zombie, it becomes a Zombie in addition to its other types."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Arboreal Grazer
 {
     "name": "Arboreal Grazer",
@@ -3695,6 +3754,82 @@
     ]
 }
 
+// Dovin, Hand of Control
+{
+    "name": "Dovin, Hand of Control",
+    "manaCost": "{2}{W/U}",
+    "typeLine": "Legendary Planeswalker — Dovin",
+    "oracleText": "Artifact, instant, and sorcery spells your opponents cast cost {1} more to cast.\n−1: Until your next turn, prevent all damage that would be dealt to and dealt by target permanent an opponent controls.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Dovin, Hand of Control:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "PreventDamageShield",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        },
+                        {
+                            "type": "PreventDamageShield",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "direction": "FromTarget",
+                            "duration": "UntilYourNextTurn"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent ctrl:opponent"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "OpponentsCast",
+                    "filter": "artifact|instant|sorcery"
+                },
+                "modification": {
+                    "type": "IncreaseGeneric",
+                    "amount": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "229",
+        "rarity": "UNCOMMON",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/d/bd6ff745-919b-4688-9e9e-ab7835b3b891.jpg?1783933381"
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Dreadhorde Arcanist
 {
     "name": "Dreadhorde Arcanist",
@@ -3792,6 +3927,91 @@
         ]
     },
     "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Dreadhorde Butcher
+{
+    "name": "Dreadhorde Butcher",
+    "manaCost": "{B}{R}",
+    "typeLine": "Creature — Zombie Warrior",
+    "oracleText": "Haste\nWhenever this creature deals combat damage to a player or planeswalker, put a +1/+1 counter on this creature.\nWhen this creature dies, it deals damage equal to its power to any target.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dreadhorde Butcher:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientAnyOf",
+                        "options": [
+                            {
+                                "type": "RecipientPlayer",
+                                "player": "Any"
+                            },
+                            {
+                                "type": "RecipientObject",
+                                "filter": "planeswalker"
+                            }
+                        ]
+                    }
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Dreadhorde Butcher:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "194",
+        "rarity": "RARE",
+        "artist": "Piotr Dura",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/457bc402-4c31-465c-95e1-694f686e257e.jpg?1783933398",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "Dreadhorde Butcher's last known existence on the battlefield is checked to determine its power as its last ability resolves. If its power was 0 or less, the ability resolves with no effect."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
         "RED"
     ]
 }
@@ -6776,6 +6996,81 @@
     ]
 }
 
+// Heartwarming Redemption
+{
+    "name": "Heartwarming Redemption",
+    "manaCost": "{2}{R}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Discard all the cards in your hand, then draw that many cards plus one. You gain life equal to the number of cards in your hand.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Discard"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Add",
+                        "left": {
+                            "type": "VariableReference",
+                            "variableName": "gathered0_count"
+                        },
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Hand"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "199",
+        "rarity": "UNCOMMON",
+        "artist": "Howard Lyon",
+        "flavorText": "Kytheon had known war every day of his life. Now he finally knew peace.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/af569235-f5cb-4e3e-ba77-c1c429ed0a60.jpg?1783933396",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "If you have no cards in hand as Heartwarming Redemption resolves, you discard nothing then draw one card."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "The amount of life you gain is determined after you draw during Heartwarming Redemption's resolution. No player may take actions between the time cards are drawn and the time you gain life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Herald of the Dreadhorde
 {
     "name": "Herald of the Dreadhorde",
@@ -6899,6 +7194,67 @@
     "colorIdentityOverride": [
         "WHITE",
         "GREEN"
+    ]
+}
+
+// Huatli, the Sun's Heart
+{
+    "name": "Huatli, the Sun's Heart",
+    "manaCost": "{2}{G/W}",
+    "typeLine": "Legendary Planeswalker — Huatli",
+    "oracleText": "Each creature you control assigns combat damage equal to its toughness rather than its power.\n−3: You gain life equal to the greatest toughness among creatures you control.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Huatli, the Sun's Heart:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature",
+                        "aggregation": "MAX",
+                        "property": "TOUGHNESS"
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "AssignDamageEqualToToughness",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "onlyWhenToughnessGreaterThanPower": false
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "230",
+        "rarity": "UNCOMMON",
+        "artist": "Lius Lasahido",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d709742c-82a2-457e-9991-85e98d78029d.jpg?1783933379",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "Huatli's first ability doesn't actually change any creature's power. It changes only the amount of combat damage it assigns. All other rules and effects that check power or toughness use the real values."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "The greatest toughness among creatures you control is determined only as Huatli's loyalty ability begins to resolve."
+            }
+        ]
+    },
+    "startingLoyalty": 7,
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
     ]
 }
 
@@ -7204,6 +7560,51 @@
         "rarity": "UNCOMMON",
         "artist": "Adam Paquette",
         "imageUri": "https://cards.scryfall.io/normal/front/1/3/132d8e2a-e1dd-4867-8e8c-e48b9450b350.jpg?1783933367"
+    }
+}
+
+// Invade the City
+{
+    "name": "Invade the City",
+    "manaCost": "{1}{U}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Amass Zombies X, where X is the number of instant and sorcery cards in your graveyard. (Put X +1/+1 counters on an Army you control. It's also a Zombie. If you don't control an Army, create a 0/0 black Zombie Army creature token first.)",
+    "script": {
+        "spellEffect": {
+            "type": "Amass",
+            "amount": {
+                "type": "Count",
+                "player": "You",
+                "zone": "Graveyard",
+                "filter": "instant|sorcery"
+            },
+            "subtype": "Zombie"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "201",
+        "rarity": "UNCOMMON",
+        "artist": "Sung Choi",
+        "flavorText": "Death greeted the world with a roar of desert air.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/5/a587eb67-c2df-486c-9c48-dfeac540efe8.jpg?1783933395",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "If there are no instant or sorcery cards in your graveyard, you'll amass 0. If you don't control an Army, you'll create a 0/0 black Zombie Army creature token that will die after Invade the City has finished resolving."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "The number of instant and sorcery cards in your graveyard is counted only as Invade the City resolves."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "A split card that's both an instant and a sorcery is counted only once for Invade the City."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Invade the City is still on the stack while you count your instant and sorcery cards in your graveyard. It doesn't count itself."
+            }
+        ]
     }
 }
 
@@ -10432,6 +10833,107 @@
     ]
 }
 
+// Neoform
+{
+    "name": "Neoform",
+    "manaCost": "{G}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "As an additional cost to cast this spell, sacrifice a creature.\nSearch your library for a creature card with mana value equal to 1 plus the sacrificed creature's mana value, put that card onto the battlefield with an additional +1/+1 counter on it, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "ManaValueEqualsDynamic",
+                                    "amount": {
+                                        "type": "Add",
+                                        "left": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "right": {
+                                            "type": "EntityProperty",
+                                            "entity": "SacrificedAsCost",
+                                            "numericProperty": "ManaValue"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "storeAs": "gathered0",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected1",
+                    "prompt": "Search your library for a creature card with mana value equal to 1 plus the sacrificed creature's mana value"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    },
+                    "addCounterType": "PLUS_ONE_PLUS_ONE"
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        },
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "206",
+        "rarity": "UNCOMMON",
+        "artist": "Bram Sels",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/2/92d8f67e-4f2f-4a1f-b190-7c3f39e477e4.jpg?1783933392",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "You must sacrifice exactly one creature to cast this spell; you can't cast it without sacrificing one, and you can't sacrifice additional creatures."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If a creature or a creature card in your library has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "A creature put onto the battlefield this way enters the battlefield with one +1/+1 counter if it would otherwise enter with no +1/+1 counters."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Nicol Bolas, Dragon-God
 {
     "name": "Nicol Bolas, Dragon-God",
@@ -12013,6 +12515,52 @@
     ]
 }
 
+// Ravnica at War
+{
+    "name": "Ravnica at War",
+    "manaCost": "{3}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exile all multicolored permanents.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsPermanent",
+                                "IsMulticolored"
+                            ]
+                        }
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "rarity": "RARE",
+        "artist": "Adam Paquette",
+        "flavorText": "The heart of Ravnica disappeared before anyone could strike a blow in its defense.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e0f83824-43c6-4101-88fd-9109958b23e2.jpg?1783933477"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Relentless Advance
 {
     "name": "Relentless Advance",
@@ -12263,6 +12811,98 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Role Reversal
+{
+    "name": "Role Reversal",
+    "manaCost": "{U}{U}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exchange control of two target permanents that share a permanent type.",
+    "script": {
+        "spellEffect": {
+            "type": "ExchangeControl",
+            "target1": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "target2": {
+                "type": "BoundVariable",
+                "name": "t1"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "permanent"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsPermanent",
+                            {
+                                "type": "SharesCardTypeWith",
+                                "entity": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "among": [
+                                    "CREATURE",
+                                    "ENCHANTMENT",
+                                    "ARTIFACT",
+                                    "LAND",
+                                    "PLANESWALKER",
+                                    "BATTLE"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "214",
+        "rarity": "RARE",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/59b47017-d982-4d4c-94fc-f265a5b7f36a.jpg?1783933388",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "Gaining control of a permanent doesn't cause you to gain control of any Auras or Equipment attached to it."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If one of the target permanents is an illegal target when Role Reversal resolves, the exchange won't happen."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Role Reversal's effect lasts indefinitely. It doesn't wear off during the cleanup step, and it doesn't expire if the permanents stop sharing a permanent type after Role Reversal has resolved."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "You don't have to control either target permanent."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If the same player controls both permanents when Role Reversal resolves, nothing happens."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "The permanent types are artifact, creature, enchantment, land, and planeswalker. Supertypes, like legendary, aren't permanent types. For example, you can't exchange control of a legendary creature with a legendary planeswalker."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
     ]
 }
 
@@ -12986,6 +13626,96 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Solar Blaze
+{
+    "name": "Solar Blaze",
+    "manaCost": "{2}{R}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each creature deals damage to itself equal to its power.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            },
+            "body": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "EntityProperty",
+                    "entity": "IterationEntity",
+                    "numericProperty": "Power"
+                },
+                "target": "IterationEntity",
+                "damageSource": "IterationEntity"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "216",
+        "rarity": "RARE",
+        "artist": "Adam Paquette",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/eb72ba0f-ab3a-41e6-906d-a84039efa0af.jpg?1783933389"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
+// Soul Diviner
+{
+    "name": "Soul Diviner",
+    "manaCost": "{U}{B}",
+    "typeLine": "Creature — Zombie Wizard",
+    "oracleText": "{T}, Remove a counter from an artifact, creature, land, or planeswalker you control: Draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Soul Diviner:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "filter": "artifact|creature|land|planeswalker"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "218",
+        "rarity": "RARE",
+        "artist": "Randy Vargas",
+        "flavorText": "As the Eternal's cold fingers tightened around his throat, Domri realized what kind of master he had rushed to serve.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7fb66ccd-a930-4757-832c-c4b0259741e2.jpg?1783933386"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 
@@ -14001,6 +14731,72 @@
     ]
 }
 
+// Tenth District Legionnaire
+{
+    "name": "Tenth District Legionnaire",
+    "manaCost": "{R}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Haste\nWhenever you cast a spell that targets this creature, put a +1/+1 counter on this creature, then scry 1.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tenth District Legionnaire:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Scry",
+                            "count": 1
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever you cast a spell that targets this creature, put a +1/+1 counter on this creature, then scry 1."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "222",
+        "rarity": "UNCOMMON",
+        "artist": "Victor Adame Minguez",
+        "flavorText": "\"The Tenth is under heavy attack, but it's being handled. I sent Mileva.\"\n—Tajic",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/44f3090b-917b-4122-b522-27c30dca8e69.jpg?1783933383",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "Tenth District Legionnaire's ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "You scry 1 even if you can't put a +1/+1 counter on Tenth District Legionnaire, most likely because it has left the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Teyo's Lightshield
 {
     "name": "Teyo's Lightshield",
@@ -14044,6 +14840,55 @@
         "flavorText": "Teyo gifted his shields to as many allies as possible, knowing he could not always be there to protect them himself.",
         "imageUri": "https://cards.scryfall.io/normal/front/d/f/dfffe235-98b1-43db-9461-1b2da5f0690e.jpg"
     },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Teyo, the Shieldmage
+{
+    "name": "Teyo, the Shieldmage",
+    "manaCost": "{2}{W}",
+    "typeLine": "Legendary Planeswalker — Teyo",
+    "oracleText": "You have hexproof. (You can't be the target of spells or abilities your opponents control.)\n−2: Create a 0/3 white Wall creature token with defender.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Teyo, the Shieldmage:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 3,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Wall"
+                    ],
+                    "keywords": [
+                        "DEFENDER"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/e/8/e8ae8c31-70cb-44e1-a105-f4d29f1f9356.jpg?1783933354"
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ],
+        "staticAbilities": [
+            "GrantHexproofToController"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "rarity": "UNCOMMON",
+        "artist": "Magali Villeneuve",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a974571c-d8d5-4860-9077-2023e5f32a24.jpg?1783933473"
+    },
+    "startingLoyalty": 5,
     "colorIdentityOverride": [
         "WHITE"
     ]
@@ -14314,6 +15159,95 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// The Wanderer
+{
+    "name": "The Wanderer",
+    "manaCost": "{3}{W}",
+    "typeLine": "Legendary Planeswalker",
+    "oracleText": "Prevent all noncombat damage that would be dealt to you and other permanents you control.\n−2: Exile target creature with power 4 or greater.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "The Wanderer:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature pow>=4"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "PreventDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "You"
+                    },
+                    "damageType": "DamageNonCombat"
+                }
+            },
+            {
+                "type": "PreventDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsPermanent"
+                            ],
+                            "statePredicates": [
+                                {
+                                    "type": "StateNot",
+                                    "predicate": "IsSource"
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByYou"
+                        }
+                    },
+                    "damageType": "DamageNonCombat"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "rarity": "UNCOMMON",
+        "artist": "Wesley Burt",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/0/d0f0e463-9eed-4348-af7c-fde5f0d8188c.jpg?1783933472",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "If The Wanderer would be dealt lethal damage at the same time as you and/or other permanents you control would be dealt noncombat damage, the damage that would be dealt to you and your other permanents is prevented."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -14947,6 +15881,83 @@
             {
                 "date": "2019-05-03",
                 "text": "Players can't normally play a land card from a graveyard. If a player finds a way to do so, Tomik's last ability takes precedence over that permission."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Topple the Statue
+{
+    "name": "Topple the Statue",
+    "manaCost": "{2}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Tap target permanent. If it's an artifact, destroy it.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "filter": "artifact"
+                        }
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "descriptionOverride": "If it's an artifact, destroy it"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "permanent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "artist": "Sidharth Chaturvedi",
+        "flavorText": "Bolas cared little when his statue fell, thinking it a useful distraction, underestimating the surge of resolve it gave his opponents.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/2829fa40-92e4-4017-aacd-9d9feae04aa2.jpg?1783933473",
+        "rulings": [
+            {
+                "date": "2020-08-07",
+                "text": "If the target permanent is an illegal target when Topple the Statue tries to resolve, it doesn't resolve. You won't draw a card. If the target is legal but isn't tapped, isn't destroyed, or is neither tapped nor destroyed, you do draw a card."
             }
         ]
     },

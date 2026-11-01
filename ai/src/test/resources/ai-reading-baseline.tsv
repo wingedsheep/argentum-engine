@@ -532,6 +532,7 @@ Anger
 Angler Drake	polarity: MoveToZoneEffect
 Angrath's Ambusher
 Angrath's Rampage	polarity: ForceSacrificeEffect
+Angrath, Captain of Chaos	intent: AmassEffect
 Angry Mob
 Angry Rabble
 Anguished Unmaking
@@ -4279,6 +4280,7 @@ Douse in Gloom
 Douser of Lights
 Dovin's Automaton
 Dovin's Veto
+Dovin, Hand of Control	polarity: mixed(PreventDamageEffect)
 Down in the Valley
 Down, Down to Goblin-town
 Downwind Ambusher
@@ -4404,6 +4406,7 @@ Dreadfeast Demon
 Dreadful Apathy
 Dreadful as the Storm	intent: SetBaseStatsEffect; intent: TheRingTemptsYouEffect; polarity: SetBaseStatsEffect; timing: SetBaseStatsEffect
 Dreadhorde Arcanist	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(ChosenTargets→?); polarity: CastFromCollectionWithoutPayingCostEffect; polarity: Pipeline(ChosenTargets→?)
+Dreadhorde Butcher
 Dreadhorde Invasion	intent: AmassEffect; intent: GrantKeywordEffect
 Dreadhorde Twins	intent: AmassEffect
 Dreadhound
@@ -6474,6 +6477,7 @@ Gideon's Company	intent: AddCountersEffect
 Gideon's Lawkeeper
 Gideon's Memorial
 Gideon's Reproach
+Gideon's Sacrifice	intent: RedirectNextDamageEffect; intent: SelectTargetEffect; timing: RedirectNextDamageEffect
 Gideon's Triumph	polarity: ForceSacrificeEffect
 Gideon, Champion of Justice	intent: Pipeline(BattlefieldMatching→exile); polarity: AddDynamicCountersEffect
 Gift of Compleation
@@ -7412,6 +7416,7 @@ Hearthhull, the Worldseed
 Heartless Act	polarity: RemoveAnyNumberOfCountersEffect
 Heartless Summoning
 Heartstring Puller
+Heartwarming Redemption
 Heartwood Crafter
 Heartwood Giant
 Heartwood Shard
@@ -7779,6 +7784,7 @@ Huatli's Final Strike
 Huatli's Raptor	intent: ProliferateEffect
 Huatli's Snubhorn
 Huatli, Poet of Unity	intent: ExileAndReturnTransformedEffect
+Huatli, the Sun's Heart
 Hugs, Grisly Guardian	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Hulk, Gamma Goliath
 Hulking Bugbear
@@ -8216,6 +8222,7 @@ Introduction to Prophecy
 Intrude on the Mind
 Intruder Alarm	intent: ForEach>TapUntapEffect
 Intruding Soulrager
+Invade the City	intent: AmassEffect
 Invading Manticore	intent: AmassEffect
 Invasion Reinforcements
 Invasion Submersible	intent: AddCardTypeEffect; polarity: MoveToZoneEffect
@@ -10945,6 +10952,7 @@ Nekusar, the Mindrazer
 Nema Siltlurker
 Nemata, Grove Guardian
 Nemata, Primeval Warden
+Neoform
 Neonate's Rush
 Nephalia Seakite
 Nephalia Smuggler	polarity: MoveToZoneEffect
@@ -12746,6 +12754,7 @@ Ravenous Sailback
 Ravenous Skirge
 Ravenous Squirrel
 Ravine Raider
+Ravnica at War	intent: Pipeline(BattlefieldMatching→exile)
 Ray Fillet, Man Ray
 Ray of Dissolution
 Ray of Distortion
@@ -13360,6 +13369,7 @@ Roiling Canopy
 Roiling Dragonstorm
 Roiling Regrowth
 Roiling Vortex	intent: LockLifeGainEffect; timing: LockLifeGainEffect
+Role Reversal	intent: ExchangeControlEffect; polarity: ExchangeControlEffect
 Roll-Roll-Roll-Roll
 Rolling Earthquake
 Rolling Hamsphere
@@ -14970,6 +14980,7 @@ Sol Talisman
 Sol'Kanar the Tainted
 Sol'kanar the Swamp King
 Solar Blast
+Solar Blaze
 Solar Tide
 Solar Transformer
 Solarium Sentry
@@ -15041,6 +15052,7 @@ Sosuke, Son of Seshiro
 Sothera, the Supervoid	intent: AddCountersToCollectionEffect; intent: ForEach>Pipeline(BattlefieldMatching→exile); intent: Pipeline(FromLinkedExile→battlefield); intent: SacrificeSelfEffect
 Soul Burn
 Soul Collector	intent: MoveToZoneEffect
+Soul Diviner
 Soul Enervation
 Soul Exchange
 Soul Feast
@@ -16374,6 +16386,7 @@ Tenement Crasher
 Tentative Connection	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
 Tenth District Guard
 Tenth District Hero	combat: SetBaseStatsEffect; intent: AddCardTypeEffect; intent: BecomeArtifactEffect; intent: SetBaseStatsEffect
+Tenth District Legionnaire
 Tenuous Truce	polarity: Aura>DrawCardsEffect; polarity: Aura>SacrificeTargetEffect
 Tenured Concocter
 Tenured Inkcaster
@@ -16444,6 +16457,7 @@ Textbook Tabulator
 Teyo's Lightshield
 Teyo, Diamondblade Mage
 Teyo, Lightshield Expert
+Teyo, the Shieldmage
 Teysa Karlov
 Teysa, Opulent Oligarch
 Teysa, Orzhov Scion
@@ -16672,6 +16686,7 @@ The Unspeakable
 The Ur-Dragon
 The Vision
 The Walls of Ba Sing Se
+The Wanderer
 The Wandering Emperor
 The Wandering Minstrel
 The Wandering Rescuer
@@ -17070,6 +17085,7 @@ Topiary Lecturer
 Topiary Panther
 Topiary Stomper
 Topple
+Topple the Statue
 Topplegeist
 Tor Giant
 Tor Wauki
