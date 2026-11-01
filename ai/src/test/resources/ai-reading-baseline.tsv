@@ -3268,7 +3268,7 @@ Cowabunga!
 Cowl Prowler
 Crabomination	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(FromMultipleZones|TopOfLibrary|graveyard|hand→exile); polarity: Pipeline(FromMultipleZones|TopOfLibrary|graveyard|hand→exile)
 Crack Open
-Cracked Skull	intent: LookAtTargetHandEffect; intent: Pipeline(hand→graveyard); polarity: LookAtTargetHandEffect; polarity: Pipeline(hand→graveyard)
+Cracked Skull	intent: LookAtTargetHandEffect; intent: Pipeline(hand→graveyard)
 Crackle with Power
 Crackling Cyclops
 Crackling Doom	intent: ForEach>Pipeline(ControlledPermanents→graveyard)
@@ -3826,7 +3826,7 @@ Deep Reconnaissance
 Deep Spawn	intent: PayOrSufferEffect
 Deep Water	intent: GrantStaticAbilityEffect; timing: GrantStaticAbilityEffect
 Deep Wood	timing: PreventDamageEffect
-Deep-Cavern Bat	intent: LookAtTargetHandEffect; intent: Pipeline(FromLinkedExile→hand); intent: Pipeline(hand→exile); polarity: LookAtTargetHandEffect; polarity: Pipeline(hand→exile)
+Deep-Cavern Bat	intent: LookAtTargetHandEffect; intent: Pipeline(FromLinkedExile→hand); intent: Pipeline(hand→exile)
 Deep-Sea Serpent
 Deep-Slumber Titan
 Deepchannel Duelist	intent: TapUntapEffect
@@ -4318,7 +4318,7 @@ Dragon Wings	intent: ReturnSelfToBattlefieldAttachedEffect
 Dragon's Approach
 Dragon's Claw
 Dragon's Disciple
-Dragon's Eye Savants	intent: LookAtTargetHandEffect; polarity: LookAtTargetHandEffect
+Dragon's Eye Savants	intent: LookAtTargetHandEffect
 Dragon's Eye Sentry
 Dragon's Fire
 Dragon's Hoard
@@ -4808,7 +4808,7 @@ Elite Inquisitor
 Elite Instructor
 Elite Interceptor	polarity: ModalEffect
 Elite Javelineer
-Elite Spellbinder	intent: ExileAndGrantOwnerPlayPermissionEffect; intent: LookAtTargetHandEffect; intent: Pipeline(hand→?); polarity: LookAtTargetHandEffect; polarity: Pipeline(hand→?)
+Elite Spellbinder	intent: ExileAndGrantOwnerPlayPermissionEffect; intent: LookAtTargetHandEffect; intent: Pipeline(hand→?)
 Elite Vanguard
 Elixir
 Elixir of Vitality
@@ -6513,7 +6513,7 @@ Gisela, Blade of Goldnight
 Gisela, the Broken Blade	intent: MeldEffect
 Gishath, Sun's Avatar	intent: Pipeline(TopOfLibrary→battlefield|library)
 Gitaxian Anatomist
-Gitaxian Probe	polarity: LookAtTargetHandEffect
+Gitaxian Probe
 Gitaxian Raptor	intent: ModifyStatsEffect
 Give In to Violence
 Gix's Caress	polarity: Pipeline(hand→graveyard); polarity: RevealHandEffect
@@ -6548,7 +6548,7 @@ Glaring Aegis
 Glaring Fleshraker
 Glass Casket	intent: Pipeline(FromLinkedExile→battlefield)
 Glass Golem
-Glasses of Urza	intent: LookAtTargetHandEffect; polarity: LookAtTargetHandEffect
+Glasses of Urza	intent: LookAtTargetHandEffect
 Glasspool Mimic
 Glasswing Grace
 Glassworks // Shattered Yard
@@ -8088,7 +8088,7 @@ Ingenious Leonin
 Ingenious Mastery
 Ingenious Prodigy
 Ingenious Smith
-Ingenious Thief	intent: LookAtTargetHandEffect; polarity: LookAtTargetHandEffect
+Ingenious Thief	intent: LookAtTargetHandEffect
 Ingenuity Engine	polarity: MoveToZoneEffect
 Ingot Chewer
 Ingris Stingerquill
@@ -8212,7 +8212,7 @@ Invasion of Dominaria
 Invasion of Eldraine	intent: Pipeline(hand→graveyard); polarity: Pipeline(hand→graveyard)
 Invasion of Ergamon
 Invasion of Fiora	intent: RemoveAllCountersEffect; polarity: RemoveAllCountersEffect
-Invasion of Gobakhan	intent: ExileAndGrantOwnerPlayPermissionEffect; intent: LookAtTargetHandEffect; intent: Pipeline(hand→?); polarity: LookAtTargetHandEffect; polarity: Pipeline(hand→?)
+Invasion of Gobakhan	intent: ExileAndGrantOwnerPlayPermissionEffect; intent: LookAtTargetHandEffect; intent: Pipeline(hand→?)
 Invasion of Ikoria	intent: Pipeline(FromMultipleZones→battlefield)
 Invasion of Innistrad
 Invasion of Ixalan
@@ -11270,7 +11270,7 @@ Ogre Warrior
 Ogre's Cleaver
 Ogre-Head Helm	intent: UnattachEquipmentEffect
 Oil-Gorger Troll
-Oildeep Gearhulk
+Oildeep Gearhulk	polarity: Pipeline(hand→graveyard)
 Ojer Axonil, Deepest Might	intent: ReturnSelfFromZoneTransformedEffect
 Ojer Kaslem, Deepest Growth	intent: Pipeline(TopOfLibrary→battlefield|library); intent: ReturnSelfFromZoneTransformedEffect
 Ojer Pakpatiq, Deepest Epoch	intent: GrantKeywordToSpellEffect; intent: ReturnSelfFromZoneTransformedEffect
@@ -11706,7 +11706,7 @@ Pearled Unicorn
 Pearlspear Courier
 Peculiar Lighthouse
 Pedal to the Metal
-Peek	polarity: LookAtTargetHandEffect
+Peek
 Peel from Reality	polarity: MoveToZoneEffect
 Peema Outrider
 Peer Past the Veil
@@ -15003,7 +15003,7 @@ Sorcerer's Broom
 Sorcerer's Wand
 Sorceress Queen	combat: SetBaseStatsEffect; intent: SetBaseStatsEffect; polarity: SetBaseStatsEffect; timing: SetBaseStatsEffect
 Sorceress's Schemes
-Sorcerous Sight	polarity: LookAtTargetHandEffect
+Sorcerous Sight
 Sorcerous Spyglass
 Sorin of House Markov	intent: ExileAndReturnTransformedEffect; polarity: AddCreatureTypeEffect
 Sorin the Mirthless
@@ -15331,7 +15331,7 @@ Sprouting Thrinax
 Sprouting Vines
 Spry and Mighty	polarity: DrawCardsEffect; polarity: GrantKeywordEffect; polarity: ModifyStatsEffect; polarity: StoreNumberEffect
 Spurred Wolverine	intent: GrantKeywordEffect
-Spy Network	intent: LookAtFaceDownEffect; intent: LookAtTargetHandEffect; intent: Pipeline(TopOfLibrary→library); polarity: LookAtFaceDownEffect; polarity: LookAtTargetHandEffect; polarity: Pipeline(TopOfLibrary→library)
+Spy Network	intent: LookAtFaceDownEffect; intent: LookAtTargetHandEffect; intent: Pipeline(TopOfLibrary→library)
 Spyglass Siren
 Spymaster's Vault
 Squad Captain
@@ -16105,7 +16105,7 @@ Takenuma, Abandoned Mire	intent: Pipeline(TopOfLibrary|graveyard→graveyard|han
 Takklemaggot	intent: PutOntoBattlefieldAsNonAuraEffect; intent: PutOntoBattlefieldAttachedToChosenEffect
 Talarian Hook Spider
 Talas Air Ship
-Talas Explorer	intent: LookAtTargetHandEffect; polarity: LookAtTargetHandEffect
+Talas Explorer	intent: LookAtTargetHandEffect
 Talas Lookout
 Talas Merchant
 Talas Researcher
@@ -16268,7 +16268,7 @@ Tel-Jilad Justice
 Tel-Jilad Stylus	polarity: MoveToZoneEffect
 Telekinesis	timing: PreventDamageEffect
 Telekinetic Sliver
-Telepathic Spies	intent: LookAtTargetHandEffect; polarity: LookAtTargetHandEffect
+Telepathic Spies	intent: LookAtTargetHandEffect
 Teleport	intent: GrantKeywordEffect; timing: GrantKeywordEffect
 Teleportation Circle	polarity: MoveToZoneEffect
 Telethopter
@@ -17837,7 +17837,7 @@ Velvetwing Butterflies
 Venarian Gold	intent: RemoveCountersEffect; polarity: Aura>AddDynamicCountersEffect; polarity: Aura>GrantKeyword; polarity: Aura>RemoveCountersEffect; polarity: Aura>TapUntapEffect
 Venat, Heart of Hydaelyn
 Vendetta
-Vendilion Clique
+Vendilion Clique	polarity: Pipeline(hand→library)
 Venerable Knight
 Venerable Kumo
 Venerable Lammasu
@@ -18277,7 +18277,7 @@ Wanderbrine Trapper
 Wanderer's Intervention
 Wanderer's Strike
 Wanderer's Twig
-Wanderguard Sentry	intent: LookAtTargetHandEffect; polarity: LookAtTargetHandEffect
+Wanderguard Sentry	intent: LookAtTargetHandEffect
 Wandering Archaic	intent: PayOrSufferEffect
 Wandering Mind
 Wandering Musicians
@@ -18855,7 +18855,7 @@ Woodwraith Strangler
 Woolly Loxodon
 Woolly Thoctar
 Word of Binding
-Word of Command	intent: ControlPlayerDuringResolutionEffect; intent: LookAtTargetHandEffect; intent: Pipeline(hand→?); intent: WithManaSpendingObligationsEffect; polarity: ControlPlayerDuringResolutionEffect; polarity: LookAtTargetHandEffect; polarity: Pipeline(hand→?); polarity: WithManaSpendingObligationsEffect
+Word of Command	intent: ControlPlayerDuringResolutionEffect; intent: LookAtTargetHandEffect; intent: Pipeline(hand→?); intent: WithManaSpendingObligationsEffect
 Words of War	intent: ReplaceNextDrawWithEffect; polarity: ReplaceNextDrawWithEffect
 Words of Waste	intent: ReplaceNextDrawWithEffect
 Words of Wilding	intent: ReplaceNextDrawWithEffect
@@ -18916,7 +18916,7 @@ Wu Elite Cavalry
 Wu Infantry
 Wu Light Cavalry
 Wu Longbowman
-Wu Scout	intent: LookAtTargetHandEffect; polarity: LookAtTargetHandEffect
+Wu Scout	intent: LookAtTargetHandEffect
 Wu Spy	polarity: Pipeline(TopOfLibrary→graveyard)
 Wu Warship
 Wumpus Aberration	intent: ForEach>Pipeline(hand→battlefield); polarity: ForEachEffect
