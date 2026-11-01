@@ -12,8 +12,8 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.DamageUnpreventableThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.engine.state.components.identity.PlayerComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.Effect
 
@@ -105,7 +105,7 @@ object OptionalDamageRedirect {
      *
      * A filter shield protects a *class* and is read off projected state from its controller's side,
      * so a creature that arrived after the shield was created is covered, an animated land counts
-     * while it is one, a player never is, and neither is the shield's own recipient — "all damage
+     * while it is one, a player only when the shield lists it, and never the shield's own recipient — "all damage
      * that would be dealt to creatures you control is dealt to that creature instead" leaves the
      * damage already headed for that creature where it is. Any other shield protects the entities
      * it was created with (an empty list meaning "anything").
@@ -122,33 +122,41 @@ object OptionalDamageRedirect {
         targetId: EntityId,
         predicateEvaluator: PredicateEvaluator
     ): Boolean {
+        val projected = state.projectedState
+        fun validRecipient(id: EntityId): Boolean = id in state.turnOrder ||
+            (id in state.getBattlefield() && (projected.isCreature(id) || projected.isPlaneswalker(id) || projected.isBattle(id)))
         if (mod.chosenSource != null) {
             // Damage already headed for the shield's own recipient has nowhere else to go. Without
             // this an every-recipient shield (Reverberation) would redirect its redirected damage again.
             if (targetId == mod.redirectToId) return false
             if (mod.protectedRef != null && !state.isCurrentObject(mod.protectedRef)) return false
-            val projected = state.projectedState
-            fun validRecipient(id: EntityId): Boolean = id in state.turnOrder ||
-                (id in state.getBattlefield() && (projected.isCreature(id) || projected.isPlaneswalker(id) || projected.isBattle(id)))
-            if (!validRecipient(targetId) || !validRecipient(mod.redirectToId)) return false
+            if (!validRecipient(targetId)) return false
         }
         // The recipient as an object: one that left and came back is a new object (CR 400.7).
         if (mod.redirectToRef != null && !state.isCurrentObject(mod.redirectToRef)) return false
-        val recipient = state.getEntity(mod.redirectToId) ?: return false
-        if (!recipient.has<PlayerComponent>() && mod.redirectToId !in state.getBattlefield()) return false
+        if (state.getEntity(mod.redirectToId) == null) return false
+        // CR 614.9: damage isn't redirected to a permanent that has left the battlefield or is no
+        // longer a battle, creature or planeswalker — Gideon's Sacrifice's "(if it's still a creature
+        // or planeswalker)", and every other redirection shield's unprinted equivalent.
+        if (!validRecipient(mod.redirectToId)) return false
         val filter = mod.protectedFilter
         return if (filter != null) {
-            targetId != mod.redirectToId && targetId in state.getBattlefield() && predicateEvaluator.matches(
-                state, state.projectedState, targetId, filter,
-                PredicateContext(controllerId = floating.controllerId, sourceId = floating.sourceId)
-            )
+            // The listed targets and the filtered class together: Gideon's Sacrifice's "you and
+            // permanents you control" lists the player and filters the permanents.
+            targetId != mod.redirectToId && (targetId in floating.effect.affectedEntities ||
+                targetId in state.getBattlefield() && predicateEvaluator.matches(
+                    state, projected, targetId, filter,
+                    PredicateContext(controllerId = floating.controllerId, sourceId = floating.sourceId)
+                ))
         } else {
             floating.effect.affectedEntities.isEmpty() || targetId in floating.effect.affectedEntities
         }
     }
 
     /**
-     * Check the damage a caller is about to deal against the optional shields in play.
+     * Check the damage a caller is about to deal against the optional shields in play, and against
+     * mandatory shields that could chain it to more than one recipient (the affected player then
+     * picks which, CR 616.1e).
      *
      * Answers left over from an earlier damage event are pruned here — a "yes" recorded for damage
      * that a shield counter ended up eating must not be reused for the next event that happens to
@@ -163,9 +171,20 @@ object OptionalDamageRedirect {
             .flatMap { instance ->
                 optionalShieldsFor(state, instance.targetId, predicateEvaluator).map { shield -> shield to instance }
             }
+        // Instances whose mandatory shields can chain to more than one final recipient (two Gideon's
+        // Sacrifices that chose different permanents): the affected player picks the order (CR 616.1e).
+        val routeChoices = instances
+            .filter { it.amount > 0 }
+            // A recipient whose damage can't be redirected away (Whippoorwill) has no route to pick.
+            .filter { state.getEntity(it.targetId)?.has<DamageUnpreventableThisTurnComponent>() != true }
+            .mapNotNull { instance ->
+                val routes = routesFor(state, instance, predicateEvaluator)
+                if (routes.size < 2) null else instance to routes
+            }
         val pruned = prune(
             state,
-            pairs.map { (shield, instance) -> choiceKey(shield.id, instance.sourceId, instance.targetId) }.toSet()
+            pairs.map { (shield, instance) -> choiceKey(shield.id, instance.sourceId, instance.targetId) }.toSet() +
+                routeChoices.flatMap { (instance, routes) -> routeKeys(instance, routes) }
         )
 
         // The first pair still to be answered. A shield already answered "yes" settles its whole
@@ -180,7 +199,7 @@ object OptionalDamageRedirect {
         val unanswered = pairs.firstOrNull { (shield, instance) ->
             instance !in settledInstances &&
                 choiceKey(shield.id, instance.sourceId, instance.targetId) !in pruned.optionalDamageRedirectChoices
-        } ?: return Check.Ready(pruned)
+        } ?: return chooseRoutes(pruned, routeChoices)
 
         val (shield, instance) = unanswered
         val key = choiceKey(shield.id, instance.sourceId, instance.targetId)
@@ -210,6 +229,109 @@ object OptionalDamageRedirect {
             noText = "Let it through"
         ) }
         return Check.Ask(pruned, question, key)
+    }
+
+    /**
+     * One way a damage instance can end up after its mandatory redirection shields have applied:
+     * the permanent or player finally dealt the damage, and each (shield, recipient-at-that-point)
+     * hop that got it there.
+     */
+    private data class Route(val recipient: EntityId, val hops: List<Pair<EntityId, EntityId>>)
+
+    /**
+     * Every distinct final recipient [instance] can reach through the mandatory, non-source-keyed
+     * redirection shields in play — one route per recipient, the first in timestamp order kept.
+     * After the chosen shield applies, the others that now apply to the modified event are
+     * considered again (CR 616.1f), each at most once (CR 614.5), so this branches over every
+     * covering shield at every hop. Shields are few, so the search stays tiny.
+     */
+    private fun routesFor(state: GameState, instance: Instance, predicateEvaluator: PredicateEvaluator): List<Route> {
+        fun walk(targetId: EntityId, applied: Set<EntityId>): List<Route> {
+            val covering = state.floatingEffects.filter { floating ->
+                val mod = floating.effect.modification
+                mod is SerializableModification.RedirectNextDamage && !mod.optional && mod.chosenSource == null &&
+                    floating.id !in applied && redirectShieldCovers(state, floating, mod, targetId, predicateEvaluator)
+            }
+            if (covering.isEmpty()) return listOf(Route(targetId, emptyList()))
+            return covering.flatMap { shield ->
+                val to = (shield.effect.modification as SerializableModification.RedirectNextDamage).redirectToId
+                walk(to, applied + shield.id).map { it.copy(hops = listOf(shield.id to targetId) + it.hops) }
+            }
+        }
+        if (state.floatingEffects.none { it.effect.modification is SerializableModification.RedirectNextDamage }) return emptyList()
+        // An optional ("you may") or source-keyed shield on the same damage answers through its own
+        // path; a route chosen here would override it, so such an instance keeps timestamp order.
+        val otherKindCovers = state.floatingEffects.any { floating ->
+            val mod = floating.effect.modification
+            mod is SerializableModification.RedirectNextDamage && (mod.optional || mod.chosenSource != null) &&
+                redirectShieldCovers(state, floating, mod, instance.targetId, predicateEvaluator)
+        }
+        if (otherKindCovers) return emptyList()
+        return walk(instance.targetId, emptySet()).distinctBy { it.recipient }
+    }
+
+    private fun routeKey(instance: Instance, recipient: EntityId): String =
+        "route|${instance.sourceId ?: "none"}|${instance.targetId}|$recipient"
+
+    /** The answers and hop marks a route choice files under — live for as long as the instance is. */
+    private fun routeKeys(instance: Instance, routes: List<Route>): List<String> =
+        routes.dropLast(1).map { routeKey(instance, it.recipient) } +
+            routes.flatMap { route -> route.hops.map { (shield, at) -> choiceKey(shield, instance.sourceId, at) } }
+
+    /**
+     * Settle each multi-route instance: ask the affected player about the routes one at a time ("deal
+     * it to A?" — the last one needs no question), then mark the chosen route's hops so
+     * [DamageUtils.checkDamageRedirection] applies exactly those shields, in that order.
+     */
+    private fun chooseRoutes(state: GameState, routeChoices: List<Pair<Instance, List<Route>>>): Check {
+        val working = state
+        val spent = mutableSetOf<String>()
+        val hops = mutableListOf<Pair<String, Boolean>>()
+        for ((instance, routes) in routeChoices) {
+            val answers = working.optionalDamageRedirectChoices
+            var chosen: Route? = null
+            for ((index, route) in routes.withIndex()) {
+                if (index == routes.lastIndex) { chosen = route; break }
+                when (answers[routeKey(instance, route.recipient)]) {
+                    true -> { chosen = route; break }
+                    false -> continue
+                    null -> return Check.Ask(working, routeQuestion(working, instance, routes.drop(index)), routeKey(instance, route.recipient))
+                }
+            }
+            val route = chosen ?: continue
+            // The answers are spent once the route is settled: a later event with the same source,
+            // recipient and shields (a double striker's second hit) asks again. The chosen route's
+            // hops carry the decision into the damage pipeline, which consumes them as it applies.
+            // Stripped only once every instance is settled — an Ask for a later instance must keep
+            // this one's answer.
+            spent += routeKeys(instance, routes)
+            hops += route.hops.map { (shield, at) -> choiceKey(shield, instance.sourceId, at) to true }
+        }
+        return Check.Ready(working.copy(optionalDamageRedirectChoices = working.optionalDamageRedirectChoices - spent + hops))
+    }
+
+    /** "Which permanent is dealt it?" as a yes/no over the first of [remaining], buttons named by recipient. */
+    private fun routeQuestion(state: GameState, instance: Instance, remaining: List<Route>): (String) -> YesNoDecision {
+        val decider = if (instance.targetId in state.turnOrder) instance.targetId
+            else state.projectedState.getController(instance.targetId) ?: instance.targetId
+        fun nameOf(id: EntityId): String =
+            if (id == decider) "you" else state.getEntity(id)?.get<CardComponent>()?.name ?: "that permanent"
+        val sourceName = instance.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name } ?: "A source"
+        val shieldSource = state.floatingEffects.firstOrNull { it.id == remaining.first().hops.firstOrNull()?.first }
+        val first = nameOf(remaining.first().recipient)
+        return { decisionId -> YesNoDecision(
+            id = decisionId,
+            playerId = decider,
+            prompt = "$sourceName would deal ${instance.amount} damage to ${nameOf(instance.targetId)} — " +
+                "which one is dealt it instead?",
+            context = DecisionContext(
+                sourceId = shieldSource?.sourceId,
+                sourceName = shieldSource?.sourceName ?: "Damage redirection",
+                phase = DecisionPhase.RESOLUTION
+            ),
+            yesText = first.replaceFirstChar { it.uppercase() },
+            noText = if (remaining.size == 2) nameOf(remaining[1].recipient).replaceFirstChar { it.uppercase() } else "Somewhere else"
+        ) }
     }
 
     /**

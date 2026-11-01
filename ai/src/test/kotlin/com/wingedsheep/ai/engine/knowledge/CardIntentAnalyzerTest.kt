@@ -256,6 +256,20 @@ class CardIntentAnalyzerTest : ScenarioTestBase() {
             }
         }
 
+        test("a delayed trigger reads as the effect it fires, minus the price of taking back its own") {
+            withClue("Cockatrice: the creature it blocked is destroyed at end of combat — removal, only later") {
+                intentOf("Cockatrice").tags shouldContain IntentTag.REMOVAL
+            }
+            withClue("Mishra's Bauble: the draw at the next upkeep is card draw") {
+                intentOf("Mishra's Bauble").tags shouldContain IntentTag.DRAW
+            }
+            for (name in listOf("Through the Breach", "Animate Dead", "Coalstoke Gearhulk", "Long River Lurker")) {
+                withClue("$name: sacrificing, exiling or blinking the creature it put in is its price, not removal") {
+                    intentOf(name).tags shouldNotContain IntentTag.REMOVAL
+                }
+            }
+        }
+
         test("the catalog is off by default and answers nothing") {
             IntentCatalog.NONE.isEnabled shouldBe false
             IntentCatalog.NONE.forName("Icy Manipulator") shouldBe null

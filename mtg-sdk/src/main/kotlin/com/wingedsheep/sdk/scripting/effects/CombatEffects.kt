@@ -923,12 +923,13 @@ data object SwapBlockingAssignmentsEffect : Effect {
  * @property redirectTo The target that will receive the redirected damage (chosen at activation)
  * @property amount If set, only redirect up to this many damage (e.g., "the next 1 damage"). Null = redirect all.
  * @property scope When the shield is used up (only meaningful when [amount] is null). See [RedirectScope].
- * @property protectedFilter Protect every permanent matching this filter instead of a fixed
- *   [protectedTargets] list — Blood of the Martyr's "any creature" ([GameObjectFilter.Creature]),
+ * @property protectedFilter Protect every permanent matching this filter, in addition to any
+ *   [protectedTargets] — Blood of the Martyr's "any creature" ([GameObjectFilter.Creature]),
  *   Ascent of the Worthy's "creatures you control" (`Creature.youControl()`, "you" being the
- *   shield's controller). Matched against projected state at damage time, so permanents that
- *   arrive later are covered, a player never is, and damage already headed for [redirectTo]
- *   stays there. Null = protect [protectedTargets].
+ *   shield's controller), Gideon's Sacrifice's "you and permanents you control" (`Controller`
+ *   listed, `Permanent.youControl()` filtered). Matched against projected state at damage time,
+ *   so permanents that arrive later are covered, a player only when listed, and damage already
+ *   headed for [redirectTo] stays there. Null = protect [protectedTargets] alone.
  * @property duration How long the shield lasts — "this turn" ([Duration.EndOfTurn], the default)
  *   or "until your next turn" ([Duration.UntilYourNextTurn], Ascent of the Worthy).
  * @property fromSource Redirect only damage dealt by this one object — "all damage that would be
@@ -964,7 +965,8 @@ data class RedirectNextDamageEffect(
         append(if (scope == RedirectScope.CONTINUOUS) "All " else "The next ")
         if (amount != null) append("$amount ")
         val recipients = when {
-            protectedFilter != null -> protectedFilter.pluralPermanentDescription
+            protectedFilter != null -> (protectedTargets.map { it.description } +
+                protectedFilter.pluralPermanentDescription).joinToString(" and ")
             protectedTargets.isEmpty() -> null
             else -> protectedTargets.joinToString(" and/or ") { it.description }
         }
