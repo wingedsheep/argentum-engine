@@ -56,7 +56,7 @@ Abstruse Appropriation	intent: GrantMayPlayFromExileEffect; intent: Pipeline(Cho
 Abu Ja'far	intent: Pipeline(LastKnownCombatPairedWithSource→graveyard)
 Abuelo's Awakening
 Abuelo, Ancestral Echo
-Abuna Acolyte	timing: PreventDamageEffect
+Abuna Acolyte
 Abundance
 Abundant Growth
 Abundant Maw
@@ -302,7 +302,7 @@ Akroma, Angel of Wrath
 Akron Legionnaire
 Akul the Unrepentant	intent: Pipeline(hand→battlefield)
 Al Bhed Salvagers
-Al-abara's Carpet	timing: PreventDamageEffect
+Al-abara's Carpet
 Alabaster Dragon
 Alabaster Host Intercessor	intent: Pipeline(FromLinkedExile→battlefield)
 Alabaster Host Sanctifier
@@ -310,7 +310,7 @@ Alabaster Kirin
 Alabaster Leech
 Alabaster Mage	intent: GrantKeywordEffect
 Alabaster Potion
-Alabaster Wall	timing: PreventDamageEffect
+Alabaster Wall
 Alaborn Cavalier
 Alaborn Grenadier
 Alaborn Musketeer
@@ -424,7 +424,7 @@ Ampryn Tactician
 Amrou Kithkin
 Amrou Scout
 Amugaba
-Amulet of Kroog	timing: PreventDamageEffect
+Amulet of Kroog
 Amulet of Vigor	intent: TapUntapEffect
 An Offer You Can't Refuse
 An Unexpected Party
@@ -534,7 +534,7 @@ Angrath's Rampage	polarity: ForceSacrificeEffect
 Angry Mob
 Angry Rabble
 Anguished Unmaking
-Angus Mackenzie	timing: PreventDamageEffect
+Angus Mackenzie
 Anim Pakal, Thousandth Moon
 Animal Friend	polarity: Aura>GrantTriggeredAbility
 Animal Magnetism	intent: Pipeline(TopOfLibrary→battlefield|graveyard)
@@ -731,7 +731,7 @@ Argent Dais
 Argentum Masticore
 Argivian Archaeologist
 Argivian Avenger	intent: ChooseActionEffect; intent: ModifyStatsEffect
-Argivian Blacksmith	timing: PreventDamageEffect
+Argivian Blacksmith
 Argivian Cavalier
 Argivian Phalanx
 Argoth, Sanctum of Nature
@@ -1007,7 +1007,7 @@ Aven Heartstabber
 Aven Interrupter	intent: ExileTargetSpellEffect
 Aven Liberator	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
 Aven Mindcensor
-Aven Redeemer	timing: PreventDamageEffect
+Aven Redeemer
 Aven Riftwatcher
 Aven Sentry
 Aven Smokeweaver
@@ -1282,7 +1282,7 @@ Battle-Scarred Goblin
 Battle-Scarred Survivalist
 Battlefield Butcher
 Battlefield Forge
-Battlefield Medic	timing: PreventDamageEffect
+Battlefield Medic
 Battlefield Percher
 Battlefield Promotion	timing: GrantKeywordEffect
 Battlefield Raptor
@@ -1387,7 +1387,7 @@ Benalish Sleeper
 Benalish Trapper
 Bend or Break
 Bender's Waterskin
-Benevolent Ancestor	timing: PreventDamageEffect
+Benevolent Ancestor
 Benevolent Hydra
 Benevolent River Spirit
 Benthic Behemoth
@@ -2374,7 +2374,7 @@ Cardassia Prime
 Careening Mine Cart
 Careful Cultivation
 Careful Study
-Caregiver	timing: PreventDamageEffect
+Caregiver
 Careless Celebrant
 Caretaker's Talent
 Cargo Ship
@@ -2772,13 +2772,13 @@ Circle of Confinement	intent: Pipeline(FromLinkedExile→battlefield)
 Circle of Dreams Druid
 Circle of Flame
 Circle of Power
-Circle of Protection: Artifacts	timing: PreventDamageEffect
-Circle of Protection: Black	timing: PreventDamageEffect
-Circle of Protection: Blue	timing: PreventDamageEffect
-Circle of Protection: Green	timing: PreventDamageEffect
-Circle of Protection: Red	timing: PreventDamageEffect
-Circle of Protection: White	timing: PreventDamageEffect
-Circle of Solace	timing: PreventDamageEffect
+Circle of Protection: Artifacts
+Circle of Protection: Black
+Circle of Protection: Blue
+Circle of Protection: Green
+Circle of Protection: Red
+Circle of Protection: White
+Circle of Solace
 Circle of the Moon Druid
 Circu, Dimir Lobotomist	intent: Pipeline(TopOfLibrary→exile); polarity: Pipeline(TopOfLibrary→exile)
 Circuit Mender
@@ -2846,7 +2846,7 @@ Cleaving Reaper
 Cleaving Skyrider
 Cleaving Sliver
 Clement, the Worrywort	polarity: MoveToZoneEffect
-Clergy en-Vec	timing: PreventDamageEffect
+Clergy en-Vec
 Clergy of the Holy Nimbus	intent: CantBeRegeneratedEffect
 Cleric Class
 Cleric of Chill Depths	intent: GrantKeywordEffect
@@ -3005,7 +3005,7 @@ Colossus of Sardia
 Colossus of the Blood Age
 Combat Celebrant	intent: AddCombatPhaseEffect; intent: ForEach>TapUntapEffect
 Combat Courier
-Combat Medic	timing: PreventDamageEffect
+Combat Medic
 Combat Professor
 Combat Research
 Combat Thresher
@@ -3097,7 +3097,7 @@ Connecting the Dots	intent: Pipeline(FromLinkedExile→hand); intent: Pipeline(T
 Conscripted Infantry
 Consecrate Land
 Consecrated Sphinx
-Conservator	timing: PreventDamageEffect
+Conservator
 Consider
 Consign to Memory
 Consign to the Pit
@@ -3521,7 +3521,7 @@ Cyclops of One-Eyed Pass
 Cylian Elf
 Cynical Loner
 D'Avenant Archer
-D'Avenant Healer	timing: PreventDamageEffect
+D'Avenant Healer
 D'Avenant Trapper
 D'Vana Tendi, Optimistic Ensign	intent: SurveilEffect; intent: TapUntapEffect
 DOT-7 Repair Squad	intent: TapUntapEffect
@@ -3609,7 +3609,7 @@ Dark Petition
 Dark Remedy
 Dark Revenant
 Dark Ritual
-Dark Sphere	timing: PreventDamageEffect
+Dark Sphere
 Dark Supplicant	intent: Pipeline(FromMultipleZones→battlefield)
 Dark Withering
 Dark-Dweller Oracle	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
@@ -3641,7 +3641,7 @@ Darkwater Egg
 Darling of the Masses
 Daru Cavalier
 Daru Encampment
-Daru Healer	timing: PreventDamageEffect
+Daru Healer
 Daru Lancer
 Daru Mender
 Daru Sanctifier
@@ -3686,7 +3686,7 @@ Dawnhart Wardens
 Dawning Angel
 Dawning Purist
 Dawnsire, Sunstar Dreadnought
-Dawnstrider	timing: PreventDamageEffect
+Dawnstrider
 Dawnstrike Paladin
 Dawnstrike Vanguard
 Dawnwing Marshal
@@ -3792,7 +3792,7 @@ Declare Dominance
 Decode Transmissions
 Deconstruct
 Deconstruction Hammer
-Decorated Griffin	timing: PreventDamageEffect
+Decorated Griffin
 Decorum Dissertation	polarity: mixed(DrawCardsEffect+LoseLifeEffect)
 Decoy Ploy
 Decree of Annihilation
@@ -4706,7 +4706,7 @@ Eidolon of Inspiration
 Eidolon of Obstruction
 Eidolon of Philosophy
 Eidolon of Rhetoric
-Eiganjo Castle	timing: PreventDamageEffect
+Eiganjo Castle
 Eiganjo Exemplar
 Eiganjo Uprising
 Eiganjo, Seat of the Empire
@@ -5072,7 +5072,7 @@ Esika's Chariot	polarity: CreateTokenCopyOfTargetEffect
 Esika, God of the Tree	intent: GatherUntilMatchEffect; intent: Pipeline(?→battlefield|library)
 Esior, Wardwing Familiar
 Esoteric Duplicator	intent: CreateDelayedTriggerEffect
-Esper Battlemage	timing: PreventDamageEffect
+Esper Battlemage
 Esper Charm	polarity: Pipeline(hand→graveyard)
 Esper Cormorants
 Esper Origins
@@ -5514,7 +5514,7 @@ Fellwar Stone
 Felonious Rage
 Felothar, Dawn of the Abzan
 Femeref Archers
-Femeref Healer	timing: PreventDamageEffect
+Femeref Healer
 Femeref Knight	intent: GrantKeywordEffect
 Femeref Scouts
 Fencing Ace
@@ -6775,7 +6775,7 @@ Godless Shrine
 Godo, Bandit Warlord	intent: AddCombatPhaseEffect; intent: ForEach>TapUntapEffect
 Gods Willing	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
 Gods' Hall Guardian
-Godtoucher	timing: PreventDamageEffect
+Godtoucher
 Gogo, Master of Mimicry	intent: CopyTargetSpellOrAbilityEffect; polarity: CopyTargetSpellOrAbilityEffect
 Goham Djinn
 Gohn, Town of Ruin
@@ -6970,7 +6970,7 @@ Greater Basilisk
 Greater Forgeling	intent: ModifyStatsEffect
 Greater Good
 Greater Mossdog
-Greater Realm of Preservation	timing: PreventDamageEffect
+Greater Realm of Preservation
 Greater Sandwurm
 Greater Tanuki
 Greed
@@ -7835,7 +7835,7 @@ Hypnotic Cloud	intent: Pipeline(hand→graveyard); polarity: Pipeline(hand→gra
 Hypnotic Grifter
 Hypnotic Specter	intent: Pipeline(hand→graveyard)
 Hypnotic Sprite
-Hypochondria	timing: PreventDamageEffect
+Hypochondria
 Hyrax Tower Scout	intent: TapUntapEffect
 Hysterical Blindness	intent: ForEach>ModifyStatsEffect
 Hystrodon
@@ -8448,7 +8448,7 @@ Jetmir, Nexus of Revels
 Jewel Thief
 Jewel-Eyed Cobra
 Jeweled Bird
-Jhessian Balmgiver	intent: GrantKeywordEffect; timing: PreventDamageEffect
+Jhessian Balmgiver	intent: GrantKeywordEffect
 Jhessian Infiltrator
 Jhessian Lookout
 Jhessian Thief
@@ -8721,7 +8721,7 @@ Keeper of the Quiet Hour
 Keepers of the Faith
 Kefka, Court Mage
 Kefka, Dancing Mad	intent: CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: ForEach>Pipeline(graveyard→?); intent: Pipeline(?→exile)
-Kei Takahashi	timing: PreventDamageEffect
+Kei Takahashi
 Keiga, the Tide Star
 Keldon Flamesage	intent: ConditionalOnCollectionEffect; intent: Pipeline(TopOfLibrary→exile|library); intent: StoreNumberEffect
 Keldon Halberdier
@@ -8858,7 +8858,7 @@ Kithkin Billyrider
 Kithkin Daggerdare
 Kithkin Greatheart
 Kithkin Harbinger
-Kithkin Healer	timing: PreventDamageEffect
+Kithkin Healer
 Kithkin Mourncaller
 Kithkin Rabble
 Kithkin Shielddare
@@ -8867,7 +8867,7 @@ Kitsa, Otterball Elite	intent: CopyTargetSpellEffect; polarity: CopyTargetSpellE
 Kitsune Ace	intent: ModalEffect
 Kitsune Blademaster
 Kitsune Diviner
-Kitsune Healer	timing: PreventDamageEffect
+Kitsune Healer
 Kitsune Mystic	intent: FlipEffect
 Kitsune Riftwalker
 Kitsune's Technique	polarity: Pipeline(TopOfLibrary→graveyard)
@@ -8905,7 +8905,7 @@ Knight of the Skyward Eye
 Knight of the Stampede
 Knight of the Tusk
 Knight's Pledge
-Knight-Captain of Eos	timing: PreventDamageEffect
+Knight-Captain of Eos
 Knight-Errant of Eos
 Knightfisher
 Knighthood
@@ -9563,7 +9563,7 @@ Lovestruck Beast
 Lowland Giant
 Lowland Oaf
 Lowland Tracker	intent: ProvokeEffect; polarity: ProvokeEffect
-Loxodon Anchorite	timing: PreventDamageEffect
+Loxodon Anchorite
 Loxodon Battle Priest
 Loxodon Convert
 Loxodon Eavesdropper
@@ -9963,7 +9963,7 @@ Massacre Wurm
 Massive Might
 Massive Raid
 Master Decoy
-Master Healer	timing: PreventDamageEffect
+Master Healer
 Master Pakku	polarity: Pipeline(TopOfLibrary→graveyard)
 Master Piandao
 Master Skald
@@ -10220,7 +10220,7 @@ Mikey & Leo, Chaos & Order
 Mila, Crafty Companion	intent: ConditionalOnCollectionEffect; intent: CreateGlobalTriggeredAbilityEffect; intent: ForEach>AddCountersEffect; intent: Pipeline(ChosenTargets→battlefield); polarity: ConditionalOnCollectionEffect; polarity: Pipeline(ChosenTargets→battlefield)
 Mild-Mannered Librarian
 Miles Morales	combat: GrantEvasionKeywordEffect; intent: ForEach>DoubleCountersEffect; intent: TransformEffect; timing: ChangeColorEffect
-Militant Monk	timing: PreventDamageEffect
+Militant Monk
 Military Discipline	intent: GrantKeywordEffect
 Military Intelligence
 Militia Bugler
@@ -11158,7 +11158,7 @@ Oakhame Ranger
 Oakhollow Village	intent: AddCountersToCollectionEffect; intent: Pipeline(battlefield→?)
 Oakshade Stalker
 Oashra Cultivator
-Oasis	timing: PreventDamageEffect
+Oasis
 Oasis Gardener
 Oath of Kaya
 Oath of Teferi
@@ -11397,7 +11397,7 @@ Order of the Sacred Bell
 Order of the White Shield	intent: GrantKeywordEffect
 Ordered Migration
 Ordinary Bear
-Ordruun Commando	timing: PreventDamageEffect
+Ordruun Commando
 Ore Gorger
 Ore-Scale Guardian
 Oread of Mountain's Blaze
@@ -11415,7 +11415,7 @@ Origin of the Avengers
 Orim's Chant	intent: CantAttackGroupEffect; intent: CantCastSpellsEffect; polarity: CantCastSpellsEffect; timing: CantAttackGroupEffect; timing: CantCastSpellsEffect
 Orim's Prayer
 Orim's Touch	timing: PreventDamageEffect
-Orim, Samite Healer	timing: PreventDamageEffect
+Orim, Samite Healer
 Orion
 Oriq Loremage
 Ornamental Courage
@@ -11577,7 +11577,7 @@ Paleoloth
 Palinchron	intent: Pipeline(BattlefieldMatching→?); intent: TapUntapCollectionEffect
 Palladia-Mors	intent: PayOrSufferEffect
 Palladium Myr
-Panacea	timing: PreventDamageEffect
+Panacea
 Pang Tong, "Young Phoenix"
 Panharmonicon
 Panicked Altisaur
@@ -11665,7 +11665,7 @@ Peach Garden Oath
 Pearl Dragon
 Pearl Lake Ancient
 Pearl Medallion
-Pearl Shard	timing: PreventDamageEffect
+Pearl Shard
 Pearl of Wisdom
 Pearl-Ear, Imperial Advisor
 Pearled Unicorn
@@ -12239,7 +12239,7 @@ Protect the Negotiators
 Protective Bubble
 Protective Parents	intent: CreateAuraTokenEffect
 Protective Response
-Protective Sphere	timing: PreventDamageEffect
+Protective Sphere
 Protector of Gondor
 Protege's Awakening
 Proteus Machine	intent: BecomeCreatureTypeEffect
@@ -12527,7 +12527,7 @@ Raise the Alarm
 Raise the Draugr
 Raise the Past	intent: Pipeline(graveyard→battlefield)
 Raiyuu, Storm's Edge	intent: AddCombatPhaseEffect; intent: TapUntapEffect
-Rakalite	timing: PreventDamageEffect
+Rakalite
 Rakdos Carnarium	intent: Pipeline(BattlefieldMatching→hand)
 Rakdos Charm	polarity: Pipeline(graveyard→exile)
 Rakdos Guildgate
@@ -12636,7 +12636,7 @@ Rapier Wit
 Raptor Companion
 Raptor Hatchling
 Rapturous Moment
-Rasputin Dreamweaver	timing: PreventDamageEffect
+Rasputin Dreamweaver
 Rat Colony
 Rat King, Verminister	polarity: ReturnSameNamedFromGraveyardEffect
 Rat Out
@@ -12854,7 +12854,7 @@ Rehearsed Debater
 Reidane, God of the Worthy	intent: WardCounterEffect
 Reigning Victor
 Reincarnation	intent: CreateDelayedTriggerEffect; polarity: CreateDelayedTriggerEffect
-Reinforced Bulwark	timing: PreventDamageEffect
+Reinforced Bulwark
 Reinforced Ronin
 Reiterating Bolt
 Reito Lantern	polarity: MoveToZoneEffect
@@ -13041,7 +13041,7 @@ Revenge of the Rats
 Reverberating Summons	intent: BecomeCreatureEffect
 Reverberation	intent: RedirectNextDamageEffect; polarity: RedirectNextDamageEffect; timing: RedirectNextDamageEffect
 Revered Dead
-Revered Elder	timing: PreventDamageEffect
+Revered Elder
 Reverent Hoplite
 Reverent Howl	polarity: mixed(DrawCardsEffect+LoseLifeEffect)
 Reverent Silence	intent: Pipeline(BattlefieldMatching→graveyard)
@@ -13263,7 +13263,7 @@ Roc of Kher Ridges
 Rocco, Cabaretti Caterer
 Rocco, Street Chef	intent: ForEach>GrantMayPlayFromExileEffect; intent: ForEach>Pipeline(TopOfLibrary→exile)
 Rock Badger
-Rock Hydra	timing: PreventDamageEffect
+Rock Hydra
 Rock Jockey	intent: PreventLandPlaysThisTurnEffect
 Rock Soldiers
 Rockalanche	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
@@ -13599,8 +13599,8 @@ Sam's Desperate Rescue
 Sami's Curiosity
 Sami, Ship's Engineer
 Sami, Wildcat Captain
-Samite Archer	timing: PreventDamageEffect
-Samite Healer	timing: PreventDamageEffect
+Samite Archer
+Samite Healer
 Samite Herbalist
 Samite Ministration	timing: PreventDamageEffect
 Sample Collector
@@ -13622,7 +13622,7 @@ Sanctuary Lockdown
 Sanctuary Smasher	intent: AddCountersEffect
 Sanctuary Wall
 Sanctuary Warden
-Sanctum Custodian	timing: PreventDamageEffect
+Sanctum Custodian
 Sanctum Gargoyle
 Sanctum Lurker
 Sanctum Seeker
@@ -13767,7 +13767,7 @@ Scar
 Scarblade Scout
 Scarblade's Malice	intent: CreateDelayedTriggerEffect; intent: GrantKeywordEffect; timing: GrantKeywordEffect
 Scarecrone
-Scarecrow	timing: PreventDamageEffect
+Scarecrow
 Scarecrow Guide
 Scarland Thrinax
 Scarlet Spider, Ben Reilly
@@ -14324,7 +14324,7 @@ Shield Broker	polarity: mixed(AddCountersEffect+GainControlEffect)
 Shield Wall
 Shield of Duty and Reason
 Shield of Kaldra
-Shield of the Ages	timing: PreventDamageEffect
+Shield of the Ages
 Shield of the Realm	polarity: AttachEquipmentEffect
 Shield-Wall Sentinel
 Shieldmage Elder	timing: PreventDamageEffect
@@ -15256,8 +15256,8 @@ Spontaneous Flight
 Spontaneous Mutation
 Spore Cloud	timing: PreventDamageEffect
 Spore Crawler
-Spore Flower	timing: PreventDamageEffect
-Spore Frog	timing: PreventDamageEffect
+Spore Flower
+Spore Frog
 Spore Swarm
 Sporeback Wolf
 Sporecap Spider
@@ -15303,7 +15303,7 @@ Square Up	intent: SetBaseStatsEffect; polarity: SetBaseStatsEffect; timing: SetB
 Squash
 Squawkroaster
 Squeaking Pie Sneak
-Squee's Toy	timing: PreventDamageEffect
+Squee's Toy
 Squee, Dubious Monarch
 Squee, Goblin Nabob
 Squee, the Immortal
@@ -17168,7 +17168,7 @@ Tree Monkey
 Tree of Perdition	intent: ExchangeLifeAndStatEffect; polarity: ExchangeLifeAndStatEffect
 Tree of Tales
 Treefolk Harbinger
-Treefolk Healer	timing: PreventDamageEffect
+Treefolk Healer
 Treeguard Duo
 Treeshaker Chimera
 Treespring Lorian
@@ -17245,7 +17245,7 @@ Trophy Hunter
 Trophy Mage
 Tropical Island
 Trostani, Three Whispers	intent: GrantKeywordEffect
-Troubled Healer	timing: PreventDamageEffect
+Troubled Healer
 Troublemaker Ouphe
 Troublesome Spirit
 Troubling Tribbles
@@ -18473,7 +18473,7 @@ Well Rested
 Well of Lost Dreams	intent: ChooseNumberThenEffect
 Well-Laid Plans
 Well-Worn Spatula
-Wellgabber Apothecary	timing: PreventDamageEffect
+Wellgabber Apothecary
 Wellspring	polarity: Aura>GainControlEffect; polarity: Aura>TapUntapEffect
 Wellwisher
 Werefox Bodyguard	intent: Pipeline(FromLinkedExile→battlefield)
@@ -18766,7 +18766,7 @@ Wizened Snitches
 Woe Strider
 Woebearer
 Woebringer Demon
-Wojek Apothecary	timing: ForEach>PreventDamageEffect; timing: PreventDamageEffect
+Wojek Apothecary
 Wojek Embermage
 Wojek Investigator
 Wojek Siren

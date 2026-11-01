@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- Holds "prevent the next damage this turn" abilities (Samite Healer, Abuna Acolyte, Benevolent Ancestor, Circle of Protection activations) until damage can still come — an attack, a fight its creature is in, or a spell on the stack — instead of tapping them in its own main phase for a shield nothing will hit.
 - Reads a variable "-X/-X" on another creature (Death Wind, Defile, Flunk, Bloodtithe Harvester, Olivia's Wrath) as removal: it keeps such a card over a filler creature when it must discard, holds it for a response or the opponent's end step like other instant removal, and values it as removal in drafts, deckbuilding and playouts
 - #4185 Reads "look at the top cards and put one into your hand" (Impulse, Sleight of Hand, Fact or Fiction, Ancient Stirrings, Duskwatch Recruiter) as card draw: it cashes such instants and abilities at the opponent's end step, holds them in its own main phase while a counterspell or trick wants the mana, and values them as card draw in drafts and playouts
 - #4184 Reads "copy a card and cast the copy" (God-Eternal Kefnet, Isochron Scepter, Spellweaver Helix, Arcane Bombardment) as card advantage instead of an effect it can't place.
