@@ -952,6 +952,24 @@ sealed interface StatePredicate {
     }
 
     /**
+     * This card is currently in a graveyard *and* was put there during the current combat phase
+     * (CR 506.1: beginning of combat through end of combat step), from any zone — Storrev,
+     * Devkarin Lich's "target creature or planeswalker card in your graveyard that wasn't put
+     * there this combat" (negated with [Not]). A card that arrived during an earlier combat
+     * phase of the same turn doesn't count.
+     *
+     * The combat-scoped sibling of [PutIntoGraveyardThisTurn]: same
+     * `PutIntoGraveyardThisTurnComponent` and lifecycle, additionally requiring its
+     * `duringCombat` flag, which is set when the arrival happens in the combat phase and
+     * cleared when that combat phase ends.
+     */
+    @SerialName("PutIntoGraveyardThisCombat")
+    @Serializable
+    data object PutIntoGraveyardThisCombat : History {
+        override val description: String = "put into a graveyard this combat"
+    }
+
+    /**
      * This card is currently in a hand *and* got there by being drawn (CR 121.1) this turn —
      * Sylvan Library's "choose two cards in your hand drawn this turn". A card put into a hand any
      * other way (a bounce, a tutor, a replaced draw) doesn't count, and neither does a drawn card

@@ -8170,6 +8170,14 @@ work for abilities-on-stack (which carry no `CardComponent`).
   in a graveyard that was milled this turn"). Surveil or an unworded "put the top card into your
   graveyard" doesn't count. Same `PutIntoGraveyardThisTurnComponent` and lifecycle as the two
   predicates below, flagged `milled` by `ZoneTransitionService.trackMill` after a mill's move.
+- `PutIntoGraveyardThisCombat` (filter builders `putIntoGraveyardThisCombat()` /
+  `notPutIntoGraveyardThisCombat()`) — card currently in a graveyard that was put there, from any
+  zone, during the combat phase in progress (CR 506.1). Storrev, Devkarin Lich's "target creature or
+  planeswalker card in your graveyard that wasn't put there this combat" is
+  `GameObjectFilter.CreatureOrPlaneswalker.ownedByYou().notPutIntoGraveyardThisCombat()`. Same
+  `PutIntoGraveyardThisTurnComponent` stamp, whose `duringCombat` flag is set on an arrival in the
+  combat phase and cleared when that combat phase ends — so a card that died in an earlier combat
+  phase of the same turn is no longer "put there this combat".
 - `PutIntoGraveyardThisTurn` (filter builder `putIntoGraveyardThisTurn()`) and
   `PutIntoGraveyardFromBattlefieldThisTurn` (filter builder
   `putIntoGraveyardFromBattlefieldThisTurn()`) — card currently in a graveyard that was put

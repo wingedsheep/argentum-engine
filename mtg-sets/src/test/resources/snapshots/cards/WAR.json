@@ -7932,6 +7932,95 @@
     ]
 }
 
+// Storrev, Devkarin Lich
+{
+    "name": "Storrev, Devkarin Lich",
+    "manaCost": "{1}{B}{B}{G}",
+    "typeLine": "Legendary Creature — Zombie Elf Wizard",
+    "oracleText": "Trample\nWhenever Storrev deals combat damage to a player or planeswalker, return to your hand target creature or planeswalker card in your graveyard that wasn't put there this combat.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Storrev, Devkarin Lich:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientAnyOf",
+                        "options": [
+                            {
+                                "type": "RecipientPlayer",
+                                "player": "Any"
+                            },
+                            {
+                                "type": "RecipientObject",
+                                "filter": "planeswalker"
+                            }
+                        ]
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "Or",
+                                    "predicates": [
+                                        "IsCreature",
+                                        "IsPlaneswalker"
+                                    ]
+                                }
+                            ],
+                            "statePredicates": [
+                                {
+                                    "type": "StateNot",
+                                    "predicate": "PutIntoGraveyardThisCombat"
+                                }
+                            ],
+                            "controllerPredicate": "OwnedByYou"
+                        },
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "219",
+        "rarity": "RARE",
+        "artist": "Igor Kieryluk",
+        "flavorText": "In times of war, only death flourishes.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/59c906bd-f443-4f4b-b40b-9218e71f1196.jpg?1783933386",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "If Storrev dies due to combat damage dealt at the same time that it deals combat damage to a player or planeswalker, its ability still triggers."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Storrev's triggered ability can't target any card that was put into your graveyard during this combat phase. This includes creatures and planeswalkers that died from combat damage, creatures and planeswalkers that died for any other reason, and cards that were put there from any other zone."
+            }
+        ]
+    }
+}
+
 // Sunblade Angel
 {
     "name": "Sunblade Angel",

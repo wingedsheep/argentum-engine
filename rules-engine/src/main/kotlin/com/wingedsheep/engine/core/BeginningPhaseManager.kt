@@ -555,6 +555,7 @@ class BeginningPhaseManager(
         StatePredicate.SharesNameWithSpellCastThisTurn -> false
         StatePredicate.PutIntoGraveyardThisTurn -> false
         StatePredicate.MilledThisTurn -> false
+        StatePredicate.PutIntoGraveyardThisCombat -> false
         // Hand-only predicate; untap candidates are battlefield permanents.
         StatePredicate.DrawnThisTurn -> false
         StatePredicate.PutIntoGraveyardFromBattlefieldThisTurn -> false

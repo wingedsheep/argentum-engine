@@ -737,6 +737,7 @@ internal class AffectsFilterResolver(
         // projection answer is unconditionally false here.
         StatePredicate.PutIntoGraveyardThisTurn -> false
         StatePredicate.MilledThisTurn -> false
+        StatePredicate.PutIntoGraveyardThisCombat -> false
         // Hand-only predicate; never true of a battlefield permanent.
         StatePredicate.DrawnThisTurn -> false
         StatePredicate.PutIntoGraveyardFromBattlefieldThisTurn -> false

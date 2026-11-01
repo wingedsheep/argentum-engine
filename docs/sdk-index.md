@@ -1803,6 +1803,7 @@ Families:
 - `StatePredicate.NotTargetedByAbilityFromSameNamedSource` — The candidate object (a spell or permanent) is **not** currently the target of an ability on the stack whose source is *another* permanent sharing the effect source's name.
 - `StatePredicate.Or(predicates: List<StatePredicate>)`
 - `StatePredicate.PutIntoGraveyardFromBattlefieldThisTurn` — This card is currently in a graveyard *and* was put there from the battlefield during the current turn.
+- `StatePredicate.PutIntoGraveyardThisCombat` — This card is currently in a graveyard *and* was put there during the current combat phase (CR 506.1: beginning of combat through end of combat step), from any zone — Storrev, Devkarin Lich's "targe…
 - `StatePredicate.PutIntoGraveyardThisTurn` — This card is currently in a graveyard *and* was put there during the current turn, from any zone — the battlefield, but equally the library (mill), the hand (discard), or the stack (a countered or…
 - `StatePredicate.ReceivedCounterThisTurn(counterType: CounterType?, placedByController: Boolean)` — One or more counters were put on this permanent during the current turn — the filter-level form of "…that you've put one or more +1/+1 counters on this turn".
 - `StatePredicate.SharesNameWithSpellCastThisTurn` — Shares a name with a spell cast by any player during the current turn.

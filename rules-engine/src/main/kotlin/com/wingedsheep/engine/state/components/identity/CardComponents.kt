@@ -295,6 +295,8 @@ data class DrawnThisTurnComponent(val generation: Long) : Component
  * rather than two markers that can drift apart:
  *  - `StatePredicate.PutIntoGraveyardThisTurn` — marker present, [fromBattlefield] ignored
  *    (FDN — Abyssal Harvester's "creature card from a graveyard that was put there this turn").
+ *  - `StatePredicate.PutIntoGraveyardThisCombat` — marker present *and* [duringCombat]
+ *    (WAR — Storrev, Devkarin Lich's "wasn't put there this combat", negated).
  *  - `StatePredicate.MilledThisTurn` — marker present *and* [milled] (PIP — Raul, Trouble
  *    Shooter; Tato Farmer).
  *  - `StatePredicate.PutIntoGraveyardFromBattlefieldThisTurn` — marker present *and*
@@ -312,5 +314,11 @@ data class PutIntoGraveyardThisTurnComponent(
      * True when this arrival was a mill (CR 701.17) — set after the move by
      * `ZoneTransitionService.trackMill`. Backs `StatePredicate.MilledThisTurn`.
      */
-    val milled: Boolean = false
+    val milled: Boolean = false,
+    /**
+     * True when the arrival happened during the combat phase that is still in progress (CR 506.1)
+     * — set by `ZoneTransitionService.recordGraveyardArrival`, cleared by `CombatManager.endCombat`
+     * when that combat phase ends. Backs `StatePredicate.PutIntoGraveyardThisCombat`.
+     */
+    val duringCombat: Boolean = false
 ) : Component

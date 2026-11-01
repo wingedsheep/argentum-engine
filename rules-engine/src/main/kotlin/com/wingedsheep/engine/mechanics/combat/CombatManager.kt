@@ -4,7 +4,9 @@ import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.identity.PutIntoGraveyardThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.*
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.model.EntityId
@@ -176,6 +178,15 @@ class CombatManager(
     }
 
     /**
+     * A card put into a graveyard during this combat phase stops being "put there this combat"
+     * once the phase ends (Storrev, Devkarin Lich); it stays "put there this turn".
+     */
+    private fun ComponentContainer.endingCombatGraveyardArrival(): ComponentContainer {
+        val stamp = get<PutIntoGraveyardThisTurnComponent>() ?: return this
+        return if (stamp.duringCombat) with(stamp.copy(duringCombat = false)) else this
+    }
+
+    /**
      * [combatPhaseRan] is false when the turn skipped every step of this combat phase (Fatespinner):
      * nothing is in combat, but no combat phase happened either, so "its controller's next combat
      * phase" is still to come.
@@ -199,6 +210,7 @@ class CombatManager(
                     .without<com.wingedsheep.engine.state.components.player.BlockerCountLimitThisCombatComponent>()
                     .without<AttackedThisCombatComponent>()
                     .without<BlockedThisCombatComponent>()
+                    .endingCombatGraveyardArrival()
             }
         )
 

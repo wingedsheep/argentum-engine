@@ -69,6 +69,7 @@ import com.wingedsheep.engine.state.components.player.SacrificedArtifactThisTurn
 import com.wingedsheep.engine.state.components.player.SacrificedFoodThisTurnComponent
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.sdk.core.Zone
@@ -2098,7 +2099,8 @@ class ZoneTransitionService(
          *
          *  - the per-card [PutIntoGraveyardThisTurnComponent] stamp, recording whether the arrival
          *    came from the battlefield (Abyssal Harvester; Samwise / Lobelia, battlefield only).
-         *    Overwrites any previous stamp so the most recent origin wins.
+         *    Overwrites any previous stamp so the most recent origin wins. Its `duringCombat` flag
+         *    marks an arrival in the combat phase in progress (Storrev, Devkarin Lich).
          *  - descend (CR 700.11): permanent cards, [PlayerDescendedThisTurnComponent].
          *  - creature cards, [CreatureCardsPutIntoGraveyardThisTurnComponent] (Macabre Reconstruction).
          *  - every card, by id, [CardsPutIntoGraveyardThisTurnComponent] (Crawling Sensation's
@@ -2119,7 +2121,12 @@ class ZoneTransitionService(
         ): GameState {
             if (fromZone == Zone.GRAVEYARD) return state
             var newState = state.updateEntity(entityId) { c ->
-                c.with(PutIntoGraveyardThisTurnComponent(fromBattlefield = fromZone == Zone.BATTLEFIELD))
+                c.with(
+                    PutIntoGraveyardThisTurnComponent(
+                        fromBattlefield = fromZone == Zone.BATTLEFIELD,
+                        duringCombat = state.phase == Phase.COMBAT
+                    )
+                )
             }
             if (isToken) return newState
             fun bump(update: (ComponentContainer) -> ComponentContainer) {

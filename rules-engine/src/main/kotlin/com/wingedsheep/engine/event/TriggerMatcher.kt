@@ -3136,6 +3136,7 @@ class TriggerMatcher(
         // Graveyard-zone-only predicates; trigger gating never sees a stamped entity here.
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.PutIntoGraveyardThisTurn -> false
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.MilledThisTurn -> false
+        is com.wingedsheep.sdk.scripting.predicates.StatePredicate.PutIntoGraveyardThisCombat -> false
         // Hand-zone-only predicate; trigger gating reads battlefield entities.
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.DrawnThisTurn -> false
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.PutIntoGraveyardFromBattlefieldThisTurn -> false

@@ -2405,6 +2405,12 @@ class PredicateEvaluator(
                 container.get<PutIntoGraveyardThisTurnComponent>()?.milled == true
             }
 
+            // The combat-restricted sibling: the arrival happened during the current combat
+            // phase (Storrev, Devkarin Lich — WAR). CombatManager.endCombat clears the flag.
+            StatePredicate.PutIntoGraveyardThisCombat -> {
+                container.get<PutIntoGraveyardThisTurnComponent>()?.duringCombat == true
+            }
+
             // "Cards in your hand drawn this turn" (Sylvan Library). The stamp names the hand
             // object the draw produced; any later zone change mints a new generation (CR 400.7).
             StatePredicate.DrawnThisTurn -> {

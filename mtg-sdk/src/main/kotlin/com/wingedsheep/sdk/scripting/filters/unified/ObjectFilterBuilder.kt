@@ -1018,6 +1018,19 @@ interface ObjectFilterBuilder<out Self> {
     fun milledThisTurn() = withStatePredicate(StatePredicate.MilledThisTurn)
 
     /**
+     * Must currently be in a graveyard *and* have been put there during the current combat phase.
+     * See [StatePredicate.PutIntoGraveyardThisCombat].
+     */
+    fun putIntoGraveyardThisCombat() = withStatePredicate(StatePredicate.PutIntoGraveyardThisCombat)
+
+    /**
+     * Must *not* have been put into a graveyard during the current combat phase — Storrev,
+     * Devkarin Lich's "card in your graveyard that wasn't put there this combat".
+     */
+    fun notPutIntoGraveyardThisCombat() =
+        withStatePredicate(StatePredicate.Not(StatePredicate.PutIntoGraveyardThisCombat))
+
+    /**
      * Must currently be in a hand *and* have been drawn this turn (Sylvan Library). See
      * [StatePredicate.DrawnThisTurn].
      */
