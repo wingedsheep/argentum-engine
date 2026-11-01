@@ -1616,6 +1616,180 @@
     ]
 }
 
+// Domri, Chaos Bringer
+{
+    "name": "Domri, Chaos Bringer",
+    "manaCost": "{2}{R}{G}",
+    "typeLine": "Legendary Planeswalker — Domri",
+    "oracleText": "+1: Add {R} or {G}. If that mana is spent on a creature spell, it gains riot. (It enters with your choice of a +1/+1 counter or haste.)\n−3: Look at the top four cards of your library. You may reveal up to two creature cards from among them and put them into your hand. Put the rest on the bottom of your library in a random order.\n−8: You get an emblem with \"At the beginning of each end step, create a 4/4 red and green Beast creature token with trample.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Domri, Chaos Bringer:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "colorSet": {
+                        "type": "ManaColorSet.Specific",
+                        "colors": [
+                            "RED",
+                            "GREEN"
+                        ]
+                    },
+                    "riders": [
+                        {
+                            "type": "GrantsKeywordWhenSpent",
+                            "keyword": "RIOT",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ]
+                            },
+                            "duration": "Permanent"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Domri, Chaos Bringer:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "filter": "creature",
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "You may reveal up to two creature cards to put into your hand.",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Domri, Chaos Bringer:4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -8
+                },
+                "effect": {
+                    "type": "CreateGlobalTriggeredAbility",
+                    "ability": {
+                        "id": "Domri, Chaos Bringer:3",
+                        "trigger": {
+                            "type": "StepEvent",
+                            "step": "END",
+                            "player": "Each"
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "CreateToken",
+                            "power": 4,
+                            "toughness": 4,
+                            "colors": [
+                                "RED",
+                                "GREEN"
+                            ],
+                            "creatureTypes": [
+                                "Beast"
+                            ],
+                            "keywords": [
+                                "TRAMPLE"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/8/7/87ec9ade-1e06-43c9-97df-55465cabdf32.jpg?1783933602"
+                        }
+                    },
+                    "descriptionOverride": "At the beginning of each end step, create a 4/4 red and green Beast creature token with trample."
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "166",
+        "rarity": "MYTHIC",
+        "artist": "Zack Stella",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/f/1f56bbf3-3884-495a-b9cd-6585d86f76f1.jpg?1783933653",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "Because it's a loyalty ability, Domri's first ability isn't a mana ability. It can be activated only any time you could cast a sorcery. It uses the stack and can be responded to."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "Riot is a replacement effect. Players can't respond to your choice of +1/+1 counter or haste, and they can't take actions while the creature is on the battlefield without one or the other."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If a creature entering the battlefield has riot but can't have a +1/+1 counter put onto it, it gains haste."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If you choose for the creature to gain haste, it gains haste indefinitely. It won't lose it as the turn ends or as another player gains control of it."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If a creature enters the battlefield with two instances of riot, you may choose to have it get two +1/+1 counters, one +1/+1 counter and haste, or two instances of haste. Multiple instances of haste on the same creature are redundant, but we're not going to tell the Gruul how to live their lives."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Dovin's Automaton
 {
     "name": "Dovin's Automaton",
