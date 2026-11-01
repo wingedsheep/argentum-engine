@@ -4,6 +4,7 @@ import com.wingedsheep.ai.audit.AiReadingAudit.AbilityKind
 import com.wingedsheep.ai.audit.AiReadingAudit.Check
 import com.wingedsheep.mtg.sets.MtgSetCatalog
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -114,6 +115,12 @@ class AiReadingByAbilityTest : FunSpec({
         djinn.abilities.single { it.ability.kind == AbilityKind.TRIGGERED }
             .findings.single { it.check == Check.INTENT }.reason shouldContain "needs no intent"
         AiReadingAudit.audit(card("Rhystic Study")).map { it.key } shouldBe listOf("intent: PayOrSufferEffect")
+    }
+
+    test("a permanent removing counters from itself needs no intent, but removing them from a target stays flagged") {
+        AiReadingAudit.read(card("Armageddon Clock")).readFully shouldBe true
+        AiReadingAudit.read(card("Bloodletter Quill")).readFully shouldBe true
+        AiReadingAudit.audit(card("Portent Tracker")).map { it.key } shouldContain "intent: RemoveCountersEffect"
     }
 
     test("a leaves-trigger returning what its permanent exiled needs no intent, but a return into a hand stays flagged") {

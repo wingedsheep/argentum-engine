@@ -350,7 +350,7 @@ Alien Invasion
 Alien Symbiosis
 Alirios, Enraptured
 Alisaie Leveilleur	polarity: ForEachEffect
-All Hallow's Eve	intent: MarkSpellExileWithCountersEffect; intent: Pipeline(graveyard→battlefield); intent: RemoveCountersEffect
+All Hallow's Eve	intent: MarkSpellExileWithCountersEffect; intent: Pipeline(graveyard→battlefield)
 All That Glitters
 All Will Be One
 All-Fates Scroll
@@ -692,7 +692,7 @@ Archers' Parapet
 Archfiend of Depravity
 Archfiend of Despair
 Archfiend of Ifnir
-Archfiend of the Dross	intent: LoseGameEffect; intent: RemoveCountersEffect
+Archfiend of the Dross	intent: LoseGameEffect
 Archfiend's Vessel
 Archghoul of Thraben
 Archipelagore
@@ -759,7 +759,7 @@ Arm the Cathars
 Armada Wurm
 Armadillo Cloak
 Armageddon
-Armageddon Clock	intent: RemoveCountersEffect
+Armageddon Clock
 Armaggon, Future Shark
 Armament Corps	intent: DistributeCountersAmongTargetsEffect; polarity: DistributeCountersAmongTargetsEffect
 Armament Dragon	intent: DistributeCountersAmongTargetsEffect; polarity: DistributeCountersAmongTargetsEffect
@@ -1704,7 +1704,7 @@ Bloodghast
 Bloodhall Priest
 Bloodhaze Wolverine
 Bloodhunter Bat	polarity: DrainLifeEffect
-Bloodletter Quill	intent: RemoveCountersEffect
+Bloodletter Quill
 Bloodletter of Aclazotz
 Bloodline Bidding	intent: ChooseCreatureTypeEffect; intent: Pipeline(graveyard→battlefield)
 Bloodline Culling
@@ -1985,7 +1985,7 @@ Brass Knuckles	intent: CopyTargetSpellEffect
 Brass Man
 Brass Secretary
 Brass's Bounty
-Brass's Tunnel-Grinder	intent: DiscoverEffect; intent: RemoveCountersEffect
+Brass's Tunnel-Grinder	intent: DiscoverEffect
 Brassclaw Orcs
 Brave Brawler
 Brave the Sands
@@ -2074,7 +2074,7 @@ Bring to Trial
 Bringer of the Last Gift
 Brion Stoutarm
 Brisela, Voice of Nightmares
-Bristlebane Battler	intent: RemoveCountersEffect
+Bristlebane Battler
 Bristlebane Outrider
 Bristlebud Farmer
 Bristlepack Sentry
@@ -2892,16 +2892,16 @@ Cloak of Mists
 Cloak of the Bat
 Cloaked Cadet	intent: EmitKeywordCounterEventEffect
 Clockspinning	intent: AddCountersOfChosenKindEffect; intent: RemoveAnyNumberOfCountersEffect; polarity: AddCountersOfChosenKindEffect; polarity: RemoveAnyNumberOfCountersEffect
-Clockwork Avian	intent: ChooseNumberThenEffect; intent: RemoveCountersEffect
-Clockwork Beast	intent: ChooseNumberThenEffect; intent: RemoveCountersEffect
-Clockwork Beetle	intent: RemoveCountersEffect
-Clockwork Condor	intent: RemoveCountersEffect
-Clockwork Dragon	intent: RemoveCountersEffect
+Clockwork Avian	intent: ChooseNumberThenEffect
+Clockwork Beast	intent: ChooseNumberThenEffect
+Clockwork Beetle
+Clockwork Condor
+Clockwork Dragon
 Clockwork Drawbridge
 Clockwork Hydra
 Clockwork Percussionist	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Clockwork Servant
-Clockwork Vorrac	intent: RemoveCountersEffect
+Clockwork Vorrac
 Cloister Gargoyle	intent: VentureIntoTheDungeonEffect
 Cloistered Telepath
 Clone
@@ -3320,7 +3320,7 @@ Crawling Infestation
 Crawling Sensation
 Crazed Goblin
 Crazed Skirge
-Creakwood Safewright	intent: RemoveCountersEffect
+Creakwood Safewright
 Creative Outburst
 Creature Bond	polarity: Aura>DealDamageEffect
 Creeperhulk	combat: SetBaseStatsEffect; timing: SetBaseStatsEffect
@@ -3510,7 +3510,7 @@ Cursed Land	polarity: Aura>DealDamageEffect
 Cursed Minotaur
 Cursed Mirror
 Cursed Rack
-Cursed Recording	intent: CopyNextSpellCastEffect; intent: RemoveCountersEffect
+Cursed Recording	intent: CopyNextSpellCastEffect
 Cursed Ronin
 Cursed Totem
 Cursed Windbreaker	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard)
@@ -3600,7 +3600,7 @@ Dapper Shieldmate
 Darba
 Daredevil, Man Without Fear
 Daretti, Rocketeer Engineer	intent: MoveToZoneEffect
-Darigaaz Reincarnated	intent: RemoveCountersEffect
+Darigaaz Reincarnated
 Darigaaz's Attendant
 Darigaaz, the Igniter	intent: ChooseColorThenEffect
 Daring Apprentice
@@ -4191,7 +4191,7 @@ Divination
 Divine Arrow
 Divine Favor
 Divine Gambit
-Divine Intervention	intent: GameIsDrawEffect; intent: RemoveCountersEffect
+Divine Intervention	intent: GameIsDrawEffect
 Divine Offering
 Divine Presence
 Divine Resilience	timing: GrantKeywordEffect
@@ -4676,7 +4676,7 @@ Eater of Virtue
 Eater of the Dead	polarity: MoveToZoneEffect
 Ebon Dragon	intent: Pipeline(hand→graveyard); polarity: Pipeline(hand→graveyard)
 Ebon Drake
-Ebon Praetor	intent: RemoveCountersEffect
+Ebon Praetor
 Ebon Stronghold
 Ebonblade Reaper
 Ebondeath, Dracolich
@@ -4972,7 +4972,7 @@ Encouraging Aviator	intent: BecomePreparedEffect; timing: GrantKeywordEffect
 Encroaching Dragonstorm
 Encroaching Mycosynth
 Encroaching Wastes
-Encumbered Reejerey	intent: RemoveCountersEffect
+Encumbered Reejerey
 End Hostilities
 End of the Hunt	intent: Pipeline(BattlefieldMatching→exile); polarity: Pipeline(BattlefieldMatching→exile)
 End the Festivities
@@ -5955,7 +5955,7 @@ Forbidden Friendship
 Forbidden Orchard	polarity: CreateTokenEffect
 Forbidding Spirit	intent: GrantStaticAbilityEffect
 Force Away	polarity: MoveToZoneEffect
-Force Bubble	intent: RemoveCountersEffect
+Force Bubble
 Force Spike
 Force of Nature
 Force of Negation
@@ -7454,7 +7454,7 @@ Heightened Reflexes
 Heiko Yamazaki, the General	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→?); polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets→?)
 Heir of the Ancient Fang
 Heir of the Wilds
-Heirloom Auntie	intent: RemoveCountersEffect
+Heirloom Auntie
 Heirloom Blade	intent: GatherUntilMatchEffect; intent: Pipeline(?→hand|library)
 Heirloom Epic
 Heirloom Mirror
@@ -8530,7 +8530,7 @@ Jin-Gitaxias	intent: ExileAndReturnTransformedEffect
 Jin-Gitaxias, Core Augur
 Jin-Gitaxias, Progress Tyrant	intent: CopyTargetSpellEffect
 Jinnie Fay, Jetmir's Second
-Jinxed Choker	intent: GiveControlToTargetPlayerEffect; intent: RemoveCountersEffect; polarity: GiveControlToTargetPlayerEffect
+Jinxed Choker	intent: GiveControlToTargetPlayerEffect; polarity: GiveControlToTargetPlayerEffect
 Jinxed Idol	intent: GiveControlToTargetPlayerEffect; polarity: GiveControlToTargetPlayerEffect
 Jirina, Dauntless General	intent: Pipeline(graveyard→exile); polarity: Pipeline(graveyard→exile)
 Jodah's Codex
@@ -9795,7 +9795,7 @@ Magmatic Galleon
 Magmatic Hellkite
 Magmatic Insight
 Magmatic Sinkhole
-Magmatic Sprinter	intent: AddCountersEffect; intent: RemoveCountersEffect; polarity: AddCountersEffect
+Magmatic Sprinter	intent: AddCountersEffect; polarity: AddCountersEffect
 Magmaw
 Magnanimous Magistrate	intent: MoveToZoneEffect
 Magnetic Flux	timing: ForEach>GrantKeywordEffect
@@ -10172,7 +10172,7 @@ Merciless Javelineer	combat: CantBlockEffect; timing: CantBlockEffect
 Merciless Repurposing
 Merciless Resolve
 Mercurial Kite
-Mercurial Spelldancer	intent: CopyTargetSpellEffect; intent: RemoveCountersEffect
+Mercurial Spelldancer	intent: CopyTargetSpellEffect
 Mercurial Transformation	intent: BecomeArtifactEffect; intent: SetBaseStatsEffect
 Meren of Clan Nel Toth
 Merfolk Assassin
@@ -10202,7 +10202,7 @@ Merrow Skyswimmer
 Merrow Wavebreakers
 Merry Bards	intent: CreateAuraTokenEffect
 Merry, Esquire of Rohan
-Merseine	intent: RemoveCountersEffect; polarity: Aura>ConditionalStaticAbility; polarity: Aura>RemoveCountersEffect
+Merseine	polarity: Aura>ConditionalStaticAbility; polarity: Aura>RemoveCountersEffect
 Mesa Cavalier
 Mesa Enchantress
 Mesa Lynx
@@ -10608,7 +10608,7 @@ Moonmist
 Moonrager's Slash
 Moonring Mirror	intent: Pipeline(FromLinkedExile|hand→exile|hand); intent: Pipeline(TopOfLibrary→exile)
 Moonrise Cleric
-Moonshadow	intent: RemoveCountersEffect
+Moonshadow
 Moonshaker Cavalry
 Moonsilver Key
 Moonsnare Prototype	intent: PutOnLibraryPositionOfChoiceEffect; polarity: PutOnLibraryPositionOfChoiceEffect
@@ -11580,11 +11580,11 @@ Overgrowth
 Overgrowth Elemental
 Overkill
 Overload
-Overlord of the Balemurk	intent: Pipeline(TopOfLibrary|graveyard→graveyard|hand); intent: RemoveCountersEffect
-Overlord of the Boilerbilges	intent: RemoveCountersEffect
-Overlord of the Floodpits	intent: RemoveCountersEffect
-Overlord of the Hauntwoods	intent: RemoveCountersEffect
-Overlord of the Mistmoors	intent: RemoveCountersEffect
+Overlord of the Balemurk	intent: Pipeline(TopOfLibrary|graveyard→graveyard|hand)
+Overlord of the Boilerbilges
+Overlord of the Floodpits
+Overlord of the Hauntwoods
+Overlord of the Mistmoors
 Overprotect
 Override
 Overrun
@@ -11999,7 +11999,7 @@ Pizza Face, Gastromancer
 Placid Rottentail
 Plague Beetle
 Plague Belcher
-Plague Boiler	intent: RemoveCountersEffect
+Plague Boiler
 Plague Dogs
 Plague Nurse	intent: ForEach>GrantKeywordEffect
 Plague Rats
@@ -12048,6 +12048,7 @@ Platoon Dispenser
 Platypus-Bear
 Play with Fire
 Playful Shove
+Plaza of Harmony
 Plaza of Heroes
 Pledge of Loyalty	polarity: Aura>GrantProtectionFromControlledColors
 Pledge of Unity
@@ -12975,7 +12976,7 @@ Reliquary Monk
 Reliquary Tower
 Relive the Past	intent: Pipeline(ChosenTargets→battlefield); polarity: Pipeline(ChosenTargets→battlefield)
 Relm's Sketching	polarity: CreateTokenCopyOfTargetEffect
-Reluctant Dounguard	intent: RemoveCountersEffect
+Reluctant Dounguard
 Reluctant Role Model	intent: AddCountersEffect; intent: MoveAllLastKnownCountersEffect; polarity: MoveAllLastKnownCountersEffect
 Rem Karolus, Stalwart Slayer
 Remand
@@ -13274,7 +13275,7 @@ Rising of the Day
 Risky Move	intent: FlipCoinEffect; intent: GainControlByActivePlayerEffect; polarity: FlipCoinEffect
 Risky Research
 Risky Shortcut
-Risona, Asari Commander	intent: AddCountersEffect; intent: RemoveCountersEffect
+Risona, Asari Commander	intent: AddCountersEffect
 Rite of Belzenlok
 Rite of Flame
 Rite of Harmony
@@ -15110,7 +15111,7 @@ Soulbright Flamekin
 Soulbright Seeker
 Soulcage Fiend
 Soulcatchers' Aerie
-Soulcipher Board	intent: Pipeline(TopOfLibrary→graveyard|library); intent: RemoveCountersEffect
+Soulcipher Board	intent: Pipeline(TopOfLibrary→graveyard|library)
 Soulcoil Viper
 Souldrinker
 Soulknife Spy
@@ -15739,7 +15740,7 @@ Strip Mine
 Strix Lookout
 Strix Serenade
 Strixhaven Skycoach
-Strixhaven Stadium	intent: LoseGameEffect; intent: RemoveAllCountersOfTypeEffect; intent: RemoveCountersEffect
+Strixhaven Stadium	intent: LoseGameEffect; intent: RemoveAllCountersOfTypeEffect
 Stroke of Midnight
 Stromkirk Bloodthief
 Stromkirk Captain
@@ -16752,7 +16753,7 @@ Thieving Otter
 Thieving Skydiver
 Thieving Sprite	intent: Pipeline(hand→graveyard); polarity: Pipeline(hand→graveyard)
 Thing from the Deep
-Thing in the Ice	intent: Pipeline(BattlefieldMatching→hand); intent: RemoveCountersEffect
+Thing in the Ice	intent: Pipeline(BattlefieldMatching→hand)
 Think Tank
 Think Twice
 Thinking Cap
@@ -17148,7 +17149,7 @@ Touch of Invisibility
 Touch the Spirit Realm
 Tough Cookie	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
 Tourach's Chant
-Tourach's Gate	intent: RemoveCountersEffect; intent: SacrificeSelfEffect; polarity: Aura>AddCountersEffect; polarity: Aura>ForEachEffect; polarity: Aura>RemoveCountersEffect; polarity: Aura>SacrificeSelfEffect; timing: ForEach>ModifyStatsEffect
+Tourach's Gate	intent: SacrificeSelfEffect; polarity: Aura>AddCountersEffect; polarity: Aura>ForEachEffect; polarity: Aura>RemoveCountersEffect; polarity: Aura>SacrificeSelfEffect; timing: ForEach>ModifyStatsEffect
 Tournament Grounds
 Tovolar's Huntmaster	polarity: FightEffect
 Tovolar, Dire Overlord	intent: ForEach>TransformEffect; intent: Pipeline(ControlledPermanents→?); intent: SetDayNightEffect
