@@ -640,6 +640,45 @@
     ]
 }
 
+// Aven Eternal
+{
+    "name": "Aven Eternal",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Zombie Bird Warrior",
+    "oracleText": "Flying\nWhen this creature enters, amass Zombies 1. (Put a +1/+1 counter on an Army you control. It's also a Zombie. If you don't control an Army, create a 0/0 black Zombie Army creature token first.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aven Eternal:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Amass",
+                    "subtype": "Zombie"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "artist": "Johan Grenier",
+        "flavorText": "\"I've never seen the firemane angels so anxious.\" —Tajic",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/fe479484-a827-4d3c-8e35-e905e4f6664a.jpg?1783933467"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Awakening of Vitu-Ghazi
 {
     "name": "Awakening of Vitu-Ghazi",
@@ -1465,6 +1504,87 @@
     ]
 }
 
+// Bond of Insight
+{
+    "name": "Bond of Insight",
+    "manaCost": "{3}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each player mills four cards. Return up to two instant and/or sorcery cards from your graveyard to your hand. Exile Bond of Insight.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 4
+                        },
+                        "player": "Each",
+                        "isMill": true
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": "Each"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard",
+                        "filter": "instant|sorcery"
+                    },
+                    "storeAs": "gathered2"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered2",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "storeSelected": "selected3",
+                    "prompt": "Return up to two instant and/or sorcery cards from your graveyard to your hand",
+                    "selectedLabel": "Return to hand",
+                    "remainderLabel": "Leave in graveyard",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected3",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                }
+            ]
+        },
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "rarity": "UNCOMMON",
+        "artist": "Joe Slucher",
+        "flavorText": "\"Together we can unlock secrets no one has even dreamed of. I might even let you remember some of them.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/648629af-e911-49e1-b564-c98f339b84a1.jpg?1783933467"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Bond of Passion
 {
     "name": "Bond of Passion",
@@ -1644,6 +1764,57 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Callous Dismissal
+{
+    "name": "Callous Dismissal",
+    "manaCost": "{1}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return target nonland permanent to its owner's hand.\nAmass Zombies 1. (Put a +1/+1 counter on an Army you control. It's also a Zombie. If you don't control an Army, create a 0/0 black Zombie Army creature token first.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "Amass",
+                    "subtype": "Zombie"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "nonland permanent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "artist": "Mathias Kollros",
+        "flavorText": "\"They make it clear we are nothing to them.\"\n—Lavinia",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/66cef326-339c-49e5-9905-21a1603a46ae.jpg?1783933467",
+        "rulings": [
+            {
+                "date": "2023-06-16",
+                "text": "Some spells and abilities that amass Zombies may require targets. If each target chosen is an illegal target as that spell or ability tries to resolve, it won't resolve. You won't amass Zombies."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -2125,6 +2296,90 @@
     ]
 }
 
+// Commence the Endgame
+{
+    "name": "Commence the Endgame",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "This spell can't be countered.\nDraw two cards, then amass Zombies X, where X is the number of cards in your hand. (Put X +1/+1 counters on an Army you control. It's also a Zombie. If you don't control an Army, create a 0/0 black Zombie Army creature token first.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                {
+                    "type": "Amass",
+                    "amount": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Hand"
+                    },
+                    "subtype": "Zombie"
+                }
+            ]
+        },
+        "cantBeCountered": true
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "rarity": "RARE",
+        "artist": "Noah Bradley",
+        "flavorText": "\"Even gods shall kneel.\"\n—Nicol Bolas",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/209d70a2-c8c1-4072-ab1f-57804b55a09a.jpg?1783933467",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "A spell or ability that counters spells can still target Commence the Endgame. When that spell or ability resolves, Commence the Endgame won't be countered, but any additional effects of that spell or ability will still happen."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "You draw two cards and amass X all while Commence the Endgame is resolving. Nothing can happen between the two, and no player may choose to take actions."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Contentious Plan
+{
+    "name": "Contentious Plan",
+    "manaCost": "{1}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                "Proliferate",
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "artist": "Eric Deschamps",
+        "flavorText": "Niv-Mizzet had perfected a plan, but he had no control over the mortal minds who had to agree to implement it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/e/8e30deb6-9e1f-4545-ae30-c30ba6c7b3a0.jpg?1783933466"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Courage in Crisis
 {
     "name": "Courage in Crisis",
@@ -2225,6 +2480,65 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLACK"
+    ]
+}
+
+// Crush Dissent
+{
+    "name": "Crush Dissent",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell unless its controller pays {2}.\nAmass Zombies 2. (Put two +1/+1 counters on an Army you control. It's also a Zombie. If you don't control an Army, create a 0/0 black Zombie Army creature token first.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Counter",
+                    "condition": {
+                        "type": "CounterCondition.UnlessPaysMana",
+                        "cost": "{2}"
+                    }
+                },
+                {
+                    "type": "Amass",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "subtype": "Zombie"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "artist": "Mike Bierek",
+        "flavorText": "\"All I ask is complete obedience.\"\n—Nicol Bolas",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/4/94c70f23-0ca9-425e-a53a-6c09921c0075.jpg?1783933466",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "You amass 2 even if the controller of the spell pays {2}."
+            },
+            {
+                "date": "2023-06-16",
+                "text": "Some spells and abilities that amass Zombies may require targets. If each target chosen is an illegal target as that spell or ability tries to resolve, it won't resolve. You won't amass Zombies."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4941,6 +5255,51 @@
     }
 }
 
+// Guildpact Informant
+{
+    "name": "Guildpact Informant",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Faerie Rogue",
+    "oracleText": "Flying\nWhenever this creature deals combat damage to a player or planeswalker, proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Guildpact Informant:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientAnyOf",
+                        "options": [
+                            {
+                                "type": "RecipientPlayer",
+                                "player": "Any"
+                            },
+                            {
+                                "type": "RecipientObject",
+                                "filter": "planeswalker"
+                            }
+                        ]
+                    }
+                },
+                "effect": "Proliferate"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "271",
+        "artist": "Randy Gallegos",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a304200f-86d5-4eed-a775-cc24e72872ac.jpg?1783933359"
+    }
+}
+
 // Heartfire
 {
     "name": "Heartfire",
@@ -5552,6 +5911,46 @@
         "artist": "Darek Zabrocki",
         "flavorText": "\"Pardon me if I seem distracted. Part of me is reconnoitering the Tenth District.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/c/4/c4d35a34-01b7-41e1-8491-a6589175d027.jpg?1783933359"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Jace's Triumph
+{
+    "name": "Jace's Triumph",
+    "manaCost": "{2}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Draw two cards. If you control a Jace planeswalker, draw three cards instead.",
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "Conditional",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "planeswalker Jace"
+                },
+                "ifTrue": {
+                    "type": "Fixed",
+                    "amount": 3
+                },
+                "ifFalse": {
+                    "type": "Fixed",
+                    "amount": 2
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "rarity": "UNCOMMON",
+        "artist": "Kieran Yanner",
+        "flavorText": "His triumph was not in outsmarting Bolas's plan, but in understanding why ultimate power is self-defeating.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/4924f177-5ee2-4d3f-9603-4b9aef4dac09.jpg?1783933463"
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -6226,6 +6625,53 @@
     },
     "startingLoyalty": 5,
     "colorIdentityOverride": []
+}
+
+// Kasmina's Transmutation
+{
+    "name": "Kasmina's Transmutation",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature loses all abilities and has base power and toughness 1/1.",
+    "script": {
+        "staticAbilities": [
+            "LoseAllAbilities",
+            {
+                "type": "SetBasePowerToughnessStatic",
+                "power": 1,
+                "toughness": 1
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "artist": "Uriah Voth",
+        "flavorText": "\"Hop away now, little Eternal. Go eat some flies.\"\n—Kasmina",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a9771412-695a-4e89-b146-0e3a7336d319.jpg?1783933460",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "Kasmina's Transmutation overwrites all previous effects that set the creature's base power and toughness to specific values. Any power- or toughness-setting effects that start to apply after Kasmina's Transmutation becomes attached to a creature will overwrite this effect."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Effects that modify a creature's power and/or toughness, such as the effect of Bleeding Edge, will apply to the creature no matter when they started to take effect. The same is true for any counters that change its power and/or toughness."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If the affected creature gains an ability after Kasmina's Transmutation becomes attached to it, it will keep that ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Kasmina, Enigmatic Mentor
@@ -7093,6 +7539,118 @@
     "startingLoyalty": 6,
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Living Twister
+{
+    "name": "Living Twister",
+    "manaCost": "{R}{R}{G}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "{1}{R}, Discard a land card: This creature deals 2 damage to any target.\n{G}: Return a tapped land you control to its owner's hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 5
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Living Twister:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{R}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomDiscard",
+                                "filter": "land"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ]
+            },
+            {
+                "id": "Living Twister:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "land tapped",
+                                "player": "You"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Return a tapped land you control to its owner's hand",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "203",
+        "rarity": "RARE",
+        "artist": "James Paick",
+        "flavorText": "\"The ancient places of Ravnica awaken, stirred by the hoofbeats of Ilharg!\"\n—Nikya of the Old Ways",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/8/c8d92676-a994-4031-834c-6cf7c43bd170.jpg?1783933395"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
     ]
 }
 
@@ -9402,6 +9960,131 @@
     ]
 }
 
+// Relentless Advance
+{
+    "name": "Relentless Advance",
+    "manaCost": "{3}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Amass Zombies 3. (Put three +1/+1 counters on an Army you control. It's also a Zombie. If you don't control an Army, create a 0/0 black Zombie Army creature token first.)",
+    "script": {
+        "spellEffect": {
+            "type": "Amass",
+            "amount": {
+                "type": "Fixed",
+                "amount": 3
+            },
+            "subtype": "Zombie"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "artist": "Stanton Feng",
+        "flavorText": "They approach in formation, every movement efficient and sure. They halt, listen, and then press on in silent unison.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/4258e242-91c6-4b30-86ec-7759705aa97c.jpg?1783933458",
+        "rulings": [
+            {
+                "date": "2023-06-16",
+                "text": "In the rare case that you control multiple Army creatures (perhaps because you played a creature with changeling) while you amass Zombies, you choose which of your Army creatures to put the +1/+1 counters on. If that creature isn't a Zombie, it becomes a Zombie in addition to its other types."
+            },
+            {
+                "date": "2023-06-16",
+                "text": "If you don't control an Army, the Zombie Army token you create enters the battlefield as a 0/0 creature before receiving counters. Any abilities that trigger when a creature with a certain power enters the battlefield, such as that of Mentor of the Meek, will see the token enter as a 0/0 creature before it gets +1/+1 counters."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Rescuer Sphinx
+{
+    "name": "Rescuer Sphinx",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Creature — Sphinx",
+    "oracleText": "Flying\nAs this creature enters, you may return a nonland permanent you control to its owner's hand. If you do, this creature enters with a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CREATURE_ON_BATTLEFIELD",
+                "permanentFilter": {
+                    "cardPredicates": [
+                        "IsNonland",
+                        "IsPermanent"
+                    ],
+                    "controllerPredicate": "ControlledByYou"
+                },
+                "mayChooseNothing": true,
+                "then": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "Entity",
+                                "entity": "ChosenCreature"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "storeMovedAs": "moved1"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "moved1",
+                            "ifNotEmpty": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": "Self"
+                            }
+                        }
+                    ],
+                    "descriptionOverride": "Return it to its owner's hand. If you do, this creature enters with a +1/+1 counter on it"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "rarity": "UNCOMMON",
+        "artist": "Jesper Ejsing",
+        "flavorText": "\"Now, little fighter, show me you deserved this second chance.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/00ba9fa2-bfd2-4dc7-b96d-d22a8886a6ae.jpg?1783933459",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "You choose whether to return a nonland permanent and which one to return for Rescuer Sphinx's ability while it's entering the battlefield. No player may take actions between the time you choose which permanent to return and the time Rescuer Sphinx is on the battlefield with a +1/+1 counter."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If the returned permanent had an ability that would otherwise have triggered when Rescuer Sphinx enters the battlefield (such as that of Kronch Wrangler), that ability won't trigger."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If Rescuer Sphinx somehow enters the battlefield at the same time as another permanent, you can't return that permanent. You may choose only permanents that are already on the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Return to Nature
 {
     "name": "Return to Nature",
@@ -9639,6 +10322,89 @@
     ]
 }
 
+// Samut, Tyrant Smasher
+{
+    "name": "Samut, Tyrant Smasher",
+    "manaCost": "{2}{R/G}{R/G}",
+    "typeLine": "Legendary Planeswalker — Samut",
+    "oracleText": "Creatures you control have haste.\n−1: Target creature gets +2/+1 and gains haste until end of turn. Scry 1.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Samut, Tyrant Smasher:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "HASTE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Scry",
+                            "count": 1
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Target creature gets +2/+1 and gains haste until end of turn. Scry 1."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "235",
+        "rarity": "UNCOMMON",
+        "artist": "Aleksi Briclot",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e0457e3f-56c1-401b-8e08-f04b95c55e2d.jpg?1783933374"
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Sarkhan the Masterless
 {
     "name": "Sarkhan the Masterless",
@@ -9848,6 +10614,68 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Silent Submersible
+{
+    "name": "Silent Submersible",
+    "manaCost": "{U}{U}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Whenever this Vehicle deals combat damage to a player or planeswalker, draw a card.\nCrew 2 (Tap any number of creatures you control with total power 2 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 2
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Silent Submersible:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientAnyOf",
+                        "options": [
+                            {
+                                "type": "RecipientPlayer",
+                                "player": "Any"
+                            },
+                            {
+                                "type": "RecipientObject",
+                                "filter": "planeswalker"
+                            }
+                        ]
+                    }
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "rarity": "RARE",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/e/ae2f3dee-1768-4562-9333-a50b9ee7570f.jpg?1783933458"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -10825,6 +11653,91 @@
     "startingLoyalty": 5,
     "colorIdentityOverride": [
         "GREEN",
+        "BLUE"
+    ]
+}
+
+// Teferi's Time Twist
+{
+    "name": "Teferi's Time Twist",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Exile target permanent you control. Return that card to the battlefield under its owner's control at the beginning of the next end step. If it enters as a creature, it enters with an additional +1/+1 counter on it.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                {
+                    "type": "CreateDelayedTrigger",
+                    "step": "END",
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Battlefield",
+                        "entryCounters": [
+                            {
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "onlyIf": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "permanent ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "artist": "Ralph Horsley",
+        "flavorText": "\"The safest place for you is not now.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/8/c878bdc0-d697-4a2f-bba5-758b27f4247a.jpg?1783933453",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "If a token is exiled this way, it will cease to exist and won't return to the battlefield."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Auras attached to the exiled permanent will be put into their owners' graveyards. Equipment attached to the exiled permanent will become unattached and remain on the battlefield. Any counters on the exiled permanent will cease to exist. Once the exiled permanent returns, it's considered a new object with no relation to the object that it was."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "The permanent returns untapped unless another effect causes it to enter the battlefield tapped."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "To determine whether the entering permanent is entering as a creature, consider any effects that will modify that permanent's characteristics once it's on the battlefield, including that permanent's own abilities that affect only itself and effects from other objects."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "A creature returned to the battlefield this way enters the battlefield with one +1/+1 counter if it would otherwise enter with no +1/+1 counters."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
         "BLUE"
     ]
 }
