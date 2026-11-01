@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CardsInZonesCantBeTargeted
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.UntargetableBy
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.targets.TargetOther
@@ -30,8 +31,10 @@ import com.wingedsheep.sdk.scripting.targets.TargetRequirement
  * candidate is then a set lookup. Not controller-gated: it binds the permanent's own controller.
  *
  * It also reads [CardsInZonesCantBeTargeted] ("Cards in graveyards can't be the targets of spells
- * or abilities") — the off-battlefield counterpart, read off the holder's projected statics
- * ([zoneLocks]) because a card in a graveyard has no projection entry to carry a keyword.
+ * or abilities"; Tomik's "lands on the battlefield and land cards in graveyards … your opponents
+ * control") — read off the holder's projected statics ([zoneLocks]) because a card in a graveyard
+ * has no projection entry to carry a keyword, and because its controller scope is relative to the
+ * lock's controller rather than each permanent's.
  */
 object UntargetableByRules {
 
@@ -125,32 +128,48 @@ object UntargetableByRules {
     }
 
     /**
-     * True when one of [locks] (from [zoneLocks]) forbids targeting the card [cardId] where it
-     * is now. Players, battlefield permanents and spells are never in a locked zone.
+     * True when one of [locks] (from [zoneLocks]) forbids a spell or ability controlled by
+     * [targetingController] from targeting [objectId] where it is now — a card in a locked zone, or a
+     * permanent when a lock covers [Zone.BATTLEFIELD]. A lock scoped to "your opponents"
+     * ([CardsInZonesCantBeTargeted.sourceController] = [Player.EachOpponent]) binds only a
+     * [targetingController] who is an opponent of the lock's controller; with no known targeting
+     * controller it never binds. Players and spells are never in a locked zone.
      */
     fun isZoneLocked(
         state: GameState,
-        cardId: EntityId,
+        objectId: EntityId,
+        targetingController: EntityId?,
         locks: List<Pair<EntityId, CardsInZonesCantBeTargeted>>,
         predicateEvaluator: PredicateEvaluator
     ): Boolean {
         if (locks.isEmpty()) return false
-        val zone = state.logicalZone(cardId)?.zoneType ?: return false
+        val zone = state.logicalZone(objectId)?.zoneType ?: return false
         return locks.any { (holderId, lock) ->
             if (zone !in lock.zones) return@any false
-            if (lock.filter == GameObjectFilter.Any) return@any true
             val controller = ControllerGrants.granterController(state, holderId) ?: return@any false
+            if (lock.sourceController == Player.EachOpponent &&
+                (targetingController == null || targetingController !in state.getOpponents(controller))
+            ) return@any false
+            if (lock.filter == GameObjectFilter.Any) return@any true
             predicateEvaluator.matches(
-                state, state.projectedState, cardId, lock.filter,
+                state, state.projectedState, objectId, lock.filter,
                 PredicateContext(controllerId = controller, sourceId = holderId)
             )
         }
     }
 
-    /** Why the card [cardId] can't be targeted where it is, or null — [zoneLocks] and [isZoneLocked] in one. */
-    fun zoneLockError(state: GameState, cardId: EntityId, predicateEvaluator: PredicateEvaluator): String? {
-        if (!isZoneLocked(state, cardId, zoneLocks(state), predicateEvaluator)) return null
-        val name = state.getEntity(cardId)?.get<CardComponent>()?.name ?: "That card"
+    /**
+     * Why [objectId] can't be targeted by a spell or ability [targetingController] controls where it
+     * is, or null — [zoneLocks] and [isZoneLocked] in one.
+     */
+    fun zoneLockError(
+        state: GameState,
+        objectId: EntityId,
+        targetingController: EntityId?,
+        predicateEvaluator: PredicateEvaluator
+    ): String? {
+        if (!isZoneLocked(state, objectId, targetingController, zoneLocks(state), predicateEvaluator)) return null
+        val name = state.getEntity(objectId)?.get<CardComponent>()?.name ?: "That card"
         return "$name can't be the target of spells or abilities where it is"
     }
 

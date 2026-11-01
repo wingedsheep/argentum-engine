@@ -10871,10 +10871,16 @@ staticAbility {
   Not controller-gated (binds its own controller's spells and abilities too). Projected as one keyword per
   quality; enforced at legal-target enumeration, cast/activation validation and the resolution re-check by
   the shared engine helper `UntargetableByRules`.
-- `CardsInZonesCantBeTargeted(zones = setOf(Zone.GRAVEYARD), filter = GameObjectFilter.Any)` — "Cards in
-  graveyards can't be the targets of spells or abilities" (Ground Seal; Dennick, Pious Apprentice): cards
-  matching `filter` in `zones` can't be chosen as targets by anything — spells or abilities, its own
-  controller's included. Only *targeting* is stopped: an effect that picks a graveyard card without
+- `CardsInZonesCantBeTargeted(zones = setOf(Zone.GRAVEYARD), filter = GameObjectFilter.Any, sourceController = Player.Each)`
+  — "Cards in graveyards can't be the targets of spells or abilities" (Ground Seal; Dennick, Pious
+  Apprentice): objects matching `filter` in `zones` can't be chosen as targets by spells or abilities
+  `sourceController` controls (relative to the lock's controller). `Player.Each` (default) binds everyone,
+  its own controller included; `Player.EachOpponent` is "… spells or abilities your opponents control".
+  `Zone.BATTLEFIELD` in `zones` reaches permanents too, *whoever controls them* — Tomik, Distinguished
+  Advokist is `zones = setOf(Zone.BATTLEFIELD, Zone.GRAVEYARD), filter = GameObjectFilter.Land,
+  sourceController = Player.EachOpponent`: an opponent can't target even their own lands. That is why it
+  isn't hexproof (relative to each permanent's own controller), and hexproof-interacting effects don't
+  see it. Only *targeting* is stopped: an effect that picks a graveyard card without
   targeting it, or a cast from a graveyard (flashback, disturb), is unaffected. A graveyard card has no
   projection entry to carry a keyword, so unlike `CantBeTargetedBy` this is read off the holder's
   projected statics (`UntargetableByRules.zoneLocks`) at the same three sites — legal-target enumeration,

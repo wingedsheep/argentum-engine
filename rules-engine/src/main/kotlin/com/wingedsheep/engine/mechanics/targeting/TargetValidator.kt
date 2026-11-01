@@ -516,9 +516,14 @@ class TargetValidator(
             )?.let { return it }
         }
 
-        // CardsInZonesCantBeTargeted (Ground Seal) — a card in a locked zone.
-        if (target is ChosenTarget.Card) {
-            UntargetableByRules.zoneLockError(state, target.cardId, predicateEvaluator)?.let { return it }
+        // CardsInZonesCantBeTargeted (Ground Seal; Tomik) — an object in a locked zone.
+        val lockableId = when (target) {
+            is ChosenTarget.Card -> target.cardId
+            is ChosenTarget.Permanent -> target.entityId
+            else -> null
+        }
+        if (lockableId != null) {
+            UntargetableByRules.zoneLockError(state, lockableId, casterId, predicateEvaluator)?.let { return it }
         }
 
         // Check hexproof from a quality — color, non-color, card type (Rule 702.11d)

@@ -54,10 +54,10 @@ class TargetEnumerationUtils(
         val untargetableKeywords = UntargetableByRules.blockingKeywords(state, sourceId, targetingSourceType, requirement, spellSubtypes)
         val unblocked = if (untargetableKeywords.isEmpty()) candidates
         else candidates.filterNot { UntargetableByRules.isBlocked(state, it, untargetableKeywords) }
-        // CardsInZonesCantBeTargeted (Ground Seal) — cards off the battlefield only.
+        // CardsInZonesCantBeTargeted (Ground Seal; Tomik, Distinguished Advokist).
         val zoneLocks = UntargetableByRules.zoneLocks(state)
         return if (zoneLocks.isEmpty()) unblocked
-        else unblocked.filterNot { UntargetableByRules.isZoneLocked(state, it, zoneLocks, predicateEvaluator) }
+        else unblocked.filterNot { UntargetableByRules.isZoneLocked(state, it, playerId, zoneLocks, predicateEvaluator) }
     }
 
     private fun findCandidateTargets(

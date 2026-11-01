@@ -9261,6 +9261,66 @@
     ]
 }
 
+// Tomik, Distinguished Advokist
+{
+    "name": "Tomik, Distinguished Advokist",
+    "manaCost": "{W}{W}",
+    "typeLine": "Legendary Creature — Human Advisor",
+    "oracleText": "Flying\nLands on the battlefield and land cards in graveyards can't be the targets of spells or abilities your opponents control.\nYour opponents can't play land cards from graveyards.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CardsInZonesCantBeTargeted",
+                "zones": [
+                    "Battlefield",
+                    "Graveyard"
+                ],
+                "filter": "land",
+                "sourceController": "EachOpponent"
+            },
+            {
+                "type": "PlayersCantPlayLands",
+                "affected": "EachOpponent",
+                "landFilter": {
+                    "statePredicates": [
+                        {
+                            "type": "InZone",
+                            "zone": "Graveyard"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "rarity": "RARE",
+        "artist": "Johannes Voss",
+        "flavorText": "\"Some bend the law. I tie it into knots.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/3/f346387c-2f13-472b-b5b1-968b490eb38f.jpg?1783933473",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "Tomik's middle ability is similar to hexproof, but effects that interact with hexproof don't count these lands or land cards as having hexproof."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Players can't normally play a land card from a graveyard. If a player finds a way to do so, Tomik's last ability takes precedence over that permission."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Trusted Pegasus
 {
     "name": "Trusted Pegasus",

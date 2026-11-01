@@ -115,7 +115,7 @@ internal class ResolutionTargetValidator(
                     )
 
                     is ChosenTarget.Card -> isCardTargetLegal(
-                        state, projected, index, target, targets, targetRequirements, predicateContext
+                        state, projected, index, target, targets, targetRequirements, controllerId, predicateContext
                     )
 
                     is ChosenTarget.Spell -> {
@@ -329,6 +329,9 @@ internal class ResolutionTargetValidator(
             return false
         }
 
+        // CardsInZonesCantBeTargeted over the battlefield (Tomik) arriving after targeting (CR 608.2b).
+        if (UntargetableByRules.zoneLockError(state, target.entityId, controllerId, predicateEvaluator) != null) return false
+
         val entityController = projected.getController(target.entityId)
             ?: state.getEntity(target.entityId)?.get<ControllerComponent>()?.playerId
         return passesTargetingRestrictions(
@@ -494,11 +497,12 @@ internal class ResolutionTargetValidator(
         target: ChosenTarget.Card,
         targets: List<ChosenTarget>,
         targetRequirements: List<TargetRequirement>,
+        controllerId: EntityId,
         predicateContext: PredicateContext
     ): Boolean {
         if (target.cardId !in state.getZone(ZoneKey(target.ownerId, target.zone))) return false
         // CardsInZonesCantBeTargeted (Ground Seal) entering after the target was chosen (CR 608.2b).
-        if (UntargetableByRules.zoneLockError(state, target.cardId, predicateEvaluator) != null) return false
+        if (UntargetableByRules.zoneLockError(state, target.cardId, controllerId, predicateEvaluator) != null) return false
         val filter = extractTargetFilter(getRequirementForTargetIndex(index, targetRequirements)) ?: return true
         val cardContext = predicateContext.copy(
             ownerId = target.ownerId,

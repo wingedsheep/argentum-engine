@@ -153,7 +153,7 @@ class TargetFinder(
         }
         // CantBeTargetedBy: keyed on the source and this requirement, so computed once.
         val untargetableKeywords = UntargetableByRules.blockingKeywords(state, sourceId, targetingSourceType, requirement)
-        // CardsInZonesCantBeTargeted (Ground Seal): read only once an off-battlefield card shows up.
+        // CardsInZonesCantBeTargeted (Ground Seal; Tomik): read once, on the first non-player candidate.
         val zoneLocks by lazy(LazyThreadSafetyMode.NONE) { UntargetableByRules.zoneLocks(state) }
         return candidates.filter { id ->
             if (id in state.turnOrder) {
@@ -163,7 +163,7 @@ class TargetFinder(
             } else {
                 (sourceColors == null || !ColorProtection.isProtected(projected, id, sourceColors)) &&
                     !UntargetableByRules.isBlocked(state, id, untargetableKeywords) &&
-                    (projected.getProjectedValues(id) != null || !UntargetableByRules.isZoneLocked(state, id, zoneLocks, predicateEvaluator))
+                    !UntargetableByRules.isZoneLocked(state, id, controllerId, zoneLocks, predicateEvaluator)
             }
         }
     }

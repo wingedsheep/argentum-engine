@@ -598,30 +598,52 @@ data class CantBeTargetedBy(
 }
 
 /**
- * Cards matching [filter] in [zones] can't be the targets of spells or abilities — "Cards in
- * graveyards can't be the targets of spells or abilities" (Ground Seal; Dennick, Pious Apprentice).
+ * Objects matching [filter] in [zones] can't be the targets of spells or abilities [sourceController]
+ * controls — "Cards in graveyards can't be the targets of spells or abilities" (Ground Seal; Dennick,
+ * Pious Apprentice), "Lands on the battlefield and land cards in graveyards can't be the targets of
+ * spells or abilities your opponents control" (Tomik, Distinguished Advokist).
  *
  * Closest neighbours: [CantBeTargetedBy] is projected as a keyword onto *battlefield permanents*
  * (a [GroupFilter] scope) and scoped by a [UntargetableBy] quality, and [CantEnterTheBattlefield]
  * is the same zone-scoped, printer-owned shape for a different action (entering the battlefield).
- * A card in a graveyard has no projection entry to carry a keyword, so this lock is read off the
- * printing permanent's projected statics at each targeting site instead — which is also why it
- * stops working when that permanent loses its abilities. Not controller-gated, and covers every
- * graveyard, its controller's own included. Choosing a card without targeting it ("return a card
- * from your graveyard") is untouched.
+ * Hexproof is relative to each permanent's *own* controller, so it can't say "opponents of this
+ * lock's controller" about permanents anyone controls. A card in a graveyard has no projection entry
+ * to carry a keyword, so this lock is read off the printing permanent's projected statics at each
+ * targeting site instead — which is also why it stops working when that permanent loses its
+ * abilities. [Zone.BATTLEFIELD] in [zones] reaches permanents too, whoever controls them. Choosing a
+ * card without targeting it ("return a card from your graveyard") is untouched.
  *
- * @property zones The zones whose cards are untargetable.
- * @property filter Which cards in those zones, matched where they are.
+ * @property zones The zones whose objects are untargetable.
+ * @property filter Which objects in those zones, matched where they are.
+ * @property sourceController Whose spells and abilities can't target them, relative to the lock's
+ *   controller: [Player.Each] (anyone's, the lock's own controller included) or
+ *   [Player.EachOpponent] ("spells or abilities your opponents control").
  */
 @SerialName("CardsInZonesCantBeTargeted")
 @Serializable
 data class CardsInZonesCantBeTargeted(
     val zones: Set<Zone> = setOf(Zone.GRAVEYARD),
-    val filter: GameObjectFilter = GameObjectFilter.Any
+    val filter: GameObjectFilter = GameObjectFilter.Any,
+    val sourceController: Player = Player.Each
 ) : StaticAbility {
+    init {
+        require(sourceController == Player.Each || sourceController == Player.EachOpponent) {
+            "CardsInZonesCantBeTargeted.sourceController must be Player.Each or Player.EachOpponent, was $sourceController"
+        }
+    }
+
     override val description: String = buildString {
-        append(if (filter == GameObjectFilter.Any) "Cards" else "${filter.description.replaceFirstChar { it.uppercase() }} cards")
-        append(" in ${zonePhrase(zones, "and")} can't be the targets of spells or abilities")
+        val noun = if (filter == GameObjectFilter.Any) "card" else "${filter.description} card"
+        val offBattlefield = zones - Zone.BATTLEFIELD
+        val parts = buildList {
+            if (Zone.BATTLEFIELD in zones) {
+                add((if (filter == GameObjectFilter.Any) "permanents" else "${filter.description}s") + " on the battlefield")
+            }
+            if (offBattlefield.isNotEmpty()) add("${noun}s in ${zonePhrase(offBattlefield, "and")}")
+        }
+        append(parts.joinToString(" and ").replaceFirstChar { it.uppercase() })
+        append(" can't be the targets of spells or abilities")
+        if (sourceController == Player.EachOpponent) append(" your opponents control")
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {

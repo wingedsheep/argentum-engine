@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.LoseAllAbilities
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.references.Player
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -78,8 +79,30 @@ class CardsInZonesCantBeTargetedTest : FunSpec({
         }
     }
 
+    // Tomik, Distinguished Advokist's shape: lands anywhere on the battlefield and land cards in
+    // graveyards, scoped to spells and abilities the lock's controller's opponents control.
+    val landWard = card("Test Land Ward") {
+        manaCost = "{1}"
+        typeLine = "Enchantment"
+        staticAbility {
+            ability = CardsInZonesCantBeTargeted(
+                zones = setOf(Zone.BATTLEFIELD, Zone.GRAVEYARD),
+                filter = GameObjectFilter.Land,
+                sourceController = Player.EachOpponent
+            )
+        }
+    }
+    val stoneRain = card("Test Seal Stone Rain") {
+        manaCost = "{1}"
+        typeLine = "Sorcery"
+        spell {
+            val t = target(TargetFilter.Land)
+            effect = Effects.Destroy(t)
+        }
+    }
+
     fun driver() = GameTestDriver().also {
-        it.registerCards(TestCards.all + listOf(seal, creatureSeal, exileSeal, silencer, raise, crypt, murder))
+        it.registerCards(TestCards.all + listOf(seal, creatureSeal, exileSeal, silencer, raise, crypt, murder, landWard, stoneRain))
         it.initMirrorMatch(Deck.of("Forest" to 40), skipMulligans = true, startingPlayer = 0)
         it.passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -97,6 +120,72 @@ class CardsInZonesCantBeTargetedTest : FunSpec({
             "Cards in graveyards can't be the targets of spells or abilities"
         CardsInZonesCantBeTargeted(filter = GameObjectFilter.Creature).description shouldBe
             "Creature cards in graveyards can't be the targets of spells or abilities"
+        CardsInZonesCantBeTargeted(
+            zones = setOf(Zone.BATTLEFIELD, Zone.GRAVEYARD), filter = GameObjectFilter.Land,
+            sourceController = Player.EachOpponent
+        ).description shouldBe "Lands on the battlefield and land cards in graveyards can't be the targets of " +
+            "spells or abilities your opponents control"
+    }
+
+    test("opponent scope: an opponent's spell can't target any land on the battlefield, theirs included") {
+        val d = driver()
+        d.putPermanentOnBattlefield(d.player2, landWard.name)
+        val wardersLand = d.putLandOnBattlefield(d.player2, "Forest")
+        val ownLand = d.putLandOnBattlefield(d.player1, "Forest")
+        val spell = d.putCardInHand(d.player1, stoneRain.name)
+        d.giveColorlessMana(d.player1, 1)
+        d.legalActions(d.player1).none { (it.action as? CastSpell)?.cardId == spell } shouldBe true
+        d.castSpell(d.player1, spell, listOf(wardersLand)).error shouldNotBe null
+        d.castSpell(d.player1, spell, listOf(ownLand)).error shouldNotBe null
+    }
+
+    test("opponent scope: the lock's controller still targets lands, anyone's") {
+        val d = driver()
+        d.putPermanentOnBattlefield(d.player1, landWard.name)
+        val theirLand = d.putLandOnBattlefield(d.player2, "Forest")
+        val ownLand = d.putLandOnBattlefield(d.player1, "Forest")
+        val spell = d.putCardInHand(d.player1, stoneRain.name)
+        d.giveColorlessMana(d.player1, 1)
+        val offered = d.offeredTargets(d.player1) { it is CastSpell && it.cardId == spell }
+        offered.contains(theirLand) shouldBe true
+        offered.contains(ownLand) shouldBe true
+        d.castSpell(d.player1, spell, listOf(theirLand)).error shouldBe null
+        d.bothPass()
+        d.getGraveyard(d.player2).contains(theirLand) shouldBe true
+    }
+
+    test("opponent scope: an opponent's ability can't target a land card in a graveyard, other cards it can") {
+        val d = driver()
+        d.putPermanentOnBattlefield(d.player2, landWard.name)
+        val forest = d.putCardInGraveyard(d.player2, "Forest")
+        val bear = d.putCardInGraveyard(d.player2, "Grizzly Bears")
+        val shovel = d.putPermanentOnBattlefield(d.player1, crypt.name)
+        d.giveColorlessMana(d.player1, 1)
+        val offered = d.offeredTargets(d.player1) { (it as? ActivateAbility)?.sourceId == shovel }
+        offered.contains(forest) shouldBe false
+        offered.contains(bear) shouldBe true
+        d.submit(ActivateAbility(d.player1, shovel, shovelId, d.graveTarget(d.player2, forest))).error shouldNotBe null
+        d.submit(ActivateAbility(d.player1, shovel, shovelId, d.graveTarget(d.player2, bear))).error shouldBe null
+    }
+
+    test("opponent scope: non-land permanents stay targetable by opponents") {
+        val d = driver()
+        d.putPermanentOnBattlefield(d.player2, landWard.name)
+        val bear = d.putCreatureOnBattlefield(d.player2, "Grizzly Bears")
+        val spell = d.putCardInHand(d.player1, murder.name)
+        d.giveColorlessMana(d.player1, 1)
+        d.castSpell(d.player1, spell, listOf(bear)).error shouldBe null
+    }
+
+    test("a battlefield lock arriving after targeting makes a land target illegal on resolution (CR 608.2b)") {
+        val d = driver()
+        val land = d.putLandOnBattlefield(d.player2, "Forest")
+        val spell = d.putCardInHand(d.player1, stoneRain.name)
+        d.giveColorlessMana(d.player1, 1)
+        d.castSpell(d.player1, spell, listOf(land)).error shouldBe null
+        d.putPermanentOnBattlefield(d.player2, landWard.name)
+        d.bothPass()
+        d.state.getBattlefield().contains(land) shouldBe true
     }
 
     test("a spell can't target a card in a graveyard, and isn't offered one") {
