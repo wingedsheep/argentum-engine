@@ -593,6 +593,9 @@ class ZoneTransitionService(
                 wasModified = lastKnownWasModified,
                 wasCast = container.has<com.wingedsheep.engine.state.components.battlefield.WasCastComponent>(),
                 castFromZone = com.wingedsheep.engine.state.components.stack.castFromZoneOf(container),
+                enteredFromZone = container.get<
+                    com.wingedsheep.engine.state.components.battlefield.EnteredFromZoneComponent
+                    >()?.zone,
                 blockingOrBlockedByIds = lastKnownBlockingOrBlockedByIds,
                 wasAttacking = lastKnownWasAttacking,
                 wasBlocking = lastKnownWasBlocking,

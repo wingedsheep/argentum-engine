@@ -2741,8 +2741,10 @@ object Conditions {
         com.wingedsheep.sdk.scripting.conditions.TriggeringSpellManaSpentAtLeast(amount)
 
     /**
-     * If the triggering entity entered or was cast from a graveyard.
-     * Used by Twilight Diviner: "if they entered or were cast from a graveyard".
+     * If the triggering entity entered or was cast from a graveyard — the named shorthand for
+     * `TriggeringEntityEnteredOrWasCastFrom(Zone.GRAVEYARD)`, kept because the graveyard is the
+     * zone almost every printed card asks about (like the `AnyEnteredOrWasCastFromGraveyard`
+     * twin). Used by Twilight Diviner: "if they entered or were cast from a graveyard".
      */
     val TriggeringEntityEnteredOrWasCastFromGraveyard: ConditionInterface =
         com.wingedsheep.sdk.scripting.conditions.TriggeringEntityEnteredOrWasCastFrom(Zone.GRAVEYARD)

@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.Outcome
 import com.wingedsheep.engine.core.PaymentStrategy
@@ -9,6 +10,7 @@ import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.lea.cards.Unsummon
 import com.wingedsheep.mtg.sets.definitions.mir.cards.Polymorph
+import com.wingedsheep.mtg.sets.definitions.tmp.cards.MoggFanatic
 import com.wingedsheep.mtg.sets.definitions.ody.cards.Zombify
 import com.wingedsheep.mtg.sets.definitions.ons.cards.FutureSight
 import com.wingedsheep.mtg.sets.definitions.war.cards.FblthpTheLost
@@ -29,13 +31,15 @@ import io.kotest.matchers.shouldBe
  *
  * Covers both library halves of `Conditions.TriggeringEntityEnteredOrWasCastFrom(Zone.LIBRARY)` (cast
  * from the top with Future Sight, put onto the battlefield by Polymorph), the one-card cases (cast
- * from hand, reanimated from a graveyard), and the shuffle-away when a spell targets it.
+ * from hand, reanimated from a graveyard), last-known provenance when Fblthp is shuffled away before
+ * its enters trigger resolves (CR 608.2h), and the shuffle-away when a spell — not an ability —
+ * targets it.
  */
 class FblthpTheLostScenarioTest : FunSpec({
 
     fun setup(): Pair<GameTestDriver, EntityId> {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(FblthpTheLost, FutureSight, Polymorph, Zombify, Unsummon))
+        driver.registerCards(TestCards.all + listOf(FblthpTheLost, FutureSight, Polymorph, Zombify, Unsummon, MoggFanatic))
         driver.initMirrorMatch(deck = Deck.of("Island" to 40), skipMulligans = true, startingLife = 20)
         val me = driver.activePlayer!!
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
@@ -115,5 +119,49 @@ class FblthpTheLostScenarioTest : FunSpec({
         driver.state.getZone(ZoneKey(me, Zone.LIBRARY)) shouldContain fblthp
         driver.state.getZone(ZoneKey(me, Zone.HAND)) shouldNotContain fblthp
         driver.state.getZone(ZoneKey(me, Zone.GRAVEYARD)) shouldContain unsummon
+    }
+
+    test("shuffled away in response to its enters trigger, Fblthp still draws two (last-known information)") {
+        val (driver, me) = setup()
+        val bears = driver.putCreatureOnBattlefield(me, "Grizzly Bears")
+        val fblthp = driver.putCardOnTopOfLibrary(me, "Fblthp, the Lost")
+        val polymorph = driver.putCardInHand(me, "Polymorph")
+        val unsummon = driver.putCardInHand(me, "Unsummon")
+        val handBefore = driver.getHandSize(me)
+
+        driver.submit(
+            CastSpell(
+                playerId = me, cardId = polymorph, targets = listOf(ChosenTarget.Permanent(bears)),
+                paymentStrategy = PaymentStrategy.AutoPay
+            )
+        ).outcome shouldBe Outcome.Done
+        driver.bothPass() // Polymorph resolves; Fblthp's enters trigger goes on the stack
+        driver.state.getBattlefield() shouldContain fblthp
+        driver.state.stack.size shouldBe 1
+
+        // In response, a spell targets Fblthp: its shuffle trigger resolves first and it leaves.
+        cast(driver, me, unsummon, listOf(ChosenTarget.Permanent(fblthp)))
+
+        driver.state.getZone(ZoneKey(me, Zone.LIBRARY)) shouldContain fblthp
+        driver.getHandSize(me) shouldBe handBefore - 2 + 2
+    }
+
+    test("an ability targeting Fblthp doesn't shuffle it away") {
+        val (driver, me) = setup()
+        val fblthp = driver.putCreatureOnBattlefield(me, "Fblthp, the Lost")
+        val fanatic = driver.putCreatureOnBattlefield(me, "Mogg Fanatic")
+        val abilityId = driver.cardRegistry.getCard("Mogg Fanatic")!!.activatedAbilities.first().id
+
+        driver.submit(
+            ActivateAbility(
+                playerId = me, sourceId = fanatic, abilityId = abilityId,
+                targets = listOf(ChosenTarget.Permanent(fblthp)),
+            )
+        ).error shouldBe null
+        drainStack(driver)
+
+        // The 1 damage kills it: it's in the graveyard, not shuffled into the library.
+        driver.state.getZone(ZoneKey(me, Zone.GRAVEYARD)) shouldContain fblthp
+        driver.state.getZone(ZoneKey(me, Zone.LIBRARY)) shouldNotContain fblthp
     }
 })

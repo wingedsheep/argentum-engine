@@ -2222,6 +2222,14 @@ class ConditionEvaluator(
         context: EffectContext
     ): Boolean {
         val entityId = context.triggeringEntityId ?: return false
+        // The triggering permanent may have left since the ability triggered (Fblthp shuffled
+        // away in response to its own enters trigger): the zone change stripped its provenance
+        // markers, so read the last-known record frozen for it (CR 608.2h).
+        val departed = context.triggerContext?.triggeringLastKnownSnapshot?.takeIf { it.entityId == entityId }
+            ?: context.lastKnownSourceSnapshot?.takeIf { it.entityId == entityId }
+        departed?.let {
+            return it.castFromZone == zone || it.enteredFromZone == zone
+        }
         val entity = state.getEntity(entityId) ?: return false
         return enteredOrWasCastFrom(entity, zone)
     }

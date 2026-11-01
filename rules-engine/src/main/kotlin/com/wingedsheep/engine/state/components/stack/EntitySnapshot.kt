@@ -199,6 +199,14 @@ data class EntitySnapshot(
     @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
     val castFromZone: com.wingedsheep.sdk.core.Zone? = null,
+    /**
+     * The zone it was put onto the battlefield from without being cast (a reanimation, a blink, a
+     * library search) when it left; null if it resolved as a spell or never changed zones. The
+     * zone-exit strip removes the marker (CR 400.7), so "if it entered from …" reads it here.
+     */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val enteredFromZone: com.wingedsheep.sdk.core.Zone? = null,
     /** Creatures blocking, or blocked by, this one when it left (CR 509; Abu Ja'far). */
     val blockingOrBlockedByIds: List<EntityId> = emptyList(),
     /**
@@ -570,6 +578,7 @@ fun captureLastKnown(state: GameState, entityId: EntityId): EntitySnapshot {
         damageSources = damagedBySourcesOf(state, entityId),
         wasCast = container?.has<com.wingedsheep.engine.state.components.battlefield.WasCastComponent>() == true,
         castFromZone = container?.let(::castFromZoneOf),
+        enteredFromZone = container?.get<com.wingedsheep.engine.state.components.battlefield.EnteredFromZoneComponent>()?.zone,
         attachmentIds = attachmentIdsOf(state, entityId),
         attachments = attachmentLkiOf(state, entityId),
         // The cost strips the cast-choices bag too; "the last noted …" reads it from here.
