@@ -45,6 +45,8 @@ object RiotSynthesis {
      * [SpellOnStackComponent.entryKeywordGrants] — a mana rider's "if that mana is spent on a creature
      * spell, it gains riot" (Domri, Chaos Bringer) or a cast trigger's keyword grant. The spell has
      * riot as it resolves, so its enters-with choice is offered like a printed one (CR 702.136a).
+     * On a spell that also asks a printed choice first (printed riot, a creature-type choice), the
+     * spell-resolution resumer asks these granted instances once that printed chain passes MODE.
      */
     fun grantedRiotInstanceCount(
         state: GameState,

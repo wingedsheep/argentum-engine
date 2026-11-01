@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.dsl.riot
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
@@ -49,8 +50,16 @@ class SpellGrantedRiotTest : FunSpec({
     }
     val springAbility = riotSpring.activatedAbilities[0].id
 
+    val rioter = card("Test Spring Rioter") {
+        manaCost = "{1}{G}"
+        typeLine = "Creature — Goblin"
+        power = 2
+        toughness = 2
+        riot()
+    }
+
     fun driver(): GameTestDriver = GameTestDriver().apply {
-        registerCards(TestCards.all + listOf(riotSpring))
+        registerCards(TestCards.all + listOf(riotSpring, rioter))
         initMirrorMatch(deck = Deck.of("Forest" to 40), startingLife = 20)
         passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -65,8 +74,8 @@ class SpellGrantedRiotTest : FunSpec({
     }
 
     /** Casts Grizzly Bears with one rider mana (or none) plus ordinary green, and lets it resolve. */
-    fun GameTestDriver.castBears(me: EntityId, withRider: Boolean): EntityId {
-        val bears = putCardInHand(me, "Grizzly Bears")
+    fun GameTestDriver.castBears(me: EntityId, withRider: Boolean, name: String = "Grizzly Bears"): EntityId {
+        val bears = putCardInHand(me, name)
         if (withRider) {
             val spring = putPermanentOnBattlefield(me, "Test Riot Spring")
             submitSuccess(ActivateAbility(playerId = me, sourceId = spring, abilityId = springAbility))
@@ -111,6 +120,18 @@ class SpellGrantedRiotTest : FunSpec({
         d.chooseRiot(me, haste = false)
 
         d.plusOneCounters(bears) shouldBe 2
+    }
+
+    test("a creature with printed riot asks twice: its own riot, then the spell's granted one") {
+        val d = driver()
+        val me = d.activePlayer!!
+        val goblin = d.castBears(me, withRider = true, name = "Test Spring Rioter")
+        d.chooseRiot(me, haste = false)
+        d.chooseRiot(me, haste = true)
+
+        (d.pendingDecision == null) shouldBe true
+        d.plusOneCounters(goblin) shouldBe 1
+        d.state.projectedState.hasKeyword(goblin, Keyword.HASTE) shouldBe true
     }
 
     test("cast with ordinary mana it gets no riot choice") {

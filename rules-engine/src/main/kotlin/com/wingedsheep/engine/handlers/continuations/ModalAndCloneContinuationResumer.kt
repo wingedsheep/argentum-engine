@@ -885,7 +885,9 @@ class ModalAndCloneContinuationResumer(
                 }
                 val modeId = continuation.modeOptionIds.getOrNull(response.optionIndex)
                     ?: return ExecutionResult.error(state, "Invalid mode option index: ${response.optionIndex}")
-                state.updateEntity(spellId) { c ->
+                // A granted-riot answer is applied directly below; recording it would overwrite the
+                // printed MODE choice (printed riot's counter/haste) that the card's statics read.
+                if (continuation.syntheticRiot) state else state.updateEntity(spellId) { c ->
                     com.wingedsheep.engine.state.components.identity.EntryCharacteristicsBaking.bake(
                         c.withCastChoice(ChoiceSlot.MODE, ChoiceValue.TextChoice(modeId)), modeId, services.cardRegistry
                     )
@@ -979,6 +981,31 @@ class ModalAndCloneContinuationResumer(
             )))
             .sortedBy { it.choiceType.ordinal }
             .firstOrNull { it.choiceType.ordinal > continuation.choiceType.ordinal }
+
+        // Granted riot (a lord's, or one frozen onto the spell by a mana rider) sits in the MODE
+        // slot. When a printed choice was asked first — printed riot itself, or an earlier
+        // creature-type choice — the granted instances are still owed (CR 702.136b): ask them once
+        // the printed chain has passed MODE, before any later printed choice.
+        val riotOrdinal = com.wingedsheep.engine.mechanics.RiotSynthesis.RIOT_CHOICE.choiceType.ordinal
+        if (!continuation.syntheticRiot &&
+            continuation.choiceType.ordinal <= riotOrdinal &&
+            (nextChoice == null || nextChoice.choiceType.ordinal > riotOrdinal)
+        ) {
+            val grantedRiot = com.wingedsheep.engine.mechanics.RiotSynthesis.grantedRiotInstanceCount(
+                newState, spellId, services.cardRegistry, services.predicateEvaluator
+            )
+            if (grantedRiot > 0) {
+                val pause = services.stackResolver.pauseForEntersWithChoice(
+                    newState, spellId, controllerId, ownerId, cardComponent,
+                    com.wingedsheep.engine.mechanics.RiotSynthesis.RIOT_CHOICE,
+                    syntheticRiot = true,
+                    syntheticRiotRemaining = grantedRiot - 1
+                )
+                if (pause != null && pause.outcome is Outcome.Paused) {
+                    return ExecutionResult.propagatePause(pause.state, syntheticRiotEvents + pause.events)
+                }
+            }
+        }
 
         if (nextChoice != null) {
             val result = services.stackResolver.pauseForEntersWithChoice(
