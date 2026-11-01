@@ -5,6 +5,8 @@ import com.wingedsheep.ai.draftsim.DraftsimDeckBuilder
 import com.wingedsheep.ai.draftsim.DraftsimDeckShape
 import com.wingedsheep.ai.draftsim.DraftsimPoolCard
 import com.wingedsheep.ai.draftsim.toScorerCard
+import com.wingedsheep.ai.engine.fitsDeckColors
+import com.wingedsheep.ai.engine.spellColors
 import com.wingedsheep.engine.limited.BoosterGenerator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.sdk.core.CanadianHighlanderPoints
@@ -262,7 +264,7 @@ class ConstructedDeckGenerator(
             return null
         }
         val deckCards = picks.flatMap { (card, n) -> List(n) { card } }
-        val used = colours.filter { colour -> deckCards.any { colour in it.colors } }.toSet().ifEmpty { colours }
+        val used = colours.filter { colour -> deckCards.any { colour in spellColors(it) } }.toSet().ifEmpty { colours }
         val basics = BasicLandSplit.split(deckCards, used, shape.deckSize - spellCount, MIN_COLOUR_SHARE)
 
         logger.info(
@@ -478,8 +480,13 @@ class ConstructedDeckGenerator(
         /** Share of the basics every played colour gets before the pips divide the rest. */
         private const val MIN_COLOUR_SHARE = 0.25
 
-        /** A card's colours all inside [colours]; colourless cards fit every deck. */
-        fun castableIn(card: CardDefinition, colours: Set<Color>): Boolean = card.colors.all { it in colours }
+        /**
+         * [card] fits a deck of [colours]: its cost is payable off those basics and, if it's a mana
+         * rock, it makes one of them. Reads the cost, not [CardDefinition.colors] — a devoid card is
+         * colourless with a coloured cost (Writhing Chrysalis, {2}{R}{G}) and a Room's colours live
+         * on its doors, and both slipped into off-colour decks when the colours were read instead.
+         */
+        fun castableIn(card: CardDefinition, colours: Set<Color>): Boolean = fitsDeckColors(card, colours)
 
         /**
          * The mana value a card is played at: a split card or Room (no cost of its own) at its

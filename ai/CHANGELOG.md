@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- Builds decks it can cast: constructed decks no longer run devoid cards or Rooms off-colour, sealed decks skip mana rocks that make none of their colours, and a generated Commander deck only picks a commander its pool can fill a library for (no more 46-land decks).
 - Reads "destroy all" and "sacrifice all" wraths (Day of Judgment, Damnation, Supreme Verdict, Pernicious Deed, Child of Alara) as sweepers: it answers an opposing one with an "until end of turn" indestructible or protection ability instead of letting it resolve, and values them as removal in drafts, deckbuilding and playouts
 - Reads surveil as card selection, like scry: it uses instant-speed surveil abilities (Surveillance Phantasm, Larder Zombie, Emergent Haunting) at the opponent's end step with mana it would otherwise waste, and holds them in its main phase while an instant wants the mana; a look at the top that costs life or a sacrifice (Doom Whisperer, Zahur) — scry or surveil — no longer gets that end-step nudge.
 - Holds "prevent the next damage this turn" abilities (Samite Healer, Abuna Acolyte, Benevolent Ancestor, Circle of Protection activations) until damage can still come — an attack, a fight its creature is in, or a spell on the stack — instead of tapping them in its own main phase for a shield nothing will hit.

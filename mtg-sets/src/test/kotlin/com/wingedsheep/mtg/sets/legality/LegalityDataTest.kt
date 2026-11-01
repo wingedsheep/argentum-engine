@@ -55,4 +55,10 @@ class LegalityDataTest : FunSpec({
         shahrazad shouldNotContain DeckFormat.HIGHLANDER
         shahrazad shouldNotContain DeckFormat.CANADIAN_HIGHLANDER
     }
+
+    test("Standard Brawl reads Scryfall's concatenated key") {
+        // The bundled data spells it STANDARDBRAWL; the enum is STANDARD_BRAWL. A Standard-legal
+        // card is legal in Standard Brawl too.
+        LegalityData.forCard("Llanowar Elves") shouldContain DeckFormat.STANDARD_BRAWL
+    }
 })

@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.core.DeckFormat
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CommanderEligibility
 import com.wingedsheep.sdk.scripting.EntersTapped
+import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.random.Random
 import org.slf4j.LoggerFactory
@@ -161,7 +162,7 @@ class CommanderDeckGenerator(
         val commander = if (commanderName != null) {
             commanderCandidates(pool).firstOrNull { it.name == commanderName }
         } else {
-            pickCommander(pool)
+            pickCommander(pool, deckSize - 1, copyLimit)
         } ?: run {
             logger.warn("No legal commander in a pool of {} cards ({})", pool.size, label)
             return null
@@ -312,15 +313,45 @@ class CommanderDeckGenerator(
      * split five ways, which casts little even with the pool's duals in it. One and two colours are
      * the shapes a mostly-basic manabase supports, three is playable with fixing, and four or five
      * is a last resort for a pool with nothing narrower in it.
+     *
+     * The narrow-identity bias has a floor, though: the pool has to hold enough spells inside the
+     * commander's identity to fill the library's spell slots ([spellSupport]). Whatever the pool
+     * can't fill becomes basics, so an unchecked mono-coloured pick from one set (Eluge out of
+     * Bloomburrow) seated a 99 with 46 lands. A candidate short of that is drawn only when no
+     * candidate clears it, weighted down by how far short it falls.
      */
-    private fun pickCommander(pool: List<CardDefinition>): CardDefinition? {
+    private fun pickCommander(
+        pool: List<CardDefinition>,
+        librarySize: Int,
+        copyLimit: (CardDefinition) -> Int,
+    ): CardDefinition? {
         val ops = ConstructedRatings.ops()
         val candidates = commanderCandidates(pool)
         if (candidates.isEmpty()) return null
-        return candidates.weightedSample(1, random) { card ->
+        val support = spellSupport(pool, copyLimit)
+        val needed = (librarySize * (1 - LAND_RATIO)).roundToInt().coerceAtLeast(1)
+        fun supportOf(card: CardDefinition) = support(card.colorIdentity) - (if (card.isLand) 0 else copyLimit(card))
+        val viable = candidates.filter { supportOf(it) >= needed }
+        return viable.ifEmpty { candidates }.weightedSample(1, random) { card ->
             val rating = ops.ratingFallback(card.toScorerCard()).coerceAtLeast(ConstructedRatings.MIN_WEIGHT)
-            rating * (IDENTITY_WEIGHT[card.colorIdentity.size] ?: LAST_RESORT_IDENTITY_WEIGHT)
+            val shortfall = if (viable.isEmpty()) (supportOf(card).toDouble() / needed).coerceIn(0.01, 1.0).pow(SHORTFALL_SHARPNESS) else 1.0
+            rating * (IDENTITY_WEIGHT[card.colorIdentity.size] ?: LAST_RESORT_IDENTITY_WEIGHT) * shortfall
         }.firstOrNull()
+    }
+
+    /**
+     * How many nonland cards (counting the copies [copyLimit] allows) [pool] holds inside a given
+     * colour identity. Counted once per identity bitmask and summed over subsets, so asking for
+     * every candidate commander stays linear in the pool even over the whole card base.
+     */
+    private fun spellSupport(pool: List<CardDefinition>, copyLimit: (CardDefinition) -> Int): (Set<Color>) -> Int {
+        fun mask(colours: Set<Color>) = colours.fold(0) { acc, c -> acc or (1 shl c.ordinal) }
+        val byMask = IntArray(1 shl Color.entries.size)
+        pool.forEach { card -> if (!card.isLand) byMask[mask(card.colorIdentity)] += copyLimit(card) }
+        return { identity ->
+            val m = mask(identity)
+            byMask.indices.sumOf { sub -> if (sub and m.inv() == 0) byMask[sub] else 0 }
+        }
     }
 
     /**
@@ -453,6 +484,9 @@ class CommanderDeckGenerator(
          * consensus for a deck with no ramp (37–38 of 99) and scales to the 60-card shapes (22 of 59).
          */
         private const val LAND_RATIO = 0.38
+
+        /** How steeply an under-supported commander loses weight when every candidate is short. */
+        private const val SHORTFALL_SHARPNESS = 3.0
 
         /** The floor the ramp discount can't take the land count below: 36 of 99, 21 of 59. */
         private const val MIN_LAND_RATIO = 0.36
