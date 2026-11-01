@@ -81,9 +81,11 @@ class RumblingRuinScenarioTest : FunSpec({
         val me = d.activePlayer!!
         val opp = d.getOpponent(me)
         val bears = d.putCreatureOnBattlefield(opp, "Grizzly Bears")
+        val thopter = d.putCreatureOnBattlefield(opp, "Ornithopter") // 0/2
 
         d.castRuin()
 
         d.state.projectedState.cantBlock(bears) shouldBe false
+        d.state.projectedState.cantBlock(thopter) shouldBe true
     }
 })

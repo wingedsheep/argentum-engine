@@ -3535,8 +3535,8 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   `AttacksWithoutTappingGroup`): `PowerAtMostDynamic`, `PowerEqualsDynamic`, `ToughnessEqualsDynamic`,
   `ManaValueAtMostDynamic` and `ManaValueEqualsDynamic` are evaluated once as the effect resolves
   (CR 608.2h) and rewritten to their fixed siblings, while which creatures meet the number stays
-  live. Rumbling Ruin: `CantBlockGroup(GroupFilter(Creature.opponentControls().powerAtMost(
-  DynamicAmounts.countersOnCreaturesYouControl(PLUS_ONE_PLUS_ONE))))` — the counters are counted
+  live. Rumbling Ruin: `CantBlockGroup(GroupFilter(Creature.opponentControls().powerAtMostDynamic(
+  DynamicAmounts.battlefield(Player.You, Creature).totalCounters(PLUS_ONE_PLUS_ONE))))` — the counters are counted
   at resolution; a creature pumped above the number later that turn can block again (the
   restriction is a rules effect, applied after every layer — CR 613.11 — so it reads final power,
   counters and pumps included). An amount

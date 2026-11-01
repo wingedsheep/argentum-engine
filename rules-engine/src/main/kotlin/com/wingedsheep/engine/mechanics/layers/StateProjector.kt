@@ -490,7 +490,7 @@ class StateProjector {
 
         // The deferred "can't block" / "can't attack" restrictions affect game rules, so they apply
         // after all other continuous effects (CR 613.11) — once every characteristic is settled, P/T
-        // included — and their groups are re-resolved here: Temur Charm's
+        // included — and a group that reads keywords or P/T is re-resolved here: Temur Charm's
         // "creatures with power 3 or less can't block this turn" and Rumbling Ruin's frozen count
         // keep tracking power as counters and pumps change it. A locked CR 613.6 group keeps its
         // frozen set.
@@ -503,6 +503,8 @@ class StateProjector {
         // belonging to an effect that started applying before Layer 6 (CR 613.6).
         fun withFinalSetResolved(effect: ContinuousEffect): ContinuousEffect {
             val filter = effect.affectsFilter ?: return effect
+            if (!filterResolver.isKeywordDependentFilter(filter) &&
+                !filterResolver.isPowerToughnessDependentFilter(filter)) return effect
             return effect.copy(affectedEntities = lockAffected(effect,
                 filterResolver.resolveAffectedEntities(state, effect.sourceId, filter, projectedValues, effect.controllerId)))
         }
