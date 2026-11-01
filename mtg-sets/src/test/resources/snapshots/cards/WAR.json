@@ -671,7 +671,7 @@
     "metadata": {
         "collectorNumber": "42",
         "artist": "Johan Grenier",
-        "flavorText": "\"I've never seen the firemane angels so anxious.\" —Tajic",
+        "flavorText": "\"I've never seen the firemane angels so anxious.\"\n—Tajic",
         "imageUri": "https://cards.scryfall.io/normal/front/f/e/fe479484-a827-4d3c-8e35-e905e4f6664a.jpg?1783933467"
     },
     "colorIdentityOverride": [
@@ -5296,6 +5296,7 @@
     "metadata": {
         "collectorNumber": "271",
         "artist": "Randy Gallegos",
+        "flavorText": "\"Of course you're being followed!\"",
         "imageUri": "https://cards.scryfall.io/normal/front/a/3/a304200f-86d5-4eed-a775-cc24e72872ac.jpg?1783933359"
     }
 }

@@ -35,7 +35,7 @@ val AvenEternal = card("Aven Eternal") {
         rarity = Rarity.COMMON
         collectorNumber = "42"
         artist = "Johan Grenier"
-        flavorText = "\"I've never seen the firemane angels so anxious.\" —Tajic"
+        flavorText = "\"I've never seen the firemane angels so anxious.\"\n—Tajic"
         imageUri = "https://cards.scryfall.io/normal/front/f/e/fe479484-a827-4d3c-8e35-e905e4f6664a.jpg?1783933467"
     }
 }
