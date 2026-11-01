@@ -348,7 +348,19 @@ object LimitedCardRater {
 
     /** How a limited rating folds an effect tree. See [EffectWalker.Fold]. */
     private object LimitedScoreFold : EffectWalker.Fold<Double> {
-        override fun leaf(effect: Effect): Double = scoreEffect(effect)
+        /**
+         * A pipeline's "if those cards include …" branch scores as a conditional over both sides —
+         * the same reading [EffectWalker.payoffLeaves] gives the intent and polarity readers.
+         */
+        override fun leaf(effect: Effect): Double =
+            if (effect is ConditionalOnCollectionEffect) {
+                conditional(
+                    EffectWalker.fold(effect.ifNotEmpty, this),
+                    effect.ifEmpty?.let { EffectWalker.fold(it, this) },
+                )
+            } else {
+                scoreEffect(effect)
+            }
 
         /** Composite — sum children, capped so a long pipeline can't run away with the rating. */
         override fun composite(parts: List<Double>): Double = parts.sum().coerceAtMost(2.5)

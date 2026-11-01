@@ -5,6 +5,7 @@ import com.wingedsheep.engine.handlers.effects.composite.asMayDecide
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.scripting.effects.CreateTokenBatchEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.ConditionalOnCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.ConniveEffect
 import com.wingedsheep.sdk.scripting.effects.LearnEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -121,7 +122,9 @@ object EffectWalker {
      * [leaves], with every gate the walk stops at opened onto its payoff: the `then` and
      * `otherwise` of "you may pay {E}. If you do, …" ([com.wingedsheep.sdk.scripting.effects.Gate.MayPay]),
      * "you may discard a card. If you do, …" ([com.wingedsheep.sdk.scripting.effects.Gate.DoAction]),
-     * a pay-X or pay-life gate, and a "you may …, otherwise …" choice.
+     * a pay-X or pay-life gate, and a "you may …, otherwise …" choice. A pipeline's "if those cards
+     * include …" branch ([ConditionalOnCollectionEffect]) opens the same way, both sides: whether it
+     * fires depends on what the earlier steps gathered, but what it does is the card's payoff.
      *
      * The gate's own cost or action is left out on purpose: discarding or sacrificing to pay for
      * the payoff is the price, not what the ability is for, and reading it would call Pia's
@@ -134,9 +137,12 @@ object EffectWalker {
      * numbers — the same reason it stops at modes and `ForEach` bodies.
      */
     fun payoffLeaves(effect: Effect): List<Effect> = leaves(effect).flatMap { leaf ->
-        val gated = leaf as? GatedEffect
-        if (gated == null || gated.decisionMaker != null) listOf(leaf)
-        else listOfNotNull(gated.then, gated.otherwise).flatMap { payoffLeaves(it) }
+        when {
+            leaf is ConditionalOnCollectionEffect ->
+                listOfNotNull(leaf.ifNotEmpty, leaf.ifEmpty).flatMap { payoffLeaves(it) }
+            leaf !is GatedEffect || leaf.decisionMaker != null -> listOf(leaf)
+            else -> listOfNotNull(leaf.then, leaf.otherwise).flatMap { payoffLeaves(it) }
+        }
     }
 
     private object LeafCollector : Fold<List<Effect>> {
