@@ -550,7 +550,9 @@ object LimitedCardRater {
             // branch is what the card is worth.
             is ChooseActionEffect ->
                 if (!EffectWalker.choosesOwnBranch(effect)) 0.0
-                else effect.choices.maxOfOrNull { EffectWalker.fold(it.effect, LimitedScoreFold) + pipelineScore(it.effect) }
+                // A pipeline inside a branch is already priced by the slot's pipelineScore, which
+                // reads through the choice (payoffLeaves).
+                else effect.choices.maxOfOrNull { EffectWalker.fold(it.effect, LimitedScoreFold) }
                     ?.coerceAtMost(COMPOSITE_CAP) ?: 0.0
 
             // Card selection — scry and surveil see cards but draw none
