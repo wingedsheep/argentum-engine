@@ -194,8 +194,10 @@ object SynergyAxes {
     private fun otherRewards(pattern: EventPattern): Set<SynergyAxis> = when (pattern) {
         is EventPattern.ZoneChangeEvent -> when {
             opponents(pattern.filter) -> emptySet()
+            // "Whenever an enchanted creature dies" cashes in the deck's Auras ([CardAsks.attachmentAsk]),
+            // not its sacrifice fodder.
             pattern.from == Zone.BATTLEFIELD && pattern.to == Zone.GRAVEYARD && couldBeCreature(pattern.filter) ->
-                setOf(SynergyAxis.DEATH)
+                if (CardAsks.attachmentAsk(pattern.filter) != null) emptySet() else setOf(SynergyAxis.DEATH)
             pattern.to == Zone.BATTLEFIELD -> enterAxes(pattern.filter)
             else -> emptySet()
         }
@@ -230,7 +232,8 @@ object SynergyAxes {
         filter.controllerPredicate == ControllerPredicate.ControlledByOpponent
 
     /** False only when the filter names a card type that excludes creatures (a land, an artifact). */
-    private fun couldBeCreature(filter: GameObjectFilter): Boolean {
+    /** Whether a permanent matching [filter] could be a creature — no noncreature type rules it out. */
+    internal fun couldBeCreature(filter: GameObjectFilter): Boolean {
         val preds = predicates(filter)
         return CardPredicate.IsCreature in preds || preds.none { it in NONCREATURE_TYPES }
     }

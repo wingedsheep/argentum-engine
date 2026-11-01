@@ -190,7 +190,8 @@ class CommanderDeckGenerator(
         fun fill(want: Int, candidates: List<CardDefinition>, extra: (CardDefinition) -> Double = { 1.0 }) {
             if (want <= 0) return
             val taken = chosen.mapTo(HashSet()) { it.name }
-            chosen += candidates.filterNot { it.name in taken }.weightedSample(want, random) { weight(it) * extra(it) }
+            val score = { card: CardDefinition -> weight(card) * extra(card) }
+            chosen += candidates.filterNot { it.name in taken }.shortlist(want, score).weightedSample(want, random, score)
         }
 
         val rampPool = body.filter { DeckRole.RAMP in rolesOf(it) }
@@ -399,7 +400,7 @@ class CommanderDeckGenerator(
                 continue
             }
             val available = byBucket[bucket].orEmpty().filterNot { it.name in takenNames }
-            val drawn = available.weightedSample(want, random, weight)
+            val drawn = available.shortlist(want, weight).weightedSample(want, random, weight)
             extras += drawn
             drawn.forEach { takenNames += it.name }
             carriedDeficit = want - drawn.size
@@ -412,9 +413,24 @@ class CommanderDeckGenerator(
         if (extras.size > open) extras = extras.sortedBy { it.cmc }.take(open).toMutableList()
         if (extras.size < open) {
             val remaining = body.filterNot { it.name in takenNames }
-            extras += remaining.weightedSample(open - extras.size, random, weight)
+            extras += remaining.shortlist(open - extras.size, weight).weightedSample(open - extras.size, random, weight)
         }
         return duplicateToFill(fixed + extras, body, slots, copyLimit, weight)
+    }
+
+    /**
+     * The best [SHORTLIST_FACTOR] × [want] of these cards by [weight], for a weighted draw of [want].
+     *
+     * The draw alone favours good cards one at a time but not in aggregate: over a whole card base
+     * a colour holds thousands of 2.5-rated commons for every forty 4.0 cards, so cubing the rating
+     * still let the commons fill most of a 99 (2026-11-01 review: Talas Merchant, Pouncing Kavu,
+     * Pili-Pala and Stonework Packbeast beside Jace and Snapcaster). Drawing from the top few times
+     * the slots keeps the variety between builds and drops the long tail. A drafted or sealed pool
+     * is already shorter than the shortlist, so it is untouched.
+     */
+    private fun List<CardDefinition>.shortlist(want: Int, weight: (CardDefinition) -> Double): List<CardDefinition> {
+        val size = want * SHORTLIST_FACTOR
+        return if (this.size <= size) this else sortedByDescending(weight).take(size)
     }
 
     /**
@@ -532,6 +548,9 @@ class CommanderDeckGenerator(
 
         /** Mana values 7+ are one bucket; nothing above it curves differently enough to matter. */
         private const val TOP_CURVE_BUCKET = 7
+
+        /** How many candidates per open slot [shortlist] keeps for the weighted draw. */
+        private const val SHORTLIST_FACTOR = 3
 
         /**
          * Target curve as fractions of the non-land slots. Heavier at the top than a 60-card deck's
