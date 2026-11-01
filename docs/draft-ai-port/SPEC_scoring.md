@@ -336,6 +336,8 @@ elif have > target+2.5: u -= 0.4R   "Overcrowded curve"
 ### 6.7 Tail adjustments (both branches, end of `jm`)
 
 - **Hate draft**: `v<2 && price≥$5` → `+0.6/$20+, +0.4/$10+, +0.2/$5+`, emit "Hate draft ($X)".
+  *Not ported:* card prices mean nothing here. Argentum puts its own bomb-denial pass in their place
+  (`DraftsimScorer.withDenial`, which runs when the caller passes a pod size).
 - **Legend copies**: if `isLegendaryCreature(card)`, count same-named copies already in `pool`:
   `≥3 → -6` ("4th+ copy … Unplayable"), `≥2 → -4` ("3rd copy; deck caps at 2").
 - **Return**: `total = round(max(0,u)*100)/100`, `rawRating = v`, reasons/points,

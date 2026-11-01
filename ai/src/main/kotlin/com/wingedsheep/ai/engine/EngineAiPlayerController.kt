@@ -221,12 +221,16 @@ class EngineAiPlayerController(
     // rated by [LimitedCardRater] off their definitions rather than by rarity alone, and every card
     // carries its structural synergy reading, so a pick feeds the payoffs already taken.
 
-    /** Pick value of each card in [cards] given what the bot has already taken. */
-    private fun scoreCards(cards: List<CardSummary>, pickedSoFar: List<CardSummary>): Map<String, Double> {
+    /**
+     * Pick value of each card in [cards] given what the bot has already taken. A non-null
+     * [podSize] turns on hate drafting (a booster pick passes the rest of the pack to the next
+     * drafter). Winston piles leave it off.
+     */
+    private fun scoreCards(cards: List<CardSummary>, pickedSoFar: List<CardSummary>, podSize: Int? = null): Map<String, Double> {
         val setCodes = (cards + pickedSoFar).mapNotNull { it.setCode?.takeIf(String::isNotBlank) }.distinct()
         val definitions = (cards + pickedSoFar).mapNotNull { cardRegistry.getCard(it.name) }
         val tables = DraftsimData.tablesFor(setCodes).withFallbackRatings(definitions).withSynergyAxes(definitions)
-        val scores = DraftsimScorer(tables).scoreBoosterAuto(cards.map(::scorerCard), pickedSoFar.map(::scorerCard))
+        val scores = DraftsimScorer(tables).scoreBoosterAuto(cards.map(::scorerCard), pickedSoFar.map(::scorerCard), podSize)
         return cards.associate { it.name to (scores[it.name]?.total ?: 0.0) }
     }
 
@@ -240,9 +244,11 @@ class EngineAiPlayerController(
         packNumber: Int,
         pickNumber: Int,
         picksRequired: Int,
-        passDirection: String
+        passDirection: String,
+        podSize: Int?,
     ): List<String> {
-        val scores = scoreCards(pack, pickedSoFar)
+        // Unknown pod size still hate-drafts, at the cautious full-pod rate (0 = unknown).
+        val scores = scoreCards(pack, pickedSoFar, podSize ?: 0)
         val picks = pack.sortedByDescending { scores[it.name] ?: 0.0 }.take(picksRequired).map { it.name }
         logger.info("Engine AI draft pick P{}p{}: {} (from {} cards)", packNumber, pickNumber, picks.joinToString(", "), pack.size)
         return picks

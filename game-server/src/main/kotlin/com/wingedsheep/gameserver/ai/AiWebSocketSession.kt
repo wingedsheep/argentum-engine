@@ -454,7 +454,8 @@ class AiWebSocketSession(
             packNumber = message.packNumber,
             pickNumber = message.pickNumber,
             picksRequired = message.picksPerRound,
-            passDirection = message.passDirection
+            passDirection = message.passDirection,
+            podSize = message.podSize.takeIf { it > 0 }
         )
         logger.info("AI draft pick: {}", picks.joinToString(", "))
         callback(aiPlayerId, picks)

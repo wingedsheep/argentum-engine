@@ -140,7 +140,6 @@ class DraftsimDeckBuilder(
         override val typeLine = "Basic Land"
         override val cmc = 0.0
         override val rarity: String? = "common"
-        override val priceUsd: Double? = null
         override val colors = emptyList<String>()
         override val colorIdentity = listOf(color)
     }

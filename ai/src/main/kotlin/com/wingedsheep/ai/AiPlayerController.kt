@@ -56,6 +56,8 @@ interface AiPlayerController {
      * @param packNumber Which pack (1-based, e.g., 1, 2, or 3).
      * @param pickNumber Which pick within the pack (1-based).
      * @param picksRequired How many cards to pick (usually 1).
+     * @param podSize Drafters at the table, or null when unknown. A small pod makes denying the
+     *   next drafter a bomb worth more, since they are likely an opponent.
      * @return List of card names to pick.
      */
     fun chooseDraftPick(
@@ -64,7 +66,8 @@ interface AiPlayerController {
         packNumber: Int,
         pickNumber: Int,
         picksRequired: Int = 1,
-        passDirection: String = "LEFT"
+        passDirection: String = "LEFT",
+        podSize: Int? = null,
     ): List<String>
 
     /**

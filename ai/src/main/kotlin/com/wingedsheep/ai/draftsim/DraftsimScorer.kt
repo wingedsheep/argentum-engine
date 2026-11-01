@@ -40,6 +40,8 @@ class DraftsimScorer(private val tables: DraftsimSetTables) {
         const val IX = 3            // real-archetype total threshold
         const val LX = 15           // "early-ish / colors flexible" threshold
         const val BOMB = 3.9        // bomb / splashable-bomb rating cutoff
+        const val DENIAL_FLOOR = 3.0 // rating a passed card must beat before denying it is worth anything (ours)
+        const val DEFAULT_POD = 8   // pod size assumed when the caller doesn't know it (ours)
 
         // rarity quality bonus (jm) cX
         val RARITY_QUALITY = mapOf("mythic" to 0.15, "rare" to 0.1, "uncommon" to 0.0, "common" to 0.0)
@@ -488,7 +490,7 @@ class DraftsimScorer(private val tables: DraftsimSetTables) {
         // ----- §6.6 curve -----
         scoreCurve(card, nonland, h, r, w, acc)
         // ----- §6.7 tail -----
-        scoreTail(card, pool, v, acc)
+        scoreTail(card, pool, acc)
         // ----- synergy (ours, not the bundle's): off unless the tables carry axes -----
         applySynergy(card, nonland, acc)
 
@@ -508,8 +510,69 @@ class DraftsimScorer(private val tables: DraftsimSetTables) {
      * `xs` entry: route to the archetype-aware [scoreBooster] when the set ships archetype data, else
      * to the color-only [scoreBoosterFallback] (the common path). Mirrors the bundle's `xs` dispatch.
      */
-    fun scoreBoosterAuto(booster: List<ScorerCard>, picks: List<ScorerCard>): Map<String, DraftsimCardScore> =
-        if (tables.archetypes.isEmpty()) scoreBoosterFallback(booster, picks) else scoreBooster(booster, picks)
+    fun scoreBoosterAuto(
+        booster: List<ScorerCard>,
+        picks: List<ScorerCard>,
+        podSize: Int? = null,
+    ): Map<String, DraftsimCardScore> {
+        val scores = if (tables.archetypes.isEmpty()) scoreBoosterFallback(booster, picks) else scoreBooster(booster, picks)
+        return if (podSize == null) scores else withDenial(booster, picks, scores, podSize)
+    }
+
+    /**
+     * Hate drafting (ours, not the bundle's): take a bomb you won't play instead of passing it,
+     * but only when the card you would otherwise take adds little to your deck.
+     *
+     * Applies only once the pool is past the flexible stage ([LX] nonland cards). Before that, an
+     * off-color bomb is speculation, and the color logic above already prices it. Taking a bomb
+     * then would also pull this pool's color weights toward it.
+     *
+     * The comparison:
+     *  - **forgone**: what the pick you give up is worth over a replacement-level card,
+     *    `rawRating − QJ`.
+     *  - **denial**: how much the bomb is worth to whoever gets it, `rating − DENIAL_FLOOR`, scaled
+     *    by [denialReach], the chance the drafter you pass it to is someone you play.
+     *
+     * When denial is larger, the bomb is ranked just above the planned pick, by the margin between
+     * the two. The pick is unchanged when the planned pick is itself a bomb, or when nothing in the
+     * pack beats it. [podSize] is the number of drafters at the table; non-positive means unknown,
+     * which is treated as a full 8-seat pod (the smallest denial value).
+     */
+    private fun withDenial(
+        booster: List<ScorerCard>,
+        picks: List<ScorerCard>,
+        scores: Map<String, DraftsimCardScore>,
+        podSize: Int,
+    ): Map<String, DraftsimCardScore> {
+        if (picks.count { !isLand(it) } < LX) return scores
+        val take = argmax(booster, scores) ?: return scores
+        if (isBombCard(take)) return scores
+        val takeScore = scores.getValue(take.name)
+        val forgone = max(0.0, takeScore.rawRating - QJ)
+        val reach = denialReach(podSize)
+        val (bomb, denial) = booster
+            .filter { it.name != take.name && isBombCard(it) }
+            .map { it to reach * (ratingOrDefault(it) - DENIAL_FLOOR) }
+            .filter { (_, d) -> d > forgone }
+            .maxByOrNull { (_, d) -> d } ?: return scores
+        val bombScore = scores.getValue(bomb.name)
+        val newTotal = round2(takeScore.total + (denial - forgone))
+        if (newTotal <= bombScore.total) return scores
+        val reason = "Hate draft: keep a bomb from the next drafter"
+        return scores + (bomb.name to bombScore.copy(
+            total = newTotal,
+            reasons = bombScore.reasons + reason,
+            reasonPoints = bombScore.reasonPoints + round2(newTotal - bombScore.total),
+            summary = "Hate draft: ${take.name} (rating ${fmt(takeScore.rawRating)}) adds little to your deck; " +
+                "taking ${bomb.name} keeps it out of an opponent's.",
+        ))
+    }
+
+    /** Chance the drafter you pass to is someone you play: ~1 in 2–3 player pods, falling with size. */
+    private fun denialReach(podSize: Int): Double {
+        val seats = if (podSize <= 0) DEFAULT_POD else podSize
+        return if (seats <= 2) 1.0 else min(1.0, 2.0 / (seats - 1))
+    }
 
     /** The reason with the largest marginal point contribution (the hint layer's dominant reason). */
     fun dominantReason(score: DraftsimCardScore): String? {
@@ -705,12 +768,9 @@ class DraftsimScorer(private val tables: DraftsimSetTables) {
 
     // ----- §6.7 tail -----
 
-    private fun scoreTail(card: ScorerCard, pool: List<ScorerCard>, v: Double, acc: Acc) {
-        val price = card.priceUsd
-        if (v < 2 && price != null && price >= 5) {
-            val bonus = when { price >= 20 -> 0.6; price >= 10 -> 0.4; else -> 0.2 }
-            acc.total += bonus; acc.emit("Hate draft ($${fmt(price)})")
-        }
+    private fun scoreTail(card: ScorerCard, pool: List<ScorerCard>, acc: Acc) {
+        // The bundle's price-based "Hate draft" bonus (rare-drafting for resale value) is left out:
+        // it means nothing here. Denying bombs is [withDenial]'s job.
         if (isLegendaryCreature(card)) {
             val copies = pool.count { it.name == card.name }
             when {
