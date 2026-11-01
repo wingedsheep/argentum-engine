@@ -9047,6 +9047,10 @@ in the repo today):
   its own source's reveal (CR 607.1): it fires only when that permanent's reveal applied to the draw, so
   Primitive Etchings revealing on an opponent's turn doesn't fire Keranos's triggers. `card` is a full
   `GameObjectFilter` on the revealed card (`Creature` for Primitive Etchings, `Land` / `Nonland` for Keranos).
+  `RevealFirstDrawEachTurn(optional = true)` is "You may reveal the first card you draw each turn as you draw
+  it" (God-Eternal Kefnet): the draw pauses on a yes/no per optional source as that card is drawn, before any
+  later card of the same instruction (and before a miracle reveal question). Declining means that source didn't
+  reveal it, so its "this way" trigger doesn't fire even when another source's mandatory reveal showed the card.
 - `Triggers.oneOrMore(filter).putIntoYourGraveyard()` — when matching cards enter your yard.
 - `Triggers.oneOrMore(GameObjectFilter.Permanent).putIntoYourGraveyard()` — only permanent cards.
 - `Triggers.oneOrMore(GameObjectFilter.Creature).putIntoGraveyards()` — "… are put into **graveyards** from anywhere":

@@ -652,7 +652,7 @@ Arc-Slogger
 Arcade Gannon
 Arcades Sabboth	intent: PayOrSufferEffect
 Arcane Amphisbaena
-Arcane Bombardment	intent: CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: CopyCollectionIntoCollectionEffect; intent: Pipeline(FromLinkedExile|graveyard→exile)
+Arcane Bombardment
 Arcane Denial
 Arcane Encyclopedia
 Arcane Epiphany
@@ -1195,7 +1195,7 @@ Barktooth Warbeard
 Barkweave Crusher
 Barl's Cage	intent: GrantKeywordEffect
 Baron Bertram Graywater
-Baron Helmut Zemo	intent: CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: CopyCollectionIntoCollectionEffect; intent: Pipeline(ExiledAsCost→?)
+Baron Helmut Zemo
 Baron Strucker, HYDRA Overlord
 Baron, Airship Kingdom
 Barony Vampire
@@ -1721,7 +1721,7 @@ Bloodstone Cameo
 Bloodstone Goblin
 Bloodsworn Squire
 Bloodtallow Candle
-Bloodthirsty Adversary	intent: ReflexiveTriggerEffect
+Bloodthirsty Adversary
 Bloodthirsty Aerialist
 Bloodthirsty Conqueror
 Bloodthirsty Ogre	intent: ModifyStatsEffect; timing: ModifyStatsEffect
@@ -5262,7 +5262,7 @@ Eye of Malcator	intent: BecomeCreatureEffect
 Eye of Nowhere	polarity: MoveToZoneEffect
 Eye of Ramos
 Eye of Vecna
-Eye of the Storm	intent: ExileTargetSpellEffect; intent: ForEach>CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: ForEach>CopyCollectionIntoCollectionEffect; intent: ForEach>Pipeline(FromLinkedExile→?)
+Eye of the Storm
 Eyeblight Assassin
 Eyeblight Massacre
 Eyeblight's Ending
@@ -6769,6 +6769,7 @@ Goblin-town Flunkies	intent: AmassEffect
 Goblins of the Flarg
 Goblinslide
 God-Eternal Bontu
+God-Eternal Kefnet
 Goddric, Cloaked Reveler
 Godless Shrine
 Godo, Bandit Warlord	intent: AddCombatPhaseEffect; intent: ForEach>TapUntapEffect
@@ -8306,7 +8307,7 @@ Isildur's Fateful Strike
 Island Fish Jasconius
 Island Sanctuary
 Island of Wak-Wak	combat: SetBaseStatsEffect; intent: SetBaseStatsEffect; timing: SetBaseStatsEffect
-Isochron Scepter	intent: CastFromCollectionWithoutPayingCostEffect; intent: CopyCollectionIntoCollectionEffect; intent: Pipeline(FromLinkedExile→?); intent: Pipeline(hand→exile)
+Isochron Scepter	intent: Pipeline(hand→exile)
 Isolate
 Isolated Chapel
 Isolation at Orthanc	polarity: MoveToZoneEffect
@@ -10408,7 +10409,7 @@ Misty Palms Oasis
 Misty Rainforest
 Mite Overseer
 Mithril Coat
-Mizzix's Mastery	intent: CastFromCollectionWithoutPayingCostEffect; intent: CopyCollectionIntoCollectionEffect; intent: Pipeline(ChosenTargets→exile); polarity: CastFromCollectionWithoutPayingCostEffect; polarity: CopyCollectionIntoCollectionEffect; polarity: Pipeline(ChosenTargets→exile)
+Mizzix's Mastery	polarity: CastFromCollectionWithoutPayingCostEffect; polarity: CopyCollectionIntoCollectionEffect; polarity: Pipeline(ChosenTargets→exile)
 Mizzix, Replica Rider	intent: CopyTargetSpellEffect
 Mjölnir, Hammer of Thor	polarity: AttachEquipmentEffect
 Mm'menon, Uthros Exile
@@ -15110,7 +15111,7 @@ Spellrune Painter
 Spellscorn Coven	intent: ForEach>Pipeline(hand→graveyard); intent: ReturnSpellToOwnersHandEffect; polarity: ReturnSpellToOwnersHandEffect
 Spellskite	intent: ChangeTargetEffect; polarity: ChangeTargetEffect
 Spellstutter Sprite
-Spellweaver Helix	intent: CastFromCollectionWithoutPayingCostEffect; intent: CopyCollectionIntoCollectionEffect; intent: Pipeline(ChosenTargets→exile); intent: Pipeline(FromLinkedExile→?); polarity: Pipeline(ChosenTargets→exile)
+Spellweaver Helix	intent: Pipeline(ChosenTargets→exile); polarity: Pipeline(ChosenTargets→exile)
 Spelunking
 Sphere of Annihilation	intent: Pipeline(BattlefieldMatching|Entity|graveyard→exile); intent: StoreNumberEffect
 Sphere of Purity
@@ -17399,7 +17400,7 @@ Ulamog, the Ceaseless Hunger	intent: Pipeline(TopOfLibrary→exile)
 Ulamog, the Defiler	intent: Pipeline(TopOfLibrary→exile); polarity: Pipeline(TopOfLibrary→exile)
 Ulamog, the Infinite Gyre	intent: Pipeline(graveyard→library)
 Ulcerate
-Uldaros Theorix	intent: CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: CopyCollectionIntoCollectionEffect; intent: Pipeline(ChosenTargets→exile); polarity: CastAnyNumberFromCollectionWithoutPayingCostEffect; polarity: CopyCollectionIntoCollectionEffect; polarity: Pipeline(ChosenTargets→exile)
+Uldaros Theorix	polarity: CastAnyNumberFromCollectionWithoutPayingCostEffect; polarity: CopyCollectionIntoCollectionEffect; polarity: Pipeline(ChosenTargets→exile)
 Ulna Alley Shopkeep
 Ulrich's Kindred
 Ultima	intent: EndTheTurnEffect; intent: Pipeline(BattlefieldMatching→graveyard)
@@ -18756,7 +18757,7 @@ Wizard Replica
 Wizard's Lightning
 Wizard's Retort
 Wizard's Rockets
-Wizard's Spellbook	intent: CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: CastFromCollectionWithoutPayingCostEffect; intent: CopyCollectionIntoCollectionEffect; intent: Pipeline(ChosenTargets|FromLinkedExile→exile); intent: RollDiceEffect; polarity: CastAnyNumberFromCollectionWithoutPayingCostEffect; polarity: CastFromCollectionWithoutPayingCostEffect; polarity: CopyCollectionIntoCollectionEffect; polarity: Pipeline(ChosenTargets|FromLinkedExile→exile); polarity: RollDiceEffect
+Wizard's Spellbook	polarity: CastAnyNumberFromCollectionWithoutPayingCostEffect; polarity: CastFromCollectionWithoutPayingCostEffect; polarity: CopyCollectionIntoCollectionEffect; polarity: Pipeline(ChosenTargets|FromLinkedExile→exile); polarity: RollDiceEffect
 Wizard's Staff	polarity: AttachEquipmentEffect
 Wizened Cenn
 Wizened Snitches

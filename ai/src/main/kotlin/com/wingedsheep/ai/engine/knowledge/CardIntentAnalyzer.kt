@@ -454,6 +454,9 @@ object CardIntentAnalyzer {
 
         is DrawCardsEffect, is DrawUpToEffect -> setOf(IntentTag.DRAW)
         is ScryEffect -> setOf(IntentTag.CARD_SELECTION)
+        // "Copy that card and you may cast the copy" (God-Eternal Kefnet, Shiko): the copy is a
+        // spell the controller gets on top of the cards they hold — card advantage, read as a draw.
+        is CopyCardIntoCollectionEffect, is CopyCollectionIntoCollectionEffect -> setOf(IntentTag.DRAW)
         is CounterEffect, is CounterAllOnStackEffect -> setOf(IntentTag.COUNTERSPELL)
         is GainLifeEffect, is DrainLifeEffect -> setOf(IntentTag.LIFEGAIN)
         is CreateTokenEffect, is CreatePredefinedTokenEffect, is InvestigateEffect, is CreateTokenCopyOfTargetEffect,

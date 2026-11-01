@@ -131,13 +131,24 @@ object DrawLoop {
             drawnCards.add(drawOneResult.drawnCardId!!)
             remaining--
 
-            // 3. Miracle (CR 702.94a): "you may reveal this card from your hand as you draw it" —
-            //    asked now, before the next card is drawn, with the rest of the instruction waiting
-            //    beneath the question.
-            val miracle = drawOneResult.miracle
-            if (miracle != null) {
-                val pause = askMiracleReveal(
-                    newState, playerId, drawOneResult.drawnCardId, miracle.cost, remaining, isDrawStep, cycledCardId
+            // 3. "As you draw it" questions about the first card of the turn — optional reveals
+            //    (God-Eternal Kefnet), then miracle (CR 702.94a: "you may reveal this card from your
+            //    hand as you draw it") — asked now, before the next card is drawn, with the rest of
+            //    the instruction waiting beneath them.
+            val miracleCost = drawOneResult.miracle?.cost
+            val revealSources = drawOneResult.optionalRevealSources
+            if (miracleCost != null || revealSources.isNotEmpty()) {
+                val withTail = newState.copy(activeReplacementChain = null).pushContinuation(
+                    DrawReplacementRemainingDrawsContinuation(
+                        drawingPlayerId = playerId,
+                        remainingDraws = remaining,
+                        isDrawStep = isDrawStep,
+                        announcementApplied = true,
+                        cycledCardId = cycledCardId
+                    )
+                )
+                val pause = EffectResult.from(
+                    askFirstDrawQuestion(withTail, playerId, drawOneResult.drawnCardId, revealSources, miracleCost)!!
                 )
                 return buildPausedResult(newState, playerId, drawnCards, perCardEvents, pause, cycledCardId)
             }
@@ -147,32 +158,52 @@ object DrawLoop {
     }
 
     /**
-     * Pause the draw on the miracle reveal question for [cardId]. The question is a
-     * [PrivateQuestion]: it exists only because the card has miracle, so it reaches no other seat.
-     * The [DrawReplacementRemainingDrawsContinuation] beneath it carries the rest of the
-     * instruction — an empty tail too, which in the draw step hands the drawing player priority
-     * once the answer is in.
+     * Ask the next "as you draw it" question about [cardId], the first card [playerId] drew this
+     * turn: the first of [revealSources]' optional reveals, else the miracle reveal when
+     * [miracleCost] is set. Null when nothing is left to ask. The caller has already pushed the
+     * [DrawReplacementRemainingDrawsContinuation] carrying the rest of the instruction — an empty
+     * tail too, which in the draw step hands the drawing player priority once the answers are in.
+     *
+     * The miracle question is a [PrivateQuestion]: it exists only because the card has miracle, so
+     * it reaches no other seat. An optional reveal's question is public — its source is on the
+     * battlefield — and names the drawn card only in the asked player's prompt.
      */
-    private fun askMiracleReveal(
+    fun askFirstDrawQuestion(
         state: GameState,
         playerId: EntityId,
         cardId: EntityId,
-        cost: com.wingedsheep.sdk.core.ManaCost,
-        remainingDraws: Int,
-        isDrawStep: Boolean,
-        cycledCardId: EntityId?
-    ): EffectResult {
+        revealSources: List<EntityId>,
+        miracleCost: com.wingedsheep.sdk.core.ManaCost?,
+        events: List<GameEvent> = emptyList()
+    ): ExecutionResult? {
         val cardName = state.getEntity(cardId)?.get<CardComponent>()?.name ?: "this card"
-        val withTail = state.copy(activeReplacementChain = null).pushContinuation(
-            DrawReplacementRemainingDrawsContinuation(
-                drawingPlayerId = playerId,
-                remainingDraws = remainingDraws,
-                isDrawStep = isDrawStep,
-                announcementApplied = true,
-                cycledCardId = cycledCardId
+        val sourceId = revealSources.firstOrNull()
+        if (sourceId != null) {
+            val sourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "this permanent"
+            return state.suspendForDecision(
+                question = { id ->
+                    YesNoDecision(
+                        id = id,
+                        playerId = playerId,
+                        prompt = "Reveal $cardName with $sourceName?",
+                        context = DecisionContext(
+                            sourceId = sourceId,
+                            sourceName = sourceName,
+                            phase = DecisionPhase.RESOLUTION
+                        ),
+                        yesText = "Reveal",
+                        noText = "Keep hidden",
+                        hint = "$sourceName lets you reveal the first card you draw each turn as you draw it."
+                    )
+                },
+                answer = OptionalFirstDrawRevealContinuation(
+                    playerId, cardId, sourceId, revealSources.drop(1), miracleCost
+                ),
+                events = events
             )
-        )
-        return EffectResult.from(withTail.suspendForDecision(
+        }
+        if (miracleCost == null) return null
+        return state.suspendForDecision(
             question = { id ->
                 YesNoDecision(
                     id = id,
@@ -185,12 +216,13 @@ object DrawLoop {
                     ),
                     yesText = "Reveal",
                     noText = "Keep hidden",
-                    hint = "Miracle $cost — reveal it as the first card you drew this turn, and a " +
-                        "trigger lets you cast it for $cost as it resolves."
+                    hint = "Miracle $miracleCost — reveal it as the first card you drew this turn, and a " +
+                        "trigger lets you cast it for $miracleCost as it resolves."
                 )
             },
-            answer = MiracleRevealContinuation(playerId, cardId, cost)
-        ))
+            answer = MiracleRevealContinuation(playerId, cardId, miracleCost),
+            events = events
+        )
     }
 
     /**

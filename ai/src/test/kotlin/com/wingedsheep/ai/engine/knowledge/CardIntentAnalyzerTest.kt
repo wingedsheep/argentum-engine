@@ -6,6 +6,7 @@ import com.wingedsheep.engine.state.components.identity.RoomFace
 import com.wingedsheep.engine.state.components.identity.RoomFaceId
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.mtg.sets.definitions.dsk.cards.UnholyAnnexRitualChamber
+import com.wingedsheep.mtg.sets.definitions.war.cards.GodEternalKefnet
 import com.wingedsheep.mtg.sets.definitions.woe.cards.VirtueOfLoyalty
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -156,6 +157,14 @@ class CardIntentAnalyzerTest : ScenarioTestBase() {
             val intent = intentOf("Grizzly Bears")
             intent.tags shouldBe emptySet()
             intent.staticPriorValue shouldBe CardIntent.UNKNOWN.staticPriorValue
+        }
+
+        test("copying a card to cast the copy reads as card advantage") {
+            // God-Eternal Kefnet: "copy that card and you may cast the copy" is an extra spell on
+            // top of the hand — a repeatable draw engine, not an unread blank.
+            val intent = CardIntentAnalyzer.analyze(GodEternalKefnet)
+            intent.tags shouldContain IntentTag.DRAW
+            intent.repeatable shouldBe true
         }
 
         test("a Room's rules text lives on its faces, and the analyzer reads it") {

@@ -3554,6 +3554,134 @@
     ]
 }
 
+// God-Eternal Kefnet
+{
+    "name": "God-Eternal Kefnet",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Legendary Creature — Zombie God",
+    "oracleText": "Flying\nYou may reveal the first card you draw each turn as you draw it. Whenever you reveal an instant or sorcery card this way, copy that card and you may cast the copy. That copy costs {2} less to cast.\nWhen God-Eternal Kefnet dies or is put into exile from the battlefield, you may put it into its owner's library third from the top.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "God-Eternal Kefnet:1",
+                "trigger": {
+                    "type": "CardRevealedFromDrawEvent",
+                    "cardFilter": "instant|sorcery"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CopyCardIntoCollection",
+                            "source": "TriggeringEntity",
+                            "storeAs": "copy0"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "CastFromCollectionWithoutPayingCost",
+                                "from": "copy0",
+                                "payManaCost": true,
+                                "costReduction": 2
+                            },
+                            "descriptionOverride": "You may cast the copy. It costs {2} less to cast."
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever you reveal an instant or sorcery card this way, copy that card and you may cast the copy. That copy costs {2} less to cast."
+            },
+            {
+                "id": "God-Eternal Kefnet:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Put God-Eternal Kefnet into its owner's library third from the top?"
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Library",
+                        "fromZone": "Graveyard",
+                        "positionFromTop": 2
+                    }
+                },
+                "descriptionOverride": "When God-Eternal Kefnet dies, you may put it into its owner's library third from the top."
+            },
+            {
+                "id": "God-Eternal Kefnet:3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Exile"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Put God-Eternal Kefnet into its owner's library third from the top?"
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Library",
+                        "fromZone": "Exile",
+                        "positionFromTop": 2
+                    }
+                },
+                "descriptionOverride": "When God-Eternal Kefnet is put into exile from the battlefield, you may put it into its owner's library third from the top."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "RevealFirstDrawEachTurn",
+                "optional": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "rarity": "MYTHIC",
+        "artist": "Lius Lasahido",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/e/5e14060f-9167-4e28-a053-77689e066e30.jpg?1783933465",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "It's important to reveal the first card you draw each turn (or choose not to reveal it) before it is mixed with the other cards in your hand. You look at the card as you draw it before choosing whether to reveal it."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Multiple card draws are always treated as a sequence of individual card draws. Only the first card drawn this way may be revealed and copied with Kefnet's ability."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "You can cast the copy only as Kefnet's triggered ability resolves. If you don't want to cast it at that time (or you can't cast it), the copy ceases to exist."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "The copy is created in and cast from your hand."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Guild Globe
 {
     "name": "Guild Globe",

@@ -1720,15 +1720,23 @@ data class ModifyMaximumHandSize(
  *
  * @property yourTurnsOnly "the first card you draw on each of your turns" (Keranos, God of
  *   Storms): the reveal applies only while the controller is the active player.
+ * @property optional "You may reveal the first card you draw each turn as you draw it" (God-Eternal
+ *   Kefnet): the controller is asked as they draw it, before any later card of the same draw
+ *   instruction. Declining means this source didn't reveal it, so its "this way" trigger doesn't
+ *   fire — even if another source's mandatory reveal showed the card anyway.
  */
 @SerialName("RevealFirstDrawEachTurn")
 @Serializable
 data class RevealFirstDrawEachTurn(
-    val yourTurnsOnly: Boolean = false
+    val yourTurnsOnly: Boolean = false,
+    val optional: Boolean = false
 ) : StaticAbility {
-    override val description: String =
-        if (yourTurnsOnly) "Reveal the first card you draw on each of your turns"
-        else "Reveal the first card you draw each turn"
+    override val description: String = buildString {
+        append(if (optional) "You may reveal" else "Reveal")
+        append(" the first card you draw ")
+        append(if (yourTurnsOnly) "on each of your turns" else "each turn")
+        if (optional) append(" as you draw it")
+    }
 }
 
 /**

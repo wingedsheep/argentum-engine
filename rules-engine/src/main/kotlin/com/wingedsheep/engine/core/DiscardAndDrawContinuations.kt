@@ -179,6 +179,32 @@ data class MiracleRevealContinuation(
 ) : AnswerContinuation, PrivateQuestion
 
 /**
+ * Resume after a player answers whether [sourceId]'s optional first-draw reveal shows the card they
+ * just drew ("You may reveal the first card you draw each turn as you draw it", God-Eternal Kefnet —
+ * [com.wingedsheep.sdk.scripting.RevealFirstDrawEachTurn.optional]).
+ *
+ * Asked between cards, like [MiracleRevealContinuation]: the rest of the draw instruction waits
+ * beneath it in a [DrawReplacementRemainingDrawsContinuation]. Not a [PrivateQuestion] — the source
+ * is on the battlefield, so the table already knows the question is asked on every first draw; the
+ * drawn card is named only in the asked player's prompt, and the shared log names just the source.
+ *
+ * @property playerId The player who drew the card and is asked
+ * @property cardId The card just drawn, now in that player's hand
+ * @property sourceId The permanent whose reveal this question is about
+ * @property laterSources Further optional reveal sources still to ask about, in order
+ * @property miracleCost The drawn card's miracle cost when its miracle reveal is still to be asked
+ *     after these, or null
+ */
+@Serializable
+data class OptionalFirstDrawRevealContinuation(
+    val playerId: EntityId,
+    val cardId: EntityId,
+    val sourceId: EntityId,
+    val laterSources: List<EntityId> = emptyList(),
+    val miracleCost: com.wingedsheep.sdk.core.ManaCost? = null
+) : AnswerContinuation
+
+/**
  * Resume the draw step of a cycling action after cycling triggers have resolved.
  *
  * Nothing pushes this frame any more: cycling triggers wait in the settle boundary's queue, so

@@ -439,6 +439,7 @@ val engineSerializersModule = SerializersModule {
         subclass(DrawUpToContinuation::class)
         subclass(StaticDrawReplacementContinuation::class)
         subclass(MiracleRevealContinuation::class)
+        subclass(OptionalFirstDrawRevealContinuation::class)
         subclass(CycleCardChooseXContinuation::class)
         subclass(CostPaymentContinuation::class)
         subclass(CostPaymentManaSelectionContinuation::class)
