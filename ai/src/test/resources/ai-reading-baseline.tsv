@@ -361,7 +361,7 @@ Alley Assailant
 Alley Strangler
 Allied Assault	timing: ForEach>ModifyStatsEffect
 Allies at Last	polarity: ForEachEffect; polarity: Pipeline(ChosenTargets→?)
-Alloy Animist	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect; timing: BecomeCreatureEffect
+Alloy Animist	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
 Alloy Golem
 Alloy Myr
 Allure of the Unknown
@@ -906,7 +906,7 @@ Astrologian's Planisphere
 Asylum Visitor
 At Knifepoint
 Atalya, Samite Master
-Atarka Monument	timing: BecomeCreatureEffect
+Atarka Monument
 Atarka, World Render	intent: GrantKeywordEffect
 Atemsis, All-Seeing	intent: LoseGameEffect; intent: RevealHandEffect
 Athreos, God of Passage	intent: PayOrSufferEffect; polarity: PayOrSufferEffect
@@ -986,7 +986,7 @@ Avacyn's Pilgrim
 Avacyn, Angel of Hope
 Avacyn, Angel of Horror
 Avacynian Priest
-Avalanche Caller	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect; timing: BecomeCreatureEffect
+Avalanche Caller	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
 Avalanche Tusker	intent: ForceBlockEffect; polarity: ForceBlockEffect
 Avarax
 Avatar Aang
@@ -1414,7 +1414,7 @@ Beseech the Queen
 Beskir Shieldmate
 Besotted Knight	intent: CreateAuraTokenEffect
 Bespoke Battlegarb
-Bespoke Battlewagon	timing: BecomeCreatureEffect
+Bespoke Battlewagon
 Bespoke Bō	polarity: MoveToZoneEffect
 Bestial Bloodline
 Bestial Incursion
@@ -1794,7 +1794,7 @@ Bog Witch
 Bog Wraith
 Bog Wreckage
 Bog-Strider Ash
-Bogardan Dragonheart	timing: BecomeCreatureEffect
+Bogardan Dragonheart
 Bogardan Rager
 Boggart Birth Rite
 Boggart Brute
@@ -2350,7 +2350,7 @@ Caparocti Sunborn	intent: DiscoverEffect
 Capashen Knight
 Capashen Templar
 Capashen Unicorn
-Capenna Express	timing: BecomeCreatureEffect
+Capenna Express
 Capital City
 Capital Guard
 Capricious Hellraiser
@@ -2499,13 +2499,13 @@ Cavalry Master
 Cave People	intent: ModifyStatsEffect
 Cave Sense
 Cave of Temptation
-Cave of the Frost Dragon	timing: BecomeCreatureEffect
+Cave of the Frost Dragon
 Cavern Crawler	intent: ModifyStatsEffect
 Cavern Stomper	intent: GrantStaticAbilityEffect; timing: GrantStaticAbilityEffect
 Cavern Thoctar
 Cavern Whisperer	intent: ForEach>Pipeline(hand→graveyard)
 Cavern of Souls
-Cavernous Maw	timing: BecomeCreatureEffect
+Cavernous Maw
 Caverns of Despair
 Caves of Koilos
 Cease // Desist	polarity: DrawCardsEffect; polarity: GainLifeEffect; polarity: Pipeline(ChosenTargets→exile)
@@ -3309,7 +3309,7 @@ Craven Knight
 Craw Giant
 Craw Wurm
 Crawl from the Cellar
-Crawling Barrens	timing: BecomeCreatureEffect
+Crawling Barrens
 Crawling Chorus
 Crawling Infestation
 Crawling Sensation
@@ -3934,7 +3934,7 @@ Demonic Vigor
 Demonlord Belzenlok	intent: ExileFromTopRepeatingEffect
 Demonmail Hauberk
 Demystify
-Den of the Bugbear	intent: GrantTriggeredAbilityEffect; timing: BecomeCreatureEffect; timing: GrantTriggeredAbilityEffect
+Den of the Bugbear	intent: GrantTriggeredAbilityEffect; timing: GrantTriggeredAbilityEffect
 Denethor, Ruling Steward
 Denizen of the Deep	intent: Pipeline(BattlefieldMatching→hand)
 Dennick, Pious Apprentice
@@ -3990,7 +3990,7 @@ Desperate Ritual
 Despise	intent: Pipeline(hand→graveyard); intent: RevealHandEffect; polarity: Pipeline(hand→graveyard); polarity: RevealHandEffect
 Despoil
 Destined Confrontation
-Destiny Spinner	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect; timing: BecomeCreatureEffect
+Destiny Spinner	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
 Destroy Evil
 Destructive Digger
 Destructive Tampering
@@ -4855,7 +4855,7 @@ Elvish Aberration
 Elvish Archdruid
 Elvish Archers
 Elvish Archivist
-Elvish Branchbender	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect; timing: BecomeCreatureEffect
+Elvish Branchbender	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
 Elvish Champion
 Elvish Doomsayer	intent: ForEach>Pipeline(hand→graveyard)
 Elvish Eulogist
@@ -5312,7 +5312,7 @@ Fabricate
 Fabrication Foundry
 Face Yourself	polarity: ForEachEffect
 Face of Fear
-Faceless Haven	timing: BecomeCreatureEffect
+Faceless Haven
 Faces of the Past
 Facet Reader
 Facevaulter
@@ -5672,7 +5672,7 @@ Find // Finality
 Find the Path	intent: VentureIntoTheDungeonEffect
 Finishing Blow
 Finneas, Ace Archer
-Firdoch Core	timing: BecomeCreatureEffect
+Firdoch Core
 Fire Ambush
 Fire Ants
 Fire Bowman
@@ -7233,7 +7233,7 @@ Hall Monitor	combat: CantBlockEffect; intent: CantBlockEffect; timing: CantBlock
 Hall of Echoes	intent: EachPermanentBecomesCopyOfTargetEffect; intent: GrantStaticAbilityEffect; polarity: EachPermanentBecomesCopyOfTargetEffect; timing: EachPermanentBecomesCopyOfTargetEffect; timing: GrantStaticAbilityEffect
 Hall of Heliod's Generosity	polarity: MoveToZoneEffect
 Hall of Oracles
-Hall of Storm Giants	intent: GrantStaticAbilityEffect; timing: BecomeCreatureEffect; timing: GrantStaticAbilityEffect
+Hall of Storm Giants	intent: GrantStaticAbilityEffect; timing: GrantStaticAbilityEffect
 Hall of Tagsin
 Hall of the Bandit Lord
 Hallar, the Firefletcher
@@ -7626,7 +7626,7 @@ Hit the Mother Lode	intent: DiscoverEffect
 Hitchclaw Recluse
 Hithlain Knots
 Hive Stirrings
-Hive of the Eye Tyrant	intent: GrantTriggeredAbilityEffect; timing: BecomeCreatureEffect; timing: GrantTriggeredAbilityEffect
+Hive of the Eye Tyrant	intent: GrantTriggeredAbilityEffect; timing: GrantTriggeredAbilityEffect
 Hiveheart Shaman
 Hivespine Wolverine
 Hoar Shade
@@ -7682,7 +7682,7 @@ Honed Khopesh
 Honest Rutstein
 Honest Work	polarity: Aura>GrantActivatedAbility; polarity: Aura>LoseAllAbilities; polarity: Aura>RemoveAllCountersEffect; polarity: Aura>SetBasePowerToughnessStatic; polarity: Aura>SetName; polarity: Aura>TapUntapEffect; polarity: Aura>TransformPermanent
 Honey Mammoth
-Honeymoon Hearse	timing: BecomeCreatureEffect
+Honeymoon Hearse
 Honor
 Honor Guard
 Honor Troll
@@ -8321,7 +8321,7 @@ Iron Lad, Diverging Destiny
 Iron Lance	intent: GrantKeywordEffect
 Iron League Steed
 Iron Maiden
-Iron Man Armor	timing: BecomeCreatureEffect
+Iron Man Armor
 Iron Man, Master of Machines
 Iron Myr
 Iron Spider, Stark Upgrade
@@ -8723,7 +8723,7 @@ Katara, Water Tribe's Hope	combat: ForEach>SetBaseStatsEffect; intent: ForEach>S
 Katara, the Fearless
 Katilda, Dawnhart Martyr
 Katilda, Dawnhart Prime
-Katsumasa, the Animator	timing: AddCardTypeEffect; timing: BecomeCreatureEffect
+Katsumasa, the Animator	timing: AddCardTypeEffect
 Kav Landseeker
 Kavaron Harrier
 Kavaron Skywarden
@@ -9118,7 +9118,7 @@ Kwende, Pride of Femeref
 Kwia Vigorbloom
 Kykar, Wind's Fury
 Kykar, Zephyr Awakener
-Kylox's Voltstrider	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(FromLinkedExile→?); timing: BecomeCreatureEffect
+Kylox's Voltstrider	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(FromLinkedExile→?)
 Kylox, Visionary Inventor	intent: CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→exile); intent: SacrificeEffect
 Kyodai, Soul of Kamigawa
 Kyoshi Battle Fan
@@ -9152,7 +9152,7 @@ Lagonna-Band Storyteller	polarity: GainLifeEffect; polarity: MoveToZoneEffect
 Lagorin, Soul of Alacria
 Lagrella, the Magpie	intent: Pipeline(FromLinkedExile→battlefield); intent: ReflexiveTriggerEffect
 Laid to Rest
-Lair of the Hydra	timing: BecomeCreatureEffect
+Lair of the Hydra
 Lairwatch Giant	intent: GrantKeywordEffect
 Lake-town
 Lake-town Lookout
@@ -9320,7 +9320,7 @@ Lethal Vapors	intent: SkipNextTurnEffect
 Letter of Acceptance
 Leveler
 Leviathan
-Levitating Statue	timing: BecomeCreatureEffect
+Levitating Statue
 Levitation
 Ley Druid	intent: TapUntapEffect
 Leyline Axe
@@ -10113,7 +10113,7 @@ Mek'leth Berserker
 Melancholic Poet
 Melded Moxite
 Meldweb Curator	polarity: MoveToZoneEffect
-Meldweb Strider	timing: BecomeCreatureEffect
+Meldweb Strider
 Melek, Reforged Researcher
 Melesse Spirit
 Melira, the Living Cure	polarity: CreateDelayedTriggerEffect
@@ -10290,7 +10290,7 @@ Militia's Pride
 Millikin
 Millstone	polarity: Pipeline(TopOfLibrary→graveyard)
 Mimeoplasm, Revered One	intent: EachPermanentBecomesCopyOfTargetEffect; polarity: EachPermanentBecomesCopyOfTargetEffect
-Mimic	timing: BecomeCreatureEffect
+Mimic
 Mina and Denn, Wildborn
 Minamo, School at Water's Edge	intent: TapUntapEffect
 Minas Morgul, Dark Fortress
@@ -10418,8 +10418,8 @@ Misguided Rage	polarity: ForceSacrificeEffect
 Mishra's Bauble	polarity: Pipeline(TopOfLibrary→?)
 Mishra's Command
 Mishra's Domination	polarity: Aura>ConditionalStaticAbility
-Mishra's Factory	timing: BecomeCreatureEffect
-Mishra's Foundry	timing: BecomeCreatureEffect
+Mishra's Factory
+Mishra's Foundry
 Mishra's Juggernaut
 Mishra's Onslaught
 Mishra's Research Desk	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
@@ -10488,7 +10488,7 @@ Mob Lookout
 Mobile Homestead	intent: Pipeline(TopOfLibrary→battlefield)
 Mobilization
 Mobilize	intent: ForEach>TapUntapEffect
-Mobilized District	timing: BecomeCreatureEffect
+Mobilized District
 Mobilizer Mech	intent: AddCardTypeEffect; polarity: AddCardTypeEffect
 Mocking Sprite
 Mockingbird
@@ -11842,7 +11842,7 @@ Phantom Interference
 Phantom Monster
 Phantom Nantuko
 Phantom Ninja
-Phantom Train	timing: BecomeCreatureEffect
+Phantom Train
 Phantom Warrior
 Pharika's Cure
 Pharika's Disciple
@@ -12569,7 +12569,7 @@ Raging Kavu
 Raging Kronch
 Raging Minotaur
 Raging Poltergeist
-Raging Ravine	intent: GrantTriggeredAbilityEffect; timing: BecomeCreatureEffect; timing: GrantTriggeredAbilityEffect
+Raging Ravine	intent: GrantTriggeredAbilityEffect; timing: GrantTriggeredAbilityEffect
 Raging Redcap
 Raging Regisaur
 Raging River	intent: ForEach>ChoosePileEffect; intent: ForEach>GrantCantBeBlockedExceptByCollectionEffect; intent: ForEach>Pipeline(BattlefieldMatching→?)
@@ -13007,7 +13007,7 @@ Replicating Ring
 Replication Specialist
 Repository Skaab
 Reprieve	polarity: DrawCardsEffect; polarity: ReturnSpellToOwnersHandEffect
-Reptil, Dinomorpher	timing: BecomeCreatureEffect
+Reptil, Dinomorpher
 Reptilian Recruiter	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
 Reptilian Reflection
 Repulse	polarity: MoveToZoneEffect
@@ -13054,18 +13054,18 @@ Resplendent Angel
 Resplendent Marshal
 Resplendent Mentor
 Rest in Peace	intent: Pipeline(graveyard→exile)
-Restless Anchorage	timing: BecomeCreatureEffect
-Restless Bivouac	timing: BecomeCreatureEffect
+Restless Anchorage
+Restless Bivouac
 Restless Bloodseeker
-Restless Cottage	timing: BecomeCreatureEffect
+Restless Cottage
 Restless Dead
-Restless Fortress	timing: BecomeCreatureEffect
-Restless Prairie	timing: BecomeCreatureEffect
-Restless Reef	polarity: Pipeline(TopOfLibrary→graveyard); timing: BecomeCreatureEffect
-Restless Ridgeline	timing: BecomeCreatureEffect
-Restless Spire	intent: GrantKeywordEffect; timing: BecomeCreatureEffect
-Restless Vents	timing: BecomeCreatureEffect
-Restless Vinestalk	intent: SetBaseStatsEffect; polarity: SetBaseStatsEffect; timing: BecomeCreatureEffect
+Restless Fortress
+Restless Prairie
+Restless Reef	polarity: Pipeline(TopOfLibrary→graveyard)
+Restless Ridgeline
+Restless Spire	intent: GrantKeywordEffect
+Restless Vents
+Restless Vinestalk	intent: SetBaseStatsEffect; polarity: SetBaseStatsEffect
 Restock
 Restoration Angel	polarity: MoveToZoneEffect
 Restoration Magic
@@ -15359,7 +15359,7 @@ Spring Cleaning
 Spring Splasher	intent: ModifyStatsEffect
 Spring of Eternal Peace
 Spring-Leaf Avenger
-Spring-Loaded Sawblades	intent: ReturnSelfFromExileTransformedEffect; timing: BecomeCreatureEffect
+Spring-Loaded Sawblades	intent: ReturnSelfFromExileTransformedEffect
 Springbloom Druid
 Springheart Nantuko
 Springjack Knight	intent: GrantKeywordEffect
@@ -15757,7 +15757,7 @@ Student of Elements	intent: FlipEffect
 Student of Ojutai
 Studious First-Year
 Study Break
-Stuffed Bear	timing: BecomeCreatureEffect
+Stuffed Bear
 Stump Stomp	polarity: DealDamageEffect
 Stun	timing: CantBlockEffect
 Su-Chi
@@ -15979,7 +15979,7 @@ Susurian Dirgecraft
 Susurian Voidborn
 Suture Priest
 Svella, Ice Shaper	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→library)
-Svogthos, the Restless Tomb	timing: BecomeCreatureEffect
+Svogthos, the Restless Tomb
 Svyelun of Sea and Sky
 Svyelunite Priest
 Svyelunite Temple
@@ -16203,7 +16203,7 @@ Tangle	timing: PreventDamageEffect
 Tangle Golem
 Tangle Kelp
 Tangle Spider
-Tangle Tumbler	timing: BecomeCreatureEffect
+Tangle Tumbler
 Tanglebloom
 Tangled Colony
 Tangled Florahedron
@@ -16613,7 +16613,7 @@ The Master of Lake-town
 The Master, Transcendent	combat: SetBaseStatsEffect; polarity: AddCountersEffect
 The Masters of Evil
 The Meathook Massacre
-The Mechanist, Aerial Artisan	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect; timing: BecomeCreatureEffect
+The Mechanist, Aerial Artisan	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
 The Mending of Dominaria
 The Mightstone and Weakstone
 The Mighty Thor, Jane Foster	polarity: MoveToZoneEffect
@@ -16711,7 +16711,7 @@ The Wretched
 Theft of Dreams	polarity: DrawCardsEffect
 Thelon's Chant
 Thelon's Curse	intent: GatedEffect; intent: Pipeline(ControlledPermanents→?)
-Thelonite Druid	intent: ForEach>BecomeCreatureEffect; timing: ForEach>BecomeCreatureEffect
+Thelonite Druid	intent: ForEach>BecomeCreatureEffect
 Thelonite Hermit
 Thelonite Monk	intent: SetLandTypeEffect; polarity: SetLandTypeEffect
 Theoretical Necromancer
@@ -17132,7 +17132,7 @@ Touch of Brilliance
 Touch of Darkness	intent: ForEach>ChangeColorEffect; polarity: ForEachEffect; timing: ForEach>ChangeColorEffect
 Touch of Invisibility
 Touch the Spirit Realm
-Tough Cookie	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect; timing: BecomeCreatureEffect
+Tough Cookie	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
 Tourach's Chant
 Tourach's Gate	intent: RemoveCountersEffect; intent: SacrificeSelfEffect; polarity: Aura>AddCountersEffect; polarity: Aura>ForEachEffect; polarity: Aura>RemoveCountersEffect; polarity: Aura>SacrificeSelfEffect; timing: ForEach>ModifyStatsEffect
 Tournament Grounds
@@ -17276,7 +17276,7 @@ Treetop Scout
 Treetop Sentinel
 Treetop Sentries
 Treetop Snarespinner
-Treetop Village	timing: BecomeCreatureEffect
+Treetop Village
 Treetop Warden
 Trelasarra, Moon Dancer
 Tremor
@@ -18224,7 +18224,7 @@ Vote Out
 Vow to Erebor
 Voyage Home
 Voyage's End	polarity: MoveToZoneEffect
-Voyager Glidecar	timing: BecomeCreatureEffect
+Voyager Glidecar
 Voyager Quickwelder
 Voyager Staff
 Voyaging Satyr	intent: TapUntapEffect
@@ -18577,7 +18577,7 @@ Wellgabber Apothecary
 Wellspring	polarity: Aura>GainControlEffect; polarity: Aura>TapUntapEffect
 Wellwisher
 Werefox Bodyguard
-Werewolf Pack Leader	timing: BecomeCreatureEffect
+Werewolf Pack Leader
 West Wind Avatar
 Western Paladin
 Westfold Rider
