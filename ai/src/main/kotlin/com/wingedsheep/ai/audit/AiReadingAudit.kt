@@ -34,6 +34,7 @@ import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.ScryEffect
 import com.wingedsheep.sdk.scripting.effects.SurveilEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
+import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.TransformEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
@@ -547,7 +548,7 @@ object AiReadingAudit {
     }
 
     /**
-     * The leaves that need no intent tag: equip / attach, a card moving, untapping or transforming itself, damage to a
+     * The leaves that need no intent tag: equip / attach, a card moving, untapping, transforming or animating itself, damage to a
      * player and life loss (commented inline below), and a counter the effect puts on its own source or its own
      * controller — a creature growing itself, a charge, oil, quest or loyalty counter, `{E}` for you. There is no target to choose and nothing
      * to hold it for, and its payoff is already on the board (the evaluator reads a grown creature's
@@ -575,6 +576,11 @@ object AiReadingAudit {
         // no spell to time: its payoff is the face it becomes, which the simulation sees on the board.
         // Transforming another permanent stays flagged.
         if (leaf is TransformEffect && leaf.target == EffectTarget.Self) return true
+        // A permanent animating itself (a manland, "this artifact becomes a 3/3 until end of turn") has
+        // no target and is no spell to hold: when to activate it is the timing check's question and
+        // that it can block is CombatReach's; what it is worth is the creature the simulation then sees.
+        // Animating another permanent stays flagged.
+        if (leaf is BecomeCreatureEffect && leaf.target == EffectTarget.Self) return true
         // Damage to a player is a clock: the evaluator prices the life it takes on resolution, it
         // answers nothing on the board, and life lost now or one window later is the same life.
         // Which player a targeted one aims at is the polarity check's question, not intent's.
