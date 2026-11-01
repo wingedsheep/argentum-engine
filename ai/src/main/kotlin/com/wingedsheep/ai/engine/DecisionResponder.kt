@@ -12,6 +12,7 @@ import com.wingedsheep.ai.engine.knowledge.ExpiringGrantWindow
 import com.wingedsheep.ai.engine.knowledge.GraveyardSynergy
 import com.wingedsheep.ai.engine.knowledge.IntentCatalog
 import com.wingedsheep.ai.engine.knowledge.TargetPolarity
+import com.wingedsheep.ai.engine.knowledge.TargetPolarityAnalyzer
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.engine.state.GameState
@@ -600,6 +601,15 @@ class DecisionResponder(
             return CardsSelectedResponse(decision.id, options.filter { it in keep })
         }
 
+        // Proliferate: each recipient is its own yes/no. The generic branches below answer an
+        // "any number of" selection all-or-nothing, which proliferated the opponent's +1/+1 and
+        // loyalty counters along with ours.
+        if ((state.peekContinuation() as? Suspension)?.takeIf { it.question.id == decision.id }
+                ?.answer is ProliferateContinuation
+        ) {
+            return CardsSelectedResponse(decision.id, proliferateRecipients(state, decision, playerId))
+        }
+
         // A `minTotalManaValue` floor (collect evidence N, CR 701.59a) is a *sum* gate, so none of
         // the count-based branches below can satisfy it — taking `min` cheap cards submits an
         // illegal selection the validator rejects, and taking zero silently declines an optional
@@ -680,6 +690,44 @@ class DecisionResponder(
             else -> {
                 val ranked = rankCardsContextual(state, options, playerId, wantToKeep = true)
                 CardsSelectedResponse(decision.id, ranked.take(min.coerceAtLeast(0)))
+            }
+        }
+    }
+
+    /**
+     * The proliferate recipients worth another counter of each kind for [playerId]: every option
+     * whose one-recipient simulation scores above choosing none. Where the evaluation can't tell
+     * (a charge counter, a counter it doesn't price) the counters' own polarity decides — ours
+     * when every kind on it reads as good or unread, an opponent's (or an opponent) only when
+     * every kind reads as harmful (-1/-1, stun, poison).
+     */
+    private fun proliferateRecipients(
+        state: GameState,
+        decision: SelectCardsDecision,
+        playerId: EntityId,
+    ): List<EntityId> {
+        val projected = state.projectedState
+        val noneScore = evaluateChoice(
+            state, simulator.simulateDecision(state, CardsSelectedResponse(decision.id, emptyList())), playerId,
+        )
+        return decision.options.filter { id ->
+            val score = evaluateChoice(
+                state, simulator.simulateDecision(state, CardsSelectedResponse(decision.id, listOf(id))), playerId,
+            )
+            when {
+                score > noneScore + PROLIFERATE_EPSILON -> true
+                score < noneScore - PROLIFERATE_EPSILON -> false
+                else -> {
+                    val kinds = state.getEntity(id)?.get<CountersComponent>()?.counters
+                        ?.filterValues { it > 0 }?.keys.orEmpty()
+                    val polarities = kinds.map { kind ->
+                        if (kind == CounterType.POISON) TargetPolarity.HARMFUL else TargetPolarityAnalyzer.counterPolarity(kind)
+                    }
+                    val holder = if (id in state.turnOrder) id else projected.getController(id)
+                    if (holder == playerId) polarities.none { it == TargetPolarity.HARMFUL }
+                    else holder != null && state.isOpponentTo(holder, playerId) &&
+                        polarities.isNotEmpty() && polarities.all { it == TargetPolarity.HARMFUL }
+                }
             }
         }
     }
@@ -1809,6 +1857,9 @@ class DecisionResponder(
     }
 
     private companion object {
+        /** Score movement below this is the evaluation not seeing a proliferate recipient. */
+        const val PROLIFERATE_EPSILON = 1e-6
+
         /**
          * An option list longer than this is open-ended — every creature type, every card name —
          * and is shortlisted from the cards in the game rather than simulated entry by entry. Well
