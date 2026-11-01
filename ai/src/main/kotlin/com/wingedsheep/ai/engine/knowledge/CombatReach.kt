@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
+import com.wingedsheep.sdk.scripting.effects.AmassEffect
 import com.wingedsheep.sdk.scripting.effects.AnimateLandEffect
 import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
@@ -82,6 +83,9 @@ internal enum class CombatReach {
                 // same as a pump does, and keeps it grown; a -1/-1 counter shrinks one.
                 is AddCountersEffect -> if (changesStats(leaf.counterType)) reach += FIGHT
                 is AddDynamicCountersEffect -> if (changesStats(leaf.counterType)) reach += FIGHT
+                // Amass puts +1/+1 counters on an Army already in the fight (and is read as a
+                // token maker, BLOCKER, for the Army it creates when there is none).
+                is AmassEffect -> reach += FIGHT
                 // Damage aimed only at a player is a clock, not a combat answer.
                 is DealDamageEffect -> if (leaf.target !is EffectTarget.PlayerRef) reach += FIGHT
                 is AnimateLandEffect, is BecomeCreatureEffect, is MassAnimateEffect -> reach += BLOCKER

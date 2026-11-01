@@ -689,6 +689,9 @@ object CardIntentAnalyzer {
         is GainLifeEffect, is DrainLifeEffect -> setOf(IntentTag.LIFEGAIN)
         is CreateTokenEffect, is CreatePredefinedTokenEffect, is InvestigateEffect, is CreateTokenCopyOfTargetEffect,
         is CreateTokenCopyOfSourceEffect -> setOf(IntentTag.TOKEN_MAKER)
+        // Amass makes the Army token when there is none and grows it when there is: either way a
+        // creature body on the battlefield, the same payoff as the token it creates.
+        is AmassEffect -> setOf(IntentTag.TOKEN_MAKER)
 
         is AddManaEffect, is AddColorlessManaEffect, is AddDynamicManaEffect,
         is AddManaOfChoiceEffect, is PlayAdditionalLandsEffect -> setOf(IntentTag.RAMP)
