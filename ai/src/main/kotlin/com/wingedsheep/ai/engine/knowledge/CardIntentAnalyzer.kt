@@ -496,7 +496,8 @@ object CardIntentAnalyzer {
         is TapUntapCollectionEffect -> if (effect.tap) setOf(IntentTag.TAPPER) else emptySet()
 
         is DrawCardsEffect, is DrawUpToEffect -> setOf(IntentTag.DRAW)
-        is ScryEffect -> setOf(IntentTag.CARD_SELECTION)
+        // Surveil is scry whose bottom is the graveyard: the same look at the top, the same card flow.
+        is ScryEffect, is SurveilEffect -> setOf(IntentTag.CARD_SELECTION)
         // "Copy that card and you may cast the copy" (God-Eternal Kefnet, Shiko): the copy is a
         // spell the controller gets on top of the cards they hold — card advantage, read as a draw.
         is CopyCardIntoCollectionEffect, is CopyCollectionIntoCollectionEffect -> setOf(IntentTag.DRAW)

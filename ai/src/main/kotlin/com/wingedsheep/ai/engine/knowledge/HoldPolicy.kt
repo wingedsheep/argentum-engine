@@ -379,7 +379,7 @@ class HoldPolicy(
     }
 
     /**
-     * An instant-speed activation that only draws or scries ([ACTIVATION_FLOW_TAGS]), judged under
+     * An instant-speed activation that only draws, scries or surveils ([ACTIVATION_FLOW_TAGS]), judged under
      * [drawWithIdleMana]: cashed at the opponent's end step, held everywhere before it while an
      * instant-speed card in hand wants the mana. Null when the ability is not that shape or the hold does not apply.
      *
@@ -788,7 +788,7 @@ class HoldPolicy(
         /** Tags of a spell whose whole payoff is card flow — cards into hand, or a scry — see [idleDrawWindow]. */
         val CARD_FLOW_TAGS = setOf(IntentTag.DRAW, IntentTag.TUTOR, IntentTag.CARD_SELECTION)
 
-        /** What [drawActivationVerdict] cashes at the opponent's end step: a draw, or a look at the top (scry). */
+        /** What [drawActivationVerdict] cashes at the opponent's end step: a draw, or a look at the top (scry, surveil). */
         val ACTIVATION_FLOW_TAGS = setOf(IntentTag.DRAW, IntentTag.CARD_SELECTION)
 
         /** Our turn, attackers already declared — see [trickTargetSitsOutTheFight]. */

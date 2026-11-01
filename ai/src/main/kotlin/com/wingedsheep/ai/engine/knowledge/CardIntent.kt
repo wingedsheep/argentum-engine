@@ -275,7 +275,8 @@ enum class IntentTag {
     TUTOR,
 
     /**
-     * Looks at the top of its controller's library and arranges it — scry. No card changes hands,
+     * Looks at the top of its controller's library and arranges it — scry, or surveil (scry whose
+     * discards go to the graveyard). No card changes hands,
      * so it is neither [DRAW] nor [TUTOR], but it is the same card flow for timing: a card seen at
      * the opponent's end step is the card seen now, so [HoldPolicy] cashes a selection-only
      * activation there, with mana that would otherwise empty, like a draw activation.
