@@ -15044,6 +15044,7 @@ Spara's Adjudicators	intent: CantAttackEffect; intent: CantBlockEffect; intent: 
 Spara's Headquarters
 Spare Dagger	polarity: AttachEquipmentEffect
 Spare Supplies
+Spark Double
 Spark Elemental	intent: SacrificeSelfEffect
 Spark Jolt
 Spark Reaper
