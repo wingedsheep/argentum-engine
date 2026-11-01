@@ -379,9 +379,9 @@ class HoldPolicy(
     }
 
     /**
-     * An instant-speed activation that only draws, judged under [drawWithIdleMana]: cashed at the
-     * opponent's end step, held everywhere before it while an instant-speed card in hand wants the
-     * mana. Null when the ability is not that shape or the hold does not apply.
+     * An instant-speed activation that only draws or scries ([ACTIVATION_FLOW_TAGS]), judged under
+     * [drawWithIdleMana]: cashed at the opponent's end step, held everywhere before it while an
+     * instant-speed card in hand wants the mana. Null when the ability is not that shape or the hold does not apply.
      *
      * The misplay (2026-10-11 logs, game 2 turn 11): Omashu City's "{4}, {T}, Sacrifice this land:
      * Draw a card" activated in our precombat main, tapping five of six lands while Pillar Launch
@@ -403,7 +403,8 @@ class HoldPolicy(
         ability: ActivatedAbility,
     ): TimingVerdict? {
         if (ability.isManaAbility || ability.timing != TimingRule.InstantSpeed) return null
-        if (CardIntentAnalyzer.analyzeEffect(ability.effect).tags != setOf(IntentTag.DRAW)) return null
+        val tags = CardIntentAnalyzer.analyzeEffect(ability.effect).tags
+        if (tags.isEmpty() || !tags.all { it in ACTIVATION_FLOW_TAGS }) return null
         if (isOpponentEndStep(state, playerId)) {
             return TimingVerdict.Adjust(END_STEP_WINDOW, reason = "draw at their end step")
         }
@@ -776,7 +777,10 @@ class HoldPolicy(
         val REMOVAL_TAGS = setOf(IntentTag.REMOVAL, IntentTag.EXILE_REMOVAL, IntentTag.SWEEPER)
 
         /** Tags of a spell whose whole payoff is cards into hand — see [idleDrawWindow]. */
-        val CARD_FLOW_TAGS = setOf(IntentTag.DRAW, IntentTag.TUTOR)
+        val CARD_FLOW_TAGS = setOf(IntentTag.DRAW, IntentTag.TUTOR, IntentTag.CARD_SELECTION)
+
+        /** What [drawActivationVerdict] cashes at the opponent's end step: a draw, or a look at the top (scry). */
+        val ACTIVATION_FLOW_TAGS = setOf(IntentTag.DRAW, IntentTag.CARD_SELECTION)
 
         /** Our turn, attackers already declared — see [trickTargetSitsOutTheFight]. */
         val ATTACKERS_DECLARED_STEPS = setOf(

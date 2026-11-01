@@ -453,6 +453,7 @@ object CardIntentAnalyzer {
         is TapUntapCollectionEffect -> if (effect.tap) setOf(IntentTag.TAPPER) else emptySet()
 
         is DrawCardsEffect, is DrawUpToEffect -> setOf(IntentTag.DRAW)
+        is ScryEffect -> setOf(IntentTag.CARD_SELECTION)
         is CounterEffect, is CounterAllOnStackEffect -> setOf(IntentTag.COUNTERSPELL)
         is GainLifeEffect, is DrainLifeEffect -> setOf(IntentTag.LIFEGAIN)
         is CreateTokenEffect, is CreatePredefinedTokenEffect, is InvestigateEffect, is CreateTokenCopyOfTargetEffect,

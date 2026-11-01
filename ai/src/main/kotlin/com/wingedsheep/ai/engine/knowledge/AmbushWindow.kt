@@ -368,7 +368,7 @@ internal object AmbushWindow {
      * The tags of an instant whose whole payoff is what it leaves on the battlefield — see
      * [holdsInstantDeploy]. Life gained is worth the same a window later, as [holds] argues.
      */
-    private val BODY_ONLY = setOf(IntentTag.TOKEN_MAKER, IntentTag.LIFEGAIN)
+    private val BODY_ONLY = setOf(IntentTag.TOKEN_MAKER, IntentTag.LIFEGAIN, IntentTag.CARD_SELECTION)
 
     /** Their turn, from the moment attackers are known — see [laterWindowIsStillAhead]. */
     private val RELEASED_ON_THEIR_TURN = setOf(

@@ -200,6 +200,7 @@ object AiCardRating {
         IntentTag.NEUTRALIZE to "Neutralizes a creature",
         IntentTag.DRAW to "Card draw",
         IntentTag.TUTOR to "Tutor",
+        IntentTag.CARD_SELECTION to "Card selection",
         IntentTag.RAMP to "Ramp",
         IntentTag.ANTHEM to "Anthem",
         IntentTag.PUMP to "Pump",

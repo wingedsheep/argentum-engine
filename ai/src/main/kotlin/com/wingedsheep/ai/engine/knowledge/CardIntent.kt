@@ -274,6 +274,14 @@ enum class IntentTag {
     /** Searches a library. */
     TUTOR,
 
+    /**
+     * Looks at the top of its controller's library and arranges it — scry. No card changes hands,
+     * so it is neither [DRAW] nor [TUTOR], but it is the same card flow for timing: a card seen at
+     * the opponent's end step is the card seen now, so [HoldPolicy] cashes a selection-only
+     * activation there, with mana that would otherwise empty, like a draw activation.
+     */
+    CARD_SELECTION,
+
     /** Produces mana, or puts extra lands onto the battlefield. */
     RAMP,
 
