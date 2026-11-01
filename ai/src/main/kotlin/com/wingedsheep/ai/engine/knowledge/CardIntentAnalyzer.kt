@@ -355,9 +355,21 @@ object CardIntentAnalyzer {
      * The reflexive payoff is read here and not in [EffectWalker.payoffLeaves] because its targets
      * are chosen when it triggers, against its own requirements: a polarity reader matching its
      * `ContextTarget(0)` against the outer ability's slots would read the wrong target.
+     *
+     * A delayed trigger is read the same way, as the effect it fires ([EffectWalker.firedLeaves]):
+     * "draw a card at the beginning of the next upkeep" is a draw and "destroy that creature at end
+     * of combat" is removal, only later. Its price — "sacrifice it at the beginning of the next end
+     * step" — is left out, as a gate's cost is.
      */
-    private fun readingLeaves(effect: Effect): List<Effect> = EffectWalker.payoffLeaves(effect).flatMap { leaf ->
-        if (leaf is ReflexiveTriggerEffect) readingLeaves(leaf.reflexiveEffect) else listOf(leaf)
+    private fun readingLeaves(effect: Effect): List<Effect> {
+        val payoff = EffectWalker.payoffLeaves(effect)
+        return payoff.flatMap { leaf ->
+            when (leaf) {
+                is ReflexiveTriggerEffect -> readingLeaves(leaf.reflexiveEffect)
+                is CreateDelayedTriggerEffect -> EffectWalker.firedLeaves(leaf, payoff).flatMap(::readingLeaves)
+                else -> listOf(leaf)
+            }
+        }
     }
 
     /**

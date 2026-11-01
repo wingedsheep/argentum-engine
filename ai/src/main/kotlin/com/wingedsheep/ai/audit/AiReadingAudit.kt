@@ -8,6 +8,7 @@ import com.wingedsheep.ai.engine.knowledge.ExpiringGrantWindow
 import com.wingedsheep.ai.engine.knowledge.IntentTag
 import com.wingedsheep.ai.engine.knowledge.TargetPolarity
 import com.wingedsheep.ai.engine.knowledge.TargetPolarityAnalyzer
+import com.wingedsheep.ai.engine.knowledge.TargetlessEntry
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
@@ -23,6 +24,7 @@ import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
 import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
@@ -30,12 +32,17 @@ import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
+import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
+import com.wingedsheep.sdk.scripting.effects.PhaseOutEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
+import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
+import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
 import com.wingedsheep.sdk.scripting.effects.ScryEffect
 import com.wingedsheep.sdk.scripting.effects.SurveilEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.effects.TransformEffect
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import java.util.Locale
@@ -65,7 +72,8 @@ import java.util.Locale
  *    each non-mana ability): a slot that earns no [IntentTag] at all is invisible to every intent
  *    consumer, and is attributed to each of its leaves — except the leaves that need no tag
  *    ([needsNoIntent]: a non-keyword counter on the source itself or on its controller, damage to a
- *    player, life loss, a permanent untapping, moving, transforming or animating itself).
+ *    player, life loss, a permanent untapping, moving, transforming or animating itself, an upkeep
+ *    cost its controller pays or suffers on its own source, an "unless" whose suffer is life loss).
  *  - [Check.COMBAT] — [CombatReach] over each leaf of a non-mana activated ability that changes
  *    power/toughness, keywords, P/T counters or blocking, and that combat simulation cannot see.
  *  - [Check.TIMING] — an until-end-of-turn leaf on an instant-speed activation or an instant-speed
@@ -310,7 +318,15 @@ object AiReadingAudit {
             abilityPolarity(trigger.effect, reqs, lookup, sink) {
                 TargetPolarityAnalyzer.forRequirements(trigger.effect, reqs, lookup, source = card)
             }
-            intent(trigger.effect, sink)
+            // "When this leaves the battlefield, return the exiled card" (O-Ring, Fiend Hunter, champion)
+            // needs no intent: it never stands alone — it is the price of the entry's exile, with no
+            // target to aim and no window to choose, and the entry trigger already carries the reading.
+            // One that puts the cards into a hand stays flagged: that can be a payoff (Hoarding Dragon).
+            if (TargetlessEntry.handsBackTheEntry(trigger) && !movesToHand(trigger.effect)) {
+                sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only hands back what this permanent exiled, when it leaves")
+            } else {
+                intent(trigger.effect, sink)
+            }
             modal(trigger.effect, sink)
             out += AbilityReading(AbilityRef(AbilityKind.TRIGGERED, i + 1, faceName, describe { trigger.description }), sink.findings)
         }
@@ -410,13 +426,16 @@ object AiReadingAudit {
         }
         val unread = "no intent: the AI doesn't know what this effect is for"
         val before = sink.findings.size
-        val leaves = EffectWalker.payoffLeaves(root)
+        // A delayed trigger is read as the effect it fires (CardIntentAnalyzer), so an unread one is
+        // labelled by that effect — the step it schedules, not the scheduling. Its price ("sacrifice
+        // it at end step") needs no intent, like a gate's cost: EffectWalker.firedLeaves drops it.
+        val leaves = fired(EffectWalker.payoffLeaves(root))
         val unreadLeaves = leaves.filterNot(::needsNoIntent)
         labels(unreadLeaves.filterNot { it is ForEachEffect }).filterNot { it.first in NO_INTENT_PIPELINES }.forEach { (label, leaf) ->
             sink += gap(Check.INTENT, unread, label, step(leaves, leaf))
         }
         for (each in unreadLeaves.filterIsInstance<ForEachEffect>()) {
-            labels(EffectWalker.payoffLeaves(each.body).filterNot(::needsNoIntent)).filterNot { it.first in NO_INTENT_PIPELINES }.forEach { (label, _) ->
+            labels(fired(EffectWalker.payoffLeaves(each.body)).filterNot(::needsNoIntent)).filterNot { it.first in NO_INTENT_PIPELINES }.forEach { (label, _) ->
                 sink += gap(Check.INTENT, unread, "ForEach>$label", step(leaves, each))
             }
         }
@@ -425,7 +444,7 @@ object AiReadingAudit {
         if (sink.findings.size == before && tags.isNotEmpty()) {
             sink += Finding(Check.INTENT, read = true, reason = "knows what it's for: ${tags.sorted().joinToString(", ", transform = ::tagPhrase)}")
         } else if (sink.findings.size == before) {
-            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, untaps, attaches, moves, transforms or animates its own source, adds counters for its controller, damages a player, makes one lose life, or mills one")
+            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, untaps, attaches, moves, transforms or animates its own source, adds counters for its controller, damages a player, makes one lose life, mills one, or is an unless-clause its payer suffers as an upkeep cost or life loss")
         }
     }
 
@@ -558,6 +577,10 @@ object AiReadingAudit {
      * its id naming a [Keyword]; that also keeps the few counters merely named after a keyword (fuse,
      * training) flagged, which errs toward flagging.
      */
+    private fun fired(payoff: List<Effect>): List<Effect> = payoff.flatMap { leaf ->
+        if (leaf is CreateDelayedTriggerEffect) fired(EffectWalker.firedLeaves(leaf, payoff)) else listOf(leaf)
+    }
+
     private fun needsNoIntent(leaf: Effect): Boolean {
         // Equip / fortify / reconfigure moves the source onto a host and does nothing of its own:
         // what the Equipment is *for* is the card's reading of its "equipped creature" statics
@@ -588,6 +611,18 @@ object AiReadingAudit {
         // Life loss always lands on a player, so it is the same clock — or, on "you lose N life",
         // a drawback the simulation already prices on resolution. Either way there is nothing to tag.
         if (leaf is LoseLifeEffect) return true
+        // "Sacrifice it unless you pay {1}{U}" (an upkeep cost, a land's "sacrifice it unless you pay {1}") is a drawback its
+        // controller chooses to pay or take: no target, nothing to hold, and whether to pay is the
+        // simulation's call when the trigger resolves. A suffer that needs no intent of its own (life
+        // loss, damage to a player) needs none behind an "unless" either, whoever pays. An opponent
+        // paying to stop *our* payoff (Rhystic Study's draw) stays flagged.
+        if (leaf is PayOrSufferEffect) {
+            val paidByController = leaf.player == EffectTarget.Controller || leaf.player == EffectTarget.PlayerRef(Player.You)
+            // Scry/surveil needsNoIntent only because CardIntentAnalyzer reads them, and nothing reads inside a suffer.
+            return EffectWalker.payoffLeaves(leaf.suffer).all {
+                (it !is ScryEffect && it !is SurveilEffect && needsNoIntent(it)) || (paidByController && harmsOnlyItsSource(it))
+            }
+        }
         // Scry and surveil are read (card selection); skipped here only so a sibling leaf is still asked about.
         if (leaf is ScryEffect || leaf is SurveilEffect) return true
         val (counter, target) = when (leaf) {
@@ -597,6 +632,19 @@ object AiReadingAudit {
         }
         if (target != EffectTarget.Self && target != EffectTarget.Controller) return false
         return Keyword.entries.none { it.name == counter.name }
+    }
+
+    private fun movesToHand(effect: Effect): Boolean = EffectWalker.leaves(effect).any { leaf ->
+        leaf is MoveCollectionEffect && (leaf.destination as? CardDestination.ToZone)?.zone == Zone.HAND
+    }
+
+    /** A leaf that only sacrifices, taps or phases out its own source — the "suffer" of an upkeep cost. */
+    private fun harmsOnlyItsSource(leaf: Effect): Boolean = when (leaf) {
+        SacrificeSelfEffect -> true
+        is SacrificeTargetEffect -> leaf.target == EffectTarget.Self
+        is TapUntapEffect -> leaf.target == EffectTarget.Self
+        is PhaseOutEffect -> leaf.target == EffectTarget.Self
+        else -> false
     }
 
     /** The targets [CardIntentAnalyzer] reads as a player rather than a permanent (its `hitsAnotherPermanent`). */

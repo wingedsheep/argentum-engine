@@ -11649,9 +11649,17 @@ in the declare-blockers step, even before the turn-based block action has comple
   of the Martyr's "if damage would be dealt to any creature" (`GameObjectFilter.Creature`), Ascent of
   the Worthy's "all damage that would be dealt to creatures you control" (`Creature.youControl()`,
   "you" being the shield's controller, so a chosen creature that changes control still soaks the
-  damage). Matched against projected state at damage time, so a permanent that entered after the
-  shield resolved is covered, a player never is, and damage already headed for `redirectTo` stays
-  there — an empty `protectedTargets` otherwise means "anything", players included. Pair it with
+  damage). It **adds to** any listed `protectedTargets`: Gideon's Sacrifice's "you and permanents
+  you control" lists `EffectTarget.Controller` and filters `Permanent.youControl()`. Matched against
+  projected state at damage time, so a permanent that entered after the shield resolved is covered,
+  a player only when listed, and damage already headed for `redirectTo` stays there — without a
+  filter an empty `protectedTargets` means "anything", players included. Every redirection shield
+  follows CR 614.9: damage isn't redirected to a permanent that has left the battlefield or is no
+  longer a battle, creature or planeswalker (Gideon's Sacrifice's "if it's still on the
+  battlefield"). And each shield gets one opportunity at a damage event (CR 614.5): redirected
+  damage is checked against the *other* shields (CR 616.1f), so two Gideon's Sacrifices that chose
+  different permanents hand the damage on once instead of looping. Combat damage to planeswalkers
+  and battles is redirected like damage to players and creatures. Pair it with
   `RedirectScope.CONTINUOUS` for the "all damage" form. **`duration`** is how long the shield lasts:
   "this turn" by default, `Duration.UntilYourNextTurn` for Ascent of the Worthy. A shield whose
   recipient has left the battlefield redirects nothing (Ascent of the Worthy ruling). The

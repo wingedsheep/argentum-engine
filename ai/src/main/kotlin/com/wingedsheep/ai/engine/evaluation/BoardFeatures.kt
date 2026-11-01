@@ -4,6 +4,7 @@ import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.ai.engine.OpponentAggregate
 import com.wingedsheep.ai.engine.PlaneswalkerThreat
 import com.wingedsheep.ai.engine.knowledge.CardIntent
+import com.wingedsheep.ai.engine.knowledge.EffectWalker
 import com.wingedsheep.ai.engine.knowledge.IntentCatalog
 import com.wingedsheep.ai.engine.lifePoolsOf
 import com.wingedsheep.ai.engine.sidesFor
@@ -21,6 +22,9 @@ import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 // ═════════════════════════════════════════════════════════════════════════════
 // Life Differential
@@ -1027,7 +1031,7 @@ object CardAdvantage : BoardFeature {
         }
         val hand = state.getZone(playerId, Zone.HAND)
         val lands = hand.count { state.getEntity(it)?.get<CardComponent>()?.isLand == true }
-        return cardValue(hand.size - lands, topdeckPenalty) +
+        return cardValue(hand.size - lands + pendingDelayedDraws(state, playerId), topdeckPenalty) +
             landsInHandValue(landsInPlay(state, projected, playerId), lands)
     }
 
@@ -1138,18 +1142,35 @@ object CardAdvantage : BoardFeature {
         projected: ProjectedState? = null,
     ): Double {
         val hand = state.getZone(playerId, Zone.HAND)
-        if (!landDropIsNotCardLoss) return hand.size.toDouble()
+        val held = hand.size + pendingDelayedDraws(state, playerId)
+        if (!landDropIsNotCardLoss) return held.toDouble()
         val drops = state.getEntity(playerId)?.get<LandDropsComponent>()?.remaining ?: 0
         val lands = hand.count { state.getEntity(it)?.get<CardComponent>()?.isLand == true }
         val earmarked = if (drops <= 0) 0 else minOf(lands, drops)
-        if (!surplusAwareLands) return (hand.size - earmarked).toDouble()
+        if (!surplusAwareLands) return (held - earmarked).toDouble()
         val lookahead = if (readsHand && projected != null) {
             landDropsTheHandNeeds(state, projected, playerId, hand, earmarked)
         } else {
             LOOKAHEAD_LAND_DROPS
         }
-        return hand.size - earmarked - surplusLands(lands, drops, lookahead) * (1.0 - SURPLUS_LAND_CARD)
+        return held - earmarked - surplusLands(lands, drops, lookahead) * (1.0 - SURPLUS_LAND_CARD)
     }
+
+    /**
+     * Cards [playerId] is already owed by a pending step-based delayed trigger it controls — "draw a
+     * card at the beginning of the next turn's upkeep" (Mishra's Bauble, Arcane Denial). The draw
+     * usually lands past the search horizon, so without this a line that schedules it reads as a
+     * card spent for nothing. Counted as held: the step will come. An event-based one ("whenever you
+     * cast a creature spell this turn, draw") may never fire, so it is not counted.
+     */
+    private fun pendingDelayedDraws(state: GameState, playerId: EntityId): Int =
+        state.delayedTriggers.sumOf { delayed ->
+            if (delayed.controllerId != playerId || delayed.fireAtStep == null) 0
+            else EffectWalker.payoffLeaves(delayed.effect).sumOf { leaf ->
+                val count = (leaf as? DrawCardsEffect)?.takeIf { it.target == EffectTarget.Controller }?.count
+                (count as? DynamicAmount.Fixed)?.amount ?: 0
+            }
+        }
 
     /**
      * How many turns of land drops after this one the hand still wants a land for —
