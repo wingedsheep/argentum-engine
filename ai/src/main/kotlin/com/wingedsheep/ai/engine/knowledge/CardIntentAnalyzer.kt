@@ -468,15 +468,14 @@ object CardIntentAnalyzer {
         is DividedDamageEffect -> setOf(IntentTag.REMOVAL)
 
         is ModifyStatsEffect -> {
-            val power = fixed(effect.powerModifier) ?: 0
-            val toughness = fixed(effect.toughnessModifier) ?: 0
+            val shrinks = AmountSign.of(effect.toughnessModifier) == AmountSign.LOSS
             when {
-                // "-N/-N" is removal by another name, and reaches exactly N toughness.
-                toughness < 0 && hitsAnotherPermanent(effect.target) ->
-                    removalTags(effect.target)
+                // "-N/-N" is removal by another name, and reaches exactly N toughness. A dynamic
+                // "-X/-X" (Death Wind's X, Defile's Swamp count) is the same answer with a reach
+                // no static reader can bound — read like X burn, which leaves reach null too.
+                shrinks && hitsAnotherPermanent(effect.target) -> removalTags(effect.target)
 
-                toughness < 0 -> emptySet()
-                AmountSign.of(effect.toughnessModifier) == AmountSign.LOSS -> emptySet()
+                shrinks -> emptySet()
                 // "+X/+X where X is …" is a pump whenever X cannot go negative — see [AmountSign].
                 raises(effect.powerModifier) || raises(effect.toughnessModifier) -> setOf(IntentTag.PUMP)
                 else -> emptySet()
