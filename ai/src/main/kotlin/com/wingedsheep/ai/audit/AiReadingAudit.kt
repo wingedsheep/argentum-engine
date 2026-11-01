@@ -30,6 +30,7 @@ import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
+import com.wingedsheep.sdk.scripting.effects.IterationSpace
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
@@ -81,7 +82,8 @@ import java.util.Locale
  *    ([needsNoIntent]: a non-keyword counter on the source itself or one it removes from itself, any counter on a player, damage to a
  *    player, life loss, a permanent untapping, moving, transforming, animating or sacrificing itself, a creature
  *    shifting its own P/T with a loss on either side, an upkeep cost its controller pays or suffers
- *    on its own source, an "unless" whose suffer is life loss).
+ *    on its own source, an "unless" whose suffer is life loss; and [noIntentPipeline]: a mill, or a return
+ *    to hand chosen among its controller's own permanents).
  *  - [Check.COMBAT] — [CombatReach] over each leaf of a non-mana activated ability that changes
  *    power/toughness, keywords, P/T counters or blocking, and that combat simulation cannot see.
  *  - [Check.TIMING] — an until-end-of-turn leaf on an instant-speed activation or an instant-speed
@@ -453,11 +455,16 @@ object AiReadingAudit {
         // it at end step") needs no intent, like a gate's cost: EffectWalker.firedLeaves drops it.
         val leaves = fired(EffectWalker.payoffLeaves(root))
         val unreadLeaves = leaves.filterNot(noIntent)
-        labels(unreadLeaves.filterNot { it is ForEachEffect }).filterNot { it.first in NO_INTENT_PIPELINES }.forEach { (label, leaf) ->
+        labels(unreadLeaves.filterNot { it is ForEachEffect }).filterNot { noIntentPipeline(it.first, unreadLeaves) }.forEach { (label, leaf) ->
             sink += gap(Check.INTENT, unread, label, step(leaves, leaf))
         }
         for (each in unreadLeaves.filterIsInstance<ForEachEffect>()) {
-            labels(fired(EffectWalker.payoffLeaves(each.body)).filterNot(noIntent)).filterNot { it.first in NO_INTENT_PIPELINES }.forEach { (label, _) ->
+            val body = fired(EffectWalker.payoffLeaves(each.body)).filterNot(noIntent)
+            // Over each player, "you" in the body is the player iterated (ControllerOfTriggeringEntity's
+            // land for Confounding Conundrum), so an own-permanents return is only ours over Players(You).
+            val players = (each.space as? IterationSpace.Players)?.players
+            val ownSide = players == null || players == Player.You
+            labels(body).filterNot { it.first in NO_INTENT_PIPELINES || (ownSide && noIntentPipeline(it.first, body)) }.forEach { (label, _) ->
                 sink += gap(Check.INTENT, unread, "ForEach>$label", step(leaves, each))
             }
         }
@@ -466,7 +473,7 @@ object AiReadingAudit {
         if (sink.findings.size == before && tags.isNotEmpty()) {
             sink += Finding(Check.INTENT, read = true, reason = "knows what it's for: ${tags.sorted().joinToString(", ", transform = ::tagPhrase)}")
         } else if (sink.findings.size == before) {
-            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, shifts the P/T of, untaps, attaches, moves, transforms or animates or sacrifices its own source, adds counters for its controller or removes them from itself, damages a player, makes one lose life, mills one, or is an unless-clause its payer suffers as an upkeep cost or life loss")
+            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, shifts the P/T of, untaps, attaches, moves, transforms or animates or sacrifices its own source, adds counters for its controller or removes them from itself, damages a player, makes one lose life, mills one, returns its controller's own permanents to hand, or is an unless-clause its payer suffers as an upkeep cost or life loss")
         }
     }
 
@@ -779,6 +786,26 @@ object AiReadingAudit {
      * player a mill aims at is GraveyardSynergy's and the polarity check's question, not intent's.
      */
     private val NO_INTENT_PIPELINES = setOf("Pipeline(TopOfLibrary→graveyard)")
+
+    /**
+     * Whether the pipeline labelled [label], made of [stages], needs no intent tag: one of
+     * [NO_INTENT_PIPELINES], or a return of its controller's own permanents to hand. "Return a land
+     * you control" (a karoo), "return a creature you control" (Whitemane Lion, Kazandu Stomper),
+     * "return each other creature you control" (Denizen of the Deep) choose on resolution among
+     * their own permanents: no target, a drawback or a re-buy of an enters trigger the simulation
+     * prices on the board, and a flash rescue in response to removal is the simulation's call on
+     * their spell (AmbushWindow leaves that window alone) — like a Restoration Angel blinking our
+     * own creature. A bounce that can reach another player's permanents stays flagged.
+     */
+    private fun noIntentPipeline(label: String, stages: List<Effect>): Boolean {
+        if (label in NO_INTENT_PIPELINES) return true
+        if (label != "Pipeline(BattlefieldMatching→hand)") return false
+        val sources = stages.filterIsInstance<GatherCardsEffect>().map { it.source }
+        return sources.isNotEmpty() && sources.all { source ->
+            source is CardSource.BattlefieldMatching &&
+                (source.player == Player.You || source.filter.controllerPredicate == ControllerPredicate.ControlledByYou)
+        }
+    }
 
     private val PIPELINE_STAGES = setOf(
         "GatherCardsEffect", "MoveCollectionEffect", "SelectFromCollectionEffect", "FilterCollectionEffect",

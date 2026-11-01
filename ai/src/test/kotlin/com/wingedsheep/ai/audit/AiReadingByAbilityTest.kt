@@ -131,4 +131,12 @@ class AiReadingByAbilityTest : FunSpec({
             .any { it.reason.contains("needs no intent") } shouldBe true
         AiReadingAudit.audit(card("Hoarding Dragon")).map { it.key } shouldBe listOf("intent: Pipeline(FromLinkedExile→hand)")
     }
+
+    test("a return to hand chosen among its controller's own permanents needs no intent, but a bounce that reaches others stays flagged") {
+        AiReadingAudit.read(card("Azorius Chancery")).readFully shouldBe true
+        AiReadingAudit.read(card("Whitemane Lion")).readFully shouldBe true
+        AiReadingAudit.audit(card("Aetherize")).map { it.key } shouldContain "intent: Pipeline(BattlefieldMatching→hand)"
+        // Over each player, "you" is the player iterated: the opponent returns their own land.
+        AiReadingAudit.audit(card("Confounding Conundrum")).map { it.key } shouldContain "intent: ForEach>Pipeline(BattlefieldMatching→hand)"
+    }
 })
