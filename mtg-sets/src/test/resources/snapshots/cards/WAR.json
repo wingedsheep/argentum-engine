@@ -2635,6 +2635,107 @@
     ]
 }
 
+// Fblthp, the Lost
+{
+    "name": "Fblthp, the Lost",
+    "manaCost": "{1}{U}",
+    "typeLine": "Legendary Creature — Homunculus",
+    "oracleText": "When Fblthp enters, draw a card. If it entered from your library or was cast from your library, draw two cards instead.\nWhen Fblthp becomes the target of a spell, shuffle Fblthp into its owner's library.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fblthp, the Lost:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "All",
+                            "conditions": [
+                                {
+                                    "type": "TriggeringEntityEnteredOrWasCastFrom",
+                                    "zone": "Library"
+                                },
+                                {
+                                    "type": "EntityMatches",
+                                    "entity": "Self",
+                                    "filter": "own:you"
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "otherwise": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            },
+            {
+                "id": "Fblthp, the Lost:2",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "spellsOnly": true
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Library",
+                    "placement": "Shuffled"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "50",
+        "rarity": "RARE",
+        "artist": "Jesper Ejsing",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/52558748-6893-4c72-a9e2-e87d31796b59.jpg?1783933465",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "There's normally no way to cast Fblthp from your library or to have it enter the battlefield from your library. You'll have to use other effects to find Fblthp for the bonus card draw."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If an effect exiles Fblthp from your library and then lets you cast that card, it's cast from exile, not from your library."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Fblthp's last ability triggers only if it's on the battlefield when it becomes the target of a spell."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Fblthp's last ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If the spell that targets Fblthp has no other targets, it won't resolve (because it no longer has a legal target after Fblthp has gotten totally lost in your library)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Feather, the Redeemed
 {
     "name": "Feather, the Redeemed",

@@ -133,15 +133,28 @@ data class TriggeringSpellManaSpentAtLeast(val amount: Int) : Condition {
 }
 
 /**
- * Condition: "if it entered or was cast from a graveyard".
- * True when the triggering entity has either EnteredFromGraveyardComponent (reanimated
- * directly from graveyard → battlefield) or CastFromGraveyardComponent (spell was cast
- * from graveyard). Used by Twilight Diviner.
+ * Condition: "if it entered from [zone] or was cast from [zone]" about the triggering entity.
+ * True when the triggering permanent was put onto the battlefield directly from [zone] (a
+ * reanimation, a blink, a library search — the engine's entered-from marker) or resolved from a
+ * spell cast from [zone] (its cast-origin marker). [zone] is any of [PROVENANCE_ZONES].
+ *
+ * The single-entity twin of [AnyEnteredOrWasCastFrom], which reads the same markers over a
+ * batch-enters capture.
+ * - **Twilight Diviner**, **Archfiend's Vessel** — `Zone.GRAVEYARD`.
+ * - **Fblthp, the Lost** — `Zone.LIBRARY` ("if it entered from your library or was cast from your
+ *   library", with the "your" carried by a separate owned-by-you check).
  */
-@SerialName("TriggeringEntityEnteredOrWasCastFromGraveyard")
+@SerialName("TriggeringEntityEnteredOrWasCastFrom")
 @Serializable
-data object TriggeringEntityEnteredOrWasCastFromGraveyard : Condition {
-    override val description: String = "if it entered or was cast from a graveyard"
+data class TriggeringEntityEnteredOrWasCastFrom(val zone: Zone) : Condition {
+    init {
+        require(zone in PROVENANCE_ZONES) {
+            "TriggeringEntityEnteredOrWasCastFrom tracks ${PROVENANCE_ZONES.joinToString()} provenance, not $zone"
+        }
+    }
+
+    override val description: String =
+        "if it entered or was cast from ${provenanceZoneText(zone)}"
 }
 
 /**

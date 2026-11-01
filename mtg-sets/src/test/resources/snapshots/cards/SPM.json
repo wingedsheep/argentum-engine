@@ -6249,7 +6249,10 @@
                     "type": "Gated",
                     "gate": {
                         "type": "Gate.WhenCondition",
-                        "condition": "TriggeringEntityEnteredOrWasCastFromGraveyard"
+                        "condition": {
+                            "type": "TriggeringEntityEnteredOrWasCastFrom",
+                            "zone": "Graveyard"
+                        }
                     },
                     "then": {
                         "type": "LoseLife",

@@ -128,13 +128,18 @@ data object CastFromGraveyardComponent : Component
 data object CastFromLibraryComponent : Component
 
 /**
- * Marks a permanent that entered the battlefield directly from a graveyard via a
- * reanimation effect (not via casting). Added in the battlefield-entry path when
- * the zone transition's fromZone is GRAVEYARD. Used by triggers that care whether
- * an entering creature was reanimated (e.g., Twilight Diviner).
+ * Marks a permanent that entered the battlefield directly from [zone] — any way other than
+ * resolving as a spell: a reanimation (graveyard), a blink or "put an exiled card onto the
+ * battlefield" effect (exile), a "put it onto the battlefield" search or reveal (library), a
+ * "put it from your hand" effect (hand), or a land played from any of those zones. Added in the
+ * battlefield-entry paths ([com.wingedsheep.engine.handlers.effects.ZoneTransitionService] and the
+ * land-play handler); a resolving permanent spell carries its cast-origin marker
+ * ([CastFromGraveyardComponent], [CastFromExileComponent], [CastFromLibraryComponent],
+ * [CastFromHandComponent]) instead. Read by the "if it entered from [zone] or was cast from [zone]"
+ * conditions — Twilight Diviner, Extraordinary Journey, Fblthp, the Lost.
  */
 @Serializable
-data object EnteredFromGraveyardComponent : Component
+data class EnteredFromZoneComponent(val zone: com.wingedsheep.sdk.core.Zone) : Component
 
 /**
  * Marks a permanent as having been cast from exile — an impulse-draw permission, a plotted or
@@ -144,15 +149,6 @@ data object EnteredFromGraveyardComponent : Component
  */
 @Serializable
 data object CastFromExileComponent : Component
-
-/**
- * Marks a permanent that entered the battlefield directly from exile (not via casting) — a blink
- * effect returning it, or any "put an exiled card onto the battlefield" effect. Added in the
- * battlefield-entry path when the zone transition's fromZone is EXILE. The exile twin of
- * [EnteredFromGraveyardComponent] (Extraordinary Journey).
- */
-@Serializable
-data object EnteredFromExileComponent : Component
 
 /**
  * Marks a permanent as having been cast for its warp cost.

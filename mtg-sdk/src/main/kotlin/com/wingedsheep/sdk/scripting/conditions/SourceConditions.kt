@@ -229,14 +229,14 @@ data object NoManaSpentToCastEntered : Condition {
  * Condition: "if one or more of them entered from [zone] or was cast from [zone]."
  *
  * The batch-enters, any-of counterpart of
- * [com.wingedsheep.sdk.scripting.conditions.TriggeringEntityEnteredOrWasCastFromGraveyard]:
+ * [com.wingedsheep.sdk.scripting.conditions.TriggeringEntityEnteredOrWasCastFrom]:
  * evaluated over the permanents a batch-enters trigger captured (the
  * `Triggers.oneOrMore(filter).enter()` batch, exposed as the `trigger.captured` pipeline
  * collection), it is true iff **at least one** captured permanent came from [zone] — either put
  * onto the battlefield directly from it or cast from it. An empty capture is false.
  *
- * [zone] is [Zone.EXILE] or [Zone.GRAVEYARD], the two zones the engine stamps entry and cast
- * provenance for. Note the quantifier: [NoManaSpentToCastEntered] is an *every* over the batch
+ * [zone] is any of [PROVENANCE_ZONES] (hand, library, graveyard, exile), the zones the engine
+ * stamps entry and cast provenance for. Note the quantifier: [NoManaSpentToCastEntered] is an *every* over the batch
  * ("if **none** of them …"), this one is an *any* ("if **one or more** of them …").
  *
  * Works as a real intervening-"if" (CR 603.4) as well as a resolution-time gate, which matters
@@ -249,15 +249,28 @@ data object NoManaSpentToCastEntered : Condition {
 @Serializable
 data class AnyEnteredOrWasCastFrom(val zone: Zone) : Condition {
     init {
-        require(zone == Zone.EXILE || zone == Zone.GRAVEYARD) {
-            "AnyEnteredOrWasCastFrom tracks EXILE or GRAVEYARD provenance, not $zone"
+        require(zone in PROVENANCE_ZONES) {
+            "AnyEnteredOrWasCastFrom tracks ${PROVENANCE_ZONES.joinToString()} provenance, not $zone"
         }
     }
 
-    override val description: String = when (zone) {
-        Zone.GRAVEYARD -> "one or more of them entered from a graveyard or was cast from a graveyard"
-        else -> "one or more of them entered from exile or was cast from exile"
-    }
+    override val description: String =
+        "one or more of them entered from ${provenanceZoneText(zone)} or was cast from ${provenanceZoneText(zone)}"
+}
+
+/**
+ * The zones the engine stamps entry and cast provenance for — where a permanent can have come
+ * from before it entered the battlefield, directly or by resolving as a spell.
+ */
+internal val PROVENANCE_ZONES: Set<Zone> = setOf(Zone.HAND, Zone.LIBRARY, Zone.GRAVEYARD, Zone.EXILE)
+
+/** "a graveyard" / "exile" / "a library" / "a hand" — the Oracle wording of a provenance zone. */
+internal fun provenanceZoneText(zone: Zone): String = when (zone) {
+    Zone.EXILE -> "exile"
+    Zone.GRAVEYARD -> "a graveyard"
+    Zone.LIBRARY -> "a library"
+    Zone.HAND -> "a hand"
+    else -> zone.name.lowercase()
 }
 
 /**

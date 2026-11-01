@@ -26,7 +26,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * The Mayhem here is the CR 702.187c no-cost land form (`mayhem("")`): a discarded-this-turn
  * Oscorp is *played* from the graveyard (enumerated by `PlayLandEnumerator`, allowed by
  * `PlayLandHandler`), which trips the "enters from a graveyard" ETB via the
- * `EnteredFromGraveyardComponent` the handler now stamps on graveyard land-plays.
+ * `EnteredFromZoneComponent(GRAVEYARD)` the handler now stamps on graveyard land-plays.
  */
 val OscorpIndustries = card("Oscorp Industries") {
     typeLine = "Land"
@@ -41,7 +41,7 @@ val OscorpIndustries = card("Oscorp Industries") {
 
     // When this land enters from a graveyard, you lose 2 life. The graveyard check runs at
     // resolution (a Effects.If), since TriggeringEntityEnteredOrWasCastFromGraveyard reads
-    // the EnteredFromGraveyardComponent only in resolution context.
+    // the EnteredFromZoneComponent only in resolution context.
     triggeredAbility {
         trigger = Triggers.self.enters()
         effect = Effects.If(

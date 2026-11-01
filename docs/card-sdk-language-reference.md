@@ -16224,21 +16224,30 @@ answer it and would silently return `false`.
   capture is vacuously true). Use as a resolution-time `Effects.If` gate on the payoff — **Satoru,
   the Infiltrator**: `Effects.If(Conditions.NoManaSpentToCastEntered, Effects.DrawCards(1))` under a
   `Triggers.oneOrMore(GameObjectFilter.Creature.nontoken()).enter()` trigger. Resolution-only.
+- `TriggeringEntityEnteredOrWasCastFrom(zone)` — "if it entered from `zone` or was cast from `zone`"
+  about the triggering entity, `zone` ∈ {`HAND`, `LIBRARY`, `GRAVEYARD`, `EXILE`}. Facades
+  `Conditions.TriggeringEntityEnteredOrWasCastFrom(zone)` and
+  `Conditions.TriggeringEntityEnteredOrWasCastFromGraveyard`. Reads the provenance markers the engine
+  stamps on entry: the cast-origin marker of a permanent spell that resolved (`CastFromHandComponent` /
+  `CastFromLibraryComponent` / `CastFromGraveyardComponent` / `CastFromExileComponent`) and
+  `EnteredFromZoneComponent(zone)` for a direct entry (a reanimation, a blink, a library search or
+  reveal, a land played from any zone). Both are stripped when the permanent leaves the battlefield
+  (CR 400.7). Resolution-only. **Twilight Diviner**, **Archfiend's Vessel**: `Zone.GRAVEYARD` as an
+  `interveningIf`. **Fblthp, the Lost** ("if it entered from *your* library or was cast from *your*
+  library"): `Conditions.All(TriggeringEntityEnteredOrWasCastFrom(Zone.LIBRARY),
+  SourceMatches(GameObjectFilter.Any.ownedByYou()))` — a card is only ever in its owner's library,
+  so "your" is the owned-by-you check.
 - `AnyEnteredOrWasCastFrom(zone)` — the batch-enters *any*-of provenance condition: "if one or more of
-  them entered from `zone` or was cast from `zone`", `zone` ∈ {`EXILE`, `GRAVEYARD`}. Facades
-  `Conditions.AnyEnteredOrWasCastFromExile` and `Conditions.AnyEnteredOrWasCastFromGraveyard`. The batch
-  twin of `TriggeringEntityEnteredOrWasCastFromGraveyard`, evaluated over the same `trigger.captured`
+  them entered from `zone` or was cast from `zone`", same zones and markers as
+  `TriggeringEntityEnteredOrWasCastFrom`. Facades `Conditions.AnyEnteredOrWasCastFromExile` and
+  `Conditions.AnyEnteredOrWasCastFromGraveyard`. Evaluated over the same `trigger.captured`
   collection as `NoManaSpentToCastEntered` — note the opposite quantifier (that one is "if **none** of
-  them …", this one is "if **one or more** of them …"; an empty capture is false here). Reads the
-  provenance markers the engine stamps on entry: `CastFromExileComponent` / `CastFromGraveyardComponent`
-  (a spell that resolved with `castFromZone` exile / graveyard — impulse draws, plot/foretell, an
-  adventurer's permanent half, flashback-style and `MayCastFromGraveyard` grants) and
-  `EnteredFromExileComponent` / `EnteredFromGraveyardComponent` (a direct entry, e.g. a blink or a
-  reanimation). **Usable as a real intervening-"if" (`interveningIf`), not just a resolution gate** —
-  batch captures are seeded into the condition context at trigger-detection time as well as at
-  resolution. That distinction is load-bearing whenever the ability also carries `oncePerTurn`: CR 603.4
-  says an ability whose intervening-"if" is false never triggers, so it must not consume the turn's
-  single firing. **Extraordinary Journey**: `Triggers.oneOrMore(Creature.nontoken().anyController()).enter()`
+  them …", this one is "if **one or more** of them …"; an empty capture is false here). **Usable as a
+  real intervening-"if" (`interveningIf`), not just a resolution gate** — batch captures are seeded
+  into the condition context at trigger-detection time as well as at resolution. That distinction is
+  load-bearing whenever the ability also carries `oncePerTurn`: CR 603.4 says an ability whose
+  intervening-"if" is false never triggers, so it must not consume the turn's single firing.
+  **Extraordinary Journey**: `Triggers.oneOrMore(Creature.nontoken().anyController()).enter()`
   + `interveningIf = Conditions.AnyEnteredOrWasCastFromExile` + `oncePerTurn = true`. **Kotis, Sibsig
   Champion**: `Triggers.oneOrMore(Creature.youControl()).enter()` + `interveningIf =
   Conditions.AnyEnteredOrWasCastFromGraveyard`. The same exile marker also backs

@@ -494,7 +494,10 @@
                 "interveningIf": {
                     "type": "All",
                     "conditions": [
-                        "TriggeringEntityEnteredOrWasCastFromGraveyard",
+                        {
+                            "type": "TriggeringEntityEnteredOrWasCastFrom",
+                            "zone": "Graveyard"
+                        },
                         {
                             "type": "EntityMatches",
                             "entity": "Self",

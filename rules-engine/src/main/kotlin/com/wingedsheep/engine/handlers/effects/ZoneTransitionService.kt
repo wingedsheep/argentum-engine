@@ -1763,18 +1763,12 @@ class ZoneTransitionService(
             // Track that this permanent entered the battlefield this turn
             updated = updated.with(EnteredThisTurnComponent)
 
-            // Track reanimation (direct graveyard → battlefield) for triggers that care.
-            if (fromZone == Zone.GRAVEYARD) {
+            // Track where it entered from (a reanimation, a blink, a library search) for the
+            // "if it entered from <zone>" conditions. A resolving spell doesn't come through here;
+            // PermanentEntry stamps its cast-origin marker instead.
+            if (fromZone != null && fromZone != Zone.STACK && fromZone != Zone.BATTLEFIELD) {
                 updated = updated.with(
-                    com.wingedsheep.engine.state.components.battlefield.EnteredFromGraveyardComponent
-                )
-            }
-
-            // Same for a direct exile → battlefield entry (a blink returning it, or any "put an
-            // exiled card onto the battlefield" effect) — Extraordinary Journey.
-            if (fromZone == Zone.EXILE) {
-                updated = updated.with(
-                    com.wingedsheep.engine.state.components.battlefield.EnteredFromExileComponent
+                    com.wingedsheep.engine.state.components.battlefield.EnteredFromZoneComponent(fromZone)
                 )
             }
 

@@ -8814,7 +8814,10 @@
                     },
                     "then": "ExileAndReturnTransformed"
                 },
-                "interveningIf": "TriggeringEntityEnteredOrWasCastFromGraveyard",
+                "interveningIf": {
+                    "type": "TriggeringEntityEnteredOrWasCastFrom",
+                    "zone": "Graveyard"
+                },
                 "descriptionOverride": "Whenever Grist or another creature you control enters, if it entered from your graveyard or you cast it from your graveyard, you may pay {G}. If you do, exile Grist, then return it to the battlefield transformed under its owner's control."
             }
         ]

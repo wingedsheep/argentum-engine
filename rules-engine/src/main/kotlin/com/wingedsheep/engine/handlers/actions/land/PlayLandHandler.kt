@@ -258,12 +258,13 @@ class PlayLandHandler(
         // Record Muldrotha graveyard land permission usage
         if (fromZone == Zone.GRAVEYARD) {
             newState = recordGraveyardPlayPermissionUsage(newState, action.playerId, CardType.LAND.name)
-            // Mark "entered from a graveyard" for ETB conditions (Oscorp Industries: "when this land
-            // enters from a graveyard, you lose 2 life"). Lands bypass ZoneTransitionService, which
-            // normally stamps this component, so set it here.
-            newState = newState.updateEntity(action.cardId) { c ->
-                c.with(com.wingedsheep.engine.state.components.battlefield.EnteredFromGraveyardComponent)
-            }
+        }
+        // Mark the zone it entered from for ETB conditions (Oscorp Industries: "when this land
+        // enters from a graveyard, you lose 2 life"; a land played from the top of the library or
+        // from exile likewise entered from there). Lands bypass ZoneTransitionService, which
+        // normally stamps this component, so set it here.
+        newState = newState.updateEntity(action.cardId) { c ->
+            c.with(com.wingedsheep.engine.state.components.battlefield.EnteredFromZoneComponent(fromZone))
         }
 
         // The land-play signal (CR 305.1). [landPlayedEvent] rides alongside every entry
@@ -332,7 +333,7 @@ class PlayLandHandler(
             newState = spendExilePlayAllowances(state, newState, action, fromZone)
                 .updateEntity(action.cardId) { c ->
                     c.without<ControllerComponent>()
-                        .without<com.wingedsheep.engine.state.components.battlefield.EnteredFromGraveyardComponent>()
+                        .without<com.wingedsheep.engine.state.components.battlefield.EnteredFromZoneComponent>()
                 }
                 .addToZone(ZoneKey(ownerId, destination), action.cardId)
                 .updateEntity(action.playerId) { c ->

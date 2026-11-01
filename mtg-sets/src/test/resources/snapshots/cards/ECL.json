@@ -19032,7 +19032,10 @@
                     "type": "CreateTokenCopyOfTarget",
                     "target": "TriggeringEntity"
                 },
-                "interveningIf": "TriggeringEntityEnteredOrWasCastFromGraveyard",
+                "interveningIf": {
+                    "type": "TriggeringEntityEnteredOrWasCastFrom",
+                    "zone": "Graveyard"
+                },
                 "oncePerTurn": true
             }
         ]

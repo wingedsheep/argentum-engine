@@ -18,7 +18,7 @@ import io.kotest.matchers.shouldBe
 /**
  * Oscorp Industries (SPM) — Mayhem land (CR 702.187c no-cost form). Pins the new Mayhem
  * land-play-from-graveyard path (`PlayLandEnumerator` + `PlayLandHandler`) and the
- * "enters from a graveyard" ETB (the `EnteredFromGraveyardComponent` the handler now stamps on
+ * "enters from a graveyard" ETB (the `EnteredFromZoneComponent(GRAVEYARD)` the handler now stamps on
  * graveyard land-plays).
  */
 class OscorpIndustriesScenarioTest : FunSpec({

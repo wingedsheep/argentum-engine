@@ -128,7 +128,7 @@ import com.wingedsheep.sdk.scripting.conditions.TargetSharesMostCommonColor
 import com.wingedsheep.sdk.scripting.conditions.ColorIsMostCommon
 import com.wingedsheep.engine.mechanics.ManaValues
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
-import com.wingedsheep.sdk.scripting.conditions.TriggeringEntityEnteredOrWasCastFromGraveyard
+import com.wingedsheep.sdk.scripting.conditions.TriggeringEntityEnteredOrWasCastFrom
 import com.wingedsheep.sdk.scripting.conditions.TriggeringEntityHadCounters
 import com.wingedsheep.sdk.scripting.conditions.TriggeringEntityHadMinusOneMinusOneCounter
 import com.wingedsheep.sdk.scripting.conditions.TriggeringEntityWasHistoric
@@ -372,7 +372,7 @@ class ConditionEvaluator(
             is TargetMarkedDamageExceedsToughness,
             is TargetSharesMostCommonColor,
             is ThisAbilityActivatedThisTurnAtLeast,
-            TriggeringEntityEnteredOrWasCastFromGraveyard,
+            is TriggeringEntityEnteredOrWasCastFrom,
             TriggeringEntityHadCounters,
             TriggeringEntityHadMinusOneMinusOneCounter,
             is TriggeringEntityWas,
@@ -936,8 +936,8 @@ class ConditionEvaluator(
                 ifResolution { evaluateTriggeringSpellCastWithoutPayingMana(state, it) }
             is com.wingedsheep.sdk.scripting.conditions.TriggeringSpellManaSpentAtLeast ->
                 ifResolution { evaluateTriggeringSpellManaSpentAtLeast(state, condition.amount, it) }
-            is TriggeringEntityEnteredOrWasCastFromGraveyard ->
-                ifResolution { evaluateTriggeringEntityEnteredOrWasCastFromGraveyard(state, it) }
+            is TriggeringEntityEnteredOrWasCastFrom ->
+                ifResolution { evaluateTriggeringEntityEnteredOrWasCastFrom(state, condition.zone, it) }
             is TriggeringEntityHadMinusOneMinusOneCounter ->
                 ifResolution { (it.triggerContext?.minusOneMinusOneCounterCount ?: 0) > 0 }
             is TriggeringEntityHadCounters ->
@@ -1900,7 +1900,7 @@ class ConditionEvaluator(
     /**
      * "If one or more of them entered from [zone] or was cast from [zone]" — an *any* over the
      * batch-enters capture; the batch counterpart of
-     * [evaluateTriggeringEntityEnteredOrWasCastFromGraveyard], reading the same provenance markers.
+     * [evaluateTriggeringEntityEnteredOrWasCastFrom], reading the same provenance markers.
      * An empty capture is false: nothing entered from [zone].
      */
     private fun evaluateAnyEnteredOrWasCastFrom(state: GameState, zone: Zone, context: EffectContext): Boolean {
@@ -1911,16 +1911,10 @@ class ConditionEvaluator(
         }
     }
 
-    /** Whether [entity] carries the entered-from or cast-from provenance marker for [zone] (exile or graveyard). */
+    /** Whether [entity] carries the entered-from or cast-from provenance marker for [zone]. */
     private fun enteredOrWasCastFrom(entity: com.wingedsheep.engine.state.ComponentContainer, zone: Zone): Boolean =
-        when (zone) {
-            Zone.GRAVEYARD ->
-                entity.has<com.wingedsheep.engine.state.components.battlefield.CastFromGraveyardComponent>() ||
-                    entity.has<com.wingedsheep.engine.state.components.battlefield.EnteredFromGraveyardComponent>()
-            else ->
-                entity.has<com.wingedsheep.engine.state.components.battlefield.CastFromExileComponent>() ||
-                    entity.has<com.wingedsheep.engine.state.components.battlefield.EnteredFromExileComponent>()
-        }
+        castFromMarker(entity, zone) ||
+            entity.get<com.wingedsheep.engine.state.components.battlefield.EnteredFromZoneComponent>()?.zone == zone
 
     /**
      * Triggering-entity counterpart of [evaluateNoManaSpentToCast] for a spell still on the stack
@@ -2222,13 +2216,14 @@ class ConditionEvaluator(
         return zone == null || castFromMarker(entity, zone)
     }
 
-    private fun evaluateTriggeringEntityEnteredOrWasCastFromGraveyard(
+    private fun evaluateTriggeringEntityEnteredOrWasCastFrom(
         state: GameState,
+        zone: Zone,
         context: EffectContext
     ): Boolean {
         val entityId = context.triggeringEntityId ?: return false
         val entity = state.getEntity(entityId) ?: return false
-        return enteredOrWasCastFrom(entity, Zone.GRAVEYARD)
+        return enteredOrWasCastFrom(entity, zone)
     }
 
     private fun evaluateTriggeringEntityWasNotPutByThisSource(
