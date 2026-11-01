@@ -209,6 +209,14 @@ data class CreatureValuation(
      * shown. [com.wingedsheep.ai.engine.AiProfile.LIVE] ships it.
      */
     val statsReadTheBoard: Boolean = false,
+    /**
+     * Price the growth a creature's recurring +1/+1-counter triggers will still add
+     * ([GrowthPotential]): an Ouroboroid is worth the counters its next three combats put on its
+     * controller's team, not only its 1/3 body. Reads nothing without card knowledge
+     * ([com.wingedsheep.ai.engine.knowledge.IntentCatalog.NONE]).
+     * [com.wingedsheep.ai.engine.AiProfile.LIVE] ships it.
+     */
+    val growthPotential: Boolean = false,
 ) {
     companion object {
         /** Neither correction: what every number published before 2026-08-10 was measured on. */
@@ -441,7 +449,13 @@ object BoardPresence : BoardFeature {
             } else {
                 null
             }
-            return creatureValue(state, projected, entityId, container, creatureValuation, context)
+            val growth = if (creatureValuation.growthPotential) {
+                intents.growth?.value(state, projected, entityId, card.name) ?: 0.0
+            } else {
+                0.0
+            }
+            return (creatureValue(state, projected, entityId, container, creatureValuation, context) + growth)
+                .coerceAtLeast(0.1)
         }
 
         // Non-creature permanents

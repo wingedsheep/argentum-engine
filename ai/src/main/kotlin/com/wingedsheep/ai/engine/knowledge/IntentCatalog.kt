@@ -48,6 +48,14 @@ class IntentCatalog private constructor(private val registry: CardRegistry?) {
      */
     val predicates: PredicateEvaluator? by lazy { registry?.let(::PredicateEvaluator) }
 
+    /**
+     * The simulator behind [com.wingedsheep.ai.engine.evaluation.CreatureValuation.growthPotential]:
+     * what a permanent's recurring +1/+1-counter triggers will still add. Null for [NONE].
+     */
+    val growth: com.wingedsheep.ai.engine.evaluation.GrowthPotential? by lazy {
+        registry?.let { com.wingedsheep.ai.engine.evaluation.GrowthPotential.of(it) }
+    }
+
     private val manaSolver: ManaSolver? by lazy {
         val registry = registry ?: return@lazy null
         predicates?.let { ManaSolver(registry, it) }
