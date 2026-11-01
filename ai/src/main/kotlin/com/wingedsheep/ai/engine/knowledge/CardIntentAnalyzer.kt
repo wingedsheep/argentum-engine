@@ -144,7 +144,7 @@ object CardIntentAnalyzer {
      * fold is one pass over an effect tree and the only caller walks a stack of at most a few.
      */
     fun analyzeEffect(effect: Effect): CardIntent {
-        val tags = digTags(effect).toMutableSet()
+        val tags = pipelineTags(effect).toMutableSet()
         var removalReach: Int? = null
         for (leaf in readingLeaves(effect)) {
             tags += tagsOf(leaf)
@@ -214,7 +214,7 @@ object CardIntentAnalyzer {
             }
         }
 
-        for (root in roots) tags += digTags(root)
+        for (root in roots) tags += pipelineTags(root)
         for (effect in leaves) {
             tags += tagsOf(effect)
             reachOf(effect)?.let { removalReach = maxOf(removalReach ?: 0, it) }
@@ -377,9 +377,66 @@ object CardIntentAnalyzer {
                 .flatMap { handSelectionLeaves(it) }
         }
 
-    /** Every tag [root] reads as: its leaves' own, plus what the pipeline among them adds up to ([digTags]). */
+    /** Every tag [root] reads as: its leaves' own, plus what the pipeline among them adds up to ([pipelineTags]). */
     private fun effectTags(root: Effect): Set<IntentTag> =
-        readingLeaves(root).flatMapTo(HashSet()) { tagsOf(it) } + digTags(root)
+        readingLeaves(root).flatMapTo(HashSet()) { tagsOf(it) } + pipelineTags(root)
+
+    /** What the gather → move pipelines in [root] add up to, which no single leaf of them says. */
+    private fun pipelineTags(root: Effect): Set<IntentTag> = digTags(root) + destroyAllTags(root)
+
+    /**
+     * "Destroy all creatures" — a gather of the battlefield moved to the graveyard by destruction or
+     * sacrifice — reads as a wrath: [IntentTag.REMOVAL] and [IntentTag.SWEEPER], as the `ForEach`
+     * spelling of the same card does in [tagsOf]. `Effects.DestroyAll` lowers to this shape.
+     *
+     * The gathered collection is followed through the steps that split or narrow it, as [digTags]
+     * does. Narrowed by a filter, a pile or the remainder of a pick ("choose one to save, destroy the
+     * rest"), it is still a group; the *picked* side of a selection (Haphazard Bombardment destroying
+     * one of its aimed permanents) is spot removal, so it keeps [IntentTag.REMOVAL] alone.
+     *
+     * A gather of only our own permanents is a drawback or a cost, not an answer, and stays unread.
+     */
+    private fun destroyAllTags(root: Effect): Set<IntentTag> {
+        val leaves = readingLeaves(root)
+        // Collection name -> whether it is still a whole group rather than a picked few.
+        val groups = HashMap<String, Boolean>()
+        for (leaf in leaves) {
+            if (leaf !is GatherCardsEffect) continue
+            val source = leaf.source as? CardSource.BattlefieldMatching ?: continue
+            if (source.player == Player.You || source.filter.controllerPredicate == ControllerPredicate.ControlledByYou) continue
+            groups[leaf.storeAs] = true
+        }
+        if (groups.isEmpty()) return emptySet()
+        do {
+            val before = groups.toMap()
+            for (leaf in leaves) {
+                val picked = (leaf as? SelectFromCollectionEffect)?.takeIf { it.from in groups }?.storeSelected
+                for (name in derivedCollections(leaf, groups.keys)) {
+                    val parentIsGroup = sourcesOf(leaf).any { groups[it] == true }
+                    groups[name] = (groups[name] ?: false) || (parentIsGroup && name != picked)
+                }
+            }
+        } while (groups != before)
+        var tags = emptySet<IntentTag>()
+        for (leaf in leaves) {
+            if (leaf !is MoveCollectionEffect || leaf.from !in groups) continue
+            if ((leaf.destination as? CardDestination.ToZone)?.zone != Zone.GRAVEYARD) continue
+            if (leaf.moveType != MoveType.Destroy && leaf.moveType != MoveType.Sacrifice) continue
+            if (groups[leaf.from] == true) return setOf(IntentTag.REMOVAL, IntentTag.SWEEPER)
+            tags = setOf(IntentTag.REMOVAL)
+        }
+        return tags
+    }
+
+    /** The collections [leaf] reads from, for the steps [derivedCollections] follows. */
+    private fun sourcesOf(leaf: Effect): List<String> = when (leaf) {
+        is SelectFromCollectionEffect -> listOf(leaf.from)
+        is FilterCollectionEffect -> listOf(leaf.from)
+        is ChoosePileEffect -> listOf(leaf.pileA, leaf.pileB)
+        is ChooseOnePerCategoryEffect -> listOf(leaf.from)
+        is MoveCollectionEffect -> listOf(leaf.from)
+        else -> emptyList()
+    }
 
     /**
      * "Look at the top N cards of your library and put one of them into your hand" — a gather from
