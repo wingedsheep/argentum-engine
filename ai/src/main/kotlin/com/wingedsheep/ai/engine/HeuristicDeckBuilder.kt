@@ -105,7 +105,7 @@ private fun buildFreshSealedDeck(pool: List<CardDefinition>, targetSize: Int): M
 
     // Cards castable off the chosen colors, best first — by each copy's *marginal* value, so a
     // second copy of a legend ranks below the first (see [rankByMarginalValue]).
-    val ranked = rankByMarginalValue(nonLands.filter { castableWithColors(it, bestColors) }) { ratings[it] ?: 0.0 }
+    val ranked = rankByMarginalValue(nonLands.filter { fitsDeckColors(it, bestColors) }) { ratings[it] ?: 0.0 }
 
     // On-color non-basic lands (capped at 4 per name) are fixed first: the mana-support check
     // below needs to know which colors they already make.
@@ -211,7 +211,7 @@ private fun lightSplash(
         val withSplash = mainColors + color
         val copies = mutableMapOf<String, Int>()
         val cards = offColour
-            .filter { castableWithColors(it, withSplash) && strictPips(it, color) == 1 && !DeckDependencies.inert(it, taken) }
+            .filter { fitsDeckColors(it, withSplash) && strictPips(it, color) == 1 && !DeckDependencies.inert(it, taken) }
             .sortedByDescending { ratings[it] ?: 0.0 }
             .filter { card ->
                 val n = (takenNames[card.name] ?: 0) + (copies[card.name] ?: 0)
@@ -495,7 +495,7 @@ private fun completeSealedDeck(
     // Copies the player already locked count toward the legend discount: a locked legend's next
     // copy from the pool is already its second.
     val candidates = rankByMarginalValue(
-        pool.filter { !it.typeLine.isLand && castableWithColors(it, bestColors) },
+        pool.filter { !it.typeLine.isLand && fitsDeckColors(it, bestColors) },
         alreadyIncluded = { name -> locked[name] ?: 0 },
     ) { ratings[it] ?: 0.0 }.map { it.slot.card }
     for (card in candidates) {
@@ -612,7 +612,15 @@ internal fun rankByMarginalValue(
  * devoid makes a card colorless (CR 702.114a) without making its `{U}` payable with any mana.
  */
 internal fun spellColors(card: CardDefinition): Set<Color> =
-    card.manaCost.colors + (card.colorIndicator ?: emptySet())
+    card.manaCost.colors + (card.colorIndicator ?: emptySet()) + facesToCast(card).flatMap { it.colors }
+
+/**
+ * The costs a card with no mana cost of its own is cast for: each half of a split card or Room
+ * (CR 709.3, 709.5) lives on its face. Empty for every other card — an Adventure's own cost is
+ * the creature's, and its face is an alternative, not the price of the card.
+ */
+private fun facesToCast(card: CardDefinition): List<ManaCost> =
+    if (card.manaCost.symbols.isEmpty()) card.cardFaces.map { it.manaCost }.filter { it.symbols.isNotEmpty() } else emptyList()
 
 /**
  * Whether a deck whose mana comes from [deckColors] basics can pay [card]'s mana cost. Every pip
@@ -623,8 +631,28 @@ internal fun spellColors(card: CardDefinition): Set<Color> =
  * mana cost at all (cast only by suspend or the like) falls back to its color indicator.
  */
 internal fun castableWithColors(card: CardDefinition, deckColors: Set<Color>): Boolean {
-    if (card.manaCost.symbols.isEmpty()) return (card.colorIndicator ?: emptySet()).all { it in deckColors }
+    if (card.manaCost.symbols.isEmpty()) {
+        // A split card or Room is cast one half at a time; a deck that can't cast every half is
+        // playing half a card (Funeral Room // Awakening Hall, {2}{B} // {6}{B}{B}, in a G/W deck).
+        val faces = facesToCast(card)
+        if (faces.isNotEmpty()) return faces.all { manaCostPayableWith(it, deckColors) }
+        return (card.colorIndicator ?: emptySet()).all { it in deckColors }
+    }
     return manaCostPayableWith(card.manaCost, deckColors)
+}
+
+/**
+ * [card] earns a slot in a deck playing [deckColors]: castable off them ([castableWithColors]),
+ * and not a mana rock that makes only other colours. A colourless rock is always castable, but a
+ * Mardu Banner (R/W/B) in a U/G deck is three mana for a colourless card that fixes nothing.
+ */
+internal fun fitsDeckColors(card: CardDefinition, deckColors: Set<Color>): Boolean =
+    castableWithColors(card, deckColors) && !offColorManaRock(card, deckColors)
+
+private fun offColorManaRock(card: CardDefinition, deckColors: Set<Color>): Boolean {
+    if (card.typeLine.isLand || card.typeLine.isCreature) return false
+    val produced = tappedColors(card)
+    return produced.isNotEmpty() && produced.none { it in deckColors }
 }
 
 internal fun manaCostPayableWith(cost: ManaCost, deckColors: Set<Color>): Boolean =
@@ -688,9 +716,14 @@ internal fun utilityLand(poolLands: List<CardDefinition>, deckColors: Set<Color>
     }
 }
 
-/** A land that makes no colored mana and fetches none: `{T}: Add {C}` plus whatever else it does. */
+/**
+ * A land that makes no colored mana and fetches none: `{T}: Add {C}` plus whatever else it does. It
+ * has to make mana at all — Bazaar of Baghdad ("{T}: Draw two cards, then discard three") is a land
+ * slot that never pays for a spell, and it made two generated Commander decks as their "utility" land.
+ */
 internal fun isColorlessUtilityLand(land: CardDefinition): Boolean =
-    land.typeLine.isLand && !land.typeLine.isBasicLand && producedColors(land).isEmpty() && !fetchesAnyBasic(land)
+    land.typeLine.isLand && !land.typeLine.isBasicLand && producedColors(land).isEmpty() && !fetchesAnyBasic(land) &&
+        land.script.activatedAbilities.any { it.isManaAbility }
 
 private fun hasPayoff(effect: Effect, spells: List<CardDefinition>): Boolean = when (effect) {
     is BecomePreparedEffect -> spells.count { it.typeLine.isCreature && it.isPreparation } >= MIN_PREPARE_CREATURES
