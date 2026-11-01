@@ -77,6 +77,9 @@ import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
 import com.wingedsheep.sdk.scripting.effects.PreventionDirection
 import com.wingedsheep.sdk.scripting.effects.RegenerateEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
+import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
@@ -278,6 +281,22 @@ object TargetPolarityAnalyzer {
                 }
                 continue
             }
+            // "One or two target creatures you control each deal damage equal to their power to
+            // target creature an opponent controls" (Common Goal): the pipeline gathers its own
+            // chosen targets and loops over them, so `IterationEntity` spans several slots and names
+            // none. The body's other references keep their own slots (the victim); a bite drawing
+            // its damage from the iterated creature lends the power of every own-side slot.
+            if (space is IterationSpace.Collection && space.collection in chosenTargetCollections(effect)) {
+                for (inner in EffectWalker.payoffLeaves(leaf.body)) {
+                    for ((target, polarity) in classify(inner, definitions, source)) {
+                        slotOf(target, requirements)?.let { perSlot[it] += polarity }
+                    }
+                    if (inner is DealDamageEffect && inner.damageSource == EffectTarget.IterationEntity) {
+                        biteSources += requirements.indices.filter { isOwnSide(requirements[it]) }
+                    }
+                }
+                continue
+            }
             val recursion = recursionSlot(leaf, requirements)
             val copy = ownCopySlot(leaf, requirements)
             if (recursion != null) {
@@ -400,10 +419,31 @@ object TargetPolarityAnalyzer {
     /** The slot [target] names when its requirement's filter keeps it on our side of the table. */
     private fun ownSideSlot(target: EffectTarget, requirements: List<TargetRequirement>): Int? {
         val slot = slotOf(target, requirements) ?: return null
-        val filter = (requirements[slot] as? TargetObject)?.filter ?: return null
-        val ours = filter.alternatives.isEmpty() &&
+        return slot.takeIf { isOwnSide(requirements[slot]) }
+    }
+
+    /** Whether [requirement]'s filter keeps its target on our side of the table ("… you control"). */
+    private fun isOwnSide(requirement: TargetRequirement): Boolean {
+        val filter = (((requirement as? TargetOther)?.baseRequirement ?: requirement) as? TargetObject)?.filter
+            ?: return false
+        return filter.alternatives.isEmpty() &&
             filter.baseFilter.controllerPredicate == ControllerPredicate.ControlledByYou
-        return slot.takeIf { ours }
+    }
+
+    /**
+     * The pipeline collections of [effect] that hold its own chosen targets: gathered from
+     * [CardSource.ChosenTargets], or filtered out of such a collection.
+     */
+    private fun chosenTargetCollections(effect: Effect): Set<String> {
+        val leaves = EffectWalker.leaves(effect)
+        val names = leaves.filterIsInstance<GatherCardsEffect>()
+            .filter { it.source == CardSource.ChosenTargets }.mapTo(HashSet()) { it.storeAs }
+        val filters = leaves.filterIsInstance<FilterCollectionEffect>()
+        do {
+            val grown = filters.filter { it.from in names }
+                .flatMap { listOfNotNull(it.storeMatching, it.storeNonMatching) }
+        } while (names.addAll(grown))
+        return names
     }
 
     /**
