@@ -360,7 +360,7 @@ All-Seeing Arbiter	intent: ModifyStatsEffect
 Alley Assailant
 Alley Strangler
 Allied Assault	timing: ForEach>ModifyStatsEffect
-Allies at Last	polarity: ForEachEffect; polarity: Pipeline(ChosenTargets→?)
+Allies at Last
 Alloy Animist	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
 Alloy Golem
 Alloy Myr
@@ -3063,7 +3063,7 @@ Commence the Endgame
 Commercial District
 Commissar Severina Raine
 Common Crook
-Common Goal	polarity: ForEachEffect; polarity: Pipeline(ChosenTargets→?)
+Common Goal
 Communal Brewing
 Commune with Beavers
 Commune with Evil
@@ -6086,7 +6086,7 @@ Fretwork Colony
 Freya Crescent
 Friendly Ghost
 Friendly Neighborhood
-Friendly Rivalry	polarity: DealDamageEffect
+Friendly Rivalry
 Friendly Teddy
 Frightshroud Courier
 Frilled Cave-Wurm
@@ -6922,7 +6922,7 @@ Grab the Reins	polarity: mixed(GainControlEffect+GrantKeywordEffect)
 Grabby Giant
 Graceful Adept
 Graceful Cat
-Graceful Takedown	polarity: ForEachEffect; polarity: Pipeline(ChosenTargets→?)
+Graceful Takedown
 Graduation Day
 Graf Harvest
 Graf Rats	intent: MeldEffect
@@ -13674,7 +13674,7 @@ Saheeli, Consul of Oversight
 Saheeli, Filigree Master	intent: CreatePermanentEmblemEffect
 Saheeli, Jewel of Avishkar
 Saheeli, Sublime Artificer	intent: EachPermanentBecomesCopyOfTargetEffect; polarity: EachPermanentBecomesCopyOfTargetEffect
-Saheeli, the Sun's Brilliance	polarity: CreateTokenCopyOfTargetEffect
+Saheeli, the Sun's Brilliance
 Sai, Master Thopterist
 Saiba Cryptomancer
 Saiba Trespassers
@@ -16458,7 +16458,7 @@ Terrapact Intimidator	intent: ChooseActionEffect; polarity: ChooseActionEffect
 Terrarion
 Terrasymbiosis
 Terrian, World Tyrant
-Terrific Team-Up	polarity: ForEachEffect; polarity: Pipeline(ChosenTargets→?); timing: ForEach>ModifyStatsEffect
+Terrific Team-Up	timing: ForEach>ModifyStatsEffect
 Territorial Allosaurus
 Territorial Baloth
 Territorial Boar
@@ -16617,7 +16617,7 @@ The Hunter Maze
 The Huntsman's Redemption
 The Infamous Cruelclaw	intent: GatherUntilMatchEffect; intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithAdditionalCostEffect; intent: GrantPlayWithoutPayingCostEffect; intent: Pipeline(?→exile)
 The Irencrag	intent: BecomeArtifactEffect
-The Jolly Balloon Man	polarity: CreateTokenCopyOfTargetEffect
+The Jolly Balloon Man
 The Kami War
 The Kenriths' Royal Funeral	polarity: DrawCardsEffect; polarity: LoseLifeEffect; polarity: Pipeline(ChosenTargets→exile); polarity: StoreNumberEffect
 The Key to the Vault	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→exile|library); polarity: AttachEquipmentEffect
