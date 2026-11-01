@@ -807,7 +807,8 @@ data class RemoveCountersFromAmongEffect(
     val storeAmountAs: String,
 ) : Effect {
     override val description: String =
-        "You may remove any number of ${counterType.printed} counters from among ${filter.description}s"
+        "Remove any number of ${counterType.printed} counters from among " +
+            com.wingedsheep.sdk.scripting.describeObjectsForEvent(filter)
 }
 
 /**

@@ -53,8 +53,7 @@ class RemoveCountersFromAmongExecutor(
         val decision = { decisionId: String -> DistributeDecision(
             id = decisionId,
             playerId = context.controllerId,
-            prompt = "Remove any number of ${effect.counterType.printed} counters from among " +
-                "${effect.filter.description}s",
+            prompt = effect.description,
             context = DecisionContext(
                 sourceId = sourceId,
                 sourceName = sourceName,
