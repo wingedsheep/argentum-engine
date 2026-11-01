@@ -80,6 +80,7 @@ import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.scripting.targets.TargetOther
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import java.util.concurrent.ConcurrentHashMap
@@ -623,7 +624,8 @@ object TargetPolarityAnalyzer {
      * A slot of an ability its controller resolves: they aim a harmful leaf at someone else and a
      * helpful one at their own, so either way it serves them — except a harmful leaf whose filter
      * allows only their own objects. A slot whose requirement isn't in [requirements] (a reflexive
-     * trigger's own target) has no such filter to keep it home.
+     * trigger's own target), or isn't an object filter ("any target"), has no such filter to keep
+     * it home.
      */
     private fun controllersPick(
         target: EffectTarget,
@@ -631,8 +633,10 @@ object TargetPolarityAnalyzer {
         requirements: List<TargetRequirement>,
     ): TargetPolarity {
         if (polarity != TargetPolarity.HARMFUL) return TargetPolarity.BENEFICIAL
-        val filter = slotOf(target, requirements)?.let { (requirements[it] as? TargetObject)?.filter }
-            ?: return TargetPolarity.BENEFICIAL
+        // "Another target creature you control" keeps the same side as "target creature you control".
+        val requirement = slotOf(target, requirements)?.let { requirements[it] }
+            ?.let { (it as? TargetOther)?.baseRequirement ?: it } ?: return TargetPolarity.BENEFICIAL
+        val filter = (requirement as? TargetObject)?.filter ?: return TargetPolarity.BENEFICIAL
         val ownSideOnly = filter.alternatives.isEmpty() &&
             filter.baseFilter.controllerPredicate == ControllerPredicate.ControlledByYou
         return if (ownSideOnly) TargetPolarity.HARMFUL else TargetPolarity.BENEFICIAL
