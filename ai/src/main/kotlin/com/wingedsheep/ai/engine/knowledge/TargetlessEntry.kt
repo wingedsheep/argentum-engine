@@ -100,9 +100,9 @@ internal object TargetlessEntry {
     /**
      * "When this leaves the battlefield, return the exiled card" — a leave trigger of its own whose
      * every leaf reads the permanent's linked exile and moves what it gathered. With nothing exiled
-     * it moves nothing.
+     * it moves nothing. The reading audit asks the same question: such a trigger needs no intent.
      */
-    private fun handsBackTheEntry(trigger: TriggeredAbility): Boolean {
+    fun handsBackTheEntry(trigger: TriggeredAbility): Boolean {
         if (trigger.binding != TriggerBinding.SELF) return false
         val pattern = trigger.trigger as? EventPattern.ZoneChangeEvent ?: return false
         if (pattern.from != Zone.BATTLEFIELD) return false
