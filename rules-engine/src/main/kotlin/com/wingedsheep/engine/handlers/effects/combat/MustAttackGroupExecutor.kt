@@ -1,9 +1,10 @@
 package com.wingedsheep.engine.handlers.effects.combat
 
 import com.wingedsheep.engine.core.EffectResult
+import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.ResolutionPlayerBaker
+import com.wingedsheep.engine.handlers.effects.ResolutionFilterBaker
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
@@ -20,7 +21,9 @@ import kotlin.reflect.KClass
  * requirement steers attacks away from is this effect's controller, baked in now: it stays the
  * same player if the source later changes hands or leaves.
  */
-class MustAttackGroupExecutor : EffectExecutor<MustAttackGroupEffect> {
+class MustAttackGroupExecutor(
+    private val amountEvaluator: DynamicAmountEvaluator
+) : EffectExecutor<MustAttackGroupEffect> {
 
     override val effectType: KClass<MustAttackGroupEffect> = MustAttackGroupEffect::class
 
@@ -36,7 +39,7 @@ class MustAttackGroupExecutor : EffectExecutor<MustAttackGroupEffect> {
             affectedEntities = emptySet(),
             duration = effect.duration,
             context = context,
-            dynamicGroupFilter = ResolutionPlayerBaker.bake(effect.filter, context, state)
+            dynamicGroupFilter = ResolutionFilterBaker.bake(effect.filter, context, state, amountEvaluator)
         )
         return EffectResult.success(newState)
     }

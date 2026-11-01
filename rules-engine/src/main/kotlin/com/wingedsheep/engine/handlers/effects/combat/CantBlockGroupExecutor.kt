@@ -1,9 +1,10 @@
 package com.wingedsheep.engine.handlers.effects.combat
 
 import com.wingedsheep.engine.core.EffectResult
+import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.ResolutionPlayerBaker
+import com.wingedsheep.engine.handlers.effects.ResolutionFilterBaker
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
@@ -19,7 +20,9 @@ import kotlin.reflect.KClass
  * matching the filter. Per Rule 611.2c, rule-modifying effects like "can't block" apply
  * to all matching objects including those entering the battlefield after the effect resolves.
  */
-class CantBlockGroupExecutor : EffectExecutor<CantBlockGroupEffect> {
+class CantBlockGroupExecutor(
+    private val amountEvaluator: DynamicAmountEvaluator
+) : EffectExecutor<CantBlockGroupEffect> {
 
     override val effectType: KClass<CantBlockGroupEffect> = CantBlockGroupEffect::class
 
@@ -34,7 +37,7 @@ class CantBlockGroupExecutor : EffectExecutor<CantBlockGroupEffect> {
             affectedEntities = emptySet(),
             duration = effect.duration,
             context = context,
-            dynamicGroupFilter = ResolutionPlayerBaker.bake(effect.filter, context, state)
+            dynamicGroupFilter = ResolutionFilterBaker.bake(effect.filter, context, state, amountEvaluator)
         )
 
         return EffectResult.success(newState)

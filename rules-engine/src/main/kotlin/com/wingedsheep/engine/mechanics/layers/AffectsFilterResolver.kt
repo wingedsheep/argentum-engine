@@ -268,6 +268,30 @@ internal class AffectsFilterResolver(
      */
     fun isKeywordDependentFilter(filter: AffectsFilter): Boolean = keywordsReadBy(filter).isNotEmpty()
 
+    /**
+     * True when the filter reads power or toughness ("creatures with power 3 or less" — Temur
+     * Charm, Rumbling Ruin). A rules-effect restriction over such a group is re-resolved after
+     * Layer 7, once counters and pumps have settled P/T (CR 613.11).
+     */
+    fun isPowerToughnessDependentFilter(filter: AffectsFilter): Boolean {
+        if (filter !is AffectsFilter.Generic) return false
+        fun reads(p: CardPredicate): Boolean = when (p) {
+            is CardPredicate.PowerEquals, is CardPredicate.PowerAtMost, is CardPredicate.PowerAtLeast,
+            is CardPredicate.ToughnessEquals, is CardPredicate.ToughnessAtMost, is CardPredicate.ToughnessAtLeast,
+            is CardPredicate.PowerOrToughnessAtLeast, is CardPredicate.PowerOrToughnessAtMost,
+            is CardPredicate.TotalPowerAndToughnessAtMost, CardPredicate.ToughnessGreaterThanPower,
+            CardPredicate.PowerGreaterThanBase, is CardPredicate.BasePowerEquals,
+            is CardPredicate.BaseToughnessEquals -> true
+            is CardPredicate.And -> p.predicates.any(::reads)
+            is CardPredicate.Or -> p.predicates.any(::reads)
+            is CardPredicate.Not -> reads(p.predicate)
+            else -> false
+        }
+        fun reads(f: com.wingedsheep.sdk.scripting.GameObjectFilter): Boolean =
+            f.cardPredicates.any(::reads) || f.anyOf.any(::reads)
+        return reads(filter.groupFilter.baseFilter)
+    }
+
     fun isControllerDependentFilter(filter: AffectsFilter): Boolean {
         return filter is AffectsFilter.AllCreaturesYouControl ||
             filter is AffectsFilter.AllCreaturesOpponentsControl ||
@@ -370,7 +394,7 @@ internal class AffectsFilterResolver(
                         ControllerPredicate.OwnedByYou -> card.ownerId != null && card.ownerId == controller
                         ControllerPredicate.OwnedByOpponent -> card.ownerId != null && card.ownerId != controller
                         // "creatures that player controls" — a player pinned when a floating group
-                        // restriction resolved (ResolutionPlayerBaker), or a state-relative reference.
+                        // restriction resolved (ResolutionFilterBaker), or a state-relative reference.
                         // Answered by the evaluator's shared player leaf; it must never fail open, or
                         // a one-player restriction would bind every controller's creatures.
                         is ControllerPredicate.ControlledByReferencedPlayer -> when (val ref = leaf.target) {

@@ -36,7 +36,7 @@ class AttackOtherThanRequirementAiTest : FunSpec({
             GroupFilter.AllCreaturesOpponentsControl, MustAttackDefender.PlayerOtherThanYou, Duration.UntilYourNextTurn
         )
         driver.replaceState(
-            MustAttackGroupExecutor().execute(driver.state, effect, EffectContext(sourceId = null, controllerId = kardurSeat)).state
+            MustAttackGroupExecutor(driver.services.predicateEvaluator.amounts).execute(driver.state, effect, EffectContext(sourceId = null, controllerId = kardurSeat)).state
         )
         driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
 

@@ -52,6 +52,12 @@ class CardIntentAnalyzerTest : ScenarioTestBase() {
             }
         }
 
+        test("a team-wide can't-block or can't-be-blocked turn reads as an evasion grant") {
+            intentOf("Rumbling Ruin").tags shouldContain IntentTag.EVASION_GRANT
+            intentOf("Barrage of Boulders").tags shouldContain IntentTag.EVASION_GRANT
+            intentOf("Jace, Arcane Strategist").tags shouldContain IntentTag.EVASION_GRANT
+        }
+
         test("a mana rock is ramp, and is worth about a land plus the card it can still cash in") {
             val intent = intentOf("Mind Stone")
             intent.tags shouldContain IntentTag.RAMP

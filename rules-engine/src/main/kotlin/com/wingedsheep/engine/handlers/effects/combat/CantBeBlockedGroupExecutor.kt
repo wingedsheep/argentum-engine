@@ -1,9 +1,10 @@
 package com.wingedsheep.engine.handlers.effects.combat
 
 import com.wingedsheep.engine.core.EffectResult
+import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.ResolutionPlayerBaker
+import com.wingedsheep.engine.handlers.effects.ResolutionFilterBaker
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
@@ -20,7 +21,9 @@ import kotlin.reflect.KClass
  * re-evaluated on each projection. Per Rule 611.2c a rule-modifying effect applies to matching
  * objects that arrive after it resolves, unlike a keyword grant, which locks its set in.
  */
-class CantBeBlockedGroupExecutor : EffectExecutor<CantBeBlockedGroupEffect> {
+class CantBeBlockedGroupExecutor(
+    private val amountEvaluator: DynamicAmountEvaluator
+) : EffectExecutor<CantBeBlockedGroupEffect> {
 
     override val effectType: KClass<CantBeBlockedGroupEffect> = CantBeBlockedGroupEffect::class
 
@@ -35,7 +38,7 @@ class CantBeBlockedGroupExecutor : EffectExecutor<CantBeBlockedGroupEffect> {
             affectedEntities = emptySet(),
             duration = effect.duration,
             context = context,
-            dynamicGroupFilter = ResolutionPlayerBaker.bake(effect.filter, context, state)
+            dynamicGroupFilter = ResolutionFilterBaker.bake(effect.filter, context, state, amountEvaluator)
         )
 
         return EffectResult.success(newState)
