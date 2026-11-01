@@ -7813,6 +7813,60 @@
     ]
 }
 
+// Imperious Oligarch
+{
+    "name": "Imperious Oligarch",
+    "manaCost": "{W}{B}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "Vigilance\nAfterlife 1 (When this creature dies, create a 1/1 white and black Spirit creature token with flying.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Imperious Oligarch:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE",
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Spirit"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/4/5/45b3bdd7-b093-4bfd-8a9a-965e72bfefb3.jpg?1783933602"
+                },
+                "descriptionOverride": "Afterlife 1 (When this creature dies, create a 1/1 white and black Spirit creature token with flying.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "184",
+        "artist": "Johannes Voss",
+        "flavorText": "The rights of ghosts are strictly protected under Orzhov bylaws, and those who enforce them can count on the ghosts' assistance.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd27ba9e-5b9c-468f-9a44-bf2e89138e72.jpg?1783933646"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Incubation // Incongruity
 {
     "name": "Incubation // Incongruity",
@@ -8222,6 +8276,254 @@
     ]
 }
 
+// Kaya's Wrath
+{
+    "name": "Kaya's Wrath",
+    "manaCost": "{W}{W}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy all creatures. You gain life equal to the number of creatures you controlled that were destroyed this way.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "creature"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "gathered0",
+                    "filter": "creature ctrl:you",
+                    "storeMatching": "matching1",
+                    "storeNonMatching": "rest1"
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "creature"
+                            },
+                            "storeAs": "destroyAll_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "destroyAll_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy",
+                            "storeMovedAs": "stored2"
+                        }
+                    ]
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "stored2",
+                    "collectionFilter": {
+                        "type": "ExcludeOtherCollection",
+                        "otherCollectionName": "rest1"
+                    },
+                    "storeMatching": "matching3"
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "VariableReference",
+                        "variableName": "matching3_count"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "187",
+        "rarity": "RARE",
+        "artist": "Victor Adame Minguez",
+        "flavorText": "Teysa convened the meeting of the Obzedat. Kaya ended it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/e/5ed140c1-752b-4539-88f2-1fa354049b17.jpg?1783933645"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
+// Kaya, Orzhov Usurper
+{
+    "name": "Kaya, Orzhov Usurper",
+    "manaCost": "{1}{W}{B}",
+    "typeLine": "Legendary Planeswalker — Kaya",
+    "oracleText": "+1: Exile up to two target cards from a single graveyard. You gain 2 life if at least one creature card was exiled this way.\n−1: Exile target nonland permanent with mana value 1 or less.\n−5: Kaya deals damage to target player equal to the number of cards that player owns in exile and you gain that much life.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kaya, Orzhov Usurper:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "gathered0",
+                            "ifNotEmpty": {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "ifEmpty": {
+                                "type": "Composite",
+                                "effects": []
+                            },
+                            "filter": "creature"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 2,
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": {},
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0",
+                        "sameOwner": true
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Exile up to two target cards from a single graveyard. You gain 2 life if at least one creature card was exiled this way."
+            },
+            {
+                "id": "Kaya, Orzhov Usurper:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -1
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "nonland permanent mv<=1"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Exile target nonland permanent with mana value 1 or less."
+            },
+            {
+                "id": "Kaya, Orzhov Usurper:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -5
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "AggregateZone",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t2"
+                                },
+                                "zone": "Exile"
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t2"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "AggregateZone",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t2"
+                                },
+                                "zone": "Exile"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t2"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Kaya deals damage to target player equal to the number of cards that player owns in exile and you gain that much life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "186",
+        "rarity": "MYTHIC",
+        "artist": "Yongjae Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fdb4b2ef-5196-4f7f-88ff-64b2cdb36c6b.jpg?1783933645",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "If a permanent has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "Tokens that aren't a copy of something else don't have a mana cost. Anything without a mana cost normally has a mana value of 0."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "Kaya's last ability causes you to gain life equal to the number of cards the target player owns in exile, even if an effect causes her to deal more or less than that amount of damage to that player."
+            }
+        ]
+    },
+    "startingLoyalty": 3,
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Knight of Sorrows
 {
     "name": "Knight of Sorrows",
@@ -8287,6 +8589,103 @@
     ]
 }
 
+// Knight of the Last Breath
+{
+    "name": "Knight of the Last Breath",
+    "manaCost": "{5}{W}{B}",
+    "typeLine": "Creature — Giant Knight",
+    "oracleText": "{3}, Sacrifice another nontoken creature: Create a 1/1 white and black Spirit creature token with flying.\nAfterlife 3 (When this creature dies, create three 1/1 white and black Spirit creature tokens with flying.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Knight of the Last Breath:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE",
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Spirit"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/4/5/45b3bdd7-b093-4bfd-8a9a-965e72bfefb3.jpg?1783933602"
+                },
+                "descriptionOverride": "Afterlife 3 (When this creature dies, create three 1/1 white and black Spirit creature tokens with flying.)"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Knight of the Last Breath:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature nontoken",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE",
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Spirit"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/4/5/45b3bdd7-b093-4bfd-8a9a-965e72bfefb3.jpg?1783933602"
+                },
+                "descriptionOverride": "{3}, Sacrifice another nontoken creature: Create a 1/1 white and black Spirit creature token with flying."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "188",
+        "rarity": "UNCOMMON",
+        "artist": "Milivoj Ćeran",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/6/76fccf60-2df5-4c14-893f-41d3f86c545f.jpg?1783933644"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Lavinia, Azorius Renegade
 {
     "name": "Lavinia, Azorius Renegade",
@@ -8341,6 +8740,71 @@
         "artist": "Steven Belledin",
         "flavorText": "\"I told Jace that Ravnica would fall apart if he didn't take his responsibilities seriously. I didn't want to be right.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/c/4/c497d496-1232-4614-93b0-9864fa93c29f.jpg?1783933643"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
+// Lawmage's Binding
+{
+    "name": "Lawmage's Binding",
+    "manaCost": "{1}{W}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Flash\nEnchant creature\nEnchanted creature can't attack or block, and its activated abilities can't be activated.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "CantBlock",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "PreventActivatedAbilities",
+                "filter": {
+                    "cardPredicates": [
+                        "IsPermanent"
+                    ],
+                    "statePredicates": [
+                        "IsAttachedToBySource"
+                    ]
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "190",
+        "artist": "Mark Behm",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/8/a8a7be1f-3fba-4ff2-a4f1-aebd3d20da8f.jpg?1783933643",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "Activated abilities contain a colon. They're generally written \"[Cost]: [Effect].\" Some keyword abilities are activated abilities and will have colons in their reminder text. Triggered abilities (starting with \"when,\" \"whenever,\" or \"at\") are unaffected by Lawmage's Binding."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "Once a creature has attacked or blocked, casting Lawmage's Binding won't remove that creature from combat. Similarly, once a creature's ability has been activated, casting Lawmage's Binding won't counter that ability."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "WHITE",
@@ -8584,6 +9048,85 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Macabre Mockery
+{
+    "name": "Macabre Mockery",
+    "manaCost": "{2}{B}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Put target creature card from an opponent's graveyard onto the battlefield under your control. It gets +2/+0 and gains haste until end of turn. Sacrifice it at the beginning of the next end step.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield",
+                    "controllerOverride": "Controller"
+                },
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "CreateDelayedTrigger",
+                    "step": "END",
+                    "effect": {
+                        "type": "SacrificeTarget",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature own:opponent",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "191",
+        "rarity": "UNCOMMON",
+        "artist": "Deruchenko Alexander",
+        "flavorText": "The Rakdos put the \"fun\" in \"funeral.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9c1aee37-dcee-4e58-be9b-81ca57cedb53.jpg?1783933642"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
     ]
 }
 
@@ -8851,6 +9394,60 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Nikya of the Old Ways
+{
+    "name": "Nikya of the Old Ways",
+    "manaCost": "{3}{R}{G}",
+    "typeLine": "Legendary Creature — Centaur Druid",
+    "oracleText": "You can't cast noncreature spells.\nWhenever you tap a land for mana, add one mana of any type that land produced.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "PlayersCantCastSpells",
+                "affected": "You",
+                "spellFilter": {
+                    "cardPredicates": [
+                        "IsNoncreature"
+                    ]
+                }
+            },
+            {
+                "type": "AdditionalManaOnSourceTap",
+                "sourceFilter": "land ctrl:you"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "193",
+        "rarity": "RARE",
+        "artist": "Ryan Pancoast",
+        "flavorText": "\"The hooves of the Raze-Boar will trample the weak—and their city—to dust!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/d/0dcdad71-323e-41e0-a1b3-9fd5b753e71c.jpg?1783933642",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "The types of mana are white, blue, black, red, green, and colorless."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If you tap a land for more than one mana, you choose one type that was produced and add one mana of that type."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "Nikya doesn't care about any restrictions or riders your lands put on the mana they produce, such as those of Unclaimed Territory and Guildmages' Forum. It just produces one mana of the appropriate type, with no restrictions or riders."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
     ]
 }
 
@@ -9758,6 +10355,108 @@
     ]
 }
 
+// Prime Speaker Vannifar
+{
+    "name": "Prime Speaker Vannifar",
+    "manaCost": "{2}{G}{U}",
+    "typeLine": "Legendary Creature — Elf Ooze Wizard",
+    "oracleText": "{T}, Sacrifice another creature: Search your library for a creature card with mana value equal to 1 plus the sacrificed creature's mana value, put that card onto the battlefield, then shuffle. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Prime Speaker Vannifar:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "ManaValueEqualsDynamic",
+                                            "amount": {
+                                                "type": "Add",
+                                                "left": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                },
+                                                "right": {
+                                                    "type": "EntityProperty",
+                                                    "entity": "SacrificedAsCost",
+                                                    "numericProperty": "ManaValue"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a creature card with mana value equal to (1 + the sacrificed creature's mana value) to put onto the battlefield",
+                            "selectedLabel": "Put onto the battlefield"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                },
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "195",
+        "rarity": "MYTHIC",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/84abfc59-10a7-4cb5-9cdd-81797116c810.jpg?1783933641"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Prowling Caracal
 {
     "name": "Prowling Caracal",
@@ -10067,6 +10766,87 @@
         "imageUri": "https://cards.scryfall.io/normal/front/c/b/cb13420d-d295-4000-9c38-fa5d10e06ece.jpg"
     },
     "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Rakdos Firewheeler
+{
+    "name": "Rakdos Firewheeler",
+    "manaCost": "{B}{B}{R}{R}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "When this creature enters, it deals 2 damage to target opponent and 2 damage to up to one target creature or planeswalker.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rakdos Firewheeler:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "damageSource": "Self"
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "damageSource": "Self"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "additionalTargetRequirements": [
+                    {
+                        "type": "TargetCreatureOrPlaneswalker",
+                        "optional": true,
+                        "id": "t1"
+                    }
+                ],
+                "descriptionOverride": "When this creature enters, it deals 2 damage to target opponent and 2 damage to up to one target creature or planeswalker."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "197",
+        "rarity": "UNCOMMON",
+        "artist": "Slawomir Maniak",
+        "flavorText": "Ever wonder why you never see an old Rakdos cultist?",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d819a944-0b3e-4e26-87da-2417081928e7.jpg?1783933640",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "If you can't target any opponent with Rakdos Firewheeler's ability, the ability doesn't go on the stack. You can't have it deal 2 damage to any creature or planeswalker. On the other hand, if you do choose two legal targets but either target is illegal when the ability tries to resolve, the other is still affected as appropriate."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
         "RED"
     ]
 }
@@ -10443,6 +11223,148 @@
         "imageUri": "https://cards.scryfall.io/normal/front/1/2/12c1b820-0f06-41f6-804f-5c98f60c1529.jpg"
     },
     "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Ravager Wurm
+{
+    "name": "Ravager Wurm",
+    "manaCost": "{3}{R}{G}{G}",
+    "typeLine": "Creature — Wurm",
+    "oracleText": "Riot (This creature enters with your choice of a +1/+1 counter or haste.)\nWhen this creature enters, choose up to one —\n• This creature fights target creature you don't control.\n• Destroy target land with an activated ability that isn't a mana ability.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "RIOT"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ravager Wurm:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Fight",
+                                "target1": "Self",
+                                "target2": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": {
+                                            "cardPredicates": [
+                                                "IsCreature"
+                                            ],
+                                            "controllerPredicate": {
+                                                "type": "ControllerNot",
+                                                "predicate": "ControlledByYou"
+                                            }
+                                        }
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "This creature fights target creature you don't control"
+                        },
+                        {
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                },
+                                "destination": "Graveyard",
+                                "byDestruction": true
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": {
+                                            "cardPredicates": [
+                                                "IsLand",
+                                                "HasNonManaActivatedAbility"
+                                            ]
+                                        }
+                                    },
+                                    "id": "t1"
+                                }
+                            ],
+                            "description": "Destroy target land with an activated ability that isn't a mana ability"
+                        }
+                    ],
+                    "minChooseCount": 0,
+                    "countsAsModalSpell": false
+                },
+                "descriptionOverride": "When this creature enters, choose up to one — This creature fights target creature you don't control; or destroy target land with an activated ability that isn't a mana ability."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "haste"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "modeOptions": [
+                    {
+                        "id": "counter",
+                        "label": "A +1/+1 counter",
+                        "iconKey": "plusOneCounter"
+                    },
+                    {
+                        "id": "haste",
+                        "label": "Haste",
+                        "iconKey": "haste"
+                    }
+                ]
+            },
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "counter"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "200",
+        "rarity": "MYTHIC",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6d5a6085-bb5d-412e-8831-757996bbc8fb.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED",
         "GREEN"
     ]
 }
@@ -11569,6 +12491,76 @@
     "colorIdentityOverride": []
 }
 
+// Scuttlegator
+{
+    "name": "Scuttlegator",
+    "manaCost": "{4}{G/U}{G/U}",
+    "typeLine": "Creature — Crab Turtle Crocodile",
+    "oracleText": "Defender\n{6}{G/U}{G/U}: Adapt 3. (If this creature has no +1/+1 counters on it, put three +1/+1 counters on it.)\nAs long as this creature has a +1/+1 counter on it, it can attack as though it didn't have defender.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Scuttlegator:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{6}{G/U}{G/U}"
+                    }
+                },
+                "effect": {
+                    "type": "Adapt",
+                    "amount": 3
+                },
+                "descriptionOverride": "{6}{G/U}{G/U}: Adapt 3."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CanAttackDespiteDefender",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "218",
+        "artist": "Jehan Choo",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d886fd9a-7800-41f1-b692-32a439b045da.jpg?1783933631",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "You can always activate an ability that will cause a creature to adapt. As that ability resolves, if the creature has a +1/+1 counter on it for any reason, you simply won't put any +1/+1 counters on it."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If a creature somehow loses all of its +1/+1 counters, it can adapt again and get more +1/+1 counters."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Senate Courier
 {
     "name": "Senate Courier",
@@ -11832,6 +12824,98 @@
     ]
 }
 
+// Seraph of the Scales
+{
+    "name": "Seraph of the Scales",
+    "manaCost": "{2}{W}{B}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying\n{W}: This creature gains vigilance until end of turn.\n{B}: This creature gains deathtouch until end of turn.\nAfterlife 2 (When this creature dies, create two 1/1 white and black Spirit creature tokens with flying.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Seraph of the Scales:3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE",
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Spirit"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/4/5/45b3bdd7-b093-4bfd-8a9a-965e72bfefb3.jpg?1783933602"
+                },
+                "descriptionOverride": "Afterlife 2 (When this creature dies, create two 1/1 white and black Spirit creature tokens with flying.)"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Seraph of the Scales:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{W}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "VIGILANCE",
+                    "target": "Self"
+                },
+                "descriptionOverride": "{W}: This creature gains vigilance until end of turn."
+            },
+            {
+                "id": "Seraph of the Scales:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{B}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "DEATHTOUCH",
+                    "target": "Self"
+                },
+                "descriptionOverride": "{B}: This creature gains deathtouch until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "rarity": "MYTHIC",
+        "artist": "Magali Villeneuve",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d602e9e6-31ed-4d17-b39c-457b3b182943.jpg?1783933636"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Sharktocrab
 {
     "name": "Sharktocrab",
@@ -12085,6 +13169,122 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Simic Ascendancy
+{
+    "name": "Simic Ascendancy",
+    "manaCost": "{G}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "{1}{G}{U}: Put a +1/+1 counter on target creature you control.\nWhenever one or more +1/+1 counters are put on a creature you control, put that many growth counters on this enchantment.\nAt the beginning of your upkeep, if this enchantment has twenty or more growth counters on it, you win the game.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Simic Ascendancy:2",
+                "trigger": {
+                    "type": "CountersPlacedEvent",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "filter": "creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "GROWTH",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_COUNTERS_PLACED_AMOUNT"
+                    },
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Simic Ascendancy:3",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "WinGame",
+                    "message": "Simic Ascendancy reached 20 growth counters."
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "GROWTH"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 20
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Simic Ascendancy:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{G}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "RARE",
+        "artist": "Izzy",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff824392-fb5c-496c-be2f-6dfa6e04e3a2.jpg?1783933635",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "An ability that triggers when counters are put on a permanent will trigger if that permanent somehow enters the battlefield with those counters."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If Simic Ascendancy doesn't have twenty or more growth counters on it as your upkeep begins, its last ability won't trigger. You can't take any actions during your turn before your upkeep begins."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If the last ability does trigger, but counters are removed from Simic Ascendancy so it has fewer than twenty remaining on it, you won't win the game."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If the last ability does trigger, but Simic Ascendancy leaves the battlefield, use the number of counters it had on it immediately before it left the battlefield to determine whether you win the game."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
     ]
 }
 
@@ -12880,6 +14080,51 @@
         ]
     },
     "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Sphinx of New Prahv
+{
+    "name": "Sphinx of New Prahv",
+    "manaCost": "{W}{W}{U}{U}",
+    "typeLine": "Creature — Sphinx",
+    "oracleText": "Flying, vigilance\nSpells your opponents cast that target this creature cost {2} more to cast.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "OpponentsCastTargeting",
+                    "targetFilter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "modification": {
+                    "type": "IncreaseGeneric",
+                    "amount": 2
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "208",
+        "rarity": "UNCOMMON",
+        "artist": "Sara Winters",
+        "flavorText": "Azorius sphinxes are loyal to the precepts of the law, not to any particular guildmaster—even one of their own kind.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d9aec56e-50a3-491f-89c6-32907ea3161a.jpg?1783933635"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
         "BLUE"
     ]
 }
