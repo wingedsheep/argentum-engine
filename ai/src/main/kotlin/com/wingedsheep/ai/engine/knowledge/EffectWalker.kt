@@ -167,18 +167,26 @@ object EffectWalker {
      *
      * "Put a creature card from your hand onto the battlefield; sacrifice it at the beginning of the
      * next end step" (Through the Breach), "return it to its owner's hand at end of turn" (Ilharg),
-     * "when this leaves, its controller sacrifices the reanimated creature" (Animate Dead): the
-     * delayed step aims at "it" — a creature a pipeline of the ability moved, the entity a `ForEach`
-     * around it is iterating, a permanent tapped to pay its cost — and is the price of the ability,
-     * not an answer. A "you sacrifice it" can only ever take our own permanent. What remains is the
-     * delayed payoff: the draw at the next upkeep, the blocker destroyed at end of combat.
+     * "exile it at the beginning of the next end step" after reanimating a target (Coalstoke
+     * Gearhulk): the delayed step aims at "it" — a creature a pipeline of the ability moved, the
+     * entity a `ForEach` around it is iterating, a permanent tapped to pay its cost, or anything
+     * [siblings] (the other payoff steps of the scheduling ability) put onto the battlefield — and
+     * is the price of the ability, not an answer. A "you sacrifice it" can only ever take our own
+     * permanent, and a move off the battlefield that the same delayed effect moves back is a blink
+     * (Long River Lurker). What remains is the delayed payoff: the draw at the next upkeep, the
+     * blocker destroyed at end of combat.
      */
-    fun firedLeaves(delayed: CreateDelayedTriggerEffect): List<Effect> =
-        payoffLeaves(delayed.effect).filterNot(::takesBackItsOwn)
+    fun firedLeaves(delayed: CreateDelayedTriggerEffect, siblings: List<Effect> = emptyList()): List<Effect> {
+        val fired = payoffLeaves(delayed.effect)
+        val putOntoBattlefield = (siblings + fired)
+            .filter { it is MoveToZoneEffect && it.destination == Zone.BATTLEFIELD }
+            .mapTo(HashSet()) { (it as MoveToZoneEffect).target }
+        return fired.filterNot { takesBackItsOwn(it, putOntoBattlefield) }
+    }
 
-    private fun takesBackItsOwn(leaf: Effect): Boolean = when (leaf) {
-        is SacrificeTargetEffect -> !leaf.sacrificedByItsController || isIt(leaf.target)
-        is MoveToZoneEffect -> leaf.destination != Zone.BATTLEFIELD && isIt(leaf.target)
+    private fun takesBackItsOwn(leaf: Effect, putOntoBattlefield: Set<EffectTarget>): Boolean = when (leaf) {
+        is SacrificeTargetEffect -> !leaf.sacrificedByItsController || isIt(leaf.target) || leaf.target in putOntoBattlefield
+        is MoveToZoneEffect -> leaf.destination != Zone.BATTLEFIELD && (isIt(leaf.target) || leaf.target in putOntoBattlefield)
         else -> false
     }
 

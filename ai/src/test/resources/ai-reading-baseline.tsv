@@ -9538,7 +9538,7 @@ Long Goodbye
 Long Lake Nuisance
 Long List of the Ents
 Long Rest	intent: Pipeline(ChosenTargets→hand); intent: SetLifeTotalEffect; polarity: Pipeline(ChosenTargets→hand); polarity: SetLifeTotalEffect
-Long River Lurker
+Long River Lurker	intent: GrantKeywordEffect; intent: MoveToZoneEffect
 Long River's Pull
 Long-Bodied Grey Dog
 Long-Finned Skywhale

@@ -414,13 +414,13 @@ object AiReadingAudit {
         // A delayed trigger is read as the effect it fires (CardIntentAnalyzer), so an unread one is
         // labelled by that effect — the step it schedules, not the scheduling. Its price ("sacrifice
         // it at end step") needs no intent, like a gate's cost: EffectWalker.firedLeaves drops it.
-        val leaves = EffectWalker.payoffLeaves(root).flatMap(::firedLeaves)
+        val leaves = fired(EffectWalker.payoffLeaves(root))
         val unreadLeaves = leaves.filterNot(::needsNoIntent)
         labels(unreadLeaves.filterNot { it is ForEachEffect }).filterNot { it.first in NO_INTENT_PIPELINES }.forEach { (label, leaf) ->
             sink += gap(Check.INTENT, unread, label, step(leaves, leaf))
         }
         for (each in unreadLeaves.filterIsInstance<ForEachEffect>()) {
-            labels(EffectWalker.payoffLeaves(each.body).flatMap(::firedLeaves).filterNot(::needsNoIntent)).filterNot { it.first in NO_INTENT_PIPELINES }.forEach { (label, _) ->
+            labels(fired(EffectWalker.payoffLeaves(each.body)).filterNot(::needsNoIntent)).filterNot { it.first in NO_INTENT_PIPELINES }.forEach { (label, _) ->
                 sink += gap(Check.INTENT, unread, "ForEach>$label", step(leaves, each))
             }
         }
@@ -562,8 +562,9 @@ object AiReadingAudit {
      * its id naming a [Keyword]; that also keeps the few counters merely named after a keyword (fuse,
      * training) flagged, which errs toward flagging.
      */
-    private fun firedLeaves(leaf: Effect): List<Effect> =
-        if (leaf is CreateDelayedTriggerEffect) EffectWalker.firedLeaves(leaf).flatMap(::firedLeaves) else listOf(leaf)
+    private fun fired(payoff: List<Effect>): List<Effect> = payoff.flatMap { leaf ->
+        if (leaf is CreateDelayedTriggerEffect) fired(EffectWalker.firedLeaves(leaf, payoff)) else listOf(leaf)
+    }
 
     private fun needsNoIntent(leaf: Effect): Boolean {
         // Equip / fortify / reconfigure moves the source onto a host and does nothing of its own:

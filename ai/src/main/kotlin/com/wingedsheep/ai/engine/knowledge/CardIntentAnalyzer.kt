@@ -361,11 +361,14 @@ object CardIntentAnalyzer {
      * of combat" is removal, only later. Its price — "sacrifice it at the beginning of the next end
      * step" — is left out, as a gate's cost is.
      */
-    private fun readingLeaves(effect: Effect): List<Effect> = EffectWalker.payoffLeaves(effect).flatMap { leaf ->
-        when (leaf) {
-            is ReflexiveTriggerEffect -> readingLeaves(leaf.reflexiveEffect)
-            is CreateDelayedTriggerEffect -> EffectWalker.firedLeaves(leaf).flatMap(::readingLeaves)
-            else -> listOf(leaf)
+    private fun readingLeaves(effect: Effect): List<Effect> {
+        val payoff = EffectWalker.payoffLeaves(effect)
+        return payoff.flatMap { leaf ->
+            when (leaf) {
+                is ReflexiveTriggerEffect -> readingLeaves(leaf.reflexiveEffect)
+                is CreateDelayedTriggerEffect -> EffectWalker.firedLeaves(leaf, payoff).flatMap(::readingLeaves)
+                else -> listOf(leaf)
+            }
         }
     }
 
