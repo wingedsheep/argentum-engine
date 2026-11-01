@@ -339,7 +339,8 @@ object LimitedCardRater {
      * The traversal — which script slots count, how much each is discounted, how gates and
      * composites fold — lives in [EffectWalker], shared with
      * [com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer]. Only the leaf scoring below is
-     * this rater's own.
+     * this rater's own — plus opening a pipeline's "if those cards include" leaf onto both branches,
+     * which [EffectWalker.leaves] keeps whole.
      */
     private fun effectBonus(card: CardDefinition): Double =
         EffectWalker.slots(card.script).sumOf { slot ->
@@ -348,7 +349,19 @@ object LimitedCardRater {
 
     /** How a limited rating folds an effect tree. See [EffectWalker.Fold]. */
     private object LimitedScoreFold : EffectWalker.Fold<Double> {
-        override fun leaf(effect: Effect): Double = scoreEffect(effect)
+        /**
+         * A pipeline's "if those cards include …" branch scores as a conditional over both sides —
+         * the same reading [EffectWalker.payoffLeaves] gives the intent and polarity readers.
+         */
+        override fun leaf(effect: Effect): Double =
+            if (effect is ConditionalOnCollectionEffect) {
+                conditional(
+                    EffectWalker.fold(effect.ifNotEmpty, this),
+                    effect.ifEmpty?.let { EffectWalker.fold(it, this) },
+                )
+            } else {
+                scoreEffect(effect)
+            }
 
         /** Composite — sum children, capped so a long pipeline can't run away with the rating. */
         override fun composite(parts: List<Double>): Double = parts.sum().coerceAtMost(2.5)
