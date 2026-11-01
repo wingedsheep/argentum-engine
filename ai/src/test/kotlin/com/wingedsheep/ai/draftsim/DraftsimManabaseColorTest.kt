@@ -135,4 +135,24 @@ class DraftsimManabaseColorTest : FunSpec({
         build.colors.toSet() shouldBe setOf("R", "U", "G", "W")
         build.basicsNeeded.keys shouldBe setOf("R", "U", "G", "W")
     }
+
+    // 2026-11-01: a near mono-white BLB deck whose only red cards were Mabel ({1}{R}{W}) and Agate
+    // Assault ({2}{R}) — its R/W hybrids cast off Plains — ran six Mountains. Two one-pip cards are a
+    // splash: four sources, the rest Plains.
+    test("a colour only two cards strictly need gets a splash's sources, not a main colour's") {
+        var n = 0
+        fun pc(name: String, cost: String, type: String, colors: List<String>) =
+            DraftsimPoolCard(RCard(name, cost, type, colors, colors), "light-${n++}")
+        val pool = (1..19).map { pc("White $it", "{${it % 4}}{W}", "Creature — Soldier", listOf("W")) } +
+            pc("Mabel", "{1}{R}{W}", "Legendary Creature — Mouse Soldier", listOf("R", "W")) +
+            pc("Agate Assault", "{2}{R}", "Sorcery", listOf("R")) +
+            pc("Guardmouse A", "{3}{R/W}", "Creature — Mouse Soldier", listOf("R", "W")) +
+            pc("Guardmouse B", "{3}{R/W}", "Creature — Mouse Soldier", listOf("R", "W"))
+        val build = DraftsimDeckBuilder(DraftsimData.tablesFor(emptyList()))
+            .buildDecks(pool, mode = "sealed", forced = pool.map { it.instanceId }.toSet()).single()
+
+        val mountains = build.basicsNeeded["R"] ?: 0
+        (mountains in 3..4) shouldBe true
+        build.basicsNeeded.values.sum() shouldBe 17
+    }
 })

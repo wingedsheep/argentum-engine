@@ -1,6 +1,5 @@
 package com.wingedsheep.ai.engine.deck
 
-import com.wingedsheep.ai.draftsim.toScorerCard
 import com.wingedsheep.ai.engine.landFitsColors
 import com.wingedsheep.ai.engine.producedColors
 import com.wingedsheep.ai.engine.utilityLand
@@ -253,11 +252,10 @@ class CommanderDeckGenerator(
      * same card is weighed once per quota it is a candidate for and again on the curve.
      */
     private fun selectionWeight(synergy: CommanderSynergy): (CardDefinition) -> Double {
-        val ops = ConstructedRatings.ops()
         val cache = HashMap<String, Double>()
         return { card ->
             cache.getOrPut(card.name) {
-                val rating = ops.ratingFallback(card.toScorerCard()).coerceAtLeast(ConstructedRatings.MIN_WEIGHT)
+                val rating = ConstructedRatings.rate(card)
                 rating * rating * rating * (1 + SYNERGY_WEIGHT * synergy.score(card).coerceAtMost(MAX_SYNERGY))
             }
         }
@@ -325,7 +323,6 @@ class CommanderDeckGenerator(
         librarySize: Int,
         copyLimit: (CardDefinition) -> Int,
     ): CardDefinition? {
-        val ops = ConstructedRatings.ops()
         val candidates = commanderCandidates(pool)
         if (candidates.isEmpty()) return null
         val support = spellSupport(pool, copyLimit)
@@ -333,7 +330,7 @@ class CommanderDeckGenerator(
         fun supportOf(card: CardDefinition) = support(card.colorIdentity) - (if (card.isLand) 0 else copyLimit(card))
         val viable = candidates.filter { supportOf(it) >= needed }
         return viable.ifEmpty { candidates }.weightedSample(1, random) { card ->
-            val rating = ops.ratingFallback(card.toScorerCard()).coerceAtLeast(ConstructedRatings.MIN_WEIGHT)
+            val rating = ConstructedRatings.rate(card)
             val shortfall = if (viable.isEmpty()) (supportOf(card).toDouble() / needed).coerceIn(0.01, 1.0).pow(SHORTFALL_SHARPNESS) else 1.0
             rating * (IDENTITY_WEIGHT[card.colorIdentity.size] ?: LAST_RESORT_IDENTITY_WEIGHT) * shortfall
         }.firstOrNull()

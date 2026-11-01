@@ -716,9 +716,14 @@ internal fun utilityLand(poolLands: List<CardDefinition>, deckColors: Set<Color>
     }
 }
 
-/** A land that makes no colored mana and fetches none: `{T}: Add {C}` plus whatever else it does. */
+/**
+ * A land that makes no colored mana and fetches none: `{T}: Add {C}` plus whatever else it does. It
+ * has to make mana at all — Bazaar of Baghdad ("{T}: Draw two cards, then discard three") is a land
+ * slot that never pays for a spell, and it made two generated Commander decks as their "utility" land.
+ */
 internal fun isColorlessUtilityLand(land: CardDefinition): Boolean =
-    land.typeLine.isLand && !land.typeLine.isBasicLand && producedColors(land).isEmpty() && !fetchesAnyBasic(land)
+    land.typeLine.isLand && !land.typeLine.isBasicLand && producedColors(land).isEmpty() && !fetchesAnyBasic(land) &&
+        land.script.activatedAbilities.any { it.isManaAbility }
 
 private fun hasPayoff(effect: Effect, spells: List<CardDefinition>): Boolean = when (effect) {
     is BecomePreparedEffect -> spells.count { it.typeLine.isCreature && it.isPreparation } >= MIN_PREPARE_CREATURES

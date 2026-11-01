@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
+import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.CompositeStaticAbility
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.CantBeBlocked
@@ -24,6 +25,7 @@ import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.SpellCostTarget
 import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
@@ -50,7 +52,8 @@ data class CardAsk(val filter: GameObjectFilter, val wanted: Double)
  *    spell"), "whenever a [filter] you control enters / dies / attacks";
  *  - **group statics** that help your permanents — "[filter]s you control get +1/+1", "…have
  *    flying", "…have '{T}: …'" — which pay per body, so they want [DeckSynergy.TRIBE_MEMBERS_WANTED];
- *  - **spell statics** — "[filter] spells you cast cost {1} less", "…have flash".
+ *  - **spell statics** — "[filter] spells you cast cost {1} less", "…have flash";
+ *  - **sacrifice costs** of activated abilities — "Sacrifice an enchantment: …" (Auratog).
  *
  * Not read: effects and targets ("destroy target artifact" asks the *opponent* for artifacts),
  * anything scoped to an opponent's objects, a shrinking static ("all creatures get -1/-1"), a
@@ -82,6 +85,19 @@ internal object CardAsks {
                 groupFilter(static)?.let { add(it, DeckSynergy.TRIBE_MEMBERS_WANTED, spells = false) }
                 spellFilter(static)?.let { add(it, DeckSynergy.FEEDERS_WANTED, spells = true) }
             }
+            // An ability paid for by sacrificing a narrow kind of permanent — Auratog's
+            // enchantment, Atog's artifact — is fuelled only by the deck's cards of that kind. A
+            // broad sacrifice (a creature, a land) is a sac outlet, which [SynergyAxes] reads, and
+            // must not mark the whole card as fed by any deck.
+            for (ability in script.activatedAbilities) {
+                sacrificeFilters(ability.cost).forEach { filter ->
+                    if (!opponents(filter) && !namesCreatureType(filter) && !namesTokenType(filter) &&
+                        PrintedFilter.isNarrow(filter, false) == true
+                    ) {
+                        asks.merge(filter, DeckSynergy.FEEDERS_WANTED, ::minOf)
+                    }
+                }
+            }
         }
         if (Keyword.PROWESS in card.keywords) add(GameObjectFilter.Noncreature, DeckSynergy.FEEDERS_WANTED, spells = true)
         // A card that also cashes in something every deck has — Shalai's "other creatures you
@@ -105,6 +121,13 @@ internal object CardAsks {
         is EventPattern.PermanentsEnteredEvent -> listOf(pattern.filter to false)
         is EventPattern.CreaturesYouControlDiedEvent -> listOf(pattern.filter to false)
         is EventPattern.AttackEvent -> listOf(pattern.filter to false)
+        else -> emptyList()
+    }
+
+    /** The permanents an activation cost sacrifices (other than the source itself). */
+    private fun sacrificeFilters(cost: AbilityCost): List<GameObjectFilter> = when (cost) {
+        is AbilityCost.Atom -> listOfNotNull((cost.atom as? CostAtom.Sacrifice)?.filter)
+        is AbilityCost.Composite -> cost.costs.flatMap(::sacrificeFilters)
         else -> emptyList()
     }
 
