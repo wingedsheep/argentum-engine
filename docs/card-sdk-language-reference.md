@@ -15001,6 +15001,10 @@ Blighted Agent, Ichor Rats, Plague Stinger, Skithiryx.
   `EffectEntryChoices` — the lord's filter read under the controller the entrant enters under (CR 614.12) — and apply
   the answers on arrival (`ZoneEntryOptions.grantedRiotModes`). A counter choice that can't place its counter gives
   haste instead (Rhythm of the Wild ruling). Rhythm of the Wild: `GrantKeyword(RIOT, Creature.nontoken().youControl())`.
+  Riot granted to the **spell** counts too: a keyword frozen onto `SpellOnStackComponent.entryKeywordGrants`
+  (`ManaSpellRider.GrantsKeywordWhenSpent(Keyword.RIOT, GameObjectFilter.Creature, Duration.Permanent)` — Domri, Chaos
+  Bringer's "if that mana is spent on a creature spell, it gains riot" — or `Effects.GrantKeywordToSpell(Keyword.RIOT)`)
+  adds one synthesized choice per grant at spell resolution, on top of any lords.
   `GrantCantBeCountered` gained an `includesAbilities` flag (default false) so "spells **and abilities** can't be
   countered" (Spider-Punk) also makes matching abilities uncounterable (e.g. Stifle fizzles); `DamageCantBePrevented`
   is a battlefield replacement scoped by its own `appliesTo` pattern — while one is on the battlefield (or the "damage
@@ -18159,7 +18163,9 @@ the rider twice (Pyromancer's Goggles: "That many copies will be created").
   nothing, and an instant or sorcery that makes Dragon tokens is not a Dragon creature spell.
   `duration = Duration.Permanent` (the only other value accepted) drops the end date — Hall of the
   Bandit Lord's "If that mana is spent on a creature spell, it gains haste.", so the grant lasts
-  until the permanent leaves the battlefield.
+  until the permanent leaves the battlefield. `keyword = Keyword.RIOT` (Domri, Chaos Bringer) is
+  read at resolution: the spell's enters-with counter-or-haste choice is synthesized from the frozen
+  grant (`RiotSynthesis`), so the rider gives real riot, not a display-only keyword.
 
 ### `ManaExpiry`<a id="manaexpiry"></a>
 
