@@ -57,6 +57,16 @@ class SurveilReadingAiTest : ScenarioTestBase() {
             .build()
     }
 
+    /** Doom Whisperer (Pay 2 life: Surveil 2) at 20 life, at the opponent's end step. */
+    private val doomWhispererAtTheirEndStep = { s: ScenarioBuilder ->
+        s.withPlayers()
+            .withActivePlayer(2)
+            .withCardOnBattlefield(1, "Doom Whisperer")
+            .apply { repeat(12) { withCardInLibrary(1, "Island") } }
+            .build()
+            .advanceToPriority(1, Step.END)
+    }
+
     init {
         test("an idle surveil activation is used at the opponent's end step") {
             val result = decide(phantasmAtTheirEndStep) { shouldActivate("Surveillance Phantasm") }
@@ -68,6 +78,13 @@ class SurveilReadingAiTest : ScenarioTestBase() {
         test("a surveil activation is held in our main phase while an instant wants the mana") {
             val result = decide(phantasmWithATrickInHand) { shouldNotActivate("Surveillance Phantasm") }
             withClue("surveil reads as card selection, held for the trick like a draw activation: chose ${result.move} — ${result.failure}") {
+                result.passed shouldBe true
+            }
+        }
+
+        test("a surveil paid for in life is not cashed at the end step") {
+            val result = decide(doomWhispererAtTheirEndStep) { shouldNotActivate("Doom Whisperer") }
+            withClue("the end-step window spends only what cleanup takes back, not life: chose ${result.move} — ${result.failure}") {
                 result.passed shouldBe true
             }
         }

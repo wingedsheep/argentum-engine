@@ -1,5 +1,7 @@
 package com.wingedsheep.ai.engine.knowledge
 
+import com.wingedsheep.sdk.scripting.costs.CostAtom
+import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.ai.engine.evaluation.SynergyPresence
 import com.wingedsheep.ai.engine.evaluation.EvaluationWeights
 import com.wingedsheep.engine.core.ActivateAbility
@@ -412,6 +414,10 @@ class HoldPolicy(
                     it is com.wingedsheep.sdk.scripting.effects.CopyCollectionIntoCollectionEffect
             }
         ) return null
+        // A look at the top is worth about nothing on the board, so the window's bonus would decide
+        // alone: it may only spend what empties at cleanup anyway, never life or a permanent
+        // (Doom Whisperer's 2 life, Zahur's sacrifice). A draw is a card, worth its own price.
+        if (IntentTag.DRAW !in tags && !costsOnlyUntilCleanup(ability.cost)) return null
         if (isOpponentEndStep(state, playerId)) {
             return TimingVerdict.Adjust(END_STEP_WINDOW, reason = "card flow at their end step")
         }
@@ -419,6 +425,14 @@ class HoldPolicy(
         if (!holdsInstantSpeedCard(state, playerId)) return null
         if (Patience.releasedOutright(state, state.projectedState, playerId)) return null
         return TimingVerdict.NoWindow
+    }
+
+    /** Whether [cost] spends only mana and untapped permanents — what the turn's cleanup takes back anyway. */
+    private fun costsOnlyUntilCleanup(cost: AbilityCost): Boolean = when (cost) {
+        AbilityCost.Free, AbilityCost.Tap -> true
+        is AbilityCost.Atom -> cost.atom is CostAtom.Mana || cost.atom is CostAtom.TapPermanents
+        is AbilityCost.Composite -> cost.costs.all(::costsOnlyUntilCleanup)
+        else -> false
     }
 
     /**
