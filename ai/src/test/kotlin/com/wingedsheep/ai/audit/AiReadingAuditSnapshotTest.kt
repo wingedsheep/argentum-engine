@@ -29,6 +29,8 @@ class AiReadingAuditSnapshotTest : FunSpec({
         // Equip's target reads as what the Equipment does to the creature it equips; the attach
         // itself needs no intent tag.
         "+2 Mace" to emptyList(),
+        // Shuffling itself into its library when it dies has no target and no window: no intent tag.
+        "Alabaster Dragon" to emptyList(),
         // Mixed +4/-1: whether that helps depends on the creature, so equip's target stays unread.
         "Barbed Battlegear" to listOf("polarity: AttachEquipmentEffect"),
         // Unread — the effect types the audit names as the work to do.

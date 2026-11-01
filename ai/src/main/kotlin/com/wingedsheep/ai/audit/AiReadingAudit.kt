@@ -531,7 +531,8 @@ object AiReadingAudit {
     }
 
     /**
-     * A counter the effect puts on its own source or its own controller — a creature growing itself,
+     * The leaves that need no intent tag: equip / attach and a card moving itself (commented
+     * inline below), and a counter the effect puts on its own source or its own controller — a creature growing itself,
      * a charge, oil, quest or loyalty counter, `{E}` for you. There is no target to choose and nothing
      * to hold it for, and its payoff is already on the board (the evaluator reads a grown creature's
      * projected stats) or belongs to the ability that later spends it, so it needs no intent tag. A
