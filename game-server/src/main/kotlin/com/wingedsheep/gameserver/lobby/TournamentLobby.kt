@@ -600,9 +600,14 @@ class TournamentLobby(
      * attacks any opponent, the way Commander is played, and any other pod attacks left — one
      * neighbour keeps a big table from ganging up on whoever is ahead. The default follows the Rules
      * axis, so switching to Commander moves an untouched lobby with it.
+     *
+     * A team game (2HG / Team vs. Team) always attacks any opponent: teammates sit next to each
+     * other, so under attack left/right a player's only "neighbour" can be their own teammate and
+     * they could attack no one. The lobby doesn't offer the choice there either.
      */
     var attackMode: com.wingedsheep.sdk.core.AttackMode
-        get() = chosenAttackMode
+        get() = if (isTeamGame) com.wingedsheep.sdk.core.AttackMode.MULTIPLE
+            else chosenAttackMode
             ?: if (usesCommanderRules) com.wingedsheep.sdk.core.AttackMode.MULTIPLE
             else com.wingedsheep.sdk.core.AttackMode.LEFT
         set(value) { chosenAttackMode = value }
