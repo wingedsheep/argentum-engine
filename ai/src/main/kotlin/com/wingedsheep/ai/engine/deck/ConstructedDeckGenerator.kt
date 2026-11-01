@@ -5,10 +5,10 @@ import com.wingedsheep.ai.draftsim.DraftsimDeckShape
 import com.wingedsheep.ai.draftsim.DraftsimPoolCard
 import com.wingedsheep.ai.draftsim.toScorerCard
 import com.wingedsheep.ai.engine.DeckDependencies
+import com.wingedsheep.ai.engine.PipDemand
 import com.wingedsheep.ai.engine.fitsDeckColors
 import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
 import com.wingedsheep.ai.engine.knowledge.DeckSynergy
-import com.wingedsheep.ai.engine.knowledge.IntentTag
 import com.wingedsheep.ai.engine.knowledge.SynergyAxes
 import com.wingedsheep.ai.engine.landFitsColors
 import com.wingedsheep.ai.engine.producedColors
@@ -17,6 +17,7 @@ import com.wingedsheep.engine.limited.BoosterGenerator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.sdk.core.CanadianHighlanderPoints
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.DeckFormat
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.scripting.EntersTapped
@@ -92,7 +93,11 @@ class ConstructedDeckGenerator(
             } else {
                 legal
             }
-        }
+        }.filterNot { beyondCurve(it) }
+            // The Highlander build is Draftsim's, which has no dead-card pass ([deadIn]); its
+            // creature floor makes every one a creature deck, so a wipe of our own side is out
+            // up front — Famine in a 36-creature list.
+            .filterNot { shape == DeckShape.HIGHLANDER && CardIntentAnalyzer.sweepsOwnSide(it) }
         require(pool.isNotEmpty()) {
             "No ${format.displayName}-legal cards available" +
                 if (setCodes.isEmpty()) "" else " in ${setCodes.joinToString(", ")}"
@@ -252,7 +257,14 @@ class ConstructedDeckGenerator(
         val used = colours.filter { colour -> deckCards.any { colour in spellColors(it) } }.toSet().ifEmpty { colours }
         val landSlots = shape.deckSize - spellCount
         val duals = pickDualLands(pool, used, landSlots)
-        val basics = BasicLandSplit.split(deckCards, used, landSlots - duals.values.sum(), MIN_COLOUR_SHARE)
+        // Each colour's floor is what its hungriest card needs at this land count ([PipDemand]'s
+        // limited table, scaled): a one-pip card in a 24-land deck wants about nine sources.
+        val floors = used.associateWith { colour ->
+            deckCards.maxOfOrNull { PipDemand.sourcesNeeded((it.manaCost.colorCount[colour] ?: 0).toDouble(), landSlots) } ?: 0
+        }
+        val basics = BasicLandSplit.split(
+            deckCards, used, landSlots - duals.values.sum(), MIN_COLOUR_SHARE, floors,
+        ) { colour -> duals.entries.filter { colour in producedColors(it.key) }.sumOf { it.value } }
 
         logger.info(
             "Constructed build: {} in {}, {} spells ({} creatures, {} interaction), {} lands ({} non-basic)",
@@ -360,8 +372,11 @@ class ConstructedDeckGenerator(
      *    them, a lord with no tribe. A payoff that also rewards an axis (Smuggler's Copter's loot, a
      *    spell trigger on a 5/5) is left to its rating: there the synergy is a rider on a card that
      *    plays fine without it;
-     *  - a noncreature sweeper in a deck of [SWEEPER_CREATURE_LIMIT] or more creatures, which it
-     *    would wipe along with the opponent's: four Wraths of God in a twenty-creature deck.
+     *  - a sweeper that also hits its own side ([CardIntentAnalyzer.sweepsOwnSide]) in a deck of
+     *    [SWEEPER_CREATURE_LIMIT] or more other creatures, which it would wipe along with the
+     *    opponent's: four Wraths of God in a twenty-creature deck, Unstable Glyphbridge's
+     *    enters-the-battlefield wipe, Bane of the Living's -X/-X beside a Goblin swarm. A one-sided
+     *    wipe (Plague Wind) and a symmetric activation the deck can decline (Pestilence) stay in.
      */
     private fun deadIn(card: CardDefinition, deck: List<CardDefinition>): Boolean {
         if (DeckDependencies.inert(card, deck)) return true
@@ -371,9 +386,8 @@ class ConstructedDeckGenerator(
         ) {
             return true
         }
-        return !card.typeLine.isCreature &&
-            IntentTag.SWEEPER in CardIntentAnalyzer.analyze(card).tags &&
-            deck.count { it.typeLine.isCreature } >= SWEEPER_CREATURE_LIMIT
+        return CardIntentAnalyzer.sweepsOwnSide(card) &&
+            deck.count { it !== card && it.typeLine.isCreature } >= SWEEPER_CREATURE_LIMIT
     }
 
     /**
@@ -592,6 +606,10 @@ class ConstructedDeckGenerator(
         /** Creatures at which a sweeper hurts its own deck more than the opponent's. */
         private const val SWEEPER_CREATURE_LIMIT = 14
 
+        /** Highest mana value [beyondCurve] lets into a build. */
+        const val MAX_MANA_VALUE = 7
+        private val COST_REDUCING_KEYWORDS = setOf(Keyword.DELVE, Keyword.CONVOKE, Keyword.AFFINITY, Keyword.IMPROVISE)
+
         /** Lands = [LAND_BASE] + [LAND_PER_MANA_VALUE] × the spells' average mana value. */
         private const val LAND_BASE = 16.5
         private const val LAND_PER_MANA_VALUE = 2.6
@@ -677,6 +695,16 @@ class ConstructedDeckGenerator(
             6 -> 0.65
             else -> 0.5
         }
+
+        /**
+         * A spell no 60-card or Highlander deck built here can expect to cast: mana value above
+         * [MAX_MANA_VALUE] with no keyword that pays it down from the board or graveyard (delve,
+         * convoke, affinity, improvise). These decks run no ramp package, so a well-rated 13-drop
+         * (Emrakul, the Promised End) is a dead card in an aggro deck — and the Highlander build's
+         * limited-style pick order would otherwise take it on rating alone.
+         */
+        fun beyondCurve(card: CardDefinition): Boolean =
+            !card.isLand && manaValue(card) > MAX_MANA_VALUE && card.keywords.none { it in COST_REDUCING_KEYWORDS }
 
         /** The four-of rule; a legend is played as two, since a second copy on the battlefield dies. */
         fun copyCap(card: CardDefinition): Int = if (card.typeLine.isLegendary) 2 else 4
