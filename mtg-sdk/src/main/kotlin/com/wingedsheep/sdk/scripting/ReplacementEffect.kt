@@ -2515,8 +2515,8 @@ data class ReplaceLifePaymentWithLibraryExile(
  *                   copy — the "enter tapped as a copy" rider on the land-copy cycle (Vesuva,
  *                   Thespian's Stage, Echoing Deeps). If the copy is declined (or no candidate
  *                   exists) the permanent enters untapped as its printed self.
- * @param entersWithCounters When non-null, the permanent enters with these counters if (and only if)
- *                   it enters as a copy — the "except it enters with N additional +1/+1 counters on
+ * @param entersWithCounters The counter riders the permanent enters with if (and only if)
+ *                   it enters as a copy, each checked and placed on its own — the "except it enters with N additional +1/+1 counters on
  *                   it" rider (Altered Ego with [com.wingedsheep.sdk.scripting.values.DynamicAmount.XValue])
  *                   and "except it enters with a shield counter on it if you control that creature"
  *                   (Undercover Operative). See [CopyEntryCounters]. It belongs to the *copy*
@@ -2524,7 +2524,10 @@ data class ReplaceLifePaymentWithLibraryExile(
  *                   own copiable text, so a self-targeted enters-with-counters replacement would be
  *                   gone by the time the copy applies. Declining the copy therefore also declines
  *                   the counters, which is the printed ruling ("You can choose not to copy anything.
- *                   … It won't have +1/+1 counters placed on it by its ability.").
+ *                   … It won't have +1/+1 counters placed on it by its ability."). Several riders
+ *                   are several type-conditional clauses: "an additional +1/+1 counter on it if
+ *                   it's a creature, … an additional loyalty counter on it if it's a planeswalker"
+ *                   (Spark Double) — a creature planeswalker copy gets both.
  * @param duration How long the copy lasts. [Duration.Permanent] (default) is every Clone;
  *                   [Duration.EndOfTurn] is "you may have it become a copy of any creature on the
  *                   battlefield until end of turn" (Cursed Mirror) — at cleanup the permanent reverts
@@ -2562,7 +2565,7 @@ data class EntersAsCopy(
     val toughnessOverride: Int? = null,
     val exileCopiedCard: Boolean = false,
     val tappedIfCopied: Boolean = false,
-    val entersWithCounters: CopyEntryCounters? = null,
+    val entersWithCounters: List<CopyEntryCounters> = emptyList(),
     val exceptions: com.wingedsheep.sdk.scripting.effects.CopyExceptions =
         com.wingedsheep.sdk.scripting.effects.CopyExceptions.None,
     val duration: Duration = Duration.Permanent,
@@ -2621,7 +2624,7 @@ data class EntersAsCopy(
                 if (additionalKeywords.isNotEmpty()) {
                     add("it has ${additionalKeywords.joinToString(", ") { it.name.lowercase() }}")
                 }
-                entersWithCounters?.let { add(it.description) }
+                entersWithCounters.forEach { add(it.description) }
             }
             val allExceptions = exceptions + this@EntersAsCopy.exceptions.clauses()
             if (allExceptions.isNotEmpty()) append(", except ${allExceptions.joinToString(" and ")}")
@@ -2665,8 +2668,13 @@ data class CopyEntryCounters(
         get() = buildString {
             val plusOne = counterType == CounterType.PLUS_ONE_PLUS_ONE
             val countText = count.description
-            if (plusOne) {
-                append("it enters with $countText additional +1/+1 counters on it")
+            // A planeswalker always enters with its starting loyalty too, so a loyalty rider is
+            // "additional" by definition (Spark Double).
+            val additional = plusOne || counterType == CounterType.LOYALTY
+            if (additional && countText == "1") {
+                append("it enters with an additional ${counterType.printed} counter on it")
+            } else if (additional) {
+                append("it enters with $countText additional ${counterType.printed} counters on it")
             } else {
                 val article = if (countText == "1") "a" else countText
                 val plural = if (countText == "1") "" else "s"

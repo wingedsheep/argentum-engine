@@ -51,10 +51,10 @@ val MoritteOfTheFrost = card("Moritte of the Frost") {
                     )
                 ),
             ),
-            entersWithCounters = CopyEntryCounters(
+            entersWithCounters = listOf(CopyEntryCounters(
                 count = DynamicAmounts.fixed(2),
                 ifEntrantMatches = GameObjectFilter.Creature,
-            ),
+            )),
         )
     )
 

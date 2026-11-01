@@ -14225,17 +14225,19 @@
                     ],
                     "controllerPredicate": "ControlledByYou"
                 },
-                "entersWithCounters": {
-                    "count": {
-                        "type": "Fixed",
-                        "amount": 2
-                    },
-                    "ifEntrantMatches": {
-                        "cardPredicates": [
-                            "IsCreature"
-                        ]
+                "entersWithCounters": [
+                    {
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "ifEntrantMatches": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ]
+                        }
                     }
-                },
+                ],
                 "exceptions": {
                     "addedSupertypes": [
                         "LEGENDARY",

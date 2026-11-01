@@ -1118,9 +1118,9 @@ class ZoneTransitionService(
                     }
                 }
                 val entryCopy = entryCopyChoice?.takeIf { it.copiedCard != null && !options.faceDown }
-                entryCopy?.replacement?.entersWithCounters?.let { rider ->
+                for (rider in entryCopy?.replacement?.entersWithCounters.orEmpty()) {
                     val count = EntersWithReplacements.copyEntryCounterCount(
-                        newState, rider, entityId, entryCopy.copiedEntity, destControllerId, xValue = null,
+                        newState, rider, entityId, entryCopy?.copiedEntity, destControllerId, xValue = null,
                         predicateEvaluator = predicateEvaluator)
                     if (entryCounterTotals != null) {
                         val kind = rider.counterType

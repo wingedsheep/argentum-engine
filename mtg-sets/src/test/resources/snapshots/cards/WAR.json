@@ -7877,6 +7877,87 @@
     ]
 }
 
+// Spark Double
+{
+    "name": "Spark Double",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Illusion",
+    "oracleText": "You may have this creature enter as a copy of a creature or planeswalker you control, except it enters with an additional +1/+1 counter on it if it's a creature, it enters with an additional loyalty counter on it if it's a planeswalker, and it isn't legendary.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersAsCopy",
+                "copyFilter": {
+                    "cardPredicates": [
+                        {
+                            "type": "Or",
+                            "predicates": [
+                                "IsCreature",
+                                "IsPlaneswalker"
+                            ]
+                        }
+                    ],
+                    "controllerPredicate": "ControlledByYou"
+                },
+                "entersWithCounters": [
+                    {
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "ifEntrantMatches": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ]
+                        }
+                    },
+                    {
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "counterType": "LOYALTY",
+                        "ifEntrantMatches": {
+                            "cardPredicates": [
+                                "IsPlaneswalker"
+                            ]
+                        }
+                    }
+                ],
+                "exceptions": {
+                    "removedSupertypes": [
+                        "LEGENDARY"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "rarity": "RARE",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bb8a103c-b776-4501-9441-a45b90391045.jpg?1783933455",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "Spark Double isn't legendary if it copies a legendary permanent, and this exception is copiable. If something else copies Spark Double later, that copy also won't be legendary."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If it copies a planeswalker, Spark Double enters with the appropriate number of loyalty counters as printed on the card plus one. If it copies a creature, Spark Double enters with a +1/+1 counter on it, plus any counters that will be put on it from abilities it copied and other abilities of other objects."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If Spark Double somehow enters the battlefield at the same time as another permanent, it can't become a copy of that permanent. You may choose only a creature or planeswalker that's already on the battlefield."
+            }
+        ]
+    }
+}
+
 // Spark Reaper
 {
     "name": "Spark Reaper",

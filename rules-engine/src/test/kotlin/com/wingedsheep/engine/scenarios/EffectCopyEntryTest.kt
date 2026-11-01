@@ -26,17 +26,34 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 class EffectCopyEntryTest : FunSpec({
     val copier = card("Entry Copier") {
         manaCost = "{U}"; typeLine = "Creature — Shapeshifter"; power = 1; toughness = 1
-        replacementEffect(EntersAsCopy(tappedIfCopied = true, entersWithCounters = CopyEntryCounters(DynamicAmount.Fixed(1))))
+        replacementEffect(EntersAsCopy(tappedIfCopied = true, entersWithCounters = listOf(CopyEntryCounters(DynamicAmount.Fixed(1)))))
     }
     val shieldCopier = card("Entry Shield Copier") {
         manaCost = "{U}"; typeLine = "Creature — Shapeshifter"; power = 0; toughness = 0
-        replacementEffect(EntersAsCopy(entersWithCounters = CopyEntryCounters(
-            DynamicAmount.Fixed(1), CounterType.SHIELD, ifCopiedMatches = GameObjectFilter.Any.youControl())))
+        replacementEffect(EntersAsCopy(entersWithCounters = listOf(CopyEntryCounters(
+            DynamicAmount.Fixed(1), CounterType.SHIELD, ifCopiedMatches = GameObjectFilter.Any.youControl()))))
     }
     val subject = card("Entry Subject") {
         manaCost = "{G}"; typeLine = "Creature — Bear"; power = 2; toughness = 2
         replacementEffect(EntersWithCounters(CounterType.PLUS_ONE_PLUS_ONE, 2, selfOnly = true))
         triggeredAbility { trigger = Triggers.self.enters(); effect = Effects.GainLife(3) }
+    }
+    // Two type-conditional riders, each read against the copy as it enters (Spark Double's shape).
+    val typedCopier = card("Entry Typed Copier") {
+        manaCost = "{U}"; typeLine = "Creature — Illusion"; power = 0; toughness = 0
+        replacementEffect(EntersAsCopy(
+            copyFilter = GameObjectFilter.CreatureOrPlaneswalker,
+            entersWithCounters = listOf(
+                CopyEntryCounters(DynamicAmount.Fixed(1), ifEntrantMatches = GameObjectFilter.Creature),
+                CopyEntryCounters(DynamicAmount.Fixed(1), CounterType.LOYALTY, ifEntrantMatches = GameObjectFilter.Planeswalker),
+            )))
+    }
+    val walker = card("Entry Walker") {
+        manaCost = "{2}{W}"; typeLine = "Planeswalker — Gideon"; startingLoyalty = 3
+    }
+    val creatureWalker = card("Entry Creature Walker") {
+        manaCost = "{2}{W}"; typeLine = "Planeswalker Creature — Gideon Soldier"
+        power = 2; toughness = 2; startingLoyalty = 3
     }
     val returnOne = card("Entry Return One") {
         manaCost = "{U}"; typeLine = "Sorcery"
@@ -54,7 +71,7 @@ class EffectCopyEntryTest : FunSpec({
         }
     }
     fun driver() = GameTestDriver().also {
-        it.registerCards(TestCards.all + listOf(copier, shieldCopier, subject, returnOne, returnAll))
+        it.registerCards(TestCards.all + listOf(copier, shieldCopier, subject, returnOne, returnAll, typedCopier, walker, creatureWalker))
         it.initMirrorMatch(Deck.of("Island" to 40), skipMulligans = true, startingPlayer = 0)
         it.passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -98,6 +115,25 @@ class EffectCopyEntryTest : FunSpec({
         d.submitCardSelection(d.player1, listOf(theirs)).error shouldBe null
         d.state.getEntity(second)!!.get<CardComponent>()!!.name shouldBe "Grizzly Bears"
         (d.state.getEntity(second)!!.get<CountersComponent>()?.getCount(CounterType.SHIELD) ?: 0) shouldBe 0
+    }
+    test("several copy riders each check the entrant: creature, planeswalker, or both") {
+        fun copyOnto(name: String): Map<CounterType, Int> {
+            val d = driver()
+            val target = d.putPermanentOnBattlefield(d.player1, name)
+            // The helper places no starting loyalty; keep a planeswalker original alive through SBAs.
+            d.replaceState(d.state.updateEntity(target) { it.with(CountersComponent(mapOf(CounterType.LOYALTY to 3))) })
+            val id = d.putCardInGraveyard(d.player1, typedCopier.name)
+            d.castReturn(returnOne.name, id)
+            d.submitCardSelection(d.player1, listOf(target)).error shouldBe null
+            d.state.getEntity(id)!!.get<CardComponent>()!!.name shouldBe name
+            val counters = d.state.getEntity(id)!!.get<CountersComponent>()
+            return listOf(CounterType.PLUS_ONE_PLUS_ONE, CounterType.LOYALTY)
+                .associateWith { counters?.getCount(it) ?: 0 }
+        }
+        copyOnto("Grizzly Bears") shouldBe mapOf(CounterType.PLUS_ONE_PLUS_ONE to 1, CounterType.LOYALTY to 0)
+        // The loyalty rider lands on top of the copied planeswalker's printed starting loyalty.
+        copyOnto(walker.name) shouldBe mapOf(CounterType.PLUS_ONE_PLUS_ONE to 0, CounterType.LOYALTY to 4)
+        copyOnto(creatureWalker.name) shouldBe mapOf(CounterType.PLUS_ONE_PLUS_ONE to 1, CounterType.LOYALTY to 4)
     }
     test("simultaneous entrants cannot copy each other and nothing moves between choices") {
         val d = driver()

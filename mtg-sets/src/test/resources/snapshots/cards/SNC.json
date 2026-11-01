@@ -18231,16 +18231,18 @@
         "replacementEffects": [
             {
                 "type": "EntersAsCopy",
-                "entersWithCounters": {
-                    "count": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "counterType": "SHIELD",
-                    "ifCopiedMatches": {
-                        "controllerPredicate": "ControlledByYou"
+                "entersWithCounters": [
+                    {
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "counterType": "SHIELD",
+                        "ifCopiedMatches": {
+                            "controllerPredicate": "ControlledByYou"
+                        }
                     }
-                }
+                ]
             }
         ]
     },

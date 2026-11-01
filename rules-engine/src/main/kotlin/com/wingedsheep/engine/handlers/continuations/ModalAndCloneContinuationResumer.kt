@@ -643,10 +643,9 @@ class ModalAndCloneContinuationResumer(
                 // the copy effect, so it only applies when a copy was actually made. Stamped before
                 // the permanent enters so it is genuinely *entering* with them: state-based actions
                 // never see the 0/0, and enters-with-counters triggers read the final total.
-                val extraCounters = continuation.entersWithCounters
-                if (extraCounters != null) {
+                for (rider in continuation.entersWithCounters) {
                     val (afterCounters, counterEvents) = applyCopyEntryCounters(
-                        newState, spellId, controllerId, extraCounters, selectedCreatureId, spellComponent.xValue
+                        newState, spellId, controllerId, rider, selectedCreatureId, spellComponent.xValue
                     )
                     newState = afterCounters
                     events.addAll(counterEvents)
@@ -762,13 +761,14 @@ class ModalAndCloneContinuationResumer(
 
         // "except it enters with N additional +1/+1 counters on it" — likewise only when a copy
         // was actually made.
-        val bfExtraCounters = continuation.entersWithCounters
-        if (copyApplied && bfExtraCounters != null && selectedId != null) {
-            val (afterCounters, counterEvents) = applyCopyEntryCounters(
-                newState, entityId, continuation.controllerId, bfExtraCounters, selectedId, xValue = null
-            )
-            newState = afterCounters
-            outEvents.addAll(counterEvents)
+        if (copyApplied && selectedId != null) {
+            for (rider in continuation.entersWithCounters) {
+                val (afterCounters, counterEvents) = applyCopyEntryCounters(
+                    newState, entityId, continuation.controllerId, rider, selectedId, xValue = null
+                )
+                newState = afterCounters
+                outEvents.addAll(counterEvents)
+            }
         }
 
         // "When you do, exile that card." (graveyard copies) — exile the copied card afterward.

@@ -30,11 +30,11 @@ val UndercoverOperative = card("Undercover Operative") {
         EntersAsCopy(
             optional = true,
             copyFilter = GameObjectFilter.Creature,
-            entersWithCounters = CopyEntryCounters(
+            entersWithCounters = listOf(CopyEntryCounters(
                 count = DynamicAmounts.fixed(1),
                 counterType = CounterType.SHIELD,
                 ifCopiedMatches = GameObjectFilter.Any.youControl(),
-            ),
+            )),
         )
     )
 

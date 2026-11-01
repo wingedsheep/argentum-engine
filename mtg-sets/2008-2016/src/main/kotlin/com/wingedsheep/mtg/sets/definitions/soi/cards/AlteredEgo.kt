@@ -43,7 +43,7 @@ val AlteredEgo = card("Altered Ego") {
         EntersAsCopy(
             optional = true,
             copyFilter = GameObjectFilter.Creature,
-            entersWithCounters = CopyEntryCounters(DynamicAmounts.xValue()),
+            entersWithCounters = listOf(CopyEntryCounters(DynamicAmounts.xValue())),
         )
     )
 

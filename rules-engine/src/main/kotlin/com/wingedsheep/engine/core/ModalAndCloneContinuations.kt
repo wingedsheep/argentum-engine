@@ -261,7 +261,7 @@ data class ModalTargetContinuation(
  * @property toughnessOverride When non-null, overrides the copy's base toughness (Superior Spider-Man: 4)
  * @property exileCopiedCard When true, exile the copied card after copying it (Superior Spider-Man:
  *   "When you do, exile that card"). Used for graveyard copies.
- * @property entersWithCounters When non-null, the counters the copy enters with (Altered Ego's
+ * @property entersWithCounters The counter riders the copy enters with (Altered Ego's
  *   "except it enters with X additional +1/+1 counters on it", Undercover Operative's conditional
  *   shield counter). Applied only when a copy was actually made — declining the copy declines the
  *   counters too.
@@ -292,7 +292,7 @@ data class CloneEntersContinuation(
     val powerOverride: Int? = null,
     val toughnessOverride: Int? = null,
     val exileCopiedCard: Boolean = false,
-    val entersWithCounters: com.wingedsheep.sdk.scripting.CopyEntryCounters? = null,
+    val entersWithCounters: List<com.wingedsheep.sdk.scripting.CopyEntryCounters> = emptyList(),
     /** [com.wingedsheep.sdk.scripting.EntersAsCopy.duration] — `EndOfTurn` tags the copy to revert at cleanup. */
     val duration: com.wingedsheep.sdk.scripting.Duration = com.wingedsheep.sdk.scripting.Duration.Permanent
 ) : AnswerContinuation
@@ -333,7 +333,7 @@ data class CloneEntersOnBattlefieldContinuation(
     val toughnessOverride: Int? = null,
     val exileCopiedCard: Boolean = false,
     val tappedIfCopied: Boolean = false,
-    val entersWithCounters: com.wingedsheep.sdk.scripting.CopyEntryCounters? = null,
+    val entersWithCounters: List<com.wingedsheep.sdk.scripting.CopyEntryCounters> = emptyList(),
     /** See [CloneEntersContinuation.duration]. */
     val duration: com.wingedsheep.sdk.scripting.Duration = com.wingedsheep.sdk.scripting.Duration.Permanent,
     /** Actual entry refs, retained across every as-enters decision. */

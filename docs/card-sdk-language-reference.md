@@ -19548,9 +19548,10 @@ not update an existing copy.
   value ≤ total mana spent (Mockingbird). `tappedIfCopied` makes the permanent enter **tapped** only
   when it actually enters as a copy — the "enter tapped as a copy" rider on the land-copy cycle
   (Echoing Deeps; Vesuva / Thespian's Stage copying a land on the battlefield); declining the copy
-  enters it untapped as its printed self. `entersWithCounters: CopyEntryCounters?` is the sibling
-  rider "except it enters with …": `CopyEntryCounters(count, counterType = PLUS_ONE_PLUS_ONE,
-  ifCopiedMatches = null, ifEntrantMatches = null)`. `CopyEntryCounters(DynamicAmounts.xValue())` is Altered Ego's "X
+  enters it untapped as its printed self. `entersWithCounters: List<CopyEntryCounters>` is the sibling
+  rider "except it enters with …", one entry per clause, each checked and placed on its own:
+  `CopyEntryCounters(count, counterType = PLUS_ONE_PLUS_ONE,
+  ifCopiedMatches = null, ifEntrantMatches = null)`. `listOf(CopyEntryCounters(DynamicAmounts.xValue()))` is Altered Ego's "X
   additional +1/+1 counters"; `CopyEntryCounters(Fixed(1), CounterType.SHIELD,
   ifCopiedMatches = GameObjectFilter.Any.youControl())` is Undercover Operative's "a shield counter
   on it if you control that creature" — the filter is read against the copied object as the
@@ -19559,7 +19560,10 @@ not update an existing copy.
   reads the **entrant itself** as the copy made it instead — Moritte of the Frost's "if it's a
   creature, it enters with two additional +1/+1 counters" (`ifEntrantMatches =
   GameObjectFilter.Creature`): copying a land animated by a non-copy effect gives a noncreature
-  copy, so no counters (ruling). It lives on the copy effect rather than on a separate
+  copy, so no counters (ruling). Two entries are Spark Double's "an additional +1/+1 counter on it if
+  it's a creature, … an additional loyalty counter on it if it's a planeswalker" (`ifEntrantMatches =
+  Creature` / `Planeswalker`, `CounterType.LOYALTY` on top of the copy's starting loyalty); a creature
+  planeswalker copy gets both. It lives on the copy effect rather than on a separate
   `EntersWithCounters`, because copying replaces the permanent's own copiable text: a self-targeted
   enters-with-counters replacement would be gone by the time the copy applies. It follows the same
   "only if a copy was actually made" rule as `tappedIfCopied`, which is the printed ruling
