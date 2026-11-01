@@ -516,6 +516,7 @@ Angelic Cub
 Angelic Curator
 Angelic Destiny
 Angelic Edict
+Angelic Exaltation
 Angelic Field Marshal
 Angelic Gift
 Angelic Guardian
@@ -792,7 +793,7 @@ Arms Race	intent: GrantKeywordEffect; intent: Pipeline(hand→battlefield)
 Army of Allah
 Army of the Damned
 Arna Kennerüd, Skycaptain
-Arni Brokenbrow	combat: SetBaseStatsEffect; intent: SetBaseStatsEffect; timing: SetBaseStatsEffect
+Arni Brokenbrow	combat: SetBaseStatsEffect; timing: SetBaseStatsEffect
 Arni Metalbrow	intent: Pipeline(hand→battlefield)
 Arni Slays the Troll
 Arni, Humble Scribe
@@ -801,6 +802,8 @@ Arnim Zola, Bio-Fanatic
 Arnyn, Deathbloom Botanist
 Aron, Benalia's Ruin
 Arrest
+Arrester's Admonition	polarity: MoveToZoneEffect
+Arrester's Zeal
 Arrogant Outlaw
 Arrogant Poet
 Arrogant Vampire
@@ -833,7 +836,7 @@ Asari Captain
 Ascendant Dustspeaker
 Ascendant Evincar
 Ascendant Packleader
-Ascendant Spirit	combat: SetBaseStatsEffect; intent: AddCountersEffect; intent: GrantTriggeredAbilityEffect; intent: SetBaseStatsEffect; intent: SetCreatureSubtypesEffect
+Ascendant Spirit	combat: SetBaseStatsEffect; intent: AddCountersEffect; intent: GrantTriggeredAbilityEffect; intent: SetCreatureSubtypesEffect
 Ascending Aven
 Ascent of the Worthy
 Asceticism
@@ -1367,7 +1370,7 @@ Belle of the Brawl
 Belligerent Guest
 Belligerent Sliver
 Belligerent Whiptail	intent: GrantKeywordEffect
-Belligerent Yearling	intent: SetBaseStatsEffect
+Belligerent Yearling
 Belligerent of the Ball
 Bello, Bard of the Brambles
 Bellowing Bruiser	intent: ForEach>CantBlockEffect
@@ -1398,6 +1401,7 @@ Benevolent Ancestor
 Benevolent Hydra
 Benevolent River Spirit
 Benthic Behemoth
+Benthic Biomancer	intent: AdaptEffect
 Benthic Criminologists
 Benthic Djinn
 Benthic Giant
@@ -1967,7 +1971,7 @@ Bramble Familiar	intent: Pipeline(TopOfLibrary→battlefield|graveyard)
 Bramble Wurm
 Brambleback Brute	combat: CantBlockEffect; intent: CantBlockEffect
 Bramblecrush
-Bramblefort Fink	combat: SetBaseStatsEffect; intent: SetBaseStatsEffect; timing: SetBaseStatsEffect
+Bramblefort Fink	combat: SetBaseStatsEffect; timing: SetBaseStatsEffect
 Brambleguard Captain
 Brambleguard Veteran
 Bramblesnap
@@ -2093,7 +2097,7 @@ Broken Wings
 Brokers Ascendancy
 Brokers Charm
 Brokers Hideout
-Brokers Initiate	combat: SetBaseStatsEffect; intent: SetBaseStatsEffect; timing: SetBaseStatsEffect
+Brokers Initiate	combat: SetBaseStatsEffect; timing: SetBaseStatsEffect
 Brokers Veteran
 Brokkos, Apex of Forever
 Brontotherium	intent: ProvokeEffect; polarity: ProvokeEffect
@@ -2860,6 +2864,7 @@ Cleanup Crew
 Clear
 Clear Shot
 Clear a Path
+Clear the Mind	polarity: Pipeline(graveyard→library)
 Clearwater Pathway
 Cleaver Skaab
 Cleaving Reaper
@@ -2965,6 +2970,7 @@ Cobbled Lancer
 Cobbled Wings
 Cockatrice
 Cocoon	polarity: Aura>AddCountersEffect; polarity: Aura>ConditionalStaticAbility; polarity: Aura>GrantKeywordEffect; polarity: Aura>RemoveCountersEffect; polarity: Aura>SacrificeTargetEffect; polarity: Aura>TapUntapEffect
+Code of Constraint
 Codecracker Hound
 Codespell Cleric
 Codex Shredder	polarity: Pipeline(TopOfLibrary→graveyard)
@@ -5192,7 +5198,7 @@ Eviscerator's Insight
 Evolution Charm
 Evolution Sage	intent: ProliferateEffect
 Evolution Witness	intent: AdaptEffect
-Evolved Sleeper	combat: SetBaseStatsEffect; intent: AddCountersEffect; intent: SetBaseStatsEffect; intent: SetCreatureSubtypesEffect
+Evolved Sleeper	combat: SetBaseStatsEffect; intent: AddCountersEffect; intent: SetCreatureSubtypesEffect
 Evolved Spinoderm
 Evolving Adaptive
 Evolving Door
@@ -5304,6 +5310,7 @@ Eyeblight Assassin
 Eyeblight Massacre
 Eyeblight's Ending
 Eyekite
+Eyes Everywhere	intent: ExchangeControlEffect; polarity: ExchangeControlEffect
 Eyes of Gitaxias
 Eyes of the Beholder
 Eyes of the Wisent
@@ -5835,7 +5842,7 @@ Fleshformer
 Fleshless Gladiator
 Fleshtaker
 Fleshwrither
-Flexible Waterbender	combat: SetBaseStatsEffect; intent: SetBaseStatsEffect; timing: SetBaseStatsEffect
+Flexible Waterbender	combat: SetBaseStatsEffect; timing: SetBaseStatsEffect
 Flick a Coin
 Flicker of Fate	polarity: MoveToZoneEffect
 Flickerform	intent: Pipeline(AttachedTo|BattlefieldMatching→battlefield|exile); polarity: Aura>CreateDelayedTriggerEffect; polarity: Aura>GatherCardsEffect; polarity: Aura>MoveCollectionEffect
@@ -7236,7 +7243,7 @@ Halana and Alena, Partners
 Halberdier
 Halcyon Glaze
 Half-Elf Monk
-Halfdane	intent: SetBaseStatsEffect; polarity: SetBaseStatsEffect
+Halfdane	polarity: SetBaseStatsEffect
 Haliya, Ascendant Cadet
 Haliya, Guided by Light
 Hall Monitor	combat: CantBlockEffect; intent: CantBlockEffect; timing: CantBlockEffect
@@ -8804,7 +8811,7 @@ Kellan Joins Up	intent: MakePlottedEffect; intent: Pipeline(hand→exile)
 Kellan's Lightblades
 Kellan, Daring Traveler
 Kellan, Inquisitive Prodigy
-Kellan, Planar Trailblazer	combat: SetBaseStatsEffect; intent: GrantKeywordEffect; intent: GrantTriggeredAbilityEffect; intent: SetBaseStatsEffect; intent: SetCreatureSubtypesEffect
+Kellan, Planar Trailblazer	combat: SetBaseStatsEffect; intent: GrantKeywordEffect; intent: GrantTriggeredAbilityEffect; intent: SetCreatureSubtypesEffect
 Kellan, the Fae-Blooded
 Kellan, the Kid	intent: Pipeline(hand→battlefield)
 Kellogg, Dangerous Mind
@@ -8962,6 +8969,7 @@ Knight of Grace
 Knight of Malice
 Knight of Meadowgrain
 Knight of New Benalia
+Knight of Sorrows
 Knight of Stromgald	intent: GrantKeywordEffect
 Knight of Wundagore
 Knight of the Ebon Legion
@@ -9675,6 +9683,7 @@ Lull
 Lullmage's Domination
 Lullmage's Familiar
 Lumaret's Favor	intent: CopyTargetSpellEffect
+Lumbering Battlement
 Lumbering Laundry	intent: GrantStaticAbilityEffect; timing: GrantStaticAbilityEffect
 Lumbering Megasloth
 Lumbering Satyr
@@ -9986,7 +9995,7 @@ Marrow Bats
 Marrow-Gnawer
 Marsh Boa
 Marsh Flats
-Marsh Flitter	combat: SetBaseStatsEffect; intent: SetBaseStatsEffect; timing: SetBaseStatsEffect
+Marsh Flitter	combat: SetBaseStatsEffect; timing: SetBaseStatsEffect
 Marsh Gas	intent: ForEach>ModifyStatsEffect
 Marsh Goblins
 Marsh Lurker
@@ -10049,7 +10058,7 @@ Master of Cruelties	intent: GrantKeywordEffect; intent: SetLifeTotalEffect
 Master of Dark Rites
 Master of Etherium
 Master of Pearls
-Master of Winds	intent: SetBaseStatsEffect
+Master of Winds
 Master of the Feast
 Master of the Hunt
 Master of the Veil	intent: TurnFaceDownEffect; polarity: TurnFaceDownEffect
@@ -10383,7 +10392,7 @@ Miriam, Herd Whisperer
 Mirkwood
 Mirkwood Bats
 Mirkwood Channeler
-Mirkwood Meditator	intent: SetBaseStatsEffect
+Mirkwood Meditator
 Mirkwood Nurturer	intent: Pipeline(ChosenTargets→hand); polarity: AddCountersEffect; polarity: Pipeline(ChosenTargets→hand)
 Mirkwood Pathmaker
 Mirkwood Spider	intent: GrantKeywordEffect
@@ -12365,7 +12374,7 @@ Psychosis Crawler
 Psychotrope Thallid
 Pterafractyl
 Pterodon Knight
-PuPu UFO	combat: SetBaseStatsEffect; intent: Pipeline(hand→battlefield); intent: SetBaseStatsEffect; timing: SetBaseStatsEffect
+PuPu UFO	combat: SetBaseStatsEffect; intent: Pipeline(hand→battlefield); timing: SetBaseStatsEffect
 Public Enemy	polarity: Aura>DrawCardsEffect; polarity: Aura>MustAttack
 Public Thoroughfare
 Puca's Eye
@@ -12652,6 +12661,7 @@ Rally the Peasants
 Rally the Ranks
 Rally the Righteous
 Rally the Troops	intent: ForEach>TapUntapEffect
+Rally to Battle
 Ram Through
 Rambling Possum
 Rambunctious Mutt
@@ -13248,7 +13258,7 @@ Riptide Director
 Riptide Entrancer
 Riptide Gearhulk	polarity: MoveToZoneEffect
 Riptide Laboratory	polarity: MoveToZoneEffect
-Riptide Mangler	combat: SetBaseStatsEffect; intent: SetBaseStatsEffect; polarity: SetBaseStatsEffect
+Riptide Mangler	combat: SetBaseStatsEffect; polarity: SetBaseStatsEffect
 Riptide Replicator
 Riptide Shapeshifter	intent: ChooseCreatureTypeEffect; intent: GatherUntilMatchEffect; intent: Pipeline(?→battlefield)
 Riptide Survivor
@@ -13267,7 +13277,7 @@ Rise of the Witch-king
 Rise to Glory
 Risen Necroregent
 Risen Reef
-Risen Riptide	intent: SetBaseStatsEffect
+Risen Riptide
 Risen Sanctuary
 Rishadan Airship
 Rishadan Dockhand
@@ -14199,7 +14209,7 @@ Sensei Golden-Tail	intent: AddCountersEffect; intent: AddCreatureTypeEffect; int
 Sensei's Divining Top	intent: Pipeline(TopOfLibrary→library)
 Senseless Rage
 Sensory Deprivation
-Sentinel	combat: SetBaseStatsEffect; intent: SetBaseStatsEffect; polarity: SetBaseStatsEffect
+Sentinel	combat: SetBaseStatsEffect; polarity: SetBaseStatsEffect
 Sentinel Sarah Lyons
 Sentinel Sliver
 Sentinel Spider
@@ -14207,6 +14217,7 @@ Sentinel of Lost Lore	polarity: MoveToZoneEffect; polarity: Pipeline(graveyard�
 Sentinel of the Nameless City
 Sentinel of the Pearl Trident
 Sentinel's Eyes
+Sentinel's Mark	intent: GrantKeywordEffect
 Sentinels of Glen Elendra
 Sentry Bot
 Sentry Oak
@@ -14774,6 +14785,7 @@ Sky Ruin Drake
 Sky Skiff
 Sky Spirit
 Sky Terror
+Sky Tether
 Sky Theater Strix
 Sky Weaver
 Sky-Blessed Samurai
@@ -15820,6 +15832,7 @@ Sultai Soothsayer
 Sumala Sentry
 Sumala Woodshaper
 Summary Dismissal
+Summary Judgment
 Summer Bloom
 Summit Intimidator	intent: CantBlockEffect
 Summit Prowler
@@ -15952,7 +15965,7 @@ Supreme Verdict
 Sure Strike
 Sure-Footed Infiltrator	intent: GrantKeywordEffect
 Sureshot Sower
-Surge Engine	combat: RemoveKeywordEffect; combat: SetBaseStatsEffect; intent: ChangeColorEffect; intent: GrantKeywordEffect; intent: RemoveKeywordEffect; intent: SetBaseStatsEffect
+Surge Engine	combat: RemoveKeywordEffect; combat: SetBaseStatsEffect; intent: ChangeColorEffect; intent: GrantKeywordEffect; intent: RemoveKeywordEffect
 Surge of Salvation	timing: ForEach>GrantKeywordEffect; timing: GrantEvasionKeywordEffect
 Surge of Thoughtweft
 Surge of Zeal	intent: ForEach>GrantKeywordEffect; intent: GrantKeywordEffect; timing: ForEach>GrantKeywordEffect; timing: GrantKeywordEffect
@@ -16098,6 +16111,7 @@ Syncopate
 Syndicate Guildmage
 Syndicate Infiltrator
 Syndicate Liquidators
+Syndicate Messenger
 Synod Sanctum	intent: Pipeline(FromLinkedExile→battlefield)
 Synth Eradicator	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Synth Infiltrator
@@ -16409,7 +16423,7 @@ Tendrils of Agony
 Tenement Crasher
 Tentative Connection	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
 Tenth District Guard
-Tenth District Hero	combat: SetBaseStatsEffect; intent: AddCardTypeEffect; intent: BecomeArtifactEffect; intent: SetBaseStatsEffect
+Tenth District Hero	combat: SetBaseStatsEffect; intent: AddCardTypeEffect; intent: BecomeArtifactEffect
 Tenth District Legionnaire
 Tenth District Veteran	intent: TapUntapEffect
 Tenuous Truce	polarity: Aura>DrawCardsEffect; polarity: Aura>SacrificeTargetEffect
@@ -17543,6 +17557,7 @@ Unassuming Sage	intent: CreateAuraTokenEffect
 Unauthorized Exit	polarity: MoveToZoneEffect
 Unblinking Observer
 Unbreakable Bond
+Unbreakable Formation	timing: ForEach>GrantKeywordEffect
 Unbreathing Horde
 Unburden	intent: Pipeline(hand→graveyard); polarity: Pipeline(hand→graveyard)
 Unburial Rites
@@ -18335,7 +18350,7 @@ Wall of Spears
 Wall of Stone
 Wall of Swords
 Wall of Tanglecord	intent: GrantKeywordEffect
-Wall of Tombstones	intent: SetBaseStatsEffect
+Wall of Tombstones
 Wall of Vapor
 Wall of Vines
 Wall of Water
