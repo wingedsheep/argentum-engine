@@ -69,8 +69,8 @@ internal enum class AmountSign {
 
             // A power or toughness can be negative, but CR 107.1b floors a calculation that yields
             // a negative result at zero: "+X/+X where X is its power", "double its power" never
-            // take anything away. Doubling a negative power is the rule's exception, and nobody
-            // casts a pump to make one worse. Inside a sum the operand is still a raw value, so
+            // take anything away. Doubling a negative power is the rule's exception (CR 701.10c
+            // makes it -X/-0), a corner too rare to give up reading every doubler as a pump. Inside a sum the operand is still a raw value, so
             // "X minus its power" stays unknown through [sum].
             // The same floor holds for an aggregate: a total power, a greatest toughness.
             is DynamicAmount.EntityProperty, is DynamicAmount.AggregateBattlefield,

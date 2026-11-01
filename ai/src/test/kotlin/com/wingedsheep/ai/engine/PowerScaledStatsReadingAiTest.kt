@@ -32,12 +32,15 @@ class PowerScaledStatsReadingAiTest : ScenarioTestBase() {
         state.getBattlefield(player1Id).single { state.getEntity(it)?.get<CardComponent>()?.name == name }
 
     init {
-        test("a power-scaled +X is a pump on a friendly target") {
+        test("a power-scaled +X is a pump on a friendly target, a power-scaled -X is removal") {
             for (name in listOf("Unleash Fury", "Bulk Up")) {
                 withClue("$name: +X/+0 with X its power reads as a pump on a friendly target") {
                     intents.forName(name)!!.tags shouldContain IntentTag.PUMP
                     intents.spellTargetPolarities(name) shouldBe listOf(TargetPolarity.BENEFICIAL)
                 }
+            }
+            withClue("Stalactite Stalker: -X/-X with X its power reads as removal") {
+                intents.forName("Stalactite Stalker")!!.tags shouldContain IntentTag.REMOVAL
             }
         }
 
