@@ -3105,7 +3105,7 @@ Conduit of Storms
 Conduit of Worlds	intent: CantCastSpellsEffect; intent: Pipeline(ChosenTargets→?); polarity: CantCastSpellsEffect; polarity: Pipeline(ChosenTargets→?)
 Cone of Flame
 Confiscate
-Confounding Conundrum
+Confounding Conundrum	intent: ForEach>Pipeline(BattlefieldMatching→hand)
 Confounding Riddle
 Confront the Past	polarity: RemoveCountersEffect
 Confusion in the Ranks	intent: ExchangeControlEffect; polarity: ExchangeControlEffect

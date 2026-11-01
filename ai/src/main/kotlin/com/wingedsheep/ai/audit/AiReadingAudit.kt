@@ -30,6 +30,7 @@ import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
+import com.wingedsheep.sdk.scripting.effects.IterationSpace
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
@@ -82,7 +83,7 @@ import java.util.Locale
  *    player, life loss, a permanent untapping, moving, transforming, animating or sacrificing itself, a creature
  *    shifting its own P/T with a loss on either side, an upkeep cost its controller pays or suffers
  *    on its own source, an "unless" whose suffer is life loss; and [noIntentPipeline]: a mill, or a return
- *    of its controller's own permanents to hand).
+ *    to hand chosen among its controller's own permanents).
  *  - [Check.COMBAT] — [CombatReach] over each leaf of a non-mana activated ability that changes
  *    power/toughness, keywords, P/T counters or blocking, and that combat simulation cannot see.
  *  - [Check.TIMING] — an until-end-of-turn leaf on an instant-speed activation or an instant-speed
@@ -459,7 +460,11 @@ object AiReadingAudit {
         }
         for (each in unreadLeaves.filterIsInstance<ForEachEffect>()) {
             val body = fired(EffectWalker.payoffLeaves(each.body)).filterNot(noIntent)
-            labels(body).filterNot { noIntentPipeline(it.first, body) }.forEach { (label, _) ->
+            // Over each player, "you" in the body is the player iterated (ControllerOfTriggeringEntity's
+            // land for Confounding Conundrum), so an own-permanents return is only ours over Players(You).
+            val players = (each.space as? IterationSpace.Players)?.players
+            val ownSide = players == null || players == Player.You
+            labels(body).filterNot { it.first in NO_INTENT_PIPELINES || (ownSide && noIntentPipeline(it.first, body)) }.forEach { (label, _) ->
                 sink += gap(Check.INTENT, unread, "ForEach>$label", step(leaves, each))
             }
         }
