@@ -144,7 +144,7 @@ object CardIntentAnalyzer {
      * fold is one pass over an effect tree and the only caller walks a stack of at most a few.
      */
     fun analyzeEffect(effect: Effect): CardIntent {
-        val tags = mutableSetOf<IntentTag>()
+        val tags = digTags(effect).toMutableSet()
         var removalReach: Int? = null
         for (leaf in readingLeaves(effect)) {
             tags += tagsOf(leaf)
@@ -186,10 +186,11 @@ object CardIntentAnalyzer {
         // Every effect the card can produce, flattened. A tag answers "does this card do X
         // anywhere?", so where in the script the effect sat does not change the answer — the
         // origin discounts [EffectWalker.slots] carries are the rater's concern, not this one's.
-        val leaves = scripts.flatMap { script ->
+        val roots = scripts.flatMap { script ->
             EffectWalker.slots(script).map { it.effect } +
                 script.stateTriggeredAbilities.map { it.effect }
-        }.flatMap { readingLeaves(it) }
+        }
+        val leaves = roots.flatMap { readingLeaves(it) }
 
         val tags = mutableSetOf<IntentTag>()
         var removalReach: Int? = null
@@ -213,6 +214,7 @@ object CardIntentAnalyzer {
             }
         }
 
+        for (root in roots) tags += digTags(root)
         for (effect in leaves) {
             tags += tagsOf(effect)
             reachOf(effect)?.let { removalReach = maxOf(removalReach ?: 0, it) }
@@ -314,7 +316,7 @@ object CardIntentAnalyzer {
         val manaAbilities = scripts.flatMap { it.activatedAbilities }.filter { it.isManaAbility }
         val sickRamp = sick && manaAbilities.isNotEmpty() && manaAbilities.all { tapsOrUntapsItself(it.cost) }
         if (deferred.isEmpty() && !sickRamp) return tags
-        fun tagsOfRoots(roots: List<Effect>) = roots.flatMap { readingLeaves(it) }.flatMapTo(HashSet()) { tagsOf(it) }
+        fun tagsOfRoots(roots: List<Effect>) = roots.flatMapTo(HashSet()) { effectTags(it) }
         val later = tagsOfRoots(deferred) + if (sickRamp) setOf(IntentTag.RAMP) else emptySet()
         val onlyLater = later - tagsOfRoots(immediate) -
             scripts.flatMap { it.staticAbilities }.flatMapTo(HashSet()) { tagsOf(it) }
@@ -374,6 +376,33 @@ object CardIntentAnalyzer {
             listOfNotNull((leaf.gate as? Gate.DoAction)?.action, leaf.then, leaf.otherwise)
                 .flatMap { handSelectionLeaves(it) }
         }
+
+    /** Every tag [root] reads as: its leaves' own, plus what the pipeline among them adds up to ([digTags]). */
+    private fun effectTags(root: Effect): Set<IntentTag> =
+        readingLeaves(root).flatMapTo(HashSet()) { tagsOf(it) } + digTags(root)
+
+    /**
+     * "Look at the top N cards of your library and put one of them into your hand" — a gather from
+     * our own library top and a move of what it picked into our hand — reads as [IntentTag.DRAW].
+     *
+     * Neither leaf says it alone: the gather is plumbing every mill, impulse and scry shares, and
+     * the move to hand is how a regrowth ends too. Together, within one ability, they are a card
+     * taken off the library into hand — what a draw is, with a choice on top. Read off [root]'s
+     * own leaves rather than the whole card's, so a card that mills on one ability and returns a
+     * creature card to hand on another reads as neither.
+     */
+    private fun digTags(root: Effect): Set<IntentTag> {
+        val leaves = readingLeaves(root)
+        val gathersOurTop = leaves.any {
+            it is GatherCardsEffect && (it.source as? CardSource.TopOfLibrary)?.player == Player.You
+        }
+        if (!gathersOurTop) return emptySet()
+        val movesToOurHand = leaves.any {
+            it is MoveCollectionEffect &&
+                (it.destination as? CardDestination.ToZone)?.let { to -> to.zone == Zone.HAND && to.player == Player.You } == true
+        }
+        return if (movesToOurHand) setOf(IntentTag.DRAW) else emptySet()
+    }
 
     /** The filter of a gather from its controller's own sideboard — "from outside the game". */
     private fun wishFilterOf(effect: Effect): GameObjectFilter? {
@@ -482,9 +511,7 @@ object CardIntentAnalyzer {
         // there for why), which makes this the analyzer's own reading of the node: interpret the
         // body, and promote it to a sweeper when the iteration spans a whole group of permanents.
         is ForEachEffect -> {
-            val inner = readingLeaves(effect.body)
-                .flatMap { tagsOf(it) }
-                .toSet()
+            val inner = effectTags(effect.body)
             if (effect.space is IterationSpace.Group && IntentTag.REMOVAL in inner) {
                 inner + IntentTag.SWEEPER
             } else {
@@ -499,7 +526,7 @@ object CardIntentAnalyzer {
         // spell when every mode counters, so [IntentTag.COUNTERSPELL] alone needs all of them.
         // A cast with its modes chosen is read off those modes instead — [analyzeModes].
         is ModalEffect -> {
-            val perMode = effect.modes.map { mode -> readingLeaves(mode.effect).flatMapTo(HashSet()) { tagsOf(it) } }
+            val perMode = effect.modes.map { mode -> effectTags(mode.effect) }
             val union = perMode.flatMapTo(HashSet()) { it }
             if (perMode.all { IntentTag.COUNTERSPELL in it }) union else union - IntentTag.COUNTERSPELL
         }
