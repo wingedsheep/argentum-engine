@@ -2397,6 +2397,7 @@ data class AiProfile(
             creatureValuation = PRODUCTION_CANDIDATE_EXPIRING.creatureValuation.copy(
                 expiringStatsNeedAFight = true,
                 statsReadTheBoard = true,
+                growthPotential = true,
             ),
             activatedPumpsNeedAPlannedAttack = true,
             attackPlaneswalkers = true,
@@ -2432,6 +2433,16 @@ data class AiProfile(
             oneShotManaIsMana = true,
             payoffsReadTheirFuel = true,
             rollouts = PRODUCTION_CANDIDATE_EXPIRING.rollouts?.copy(staticPriorPlayouts = 1.0),
+        )
+
+        /**
+         * [LIVE] without [com.wingedsheep.ai.engine.evaluation.CreatureValuation.growthPotential]:
+         * `just arena live-without-growth live 300` measures the recurring +1/+1-counter growth
+         * estimate on top of everything it ships with.
+         */
+        val LIVE_WITHOUT_GROWTH = LIVE.copy(
+            id = "live-without-growth",
+            creatureValuation = LIVE.creatureValuation.copy(growthPotential = false),
         )
 
         /**

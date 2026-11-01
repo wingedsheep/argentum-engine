@@ -164,6 +164,9 @@ object ArenaAgents {
         // LIVE without pressing a winning position. `just arena live-without-pressure live 300`
         // prices the flag on top of everything it ships with.
         ArenaAgent("live-without-pressure", AiProfile.LIVE_WITHOUT_PRESSURE),
+        // LIVE pricing creatures by their current body only: `just arena live-without-growth live 300`
+        // prices the recurring +1/+1-counter growth estimate.
+        ArenaAgent("live-without-growth", AiProfile.LIVE_WITHOUT_GROWTH),
         // LIVE without the opponent's combat responses: `just arena live-without-responses live 300`
         // prices the opponent-ability model on its own.
         ArenaAgent("live-without-responses", AiProfile.LIVE.copy(id = "live-without-responses", anticipateCombatResponses = false)),
