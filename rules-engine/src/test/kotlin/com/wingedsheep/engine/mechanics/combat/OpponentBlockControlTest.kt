@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.mechanics.combat
 
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.combat.MustBlockGroupExecutor
 import com.wingedsheep.engine.handlers.effects.player.ControlCombatDeclarationsExecutor
 import com.wingedsheep.engine.support.GameTestDriver
@@ -61,7 +62,7 @@ class OpponentBlockControlTest : FunSpec({
 
     fun GameTestDriver.mustBlock(controller: EntityId) {
         val effect = MustBlockGroupEffect(GroupFilter.AllCreaturesOpponentsControl)
-        replaceState(MustBlockGroupExecutor().execute(state, effect, EffectContext(sourceId = null, controllerId = controller)).state)
+        replaceState(MustBlockGroupExecutor(PredicateEvaluator(cardRegistry = null).amounts).execute(state, effect, EffectContext(sourceId = null, controllerId = controller)).state)
     }
 
     fun GameTestDriver.readyBear(owner: EntityId): EntityId =

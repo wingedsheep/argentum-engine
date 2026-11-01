@@ -370,7 +370,7 @@ internal class AffectsFilterResolver(
                         ControllerPredicate.OwnedByYou -> card.ownerId != null && card.ownerId == controller
                         ControllerPredicate.OwnedByOpponent -> card.ownerId != null && card.ownerId != controller
                         // "creatures that player controls" — a player pinned when a floating group
-                        // restriction resolved (ResolutionPlayerBaker), or a state-relative reference.
+                        // restriction resolved (ResolutionFilterBaker), or a state-relative reference.
                         // Answered by the evaluator's shared player leaf; it must never fail open, or
                         // a one-player restriction would bind every controller's creatures.
                         is ControllerPredicate.ControlledByReferencedPlayer -> when (val ref = leaf.target) {

@@ -184,15 +184,25 @@ internal class CardActiveEffectsProjector(
     /**
      * A dynamic-group floating effect locks no entity set, so whether it reaches this card is read
      * off the projection — which also honours its condition (Johan's "if Johan is untapped").
-     * Only modifications with a projected flag of their own can be answered this way.
+     * Only modifications with a projected flag of their own can be answered this way. "Can't
+     * block" / "can't attack" flags have other causes too (Decayed, a static), so those also ask
+     * whether the card is in this effect's group — Temur Charm's "power 3 or less", Rumbling Ruin's
+     * frozen count.
      */
     private fun appliesThroughDynamicGroup(
+        state: GameState,
         floating: ActiveFloatingEffect,
         entityId: EntityId,
         projectedState: ProjectedState?
     ): Boolean {
-        if (floating.effect.dynamicGroupFilter == null || projectedState == null) return false
+        val group = floating.effect.dynamicGroupFilter
+        if (group == null || projectedState == null) return false
+        fun inGroup() = predicateEvaluator.matches(
+            state, projectedState, entityId, group.baseFilter, PredicateContext(controllerId = floating.controllerId)
+        )
         return when (val mod = floating.effect.modification) {
+            is SerializableModification.SetCantBlock -> projectedState.cantBlock(entityId) && inGroup()
+            is SerializableModification.SetCantAttack -> projectedState.cantAttack(entityId) && inGroup()
             is SerializableModification.SetAttacksWithoutTapping -> projectedState.attacksWithoutTapping(entityId)
             is SerializableModification.SetMustAttack -> when (mod.defender) {
                 MustAttackDefender.PlayerOtherThanYou -> mod.otherThan in projectedState.mustAttackOtherThan(entityId)
@@ -213,7 +223,7 @@ internal class CardActiveEffectsProjector(
         projectedState: ProjectedState?
     ): List<ClientCardEffect> =
         state.floatingEffects
-            .filter { entityId in it.effect.affectedEntities || appliesThroughDynamicGroup(it, entityId, projectedState) }
+            .filter { entityId in it.effect.affectedEntities || appliesThroughDynamicGroup(state, it, entityId, projectedState) }
             // A granted "exile it instead" ability stripped by a later lose-all-abilities effect.
             .filterNot { floating ->
                 val mod = floating.effect.modification

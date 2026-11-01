@@ -1,16 +1,21 @@
 package com.wingedsheep.engine.handlers.effects
 
+import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.serialization.ScriptTreeWalker
 
 /**
- * Freezes the player references in a filter that only the resolving context can answer into
- * concrete player ids, for effects whose filter outlives the resolution that created it.
+ * Freezes the parts of a filter that only the resolving context can answer — the player
+ * references and, when an evaluator is supplied, the dynamic numbers — for effects whose filter
+ * outlives the resolution that created it.
  *
  * A granted static ability or a "can't block this turn" group effect is read later — at block
  * declaration, on every projection — where the ability's targets, its pipeline choices, its
@@ -28,19 +33,77 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * [ControllerPredicate.ControlledByTriggeringPlayer]. Anything that doesn't resolve now (no
  * such player in this context) is left symbolic, as are the state-relative references (you,
  * the active player, any defending player) that mean the same thing at the point of use.
+ *
+ * With [DynamicAmountEvaluator] supplied, the dynamic-amount card predicates are evaluated once
+ * against the resolving context and rewritten to their fixed siblings —
+ * [CardPredicate.PowerAtMostDynamic] → [CardPredicate.PowerAtMost], and likewise for
+ * `PowerEqualsDynamic`, `ToughnessEqualsDynamic`, `ManaValueAtMostDynamic` and
+ * `ManaValueEqualsDynamic`. Information an effect needs from the game is determined only once,
+ * when the effect is applied (CR 608.2h): Rumbling Ruin's "creatures your opponents control with power less than or equal to
+ * that number can't block this turn" counts the +1/+1 counters as the ability resolves, while
+ * which creatures have power that low stays live. Only the number is baked, never the matching
+ * objects. The layer projector can't evaluate a dynamic amount (it has no resolving context), so
+ * an unbaked dynamic predicate in a floating group filter matches nothing. Amounts phrased
+ * relative to the object under test (`Player.Candidate`) have no single value and stay symbolic.
  */
-object ResolutionPlayerBaker {
+object ResolutionFilterBaker {
 
-    fun bake(filter: GroupFilter, context: EffectContext, state: GameState): GroupFilter {
-        val baked = bake(filter.baseFilter, context, state)
+    fun bake(
+        filter: GroupFilter,
+        context: EffectContext,
+        state: GameState,
+        amounts: DynamicAmountEvaluator? = null
+    ): GroupFilter {
+        val baked = bake(filter.baseFilter, context, state, amounts)
         return if (baked == filter.baseFilter) filter else filter.copy(baseFilter = baked)
     }
 
-    fun bake(filter: GameObjectFilter, context: EffectContext, state: GameState): GameObjectFilter {
+    fun bake(
+        filter: GameObjectFilter,
+        context: EffectContext,
+        state: GameState,
+        amounts: DynamicAmountEvaluator? = null
+    ): GameObjectFilter {
         val predicate = filter.controllerPredicate?.let { bake(it, context, state) }
-        val anyOf = filter.anyOf.map { bake(it, context, state) }
-        return if (predicate == filter.controllerPredicate && anyOf == filter.anyOf) filter
-        else filter.copy(controllerPredicate = predicate, anyOf = anyOf)
+        val cardPredicates =
+            if (amounts == null) filter.cardPredicates
+            else filter.cardPredicates.map { bake(it, context, state, amounts) }
+        val anyOf = filter.anyOf.map { bake(it, context, state, amounts) }
+        return if (predicate == filter.controllerPredicate && cardPredicates == filter.cardPredicates &&
+            anyOf == filter.anyOf
+        ) filter
+        else filter.copy(controllerPredicate = predicate, cardPredicates = cardPredicates, anyOf = anyOf)
+    }
+
+    private fun bake(
+        predicate: CardPredicate,
+        context: EffectContext,
+        state: GameState,
+        amounts: DynamicAmountEvaluator
+    ): CardPredicate {
+        fun value(amount: DynamicAmount): Int? =
+            if (referencesCandidate(amount)) null else amounts.evaluate(state, amount, context)
+        return when (predicate) {
+            is CardPredicate.PowerAtMostDynamic -> value(predicate.amount)?.let { CardPredicate.PowerAtMost(it) }
+            is CardPredicate.PowerEqualsDynamic -> value(predicate.amount)?.let { CardPredicate.PowerEquals(it) }
+            is CardPredicate.ToughnessEqualsDynamic ->
+                value(predicate.amount)?.let { CardPredicate.ToughnessEquals(it) }
+            is CardPredicate.ManaValueAtMostDynamic ->
+                value(predicate.amount)?.let { CardPredicate.ManaValueAtMost(it) }
+            is CardPredicate.ManaValueEqualsDynamic ->
+                value(predicate.amount)?.let { CardPredicate.ManaValueEquals(it) }
+            is CardPredicate.And -> CardPredicate.And(predicate.predicates.map { bake(it, context, state, amounts) })
+            is CardPredicate.Or -> CardPredicate.Or(predicate.predicates.map { bake(it, context, state, amounts) })
+            is CardPredicate.Not -> CardPredicate.Not(bake(predicate.predicate, context, state, amounts))
+            else -> null
+        } ?: predicate
+    }
+
+    /** Whether [amount] reads the object under test, which has no value at resolution. */
+    private fun referencesCandidate(amount: DynamicAmount): Boolean {
+        var found = false
+        ScriptTreeWalker.forEachNode(DynamicAmount.serializer(), amount) { if (it == Player.Candidate) found = true }
+        return found
     }
 
     /**

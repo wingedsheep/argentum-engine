@@ -3526,10 +3526,22 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   Every other player the filter names through the resolving context — `targetPlayerControls()`,
   `targetOpponentControls()`, the triggering player, or `targetPlayerControls(ref)` over a
   positional / pipeline / bound target or `Player.DefendingPlayer` — is likewise pinned to that
-  player when the effect resolves (`ResolutionPlayerBaker`, shared with `GrantStaticAbility`'s
+  player when the effect resolves (`ResolutionFilterBaker`, shared with `GrantStaticAbility`'s
   `CantBeBlockedBy`), while the set of their creatures stays live. The Motherlode, Excavator:
   `CantBlockGroup(GroupFilter(Creature.withoutKeyword(FLYING).targetPlayerControls(PlayerRef(Player.DefendingPlayer))))`
   keeps binding the defending player after The Motherlode leaves combat.
+  The same baker freezes a dynamic number in the filter for all six floating group effects
+  (`CantBlockGroup`, `CantAttackGroup`, `CantBeBlockedGroup`, `MustBlockGroup`, `MustAttackGroup`,
+  `AttacksWithoutTappingGroup`): `PowerAtMostDynamic`, `PowerEqualsDynamic`, `ToughnessEqualsDynamic`,
+  `ManaValueAtMostDynamic` and `ManaValueEqualsDynamic` are evaluated once as the effect resolves
+  (CR 608.2h) and rewritten to their fixed siblings, while which creatures meet the number stays
+  live. Rumbling Ruin: `CantBlockGroup(GroupFilter(Creature.opponentControls().powerAtMost(
+  DynamicAmounts.countersOnCreaturesYouControl(PLUS_ONE_PLUS_ONE))))` — the counters are counted
+  at resolution; a creature pumped above the number later that turn can block again (the
+  restriction is a rules effect, applied after every layer — CR 613.11 — so it reads final power,
+  counters and pumps included). An amount
+  phrased relative to the object under test (`Player.Candidate`) has no single value and is left
+  unbaked, so it matches nothing in a floating group filter.
 - `GrantCantBeBlockedExceptByCollection(target, collection, alternativeFilter, duration)` — restrict
   the named attacker to blockers that were in a pipeline collection at resolution, **or** match
   `alternativeFilter` when blocking. Cards use the `Effects` facade with a `CollectionSlot`.

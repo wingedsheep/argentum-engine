@@ -8556,6 +8556,75 @@
     ]
 }
 
+// Rumbling Ruin
+{
+    "name": "Rumbling Ruin",
+    "manaCost": "{5}{R}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "When this creature enters, count the number of +1/+1 counters on creatures you control. Creatures your opponents control with power less than or equal to that number can't block this turn.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rumbling Ruin:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CantBlockGroup",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "PowerAtMostDynamic",
+                                    "amount": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": "creature",
+                                        "aggregation": "SUM",
+                                        "counterType": "PLUS_ONE_PLUS_ONE"
+                                    }
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByOpponent"
+                        }
+                    }
+                },
+                "descriptionOverride": "When this creature enters, count the number of +1/+1 counters on creatures you control. Creatures your opponents control with power less than or equal to that number can't block this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "rarity": "UNCOMMON",
+        "artist": "Jakub Kasper",
+        "flavorText": "The Rubblebelt grows restless.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/1/71fe7057-de70-456d-8f33-f64652447bdd.jpg?1783933677",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "The number of +1/+1 counters among creatures you control is counted only as Rumbling Ruin's ability resolves. The set of creatures that can't block is constantly updated as their power changes, but the number against which their power is compared doesn't change later in the turn, even if the number of +1/+1 counters among your creatures changes."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "Once a creature with high enough power has blocked, changing the power of the blocking creature won't remove the blocking creature from combat or cause the creature it blocked to become unblocked."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If there are no +1/+1 counters on creatures you control as Rumbling Ruin's ability resolves, creatures with power 0 or less can't block this turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Sage's Row Savant
 {
     "name": "Sage's Row Savant",

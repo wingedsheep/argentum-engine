@@ -391,23 +391,6 @@ class StateProjector {
             effectApplicator.applyEffect(effect, state, projectedValues,
                 restrictionSurvivesSourceAbilityRemoval = startedBeforeAbility)
         }
-        // A static ability's effect exists only while its source has the ability (CR 604.2): a
-        // Craven Giant that lost all abilities can block, and so can a creature whose "can't
-        // block" came from an enchantment that lost its abilities (likewise a Zilortha that lost
-        // its abilities no longer judges lethal damage by power). A restriction created by a
-        // resolved spell or ability is independent of anyone's abilities (CR 611.2a), as is one
-        // belonging to an effect that started applying before Layer 6 (CR 613.6).
-        for ((effect, startedBeforeAbility) in deferredCantBlock) {
-            if (effect.fromStaticAbility && !startedBeforeAbility &&
-                effect.sourceId !in staticRemoveAllAbilitiesSources && !gainedAfterRemoval(effect) &&
-                projectedValues[effect.sourceId]?.lostAllAbilities == true) continue
-            effectApplicator.applyEffect(withKeywordSetResolved(effect), state, projectedValues)
-        }
-        for ((effect, startedBeforeAbility) in deferredCantAttack) {
-            effectApplicator.applyEffect(withKeywordSetResolved(effect), state, projectedValues,
-                restrictionSurvivesSourceAbilityRemoval = startedBeforeAbility)
-        }
-
         // Rule 122.1b: re-apply keyword counters after Layer 6.
         // Counters that grant a keyword are themselves abilities of the object. When a "loses
         // all abilities" effect (Layer 6) was applied above, those counter-granted keywords
@@ -504,6 +487,35 @@ class StateProjector {
 
         // Apply counters (layer 7d)
         effectApplicator.applyCounters(state, projectedValues)
+
+        // The deferred "can't block" / "can't attack" restrictions affect game rules, so they apply
+        // after all other continuous effects (CR 613.11) — once every characteristic is settled, P/T
+        // included — and their groups are re-resolved here: Temur Charm's
+        // "creatures with power 3 or less can't block this turn" and Rumbling Ruin's frozen count
+        // keep tracking power as counters and pumps change it. A locked CR 613.6 group keeps its
+        // frozen set.
+        //
+        // A static ability's effect exists only while its source has the ability (CR 604.2): a
+        // Craven Giant that lost all abilities can block, and so can a creature whose "can't
+        // block" came from an enchantment that lost its abilities (likewise a Zilortha that lost
+        // its abilities no longer judges lethal damage by power). A restriction created by a
+        // resolved spell or ability is independent of anyone's abilities (CR 611.2a), as is one
+        // belonging to an effect that started applying before Layer 6 (CR 613.6).
+        fun withFinalSetResolved(effect: ContinuousEffect): ContinuousEffect {
+            val filter = effect.affectsFilter ?: return effect
+            return effect.copy(affectedEntities = lockAffected(effect,
+                filterResolver.resolveAffectedEntities(state, effect.sourceId, filter, projectedValues, effect.controllerId)))
+        }
+        for ((effect, startedBeforeAbility) in deferredCantBlock) {
+            if (effect.fromStaticAbility && !startedBeforeAbility &&
+                effect.sourceId !in staticRemoveAllAbilitiesSources && !gainedAfterRemoval(effect) &&
+                projectedValues[effect.sourceId]?.lostAllAbilities == true) continue
+            effectApplicator.applyEffect(withFinalSetResolved(effect), state, projectedValues)
+        }
+        for ((effect, startedBeforeAbility) in deferredCantAttack) {
+            effectApplicator.applyEffect(withFinalSetResolved(effect), state, projectedValues,
+                restrictionSurvivesSourceAbilityRemoval = startedBeforeAbility)
+        }
 
         // Post-layer pass: grant CANT_BE_BLOCKED to creatures qualifying via
         // CantBeBlockedWhilePropertyAtMost (Tetsuko Umezawa, Fugitive; Stature, Size Shifter).

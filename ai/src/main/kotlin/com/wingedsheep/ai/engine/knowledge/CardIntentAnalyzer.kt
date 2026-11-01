@@ -703,6 +703,9 @@ object CardIntentAnalyzer {
 
         is GrantKeywordEffect -> keywordTags(effect.keyword)
         is GrantEvasionKeywordEffect -> setOf(IntentTag.EVASION_GRANT)
+        // "Creatures your opponents control can't block this turn" / "creatures you control can't be
+        // blocked this turn": a turn of team-wide evasion, the same alpha-strike payoff.
+        is CantBlockGroupEffect, is CantBeBlockedGroupEffect -> setOf(IntentTag.EVASION_GRANT)
 
         is GatherCardsEffect ->
             if ((effect.source as? CardSource.FromZone)?.zone == Zone.LIBRARY) setOf(IntentTag.TUTOR)

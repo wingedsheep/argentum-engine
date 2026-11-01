@@ -80,7 +80,7 @@ class MustAttackGroupEffectTest : FunSpec({
     }
 
     fun GameTestDriver.applyKardur(controller: EntityId) {
-        val result = MustAttackGroupExecutor().execute(state, kardurEffect, EffectContext(sourceId = null, controllerId = controller))
+        val result = MustAttackGroupExecutor(PredicateEvaluator(cardRegistry = null).amounts).execute(state, kardurEffect, EffectContext(sourceId = null, controllerId = controller))
         replaceState(result.state)
     }
 
