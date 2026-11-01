@@ -4278,6 +4278,99 @@
     }
 }
 
+// Gatebreaker Ram
+{
+    "name": "Gatebreaker Ram",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Sheep",
+    "oracleText": "This creature gets +1/+1 for each Gate you control.\nAs long as you control two or more Gates, this creature has vigilance and trample.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent Gate ctrl:you"
+                },
+                "toughnessBonus": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent Gate ctrl:you"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "VIGILANCE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "permanent Gate ctrl:you"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "permanent Gate ctrl:you"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "126",
+        "rarity": "UNCOMMON",
+        "artist": "Even Amundsen",
+        "flavorText": "So-called \"battering rams\" pale in comparison to the real thing.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/e/5ef592d1-e5e1-4252-8741-402c32d65dfd.jpg?1783933671"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Gates Ablaze
 {
     "name": "Gates Ablaze",
@@ -4742,6 +4835,231 @@
     },
     "colorIdentityOverride": [
         "BLUE",
+        "GREEN"
+    ]
+}
+
+// Growth-Chamber Guardian
+{
+    "name": "Growth-Chamber Guardian",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Elf Crab Warrior",
+    "oracleText": "{2}{G}: Adapt 2. (If this creature has no +1/+1 counters on it, put two +1/+1 counters on it.)\nWhenever one or more +1/+1 counters are put on this creature, you may search your library for a card named Growth-Chamber Guardian, reveal it, put it into your hand, then shuffle.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Growth-Chamber Guardian:2",
+                "trigger": {
+                    "type": "CountersPlacedEvent",
+                    "counterType": "PLUS_ONE_PLUS_ONE"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "name:Growth-Chamber Guardian"
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a card named Growth-Chamber Guardian to put into your hand",
+                                "selectedLabel": "Put into your hand"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                },
+                                "revealed": true
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever one or more +1/+1 counters are put on this creature, you may search your library for a card named Growth-Chamber Guardian, reveal it, put it into your hand, then shuffle."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Growth-Chamber Guardian:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Adapt",
+                    "amount": 2
+                },
+                "descriptionOverride": "{2}{G}: Adapt 2."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "128",
+        "rarity": "RARE",
+        "artist": "Bram Sels",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0f97cdf4-231d-4bd0-af5e-bcb64ce1556c.jpg?1783933671",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "An ability that triggers when counters are put on a permanent will trigger if that permanent somehow enters the battlefield with those counters."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "You can always activate an ability that will cause a creature to adapt. As that ability resolves, if the creature has a +1/+1 counter on it for any reason, you simply won't put any +1/+1 counters on it."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If a creature somehow loses all of its +1/+1 counters, it can adapt again and get more +1/+1 counters."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Gruul Beastmaster
+{
+    "name": "Gruul Beastmaster",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "Riot (This creature enters with your choice of a +1/+1 counter or haste.)\nWhenever this creature attacks, another target creature you control gets +X/+0 until end of turn, where X is this creature's power.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "RIOT"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gruul Beastmaster:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "IfPositive",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": "Self",
+                            "numericProperty": "Power"
+                        }
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "haste"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "modeOptions": [
+                    {
+                        "id": "counter",
+                        "label": "A +1/+1 counter",
+                        "iconKey": "plusOneCounter"
+                    },
+                    {
+                        "id": "haste",
+                        "label": "Haste",
+                        "iconKey": "haste"
+                    }
+                ]
+            },
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "counter"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "129",
+        "rarity": "UNCOMMON",
+        "artist": "Kimonas Theodossiou",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2b0aaded-515f-4ac9-a72f-6948b4d4df51.jpg?1783933671",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "The value of X is determined only as Gruul Beastmaster's triggered ability resolves. Once that happens, the value of X won't change later in the turn even if Gruul Beastmaster's power changes."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If Gruul Beastmaster leaves the battlefield before its triggered ability resolves, use its power as it last existed on the battlefield to determine the value of X."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If Gruul Beastmaster's power is negative as its triggered ability resolves, X is considered to be 0. In other words, that ability can't cause the creature to lose power."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
         "GREEN"
     ]
 }
@@ -5313,6 +5631,117 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Immolation Shaman
+{
+    "name": "Immolation Shaman",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Lizard Shaman",
+    "oracleText": "Whenever an opponent activates an ability of an artifact, creature, or land that isn't a mana ability, this creature deals 1 damage to that player.\n{3}{R}{R}: This creature gets +3/+3 and gains menace until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Immolation Shaman:1",
+                "trigger": {
+                    "type": "AbilityActivatedEvent",
+                    "player": "EachOpponent",
+                    "sourceFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsArtifact",
+                                            "IsCreature"
+                                        ]
+                                    },
+                                    "IsLand"
+                                ]
+                            }
+                        ],
+                        "statePredicates": [
+                            "IsOnBattlefield"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "descriptionOverride": "Whenever an opponent activates an ability of an artifact, creature, or land that isn't a mana ability, this creature deals 1 damage to that player."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Immolation Shaman:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{R}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "MENACE",
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{3}{R}{R}: This creature gets +3/+3 and gains menace until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"Hello, kindling.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/45e668e5-ef50-43eb-852e-b111370459c8.jpg?1783933678",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "Immolation Shaman's first ability doesn't trigger when an opponent activates an ability of a card in hand (such as cycling) or a card in a graveyard (such as that of Bone Dragon), even if that causes a card to be put onto the battlefield."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "Activating Immolation Shaman's second ability after one creature has blocked it won't cause Immolation Shaman to become unblocked."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -6221,6 +6650,84 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Open the Gates
+{
+    "name": "Open the Gates",
+    "manaCost": "{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for a basic land card or Gate card, reveal it, put it into your hand, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "Or",
+                                    "predicates": [
+                                        "IsBasicLand",
+                                        {
+                                            "type": "And",
+                                            "predicates": [
+                                                "IsLand",
+                                                {
+                                                    "type": "HasSubtype",
+                                                    "subtype": "Gate"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "storeAs": "searchable",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "found",
+                    "prompt": "Search your library for a basic land or land Gate card to put into your hand",
+                    "selectedLabel": "Put into your hand"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "revealed": true
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "artist": "John Thacker",
+        "flavorText": "\"If you don't have a destination in mind, the route is all that matters.\"\n—Tamina, district guide",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff326c57-accb-4b75-9bc9-b5ef1a85f38d.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -7427,6 +7934,87 @@
     ]
 }
 
+// Rampage of the Clans
+{
+    "name": "Rampage of the Clans",
+    "manaCost": "{3}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy all artifacts and enchantments. For each permanent destroyed this way, its controller creates a 3/3 green Centaur creature token.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "artifact|enchantment"
+                            },
+                            "storeAs": "destroyAll_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "destroyAll_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy",
+                            "storeMovedAs": "stored0"
+                        }
+                    ]
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Collection",
+                        "collection": "stored0"
+                    },
+                    "body": {
+                        "type": "CreateToken",
+                        "power": 3,
+                        "toughness": 3,
+                        "colors": [
+                            "GREEN"
+                        ],
+                        "creatureTypes": [
+                            "Centaur"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5fc993a7-a1ce-4403-a0a0-2afc9f9eca42.jpg?1783933603",
+                        "controller": {
+                            "type": "PlayerRef",
+                            "player": "ControllerOfIterationEntity"
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "134",
+        "rarity": "RARE",
+        "artist": "Sidharth Chaturvedi",
+        "flavorText": "\"Rage! Rage until the whole world burns!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/28ebab7d-d03d-4473-aa9b-485aebb66433.jpg?1786206963",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "All of the artifacts and enchantments that are destroyed leave the battlefield before any Centaurs are created, and their abilities can't affect or trigger on these tokens entering the battlefield."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If a permanent has indestructible, it isn't destroyed this way and its controller won't create a Centaur token for it. If it is destroyed but put into a zone other than a graveyard, its controller does create a Centaur token for it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Rampaging Rendhorn
 {
     "name": "Rampaging Rendhorn",
@@ -7491,6 +8079,49 @@
         "artist": "Ben Wootten",
         "flavorText": "Tumult is its natural habitat.",
         "imageUri": "https://cards.scryfall.io/normal/front/1/2/12c1b820-0f06-41f6-804f-5c98f60c1529.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Regenesis
+{
+    "name": "Regenesis",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Return up to two target permanent cards from your graveyard to your hand.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                },
+                "destination": "Hand"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "permanent own:you",
+                    "zone": "Graveyard"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "rarity": "UNCOMMON",
+        "artist": "James Paick",
+        "flavorText": "\"When you get right down to it, the difference between death and life is just a membrane-enclosed environment maintained by a metabolic process.\"\n—Gulistan, Simic biomancer",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/8/18a362c1-af92-4094-a7c2-f09952767606.jpg"
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -7631,6 +8262,136 @@
     ]
 }
 
+// Rix Maadi Reveler
+{
+    "name": "Rix Maadi Reveler",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "Spectacle {2}{B}{R} (You may cast this spell for its spectacle cost rather than its mana cost if an opponent lost life this turn.)\nWhen this creature enters, discard a card, then draw a card. If this creature's spectacle cost was paid, instead discard your hand, then draw three cards.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rix Maadi Reveler:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "CastChoiceMade",
+                            "slot": "SELF_ALTERNATIVE_COST_PAID"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "discardedHand"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discardedHand",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            }
+                        ]
+                    },
+                    "otherwise": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "discarded",
+                                "prompt": "Choose 1 card to discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "selfAlternativeCost": {
+            "manaCost": "{2}{B}{R}",
+            "condition": {
+                "type": "Compare",
+                "left": {
+                    "type": "TurnTracking",
+                    "player": "EachOpponent",
+                    "tracker": "LIFE_LOST"
+                },
+                "operator": "GTE",
+                "right": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "rarity": "RARE",
+        "artist": "Sara Winters",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c40396da-18e2-42ca-a78c-4838a38f68b8.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Rubble Reading
 {
     "name": "Rubble Reading",
@@ -7765,6 +8526,65 @@
     ]
 }
 
+// Sagittars' Volley
+{
+    "name": "Sagittars' Volley",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target creature with flying. Sagittars' Volley deals 1 damage to each creature with flying your opponents control.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature kw:flying ctrl:opponent"
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature kw:flying"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "\"My bowstring hums in tune with the song of the Worldsoul.\"\n—Alcarus, Selesnya sagittar",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/3/d3104cad-e684-4bd7-b26b-5aa862f7a2b3.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Saruli Caretaker
 {
     "name": "Saruli Caretaker",
@@ -7806,6 +8626,46 @@
         "artist": "Howard Lyon",
         "flavorText": "\"I hold the seed of our new beginning.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/e/f/ef3358cb-714c-49bf-b7e9-a69d02d7799e.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Sauroform Hybrid
+{
+    "name": "Sauroform Hybrid",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Human Lizard Warrior",
+    "oracleText": "{4}{G}{G}: Adapt 4. (If this creature has no +1/+1 counters on it, put four +1/+1 counters on it.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Sauroform Hybrid:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{G}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Adapt",
+                    "amount": 4
+                },
+                "descriptionOverride": "{4}{G}{G}: Adapt 4."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "140",
+        "artist": "Nils Hamm",
+        "flavorText": "\"Within each of us, the potential for great power waits to be released.\"\n—Zija, Simic mutationist",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/f/2f7ecad5-8bb5-416f-b8ef-a04aba4dc4b5.jpg?1783933664"
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -8383,6 +9243,98 @@
     ]
 }
 
+// Silhana Wayfinder
+{
+    "name": "Silhana Wayfinder",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Elf Scout",
+    "oracleText": "When this creature enters, look at the top four cards of your library. You may reveal a creature or land card from among them and put it on top of your library. Put the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Silhana Wayfinder:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "creature|land",
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "You may reveal a creature or land card to put on top of your library",
+                            "selectedLabel": "Put on top of library",
+                            "remainderLabel": "Put on the bottom in a random order",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "selected1",
+                            "revealToSelf": false
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Top"
+                            },
+                            "order": "ControllerChooses"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "rarity": "UNCOMMON",
+        "artist": "Suzanne Helmigh",
+        "flavorText": "\"Stay close! It's just a little farther.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/a/ea6cd6a5-da6c-483c-a9f7-49e666ac0b6c.jpg?1783933664"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Simic Locket
 {
     "name": "Simic Locket",
@@ -8449,6 +9401,118 @@
     ]
 }
 
+// Skarrgan Hellkite
+{
+    "name": "Skarrgan Hellkite",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Riot (This creature enters with your choice of a +1/+1 counter or haste.)\nFlying\n{3}{R}: This creature deals 2 damage divided as you choose among one or two targets. Activate only if this creature has a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "RIOT",
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Skarrgan Hellkite:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "DividedDamage",
+                    "totalDamage": 2,
+                    "maxTargets": 2
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "count": 2,
+                        "minCount": 1
+                    }
+                ],
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "HasCounter",
+                                        "counterType": "PLUS_ONE_PLUS_ONE"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "haste"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "modeOptions": [
+                    {
+                        "id": "counter",
+                        "label": "A +1/+1 counter",
+                        "iconKey": "plusOneCounter"
+                    },
+                    {
+                        "id": "haste",
+                        "label": "Haste",
+                        "iconKey": "haste"
+                    }
+                ]
+            },
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "counter"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "rarity": "MYTHIC",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/e/be941a2e-4eb0-45b3-9da0-834053907a65.jpg?1783933678"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Skatewing Spy
 {
     "name": "Skatewing Spy",
@@ -8505,6 +9569,84 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Skewer the Critics
+{
+    "name": "Skewer the Critics",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Spectacle {R} (You may cast this spell for its spectacle cost rather than its mana cost if an opponent lost life this turn.)\nSkewer the Critics deals 3 damage to any target.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 3
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ],
+        "selfAlternativeCost": {
+            "manaCost": "{R}",
+            "condition": {
+                "type": "Compare",
+                "left": {
+                    "type": "TurnTracking",
+                    "player": "EachOpponent",
+                    "tracker": "LIFE_LOST"
+                },
+                "operator": "GTE",
+                "right": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "115",
+        "artist": "Heonhwa",
+        "flavorText": "Going to a Rakdos show is dangerous. Trying to leave early can be fatal.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/97295660-6bea-46ae-9a3b-0fc6abba407f.jpg?1783933675",
+        "rulings": [
+            {
+                "date": "2024-01-12",
+                "text": "Damage dealt to a player causes that player to lose that much life."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "Spectacle cares only that an opponent lost life during the turn, not that the opponent's life total is currently lower than it was. For example, if an opponent loses 1 life and then gains 2 life in the same turn, you can cast a spell for its spectacle cost that turn."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "Spectacle doesn't change when you can cast the spell. For example, you can't cast a sorcery with spectacle during an opponent's turn unless another effect allows you to do so, even if that player has lost life this turn."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying (such as a spectacle cost), add any cost increases, then apply any cost reductions. The mana value of the spell remains unchanged, no matter what the total cost to cast it was."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "A card's spectacle cost is the same no matter how much life your opponents lost or how many opponents lost life."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "In a multiplayer game, if an opponent loses life and later that turn leaves the game, you can cast a spell for its spectacle cost. (If a player leaves the game during their turn, that turn continues without an active player.)"
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -8636,6 +9778,87 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Smelt-Ward Ignus
+{
+    "name": "Smelt-Ward Ignus",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "{2}{R}, Sacrifice this creature: Gain control of target creature with power 3 or less until end of turn. Untap that creature. It gains haste until end of turn. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Smelt-Ward Ignus:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{R}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainControl",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "EndOfTurn"
+                        },
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "tap": false
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "HASTE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature pow<=3"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "116",
+        "rarity": "UNCOMMON",
+        "artist": "Jehan Choo",
+        "flavorText": "\"Come in, yes? Is warm!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/f/4f24b2b6-b994-455f-b8e6-aa73e1be81b4.jpg?1783933675"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -8905,6 +10128,45 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Spikewheel Acrobat
+{
+    "name": "Spikewheel Acrobat",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "Spectacle {2}{R} (You may cast this spell for its spectacle cost rather than its mana cost if an opponent lost life this turn.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 2
+    },
+    "script": {
+        "selfAlternativeCost": {
+            "manaCost": "{2}{R}",
+            "condition": {
+                "type": "Compare",
+                "left": {
+                    "type": "TurnTracking",
+                    "player": "EachOpponent",
+                    "tracker": "LIFE_LOST"
+                },
+                "operator": "GTE",
+                "right": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "118",
+        "artist": "Deruchenko Alexander",
+        "flavorText": "Every street's a stage, and every screaming bystander's an audience.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/58f70b8a-62ec-4ae6-97d2-3c6ae86a3602.jpg?1783933675"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
