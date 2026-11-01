@@ -1512,6 +1512,74 @@
     ]
 }
 
+// Bolrac-Clan Crusher
+{
+    "name": "Bolrac-Clan Crusher",
+    "manaCost": "{3}{R}{G}",
+    "typeLine": "Creature — Ogre Warrior",
+    "oracleText": "{T}, Remove a +1/+1 counter from a creature you control: This creature deals 2 damage to any target.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Bolrac-Clan Crusher:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "filter": "creature ctrl:you"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "This creature deals 2 damage to any target."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "rarity": "UNCOMMON",
+        "artist": "Craig J Spearing",
+        "flavorText": "Jaharg discovered that the shapes and symmetries so pleasing to the sculptor's eye also yielded a well-balanced bludgeon.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/5080975e-693a-44f5-a718-9ee947dada6d.jpg?1783933657",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "You must remove exactly one +1/+1 counter from a creature you control to activate Bolrac-Clan Crusher's ability; you can't activate it without removing a +1/+1 counter, and you can't remove additional counters."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Bring to Trial
 {
     "name": "Bring to Trial",
@@ -2223,6 +2291,117 @@
     ]
 }
 
+// Cindervines
+{
+    "name": "Cindervines",
+    "manaCost": "{R}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever an opponent casts a noncreature spell, this enchantment deals 1 damage to that player.\n{1}, Sacrifice this enchantment: Destroy target artifact or enchantment. This enchantment deals 2 damage to that permanent's controller.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cindervines:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    },
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "descriptionOverride": "Whenever an opponent casts a noncreature spell, Cindervines deals 1 damage to that player."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Cindervines:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": "TargetController"
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact|enchantment"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Destroy target artifact or enchantment. Cindervines deals 2 damage to that permanent's controller."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "161",
+        "rarity": "RARE",
+        "artist": "Mark Behm",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9f970f79-3051-4ba1-badb-697ef321cbb3.jpg?1783933655",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "Cindervines's triggered ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If the target permanent is an illegal target by the time Cindervines's activated ability tries to resolve, the ability doesn't resolve. No player is dealt damage. If the target is legal but not destroyed (most likely because it has indestructible), its controller is dealt damage."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "Cindervines can be the target of its own activated ability. The ability won't resolve since it won't have a legal target, and no player will be dealt damage, but this does allow you to sacrifice Cindervines without anything else to target if you want to."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Civic Stalwart
 {
     "name": "Civic Stalwart",
@@ -2364,6 +2543,110 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Clan Guildmage
+{
+    "name": "Clan Guildmage",
+    "manaCost": "{R}{G}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "{1}{R}, {T}: Target creature can't block this turn.\n{2}{G}, {T}: Target land you control becomes a 4/4 Elemental creature with haste until end of turn. It's still a land.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Clan Guildmage:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{R}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "CantBlockTargetCreatures",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            },
+            {
+                "id": "Clan Guildmage:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{G}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "keywords": [
+                        "HASTE"
+                    ],
+                    "creatureTypes": [
+                        "Elemental"
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "land ctrl:you"
+                        },
+                        "id": "t1"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "UNCOMMON",
+        "artist": "Tomasz Jedruszek",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/4/34a18415-015c-4d3f-8042-b156a673e125.jpg?1783933655"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
     ]
 }
 
@@ -2709,6 +2992,108 @@
         }
     ],
     "hasNoManaCost": true
+}
+
+// Combine Guildmage
+{
+    "name": "Combine Guildmage",
+    "manaCost": "{G}{U}",
+    "typeLine": "Creature — Merfolk Wizard",
+    "oracleText": "{1}{G}, {T}: This turn, each creature you control enters with an additional +1/+1 counter on it.\n{1}{U}, {T}: Move a +1/+1 counter from target creature you control onto another target creature you control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Combine Guildmage:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{G}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "GrantReplacementEffect",
+                    "replacement": {
+                        "type": "EntersWithCounters",
+                        "count": 1
+                    }
+                },
+                "descriptionOverride": "This turn, each creature you control enters with an additional +1/+1 counter on it."
+            },
+            {
+                "id": "Combine Guildmage:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{U}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "source": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    },
+                    {
+                        "type": "TargetOther",
+                        "baseRequirement": {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        "id": "t1",
+                        "excludeSource": false
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "163",
+        "rarity": "UNCOMMON",
+        "artist": "Yeong-Hao Han",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3a6e2816-d50b-41a5-b503-faa58dc7c94a.jpg?1783933655"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
 }
 
 // Consecrate // Consume
@@ -3475,6 +3860,136 @@
     "hasNoManaCost": true
 }
 
+// Deputy of Detention
+{
+    "name": "Deputy of Detention",
+    "manaCost": "{1}{W}{U}",
+    "typeLine": "Creature — Vedalken Wizard",
+    "oracleText": "When this creature enters, exile target nonland permanent an opponent controls and all other nonland permanents that player controls with the same name as that permanent until this creature leaves the battlefield.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Deputy of Detention:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": {
+                                "statePredicates": [
+                                    "IsFaceUp"
+                                ]
+                            },
+                            "storeMatching": "matching1"
+                        },
+                        {
+                            "type": "StoreCardName",
+                            "from": "matching1",
+                            "storeAs": "cardName2"
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsNonland",
+                                        "IsPermanent",
+                                        {
+                                            "type": "NameEqualsChosen",
+                                            "variableName": "cardName2"
+                                        }
+                                    ]
+                                },
+                                "player": {
+                                    "type": "ControllerOf",
+                                    "targetDescription": "target nonland permanent"
+                                },
+                                "excludeChosenTargets": true
+                            },
+                            "storeAs": "gathered3"
+                        },
+                        {
+                            "type": "MoveUntilSourceLeaves",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "gathered3"
+                            },
+                            "body": {
+                                "type": "MoveUntilSourceLeaves",
+                                "target": "IterationEntity",
+                                "destination": "Exile"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "nonland permanent ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, exile target nonland permanent an opponent controls and all other nonland permanents that player controls with the same name as that permanent until this creature leaves the battlefield."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "165",
+        "rarity": "RARE",
+        "artist": "G-host Lee",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7e362055-78a1-48fa-a4ef-6cf7e0b21b14.jpg?1783933654",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "If the target nonland permanent is an illegal target by the time this ability tries to resolve, the ability doesn't resolve. Nothing is exiled."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If Deputy of Detention leaves the battlefield before its triggered ability resolves, nothing is exiled."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "This ability has only one target. The other permanents with that name aren't targeted. For example, a permanent with hexproof will be exiled if it has the same name as the target nonland permanent."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If a token is exiled this way, it will cease to exist and won't return to the battlefield."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "A face-down creature has no name, so it can't share a name with anything. This includes other creatures with no name."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Domri, Chaos Bringer
 {
     "name": "Domri, Chaos Bringer",
@@ -3649,6 +4164,83 @@
     ]
 }
 
+// Dovin's Acuity
+{
+    "name": "Dovin's Acuity",
+    "manaCost": "{1}{W}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, you gain 2 life and draw a card.\nWhenever you cast an instant spell during your main phase, you may return this enchantment to its owner's hand.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dovin's Acuity:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Dovin's Acuity:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsInstant"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Hand"
+                    }
+                },
+                "triggerRestriction": {
+                    "type": "IsInPhase",
+                    "phases": [
+                        "PRECOMBAT_MAIN",
+                        "POSTCOMBAT_MAIN"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "168",
+        "rarity": "UNCOMMON",
+        "artist": "Bastien L. Deharme",
+        "flavorText": "Dovin ticked the Planeswalkers off on his fingers: himself, Domri, Kaya, Ral, Vraska . . . and Bolas made an even six.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/b/0b191592-7221-422a-8b5a-65f7b1caec1a.jpg?1783933652"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Dovin's Automaton
 {
     "name": "Dovin's Automaton",
@@ -3706,6 +4298,162 @@
         "imageUri": "https://cards.scryfall.io/normal/front/0/a/0a962509-2e77-4655-b397-9625b2f3407a.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Dovin, Grand Arbiter
+{
+    "name": "Dovin, Grand Arbiter",
+    "manaCost": "{1}{W}{U}",
+    "typeLine": "Legendary Planeswalker — Dovin",
+    "oracleText": "+1: Until end of turn, whenever a creature you control deals combat damage to a player, put a loyalty counter on Dovin.\n−1: Create a 1/1 colorless Thopter artifact creature token with flying. You gain 1 life.\n−7: Look at the top ten cards of your library. Put three of them into your hand and the rest on the bottom of your library in a random order.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Dovin, Grand Arbiter:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "AddCounters",
+                        "counterType": "LOYALTY",
+                        "count": 1,
+                        "target": "Self"
+                    },
+                    "trigger": {
+                        "event": {
+                            "type": "DealsDamageEvent",
+                            "damageType": "DamageCombat",
+                            "recipient": {
+                                "type": "RecipientPlayer",
+                                "player": "Any"
+                            },
+                            "sourceFilter": "creature ctrl:you"
+                        },
+                        "binding": "ANY"
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Dovin, Grand Arbiter:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [],
+                            "creatureTypes": [
+                                "Thopter"
+                            ],
+                            "keywords": [
+                                "FLYING"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/8/d/8dd768c3-f278-41f8-b329-8403391d6326.jpg?1783933601",
+                            "artifactToken": true
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Dovin, Grand Arbiter:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 10
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "selectedLabel": "Put in hand",
+                            "remainderLabel": "Put on bottom"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "167",
+        "rarity": "MYTHIC",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e6784910-0204-4a39-bb38-50daa03e94c2.jpg?1783933653",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "The delayed triggered ability created by Dovin's first ability triggers for each creature you control that deals combat damage to a player this turn. Dovin gets only one loyalty counter as each ability resolves, no matter how much damage was dealt."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If you have fewer than ten cards in your library as Dovin's last ability resolves, look at however many cards you have, put three of them into your hand (or all of them if you have fewer than three cards in your library), and then put the rest back in a random order."
+            }
+        ]
+    },
+    "startingLoyalty": 3,
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
 }
 
 // Drill Bit
@@ -3970,6 +4718,146 @@
     ]
 }
 
+// Emergency Powers
+{
+    "name": "Emergency Powers",
+    "manaCost": "{5}{W}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Each player shuffles their hand and graveyard into their library, then draws seven cards. Exile Emergency Powers.\nAddendum — If you cast this spell during your main phase, you may put a permanent card with mana value 7 or less from your hand onto the battlefield.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromMultipleZones",
+                                    "zones": [
+                                        "Hand",
+                                        "Graveyard"
+                                    ]
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Library",
+                                    "placement": "Shuffled"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 7
+                        }
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "All",
+                            "conditions": [
+                                "WasCast",
+                                {
+                                    "type": "IsInPhase",
+                                    "phases": [
+                                        "PRECOMBAT_MAIN",
+                                        "POSTCOMBAT_MAIN"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "filter": "permanent mv<=7"
+                                },
+                                "storeAs": "put_candidates"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "put_candidates",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "putting",
+                                "prompt": "You may put a permanent card with mana value 7 or less from your hand onto the battlefield"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "putting",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "169",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rallis",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/6473a93f-879f-4f44-8650-ee05a647c763.jpg?1783933652",
+        "rulings": [
+            {
+                "date": "2024-01-12",
+                "text": "Addendum abilities of instant spells apply while the spell is resolving, not immediately after casting it. If the spell is countered, you don't get the addendum bonus."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "If an effect copies a spell with an addendum ability while it's on the stack, the copy wasn't cast at all, so you won't get the addendum bonus."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If a card in your hand has {X} in its mana cost, X is considered to be 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // End-Raze Forerunners
 {
     "name": "End-Raze Forerunners",
@@ -4133,6 +5021,104 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Ethereal Absolution
+{
+    "name": "Ethereal Absolution",
+    "manaCost": "{4}{W}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Creatures you control get +1/+1.\nCreatures your opponents control get -1/-1.\n{2}{W}{B}: Exile target card from an opponent's graveyard. If it was a creature card, you create a 1/1 white and black Spirit creature token with flying.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ethereal Absolution:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{W}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": "TargetIsCreatureCard"
+                            },
+                            "then": {
+                                "type": "CreateToken",
+                                "power": 1,
+                                "toughness": 1,
+                                "colors": [
+                                    "WHITE",
+                                    "BLACK"
+                                ],
+                                "creatureTypes": [
+                                    "Spirit"
+                                ],
+                                "keywords": [
+                                    "FLYING"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/4/5/45b3bdd7-b093-4bfd-8a9a-965e72bfefb3.jpg?1783933602"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "own:opponent",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{2}{W}{B}: Exile target card from an opponent's graveyard. If it was a creature card, you create a 1/1 white and black Spirit creature token with flying."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            {
+                "type": "ModifyStats",
+                "powerBonus": -1,
+                "toughnessBonus": -1,
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "170",
+        "rarity": "RARE",
+        "artist": "Eric Deschamps",
+        "flavorText": "\"Time to let the dead be dead.\"\n—Kaya, to Teysa",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/0872d0ff-1060-44cc-9ed0-a6aa496440c8.jpg?1783933652"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
     ]
 }
 
@@ -4334,6 +5320,158 @@
         "imageUri": "https://cards.scryfall.io/normal/front/3/c/3c969aa0-b0e5-42cd-abba-0a3c7266142c.jpg?1783933682"
     },
     "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Final Payment
+{
+    "name": "Final Payment",
+    "manaCost": "{W}{B}",
+    "typeLine": "Instant",
+    "oracleText": "As an additional cost to cast this spell, pay 5 life or sacrifice a creature or enchantment.\nDestroy target creature.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "ChoiceCost",
+                "options": [
+                    {
+                        "type": "AdditionalAtom",
+                        "atom": {
+                            "type": "AtomPayLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 5
+                            }
+                        }
+                    },
+                    {
+                        "type": "AdditionalAtom",
+                        "atom": {
+                            "type": "AtomSacrifice",
+                            "filter": "creature|enchantment"
+                        }
+                    }
+                ],
+                "choiceSlot": "ADDITIONAL_COST_BRANCH"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "171",
+        "artist": "Victor Adame Minguez",
+        "flavorText": "There's nothing quite like the feeling of paying off a large debt.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/49a21a8f-9c7b-4ae8-8635-f2ee2151c8de.jpg?1783933651"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
+// Fireblade Artist
+{
+    "name": "Fireblade Artist",
+    "manaCost": "{B}{R}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "Haste\nAt the beginning of your upkeep, you may sacrifice a creature. When you do, this creature deals 2 damage to target opponent or planeswalker.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fireblade Artist:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SelectTarget",
+                                "requirement": {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "storeAs": "target0",
+                                "nonTargeting": true,
+                                "prompt": "Choose a creature to sacrifice"
+                            },
+                            {
+                                "type": "SacrificeTarget",
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "target0"
+                                }
+                            }
+                        ]
+                    },
+                    "reflexiveEffect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetOpponentOrPlaneswalker",
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "You may sacrifice a creature. When you do, this creature deals 2 damage to target opponent or planeswalker."
+                },
+                "descriptionOverride": "At the beginning of your upkeep, you may sacrifice a creature. When you do, this creature deals 2 damage to target opponent or planeswalker."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "172",
+        "artist": "Steve Argyle",
+        "flavorText": "\"Let's find out what kind of audience you are. Festive? Fearless?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/21e1161f-bd2c-45a7-a86b-3b2e5210f148.jpg?1783933650",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "Fireblade Artist's triggered ability goes on the stack without a target. While that ability is resolving, you may sacrifice a creature. When you do, the reflexive triggered ability triggers and you pick a target opponent or planeswalker to be dealt damage. This is different from effects that say \"If you do . . .\" in that players may take actions after you've sacrificed the creature but before damage is dealt."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
         "RED"
     ]
 }
@@ -5198,6 +6336,39 @@
     ]
 }
 
+// Glass of the Guildpact
+{
+    "name": "Glass of the Guildpact",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "Multicolored creatures you control get +1/+1.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsMulticolored"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "233",
+        "rarity": "RARE",
+        "artist": "Dimitar Marinski",
+        "flavorText": "\"Counterbalanced forces sustain this city. No faction above others. A beautiful idea.\"\n—Emmara",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d1022d41-c1d0-42bf-b3e5-d6fb02d47119.jpg?1783933624"
+    }
+}
+
 // Goblin Gathering
 {
     "name": "Goblin Gathering",
@@ -5746,6 +6917,96 @@
     ]
 }
 
+// Gruul Spellbreaker
+{
+    "name": "Gruul Spellbreaker",
+    "manaCost": "{1}{R}{G}",
+    "typeLine": "Creature — Ogre Warrior",
+    "oracleText": "Riot (This creature enters with your choice of a +1/+1 counter or haste.)\nTrample\nDuring your turn, you and this creature have hexproof.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "RIOT",
+        "TRAMPLE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "haste"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": "GrantHexproofToController",
+                "condition": "IsYourTurn"
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "HEXPROOF",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "IsYourTurn"
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "modeOptions": [
+                    {
+                        "id": "counter",
+                        "label": "A +1/+1 counter",
+                        "iconKey": "plusOneCounter"
+                    },
+                    {
+                        "id": "haste",
+                        "label": "Haste",
+                        "iconKey": "haste"
+                    }
+                ]
+            },
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "counter"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "179",
+        "rarity": "RARE",
+        "artist": "Zoltan Boros",
+        "flavorText": "She displays her scars with pride.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/326679a2-782d-45a0-9a06-b147ceff3979.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Guardian Project
 {
     "name": "Guardian Project",
@@ -6008,6 +7269,86 @@
     ]
 }
 
+// Hackrobat
+{
+    "name": "Hackrobat",
+    "manaCost": "{1}{B}{R}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "Spectacle {B}{R} (You may cast this spell for its spectacle cost rather than its mana cost if an opponent lost life this turn.)\n{B}: This creature gains deathtouch until end of turn.\n{R}: This creature gets +2/-2 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Hackrobat:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{B}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "DEATHTOUCH",
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Hackrobat:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{R}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "target": "Self"
+                }
+            }
+        ],
+        "selfAlternativeCost": {
+            "manaCost": "{B}{R}",
+            "condition": {
+                "type": "Compare",
+                "left": {
+                    "type": "TurnTracking",
+                    "player": "EachOpponent",
+                    "tracker": "LIFE_LOST"
+                },
+                "operator": "GTE",
+                "right": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "rarity": "UNCOMMON",
+        "artist": "Simon Dominic",
+        "flavorText": "\"They all want to see me fall.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a41335c2-3d11-4f95-8d9f-66b04398c10b.jpg?1783933647"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Hero of Precinct One
 {
     "name": "Hero of Precinct One",
@@ -6054,6 +7395,76 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// High Alert
+{
+    "name": "High Alert",
+    "manaCost": "{1}{W}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Each creature you control assigns combat damage equal to its toughness rather than its power.\nCreatures you control can attack as though they didn't have defender.\n{2}{W}{U}: Untap target creature.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "High Alert:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{W}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "AssignDamageEqualToToughness",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "onlyWhenToughnessGreaterThanPower": false
+            },
+            {
+                "type": "CanAttackDespiteDefender",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "182",
+        "rarity": "UNCOMMON",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/ce124f6e-ef0c-4d01-a876-e34d3e445108.jpg?1783933647",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "High Alert's first ability doesn't actually change any creature's power. It changes only the amount of combat damage it assigns. All other rules and effects that check power or toughness use the real values. For example, Titanic Brawl won't cause a creature to fight with its toughness under High Alert."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
     ]
 }
 
