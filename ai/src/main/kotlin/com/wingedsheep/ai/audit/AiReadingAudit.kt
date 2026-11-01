@@ -645,10 +645,10 @@ object AiReadingAudit {
 
     /**
      * Whole pipelines that need no intent tag. Milling — the top of a library put into its owner's
-     * graveyard — always lands on a player, like life loss: on an opponent it is a clock the
-     * simulation prices on resolution, on you it is fuel for whatever later reads the graveyard. It
-     * answers nothing on the board and has no window to hold for; which player a targeted mill aims
-     * at is the polarity check's question, not intent's.
+     * graveyard — always lands on a player, like life loss: on an opponent it is a slow clock
+     * (LibraryClock prices it once the library nears empty), on you it is fuel for whatever later
+     * reads the graveyard. It answers nothing on the board and has no window to hold for; which
+     * player a mill aims at is GraveyardSynergy's and the polarity check's question, not intent's.
      */
     private val NO_INTENT_PIPELINES = setOf("Pipeline(TopOfLibrary→graveyard)")
 
