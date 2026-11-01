@@ -21,7 +21,8 @@ import kotlinx.serialization.json.contentOrNull
  * any object filter anywhere in its abilities — the "other Goblins" a lord pumps, the "another Elf
  * you control" a trigger watches, the "Goblin spells" a cost reducer discounts, the "Goblin" a
  * sacrifice cost or a tutor wants. A creature-type predicate under a `Not` ("non-Goblin") doesn't
- * count, nor does one in a filter scoped to an opponent's objects ("Merfolk an opponent controls").
+ * count, nor does one in a filter scoped to an opponent's objects ("Merfolk an opponent controls"),
+ * nor a static that shrinks the type ("all Goblins get -1/-1"), which [SynergyStrength.punished] reads.
  *
  * The filters live anywhere in the ability tree (statics, triggers, costs, effects, targets), so
  * this walks the card's serialized script — the same canonical form `CardValidator` and the card
@@ -62,6 +63,9 @@ internal object CreatureTypeSynergy {
             is JsonObject -> {
                 val type = element.string("type")
                 if (type == "Not") return
+                // "All Goblins get -1/-1" names Goblins to shrink them: it punishes the tribe
+                // ([SynergyStrength.punished]), it doesn't ask for it.
+                if (type == "ModifyStats" && (element.int("powerBonus") ?: 0) + (element.int("toughnessBonus") ?: 0) < 0) return
                 if ((element["controllerPredicate"] as? JsonObject)?.string("type") in OPPONENT_SCOPES) return
                 when (type) {
                     "HasSubtype" -> element.string("subtype")?.let(out::add)
@@ -75,6 +79,8 @@ internal object CreatureTypeSynergy {
     }
 
     private fun JsonObject.string(key: String): String? = (this[key] as? JsonPrimitive)?.contentOrNull
+
+    private fun JsonObject.int(key: String): Int? = string(key)?.toIntOrNull()
 
     private val CREATURE_TYPES: Set<String> = Subtype.ALL_CREATURE_TYPES.toSet()
 

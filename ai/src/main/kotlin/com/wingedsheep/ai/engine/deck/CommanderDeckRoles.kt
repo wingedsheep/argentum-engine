@@ -3,6 +3,7 @@ package com.wingedsheep.ai.engine.deck
 import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
 import com.wingedsheep.ai.engine.knowledge.EffectWalker
 import com.wingedsheep.ai.engine.knowledge.IntentTag
+import com.wingedsheep.ai.engine.knowledge.RemovalBreadth
 import com.wingedsheep.ai.engine.knowledge.SynergyAxes
 import com.wingedsheep.ai.engine.knowledge.SynergyAxis
 import com.wingedsheep.ai.engine.knowledge.SynergyProfile
@@ -31,7 +32,10 @@ internal enum class DeckRole {
     /** Leaves extra mana behind: a mana rock or dork, or a spell that puts a land into play. */
     RAMP,
 
-    /** Answers something the opponents have: removal, a sweeper, a counterspell, a fight. */
+    /**
+     * Answers something the opponents have: removal, a sweeper, a counterspell, a fight — one that
+     * can aim at most of the table, not a hoser ([RemovalBreadth.isNarrow]).
+     */
     REMOVAL,
 
     /** Card advantage: draws two or more at once, or keeps drawing. */
@@ -57,7 +61,11 @@ internal object CommanderDeckRoles {
         return buildSet {
             // A ritual's mana is gone by end of turn; only a permanent's mana, or a land, ramps.
             if ((IntentTag.RAMP in tags && permanent) || landSearch(card) != null) add(DeckRole.RAMP)
-            if (tags.any { it in INTERACTION } && !intent.targetsOnlyOurPermanents) add(DeckRole.REMOVAL)
+            // A hoser — Execute's "white creature", Choking Sands' "non-Swamp land" — answers too
+            // little of what an unknown opponent plays to fill an interaction slot.
+            if (tags.any { it in INTERACTION } && !intent.targetsOnlyOurPermanents && !RemovalBreadth.isNarrow(card)) {
+                add(DeckRole.REMOVAL)
+            }
             if (IntentTag.DRAW in tags && ((intent.cardsDrawn ?: 0) >= 2 || intent.repeatable)) add(DeckRole.DRAW)
         }
     }
@@ -132,7 +140,17 @@ internal class CommanderSynergy(commander: CardDefinition) {
     val namedTribes: Set<Subtype> = Subtype.ALL_CREATURE_TYPES
         .filter { type -> mentions(type) || mentions(pluralNounPhrase(type)) }
         .map { Subtype(it) }
-        .toSet() + SynergyAxes.of(commander).tribesRewarded
+        .toSet() + SynergyAxes.of(commander).tribesRewarded - SynergyAxes.of(commander).punishes.keys
+
+    /** Creature types the commander shrinks ("all Goblins get -1/-1"): their members score below 0. */
+    private val punishedTribes: Set<Subtype> = SynergyAxes.of(commander).punishes.keys
+
+    /**
+     * How much the commander gives back per card that answers it ([SynergyProfile.strength]),
+     * held to [MIN_STRENGTH]–[MAX_STRENGTH] here: a weak lord still names a tribe worth building,
+     * and a strong one shouldn't drown out every off-theme bomb.
+     */
+    private val strength: Double = SynergyAxes.of(commander).strength.coerceIn(MIN_STRENGTH, MAX_STRENGTH)
 
     /** "Elf"/"Elves" as word patterns, compiled once — [score] runs them over the whole pool. */
     private val namedTribePatterns: List<Regex> = namedTribes.flatMap { listOf(it.value, pluralNounPhrase(it.value)) }
@@ -172,12 +190,21 @@ internal class CommanderSynergy(commander: CardDefinition) {
 
     /**
      * How much [card] does what the commander wants — 0 for nothing, roughly 1 per independent
-     * hit, with a creature of a named tribe counting five. Capped by the caller.
+     * hit, with a creature of a named tribe counting five — scaled by the commander's [strength],
+     * so the Goblins beside a +2/+2 lord pull harder than beside a +1/+1 one. [PUNISHED] for a
+     * creature of a type the commander shrinks, which no hit makes up for. Capped by the caller.
      */
     fun score(card: CardDefinition): Double {
-        var score = 0.0
         val changeling = Keyword.CHANGELING in card.keywords
         val tribes = card.typeLine.subtypes
+        if (punishedTribes.isNotEmpty() && card.typeLine.isCreature && (changeling || tribes.any { it in punishedTribes })) {
+            return PUNISHED
+        }
+        return hits(card, changeling, tribes) * strength
+    }
+
+    private fun hits(card: CardDefinition, changeling: Boolean, tribes: Set<Subtype>): Double {
+        var score = 0.0
         val cardText = card.oracleText.lowercase()
         if (namedTribes.isNotEmpty()) {
             when {
@@ -202,6 +229,15 @@ internal class CommanderSynergy(commander: CardDefinition) {
 
 
     private companion object {
+        const val MIN_STRENGTH = 0.5
+        const val MAX_STRENGTH = 1.5
+
+        /**
+         * [score] of a creature the commander shrinks: enough to sink its sampling weight in both
+         * generators' `× (1 + weight × score)` (Commander's weight is 2), never below zero.
+         */
+        const val PUNISHED = -0.4
+
         /** Theme axes one candidate can score on; past two it is already a theme card. */
         const val MAX_THEME_AXES = 2
 

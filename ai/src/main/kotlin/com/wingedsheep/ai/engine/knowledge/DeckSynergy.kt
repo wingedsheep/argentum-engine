@@ -18,6 +18,10 @@ import kotlin.math.min
  * feeds itself: Young Pyromancer's tokens don't count toward its own spells axis, and a second copy
  * of a payoff is a payoff, not fuel.
  *
+ * Shares are counts; what a fed share is *worth* is the payoff's [SynergyProfile.strength] — a fed
+ * +2/+2 lord is worth more than a fed +1/+0 one — and a card that shrinks a creature type
+ * ([SynergyProfile.punishes]) loses for every member of it beside it ([punishment]).
+ *
  * Every number here is a count of cards, never a game simulation. A limited deck's creatures already
  * feed "whenever another creature enters" whatever is drafted around them, so that axis is always
  * fed; the axes that separate decks are the ones with dedicated enablers — sacrifice outlets, token
@@ -86,20 +90,41 @@ object DeckSynergy {
         return maxOf(axes, tribes, asks)
     }
 
-    /** How many payoff-equivalents [cards] keep fed: the sum of every payoff's [fedShare]. */
+    /**
+     * What [card]'s synergy is worth beside the cards [counts] was taken over, in payoff-equivalents:
+     * its [fedShare] weighed by its [SynergyProfile.strength] — a fed +2/+2 lord counts for more than
+     * a fed +1/+1 one — less its [punishment] of its own deck.
+     */
+    fun fedValue(card: SynergyProfile, counts: Counts): Double =
+        (if (card.isPayoff) fedShare(card, counts) * card.strength else 0.0) - punishment(card, counts)
+
+    /**
+     * What a card that shrinks a creature type ([SynergyProfile.punishes]) costs beside the cards
+     * [counts] was taken over: per type, the share of a tribe ([TRIBE_MEMBERS_WANTED]) it shrinks,
+     * weighed by how hard. Zero for a card that shrinks nothing, or nothing in this deck.
+     */
+    fun punishment(card: SynergyProfile, counts: Counts): Double =
+        card.punishes.entries.sumOf { (tribe, weight) ->
+            val own = if (card.feedsTribe(tribe)) 1 else 0
+            min(1.0, (counts.membersOf(tribe) - own).coerceAtLeast(0) / TRIBE_MEMBERS_WANTED) * weight
+        }
+
+    /** How many payoff-equivalents [cards] keep fed: the sum of every card's [fedValue]. */
     fun fedPayoffs(cards: List<SynergyProfile>): Double {
         val counts = counts(cards)
-        return cards.sumOf { fedShare(it, counts) }
+        return cards.sumOf { fedValue(it, counts) }
     }
 
     /**
-     * How short [cards] leave their payoffs: per payoff, the share it is *not* fed, summed. A payoff's
-     * rating assumes a deck that feeds it, so this is what the deck loses against those ratings —
-     * except a payoff that [SynergyProfile.standsAlone], whose rating is earned as an answer.
+     * How short [cards] leave their payoffs: per payoff, the share it is *not* fed weighed by its
+     * [SynergyProfile.strength], summed, plus every [punishment]. A payoff's rating assumes a deck
+     * that feeds it, so this is what the deck loses against those ratings — the more a payoff gives
+     * per feeder, the more it loses unfed — except a payoff that [SynergyProfile.standsAlone], whose
+     * rating is earned as an answer.
      */
     fun shortfall(cards: List<SynergyProfile>): Double {
         val counts = counts(cards)
-        return cards.sumOf { unfed(it, counts) }
+        return cards.sumOf { unfed(it, counts) * it.strength + punishment(it, counts) }
     }
 
     /** The share of [payoff] left unfed beside [counts], or zero for a card that needs no fuel. */
@@ -107,17 +132,19 @@ object DeckSynergy {
         if (!payoff.isPayoff || payoff.standsAlone) 0.0 else 1.0 - fedShare(payoff, counts)
 
     /**
-     * How much adding [card] to [others] closes the deck's [shortfall]: the share it fills in other
-     * payoffs, as a feeder — the reason to take the second sacrifice outlet. A payoff's own fed share
-     * is not counted: adding a payoff opens a shortfall of its own, which is [shortfall]'s business.
+     * How much adding [card] to [others] raises their synergy: the [fedValue] it adds to the other
+     * cards, as a feeder — the reason to take the second sacrifice outlet, and more of a reason
+     * beside a strong payoff than a weak one. Negative for a creature whose type another card
+     * shrinks: a Goblin beside "all Goblins get -1/-1". A payoff's own value is not counted:
+     * adding a payoff opens a shortfall of its own, which is [shortfall]'s business.
      */
     fun feedGain(card: SynergyProfile, others: List<SynergyProfile>): Double {
         if (!card.isFeeder) return 0.0
         val before = counts(others)
         val after = counts(others + card)
-        return others.sumOf { payoff ->
-            if (!payoff.isPayoff) 0.0
-            else fedShare(payoff, after) - fedShare(payoff, before)
+        return others.sumOf { other ->
+            if (!other.isPayoff && !other.isPunisher) 0.0
+            else fedValue(other, after) - fedValue(other, before)
         }
     }
 }

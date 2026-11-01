@@ -4,6 +4,7 @@ import com.wingedsheep.ai.draftsim.DraftsimCardOps
 import com.wingedsheep.ai.draftsim.DraftsimData
 import com.wingedsheep.ai.draftsim.DraftsimSetTables
 import com.wingedsheep.ai.engine.LimitedCardRater
+import com.wingedsheep.ai.engine.knowledge.RemovalBreadth
 import com.wingedsheep.sdk.model.CardDefinition
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.pow
@@ -44,8 +45,18 @@ internal object ConstructedRatings {
      * rated once per process rather than once per build.
      */
     fun rate(card: CardDefinition): Double = cache.getOrPut(card.name) {
-        (cachedOps.rating(card.name) ?: LimitedCardRater.rate(card)).coerceAtLeast(MIN_WEIGHT)
+        val rating = cachedOps.rating(card.name) ?: LimitedCardRater.rate(card)
+        val hoser = if (RemovalBreadth.isNarrow(card)) NARROW_REMOVAL_SHARE else 1.0
+        (rating * hoser).coerceAtLeast(MIN_WEIGHT)
     }
+
+    /**
+     * What a hoser ([RemovalBreadth.isNarrow]) keeps of its limited rating in a constructed deck. A
+     * limited rating prices Execute against a pod whose colours a drafter partly knows; a
+     * constructed list meets opponents it knows nothing about, where "destroy target white
+     * creature" is a sideboard card.
+     */
+    private const val NARROW_REMOVAL_SHARE = 0.6
 
     /** Floor on a sampling weight; a zero would make `1/w` divide by zero. */
     const val MIN_WEIGHT = 0.1

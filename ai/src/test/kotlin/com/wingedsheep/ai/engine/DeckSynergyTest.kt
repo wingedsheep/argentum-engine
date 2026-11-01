@@ -32,19 +32,26 @@ class DeckSynergyTest : FunSpec({
     // makes bodies to sacrifice. Typhoid Rats is a creature that feeds none of that.
     val payoff = "Blood Artist"
 
+    // Every fed share is weighed by the payoff's strength ([SynergyProfile.strength]): Blood Artist's
+    // one-point drain is a weaker return per feeder than the reference lord's.
+    val strength by lazy { SynergyAxes.of(card(payoff)).strength }
+
     test("a payoff is fed by the other cards on its axis, never by itself") {
-        DeckSynergy.shortfall(profiles(payoff)) shouldBe 1.0
-        DeckSynergy.shortfall(profiles(payoff, "Typhoid Rats", "Typhoid Rats")) shouldBe 1.0
-        DeckSynergy.fedPayoffs(profiles(payoff, "Viscera Seer")) shouldBe (1.0 / 3).plusOrMinus(1e-9)
-        DeckSynergy.fedPayoffs(profiles(payoff, "Viscera Seer", "Village Rites", "Raise the Alarm")) shouldBe 1.0
+        DeckSynergy.shortfall(profiles(payoff)) shouldBe strength.plusOrMinus(1e-9)
+        DeckSynergy.shortfall(profiles(payoff, "Typhoid Rats", "Typhoid Rats")) shouldBe strength.plusOrMinus(1e-9)
+        DeckSynergy.fedPayoffs(profiles(payoff, "Viscera Seer")) shouldBe (strength / 3).plusOrMinus(1e-9)
+        DeckSynergy.fedPayoffs(profiles(payoff, "Viscera Seer", "Village Rites", "Raise the Alarm")) shouldBe
+            strength.plusOrMinus(1e-9)
         // Past FEEDERS_WANTED a payoff is simply fed: more fuel adds nothing.
-        DeckSynergy.fedPayoffs(profiles(payoff, "Viscera Seer", "Village Rites", "Raise the Alarm", "Viscera Seer")) shouldBe 1.0
+        DeckSynergy.fedPayoffs(profiles(payoff, "Viscera Seer", "Village Rites", "Raise the Alarm", "Viscera Seer")) shouldBe
+            strength.plusOrMinus(1e-9)
     }
 
-    test("a feeder's gain is the share it fills in the payoffs already there") {
-        DeckSynergy.feedGain(SynergyAxes.of(card("Viscera Seer")), profiles(payoff)) shouldBe (1.0 / 3).plusOrMinus(1e-9)
+    test("a feeder's gain is the share it fills in the payoffs already there, weighed by their strength") {
+        val zulaport = SynergyAxes.of(card("Zulaport Cutthroat")).strength
+        DeckSynergy.feedGain(SynergyAxes.of(card("Viscera Seer")), profiles(payoff)) shouldBe (strength / 3).plusOrMinus(1e-9)
         DeckSynergy.feedGain(SynergyAxes.of(card("Viscera Seer")), profiles(payoff, "Zulaport Cutthroat")) shouldBe
-            (2.0 / 3).plusOrMinus(1e-9)
+            ((strength + zulaport) / 3).plusOrMinus(1e-9)
         DeckSynergy.feedGain(SynergyAxes.of(card("Typhoid Rats")), profiles(payoff)) shouldBe 0.0
         DeckSynergy.feedGain(SynergyAxes.of(card("Viscera Seer")), profiles("Typhoid Rats")) shouldBe 0.0
     }
@@ -96,7 +103,8 @@ class DeckSynergyTest : FunSpec({
 
     test("the swap pass feeds a payoff before it cuts one, and cuts one it can't feed") {
         // Blood Artist and Zulaport beside three bodies, with outlets on the bench rated a little
-        // lower: the bodies are worth more one by one, the outlets more to the deck.
+        // lower: the bodies are worth more one by one, the outlets more to the deck. The margins are
+        // sized to these two payoffs' strength — a one-point drain is worth a small gap, not a big one.
         var index = 0
         fun slot(name: String) = PoolSlot(index++, card(name))
         val payoffs = listOf(slot(payoff), slot("Zulaport Cutthroat"))
@@ -104,8 +112,8 @@ class DeckSynergyTest : FunSpec({
         val outlets = List(3) { slot("Viscera Seer") }
         fun value(slot: PoolSlot) = when (slot.card.name) {
             "Typhoid Rats" -> 2.6
-            "Viscera Seer" -> 2.3
-            else -> 3.0
+            "Viscera Seer" -> 2.45
+            else -> 2.9
         }
 
         val feed = bestSynergySwap(selected, outlets, keepPayoffs = true, value = ::value).shouldNotBeNull()

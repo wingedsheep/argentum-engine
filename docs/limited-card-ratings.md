@@ -71,7 +71,10 @@ For a card no table rates, a structural estimate from its `CardDefinition`:
 - **Keywords** — evasion and combat keywords add value.
 - **Effects** — `EffectWalker` walks the script and sums what each effect is worth: removal (exile
   above destroy above bounce), damage by amount, card draw, tokens, pumps, control magic, counters.
-  A composite is capped, a "may" is discounted.
+  A composite is capped, a "may" is discounted. Removal that can only aim at a sliver of the
+  table — Execute's "white creature", Choking Sands' "non-Swamp land" — keeps a share of its slot's
+  value by how much it can reach (`RemovalBreadth`: the vanilla creatures of every colour and size,
+  plus an artifact, an enchantment and a planeswalker, that its target filter can hit).
 - **Rarity and curve** — small nudges (mythic +0.8, a 2-drop +0.3, a 6-drop −0.2).
 
 It reads what a card *does*, so it tells removal from a vanilla body, but it can't see synergy or
@@ -86,7 +89,7 @@ how a format plays. It is the floor, not the goal.
 | AI deck from a tournament pool (`HeuristicDeckBuilder`) | `LimitedCardRater.rate` |
 | "Draftsim" Suggest Pick advisor | Draftsim tables only (rarity ladder for unrated cards) |
 | "Heuristic" Suggest Pick advisor (`LimitedPickScorer`) | Rarity and oracle-text keywords — no tables |
-| Constructed and Commander generators (`ConstructedRatings`) | Every manifest table merged, cube tables excluded |
+| Constructed and Commander generators (`ConstructedRatings`) | Every manifest table merged, cube tables excluded; a narrow hoser keeps 60% of its rating, and fills no interaction slot |
 
 `LimitedCardRater.rate` chains the three sources: 17Lands, then any manifest table (so a reprint
 inherits its rating from wherever it was rated), then the heuristic.
@@ -116,8 +119,16 @@ in its abilities names it: the "other Goblins" a lord pumps, the "another Elf yo
 watches, a tribal cost reducer or tutor. Filters under "non-" or scoped to an opponent don't count.
 A card **feeds** the types on its type line and the types of the tokens it makes, and a changeling
 feeds every type. A tribal payoff is fully fed at five members among the other cards, since a lord
-pays per body. A hoser that names a type with no controller ("tap target Wall") still reads as
-asking for it; such cards are rare.
+pays per body. A static that *shrinks* a type ("all Goblins get -1/-1") doesn't ask for it: it
+**punishes** it, and every member of that type beside it counts against the deck. A hoser that names
+a type in an effect ("tap target Wall") still reads as asking for it; such cards are rare.
+
+How fed a payoff is counts in proportion to its **strength** (`SynergyStrength`): what it gives back
+per feeder, priced with the heuristic's own effect and keyword values, and divided by Goblin King's
++1/+1 and mountainwalk (1.0). A +2/+2 lord is worth more fed than a +1/+0 one, and a "draw a card
+whenever a creature dies" more than a one-point drain. So a feeder gains more beside a strong payoff,
+and a strong payoff loses more unfed. A payoff nothing prices reads as 1.0. `just ai-card` prints a
+payoff's strength and the types it shrinks.
 
 Every other kind of card a payoff wants is read from **its own filter** (`CardAsks`): the
 "noncreature spell" Monastery Mentor (and every prowess creature) watches, the "artifact spells"
@@ -144,14 +155,16 @@ asks and whether it stands alone.
 
 - **Draft picks and the Draftsim deckbuild.** `DraftsimSetTables.withSynergyAxes(cards)` attaches
   the reading, and the scorer adds `DraftsimSynergy.pickAdjustment`: a card gains for the payoffs it
-  feeds in the pool, and a payoff loses for the fuel it lacks — nothing in pack 1, all of it once
-  the pool is complete. Either way it's capped at 0.75, under one rarity step, so a bomb still beats
+  feeds in the pool (and loses beside one that shrinks its type), a payoff gains a little for the
+  fuel already there, and loses for the fuel it lacks — nothing in pack 1, all of it once the pool
+  is complete — all weighed by the payoff's strength. Either way it's capped at 0.75, under one rarity step, so a bomb still beats
   a synergy common. The deck scorer's synergy sub-score adds the payoffs the deck keeps fed, so the
   build's swap pass compares whole decks. Cards a set's archetype table already tags keep Draftsim's
   own enabler/payoff counting and count here as fuel only. Without the call every score matches the
   ported bundle; the "Draftsim" Suggest Pick advisor stays that way.
 - **`HeuristicDeckBuilder`.** After the creature minimum, `feedPayoffs` swaps cards while the deck's
-  worth rises: the cards' ratings less 0.75 per payoff-share left unfed. Feeding swaps go first; only
+  worth rises: the cards' ratings less 0.75 per payoff-share left unfed, weighed by strength, and per
+  tribe-share a punisher shrinks. Feeding swaps go first; only
   then is a payoff that still lacks fuel cut for a better body.
 
 `just arena-synergy-decks GAMES SET` measures whether it makes stronger decks: the AI's build of
