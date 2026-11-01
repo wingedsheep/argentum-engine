@@ -20,6 +20,7 @@ import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
+import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
@@ -34,7 +35,6 @@ import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.ScryEffect
 import com.wingedsheep.sdk.scripting.effects.SurveilEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
-import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.TransformEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
@@ -65,7 +65,7 @@ import java.util.Locale
  *    each non-mana ability): a slot that earns no [IntentTag] at all is invisible to every intent
  *    consumer, and is attributed to each of its leaves — except the leaves that need no tag
  *    ([needsNoIntent]: a non-keyword counter on the source itself or on its controller, damage to a
- *    player, life loss, a permanent untapping, moving or transforming itself).
+ *    player, life loss, a permanent untapping, moving, transforming or animating itself).
  *  - [Check.COMBAT] — [CombatReach] over each leaf of a non-mana activated ability that changes
  *    power/toughness, keywords, P/T counters or blocking, and that combat simulation cannot see.
  *  - [Check.TIMING] — an until-end-of-turn leaf on an instant-speed activation or an instant-speed
@@ -425,7 +425,7 @@ object AiReadingAudit {
         if (sink.findings.size == before && tags.isNotEmpty()) {
             sink += Finding(Check.INTENT, read = true, reason = "knows what it's for: ${tags.sorted().joinToString(", ", transform = ::tagPhrase)}")
         } else if (sink.findings.size == before) {
-            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, untaps, attaches or moves its own source, adds counters for its controller, damages a player, makes one lose life, or mills one")
+            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, untaps, attaches, moves, transforms or animates its own source, adds counters for its controller, damages a player, makes one lose life, or mills one")
         }
     }
 
