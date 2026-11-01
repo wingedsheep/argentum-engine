@@ -2939,6 +2939,18 @@ data class EntersWithChoice(
      * stay the default. Only [ChoiceType.NUMBER] honours it.
      */
     val atRandom: Boolean = false,
+    /**
+     * When true, the chosen opponent is who the permanent **enters under the control of** — "This
+     * enters under the control of an opponent of your choice" (Captive Audience, Xantcha, Sleeper
+     * Agent). It is part of the same replacement (CR 614.1c / 614.12a): the choice is made before the
+     * permanent enters, by the player who would otherwise control it, and the permanent arrives on
+     * the chosen player's battlefield already controlled by them — no control-changing effect is
+     * created, its "enters" triggers are controlled by that player, and it is that player's
+     * "entered under your control". The pick is still recorded in [ChoiceSlot.OPPONENT] (read back
+     * by [com.wingedsheep.sdk.scripting.references.Player.ChosenOpponent]). With no opponent to
+     * choose it enters under its usual controller. Only [ChoiceType.OPPONENT] honours it.
+     */
+    val chosenOpponentControls: Boolean = false,
     override val appliesTo: EventPattern = EventPattern.ZoneChangeEvent(
         filter = GameObjectFilter.Any,
         to = Zone.BATTLEFIELD
@@ -2950,6 +2962,9 @@ data class EntersWithChoice(
         }
         require(!atRandom || (choiceType == ChoiceType.NUMBER && minValue <= maxValue && chooser == Player.You)) {
             "atRandom applies only to ChoiceType.NUMBER with minValue <= maxValue and no chooser"
+        }
+        require(!chosenOpponentControls || (choiceType == ChoiceType.OPPONENT && chooser == Player.You)) {
+            "chosenOpponentControls applies only to ChoiceType.OPPONENT chosen by you"
         }
     }
 
@@ -2996,7 +3011,9 @@ data class EntersWithChoice(
         } else {
             "As this permanent enters, choose a basic land type"
         }
-        ChoiceType.OPPONENT -> if (chooser == Player.AnOpponent) {
+        ChoiceType.OPPONENT -> if (chosenOpponentControls) {
+            "This permanent enters under the control of an opponent of your choice"
+        } else if (chooser == Player.AnOpponent) {
             "As this permanent enters, an opponent chooses an opponent"
         } else {
             "As this permanent enters, choose an opponent"

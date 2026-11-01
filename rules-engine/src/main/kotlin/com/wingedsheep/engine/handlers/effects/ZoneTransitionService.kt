@@ -475,7 +475,15 @@ class ZoneTransitionService(
             ownerId
         }
 
-        val destControllerId = options.controllerId ?: ownerId
+        // "Enters under the control of an opponent of your choice" (Captive Audience): the opponent
+        // was asked before the move (EffectEntryChoices) and is who it enters under.
+        val destControllerId = (if (actualDestZone == Zone.BATTLEFIELD && !options.faceDown) {
+            ChosenEntryController.of(
+                options.entryCopy?.copiedCard?.let { cardRegistry.getCard(it.cardDefinitionId) }
+                    ?: cardRegistry.getCard(cardComponent.cardDefinitionId),
+                options.entryChoices,
+            )
+        } else null) ?: options.controllerId ?: ownerId
         val destZoneKey = if (actualDestZone == Zone.BATTLEFIELD) {
             ZoneKey(destControllerId, actualDestZone)
         } else {

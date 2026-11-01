@@ -1131,6 +1131,16 @@ class ModalAndCloneContinuationResumer(
             .applySagaEntryIfNeeded(newState, entityId, services.predicateEvaluator)
         newState = sagaState
 
+        // "Enters under the control of an opponent of your choice": it was placed before the
+        // question could be asked, so it moves to the chosen player's battlefield now — still
+        // part of the entry, which nothing has seen yet.
+        com.wingedsheep.engine.handlers.effects.ChosenEntryController.of(
+            cardDef, newState.getEntity(entityId)?.get<com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent>()?.chosen,
+        )?.let { chosen ->
+            newState = com.wingedsheep.engine.handlers.effects.ChosenEntryController
+                .enterUnder(newState, entityId, continuation.controllerId, chosen)
+        }
+
         // Emit the entry event, so the permanent's enters triggers (landfall, "when ~ enters") fire
         // now that the chosen value is recorded. The permanent already moved to the battlefield when
         // it was placed; the caller deliberately left this event to us.

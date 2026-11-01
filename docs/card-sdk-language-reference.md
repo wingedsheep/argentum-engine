@@ -18784,7 +18784,13 @@ EffectTarget.ChosenCreature))`,
 `SetEnchantedLandTypeFromChosen` and `GrantLandwalkOfChosenType`), and
 `ChoiceType.OPPONENT` writes an entity-id choice into the `CastChoicesComponent` under
 `ChoiceSlot.OPPONENT` — read back via the `Player.ChosenOpponent` reference (e.g. Jihad's
-anthem + state-trigger condition: `Exists(Player.ChosenOpponent, Zone.BATTLEFIELD, …)`), and
+anthem + state-trigger condition: `Exists(Player.ChosenOpponent, Zone.BATTLEFIELD, …)`). Set
+`chosenOpponentControls = true` for "This enters under the control of an opponent of your choice"
+(Captive Audience, Xantcha): the player who would otherwise control it picks the opponent before it
+enters (CR 614.12a), and it arrives on that player's battlefield already theirs — no control-changing
+effect, its enters triggers are theirs (CR 603.3a), it is their "entered under your control", its owner is
+unchanged. Honoured on the cast, effect (reanimation / blink / mass return) and token-copy entry paths
+(`ChosenEntryController`); only `ChoiceType.OPPONENT` with the default chooser accepts it, and
 `ChoiceType.CARD_NAME` writes a chosen **card name** (presented as a searchable option list) into
 the `CastChoicesComponent` under `ChoiceSlot.CARD_NAME` as a `ChoiceValue.TextChoice` — read back via
 `chosenCardName()` or, for name-keyed static-ability filters,
