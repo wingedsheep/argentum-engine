@@ -5,6 +5,7 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
+import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockedComponent
@@ -23,6 +24,7 @@ import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
+import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.CantAttackEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseOptionEffect
@@ -287,13 +289,13 @@ internal object ExpiringGrantWindow {
                     // adds nothing. Pending is read for a self-grant only, where "the same ability
                     // from the same source" can only mean the same creature.
                     val fresh = affected.filterNot { id ->
-                        keyword != null && (
-                            projected.hasKeyword(id, keyword) ||
+                        (keyword != null || payoff.animates) && (
+                            (keyword != null && projected.hasKeyword(id, keyword)) ||
                                 (pendingSelfGrant && payoff.target == EffectTarget.Self)
                             )
                     }
                     fresh.any {
-                        canStillFight(state, projected, playerId, it, sourceId, sourceTaps, keyword)
+                        canStillFight(state, projected, playerId, it, sourceId, sourceTaps, keyword, payoff.animates)
                     }
                 }
                 PayoffKind.LAND -> affected.any { canStillMatter(state, projected, playerId, it) }
@@ -533,10 +535,29 @@ internal object ExpiringGrantWindow {
         sourceId: EntityId?,
         sourceTaps: Boolean,
         keyword: String? = null,
+        /**
+         * The payoff *makes* [creature] a creature ("until end of turn, this land becomes a 2/1"):
+         * it is not one yet, so it is judged as the creature it is about to be — untapped, and on
+         * our turn not summoning sick. An animated permanent is never already in the fight.
+         */
+        animates: Boolean = false,
     ): Boolean {
-        if (!projected.isCreature(creature)) return false
         val entity = state.getEntity(creature) ?: return false
         val tapsAway = sourceTaps && creature == sourceId
+        if (animates && !projected.isCreature(creature)) {
+            if (tapsAway || entity.has<TappedComponent>()) return false
+            return if (state.isActiveTurnFor(playerId)) {
+                state.step in UNTIL_ATTACKERS_DECLARED &&
+                    (!entity.has<SummoningSicknessComponent>() || projected.canAttackAsThoughHasty(creature))
+            } else {
+                when (state.step) {
+                    in UNTIL_ATTACKERS_DECLARED -> true
+                    Step.DECLARE_ATTACKERS -> state.getBattlefield().any { state.getEntity(it)?.has<AttackingComponent>() == true }
+                    else -> false
+                }
+            }
+        }
+        if (!projected.isCreature(creature)) return false
         return if (state.isActiveTurnFor(playerId)) {
             val blockedOnly = keyword in MATTERS_ONLY_WHEN_BLOCKED
             when (state.step) {
@@ -791,6 +812,8 @@ internal object ExpiringGrantWindow {
         val keyword: String? = null,
         /** For a [PayoffKind.SHRINK]: the toughness it takes away. */
         val toughnessLoss: Int = 0,
+        /** For a [PayoffKind.CREATURE]: the payoff is the body itself — see [canStillFight]'s `animates`. */
+        val animates: Boolean = false,
     )
 
     /**
@@ -836,6 +859,9 @@ internal object ExpiringGrantWindow {
                 }
                 leaf is SetLandTypeEffect && leaf.duration == Duration.EndOfTurn ->
                     payoffs += Payoff(PayoffKind.LAND, leaf.target)
+                // "Until end of turn, this land becomes a 2/1": a body that fights this turn or not at all.
+                leaf is BecomeCreatureEffect && leaf.duration == Duration.EndOfTurn ->
+                    payoffs += Payoff(PayoffKind.CREATURE, leaf.target, animates = true)
                 isShield(leaf) -> payoffs += Payoff(PayoffKind.SHIELD, (leaf as PreventDamageEffect).target)
                 leaf is GrantKeywordEffect && leaf.duration == Duration.EndOfTurn ->
                     payoffs += Payoff(PayoffKind.CREATURE, leaf.target, leaf.keyword)
@@ -888,6 +914,7 @@ internal object ExpiringGrantWindow {
             when (leaf) {
                 is GrantKeywordEffect -> leaf.duration == Duration.EndOfTurn
                 is GrantEvasionKeywordEffect -> leaf.duration == Duration.EndOfTurn
+                is BecomeCreatureEffect -> leaf.duration == Duration.EndOfTurn
                 is ModifyStatsEffect ->
                     leaf.duration == Duration.EndOfTurn && isPump(leaf)
                 is PreventDamageEffect -> isShield(leaf)
