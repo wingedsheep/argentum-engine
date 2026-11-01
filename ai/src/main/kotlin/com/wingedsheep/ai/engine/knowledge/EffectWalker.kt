@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenBatchEffect
+import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalOnCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.ConniveEffect
@@ -15,6 +16,7 @@ import com.wingedsheep.sdk.scripting.effects.GatedEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 
 /**
@@ -156,10 +158,21 @@ object EffectWalker {
         when {
             leaf is ConditionalOnCollectionEffect ->
                 listOfNotNull(leaf.ifNotEmpty, leaf.ifEmpty).flatMap { payoffLeaves(it) }
+            leaf is ChooseActionEffect && choosesOwnBranch(leaf) ->
+                leaf.choices.flatMap { payoffLeaves(it.effect) }
             leaf !is GatedEffect || leaf.decisionMaker != null -> listOf(leaf)
             else -> listOfNotNull(leaf.then, leaf.otherwise).flatMap { payoffLeaves(it) }
         }
     }
+
+    /**
+     * Whether the card's controller picks a [ChooseActionEffect]'s branch. Then every branch is
+     * something the card can do, as a mode is: "add {R} or {G}", "protection from artifacts or from
+     * the color of your choice". A branch someone else picks is the punisher shape — "that player
+     * chooses …" — and, as for a gate someone else decides, no branch is what the card does.
+     */
+    fun choosesOwnBranch(effect: ChooseActionEffect): Boolean =
+        effect.player == EffectTarget.Controller || effect.player == EffectTarget.PlayerRef(Player.You)
 
     /**
      * What a delayed trigger does when it fires, as the payoff walk reads it: [payoffLeaves] of its

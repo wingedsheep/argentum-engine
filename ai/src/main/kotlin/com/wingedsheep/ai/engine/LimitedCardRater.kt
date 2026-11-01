@@ -544,6 +544,15 @@ object LimitedCardRater {
                 (chosen + flexibility).coerceAtMost(COMPOSITE_CAP)
             }
 
+            // "Add {R} or {G}", "sacrifice an artifact or discard a card; if you do, draw two": a
+            // choice the controller makes on resolution is worth its best branch, as a one-mode
+            // modal is. A branch an opponent picks (a punisher) is theirs to minimise, so no
+            // branch is what the card is worth.
+            is ChooseActionEffect ->
+                if (!EffectWalker.choosesOwnBranch(effect)) 0.0
+                else effect.choices.maxOfOrNull { EffectWalker.fold(it.effect, LimitedScoreFold) + pipelineScore(it.effect) }
+                    ?.coerceAtMost(COMPOSITE_CAP) ?: 0.0
+
             // Card selection — scry and surveil see cards but draw none
             is ScryEffect -> (effect.count * SELECTION_PER_CARD).coerceAtMost(SELECTION_CAP)
             is SurveilEffect -> (effect.count * SELECTION_PER_CARD).coerceAtMost(SELECTION_CAP)

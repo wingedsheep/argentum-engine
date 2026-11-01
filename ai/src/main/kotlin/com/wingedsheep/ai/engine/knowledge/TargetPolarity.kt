@@ -29,6 +29,7 @@ import com.wingedsheep.sdk.scripting.RedirectZoneChange
 import com.wingedsheep.sdk.scripting.RedirectZoneChangeWith
 import com.wingedsheep.sdk.scripting.ReplacementEffect
 import com.wingedsheep.sdk.scripting.TriggeredAbility
+import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.IterationSpace
@@ -519,13 +520,16 @@ object TargetPolarityAnalyzer {
         val abilityEffects = card.script.triggeredAbilities.map { it.effect } +
             card.script.activatedAbilities.map { it.effect }
         for (effect in abilityEffects) {
-            for (leaf in EffectWalker.payoffLeaves(effect)) {
-                for ((target, polarity) in classify(leaf, definitions)) {
-                    // "Enchanted creature" and "enchanted permanent" (Flood the Engine's "tap
-                    // enchanted permanent") both name the object the Aura is cast on.
-                    if (target in HOST_TARGETS) readings += polarity
-                }
+            // "Enchanted creature" and "enchanted permanent" (Flood the Engine's "tap
+            // enchanted permanent") both name the object the Aura is cast on.
+            val hostReadings = EffectWalker.payoffLeaves(effect).flatMap { leaf ->
+                classify(leaf, definitions).filter { (target, _) -> target in HOST_TARGETS }.map { it.second }
             }
+            // "+1/-1 or -1/+1", its controller's pick on resolution, serves whichever side the
+            // host is on: branches that don't add up to one side are a choice, not a veto on the
+            // other abilities.
+            if (choosesOwnBranchSomewhere(effect) && combine(hostReadings) == TargetPolarity.UNKNOWN) continue
+            readings += hostReadings
         }
         // A replacement effect on an Aura (Sandskin's "prevent all combat damage dealt to and by
         // enchanted creature") is read nowhere above, and is often the whole card. Without it the
@@ -536,6 +540,9 @@ object TargetPolarityAnalyzer {
         if (card.script.replacementEffects.any { !it.affectsOnlyTheAuraItself() }) readings += TargetPolarity.UNKNOWN
         return combine(readings)
     }
+
+    private fun choosesOwnBranchSomewhere(effect: Effect): Boolean =
+        EffectWalker.leaves(effect).any { it is ChooseActionEffect && EffectWalker.choosesOwnBranch(it) }
 
     private fun ReplacementEffect.affectsOnlyTheAuraItself(): Boolean = when (this) {
         is EntersWithChoice -> true
