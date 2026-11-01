@@ -444,7 +444,21 @@
                     {
                         "type": "TargetObject",
                         "filter": {
-                            "baseFilter": "creature"
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsEnchantment",
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Aura"
+                                    }
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "IsAttachedTo",
+                                        "filter": "creature"
+                                    }
+                                ]
+                            }
                         },
                         "id": "t0"
                     }
