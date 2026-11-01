@@ -340,7 +340,7 @@ Alela, Artful Provocateur
 Alela, Cunning Conqueror	intent: GoadEffect; polarity: GoadEffect
 Alert Heedbonder
 Alert Shu Infantry
-Alesha's Legacy	timing: GrantKeywordEffect
+Alesha's Legacy
 Alesha, Who Laughs at Fate	intent: MoveToZoneEffect
 Alexi's Cloak
 Alhammarret's Archive
@@ -1283,7 +1283,7 @@ Battle for Bretagard
 Battle of Frost and Fire
 Battle of Hoover Dam
 Battle-Mad Ronin
-Battle-Rage Blessing	timing: GrantKeywordEffect
+Battle-Rage Blessing
 Battle-Rattle Shaman
 Battle-Scarred Goblin
 Battle-Scarred Survivalist
@@ -2379,6 +2379,7 @@ Captivating Glance
 Captivating Gyre	polarity: ForEachEffect
 Captivating Unicorn
 Captivating Vampire
+Captive Audience
 Captive Weird	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Capture Sphere
 Capture of Jingzhou	intent: TakeExtraTurnEffect
@@ -4194,7 +4195,7 @@ Divine Gambit
 Divine Intervention	intent: GameIsDrawEffect
 Divine Offering
 Divine Presence
-Divine Resilience	timing: GrantKeywordEffect
+Divine Resilience
 Divine Retribution
 Divine Smite
 Divine Transformation
@@ -5051,7 +5052,7 @@ Envoy of Okinec Ahau
 Envoy of the Ancestors
 Ephara's Dispersal	polarity: MoveToZoneEffect
 Ephara's Warden
-Ephemeral Shields	timing: GrantKeywordEffect
+Ephemeral Shields
 Epic Confrontation
 Epic Downfall
 Epic Fight	polarity: FightEffect
@@ -5809,7 +5810,7 @@ Flashback	intent: GrantFlashbackEffect; polarity: GrantFlashbackEffect; timing: 
 Flashfires
 Flashfreeze
 Flatten
-Flawless Maneuver	timing: ForEach>GrantKeywordEffect
+Flawless Maneuver
 Flaxen Intruder
 Flayed Nim
 Fledgling Dragon
@@ -7546,7 +7547,7 @@ Heroes' Podium
 Heroes' Reunion
 Heroic Charge
 Heroic Feast
-Heroic Intervention	timing: ForEach>GrantKeywordEffect
+Heroic Intervention
 Heroic Reinforcements
 Heroism	intent: ForEach>PayOrSufferEffect
 Heron of Hope	intent: GrantKeywordEffect
@@ -7741,7 +7742,7 @@ Hornet Queen
 Hornet Sting
 Horobi, Death's Wail
 Horrid Shadowspinner
-Horrid Vigor	timing: GrantKeywordEffect
+Horrid Vigor
 Horrific Assault
 Horror of Horrors
 Horses of the Bruinen	polarity: ForEachEffect
@@ -9577,7 +9578,7 @@ Loot, the Nexus
 Loot, the Pathfinder
 Loporrit Scout
 Loran of the Third Path
-Loran's Escape	timing: GrantKeywordEffect
+Loran's Escape
 Loran, Disciple of History
 Lord Dregg, Insect Invader
 Lord Magnus
@@ -9768,7 +9769,7 @@ Mage Hunter
 Mage Hunters' Onslaught
 Mage Tower Referee
 Mage's Attendant
-Mage's Guile	timing: GrantKeywordEffect
+Mage's Guile
 Magebane Lizard
 Mages' Contest	intent: OpenLifeBidEffect; polarity: OpenLifeBidEffect
 Mageta's Boon
@@ -11292,7 +11293,7 @@ Odric, Blood-Cursed
 Odric, Lunarch Marshal
 Of One Mind
 Offender at Large
-Offer Immortality	timing: GrantKeywordEffect
+Offer Immortality
 Officious Interrogation	polarity: InvestigateEffect
 Offspring's Revenge	polarity: CreateTokenCopyOfTargetEffect; polarity: MoveToZoneEffect
 Oggyar Battle-Seer
@@ -14396,8 +14397,8 @@ Sheltered Thicket
 Sheltered by Ghosts
 Sheltering Boughs
 Sheltering Landscape
-Sheltering Light	timing: GrantKeywordEffect
-Sheltering Word	timing: GrantKeywordEffect
+Sheltering Light
+Sheltering Word
 Sheoldred	intent: ExileAndReturnTransformedEffect
 Sheoldred's Edict
 Sheoldred's Headcleaver
@@ -16202,7 +16203,7 @@ Tamiyo's Epiphany
 Tamiyo's Immobilizer
 Tamiyo's Journal
 Tamiyo's Logbook
-Tamiyo's Safekeeping	timing: GrantKeywordEffect
+Tamiyo's Safekeeping
 Tamiyo, Collector of Tales
 Tamiyo, Compleated Sage
 Tamiyo, Field Researcher	polarity: ForEachEffect
@@ -17136,7 +17137,7 @@ Torrent Sculptor	intent: Pipeline(graveyard→exile)
 Torrent of Fire
 Torrential Gearhulk	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(ChosenTargets→?); polarity: CastFromCollectionWithoutPayingCostEffect; polarity: Pipeline(ChosenTargets→?)
 Torsten Von Ursus
-Tortoise Formation	timing: ForEach>GrantKeywordEffect
+Tortoise Formation
 Tortured Existence
 Toski, Bearer of Secrets
 Totally Lost	polarity: MoveToZoneEffect
@@ -18867,7 +18868,7 @@ Withering Gaze	polarity: RevealHandEffect
 Withering Hex
 Withering Torment
 Within Range
-Withstand Death	timing: GrantKeywordEffect
+Withstand Death
 Witness Protection
 Witness of Tomorrows
 Witness of the Ages

@@ -732,15 +732,17 @@ class HoldPolicy(
             // static reading cannot bound; see [CardIntent.removalReach]. No pump is priced against
             // either — but a trick that also protects may still answer one ([protectable]).
             val reach = threat.removalReach
+            val protects = IntentTag.PROTECTION in pump.tags && threat.tags.any { it in REMOVAL_TAGS }
             if (reach == null) {
-                if (IntentTag.PROTECTION in pump.tags && threat.tags.any { it in REMOVAL_TAGS } &&
-                    victims.any { projected.isCreature(it) }
-                ) protectable = true
+                if (protects && victims.any { projected.isCreature(it) }) protectable = true
                 continue
             }
             if (victims.any { savedByPump(state, projected, it, reach, pump) }) {
                 return TimingVerdict.Adjust(RESPONSE_WINDOW)
             }
+            // Burn that kills a creature its pump can't lift out of range (or a pump-less
+            // protection grant, Withstand Death against a Shock) may still be answered by the grant.
+            if (protects && victims.any { dyingTo(state, projected, it, reach) }) protectable = true
         }
 
         return when {
@@ -765,10 +767,18 @@ class HoldPolicy(
         reach: Int,
         pump: CardIntent,
     ): Boolean {
-        if (!projected.isCreature(creature)) return false
-        val toughness = projected.getToughness(creature) ?: return false
-        val remaining = toughness - (state.getEntity(creature)?.get<DamageComponent>()?.amount ?: 0)
+        val remaining = remainingToughness(state, projected, creature) ?: return false
         return remaining <= reach && remaining + pump.pumpToughness > reach
+    }
+
+    /** Whether [creature] dies to [reach] damage — damage already marked counts (CR 704.5g). */
+    private fun dyingTo(state: GameState, projected: ProjectedState, creature: EntityId, reach: Int): Boolean =
+        remainingToughness(state, projected, creature)?.let { it <= reach } == true
+
+    private fun remainingToughness(state: GameState, projected: ProjectedState, creature: EntityId): Int? {
+        if (!projected.isCreature(creature)) return null
+        val toughness = projected.getToughness(creature) ?: return null
+        return toughness - (state.getEntity(creature)?.get<DamageComponent>()?.amount ?: 0)
     }
 
     /**

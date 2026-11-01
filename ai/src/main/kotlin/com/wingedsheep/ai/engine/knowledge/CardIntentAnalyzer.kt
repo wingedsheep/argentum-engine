@@ -216,6 +216,7 @@ object CardIntentAnalyzer {
         }
 
         for (root in roots) tags += pipelineTags(root)
+        if (roots.any(::isExpiringProtectionTrick)) expiringPump = true
         for (effect in leaves) {
             tags += tagsOf(effect)
             reachOf(effect)?.let { removalReach = maxOf(removalReach ?: 0, it) }
@@ -246,6 +247,8 @@ object CardIntentAnalyzer {
         // A combat trick is an instant pump that *expires*. A "+1/+1 counter at instant speed" is
         // a permanent investment you can make whenever you like, and holding it for combat is not
         // the same decision — so it stays PUMP and never reaches [HoldPolicy]'s no-window verdict.
+        // A protective keyword that wears off at cleanup (Withstand Death's indestructible) is the
+        // same trick without the stats: spent on a fight or on removal on the stack, or wasted.
         val speed = speedOf(card, scripts, tags)
         if (speed == Speed.INSTANT && expiringPump) tags += IntentTag.COMBAT_TRICK
 
@@ -840,6 +843,31 @@ object CardIntentAnalyzer {
     }
 
     /**
+     * A protective keyword granted until end of turn — "target creature gains indestructible until
+     * end of turn". Like [isExpiringPump] it buys something only before cleanup, so an instant
+     * carrying one is held for a fight or a response ([IntentTag.COMBAT_TRICK]), with no toughness.
+     */
+    private fun isExpiringProtection(effect: Effect): Boolean =
+        effect is GrantKeywordEffect && effect.duration == Duration.EndOfTurn &&
+            IntentTag.PROTECTION in keywordTags(effect.keyword)
+
+    /**
+     * An ability whose payoff ends at cleanup: an [isExpiringProtection] grant (one creature's or,
+     * through a group `ForEach`, the team's), and every other leaf is one too — another expiring
+     * keyword or pump, or a rider spent on resolution (a scry, a little life). Anything else may
+     * last — Snakeskin Veil's +1/+1 counter, Oblivion's Hunger's draw, Royal Treatment's Role — and
+     * a spell with a lasting payoff is worth casting whenever, so it is no trick to hold.
+     */
+    private fun isExpiringProtectionTrick(root: Effect): Boolean {
+        val leaves = readingLeaves(root).flatMap { if (it is ForEachEffect) readingLeaves(it.body) else listOf(it) }
+        return leaves.any(::isExpiringProtection) && leaves.all { leaf ->
+            isExpiringPump(leaf) ||
+                (leaf is GrantKeywordEffect && leaf.duration == Duration.EndOfTurn) ||
+                tagsOf(leaf).let { it.isNotEmpty() && it.all { tag -> tag in SPENT_ON_RESOLUTION } }
+        }
+    }
+
+    /**
      * Whether a stat modifier only ever adds. A dynamic "+X" (a count, a mana value) counts: reading
      * only [DynamicAmount.Fixed] left Accelerated Mutation's +X/+X out of [IntentTag.COMBAT_TRICK].
      */
@@ -1120,6 +1148,9 @@ object CardIntentAnalyzer {
         Keyword.FLYING, Keyword.MENACE, Keyword.FEAR, Keyword.INTIMIDATE, Keyword.SHADOW,
         Keyword.TRAMPLE,
     ) + Keyword.LANDWALK
+
+    /** Riders that leave nothing behind once resolved — see [isExpiringProtectionTrick]. */
+    private val SPENT_ON_RESOLUTION = setOf(IntentTag.CARD_SELECTION, IntentTag.LIFEGAIN)
 
     private val PROTECTIVE_KEYWORDS = setOf(
         Keyword.HEXPROOF, Keyword.SHROUD, Keyword.INDESTRUCTIBLE, Keyword.PROTECTION,
