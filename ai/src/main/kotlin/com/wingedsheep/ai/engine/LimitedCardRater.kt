@@ -1,6 +1,7 @@
 package com.wingedsheep.ai.engine
 
 import com.wingedsheep.ai.draftsim.DraftsimData
+import com.wingedsheep.ai.engine.knowledge.AmountSign
 import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
 import com.wingedsheep.ai.engine.knowledge.EffectWalker
 import com.wingedsheep.ai.engine.knowledge.IntentTag
@@ -14,6 +15,7 @@ import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.effects.*
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.util.concurrent.ConcurrentHashMap
@@ -567,7 +569,7 @@ object LimitedCardRater {
                 // N damage, and a dynamic -X/-X (Death Wind, Defile) the unknown-X damage default.
                 // Summing it as stats priced Grasp of Darkness below a vanilla instant.
                 if (IntentTag.REMOVAL in CardIntentAnalyzer.leafTags(effect)) damageScore(t?.let { -it } ?: 3)
-                else ((p ?: 0) + (t ?: 0)) * 0.15
+                else ((p ?: dynamicStat(effect.powerModifier)) + (t ?: dynamicStat(effect.toughnessModifier))) * 0.15
             }
 
             // Life gain — low value in limited
@@ -593,6 +595,13 @@ object LimitedCardRater {
         }
     }
 
+    /**
+     * A dynamic "+X" the sign reader can vouch for — a count, a power, double a power — priced as
+     * +[DYNAMIC_STAT_GUESS], the way an unknown-X damage leaf is priced as 3. Anything else adds nothing.
+     */
+    private fun dynamicStat(amount: DynamicAmount): Int =
+        if (AmountSign.of(amount) == AmountSign.GAIN) DYNAMIC_STAT_GUESS else 0
+
     /** A removal spell dealing [amount] damage, or giving -[amount]/-[amount]. */
     private fun damageScore(amount: Int): Double = when {
         amount >= 5 -> 1.4
@@ -601,6 +610,7 @@ object LimitedCardRater {
         else -> 0.4
     }
 
+    private const val DYNAMIC_STAT_GUESS = 2
     private const val DESTROY_SCORE = 1.5
     private const val COMPOSITE_CAP = 2.5
     private const val MODAL_FLEXIBILITY = 0.2

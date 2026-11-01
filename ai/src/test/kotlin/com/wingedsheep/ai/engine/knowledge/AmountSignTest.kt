@@ -2,7 +2,9 @@ package com.wingedsheep.ai.engine.knowledge
 
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -24,6 +26,13 @@ class AmountSignTest : FunSpec({
     test("a difference of two counts could go either way") {
         AmountSign.of(DynamicAmount.Subtract(count, count)) shouldBe AmountSign.UNKNOWN
         AmountSign.of(DynamicAmount.IfPositive(DynamicAmount.Subtract(count, count))) shouldBe AmountSign.GAIN
+    }
+
+    test("a power is floored at zero (CR 107.1b): a gain, its negation a loss, a difference unknown") {
+        val power = DynamicAmount.EntityProperty(EffectTarget.Self, EntityNumericProperty.Power)
+        AmountSign.of(power) shouldBe AmountSign.GAIN
+        AmountSign.of(DynamicAmount.Multiply(power, -1)) shouldBe AmountSign.LOSS
+        AmountSign.of(DynamicAmount.Subtract(DynamicAmount.Fixed(5), power)) shouldBe AmountSign.UNKNOWN
     }
 
     test("a life total or a pipeline variable is not assumed non-negative") {
