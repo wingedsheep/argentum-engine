@@ -1,3 +1,105 @@
+// Amplifire
+{
+    "name": "Amplifire",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "At the beginning of your upkeep, reveal cards from the top of your library until you reveal a creature card. Until your next turn, this creature's base power becomes twice that card's power and its base toughness becomes twice that card's toughness. Put the revealed cards on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Amplifire:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherUntilMatch",
+                            "filter": "creature",
+                            "storeMatch": "matched0",
+                            "storeRevealed": "revealed0"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "revealed0"
+                        },
+                        {
+                            "type": "SetBaseStats",
+                            "target": "Self",
+                            "power": {
+                                "type": "Multiply",
+                                "amount": {
+                                    "type": "EntityProperty",
+                                    "entity": {
+                                        "type": "PipelineTarget",
+                                        "collectionName": "matched0"
+                                    },
+                                    "numericProperty": "Power"
+                                },
+                                "multiplier": 2
+                            },
+                            "toughness": {
+                                "type": "Multiply",
+                                "amount": {
+                                    "type": "EntityProperty",
+                                    "entity": {
+                                        "type": "PipelineTarget",
+                                        "collectionName": "matched0"
+                                    },
+                                    "numericProperty": "Toughness"
+                                },
+                                "multiplier": 2
+                            },
+                            "duration": "UntilYourNextTurn"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "revealed0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your upkeep, reveal cards from the top of your library until you reveal a creature card. Until your next turn, this creature's base power becomes twice that card's power and its base toughness becomes twice that card's toughness. Put the revealed cards on the bottom of your library in a random order."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "rarity": "RARE",
+        "artist": "Dan Murayama Scott",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/a/7a58c77f-7c15-44f4-8011-6046482a2d08.jpg?1783933686",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "Amplifire will be a 1/1 creature from the time your untap step begins until the time its triggered ability resolves during your upkeep."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "Any effects that modify Amplifire's power and/or toughness without setting them to a specific number or value will apply after its base power and toughness are set, regardless of the order in which those effects were created. The same is true of counters that modify its power and toughness."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If you reveal your entire library and don't reveal a creature card, Amplifire becomes a 0/0 creature and you put your library back in a random order."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Angel of Grace
 {
     "name": "Angel of Grace",
@@ -1638,6 +1740,50 @@
     ]
 }
 
+// Cavalcade of Calamity
+{
+    "name": "Cavalcade of Calamity",
+    "manaCost": "{1}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a creature you control with power 1 or less attacks, this enchantment deals 1 damage to the player or planeswalker that creature is attacking.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cavalcade of Calamity:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": "creature pow<=1 ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "AttackedBy"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "95",
+        "rarity": "UNCOMMON",
+        "artist": "Jonas De Ro",
+        "flavorText": "Let the Dimir worry about witnesses. For the Rakdos, screams count as applause.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/a/8a81e889-490b-4aeb-8e84-ea9a390bb8fe.jpg?1783933685",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "The power of the attacking creature is checked only when the ability triggers. Once it triggers, Cavalcade of Calamity will deal 1 damage to the appropriate player or planeswalker even if the creature's power changes or the creature leaves the battlefield before the ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Charging War Boar
 {
     "name": "Charging War Boar",
@@ -2463,6 +2609,190 @@
     ]
 }
 
+// Dagger Caster
+{
+    "name": "Dagger Caster",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Lizard Rogue",
+    "oracleText": "When this creature enters, it deals 1 damage to each opponent and 1 damage to each creature your opponents control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dagger Caster:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:opponent"
+                                }
+                            },
+                            "body": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "97",
+        "rarity": "UNCOMMON",
+        "artist": "Viktor Titov",
+        "flavorText": "\"Keep coming. I have knives enough for everyone.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/8/48a7ac34-ec4a-4571-abb1-bff1fb67c78f.jpg?1783933685"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Dead Revels
+{
+    "name": "Dead Revels",
+    "manaCost": "{3}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Spectacle {1}{B} (You may cast this spell for its spectacle cost rather than its mana cost if an opponent lost life this turn.)\nReturn up to two target creature cards from your graveyard to your hand.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                },
+                "destination": "Hand"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                }
+            }
+        ],
+        "selfAlternativeCost": {
+            "manaCost": "{1}{B}",
+            "condition": {
+                "type": "Compare",
+                "left": {
+                    "type": "TurnTracking",
+                    "player": "EachOpponent",
+                    "tracker": "LIFE_LOST"
+                },
+                "operator": "GTE",
+                "right": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "artist": "David Palumbo",
+        "flavorText": "You're only as dead as you feel.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f5b2c21a-419d-4896-82e3-1b5cb32b158e.jpg?1783933694"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Debtors' Transport
+{
+    "name": "Debtors' Transport",
+    "manaCost": "{5}{B}",
+    "typeLine": "Creature — Thrull",
+    "oracleText": "Afterlife 2 (When this creature dies, create two 1/1 white and black Spirit creature tokens with flying.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Debtors' Transport:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE",
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Spirit"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/4/5/45b3bdd7-b093-4bfd-8a9a-965e72bfefb3.jpg?1783933602"
+                },
+                "descriptionOverride": "Afterlife 2 (When this creature dies, create two 1/1 white and black Spirit creature tokens with flying.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "artist": "Jakub Kasper",
+        "flavorText": "By design, the sarcophagus muffles the debtors' moans but does not silence them.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7cd03b99-d62e-428a-9e0d-097f1227a4da.jpg?1783933694",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "Because blockers are chosen all at once, you can't block with a creature with afterlife, wait for it to die, then block with the resulting Spirit tokens."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Deface
 {
     "name": "Deface",
@@ -2760,6 +3090,101 @@
         "imageUri": "https://cards.scryfall.io/normal/front/0/a/0a962509-2e77-4655-b397-9625b2f3407a.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Drill Bit
+{
+    "name": "Drill Bit",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Spectacle {B} (You may cast this spell for its spectacle cost rather than its mana cost if an opponent lost life this turn.)\nTarget player reveals their hand. You choose a nonland card from it. That player discards that card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "RevealHand",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "nonland",
+                    "storeSelected": "selected2",
+                    "prompt": "Choose a nonland card to discard",
+                    "showAllCards": true,
+                    "alwaysPrompt": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "moveType": "Discard"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ],
+        "selfAlternativeCost": {
+            "manaCost": "{B}",
+            "condition": {
+                "type": "Compare",
+                "left": {
+                    "type": "TurnTracking",
+                    "player": "EachOpponent",
+                    "tracker": "LIFE_LOST"
+                },
+                "operator": "GTE",
+                "right": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "73",
+        "rarity": "UNCOMMON",
+        "artist": "Sidharth Chaturvedi",
+        "flavorText": "Never boring.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/3/73f8710c-9c5e-4d11-b45f-0728c54bd631.jpg?1783933694"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Electrodominance
@@ -3297,6 +3722,99 @@
     ]
 }
 
+// Flames of the Raze-Boar
+{
+    "name": "Flames of the Raze-Boar",
+    "manaCost": "{5}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Flames of the Raze-Boar deals 4 damage to target creature an opponent controls. Then Flames of the Raze-Boar deals 2 damage to each other creature that player controls if you control a creature with power 4 or greater.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "creature pow>=4"
+                        }
+                    },
+                    "then": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "controllerPredicate": {
+                                        "type": "ControlledByReferencedPlayer",
+                                        "target": "TargetController"
+                                    }
+                                },
+                                "excludeTarget": true
+                            }
+                        },
+                        "body": {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": "IterationEntity"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "rarity": "UNCOMMON",
+        "artist": "Jason A. Engle",
+        "flavorText": "\"Fire will cure a multitude of ills.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/16957271-12bb-4031-b476-f7678b753ae3.jpg?1783933682",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "If the target is dealt lethal damage this way, it will still be on the battlefield while Flames of the Raze-Boar deals damage to other creatures, if appropriate. Creatures dealt lethal damage won't die until after Flames of the Raze-Boar is entirely finished resolving."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If the chosen target becomes an illegal target for Flames of the Raze-Boar, the spell doesn't resolve. No creatures are dealt damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Font of Agonies
 {
     "name": "Font of Agonies",
@@ -3760,6 +4278,41 @@
     }
 }
 
+// Gates Ablaze
+{
+    "name": "Gates Ablaze",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Gates Ablaze deals X damage to each creature, where X is the number of Gates you control.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            },
+            "body": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "permanent Gate"
+                },
+                "target": "IterationEntity"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "102",
+        "rarity": "UNCOMMON",
+        "artist": "Eytan Zana",
+        "flavorText": "When the Izzet's spirit of invention extends to the city's infrastructure, the results are sometimes explosive.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2b574b44-01e1-4197-99bd-57e54aebc5ff.jpg?1783933682"
+    }
+}
+
 // Gateway Sneak
 {
     "name": "Gateway Sneak",
@@ -3930,6 +4483,50 @@
         "artist": "David Palumbo",
         "flavorText": "\"Today the Rubblebelt is a bit larger. That's a good day's work.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/4/d/4da3969c-1979-4eee-828a-4a7189121eba.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Goblin Gathering
+{
+    "name": "Goblin Gathering",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create a number of 1/1 red Goblin creature tokens equal to two plus the number of cards named Goblin Gathering in your graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "count": {
+                "type": "Add",
+                "left": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "right": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Graveyard",
+                    "filter": "name:Goblin Gathering"
+                }
+            },
+            "power": 1,
+            "toughness": 1,
+            "colors": [
+                "RED"
+            ],
+            "creatureTypes": [
+                "Goblin"
+            ],
+            "imageUri": "https://cards.scryfall.io/normal/front/9/9/993613a6-09a9-45a5-b35f-5a5fdb6d14ec.jpg?1783933603"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "artist": "Svetlin Velinov",
+        "flavorText": "Two's a party. Three's a felony.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/4/147bef05-4497-44d5-9dd6-fb5dc08e78f7.jpg?1783933679"
     },
     "colorIdentityOverride": [
         "RED"
@@ -4309,6 +4906,71 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Gutterbones
+{
+    "name": "Gutterbones",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Skeleton Warrior",
+    "oracleText": "This creature enters tapped.\n{1}{B}: Return this card from your graveyard to your hand. Activate only during your turn and only if an opponent lost life this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Gutterbones:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand",
+                    "fromZone": "Graveyard"
+                },
+                "restrictions": [
+                    "OnlyDuringYourTurn",
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "TurnTracking",
+                                "player": "EachOpponent",
+                                "tracker": "LIFE_LOST"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    }
+                ],
+                "activateFromZone": "Graveyard"
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "rarity": "RARE",
+        "artist": "Grzegorz Rutkowski",
+        "flavorText": "\"Down here, things don't stay dead.\"\n—Lavinia",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/a/6a1c710b-bd67-4174-ab02-6ae98a7575ac.jpg?1783933694"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -5688,6 +6350,117 @@
     ]
 }
 
+// Orzhov Racketeers
+{
+    "name": "Orzhov Racketeers",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "Whenever this creature deals combat damage to a player, that player discards a card.\nAfterlife 2 (When this creature dies, create two 1/1 white and black Spirit creature tokens with flying.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Orzhov Racketeers:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": "TriggeringPlayer"
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "TriggeringPlayer",
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "TriggeringPlayer"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature deals combat damage to a player, that player discards a card."
+            },
+            {
+                "id": "Orzhov Racketeers:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE",
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Spirit"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/4/5/45b3bdd7-b093-4bfd-8a9a-965e72bfefb3.jpg?1783933602"
+                },
+                "descriptionOverride": "Afterlife 2 (When this creature dies, create two 1/1 white and black Spirit creature tokens with flying.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "rarity": "UNCOMMON",
+        "artist": "David Palumbo",
+        "flavorText": "\"Looks like you need protection.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/29b89f68-72ba-493d-95c4-eb37751fbd3d.jpg?1783933692",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "Because blockers are chosen all at once, you can't block with a creature with afterlife, wait for it to die, then block with the resulting Spirit tokens."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Persistent Petitioners
 {
     "name": "Persistent Petitioners",
@@ -5817,6 +6590,51 @@
     ]
 }
 
+// Pestilent Spirit
+{
+    "name": "Pestilent Spirit",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Menace, deathtouch\nInstant and sorcery spells you control have deathtouch. (Any amount of damage they deal to a creature is enough to destroy it.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "MENACE",
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeywordToOwnSpells",
+                "keyword": "DEATHTOUCH",
+                "spellFilter": {
+                    "cardPredicates": [
+                        {
+                            "type": "Or",
+                            "predicates": [
+                                "IsInstant",
+                                "IsSorcery"
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "rarity": "RARE",
+        "artist": "Anastasia Ovchinnikova",
+        "flavorText": "Its stench corrodes steel. Its miasma sickens angels. Its finality ends hope.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f9a0387-5116-484b-bb2b-064bd42e7fff.jpg?1783933691"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Pitiless Pontiff
 {
     "name": "Pitiless Pontiff",
@@ -5879,6 +6697,64 @@
     "colorIdentityOverride": [
         "BLACK",
         "WHITE"
+    ]
+}
+
+// Plague Wight
+{
+    "name": "Plague Wight",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "Whenever this creature becomes blocked, each creature blocking it gets -1/-1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Plague Wight:1",
+                "trigger": "BecomesBlockedEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "IsBlockingSource"
+                                ]
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Whenever this creature becomes blocked, each creature blocking it gets -1/-1 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "artist": "Tomasz Jedruszek",
+        "flavorText": "For some goods, the best couriers are the dead.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/6/962d354f-f2ad-4b47-8666-0ed64543b676.jpg?1783933692"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -7819,6 +8695,103 @@
     ]
 }
 
+// Spawn of Mayhem
+{
+    "name": "Spawn of Mayhem",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Creature — Demon",
+    "oracleText": "Spectacle {1}{B}{B} (You may cast this spell for its spectacle cost rather than its mana cost if an opponent lost life this turn.)\nFlying, trample\nAt the beginning of your upkeep, this creature deals 1 damage to each player. Then if you have 10 or less life, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Spawn of Mayhem:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "Each"
+                            },
+                            "body": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": "Controller"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "LifeTotal",
+                                        "player": "You"
+                                    },
+                                    "operator": "LTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 10
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "selfAlternativeCost": {
+            "manaCost": "{1}{B}{B}",
+            "condition": {
+                "type": "Compare",
+                "left": {
+                    "type": "TurnTracking",
+                    "player": "EachOpponent",
+                    "tracker": "LIFE_LOST"
+                },
+                "operator": "GTE",
+                "right": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "rarity": "MYTHIC",
+        "artist": "Victor Adame Minguez",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8be01b8d-e0ef-44d1-ac97-39bb5a0e76be.jpg?1783933688"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Spear Spewer
 {
     "name": "Spear Spewer",
@@ -9185,6 +10158,75 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Undercity Scavenger
+{
+    "name": "Undercity Scavenger",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Ogre Warrior",
+    "oracleText": "When this creature enters, you may sacrifice another creature. If you do, put two +1/+1 counters on this creature, then scry 2.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Undercity Scavenger:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "Sacrifice",
+                            "filter": "creature",
+                            "excludeSource": true
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 2,
+                                "target": "Self"
+                            },
+                            {
+                                "type": "Scry",
+                                "count": 2
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "When this creature enters, you may sacrifice another creature. If you do, put two +1/+1 counters on this creature, then scry 2."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "artist": "Tomasz Jedruszek",
+        "flavorText": "\"We grow strong by feasting on failure.\"\n—Izoni",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1be7e297-4602-44f8-b919-07015813fd7e.jpg?1783933687",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "You choose whether to sacrifice a creature (and which one to sacrifice) while Undercity Scavenger's ability is resolving. No player may take actions between the time you choose which creature to sacrifice, the time Undercity Scavenger has +1/+1 counters on it, and the time you scry 2."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "You can't sacrifice multiple creatures to put more +1/+1 counters on Undercity Scavenger or to scry more."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
