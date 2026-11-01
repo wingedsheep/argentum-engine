@@ -383,25 +383,40 @@ object CardIntentAnalyzer {
 
     /**
      * "Look at the top N cards of your library and put one of them into your hand" — a gather from
-     * our own library top and a move of what it picked into our hand — reads as [IntentTag.DRAW].
+     * our own library top, and a move of those same cards (or the ones picked from among them) into
+     * our hand — reads as [IntentTag.DRAW].
      *
      * Neither leaf says it alone: the gather is plumbing every mill, impulse and scry shares, and
-     * the move to hand is how a regrowth ends too. Together, within one ability, they are a card
-     * taken off the library into hand — what a draw is, with a choice on top. Read off [root]'s
-     * own leaves rather than the whole card's, so a card that mills on one ability and returns a
-     * creature card to hand on another reads as neither.
+     * the move to hand is how a regrowth ends too. So the move must carry the gathered cards: the
+     * named collection is followed through every step that splits or narrows it (a selection, a
+     * pile, a filter). Grapple with the Past mills and then returns a card from the *graveyard* —
+     * a different collection — and stays unread here.
      */
     private fun digTags(root: Effect): Set<IntentTag> {
         val leaves = readingLeaves(root)
-        val gathersOurTop = leaves.any {
-            it is GatherCardsEffect && (it.source as? CardSource.TopOfLibrary)?.player == Player.You
+        val fromOurTop = leaves.mapNotNullTo(HashSet()) {
+            (it as? GatherCardsEffect)?.takeIf { g -> (g.source as? CardSource.TopOfLibrary)?.player == Player.You }?.storeAs
         }
-        if (!gathersOurTop) return emptySet()
-        val movesToOurHand = leaves.any {
-            it is MoveCollectionEffect &&
+        if (fromOurTop.isEmpty()) return emptySet()
+        do {
+            val before = fromOurTop.size
+            for (leaf in leaves) fromOurTop += derivedCollections(leaf, fromOurTop)
+        } while (fromOurTop.size != before)
+        val movesThemToOurHand = leaves.any {
+            it is MoveCollectionEffect && it.from in fromOurTop &&
                 (it.destination as? CardDestination.ToZone)?.let { to -> to.zone == Zone.HAND && to.player == Player.You } == true
         }
-        return if (movesToOurHand) setOf(IntentTag.DRAW) else emptySet()
+        return if (movesThemToOurHand) setOf(IntentTag.DRAW) else emptySet()
+    }
+
+    /** The collections [leaf] stores from one of [sources] — the pipeline steps that split or narrow a collection. */
+    private fun derivedCollections(leaf: Effect, sources: Set<String>): List<String> = when (leaf) {
+        is SelectFromCollectionEffect -> if (leaf.from in sources) listOfNotNull(leaf.storeSelected, leaf.storeRemainder) else emptyList()
+        is FilterCollectionEffect -> if (leaf.from in sources) listOfNotNull(leaf.storeMatching, leaf.storeNonMatching) else emptyList()
+        is ChoosePileEffect -> if (leaf.pileA in sources || leaf.pileB in sources) listOf(leaf.storeChosenAs, leaf.storeOtherAs) else emptyList()
+        is ChooseOnePerCategoryEffect -> if (leaf.from in sources) listOf(leaf.storeAs) else emptyList()
+        is MoveCollectionEffect -> if (leaf.from in sources) listOfNotNull(leaf.storeMovedAs) else emptyList()
+        else -> emptyList()
     }
 
     /** The filter of a gather from its controller's own sideboard — "from outside the game". */

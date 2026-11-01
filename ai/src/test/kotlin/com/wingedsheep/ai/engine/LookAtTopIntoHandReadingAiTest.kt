@@ -1,5 +1,7 @@
 package com.wingedsheep.ai.engine
 
+import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
+import com.wingedsheep.ai.engine.knowledge.IntentTag
 import com.wingedsheep.ai.puzzles.AiPuzzle
 import com.wingedsheep.ai.puzzles.PuzzleCategory
 import com.wingedsheep.ai.puzzles.PuzzleMove
@@ -9,6 +11,8 @@ import com.wingedsheep.ai.puzzles.advanceToPriority
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
+import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 
 /**
@@ -77,6 +81,13 @@ class LookAtTopIntoHandReadingAiTest : ScenarioTestBase() {
             val result = decide(recruiterWithACounterInHand) { shouldNotActivate("Duskwatch Recruiter") }
             withClue("look-at-top-into-hand reads as card draw, held for the counter like a draw activation: chose ${result.move} — ${result.failure}") {
                 result.passed shouldBe true
+            }
+        }
+
+        test("only the gathered cards moving into hand read as draw — mill then regrowth does not") {
+            CardIntentAnalyzer.analyze(cardRegistry.requireCard("Duskwatch Recruiter")).tags shouldContain IntentTag.DRAW
+            withClue("Grapple with the Past mills, then returns a card from the graveyard — a different collection") {
+                CardIntentAnalyzer.analyze(cardRegistry.requireCard("Grapple with the Past")).tags shouldNotContain IntentTag.DRAW
             }
         }
     }

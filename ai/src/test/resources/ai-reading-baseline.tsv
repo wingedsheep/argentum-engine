@@ -97,7 +97,7 @@ Acererak the Archlich	intent: ForEach>PayOrSufferEffect; intent: VentureIntoTheD
 Acid Rain	intent: Pipeline(BattlefieldMatching→graveyard)
 Aclazotz, Deepest Betrayal	intent: ReturnSelfFromZoneTransformedEffect; intent: TransformEffect
 Acolyte of Aclazotz
-Acolyte of Affliction
+Acolyte of Affliction	intent: Pipeline(TopOfLibrary|graveyard→graveyard|hand)
 Acquired Mutation	intent: AddCountersEffect
 Acquisition Octopus	intent: UnattachEquipmentEffect; polarity: AttachEquipmentEffect
 Acquisitions Expert	intent: Pipeline(hand→graveyard); polarity: Pipeline(hand→graveyard)
@@ -565,7 +565,7 @@ Anointed Peacekeeper
 Anointed Procession
 Anointer of Champions
 Anointer of Valor
-Another Chance
+Another Chance	intent: Pipeline(TopOfLibrary|graveyard→graveyard|hand)
 Another Round	intent: Pipeline(BattlefieldMatching|FromLinkedExile→battlefield|exile); intent: RepeatDynamicTimesEffect
 Ant Queen
 Ant-Man's Army
@@ -840,7 +840,7 @@ Asha's Favor
 Ashaya, Soul of the Wild
 Ashcloud Phoenix
 Ashcoat Bear
-Ashcoat of the Shadow Swarm
+Ashcoat of the Shadow Swarm	intent: Pipeline(TopOfLibrary|graveyard→graveyard|hand)
 Ashe, Princess of Dalmasca
 Ashen Firebeast
 Ashen Powder	intent: MoveToZoneEffect
@@ -2389,7 +2389,7 @@ Carnivorous Moss-Beast
 Carnivorous Plant
 Carrion Ants
 Carrion Crow
-Carrion Cruiser
+Carrion Cruiser	intent: Pipeline(TopOfLibrary|graveyard→graveyard|hand)
 Carrion Feeder
 Carrion Grub
 Carrion Howler	intent: ModifyStatsEffect
@@ -3181,7 +3181,7 @@ Cormela, Glamour Thief
 Cornered Crook
 Cornered by Black Mages	polarity: ForceSacrificeEffect
 Corpse Appraiser	intent: ConditionalOnCollectionEffect; intent: Pipeline(ChosenTargets→exile); polarity: ConditionalOnCollectionEffect; polarity: Pipeline(ChosenTargets→exile)
-Corpse Churn
+Corpse Churn	intent: Pipeline(TopOfLibrary|graveyard→graveyard|hand)
 Corpse Cobble
 Corpse Explosion
 Corpse Harvester
@@ -3745,7 +3745,7 @@ Death Wind	intent: ModifyStatsEffect; timing: ModifyStatsEffect
 Death in the Family
 Death or Glory	intent: ChoosePileEffect; intent: Pipeline(graveyard→battlefield|exile)
 Death to Our Enemies
-Death's Oasis
+Death's Oasis	intent: Pipeline(TopOfLibrary|graveyard→graveyard|hand)
 Death's-Head Buzzard
 Death-Priest of Myrkul
 Death-Rattle Oni	intent: Pipeline(BattlefieldMatching→graveyard)
@@ -4033,7 +4033,7 @@ Didn't Say Please
 Dig Site Inventory
 Dig Through Time
 Dig Up
-Dig Up the Body
+Dig Up the Body	intent: Pipeline(TopOfLibrary|graveyard→graveyard|hand)
 Digsite Conservator	intent: DiscoverEffect
 Dihada, Binder of Wills
 Diligent Excavator	polarity: Pipeline(TopOfLibrary→graveyard)
@@ -4201,7 +4201,7 @@ Dog Umbra
 Dog Walker
 Dogged Hunter
 Dogged Pursuit
-Dogmeat, Ever Loyal
+Dogmeat, Ever Loyal	intent: Pipeline(TopOfLibrary|graveyard→graveyard|hand)
 Dogpile
 Dokuchi Shadow-Walker
 Dokuchi Silencer
@@ -4651,7 +4651,7 @@ Ebondeath, Dracolich
 Ebony Horse	polarity: PreventDamageEffect; timing: PreventDamageEffect
 Ebony Treefolk
 Eccentric Apprentice	intent: VentureIntoTheDungeonEffect; polarity: SetCreatureSubtypesEffect
-Eccentric Farmer
+Eccentric Farmer	intent: Pipeline(TopOfLibrary|graveyard→graveyard|hand)
 Echo Inspector
 Echo Tracer	polarity: MoveToZoneEffect
 Echo of Dusk
@@ -5503,7 +5503,7 @@ Felidar Savior
 Felidar Sovereign	intent: WinGameEffect
 Feline Sovereign
 Fell
-Fell Gravship
+Fell Gravship	intent: Pipeline(TopOfLibrary|graveyard→graveyard|hand)
 Fell Horseman
 Fell Stinger
 Fell the Mighty	intent: Pipeline(BattlefieldMatching→graveyard); polarity: Pipeline(BattlefieldMatching→graveyard)
@@ -6891,7 +6891,7 @@ Granite Witness	polarity: ModalEffect
 Grapeshot
 Grapeshot Catapult
 Grapple with Death
-Grapple with the Past
+Grapple with the Past	intent: Pipeline(TopOfLibrary|graveyard→graveyard|hand)
 Grappling Kraken
 Grappling Sundew
 Grasp of Darkness
@@ -8112,7 +8112,7 @@ Insidious Roots
 Insolent Neonate
 Insomnia, Crown City
 Inspiration
-Inspiration from Beyond
+Inspiration from Beyond	intent: Pipeline(TopOfLibrary|graveyard→graveyard|hand)
 Inspire Awe	timing: PreventDamageEffect
 Inspired Charge
 Inspired Idea
@@ -8776,7 +8776,7 @@ Kheru Dreadmaw
 Kheru Goldkeeper
 Kheru Lich Lord
 Kheru Spellsnatcher
-Kianne, Dean of Substance
+Kianne, Dean of Substance	intent: Pipeline(TopOfLibrary|exile→exile|hand)
 Kibo, Uktabi Prince
 Kick in the Door
 Kickoff Celebrations	intent: ForEach>GrantKeywordEffect
@@ -11503,7 +11503,7 @@ Overgrowth
 Overgrowth Elemental
 Overkill
 Overload
-Overlord of the Balemurk	intent: RemoveCountersEffect
+Overlord of the Balemurk	intent: Pipeline(TopOfLibrary|graveyard→graveyard|hand); intent: RemoveCountersEffect
 Overlord of the Boilerbilges	intent: RemoveCountersEffect
 Overlord of the Floodpits	intent: RemoveCountersEffect
 Overlord of the Hauntwoods	intent: RemoveCountersEffect
@@ -12039,7 +12039,7 @@ Possessed Goat	intent: AddColorEffect; intent: AddCreatureTypeEffect
 Possession Engine
 Possibility Technician	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Postmortem Professor
-Pothole Mole
+Pothole Mole	intent: Pipeline(TopOfLibrary|graveyard→graveyard|hand)
 Potion of Healing
 Potioner's Trove
 Poultice Sliver
@@ -13743,7 +13743,7 @@ Saw in Half	intent: CaptureControllersEffect; intent: ForEachCapturedControllerE
 Sawblade Scamp
 Sawblade Skinripper
 Sawblade Slinger
-Say Its Name	intent: Pipeline(FromMultipleZones→battlefield)
+Say Its Name	intent: Pipeline(FromMultipleZones→battlefield); intent: Pipeline(TopOfLibrary|graveyard→graveyard|hand)
 Sazacap's Brew
 Sazh Katzroy
 Sazh's Chocobo
@@ -16058,7 +16058,7 @@ Take to the Streets
 Taken by Nightmares
 Takeno, Samurai General
 Takenuma Bleeder
-Takenuma, Abandoned Mire
+Takenuma, Abandoned Mire	intent: Pipeline(TopOfLibrary|graveyard→graveyard|hand)
 Takklemaggot	intent: PutOntoBattlefieldAsNonAuraEffect; intent: PutOntoBattlefieldAttachedToChosenEffect
 Talarian Hook Spider
 Talas Air Ship
@@ -17452,7 +17452,7 @@ Undead Minotaur
 Undead Servant
 Undead Sprinter
 Undead Warchief
-Under the Skin
+Under the Skin	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary|graveyard→battlefield|graveyard|hand)
 Undercity Dire Rat
 Undercity Eliminator
 Undercity Scrounger
@@ -17725,7 +17725,7 @@ Vandalblast
 Vandalize
 Vanguard Seraph	intent: SurveilEffect
 Vanguard of the Rose
-Vanille, Cheerful l'Cie	intent: MeldEffect
+Vanille, Cheerful l'Cie	intent: MeldEffect; intent: Pipeline(TopOfLibrary|graveyard→graveyard|hand)
 Vanish from Sight	intent: PutOnLibraryPositionOfChoiceEffect; intent: SurveilEffect; polarity: PutOnLibraryPositionOfChoiceEffect
 Vanish into Eternity
 Vanishing Verse
