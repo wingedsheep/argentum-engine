@@ -4065,6 +4065,90 @@
     ]
 }
 
+// Plaza of Harmony
+{
+    "name": "Plaza of Harmony",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "When this land enters, if you control two or more Gates, you gain 3 life.\n{T}: Add {C}.\n{T}: Add one mana of any type that a Gate you control could produce.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Plaza of Harmony:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land Gate"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Plaza of Harmony:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add {C}."
+            },
+            {
+                "id": "Plaza of Harmony:3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "colorSet": {
+                        "type": "ManaColorSet.LandsCouldProduce",
+                        "scope": "YOU",
+                        "landFilter": {
+                            "cardPredicates": [
+                                "IsLand",
+                                {
+                                    "type": "HasSubtype",
+                                    "subtype": "Gate"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add one mana of any type that a Gate you control could produce."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "254",
+        "rarity": "RARE",
+        "artist": "Jedd Chevrier",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/07f2ae00-206d-4984-84eb-d10ab75d3791.jpg?1783933616"
+    }
+}
+
 // Priest of Forgotten Gods
 {
     "name": "Priest of Forgotten Gods",

@@ -79,14 +79,25 @@ sealed interface ManaColorSet {
      * costs are ignored; colorless production is ignored. Used by Fellwar Stone
      * (OPPONENTS), Exotic Orchard (OPPONENTS), Reflecting Pool (YOU). "Any *type*" adds a
      * second `{C}` ability gated on `CardPredicate.CouldProduceColorlessMana` (Naga Vitalist).
+     *
+     * [landFilter] narrows the lands in [scope] to those it matches (read from projected state):
+     * Plaza of Harmony's "a Gate you control" is `LandsCouldProduce(YOU, Land.withSubtype("Gate"))`.
+     * Null means every land in [scope]. [scope] owns the controller, so the filter names only what
+     * the land is (no controller predicate).
      */
     @SerialName("ManaColorSet.LandsCouldProduce")
     @Serializable
-    data class LandsCouldProduce(val scope: LandControllerScope) : ManaColorSet {
-        override val description: String = when (scope) {
-            LandControllerScope.OPPONENTS -> "any color a land an opponent controls could produce"
-            LandControllerScope.YOU -> "any color a land you control could produce"
-            LandControllerScope.ANY -> "any color a land could produce"
+    data class LandsCouldProduce(
+        val scope: LandControllerScope,
+        val landFilter: GameObjectFilter? = null,
+    ) : ManaColorSet {
+        override val description: String = run {
+            val land = landFilter?.let { "${it.indefiniteArticle} ${it.description}" } ?: "a land"
+            when (scope) {
+                LandControllerScope.OPPONENTS -> "any color $land an opponent controls could produce"
+                LandControllerScope.YOU -> "any color $land you control could produce"
+                LandControllerScope.ANY -> "any color $land could produce"
+            }
         }
     }
 

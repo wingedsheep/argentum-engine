@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.mana
 
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
@@ -52,7 +53,7 @@ class TypeGrantedLandManaTest : FunSpec({
 
         IntrinsicManaAbilities.forEntity(d.state, projected, bears).map { it.id } shouldBe
             listOf(AbilityId.intrinsicMana('U'))
-        LandManaColorInspector.colorsLandsCouldProduce(d.state, projected, listOf(bears), d.cardRegistry) shouldContain
+        LandManaColorInspector.colorsLandsCouldProduce(d.state, projected, listOf(bears), d.cardRegistry, PredicateEvaluator(d.cardRegistry)) shouldContain
             Color.BLUE
     }
 
@@ -64,7 +65,7 @@ class TypeGrantedLandManaTest : FunSpec({
         val projected = d.state.projectedState
 
         IntrinsicManaAbilities.forEntity(d.state, projected, bears).shouldBeEmpty()
-        LandManaColorInspector.colorsLandsCouldProduce(d.state, projected, listOf(bears), d.cardRegistry) shouldNotContain
+        LandManaColorInspector.colorsLandsCouldProduce(d.state, projected, listOf(bears), d.cardRegistry, PredicateEvaluator(d.cardRegistry)) shouldNotContain
             Color.BLUE
     }
 })

@@ -55,7 +55,7 @@ object ManaColorSetResolver {
         is ManaColorSet.CommanderIdentity -> commanderIdentity(state, controllerId, cardRegistry)
         is ManaColorSet.AmongPermanents -> amongPermanents(colorSet, state, projected, controllerId, predicateEvaluator = predicateEvaluator)
         is ManaColorSet.AmongCardsInGraveyard -> amongCardsInGraveyard(colorSet, state, projected, controllerId, predicateEvaluator = predicateEvaluator)
-        is ManaColorSet.LandsCouldProduce -> landsCouldProduce(colorSet, state, projected, controllerId, cardRegistry)
+        is ManaColorSet.LandsCouldProduce -> landsCouldProduce(colorSet, state, projected, controllerId, cardRegistry, predicateEvaluator)
         is ManaColorSet.SourceChosenColor -> sourceChosenColor(state, sourceId)
         is ManaColorSet.AmongLinkedExiledCards -> amongLinkedExiledCards(state, sourceId)
         is ManaColorSet.ColorsOf -> colorsOf(state, projected, resolveEntity(colorSet.entity))
@@ -132,9 +132,12 @@ object ManaColorSetResolver {
         projected: ProjectedState,
         controllerId: EntityId,
         cardRegistry: CardRegistry,
+        predicateEvaluator: PredicateEvaluator,
     ): Set<Color> {
-        val landIds = LandManaColorInspector.landsInScopeOf(state, projected, controllerId, colorSet.scope)
-        return LandManaColorInspector.colorsLandsCouldProduce(state, projected, landIds, cardRegistry)
+        val landIds = LandManaColorInspector.landsInScopeOf(
+            state, projected, controllerId, colorSet.scope, colorSet.landFilter, predicateEvaluator,
+        )
+        return LandManaColorInspector.colorsLandsCouldProduce(state, projected, landIds, cardRegistry, predicateEvaluator)
     }
 
     private fun colorsOf(state: GameState, projected: ProjectedState, entityId: EntityId?): Set<Color> {

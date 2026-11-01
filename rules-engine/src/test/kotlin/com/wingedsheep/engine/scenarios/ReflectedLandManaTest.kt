@@ -94,9 +94,34 @@ class ReflectedLandManaTest : ScenarioTestBase() {
         }
     }
 
-    private fun TestGame.colorsFor(sourceId: EntityId, scope: LandControllerScope): Set<Color> =
+    // Plaza of Harmony shape: a Gate land, reflected by a Gate-filtered color set.
+    private val gate = card("Test Gate") {
+        typeLine = "Land — Gate"
+        activatedAbility {
+            cost = Costs.Tap
+            manaAbility = true
+            effect = Effects.AddMana(Color.WHITE)
+        }
+    }
+
+    private val gates = GameObjectFilter.Land.withSubtype("Gate")
+
+    private val plaza = card("Test Plaza") {
+        typeLine = "Land"
+        activatedAbility {
+            cost = Costs.Tap
+            manaAbility = true
+            effect = Effects.AddManaOfColorLandsCouldProduce(LandControllerScope.YOU, landFilter = gates)
+        }
+    }
+
+    private fun TestGame.colorsFor(
+        sourceId: EntityId,
+        scope: LandControllerScope,
+        landFilter: GameObjectFilter? = null,
+    ): Set<Color> =
         ManaColorSetResolver.resolve(
-            ManaColorSet.LandsCouldProduce(scope),
+            ManaColorSet.LandsCouldProduce(scope, landFilter),
             state,
             state.projectedState,
             sourceId,
@@ -106,7 +131,7 @@ class ReflectedLandManaTest : ScenarioTestBase() {
         )
 
     private fun TestGame.couldProduceColorless(entityId: EntityId): Boolean =
-        LandManaColorInspector.landCouldProduceColorless(state, state.projectedState, entityId, cardRegistry)
+        LandManaColorInspector.landCouldProduceColorless(state, state.projectedState, entityId, cardRegistry, services.predicateEvaluator)
 
     /** The Pool's {C} gate exactly as the activation check evaluates it. */
     private fun TestGame.colorlessGateHolds(): Boolean =
@@ -126,6 +151,8 @@ class ReflectedLandManaTest : ScenarioTestBase() {
         cardRegistry.register(stone)
         cardRegistry.register(colorlessLand)
         cardRegistry.register(restrictedRainbow)
+        cardRegistry.register(gate)
+        cardRegistry.register(plaza)
 
         fun base() = scenario()
             .withPlayers("Player", "Opponent")
@@ -221,6 +248,51 @@ class ReflectedLandManaTest : ScenarioTestBase() {
 
             withClue("the opponent's Orchard reflects my Mountain") {
                 game.colorsFor(mine, LandControllerScope.OPPONENTS) shouldBe setOf(Color.RED)
+            }
+        }
+
+        test("a land filter narrows the lands read to those it matches") {
+            val game = base()
+                .withCardOnBattlefield(1, "Test Pool")
+                .withCardOnBattlefield(1, "Test Gate")
+                .withCardOnBattlefield(1, "Forest")
+                .withCardOnBattlefield(2, "Test Gate")
+                .withCardOnBattlefield(2, "Island")
+                .build()
+            val pool = game.findPermanent("Test Pool")!!
+
+            withClue("only my Gate counts — not my Forest, nor the opponent's lands") {
+                game.colorsFor(pool, LandControllerScope.YOU, gates) shouldBe setOf(Color.WHITE)
+            }
+            withClue("an opponent-scoped Gate filter reads only the opponent's Gate") {
+                game.colorsFor(pool, LandControllerScope.OPPONENTS, gates) shouldBe setOf(Color.WHITE)
+            }
+            withClue("unfiltered, every land in scope counts") {
+                game.colorsFor(pool, LandControllerScope.YOU) shouldBe setOf(Color.WHITE, Color.GREEN)
+            }
+        }
+
+        test("a land filter matching nothing produces nothing") {
+            val game = base()
+                .withCardOnBattlefield(1, "Test Pool")
+                .withCardOnBattlefield(1, "Forest")
+                .build()
+
+            game.colorsFor(game.findPermanent("Test Pool")!!, LandControllerScope.YOU, gates) shouldBe emptySet()
+        }
+
+        test("a land reflected through a filtered ability reports only the filtered lands' colors") {
+            val game = base()
+                .withCardOnBattlefield(1, "Test Plaza")
+                .withCardOnBattlefield(1, "Test Gate")
+                .withCardOnBattlefield(1, "Forest")
+                .build()
+            val plazaId = game.findPermanent("Test Plaza")!!
+
+            withClue("what the Plaza could produce, as a Pool or Stone reflecting it would read it") {
+                LandManaColorInspector.colorsLandCouldProduce(
+                    game.state, game.state.projectedState, plazaId, cardRegistry, services.predicateEvaluator,
+                ) shouldBe setOf(Color.WHITE)
             }
         }
     }

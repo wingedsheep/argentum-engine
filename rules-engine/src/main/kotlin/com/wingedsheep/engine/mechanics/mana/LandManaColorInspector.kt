@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.mechanics.mana
 import com.wingedsheep.engine.state.components.battlefield.chosenColor
 
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
@@ -10,6 +12,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.ActivationRestriction
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.references.Player
@@ -49,12 +52,13 @@ object LandManaColorInspector {
         projected: ProjectedState,
         landIds: Iterable<EntityId>,
         cardRegistry: CardRegistry,
+        predicateEvaluator: PredicateEvaluator,
         visiting: Set<EntityId> = emptySet(),
     ): Set<Color> {
         val colors = mutableSetOf<Color>()
         for (landId in landIds) {
             if (landId in visiting) continue
-            colors.addAll(colorsLandCouldProduce(state, projected, landId, cardRegistry, visiting))
+            colors.addAll(colorsLandCouldProduce(state, projected, landId, cardRegistry, predicateEvaluator, visiting))
             if (colors.size == Color.entries.size) return colors
         }
         return colors
@@ -69,12 +73,14 @@ object LandManaColorInspector {
         projected: ProjectedState,
         entityId: EntityId,
         cardRegistry: CardRegistry,
+        predicateEvaluator: PredicateEvaluator,
         visiting: Set<EntityId> = emptySet(),
     ): Set<Color> {
         val container = state.getEntity(entityId) ?: return emptySet()
         val chain = visiting + entityId
-        val reflect = { scope: LandControllerScope ->
-            colorsLandsCouldProduce(state, projected, landsInScope(state, projected, entityId, scope), cardRegistry, chain)
+        val reflect = { colorSet: ManaColorSet.LandsCouldProduce ->
+            val lands = landsInScope(state, projected, entityId, colorSet.scope, colorSet.landFilter, predicateEvaluator)
+            colorsLandsCouldProduce(state, projected, lands, cardRegistry, predicateEvaluator, chain)
         }
         val colors = mutableSetOf<Color>()
         for (ability in manaAbilities(state, projected, entityId, cardRegistry)) {
@@ -97,6 +103,7 @@ object LandManaColorInspector {
         projected: ProjectedState,
         entityId: EntityId,
         cardRegistry: CardRegistry,
+        predicateEvaluator: PredicateEvaluator,
         visiting: Set<EntityId> = emptySet(),
     ): Boolean {
         val chain = visiting + entityId
@@ -106,40 +113,46 @@ object LandManaColorInspector {
             // A reflective gate whose player names no land scope fails closed rather than
             // letting the {C} half unlock itself.
             val scope = gate.scope ?: return@any false
-            landsInScope(state, projected, entityId, scope).any {
-                it !in chain && landCouldProduceColorless(state, projected, it, cardRegistry, chain)
+            landsInScope(state, projected, entityId, scope, landFilter = null, predicateEvaluator).any {
+                it !in chain && landCouldProduceColorless(state, projected, it, cardRegistry, predicateEvaluator, chain)
             }
         }
     }
 
     /**
      * The lands [scope] names, relative to the controller of [sourceId] (Reflecting Pool's "lands
-     * you control", Exotic Orchard's "a land an opponent controls").
+     * you control", Exotic Orchard's "a land an opponent controls"), narrowed to [landFilter] when
+     * one is given (Plaza of Harmony's "a Gate you control").
      */
     fun landsInScope(
         state: GameState,
         projected: ProjectedState,
         sourceId: EntityId,
         scope: LandControllerScope,
+        landFilter: GameObjectFilter?,
+        predicateEvaluator: PredicateEvaluator,
     ): List<EntityId> {
         val controllerId = projected.getController(sourceId) ?: return emptyList()
-        return landsInScopeOf(state, projected, controllerId, scope)
+        return landsInScopeOf(state, projected, controllerId, scope, landFilter, predicateEvaluator)
     }
 
-    /** The lands [scope] names, relative to [controllerId]. */
+    /** The lands [scope] names, relative to [controllerId], narrowed to [landFilter] when one is given. */
     fun landsInScopeOf(
         state: GameState,
         projected: ProjectedState,
         controllerId: EntityId,
         scope: LandControllerScope,
+        landFilter: GameObjectFilter?,
+        predicateEvaluator: PredicateEvaluator,
     ): List<EntityId> {
         val opponents = if (scope == LandControllerScope.OPPONENTS) state.getOpponents(controllerId).toHashSet() else emptySet()
+        val context = PredicateContext(controllerId = controllerId)
         return state.getBattlefield().filter { permId ->
             projected.hasType(permId, "LAND") && when (scope) {
                 LandControllerScope.YOU -> projected.getController(permId) == controllerId
                 LandControllerScope.OPPONENTS -> projected.getController(permId) in opponents
                 LandControllerScope.ANY -> true
-            }
+            } && (landFilter == null || predicateEvaluator.matches(state, projected, permId, landFilter, context))
         }
     }
 
@@ -227,7 +240,7 @@ object LandManaColorInspector {
         effect: Effect,
         sourceContainer: com.wingedsheep.engine.state.ComponentContainer,
         out: MutableSet<Color>,
-        reflect: (LandControllerScope) -> Set<Color>,
+        reflect: (ManaColorSet.LandsCouldProduce) -> Set<Color>,
     ) {
         when (effect) {
             is AddManaEffect -> out.add(effect.color)
@@ -253,7 +266,7 @@ object LandManaColorInspector {
         colorSet: ManaColorSet,
         sourceContainer: com.wingedsheep.engine.state.ComponentContainer,
         out: MutableSet<Color>,
-        reflect: (LandControllerScope) -> Set<Color>,
+        reflect: (ManaColorSet.LandsCouldProduce) -> Set<Color>,
     ) {
         when (colorSet) {
             is ManaColorSet.AnyColor -> out.addAll(Color.entries)
@@ -264,7 +277,7 @@ object LandManaColorInspector {
             is ManaColorSet.Union -> colorSet.members.forEach { collectChoiceColors(it, sourceContainer, out, reflect) }
             // No resolution-time choice exists outside an effect, so nothing is removed.
             is ManaColorSet.ExceptChosenColor -> collectChoiceColors(colorSet.base, sourceContainer, out, reflect)
-            is ManaColorSet.LandsCouldProduce -> out.addAll(reflect(colorSet.scope))
+            is ManaColorSet.LandsCouldProduce -> out.addAll(reflect(colorSet))
             is ManaColorSet.CommanderIdentity,
             is ManaColorSet.AmongPermanents,
             is ManaColorSet.AmongCardsInGraveyard,
