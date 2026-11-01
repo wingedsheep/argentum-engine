@@ -236,6 +236,21 @@ data class PayCountersContinuation(
 ) : AnswerContinuation
 
 /**
+ * Resume after the controller chose how many [counterType] counters to remove from each permanent
+ * offered by [com.wingedsheep.sdk.scripting.effects.RemoveCountersFromAmongEffect]. The response is a
+ * distribution (permanent -> count); the resumer removes them and stores the total under
+ * [storeAmountAs] in the pipeline frame beneath.
+ */
+@Serializable
+data class RemoveCountersFromAmongContinuation(
+    val controllerId: EntityId,
+    val counterType: CounterType,
+    val storeAmountAs: String,
+    val sourceId: EntityId?,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
+) : AnswerContinuation
+
+/**
  * Resume after the controller picks one of a player's spells cast this turn for
  * `ChooseSpellCastThisTurnEffect` (Backdraft). [damageByOption] is aligned with the decision's
  * options; the picked spell's damage is stored in the next frame's pipeline under [storeAs].

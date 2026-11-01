@@ -1039,6 +1039,7 @@ Families:
 - `RemoveAllCountersOfTypeEffect(counterType: CounterType, target: EffectTarget)` — Remove every counter of one specified kind from a target permanent.
 - `RemoveAnyNumberOfCountersEffect(target: EffectTarget, maxTotal: DynamicAmount?, minTotal: DynamicAmount)` — Remove counters from a target permanent.
 - `RemoveCountersEffect(counterType: CounterType, count: DynamicAmount, target: EffectTarget)` — Remove counters effect.
+- `RemoveCountersFromAmongEffect(counterType: CounterType, filter: GameObjectFilter, storeAmountAs: String)` — "You may remove any number of counterType counters from among filter" — the controller picks, at resolution, how many of each matching permanent's counterType counters to take off (0 up to what it…
 - `RemoveCountersOfIteratedKindEffect(target: EffectTarget, count: Int)` — "Remove count counter(s) of that kind from target", where the kind is the one an enclosing counter-kind loop (`IterationSpace.CounterKindsOn` / `CounterKindsAmong`) is visiting — "for each kind of…
 - `RemoveDamageShieldEffect(target: EffectTarget)` — One-shot destruction-replacement shield: the next time the target permanent would be destroyed this turn, remove all damage marked on it instead.
 - `RemoveFromCombatEffect(target: EffectTarget, unblockSoleBlockedAttackers: Boolean)` — Remove a creature from combat.

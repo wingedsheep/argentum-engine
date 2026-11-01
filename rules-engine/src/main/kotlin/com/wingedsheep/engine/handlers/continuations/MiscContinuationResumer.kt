@@ -58,6 +58,7 @@ class MiscContinuationResumer(
         resumer(com.wingedsheep.engine.core.PayAnyAmountOfLifeAsEntersContinuation::class, ::resumePayAnyAmountOfLifeAsEnters),
         resumer(MayPayLifeXContinuation::class, ::resumeMayPayLifeX),
         resumer(PayCountersContinuation::class, ::resumePayCounters),
+        resumer(RemoveCountersFromAmongContinuation::class, ::resumeRemoveCountersFromAmong),
         resumer(ChooseSpellCastThisTurnContinuation::class, ::resumeChooseSpellCastThisTurn),
         resumer(ConvertCountersToTokensContinuation::class, ::resumeConvertCountersToTokens),
         resumer(MoveChosenCountersToTargetContinuation::class, ::resumeMoveChosenCountersToTarget),
@@ -412,6 +413,45 @@ class MiscContinuationResumer(
         val storeResult = com.wingedsheep.engine.handlers.effects.drawing.DrawUpToExecutor
             .injectStoredNumber(newState, continuation.storeAmountAs, chosen)
         newState = storeResult.newState
+
+        return checkForMore(newState, events)
+    }
+
+    private fun resumeRemoveCountersFromAmong(
+        state: GameState,
+        continuation: RemoveCountersFromAmongContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is DistributionResponse) {
+            return ExecutionResult.error(state, "Expected distribution response for remove-counters-from-among")
+        }
+
+        var newState = state
+        val events = mutableListOf<GameEvent>()
+        var totalRemoved = 0
+
+        for ((entityId, requested) in response.distribution) {
+            if (requested <= 0) continue
+            val container = newState.getEntity(entityId) ?: continue
+            val counters = container.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
+                ?: continue
+            // Only what is actually there comes off (the validator already caps each share at the
+            // permanent's count when the decision was made).
+            val removed = minOf(requested, counters.getCount(continuation.counterType))
+            if (removed <= 0) continue
+            newState = newState.updateEntity(entityId) { c ->
+                c.with(counters.withRemoved(continuation.counterType, removed))
+            }
+            val name = container.get<com.wingedsheep.engine.state.components.identity.CardComponent>()?.name ?: ""
+            events.add(
+                CountersRemovedEvent(entityId, continuation.counterType, removed, name, removedBy = continuation.controllerId)
+            )
+            totalRemoved += removed
+        }
+
+        newState = com.wingedsheep.engine.handlers.effects.drawing.DrawUpToExecutor
+            .injectStoredNumber(newState, continuation.storeAmountAs, totalRemoved).newState
 
         return checkForMore(newState, events)
     }
