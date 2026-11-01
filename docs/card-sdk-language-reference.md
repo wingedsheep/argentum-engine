@@ -4805,6 +4805,14 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   does not leak one player's working collections into the next player's body. Syphon Mind maps each
   opponent's `discarded_this_opponent` output into `discarded_by_opponents`, then draws from that
   aggregate.
+  `ForEachInGroupCollectingEffect(filter, effects, collectCollections)` is its group twin — one
+  sub-pipeline per battlefield entity matching `filter` (snapshotted first, the visited object bound
+  as `IterationEntity`), each iteration's mapped outputs appended in group order and published after
+  the loop, so a single follow-up acts on every recorded member at once. Cards write it through the
+  `forEachInGroupCollecting` pipeline verb with `storeEntity(onlyIf = …)` recording the members:
+  **Rakdos, the Showstopper** ("flip a coin for each creature that isn't a Demon, Devil, or Imp.
+  Destroy each creature whose coin comes up tails") flips per creature, records it on tails, then
+  destroys the aggregate in one simultaneous destroy.
 - `Effects.If(condition, then, otherwise?, descriptionOverride?)` — "If [condition], [then].
   Otherwise, [otherwise]." Lowers to `GatedEffect(Gate.WhenCondition(condition), then, otherwise)`. It
   is a synchronous state test — no decision, no pause. Engine paths that recognize a conditional branch
@@ -5513,6 +5521,7 @@ with cards):
 | `captureControllers(from, asLastBlockedBy?)` | `CaptureControllersEffect` |
 | `forEachCaptured(collection, original, controllers) { count -> … }` | `ForEachCapturedControllerEffect` |
 | `forEachPlayerCollecting(players) { …; listOf(slotA, slotB) }` → the per-iteration collections unioned across players | `ForEachPlayerCollectingEffect` |
+| `forEachInGroupCollecting(filter) { …; listOf(slotA) }` → the per-member collections unioned across every battlefield object matching `filter` (visited object = `IterationEntity`). Rakdos, the Showstopper: `val (tails) = forEachInGroupCollecting(GroupFilter(Creature.notSubtype(DEMON).notSubtype(DEVIL).notSubtype(IMP))) { val heads = runStoringNumber { Effects.FlipCoins(1, storeHeadsAs = it) }; listOf(storeEntity(onlyIf = Compare(heads.amount, EQ, Fixed(0)))) }` then `destroy(tails)` | `ForEachInGroupCollectingEffect` |
 | `repeatCollecting(repeatCondition) { …; listOf(slotA, slotB) }` → the body run as a do-while loop, each returned collection unioned across every pass (published once the loop stops). Struggle for Sanity: `repeatCollecting(WhileCondition(Exists(opponent.asPlayer, Zone.HAND))) { gather hand; chooseExactlySplit(1, chooser = TargetPlayer) → exile; chooseExactly(1, rest) → exile; listOf(theirPick, yourPick) }` then `toHand(theirs)` / `toGraveyard(yours)` | `RepeatWhileEffect(collectCollections = …)` |
 | `repeatProcess { …; RepeatCondition }` → the body run as a do-while loop whose condition the block *returns*, so it can read the slots the body just filled. Delina, Wild Mage: `repeatProcess { val roll = rollDiceResult(sides = 20); ifThen(…) { run(token) }; PlayerChooses(Controller, "Roll again?", onlyIf = between(15, 20)) }` | `RepeatWhileEffect` |
 | `eachPlayerChoosesCreatureType()` → `StringListSlot` | `EachPlayerChoosesCreatureTypeEffect` |
@@ -5521,6 +5530,7 @@ with cards):
 | `storeNumber(amount)` | `StoreNumberEffect` |
 | `runStoringNumber { Effects.ChooseSpellCastThisTurn(caster, spellFilter, it) }` → the damage dealt by the spell the controller picks among `caster`'s matching spells cast this turn (its cast record's total over every recipient while it was a spell; no prompt when they all dealt the same, 0 with none). Backdraft: `selectTarget(TargetPlayer(restriction = Conditions.candidateCastSpellsThisTurn(Sorcery)), nonTargeting = true)`, then this, then `DealDamage(damage.amount / 2, player.asTarget)` | `ChooseSpellCastThisTurnEffect` |
 | `storePlayer(player = You, onlyIf?)` → the players recorded (a `CollectionSlot`; with `onlyIf`, only when the condition holds then). Inside `forEachPlayerCollecting` it records the iterated player, so the aggregate is "each player who …" snapshotted before anyone acts — Plaguecrafter: `forEachPlayerCollecting(ActivePlayerFirst) { listOf(storePlayer(onlyIf = YouControl(CreatureOrPlaneswalker, negate = true))) }` then sacrifice, then `ForEachPlayer(cant.asPlayers, discard)` | `StorePlayerEffect` (wrapped in `Effects.If` for `onlyIf`) |
+| `storeEntity(entity = IterationEntity, onlyIf?)` → the object recorded (a `CollectionSlot`; with `onlyIf`, only when the condition holds then) — `storePlayer`'s object twin. Inside `forEachInGroupCollecting` it records the visited member, so the aggregate is "each creature whose …" (Rakdos, the Showstopper's tails) | `GatherCardsEffect(CardSource.Entity)` (wrapped in `Effects.If` for `onlyIf`) |
 | `chooseOption(optionType, …, recordOnSource?)` / `chooseCardName(prompt?, excludeBasicLandNames?, pool?, chooser?, recordOnSource?)` / `noteCreatureType(…)` | `ChooseOptionEffect` / `NoteCreatureTypeEffect` |
 | `choosePile(a, b, chooser?, …)` → `(chosen, other)` | `ChoosePileEffect` |
 | `selectTarget(requirement, nonTargeting?, prompt?, excluding?, atRandom?)` (resolution-time choice — never printed "target"; `excluding` drops earlier picks; `atRandom` lets the engine draw one candidate with no decision — Vial Smasher the Fierce's "choose an opponent at random") | `SelectTargetEffect` |
