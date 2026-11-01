@@ -73,15 +73,15 @@ class DeliverUntoEvilScenarioTest : FunSpec({
 
     test("without a Bolas planeswalker, an opponent picks two to stay and the rest go to hand") {
         val d = driver()
-        val (bears, courser, lions, giant) = d.fourInGraveyard()
+        val (bears, courser, lions, guide) = d.fourInGraveyard()
 
-        val spell = d.castDeliver(listOf(bears, courser, lions, giant))
+        val spell = d.castDeliver(listOf(bears, courser, lions, guide))
 
         withClue("the opponent makes the choice") { d.pendingDecision?.playerId shouldBe d.player2 }
-        d.submitCardSelection(d.player2, listOf(courser, giant)).error shouldBe null
+        d.submitCardSelection(d.player2, listOf(courser, guide)).error shouldBe null
 
         withClue("the chosen cards stay in the graveyard") {
-            d.getGraveyard(d.player1) shouldContainAll listOf(courser, giant)
+            d.getGraveyard(d.player1) shouldContainAll listOf(courser, guide)
         }
         withClue("the rest go to hand") { d.getHand(d.player1) shouldContainAll listOf(bears, lions) }
         withClue("Deliver Unto Evil is exiled") { d.getExile(d.player1) shouldContain spell }

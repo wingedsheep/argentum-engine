@@ -10,7 +10,7 @@ import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
 /**
- * Eternal Skylord
+ * Eternal Skylord — War of the Spark #49 (canonical printing)
  * {4}{U}
  * Creature — Zombie Wizard
  * 3/3
@@ -43,9 +43,9 @@ val EternalSkylord = card("Eternal Skylord") {
 
     metadata {
         rarity = Rarity.UNCOMMON
-        collectorNumber = "99"
+        collectorNumber = "49"
         artist = "Johan Grenier"
-        imageUri = "https://cards.scryfall.io/normal/front/d/4/d48d37d2-d776-41b4-9d20-7d2f5c51f814.jpg?1783925345"
+        imageUri = "https://cards.scryfall.io/normal/front/f/5/f5aacfc9-1d45-4250-9abc-698d8941699f.jpg?1783933468"
         ruling(
             "2023-06-16",
             "Some cards that cause you to amass Zombies also provide bonuses to \"Zombie tokens.\" These affect any token that happens to be a Zombie, not just a Zombie Army you've amassed."
