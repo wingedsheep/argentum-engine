@@ -1076,6 +1076,15 @@ data class CopyTargetSpellEffect(
 
 }
 
+/** How many of a [CopyForOtherPossibleTargetsEffect]'s candidates get a copy. */
+@Serializable
+enum class PossibleTargetCopies {
+    /** One copy for each candidate (CR 707.10d — Zada, Mirrorwing Dragon, Agrus Kos). */
+    EACH,
+    /** The copier chooses one candidate; one copy targets it (Beamsplitter Mage). */
+    ONE_CHOSEN
+}
+
 /**
  * Copy a spell or ability once **for each other object it could target** (CR 707.10d), auto-assigning
  * every copy a distinct one of those objects as its target — or, with [selection] `ONE_CHOSEN`, once
@@ -1121,15 +1130,6 @@ data class CopyTargetSpellEffect(
  * @property copier Who copies: controls the copies, and the reference player for [candidates].
  * @property selection Every candidate gets a copy, or only the one the copier chooses.
  */
-/** How many of a [CopyForOtherPossibleTargetsEffect]'s candidates get a copy. */
-@Serializable
-enum class PossibleTargetCopies {
-    /** One copy for each candidate (CR 707.10d — Zada, Mirrorwing Dragon, Agrus Kos). */
-    EACH,
-    /** The copier chooses one candidate; one copy targets it (Beamsplitter Mage). */
-    ONE_CHOSEN
-}
-
 @SerialName("CopyForOtherPossibleTargets")
 @Serializable
 data class CopyForOtherPossibleTargetsEffect(

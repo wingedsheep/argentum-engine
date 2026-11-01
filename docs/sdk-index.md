@@ -802,7 +802,7 @@ Families:
 - `CopyCollectionIntoCollectionEffect(from: String, storeAs: String)` — Copy **every** card in the pipeline collection from and store all the copies' entity ids in the collection storeAs.
 - `CopyEachSpellCastEffect(copies: Int, spellFilter: GameObjectFilter)` — Until end of turn, whenever you cast a spell matching spellFilter, copy it.
 - `CopyEachTargetSpellEffect(keywordsForCopy: List<String>, removeLegendary: Boolean)` — Copy each spell targeted by this effect (CR 707.10).
-- `CopyForOtherPossibleTargetsEffect(target: EffectTarget, candidates: GameObjectFilter, copier: Player, selection: PossibleTargetCopies)`
+- `CopyForOtherPossibleTargetsEffect(target: EffectTarget, candidates: GameObjectFilter, copier: Player, selection: PossibleTargetCopies)` — Copy a spell or ability once **for each other object it could target** (CR 707.10d), auto-assigning every copy a distinct one of those objects as its target — or, with selection `ONE_CHOSEN`, once…
 - `CopyNextSpellCastEffect(copies: Int, spellFilter: GameObjectFilter)` — When you next cast a spell matching spellFilter this turn, copy that spell.
 - `CopyTargetSpellEffect(target: EffectTarget, keywordsForCopy: List<String>, removeLegendary: Boolean, addedTokenKeywords: Set<Keyword>, sacrificeTokenAtStep: Step?, sacrificeTokenOnlyOnControllersTurn: Boolean, copies: DynamicAmount, exceptions: CopyExceptions, tokenStartingLoyalty: DynamicAmount?, mayChooseNewTargets: Boolean)`
 - `CopyTargetSpellOrAbilityEffect(target: EffectTarget, copies: DynamicAmount)` — Copy target spell **or** ability on the stack, dispatching at resolution on the chosen object's kind: an instant/sorcery spell copies via the spell-copy path; an activated or triggered ability copi…
@@ -1682,6 +1682,7 @@ Families:
 - `SpellCastPredicate.CastAsPrepareSpell` — The spell was cast **as a prepare spell** (CR 722.3c) — "Whenever you cast a prepared spell" (Codie, Ravenous Codex).
 - `SpellCastPredicate.CastFromZone(zone: Zone)` — The spell was cast from this zone (e.g. HAND for "from your hand").
 - `SpellCastPredicate.CastFromZoneOtherThan(zone: Zone)` — The spell was cast from a zone *other than* zone — the negation of CastFromZone.
+- `SpellCastPredicate.CouldTargetOther(filter: GameObjectFilter)` — The spell **could target another object** matching filter — one that is a legal target for every instance of the word "target" on it and that it doesn't already target (the CR 707.10d candidate set…
 - `SpellCastPredicate.HasXInCost` — The spell has `{X}` in its printed mana cost (CR 107.3) — "Whenever you cast a spell with {X} in its mana cost, …" (Geometer's Arthropod).
 - `SpellCastPredicate.IsCard` — The spell cast is a **card**, not a copy — "whenever a player casts an instant or sorcery *card*" (Eye of the Storm).
 - `SpellCastPredicate.IsModal` — The spell was modal — at least one mode was chosen at cast time (rules 700.2).

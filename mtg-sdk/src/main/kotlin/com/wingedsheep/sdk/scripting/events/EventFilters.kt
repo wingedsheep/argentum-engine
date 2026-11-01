@@ -412,6 +412,24 @@ sealed interface SpellCastPredicate {
     }
 
     /**
+     * The spell **could target another object** matching [filter] — one that is a legal target for
+     * every instance of the word "target" on it and that it doesn't already target (the CR 707.10d
+     * candidate set of [com.wingedsheep.sdk.scripting.effects.CopyForOtherPossibleTargetsEffect]).
+     * [filter] is read relative to the trigger's controller and source.
+     *
+     * This is the trigger-time half of an intervening "if" (CR 603.4) — Beamsplitter Mage's "if you
+     * control one or more other creatures that spell could target" is
+     * `CouldTargetOther(GameObjectFilter.Creature.youControl())`; the copy effect re-checks the same
+     * set as the ability resolves. Closest neighbours: [TargetsMatching] reads the targets the spell
+     * *did* choose, and [TargetsOnlySource] only who they are — neither asks what it *could* target.
+     */
+    @SerialName("SpellCouldTargetOther")
+    @Serializable
+    data class CouldTargetOther(val filter: GameObjectFilter) : SpellCastPredicate {
+        override val description = "that could target another ${filter.description}"
+    }
+
+    /**
      * The spell was cast with at least one chosen target matching [filter]
      * ("a spell that targets a creature you don't control" — Legolas, Master Archer).
      * The filter is evaluated against each chosen target relative to the trigger

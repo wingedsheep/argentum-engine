@@ -395,7 +395,11 @@
                         ]
                     },
                     "requires": [
-                        "SpellTargetsOnlySource"
+                        "SpellTargetsOnlySource",
+                        {
+                            "type": "SpellCouldTargetOther",
+                            "filter": "creature ctrl:you"
+                        }
                     ]
                 },
                 "binding": "ANY",

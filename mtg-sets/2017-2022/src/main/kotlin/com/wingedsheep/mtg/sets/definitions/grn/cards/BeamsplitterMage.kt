@@ -19,7 +19,8 @@ import com.wingedsheep.sdk.scripting.events.SpellCastPredicate
  *
  * The candidate set is the CR 707.10d one (a creature you control that is a legal target for every
  * instance of "target" on the spell, other than the ones it already targets). The intervening "if"
- * is read at resolution by the effect itself: with no such creature, nothing is copied.
+ * (CR 603.4) is checked as the spell is cast by `SpellCastPredicate.CouldTargetOther`, and again on
+ * resolution by the copy effect, which copies nothing when no such creature is left.
  */
 val BeamsplitterMage = card("Beamsplitter Mage") {
     manaCost = "{U}{R}"
@@ -34,7 +35,10 @@ val BeamsplitterMage = card("Beamsplitter Mage") {
     triggeredAbility {
         trigger = Triggers.you.casts(
             GameObjectFilter.InstantOrSorcery,
-            requires = setOf(SpellCastPredicate.TargetsOnlySource)
+            requires = setOf(
+                SpellCastPredicate.TargetsOnlySource,
+                SpellCastPredicate.CouldTargetOther(GameObjectFilter.Creature.youControl())
+            )
         )
         effect = Effects.CopyForChosenOtherPossibleTarget(candidates = GameObjectFilter.Creature.youControl())
         description = "Whenever you cast an instant or sorcery spell that targets only this creature, if " +

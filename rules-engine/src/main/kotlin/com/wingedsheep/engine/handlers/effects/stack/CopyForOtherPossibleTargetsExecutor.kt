@@ -30,6 +30,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.CopyForOtherPossibleTargetsEffect
 import com.wingedsheep.sdk.scripting.effects.CopyTargetSpellEffect
 import com.wingedsheep.sdk.scripting.effects.PossibleTargetCopies
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import kotlin.reflect.KClass
 
@@ -38,8 +39,9 @@ import kotlin.reflect.KClass
  * Agrus Kos shape: copy a spell or ability once for each *other* object it could target, each copy
  * auto-assigned a distinct one of those objects.
  *
- * Unlike [CopyTargetSpellExecutor], nothing here pauses for a decision. The candidate set and each
- * copy's target both fall out of the board:
+ * Unlike [CopyTargetSpellExecutor], no copy is ever retargeted by the player: the candidate set and
+ * each copy's target fall out of the board (the only pause is `ONE_CHOSEN`'s pick among several
+ * candidates, below):
  *
  *  1. The effect's **copier** is the reference player throughout — it controls the copies, and the
  *     effect's `candidates` filter and each candidate's legality are evaluated relative to it. "You
@@ -98,26 +100,9 @@ class CopyForOtherPossibleTargetsExecutor(
         val copierId = TargetResolutionUtils.resolvePlayerRef(effect.copier, context, state)
             ?: return EffectResult.success(state)
 
-        val targetsComponent = container.get<TargetsComponent>()
-        val requirements = targetsComponent?.targetRequirements ?: emptyList()
-        // An object with no targets has nothing it "could target", so there is no candidate set and
-        // no copies. (Every trigger in the family requires a target anyway.)
-        if (requirements.isEmpty()) return EffectResult.success(state)
-
-        // Legality is judged for a copy the copier controls; the targeting source is the spell
-        // itself, or the permanent an ability came from (what protection and "another target"
-        // read).
-        val targetingSourceId = triggered?.sourceId ?: activated?.sourceId ?: originalId
-        // Protection / hexproof "from activated (or triggered) abilities" reads the kind of object
-        // doing the targeting, so a copy can't be aimed past it (707.10d: "is just ignored").
-        val targetingSourceType = when {
-            triggered != null -> TargetingSourceType.TRIGGERED_ABILITY
-            activated != null -> TargetingSourceType.ACTIVATED_ABILITY
-            else -> TargetingSourceType.SPELL
-        }
-        val candidates = candidatesFor(
-            state, effect, requirements, targetsComponent, copierId, targetingSourceId, targetingSourceType,
-            filterSourceId = context.sourceId ?: targetingSourceId
+        val candidates = otherPossibleTargets(
+            state, targetFinder, predicateEvaluator, originalId, effect.candidates, copierId,
+            filterSourceId = context.sourceId
         )
         if (candidates.isEmpty()) return EffectResult.success(state)
 
@@ -197,48 +182,6 @@ class CopyForOtherPossibleTargetsExecutor(
         return EffectResult.success(currentState, allEvents)
     }
 
-    private fun candidatesFor(
-        state: GameState,
-        effect: CopyForOtherPossibleTargetsEffect,
-        requirements: List<TargetRequirement>,
-        targetsComponent: TargetsComponent?,
-        copierId: EntityId,
-        targetingSourceId: EntityId,
-        targetingSourceType: TargetingSourceType,
-        filterSourceId: EntityId
-    ): List<EntityId> {
-        // Legal for *every* instance of "target" — intersect the per-requirement legal sets, keeping
-        // the first requirement's ordering so the copies go on the stack deterministically.
-        var couldTarget: List<EntityId> = targetFinder.findLegalTargets(
-            state, requirements.first(), controllerId = copierId, sourceId = targetingSourceId,
-            targetingSourceType = targetingSourceType
-        )
-        for (requirement in requirements.drop(1)) {
-            if (couldTarget.isEmpty()) break
-            val legal = targetFinder.findLegalTargets(
-                state, requirement, controllerId = copierId, sourceId = targetingSourceId,
-                targetingSourceType = targetingSourceType
-            ).toSet()
-            couldTarget = couldTarget.filter { it in legal }
-        }
-
-        // "each other …" — drop what the original already targets.
-        val alreadyTargeted = targetsComponent?.targets.orEmpty()
-            .filterIsInstance<ChosenTarget.Permanent>()
-            .map { it.entityId }
-            .toSet()
-
-        // `candidates` is card text on the *ability's* source, so "this creature" in it is that
-        // permanent (Ivy, Gleeful Spellthief: "The copy targets Ivy" is `Creature.sourceItself()`),
-        // not the spell being copied — legality above still reads the targeting object.
-        val predicateContext = PredicateContext(controllerId = copierId, sourceId = filterSourceId)
-        val projected = state.projectedState
-        return couldTarget.filter { candidateId ->
-            candidateId !in alreadyTargeted &&
-                predicateEvaluator.matches(state, projected, candidateId, effect.candidates, predicateContext)
-        }
-    }
-
     private fun pushSpellCopy(
         state: GameState,
         container: ComponentContainer,
@@ -287,5 +230,76 @@ class CopyForOtherPossibleTargetsExecutor(
             return StackPlacement.putTriggeredAbility(state, copy, targets, requirements)
         }
         return CopyTargetSpellOrAbilityExecutor.cloneAndPush(state, abilityId, copierId, targets, requirements)
+    }
+
+    companion object {
+        /**
+         * The CR 707.10d candidate set for copying [originalId] (a spell or an ability on the stack):
+         * objects matching [candidates] — read relative to [copierId] and [filterSourceId] — that
+         * are a legal target for **every** instance of the word "target" on it, minus what it
+         * already targets. Empty when the object is gone or has no targets. Shared with the
+         * trigger-time `SpellCastPredicate.CouldTargetOther` check, so an intervening "if" and the
+         * resolution agree on the set.
+         */
+        fun otherPossibleTargets(
+            state: GameState,
+            targetFinder: TargetFinder,
+            predicateEvaluator: PredicateEvaluator,
+            originalId: EntityId,
+            candidates: GameObjectFilter,
+            copierId: EntityId,
+            filterSourceId: EntityId?
+        ): List<EntityId> {
+            val container = state.getEntity(originalId) ?: return emptyList()
+            val triggered = container.get<TriggeredAbilityOnStackComponent>()
+            val activated = container.get<ActivatedAbilityOnStackComponent>()
+            val targetsComponent = container.get<TargetsComponent>()
+            val requirements = targetsComponent?.targetRequirements ?: emptyList()
+            // An object with no targets has nothing it "could target".
+            if (requirements.isEmpty()) return emptyList()
+
+            // Legality is judged for a copy the copier controls; the targeting source is the spell
+            // itself, or the permanent an ability came from (what protection and "another target"
+            // read). Protection / hexproof "from activated (or triggered) abilities" reads the kind
+            // of object doing the targeting, so a copy can't be aimed past it (707.10d: "is just
+            // ignored").
+            val targetingSourceId = triggered?.sourceId ?: activated?.sourceId ?: originalId
+            val targetingSourceType = when {
+                triggered != null -> TargetingSourceType.TRIGGERED_ABILITY
+                activated != null -> TargetingSourceType.ACTIVATED_ABILITY
+                else -> TargetingSourceType.SPELL
+            }
+
+            // Legal for *every* instance of "target" — intersect the per-requirement legal sets,
+            // keeping the first requirement's ordering so the copies go on the stack deterministically.
+            var couldTarget: List<EntityId> = targetFinder.findLegalTargets(
+                state, requirements.first(), controllerId = copierId, sourceId = targetingSourceId,
+                targetingSourceType = targetingSourceType
+            )
+            for (requirement in requirements.drop(1)) {
+                if (couldTarget.isEmpty()) break
+                val legal = targetFinder.findLegalTargets(
+                    state, requirement, controllerId = copierId, sourceId = targetingSourceId,
+                    targetingSourceType = targetingSourceType
+                ).toSet()
+                couldTarget = couldTarget.filter { it in legal }
+            }
+
+            // "each other …" — drop what the original already targets.
+            val alreadyTargeted = targetsComponent?.targets.orEmpty()
+                .filterIsInstance<ChosenTarget.Permanent>()
+                .map { it.entityId }
+                .toSet()
+
+            // `candidates` is card text on the *ability's* source, so "this creature" in it is that
+            // permanent (Ivy, Gleeful Spellthief: "The copy targets Ivy" is `Creature.sourceItself()`),
+            // not the spell being copied — legality above still reads the targeting object.
+            val predicateContext = PredicateContext(controllerId = copierId, sourceId = filterSourceId ?: targetingSourceId)
+            val projected = state.projectedState
+            return couldTarget.filter { candidateId ->
+                candidateId !in alreadyTargeted &&
+                    predicateEvaluator.matches(state, projected, candidateId, candidates, predicateContext)
+            }
+        }
     }
 }

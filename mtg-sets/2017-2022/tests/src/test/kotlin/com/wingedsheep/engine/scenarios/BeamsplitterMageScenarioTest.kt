@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
+import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -66,6 +67,27 @@ class BeamsplitterMageScenarioTest : ScenarioTestBase() {
             game.hasPendingDecision() shouldBe false
             game.state.projectedState.getPower(mage) shouldBe 5
             game.state.projectedState.getPower(game.findPermanent("Grizzly Bears")!!) shouldBe 5
+        }
+
+        test("with no other creature it could target, the ability doesn't trigger at all") {
+            // Intervening "if" (CR 603.4): checked as the spell is cast, so no trigger is put on the
+            // stack — a creature arriving before resolution can't then receive a copy.
+            val game = scenario()
+                .withPlayers()
+                .withCardOnBattlefield(1, "Beamsplitter Mage")
+                .withCardOnBattlefield(2, "Grizzly Bears")
+                .withCardInHand(1, "Giant Growth")
+                .withLandsOnBattlefield(1, "Forest", 1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            val mage = game.findPermanent("Beamsplitter Mage")!!
+            game.castSpell(1, "Giant Growth", mage).error shouldBe null
+            withClue("only Giant Growth is on the stack") { game.state.stack.size shouldBe 1 }
+            game.resolveStack()
+
+            game.state.projectedState.getPower(mage) shouldBe 5
+            game.state.projectedState.getPower(game.findPermanent("Grizzly Bears")!!) shouldBe 2
         }
 
         test("an opponent's spell targeting the Mage doesn't trigger it") {
