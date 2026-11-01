@@ -710,7 +710,7 @@ Archon of Sun's Grace
 Archon of the Wild Rose
 Archon's Glory
 Archpriest of Iona
-Archpriest of Shadows	intent: MoveToZoneEffect; polarity: GrantTriggeredAbilityEffect
+Archpriest of Shadows	intent: MoveToZoneEffect
 Archway Angel
 Archway Commons
 Archway of Innovation	combat: GrantNextSpellKeywordEffect; intent: GrantNextSpellKeywordEffect
@@ -1070,6 +1070,7 @@ Azorius Guildgate
 Azorius Knight-Arbiter
 Azorius Locket
 Azorius Signet
+Azorius Skyguard
 Azra Smokeshaper
 Azula Always Lies
 Azula, Cunning Usurper	intent: GrantMayPlayFromExileEffect; intent: Pipeline(BattlefieldMatching|FromLinkedExile|graveyard→exile); polarity: Pipeline(BattlefieldMatching|FromLinkedExile|graveyard→exile)
@@ -1458,6 +1459,7 @@ Binding Negotiation	intent: Pipeline(exile|hand→graveyard); intent: RevealHand
 Binding the Old Gods
 Bioengineered Future
 Bioessence Hydra
+Biogenic Ooze
 Biogenic Upgrade	polarity: DividedDamageEffect
 Biolume Egg	intent: GrantKeywordEffect; intent: ReturnSelfFromZoneTransformedEffect
 Biomancer's Familiar	intent: AdaptAsThoughNoCountersEffect
@@ -1818,7 +1820,7 @@ Boiling Rock Prison
 Boiling Rock Rioter	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(FromLinkedExile→?)
 Boiling Seas
 Bojuka Bog	intent: Pipeline(graveyard→exile); polarity: Pipeline(graveyard→exile)
-Bola Slinger	polarity: GrantTriggeredAbilityEffect
+Bola Slinger
 Bolas's Citadel
 Bold Biochemist
 Boldwyr Aggressor
@@ -2193,6 +2195,7 @@ Burning Vengeance
 Burning Wish	intent: Pipeline(sideboard→hand)
 Burning of Xinye	polarity: ForEachEffect; polarity: Pipeline(ControlledPermanents→graveyard)
 Burning-Rune Demon
+Burning-Tree Vandal
 Burning-Yard Trainer
 Burnished Hart
 Burnout Bashtronaut
@@ -2467,7 +2470,7 @@ Cateran Persuader
 Cateran Slaver
 Caterwauling Boggart
 Cathar Commando
-Cathar's Call	polarity: Aura>GrantKeyword; polarity: Aura>GrantTriggeredAbility
+Cathar's Call
 Cathar's Companion
 Cathars' Crusade
 Catharsis
@@ -2558,7 +2561,7 @@ Cephalopod Sentry
 Cerebral Confiscation	intent: ModalEffect; polarity: Pipeline(hand→graveyard); polarity: RevealHandEffect
 Cerebral Download
 Ceremonial Groundbreaker
-Ceremonial Knife	polarity: AttachEquipmentEffect
+Ceremonial Knife
 Certain Death
 Cerulean Drake
 Cerulean Sphinx
@@ -2717,6 +2720,7 @@ Children of Korlis
 Chill
 Chill Haunting	intent: ModifyStatsEffect; polarity: ModifyStatsEffect; timing: ModifyStatsEffect
 Chill of the Grave
+Chillbringer
 Chillerpillar	intent: BecomeMonstrousEffect
 Chilling Trap
 Chimil, the Inner Sun	intent: DiscoverEffect
@@ -2834,7 +2838,7 @@ Clash of Elements	intent: GatedEffect; polarity: GatedEffect
 Clash of Titans	polarity: FightEffect
 Clash of the Eikons	polarity: AddCountersEffect; polarity: FightEffect; polarity: RemoveCountersEffect
 Clattering Skeletons	intent: VentureIntoTheDungeonEffect
-Clavileño, First of the Blessed	intent: AddCreatureTypeEffect; intent: GrantTriggeredAbilityEffect; polarity: AddCreatureTypeEffect; polarity: GrantTriggeredAbilityEffect
+Clavileño, First of the Blessed	intent: AddCreatureTypeEffect; intent: GrantTriggeredAbilityEffect
 Clawing Torment
 Claws Out
 Claws of Gix
@@ -3043,10 +3047,10 @@ Commandeer
 Commander Greven il-Vec	intent: SacrificeEffect
 Commander Raffi Musiker
 Commander Sofia Daguerre
-Commander's Authority	polarity: Aura>GrantTriggeredAbility
+Commander's Authority
 Commander's Sphere
-Commanding Presence	polarity: Aura>GrantKeyword; polarity: Aura>GrantTriggeredAbility; polarity: Aura>ModifyStats
-Commando Raid	intent: GrantTriggeredAbilityEffect; polarity: GrantTriggeredAbilityEffect; timing: GrantTriggeredAbilityEffect
+Commanding Presence
+Commando Raid	intent: GrantTriggeredAbilityEffect; timing: GrantTriggeredAbilityEffect
 Commence the Endgame
 Commercial District
 Commissar Severina Raine
@@ -4043,7 +4047,7 @@ Diabolic Vision
 Diamond City	intent: MoveCountersEffect; polarity: MoveCountersEffect
 Diamond Knight
 Diamond Mare
-Diamond Pick-Axe	polarity: AttachEquipmentEffect
+Diamond Pick-Axe
 Diamond Valley
 Diamond Weapon
 Diaochan, Artful Beauty
@@ -4412,7 +4416,7 @@ Dreadhorde Twins	intent: AmassEffect
 Dreadhound
 Dreadlight Monstrosity	intent: GrantKeywordEffect
 Dreadmalkin
-Dreadmaw's Ire	polarity: GrantTriggeredAbilityEffect
+Dreadmaw's Ire
 Dreadmobile
 Dreadwing
 Dreadwing Scavenger
@@ -4786,7 +4790,7 @@ Elegant Parlor
 Elegy Acolyte
 Elektra, Daughter of the Hand
 Elemental Bond
-Elemental Expressionist	intent: GrantReplacementEffectEffect; intent: GrantTriggeredAbilityEffect; polarity: GrantReplacementEffectEffect; polarity: GrantTriggeredAbilityEffect
+Elemental Expressionist	intent: GrantReplacementEffectEffect; intent: GrantTriggeredAbilityEffect
 Elemental Mascot
 Elemental Masterpiece
 Elemental Summoning
@@ -6156,7 +6160,7 @@ Furnace Gremlin
 Furnace Hellkite
 Furnace Host Charger
 Furnace Punisher
-Furnace Reins	polarity: GrantTriggeredAbilityEffect
+Furnace Reins	polarity: mixed(GainControlEffect+GrantKeywordEffect+GrantTriggeredAbilityEffect+TapUntapEffect)
 Furnace Skullbomb	polarity: AddCountersEffect
 Furnace Strider	intent: GrantKeywordEffect
 Furnace Whelp
@@ -6230,7 +6234,7 @@ Gallia of the Endless Dance
 Gallia, Tragic Host
 Gallia, the Merrymaker
 Gallows Warden
-Galuf's Final Act	polarity: GrantTriggeredAbilityEffect
+Galuf's Final Act
 Galvanic Arc
 Galvanic Discharge
 Galvanic Giant
@@ -7199,6 +7203,7 @@ Gwendlyn Di Corci	intent: Pipeline(hand→graveyard); polarity: Pipeline(hand→
 Gwenna, Eyes of Gaea
 Gwenom, Remorseless	intent: GrantStaticAbilityEffect
 Gyome, Master Chef	polarity: mixed(GrantKeywordEffect+TapUntapEffect)
+Gyre Engineer
 Gyre Sage	intent: EmitKeywordCounterEventEffect
 Gyruda, Doom of Depths	intent: Pipeline(TopOfLibrary→battlefield|graveyard)
 Gysahl Greens
@@ -8070,7 +8075,7 @@ Inescapable Blaze
 Inevitable Defeat
 Inevitable End	polarity: Aura>GrantTriggeredAbility
 Inexorable Tide	intent: ProliferateEffect
-Infantry Shield	polarity: AttachEquipmentEffect
+Infantry Shield
 Infantry Veteran
 Infected Defector
 Infectious Bite	polarity: DealDamageEffect
@@ -8570,6 +8575,7 @@ Judge of Currents
 Judge's Familiar
 Judgment Bolt
 Judith, Carnage Connoisseur
+Judith, the Scourge Diva
 Jugan Defends the Temple
 Jugan, the Rising Star	intent: DistributeCountersAmongTargetsEffect; polarity: DistributeCountersAmongTargetsEffect
 Juggernaut
@@ -12466,6 +12472,7 @@ Queen of Ice
 Queen's Bay Paladin
 Queen's Bay Soldier
 Queen's Commission
+Quench
 Quest for the Necropolis
 Questing Beast
 Questing Druid	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
@@ -13635,7 +13642,7 @@ Sage of the Inward Eye	intent: ForEach>GrantKeywordEffect
 Sage of the Skies	intent: CopyTargetSpellEffect
 Sage of the Unknowable
 Sage's Knowledge
-Sage's Nouliths	polarity: AttachEquipmentEffect
+Sage's Nouliths
 Sage's Reverie
 Sage's Row Denizen	polarity: Pipeline(TopOfLibrary→graveyard)
 Sage's Row Savant
@@ -13799,6 +13806,7 @@ Savage Lands
 Savage Mansion
 Savage Offensive
 Savage Punch
+Savage Smash
 Savage Surge
 Savage Thallid
 Savage Twister
@@ -13910,6 +13918,7 @@ Scorching Missile
 Scorching Shot
 Scorching Spear
 Scorching Winds
+Scorchmark	timing: MarkExileOnDeathEffect
 Scoria Elemental
 Scoria Wurm	intent: FlipCoinEffect
 Scorn Effigy
@@ -13958,6 +13967,7 @@ Screaming Fury
 Screaming Nemesis
 Screaming Phantom
 Screaming Seahawk
+Screaming Shield
 Screaming Swarm	polarity: Pipeline(TopOfLibrary→graveyard)
 Screamreach Brawler
 Screeching Buzzard	intent: ForEach>Pipeline(hand→graveyard)
@@ -14275,7 +14285,7 @@ Seymour Flux
 Shackle Slinger
 Shacklegeist
 Shackles
-Shackles of Treachery	polarity: GrantTriggeredAbilityEffect
+Shackles of Treachery	polarity: mixed(GainControlEffect+GrantKeywordEffect+GrantTriggeredAbilityEffect+TapUntapEffect)
 Shade of Trokair
 Shade's Breath	intent: ChangeGroupColorEffect; intent: GrantActivatedAbilityToGroupEffect; intent: SetGroupCreatureSubtypesEffect; timing: ChangeGroupColorEffect; timing: GrantActivatedAbilityToGroupEffect; timing: SetGroupCreatureSubtypesEffect
 Shadewing Laureate
@@ -15127,7 +15137,7 @@ Sozin's Comet	intent: ForEach>GrantTriggeredAbilityEffect
 Space-Time Anomaly	polarity: Pipeline(TopOfLibrary→graveyard)
 Spara's Adjudicators	intent: CantAttackEffect; intent: CantBlockEffect; intent: GrantActivatedAbilityEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(exile→?); polarity: GrantActivatedAbilityEffect
 Spara's Headquarters
-Spare Dagger	polarity: AttachEquipmentEffect
+Spare Dagger
 Spare Supplies
 Spark Double
 Spark Elemental	intent: SacrificeSelfEffect
@@ -15555,7 +15565,7 @@ Stern Scolding
 Stew the Coneys	polarity: DealDamageEffect
 Steward of Valeron
 Steward of the Harvest
-Sticky Fingers	polarity: Aura>DrawCardsEffect; polarity: Aura>GrantKeyword; polarity: Aura>GrantTriggeredAbility
+Sticky Fingers
 Stickytongue Sentinel	polarity: MoveToZoneEffect
 Stifle
 Stillness in Motion	intent: Pipeline(TopOfLibrary|graveyard→graveyard|library)
@@ -15869,7 +15879,7 @@ Sundial, Dawn Tyrant
 Sundown Pass
 Sunfall
 Sunfire Balm
-Sunfire Torch	polarity: AttachEquipmentEffect
+Sunfire Torch
 Sunforger
 Sunglasses of Urza
 Sungold Barrage
@@ -16395,6 +16405,7 @@ Tentative Connection	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUnt
 Tenth District Guard
 Tenth District Hero	combat: SetBaseStatsEffect; intent: AddCardTypeEffect; intent: BecomeArtifactEffect; intent: SetBaseStatsEffect
 Tenth District Legionnaire
+Tenth District Veteran	intent: TapUntapEffect
 Tenuous Truce	polarity: Aura>DrawCardsEffect; polarity: Aura>SacrificeTargetEffect
 Tenured Concocter
 Tenured Inkcaster
@@ -16647,7 +16658,7 @@ The Rack
 The Raven Man	intent: ForEach>Pipeline(hand→graveyard)
 The Raven's Warning
 The Reality Chip	intent: UnattachEquipmentEffect; polarity: AttachEquipmentEffect
-The Reaver Cleaver	polarity: AttachEquipmentEffect
+The Reaver Cleaver
 The Regalia	intent: GatherUntilMatchEffect; intent: Pipeline(?→battlefield|library)
 The Restoration of Eiganjo
 The Ring Goes South	intent: GatherUntilMatchEffect; intent: Pipeline(?→battlefield|library); intent: TheRingTemptsYouEffect
@@ -17559,6 +17570,7 @@ Undercity Sewers
 Undercity Shade
 Undercity Troll
 Undercity Upheaval	intent: DistributeCountersAmongTargetsEffect; intent: ForEach>GrantKeywordEffect; polarity: DistributeCountersAmongTargetsEffect; polarity: ForEachEffect
+Undercity's Embrace	polarity: ForceSacrificeEffect
 Undercover Crocodelf
 Undercover Operative
 Undercover Skrull
@@ -18035,6 +18047,7 @@ Vindicate
 Vindictive Flamestoker
 Vindictive Mob	intent: SacrificeEffect
 Vindictive Triumph
+Vindictive Vampire
 Vindictive Warden
 Vine Gecko
 Vine Kami
@@ -18300,6 +18313,7 @@ Wall of Hope
 Wall of Ice
 Wall of Lava
 Wall of Light
+Wall of Lost Thoughts	polarity: Pipeline(TopOfLibrary→graveyard)
 Wall of Mist
 Wall of Mulch
 Wall of Omens
@@ -18533,7 +18547,7 @@ Weaver of Lightning
 Web
 Web Up
 Web of Life and Destiny	intent: Pipeline(TopOfLibrary→battlefield|library)
-Web-Shooters	polarity: AttachEquipmentEffect
+Web-Shooters
 Web-Warriors
 Webspinner Cuff	intent: UnattachEquipmentEffect
 Webstrike Elite
