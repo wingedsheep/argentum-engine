@@ -3,7 +3,8 @@ package com.wingedsheep.mtg.sets.definitions.avr.cards
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.OpponentsCantMakeYouSacrifice
+import com.wingedsheep.sdk.scripting.CompelledAction
+import com.wingedsheep.sdk.scripting.OpponentsCantCauseYouTo
 
 /**
  * Sigarda, Host of Herons
@@ -14,7 +15,7 @@ import com.wingedsheep.sdk.scripting.OpponentsCantMakeYouSacrifice
  * Flying, hexproof
  * Spells and abilities your opponents control can't cause you to sacrifice permanents.
  *
- * The third line is [OpponentsCantMakeYouSacrifice], a player-scoped "can't" rather than a
+ * The third line is [OpponentsCantCauseYouTo], a player-scoped "can't" rather than a
  * per-permanent one — it protects *the player*, so it also covers permanents that entered after
  * Sigarda and stops an opponent's optional sacrifice from being offered at all. Sacrifice costs
  * an opponent's spell or ability imposes ("unless you sacrifice …", ward—sacrifice) become
@@ -32,7 +33,7 @@ val SigardaHostOfHerons = card("Sigarda, Host of Herons") {
     keywords(Keyword.FLYING, Keyword.HEXPROOF)
 
     staticAbility {
-        ability = OpponentsCantMakeYouSacrifice
+        ability = OpponentsCantCauseYouTo(setOf(CompelledAction.SACRIFICE))
     }
 
     metadata {

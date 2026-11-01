@@ -684,6 +684,7 @@ val engineSerializersModule = SerializersModule {
         subclass(GrantsControllerProtectionComponent::class)
         subclass(GrantsControllerShroudComponent::class)
         subclass(GrantsSacrificeImmunityComponent::class)
+        subclass(GrantsDiscardImmunityComponent::class)
         subclass(GrantsStationUsingToughnessComponent::class)
         subclass(SuppressesHexproofForGroupComponent::class)
         subclass(SuppressesWardForGroupComponent::class)

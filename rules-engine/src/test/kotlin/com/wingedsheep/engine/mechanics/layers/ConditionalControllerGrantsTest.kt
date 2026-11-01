@@ -17,6 +17,7 @@ import com.wingedsheep.engine.state.components.battlefield.GrantsControllerHexpr
 import com.wingedsheep.engine.state.components.battlefield.GrantsControllerProtectionComponent
 import com.wingedsheep.engine.state.components.battlefield.GrantsControllerShroudComponent
 import com.wingedsheep.engine.state.components.battlefield.GrantsOpponentsCantWinGameComponent
+import com.wingedsheep.engine.state.components.battlefield.GrantsDiscardImmunityComponent
 import com.wingedsheep.engine.state.components.battlefield.GrantsSacrificeImmunityComponent
 import com.wingedsheep.engine.state.components.battlefield.GrantsStationUsingToughnessComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -40,7 +41,8 @@ import com.wingedsheep.sdk.scripting.GrantHexproofToController
 import com.wingedsheep.sdk.scripting.GrantOpponentsCantWinGame
 import com.wingedsheep.sdk.scripting.GrantProtectionToController
 import com.wingedsheep.sdk.scripting.GrantShroudToController
-import com.wingedsheep.sdk.scripting.OpponentsCantMakeYouSacrifice
+import com.wingedsheep.sdk.scripting.CompelledAction
+import com.wingedsheep.sdk.scripting.OpponentsCantCauseYouTo
 import com.wingedsheep.sdk.scripting.ProtectionScope
 import com.wingedsheep.sdk.scripting.StationUsingToughness
 import com.wingedsheep.sdk.scripting.StaticAbility
@@ -106,10 +108,16 @@ class ConditionalControllerGrantsTest : FunSpec({
             { it.get<GrantsControllerHexproofComponent>()?.condition },
         ),
         GrantCase(
-            "OpponentsCantMakeYouSacrifice", OpponentsCantMakeYouSacrifice,
+            "OpponentsCantCauseYouTo(SACRIFICE)", OpponentsCantCauseYouTo(setOf(CompelledAction.SACRIFICE)),
             GrantsSacrificeImmunityComponent::class.java,
             { it.get<GrantsSacrificeImmunityComponent>() != null },
             { it.get<GrantsSacrificeImmunityComponent>()?.condition },
+        ),
+        GrantCase(
+            "OpponentsCantCauseYouTo(DISCARD)", OpponentsCantCauseYouTo(setOf(CompelledAction.DISCARD)),
+            GrantsDiscardImmunityComponent::class.java,
+            { it.get<GrantsDiscardImmunityComponent>() != null },
+            { it.get<GrantsDiscardImmunityComponent>()?.condition },
         ),
         GrantCase(
             "GrantCantLoseGame", GrantCantLoseGame,
@@ -310,6 +318,7 @@ class ConditionalControllerGrantsTest : FunSpec({
             GrantsControllerShroudComponent::class.java,
             GrantsControllerHexproofComponent::class.java,
             GrantsSacrificeImmunityComponent::class.java,
+            GrantsDiscardImmunityComponent::class.java,
             GrantsCantLoseGameComponent::class.java,
             GrantsOpponentsCantWinGameComponent::class.java,
             GrantsCantLoseGameFromLifeComponent::class.java,

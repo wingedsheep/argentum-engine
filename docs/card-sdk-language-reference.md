@@ -11025,7 +11025,7 @@ staticAbility {
   `ConditionalStaticAbility(GrantActivatedAbility({T}: AddAnyColorMana(2)), EnchantedPermanentMatches(Land))` — the
   granted mana ability switches on/off continuously with the host's type.
   The same holds for the **player-level controller grants** — `GrantShroudToController`,
-  `GrantHexproofToController`, `GrantProtectionToController`, `OpponentsCantMakeYouSacrifice`,
+  `GrantHexproofToController`, `GrantProtectionToController`, `OpponentsCantCauseYouTo`,
   `GrantCantLoseGame`, `GrantOpponentsCantWinGame`, `GrantCantLoseGameFromLife`, `StationUsingToughness`,
   `CantBeTargetedByOpponentAbilities`. Those are stamped as marker components once, as the permanent
   enters, rather than projected each pass, so the gate travels on the marker and every reader
@@ -11085,19 +11085,28 @@ staticAbility {
   ruling reads it: an artifact creature can't pay "Sacrifice an artifact", a noncreature artifact
   still can. Sacrifices a resolving spell or ability performs (edicts, exploit, "unless you
   sacrifice") ignore it. Pair with `PlayersCantPayLifeForCosts()` for "pay life or sacrifice".
-- `OpponentsCantMakeYouSacrifice` — "Spells and abilities your opponents control can't cause you to
-  sacrifice permanents" (Sigarda, Host of Herons). The **player-scoped** counterpart of
-  `CantBeSacrificed`: it protects the controller rather than a set of permanents, so it also covers
-  permanents that arrive later and refuses an *optional* sacrifice an opponent's source offers, and a
-  sacrifice cost such a source imposes ("unless you sacrifice …", ward—sacrifice) becomes unpayable
-  rather than merely declinable. Stamped as `GrantsSacrificeImmunityComponent` and read by
-  `SacrificeImmunity.appliesTo(state, sacrificingPlayerId, effectControllerId)`, which every sacrifice
-  site consults: `ForceSacrificeExecutor` (edicts — a protected player is dropped before anyone is
-  prompted), `SacrificeExecutor`, `SacrificeTargetExecutor`, and `WardCounterEffectExecutor`'s
-  sacrifice cost. Pass the *overall* effect's controller (`context.effectControllerId ?: controllerId`),
-  not the player a per-player iteration is currently bound to, so a `ForEachPlayer` wrapper (Killing
-  Wave) still reports the caster. Only sacrifices are covered — lethal damage, 0 toughness, the legend
-  rule and destruction are untouched.
+- `OpponentsCantCauseYouTo(actions: Set<CompelledAction>)` — "Spells and abilities your opponents
+  control can't cause you to sacrifice permanents" (Sigarda, Host of Herons:
+  `setOf(CompelledAction.SACRIFICE)`) / "… to discard cards or sacrifice permanents" (Tamiyo,
+  Collector of Tales: `setOf(CompelledAction.DISCARD, CompelledAction.SACRIFICE)`). The
+  **player-scoped** counterpart of `CantBeSacrificed`: it protects the controller rather than a set of
+  permanents, so it also covers permanents and cards that arrive later. As an opponent's spell or
+  ability resolves, the discard or sacrifice it would impose simply doesn't happen; an *optional* one
+  can't be chosen; and a discard or sacrifice cost such a source imposes ("unless you discard /
+  sacrifice …" via `PayOrSuffer`, ward—discard, ward—sacrifice) becomes unpayable, so the consequence
+  happens. Stamped as one marker per action (`GrantsSacrificeImmunityComponent`,
+  `GrantsDiscardImmunityComponent`) and read by `CompelledActionImmunity.appliesTo(state, playerId,
+  effectControllerId, action)`, which every site consults: sacrifices in `ForceSacrificeExecutor`
+  (edicts — a protected player is dropped before anyone is prompted), `SacrificeExecutor`,
+  `SacrificeTargetExecutor`; discards in `MoveCollectionExecutor` (a non-cost `MoveType.Discard` keeps
+  a protected player's cards in hand and drops them from the moved collection, so "the discarded
+  card" steps see only real discards), `SelectFromCollectionExecutor` (the "choose cards to discard"
+  question isn't asked when every owner is protected) and `ZoneTransitionService.discardCards` with a
+  cause; plus the `PayOrSuffer` and ward cost checks. Pass the *overall* effect's controller
+  (`context.effectControllerId ?: controllerId`), not the player a per-player iteration is currently
+  bound to, so a `ForEachPlayer` wrapper (Killing Wave, Mind Rot cast on each opponent) still reports
+  the caster. Game rules are untouched: lethal damage, 0 toughness, the legend rule, destruction and
+  cleanup's hand-size discard aren't a spell or ability compelling anything.
 - `GrantKeyword(AbilityFlag.SURVIVES_ZERO_LOYALTY.name, filter)` — matching planeswalkers aren't put
   into their owners' graveyards for having 0 loyalty: `PlaneswalkerLoyaltyCheck` skips them (CR 704.5i).
   Only that state-based action — destruction, sacrifice and the legend rule still apply, and one that

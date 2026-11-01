@@ -26,6 +26,8 @@ import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeEffect
+import com.wingedsheep.sdk.scripting.CompelledAction
+import com.wingedsheep.engine.mechanics.CompelledActionImmunity
 import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -94,6 +96,12 @@ class PayOrSufferExecutor(
             ?: return EffectResult.error(state, "Source entity not found")
         val sourceCard = sourceContainer.get<CardComponent>()
             ?: return EffectResult.error(state, "Source has no card component")
+
+        // "… can't cause you to discard cards or sacrifice permanents" (Tamiyo, Sigarda): an
+        // opponent's "unless you discard / sacrifice" can't be paid that way, so it is suffered.
+        if (effect.cost is PayCost.Atom && forbidsPayment(state, payingPlayerId, effect.cost, context)) {
+            return executeSufferEffect(state, effect.suffer, context)
+        }
 
         return when (val cost = effect.cost) {
             is PayCost.Choice -> handleChoiceCost(state, effect, context, cost, sourceId, sourceCard.name, payingPlayerId)
@@ -927,7 +935,7 @@ class PayOrSufferExecutor(
         // Build available options: only include costs the player can actually pay
         val availableOptions = mutableListOf<Pair<Int, String>>()
         for ((index, option) in cost.options.withIndex()) {
-            if (canPayCost(state, payingPlayerId, option, sourceId)) {
+            if (!forbidsPayment(state, payingPlayerId, option, context) && canPayCost(state, payingPlayerId, option, sourceId)) {
                 availableOptions.add(index to option.description.replaceFirstChar { it.uppercase() })
             }
         }
@@ -943,7 +951,7 @@ class PayOrSufferExecutor(
         // option that only hidden cards rule out ("discard a creature card") still gets the
         // question; with nothing payable its only answer is the consequence, a forced pick
         // answered without a prompt (#3340).
-        if (cost.options.all { publiclyUnpayable(state, payingPlayerId, it, sourceId) }) {
+        if (cost.options.all { forbidsPayment(state, payingPlayerId, it, context) || publiclyUnpayable(state, payingPlayerId, it, sourceId) }) {
             return executeSufferEffect(state, effect.suffer, context)
         }
 
@@ -1049,6 +1057,23 @@ class PayOrSufferExecutor(
             else -> !canPayCost(state, playerId, cost, sourceId)
         }
         else -> !canPayCost(state, playerId, cost, sourceId)
+    }
+
+    /**
+     * Whether [cost] is a discard or a sacrifice that the resolving spell or ability's controller
+     * can't make [payingPlayerId] perform ([CompelledActionImmunity]) — Tamiyo's ruling: against
+     * an opponent's "unless you discard / sacrifice", that option can't be chosen. Public, since
+     * the protecting permanent is on the battlefield.
+     */
+    private fun forbidsPayment(state: GameState, payingPlayerId: EntityId, cost: PayCost, context: EffectContext): Boolean {
+        val action = when ((cost as? PayCost.Atom)?.atom) {
+            is CostAtom.Discard, is CostAtom.DiscardHand -> CompelledAction.DISCARD
+            is CostAtom.Sacrifice, is CostAtom.SacrificeAll -> CompelledAction.SACRIFICE
+            else -> return false
+        }
+        return CompelledActionImmunity.appliesTo(
+            state, payingPlayerId, context.effectControllerId ?: context.controllerId, action, predicateEvaluator
+        )
     }
 
     /**

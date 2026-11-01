@@ -14,6 +14,7 @@ import com.wingedsheep.engine.state.components.battlefield.GrantsCantLoseGameCom
 import com.wingedsheep.engine.state.components.battlefield.GrantsOpponentsCantWinGameComponent
 import com.wingedsheep.engine.state.components.battlefield.GrantsCantLoseGameFromLifeComponent
 import com.wingedsheep.engine.state.components.battlefield.GrantsControllerHexproofComponent
+import com.wingedsheep.engine.state.components.battlefield.GrantsDiscardImmunityComponent
 import com.wingedsheep.engine.state.components.battlefield.GrantsSacrificeImmunityComponent
 import com.wingedsheep.engine.state.components.battlefield.GrantsControllerProtectionComponent
 import com.wingedsheep.engine.state.components.battlefield.GrantsStationUsingToughnessComponent
@@ -90,7 +91,8 @@ import com.wingedsheep.sdk.scripting.GrantHexproofToController
 import com.wingedsheep.sdk.scripting.GrantOpponentsCantWinGame
 import com.wingedsheep.sdk.scripting.GrantProtectionToController
 import com.wingedsheep.sdk.scripting.GrantShroudToController
-import com.wingedsheep.sdk.scripting.OpponentsCantMakeYouSacrifice
+import com.wingedsheep.sdk.scripting.CompelledAction
+import com.wingedsheep.sdk.scripting.OpponentsCantCauseYouTo
 import com.wingedsheep.sdk.scripting.StationUsingToughness
 import com.wingedsheep.sdk.scripting.AdditionalAttackTriggers
 import com.wingedsheep.sdk.scripting.AdditionalCastOrCopyTriggers
@@ -346,8 +348,13 @@ class StaticAbilityHandler(
         allStaticAbilities.controllerGrant<GrantHexproofToController>()?.let {
             result = result.with(GrantsControllerHexproofComponent(it.condition))
         }
-        allStaticAbilities.controllerGrant<OpponentsCantMakeYouSacrifice>()?.let {
-            result = result.with(GrantsSacrificeImmunityComponent(it.condition))
+        // One marker per compelled action, each carrying the gate of the first ability naming it.
+        val compelledGrants = allStaticAbilities.controllerGrants<OpponentsCantCauseYouTo>()
+        compelledGrants.firstOrNull { (ability, _) -> CompelledAction.SACRIFICE in ability.actions }?.let { (_, condition) ->
+            result = result.with(GrantsSacrificeImmunityComponent(condition))
+        }
+        compelledGrants.firstOrNull { (ability, _) -> CompelledAction.DISCARD in ability.actions }?.let { (_, condition) ->
+            result = result.with(GrantsDiscardImmunityComponent(condition))
         }
         allStaticAbilities.controllerGrant<GrantCantLoseGame>()?.let {
             result = result.with(GrantsCantLoseGameComponent(it.condition))
@@ -1443,7 +1450,7 @@ class StaticAbilityHandler(
             is GrantHexproofToController,
             is GrantProtectionToController,
             is GrantShroudToController,
-            is com.wingedsheep.sdk.scripting.OpponentsCantMakeYouSacrifice,
+            is OpponentsCantCauseYouTo,
             is StationUsingToughness,
             is SuppressHexproofForGroup,
             is com.wingedsheep.sdk.scripting.GrantMadnessToOwnedCards,

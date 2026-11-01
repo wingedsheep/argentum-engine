@@ -390,26 +390,46 @@ data object GrantHexproofToController : StaticAbility {
 }
 
 /**
- * Spells and abilities your opponents control can't cause you to sacrifice permanents
- * (Sigarda, Host of Herons).
+ * What a resolving spell or ability can tell a player to do to their own cards — the actions
+ * [OpponentsCantCauseYouTo] forbids an opponent's source from compelling.
+ */
+@Serializable
+enum class CompelledAction(val phrase: String) {
+    /** Discard a card from hand (CR 701.9). */
+    DISCARD("discard cards"),
+
+    /** Sacrifice a permanent (CR 701.21). */
+    SACRIFICE("sacrifice permanents"),
+}
+
+/**
+ * Spells and abilities your opponents control can't cause you to [actions] — "… to sacrifice
+ * permanents" (Sigarda, Host of Herons), "… to discard cards or sacrifice permanents" (Tamiyo,
+ * Collector of Tales).
  *
  * A player-scoped "can't" that outranks the instruction (CR 101.2): as an opponent's spell or
- * ability resolves, the sacrifice it would impose on this permanent's controller simply doesn't
- * happen, and an *optional* sacrifice offered by such a source can't be chosen — including
- * paying a sacrifice cost the opponent's spell or ability imposes (a ward—sacrifice, or an
- * "unless you sacrifice …" clause). Effects the controller themselves controls are untouched,
- * and so is every non-sacrifice way a permanent leaves the battlefield (lethal damage, 0
- * toughness, the legend rule, destruction) — those aren't sacrifices.
+ * ability resolves, the discard or sacrifice it would impose on this permanent's controller simply
+ * doesn't happen, and an *optional* one offered by such a source can't be chosen — including
+ * paying a discard or sacrifice cost the opponent's spell or ability imposes (a ward cost, or an
+ * "unless you discard / sacrifice …" clause). Effects the controller themselves controls are
+ * untouched, and so are the game rules: cleanup's hand-size discard, lethal damage, 0 toughness,
+ * the legend rule and destruction aren't a spell or ability making you discard or sacrifice.
  *
- * Stamped as `GrantsSacrificeImmunityComponent` by the static-ability handler and read by
- * `SacrificeImmunity`, which every sacrifice site consults; it is not a Rule 613 continuous
- * effect.
+ * Stamped as one marker per action (`GrantsDiscardImmunityComponent`,
+ * `GrantsSacrificeImmunityComponent`) by the static-ability handler and read by
+ * `CompelledActionImmunity`, which every discard and sacrifice site consults; it is not a Rule 613
+ * continuous effect.
  */
-@SerialName("OpponentsCantMakeYouSacrifice")
+@SerialName("OpponentsCantCauseYouTo")
 @Serializable
-data object OpponentsCantMakeYouSacrifice : StaticAbility {
+data class OpponentsCantCauseYouTo(val actions: Set<CompelledAction>) : StaticAbility {
+    init {
+        require(actions.isNotEmpty()) { "OpponentsCantCauseYouTo needs at least one action" }
+    }
+
     override val description: String =
-        "Spells and abilities your opponents control can't cause you to sacrifice permanents"
+        "Spells and abilities your opponents control can't cause you to " +
+            CompelledAction.entries.filter { it in actions }.joinToString(" or ") { it.phrase }
 }
 
 /**

@@ -5207,7 +5207,12 @@
     ],
     "script": {
         "staticAbilities": [
-            "OpponentsCantMakeYouSacrifice"
+            {
+                "type": "OpponentsCantCauseYouTo",
+                "actions": [
+                    "SACRIFICE"
+                ]
+            }
         ]
     },
     "metadata": {

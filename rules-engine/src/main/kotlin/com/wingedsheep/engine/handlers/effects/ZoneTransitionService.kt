@@ -1690,6 +1690,12 @@ class ZoneTransitionService(
         asCyclingCost: Boolean = false
     ): ZoneTransitionResult {
         if (cardIds.isEmpty()) return ZoneTransitionResult(state, emptyList())
+        // An opponent's spell or ability can't make a protected player discard (Tamiyo, Collector
+        // of Tales) — the discard simply doesn't happen.
+        if (com.wingedsheep.engine.mechanics.CompelledActionImmunity.appliesTo(
+                state, playerId, causedByControllerId, com.wingedsheep.sdk.scripting.CompelledAction.DISCARD, predicateEvaluator
+            )
+        ) return ZoneTransitionResult(state, emptyList())
         val cardNames = cardIds.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
         var newState = markDiscardCause(state, cardIds, causedByControllerId)
         val moveEvents = mutableListOf<EngineGameEvent>()

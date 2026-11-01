@@ -8084,6 +8084,152 @@
     ]
 }
 
+// Tamiyo, Collector of Tales
+{
+    "name": "Tamiyo, Collector of Tales",
+    "manaCost": "{2}{G}{U}",
+    "typeLine": "Legendary Planeswalker — Tamiyo",
+    "oracleText": "Spells and abilities your opponents control can't cause you to discard cards or sacrifice permanents.\n+1: Choose a nonland card name, then reveal the top four cards of your library. Put all cards with the chosen name from among them into your hand and the rest into your graveyard.\n−3: Return target card from your graveyard to your hand.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tamiyo, Collector of Tales:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ChooseOption",
+                            "optionType": "CARD_NAME",
+                            "storeAs": "cardName0",
+                            "cardNamePool": "NONLAND"
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            },
+                            "storeAs": "gathered1",
+                            "revealed": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered1",
+                            "selection": "SelectAll",
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "NameEqualsChosen",
+                                        "variableName": "cardName0"
+                                    }
+                                ]
+                            },
+                            "storeSelected": "selected2",
+                            "storeRemainder": "remainder2"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Choose a nonland card name, then reveal the top four cards of your library. Put all cards with the chosen name from among them into your hand and the rest into your graveyard."
+            },
+            {
+                "id": "Tamiyo, Collector of Tales:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Return target card from your graveyard to your hand."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "OpponentsCantCauseYouTo",
+                "actions": [
+                    "DISCARD",
+                    "SACRIFICE"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "220",
+        "rarity": "RARE",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/6/76776b24-a2e1-4590-88e7-8a421baf2fc4.jpg?1783933384",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "As a spell or ability an opponent controls resolves, if it would force you to sacrifice a permanent or discard a card, you just don't. That part of the effect does nothing. If that spell or ability gives you the option to sacrifice a permanent or to discard a card, you can't take that option."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If a spell or ability an opponent controls states that something happens unless you sacrifice a permanent (as Mogis, God of Slaughter does) or discard a card (as Painful Quandary does), you can't choose to sacrifice or discard. On the other hand, if a spell or ability an opponent controls instructs you to sacrifice a permanent unless you perform an action (as Killing Wave does) or discard a card unless you perform an action, you can choose whether or not to perform the action. If you don't perform the action, nothing happens, since the spell or ability can't cause you to sacrifice any permanents or discard cards."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Tamiyo's ability affects sacrifices, but not any other ways permanents can leave the battlefield. It won't stop a creature from dying due to lethal damage or having 0 toughness, and it won't stop a permanent from being put into its owner's graveyard due to the \"legend rule.\" None of these are sacrifices; they're the result of game rules."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If a spell or ability your opponent controls reduces your maximum hand size, Tamiyo's first ability won't stop you from discarding cards when the game rules cause you to discard during your cleanup step."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If Tamiyo has 3 loyalty, you can't activate her last ability to return her to your hand. She won't be in your graveyard while you're choosing targets for the ability."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Teferi, Time Raveler
 {
     "name": "Teferi, Time Raveler",

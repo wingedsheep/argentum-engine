@@ -83,6 +83,25 @@ class MoveCollectionExecutor(
         } else {
             allCards
         }
+        // "Spells and abilities your opponents control can't cause you to discard cards" (Tamiyo,
+        // Collector of Tales): a protected player's share of the discard stays in their hand, and
+        // leaves this collection, so a later "the discarded card" step sees only what was really
+        // discarded. A discard paid as a cost is the payer's own act and passes through.
+        if (effect.moveType == MoveType.Discard && !context.discardIsCost) {
+            val causeControllerId = context.effectControllerId ?: context.controllerId
+            val kept = discardsByPlayer(state, cards, context.controllerId).filter { (discarderId, _) ->
+                !com.wingedsheep.engine.mechanics.CompelledActionImmunity.appliesTo(
+                    state, discarderId, causeControllerId, com.wingedsheep.sdk.scripting.CompelledAction.DISCARD, predicateEvaluator
+                )
+            }.values.flatten().toHashSet()
+            if (kept.size < cards.size) {
+                val rest = stored.filter { it in kept || it !in cards }
+                val result = execute(state, effect, context.copy(pipeline = context.pipeline.copy(
+                    storedCollections = context.pipeline.storedCollections + (effect.from to rest)
+                )))
+                return result.copy(updatedCollections = mapOf(effect.from to rest) + result.updatedCollections)
+            }
+        }
 
         // Cards a controlled search found (Opposition Agent) are exiled instead of going where the
         // instruction says, and the player who controlled the search may play them. The rest of the

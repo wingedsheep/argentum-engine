@@ -1530,7 +1530,6 @@ MustBlock — StaticAbility
 MustBlockEachAttacker — StaticAbility
 NoMaximumHandSize — StaticAbility
 NoncombatDamageBonus — StaticAbility
-OpponentsCantMakeYouSacrifice — StaticAbility
 OpponentsMustAttackYou — StaticAbility
 OpponentsPlayWithHandsRevealed — StaticAbility
 OverrideEnchantedLandManaColor — StaticAbility
@@ -1745,6 +1744,7 @@ MoveAllCountersEffect — Effect — The Ozolith — MoveAllLastKnownCountersEff
 MustAttackGroupEffect — Effect — Kardur, Doomscourge — MarkMustAttackEffect, MustAttack — MarkMustAttack marks the objects it names when it resolves and never reaches a creature that arrives later, while this group requirement is rule-modifying and binds every matching creature for its duration (CR 611.2c); MustAttack is the static form, which lives only as long as a permanent has it, and granting it needs a battlefield holder that may leave while the requirement outlasts it
 MustBlockGroupEffect — Effect — Brutal Hordechief — MarkMustBlockThisTurnEffect, MustBlock — MarkMustBlockThisTurn marks the one creature it targets and never reaches a creature that arrives later, while this group requirement is rule-modifying and binds every matching creature for its duration (CR 611.2c); MustBlock is the static form, which lives only as long as a permanent has it, and granting it needs a battlefield holder that may leave while the requirement outlasts it
 NoteNumberForSourceEffect — Effect — Sigarda's Splendor — ChooseNumberForSourceEffect, StoreNumberEffect — ChooseNumberForSource writes the same durable slot but only from a player's bounded choice; StoreNumber evaluates a DynamicAmount but only into the resolving pipeline, gone once the ability ends
+OpponentsCantCauseYouTo — StaticAbility — Tamiyo, Collector of Tales — OpponentsCantMakeYouSacrifice (renamed into this), CantBeSacrificed — renames Sigarda's sacrifice-only data object and widens it with a CompelledAction set axis (discard, sacrifice; no net new leaf); CantBeSacrificed shields a set of permanents from cost payments, not a player from an opponent's instruction, and has no discard leg
 PartnerKind.ChooseABackground — PartnerKind — none yet (Wilson, Refined Grizzly prints it) — PartnerKind.Plain, PartnerKind.Named — CR 702.124k pairs a card with a legendary Background enchantment that has no partner ability of its own; Plain and Named pair two cards that both carry the same ability, so neither expresses a one-sided pairing
 PartnerKind.DoctorsCompanion — PartnerKind — none yet (Clara Oswald prints it) — PartnerKind.ChooseABackground, PartnerKind.Named — CR 702.124m pairs with a Time Lord Doctor creature that has no partner ability; ChooseABackground's other half is a Background enchantment, a different type test, and Named needs the ability on both cards
 PartnerKind.Named — PartnerKind — none yet (Friends forever cards such as Will, Scion of Peace) — PartnerKind.Plain, PartnerKind.With — partner—[text] (CR 702.124i: Friends forever, Survivors and the rest) pairs only with the same text; Plain has no text to compare, and With names a card, not an ability

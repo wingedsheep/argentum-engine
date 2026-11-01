@@ -6,7 +6,8 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
-import com.wingedsheep.engine.mechanics.SacrificeImmunity
+import com.wingedsheep.engine.mechanics.CompelledActionImmunity
+import com.wingedsheep.sdk.scripting.CompelledAction
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.captureEntitySnapshots
@@ -47,7 +48,7 @@ class SacrificeExecutor(
         // this never fires — but a per-player iteration ("each player sacrifices a permanent")
         // rebinds controllerId to each iterated player while effectControllerId stays the caster,
         // and that is exactly the case Sigarda stops.
-        if (SacrificeImmunity.appliesTo(state, controllerId, context.effectControllerId ?: controllerId, predicateEvaluator = zones.predicateEvaluator)) {
+        if (CompelledActionImmunity.appliesTo(state, controllerId, context.effectControllerId ?: controllerId, CompelledAction.SACRIFICE, predicateEvaluator = zones.predicateEvaluator)) {
             return EffectResult.success(state)
         }
 

@@ -4,7 +4,8 @@ import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
-import com.wingedsheep.engine.mechanics.SacrificeImmunity
+import com.wingedsheep.engine.mechanics.CompelledActionImmunity
+import com.wingedsheep.sdk.scripting.CompelledAction
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -77,7 +78,7 @@ class SacrificeTargetExecutor(private val zones: ZoneTransitionService) : Effect
         // opponent's spell or ability. Killing Wave is the shape this guards: its per-creature
         // "sacrifice it unless you pay" runs under a ForEachPlayer that rebinds the resolution
         // controller to the creature's controller, so the caster is read off effectControllerId.
-        if (SacrificeImmunity.appliesTo(state, controllerId, context.effectControllerId ?: context.controllerId, predicateEvaluator = zones.predicateEvaluator)) {
+        if (CompelledActionImmunity.appliesTo(state, controllerId, context.effectControllerId ?: context.controllerId, CompelledAction.SACRIFICE, predicateEvaluator = zones.predicateEvaluator)) {
             return EffectResult.success(state)
         }
 

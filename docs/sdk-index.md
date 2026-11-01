@@ -1976,7 +1976,7 @@ Families:
 - `MustBlockEachAttacker(filter: GroupFilter)` — Each attacking creature creates a separate blocking requirement for matching blockers.
 - `NoMaximumHandSize(player: Player)` — Removes the maximum hand size limit for a scoped set of players, by default the controller.
 - `NoncombatDamageBonus(bonusAmount: Int)` — If a source you control would deal noncombat damage to an opponent or a permanent an opponent controls, it deals that much damage plus the bonus amount instead.
-- `OpponentsCantMakeYouSacrifice` — Spells and abilities your opponents control can't cause you to sacrifice permanents (Sigarda, Host of Herons).
+- `OpponentsCantCauseYouTo(actions: Set<CompelledAction>)` — Spells and abilities your opponents control can't cause you to actions — "… to sacrifice permanents" (Sigarda, Host of Herons), "… to discard cards or sacrifice permanents" (Tamiyo, Collector of Ta…
 - `OpponentsMustAttackYou` — "Each opponent must attack you or a planeswalker you control with at least one creature each combat if able" (Trove of Temptation) — a requirement on the attacking *player*, not on any one creature…
 - `OpponentsPlayWithHandsRevealed` — Your opponents play with their hands revealed.
 - `OverrideEnchantedLandManaColor(color: Color?)` — Replaces the mana produced by the enchanted land's own mana abilities with mana of a specific color.

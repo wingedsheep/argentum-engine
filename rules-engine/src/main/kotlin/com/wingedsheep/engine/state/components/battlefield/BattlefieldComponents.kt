@@ -1296,10 +1296,11 @@ data class ProtectionGrant(
 
 /**
  * Marks a permanent as granting "spells and abilities your opponents control can't cause you to
- * sacrifice permanents" to its controller (Sigarda, Host of Herons).
+ * sacrifice permanents" to its controller (Sigarda, Host of Herons; Tamiyo, Collector of Tales).
  *
- * Stamped from [com.wingedsheep.sdk.scripting.OpponentsCantMakeYouSacrifice] and read by
- * [com.wingedsheep.engine.mechanics.SacrificeImmunity], which every sacrifice site consults
+ * Stamped from [com.wingedsheep.sdk.scripting.OpponentsCantCauseYouTo] naming
+ * [com.wingedsheep.sdk.scripting.CompelledAction.SACRIFICE] and read by
+ * [com.wingedsheep.engine.mechanics.CompelledActionImmunity], which every sacrifice site consults
  * before moving a permanent to the graveyard. When the permanent leaves the battlefield the
  * component goes with it — no cleanup needed.
  *
@@ -1307,6 +1308,18 @@ data class ProtectionGrant(
  */
 @Serializable
 data class GrantsSacrificeImmunityComponent(
+    override val condition: Condition? = null
+) : Component, ControllerGrantMarker
+
+/**
+ * The discard twin of [GrantsSacrificeImmunityComponent]: "spells and abilities your opponents
+ * control can't cause you to discard cards" (Tamiyo, Collector of Tales). Stamped from
+ * [com.wingedsheep.sdk.scripting.OpponentsCantCauseYouTo] naming
+ * [com.wingedsheep.sdk.scripting.CompelledAction.DISCARD]; read by
+ * [com.wingedsheep.engine.mechanics.CompelledActionImmunity] at every effect-driven discard.
+ */
+@Serializable
+data class GrantsDiscardImmunityComponent(
     override val condition: Condition? = null
 ) : Component, ControllerGrantMarker
 

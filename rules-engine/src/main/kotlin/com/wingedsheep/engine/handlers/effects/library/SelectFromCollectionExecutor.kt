@@ -8,6 +8,7 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.ChooserResolution
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
+import com.wingedsheep.engine.mechanics.CompelledActionImmunity
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
@@ -17,6 +18,10 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.scripting.CompelledAction
+import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.MoveType
 import com.wingedsheep.sdk.scripting.effects.Chooser
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
@@ -48,11 +53,46 @@ class SelectFromCollectionExecutor(
 
     private val visibility = com.wingedsheep.engine.view.Visibility(cardRegistry, conditionEvaluator = predicateEvaluator.conditions)
 
+    /**
+     * Whether this selection only picks the cards a later step of the running program discards
+     * (a `MoveCollection` of [SelectFromCollectionEffect.storeSelected] with [MoveType.Discard]),
+     * for a spell or ability every owner of [cards] is protected from ([CompelledActionImmunity]).
+     * The running program is the frame the interpreter pushed beneath this leaf.
+     */
+    private fun selectionFeedsForbiddenDiscard(
+        state: GameState,
+        effect: SelectFromCollectionEffect,
+        context: EffectContext,
+        cards: List<EntityId>
+    ): Boolean {
+        if (context.discardIsCost || cards.isEmpty()) return false
+        val cause = context.effectControllerId ?: context.controllerId
+        val owners = cards.mapTo(HashSet()) { cardId ->
+            state.getEntity(cardId)?.get<com.wingedsheep.engine.state.components.identity.OwnerComponent>()?.playerId
+                ?: state.getEntity(cardId)?.get<CardComponent>()?.ownerId ?: return false
+        }
+        if (!owners.all { CompelledActionImmunity.appliesTo(state, it, cause, CompelledAction.DISCARD, predicateEvaluator) }) return false
+        if (!cards.all { cardId -> owners.any { cardId in state.getHand(it) } }) return false
+        val program = state.peekContinuation() as? EffectProgram ?: return false
+        val steps = program.cursor.steps.filterIsInstance<CursorStep.Child>()
+        if (steps.size != program.cursor.steps.size || steps.isEmpty()) return false
+        var composite = program.root as? CompositeEffect ?: return false
+        for (step in steps.dropLast(1)) {
+            composite = composite.effects.getOrNull(step.index) as? CompositeEffect ?: return false
+        }
+        val index = steps.last().index
+        if (composite.effects.getOrNull(index) != effect) return false
+        return composite.effects.drop(index + 1).any {
+            it is MoveCollectionEffect && it.from == effect.storeSelected && it.moveType == MoveType.Discard
+        }
+    }
+
     override fun execute(
         state: GameState,
         effect: SelectFromCollectionEffect,
         context: EffectContext
     ): EffectResult {
+        val original = effect
         // Resolve any dynamic selection restriction (e.g. TotalManaValueAtMost bound to X on a
         // pay-{X} reflexive) to a concrete integer cap up front, so the ceiling calc, the
         // decision, the continuation, and response normalization all see a fixed value.
@@ -88,6 +128,15 @@ class SelectFromCollectionExecutor(
             if (remainderName != null) {
                 collections[remainderName] = emptyList()
             }
+            return EffectResult.success(state).copy(updatedCollections = collections)
+        }
+
+        // The chosen cards are about to be discarded by an opponent's spell or ability, and every
+        // player whose hand they'd come from can't be made to discard (Tamiyo, Collector of Tales):
+        // the discard won't happen, so the question isn't asked. Both facts are public.
+        if (selectionFeedsForbiddenDiscard(state, original, context, cards)) {
+            val collections = mutableMapOf(effect.storeSelected to emptyList<EntityId>())
+            if (remainderName != null) collections[remainderName] = cards
             return EffectResult.success(state).copy(updatedCollections = collections)
         }
 

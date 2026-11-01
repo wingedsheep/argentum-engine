@@ -7,7 +7,8 @@ import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
-import com.wingedsheep.engine.mechanics.SacrificeImmunity
+import com.wingedsheep.engine.mechanics.CompelledActionImmunity
+import com.wingedsheep.sdk.scripting.CompelledAction
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.EntitySnapshot
@@ -61,7 +62,7 @@ class ForceSacrificeExecutor(
         // anyone is prompted — they are never offered the choice (CR 101.2).
         val effectControllerId = context.effectControllerId ?: context.controllerId
         val eligiblePlayers = playerIds.filterNot {
-            SacrificeImmunity.appliesTo(state, it, effectControllerId, predicateEvaluator = zones.predicateEvaluator)
+            CompelledActionImmunity.appliesTo(state, it, effectControllerId, CompelledAction.SACRIFICE, predicateEvaluator = zones.predicateEvaluator)
         }
 
         return processPlayers(state, inApnapOrder(state, eligiblePlayers), effect.filter, count, context.sourceId)

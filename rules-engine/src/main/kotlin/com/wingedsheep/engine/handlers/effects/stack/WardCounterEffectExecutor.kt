@@ -27,7 +27,8 @@ import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
-import com.wingedsheep.engine.mechanics.SacrificeImmunity
+import com.wingedsheep.engine.mechanics.CompelledActionImmunity
+import com.wingedsheep.sdk.scripting.CompelledAction
 import com.wingedsheep.engine.mechanics.mana.CostCalculator
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.legalactions.TapForGenericPermanentData
@@ -261,9 +262,10 @@ class WardCounterEffectExecutor(
             // Resolved to a fixed Life before it ever reaches here; treat as free defensively.
             is WardCost.DynamicLife -> true
             is WardCost.Discard ->
-                eligibleDiscardCount(state, zones, payingPlayerId, cost.filter) >= cost.count
+                !CompelledActionImmunity.appliesTo(state, payingPlayerId, controllerId, CompelledAction.DISCARD, predicateEvaluator = zones.predicateEvaluator) &&
+                    eligibleDiscardCount(state, zones, payingPlayerId, cost.filter) >= cost.count
             is WardCost.Sacrifice ->
-                !SacrificeImmunity.appliesTo(state, payingPlayerId, controllerId, predicateEvaluator = zones.predicateEvaluator) &&
+                !CompelledActionImmunity.appliesTo(state, payingPlayerId, controllerId, CompelledAction.SACRIFICE, predicateEvaluator = zones.predicateEvaluator) &&
                     sacrificeCandidates(state, zones, payingPlayerId, cost.filter).size >= cost.count
             // CR 701.59b fails closed — a graveyard that can't reach the total means the payer
             // can't choose to collect evidence at all. Same resolver gate [handleCollectEvidenceCost]
@@ -698,7 +700,9 @@ class WardCounterEffectExecutor(
             payingPlayerId: EntityId,
             controllerId: EntityId?
         ): Boolean = when (cost) {
-            is WardCost.Discard -> state.getHand(payingPlayerId).size < cost.count
+            // A discard immunity is on the battlefield, so it is as public as the hand size.
+            is WardCost.Discard -> state.getHand(payingPlayerId).size < cost.count ||
+                CompelledActionImmunity.appliesTo(state, payingPlayerId, controllerId, CompelledAction.DISCARD, predicateEvaluator = zones.predicateEvaluator)
             is WardCost.Composite -> cost.parts.any { publiclyUnpayable(state, zones, it, payingPlayerId, controllerId) }
             is WardCost.Choice -> cost.options.all { publiclyUnpayable(state, zones, it, payingPlayerId, controllerId) }
             else -> !canPayWardCost(state, zones, cost, payingPlayerId, controllerId)
