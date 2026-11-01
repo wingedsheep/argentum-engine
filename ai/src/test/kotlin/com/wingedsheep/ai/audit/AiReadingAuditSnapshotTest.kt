@@ -33,8 +33,10 @@ class AiReadingAuditSnapshotTest : FunSpec({
         "Alabaster Dragon" to emptyList(),
         // Mixed +4/-1: whether that helps depends on the creature, so equip's target stays unread.
         "Barbed Battlegear" to listOf("polarity: AttachEquipmentEffect"),
+        // A pump + keyword trick is held whole by HoldPolicy's combat-trick branch: the keyword is timed.
+        "Adamant Will" to emptyList(),
         // Unread — the effect types the audit names as the work to do.
-        "Adamant Will" to listOf("timing: GrantKeywordEffect"),
+        "Defy Gravity" to listOf("timing: GrantKeywordEffect"),
         "Abuna Acolyte" to listOf("timing: PreventDamageEffect"),
         "Abzan Charm" to listOf("polarity: DistributeCountersAmongTargetsEffect"),
         "Act on Impulse" to listOf("intent: GrantMayPlayFromExileEffect", "intent: Pipeline(TopOfLibrary→exile)"),

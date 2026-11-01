@@ -26,7 +26,6 @@ import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
-import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -63,7 +62,7 @@ import java.util.Locale
  *  - [Check.TIMING] — an until-end-of-turn leaf on an instant-speed activation or an instant-speed
  *    spell with no reading in [ExpiringGrantWindow] (abilities) or in the combat-trick / group-pump
  *    reading [com.wingedsheep.ai.engine.knowledge.HoldPolicy] gets from [CardIntentAnalyzer]
- *    (spells).
+ *    (spells; a combat trick is held whole, so each of its expiring leaves reads).
  *  - [Check.MODAL] — a "choose more than one" modal whose per-extra-mode cost has no picker in
  *    `TargetSelection.payEscalateCost`, so the AI can only ever choose one mode.
  *
@@ -259,8 +258,10 @@ object AiReadingAudit {
                 intent(spell, sink)
                 if (face.instantSpeed) {
                     timing(spell, sink) { leaf ->
+                        // HoldPolicy holds a COMBAT_TRICK spell whole, so every expiring leaf on it
+                        // (the keyword beside the pump, too) waits for the same fight or response.
                         ExpiringGrantWindow.hasExpiringReading(leaf, creatureGrants = false) ||
-                            (leaf is ModifyStatsEffect && IntentTag.COMBAT_TRICK in intent.tags) ||
+                            IntentTag.COMBAT_TRICK in intent.tags ||
                             (leaf is ForEachEffect && intent.expiringGroupPump)
                     }
                 }
