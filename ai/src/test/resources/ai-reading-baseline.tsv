@@ -450,7 +450,7 @@ Ancestral Katana	intent: ReflexiveTriggerEffect
 Ancestral Memories
 Ancestral Recall
 Ancestral Reminiscence
-Ancestral Statue	intent: Pipeline(BattlefieldMatching→hand)
+Ancestral Statue
 Ancestral Tribute
 Ancestral Vision
 Anchor to Reality
@@ -1065,7 +1065,7 @@ Ayula, Queen Among Bears	polarity: FightEffect
 Azami, Lady of Scrolls
 Aziza, Mage Tower Captain	intent: CopyTargetSpellEffect
 Azog, Moria's Ruin
-Azorius Chancery	intent: Pipeline(BattlefieldMatching→hand)
+Azorius Chancery
 Azorius Charm	polarity: MoveToZoneEffect
 Azorius Guildgate
 Azorius Knight-Arbiter
@@ -1902,7 +1902,7 @@ Borne Upon a Wind	timing: GrantFlashToSpellsEffect
 Boromir, Warden of the Tower
 Boros Charm
 Boros Fury-Shield
-Boros Garrison	intent: Pipeline(BattlefieldMatching→hand)
+Boros Garrison
 Boros Guildgate
 Boros Guildmage	intent: GrantKeywordEffect
 Boros Locket
@@ -2939,7 +2939,7 @@ Cloudspire Captain
 Cloudspire Coordinator
 Cloudspire Skycycle	intent: DistributeCountersAmongTargetsEffect; polarity: DistributeCountersAmongTargetsEffect
 Cloudsteel Kirin	intent: UnattachEquipmentEffect
-Cloudstone Curio	intent: Pipeline(BattlefieldMatching→hand)
+Cloudstone Curio
 Cloudthresher
 Clutch of Undeath	polarity: Aura>ConditionalStaticAbility
 Clutch of the Undercity	polarity: MoveToZoneEffect
@@ -3105,7 +3105,7 @@ Conduit of Storms
 Conduit of Worlds	intent: CantCastSpellsEffect; intent: Pipeline(ChosenTargets→?); polarity: CantCastSpellsEffect; polarity: Pipeline(ChosenTargets→?)
 Cone of Flame
 Confiscate
-Confounding Conundrum	intent: ForEach>Pipeline(BattlefieldMatching→hand)
+Confounding Conundrum
 Confounding Riddle
 Confront the Past	polarity: RemoveCountersEffect
 Confusion in the Ranks	intent: ExchangeControlEffect; polarity: ExchangeControlEffect
@@ -3942,7 +3942,7 @@ Demonmail Hauberk
 Demystify
 Den of the Bugbear	intent: GrantTriggeredAbilityEffect; timing: GrantTriggeredAbilityEffect
 Denethor, Ruling Steward
-Denizen of the Deep	intent: Pipeline(BattlefieldMatching→hand)
+Denizen of the Deep
 Dennick, Pious Apprentice
 Deny the Divine
 Denzilore Fatehold
@@ -4070,7 +4070,7 @@ Dimension X
 Dimensional Breach	intent: CreateGlobalTriggeredAbilityEffect; intent: Pipeline(BattlefieldMatching→exile)
 Dimensional Exile	polarity: Aura>ExileUntilLeavesEffect; polarity: Aura>GatherCardsEffect; polarity: Aura>MoveCollectionEffect
 Diminisher Witch	intent: CreateAuraTokenEffect
-Dimir Aqueduct	intent: Pipeline(BattlefieldMatching→hand)
+Dimir Aqueduct
 Dimir Cutpurse
 Dimir Doppelganger	polarity: EachPermanentBecomesCopyOfTargetEffect; polarity: MoveToZoneEffect
 Dimir Guildgate
@@ -4896,7 +4896,7 @@ Elvish Vatkeeper
 Elvish Visionary
 Elvish Warmaster
 Elvish Warrior
-Emancipation Angel	intent: Pipeline(BattlefieldMatching→hand)
+Emancipation Angel
 Embalmed Ascendant
 Embalmed Brawler
 Ember Hauler
@@ -6873,7 +6873,7 @@ Golgari Guildgate
 Golgari Guildmage
 Golgari Locket
 Golgari Longlegs
-Golgari Rot Farm	intent: Pipeline(BattlefieldMatching→hand)
+Golgari Rot Farm
 Golgari Rotwurm
 Golgari Signet
 Golgari Thug	polarity: MoveToZoneEffect
@@ -7129,7 +7129,7 @@ Grunn, the Lonely King
 Gruul Guildgate
 Gruul Locket
 Gruul Signet
-Gruul Turf	intent: Pipeline(BattlefieldMatching→hand)
+Gruul Turf
 Gruul War Chant
 Gryff Rider	intent: EmitKeywordCounterEventEffect
 Gryff Vanguard
@@ -8399,7 +8399,7 @@ Ixidor's Will
 Ixidor, Reality Sculptor	intent: TurnFaceUpEffect; polarity: TurnFaceUpEffect
 Iymrith, Desert Doom
 Izoni, Center of the Web
-Izzet Boilerworks	intent: Pipeline(BattlefieldMatching→hand)
+Izzet Boilerworks
 Izzet Chronarch
 Izzet Generatorium
 Izzet Guildgate
@@ -8764,7 +8764,7 @@ Kazandu Blademaster
 Kazandu Mammoth
 Kazandu Nectarpot
 Kazandu Refuge
-Kazandu Stomper	intent: Pipeline(BattlefieldMatching→hand)
+Kazandu Stomper
 Kazarov, Sengir Pureblood
 Kazuul's Fury
 Kederekt Creeper
@@ -9499,7 +9499,7 @@ Living Library	polarity: MoveToZoneEffect
 Living Phone
 Living Plane
 Living Tempest
-Living Twister	intent: Pipeline(BattlefieldMatching→hand)
+Living Twister
 Living Wall
 Livonya Silone
 Lizard Blades	intent: UnattachEquipmentEffect
@@ -9653,7 +9653,7 @@ Loxodon Surveyor
 Loxodon Warhammer
 Loxodon Wayfarer
 Loyal Apprentice
-Loyal Gryff	intent: Pipeline(BattlefieldMatching→hand)
+Loyal Gryff
 Loyal Pegasus
 Loyal Retainers
 Loyal Sentry
@@ -10448,7 +10448,7 @@ Mist-Cloaked Herald
 Mist-Syndicate Naga
 Mistbind Clique	intent: EmitChampionedEventEffect; polarity: Pipeline(BattlefieldMatching→?)
 Mistblade Shinobi	polarity: MoveToZoneEffect
-Mistbreath Elder	intent: Pipeline(BattlefieldMatching→hand)
+Mistbreath Elder
 Mistcutter Hydra
 Mister Fantastic, Reed Richards
 Mister Gutsy
@@ -11518,7 +11518,7 @@ Orthion, Hero of Lavabrink
 Orthodoxy Enforcer
 Orvar, the All-Form	polarity: CreateTokenCopyOfTargetEffect
 Orysa, Tide Choreographer
-Orzhov Basilica	intent: Pipeline(BattlefieldMatching→hand)
+Orzhov Basilica
 Orzhov Enforcer
 Orzhov Guildgate
 Orzhov Locket
@@ -11695,7 +11695,7 @@ Park Heights Pegasus
 Parker Luck	intent: Pipeline(TopOfLibrary→hand); polarity: LoseLifeEffect; polarity: Pipeline(TopOfLibrary→hand)
 Part Water
 Part in Friendship	intent: GatherUntilMatchEffect; intent: Pipeline(?→battlefield|hand|library)
-Part the Veil	intent: Pipeline(BattlefieldMatching→hand)
+Part the Veil
 Parting Gust
 Party Dude
 Party Thrasher	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
@@ -12613,7 +12613,7 @@ Raise the Draugr
 Raise the Past	intent: Pipeline(graveyard→battlefield)
 Raiyuu, Storm's Edge	intent: AddCombatPhaseEffect; intent: TapUntapEffect
 Rakalite
-Rakdos Carnarium	intent: Pipeline(BattlefieldMatching→hand)
+Rakdos Carnarium
 Rakdos Charm	polarity: Pipeline(graveyard→exile)
 Rakdos Guildgate
 Rakdos Joins Up
@@ -14166,7 +14166,7 @@ Selesnya Guildgate
 Selesnya Guildmage
 Selesnya Locket
 Selesnya Sagittars
-Selesnya Sanctuary	intent: Pipeline(BattlefieldMatching→hand)
+Selesnya Sanctuary
 Selesnya Sentry
 Selesnya Signet
 Self-Assembler
@@ -14518,7 +14518,7 @@ Shrewd Storyteller
 Shriek of Dread
 Shriek, Treblemaker	intent: ReflexiveTriggerEffect
 Shriekdiver	intent: GrantKeywordEffect
-Shrieking Drake	intent: Pipeline(BattlefieldMatching→hand)
+Shrieking Drake
 Shrieking Mogg
 Shrieking Specter	intent: Pipeline(hand→graveyard)
 Shriekmaw
@@ -14656,7 +14656,7 @@ Simian Simulacrum
 Simian Sling	intent: UnattachEquipmentEffect
 Simian Spirit Guide
 Simic Ascendancy	intent: WinGameEffect
-Simic Growth Chamber	intent: Pipeline(BattlefieldMatching→hand)
+Simic Growth Chamber
 Simic Guildgate
 Simic Locket
 Simic Signet
@@ -15668,7 +15668,7 @@ Storm Fleet Spy
 Storm Front
 Storm God's Oracle
 Storm Herald	intent: ForEach>GrantExileOnLeaveEffect; intent: Pipeline(graveyard→battlefield|exile)
-Storm Sculptor	intent: Pipeline(BattlefieldMatching→hand)
+Storm Sculptor
 Storm Seeker
 Storm Skreelix
 Storm Spirit
@@ -16279,7 +16279,7 @@ Tawnos's Wand	intent: GrantKeywordEffect
 Tawnos's Weaponry
 Tawnos, the Toymaker	intent: CopyTargetSpellEffect
 Taxi Driver	intent: GrantKeywordEffect
-Tazeem Raptor	intent: Pipeline(BattlefieldMatching→hand)
+Tazeem Raptor
 Tazeem Roilmage
 Tazri, Beacon of Unity
 Tazri, Stalwart Survivor
@@ -18520,7 +18520,7 @@ Wayfaring Giant
 Waylaying Pirates
 Wayspeaker Bodyguard
 Wayward Giant
-Wayward Guide-Beast	intent: Pipeline(BattlefieldMatching→hand)
+Wayward Guide-Beast
 Wayward Servant
 Wayward Swordtooth
 We Say Thee Nay!
@@ -18660,7 +18660,7 @@ White Sun's Zenith
 White Tiger, Ava Ayala
 White Ward
 White Widow, Free Agent
-Whitemane Lion	intent: Pipeline(BattlefieldMatching→hand)
+Whitemane Lion
 Whitesun's Passage
 Whoosh!	polarity: MoveToZoneEffect
 Wiccan, Rising Magician
@@ -19032,7 +19032,7 @@ Yargle and Multani
 Yargle, Glutton of Urborg
 Yargle, Goliath of Otaria
 Yarok's Fenlurker	intent: ForEach>Pipeline(hand→exile)
-Yarok's Wavecrasher	intent: Pipeline(BattlefieldMatching→hand)
+Yarok's Wavecrasher
 Yarok, the Desecrated
 Yarus, Roar of the Old Gods
 Yasharn, Implacable Earth
@@ -19134,7 +19134,7 @@ Zealous Guardian
 Zealous Inquisitor	intent: RedirectNextDamageEffect; polarity: RedirectNextDamageEffect; timing: RedirectNextDamageEffect
 Zealous Lorecaster
 Zealous Strike
-Zell Dincht	intent: Pipeline(BattlefieldMatching→hand)
+Zell Dincht
 Zelyon Sword
 Zendikar Farguide
 Zendikar Incarnate
