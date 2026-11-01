@@ -1139,6 +1139,69 @@
     "colorIdentityOverride": []
 }
 
+// Bleeding Edge
+{
+    "name": "Bleeding Edge",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Up to one target creature gets -2/-2 until end of turn. Amass Zombies 2. (Put two +1/+1 counters on an Army you control. It's also a Zombie. If you don't control an Army, create a 0/0 black Zombie Army creature token first.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Amass",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "subtype": "Zombie"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "rarity": "UNCOMMON",
+        "artist": "Mike Bierek",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/ac82422c-8ac8-4fbb-b9b9-d0aa23dded61.jpg?1783933451",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "You may cast Bleeding Edge without choosing a target creature. You'll just amass 2. However, if you choose a target and that target become illegal before Bleeding Edge resolves, the spell won't resolve and you won't amass."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Blindblast
 {
     "name": "Blindblast",
@@ -1666,6 +1729,59 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Bond of Revival
+{
+    "name": "Bond of Revival",
+    "manaCost": "{4}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return target creature card from your graveyard to the battlefield. It gains haste until your next turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "UntilYourNextTurn"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "rarity": "UNCOMMON",
+        "artist": "Lake Hurwitz",
+        "flavorText": "\"Today we throw off the yoke of death. Either this is an affirmation of the eternal cyclical nature of life, or it's just hilarious—depends on which of us you ask.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c6482fb9-f874-4e33-aa74-7a0da4c9760c.jpg?1783933451"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -2296,6 +2412,73 @@
     ]
 }
 
+// Command the Dreadhorde
+{
+    "name": "Command the Dreadhorde",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose any number of target creature and/or planeswalker cards in graveyards. Command the Dreadhorde deals damage to you equal to the total mana value of those cards. Put them onto the battlefield under your control.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "ManaValueSumOfCollection",
+                        "collectionName": "gathered0"
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "You"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": "creature|planeswalker",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "flavorText": "Liliana seized the reins of Bolas's vast army, gritting her teeth behind the Chain Veil.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/de7ec307-45e0-4853-85fe-9ce859b188c2.jpg?1783933449",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "Command the Dreadhorde deals damage to you before the creature and planeswalker cards are put onto the battlefield, but if this brings your life total to 0 or less, those creatures and planeswalkers enter the battlefield before you lose the game. Any abilities they have that trigger when they enter the battlefield won't resolve if you lose the game, but their static abilities (such as that of Platinum Angel) may help you survive with 0 or less life."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If a card in a graveyard has {X} in its mana cost, X is considered to be 0."
+            }
+        ]
+    }
+}
+
 // Commence the Endgame
 {
     "name": "Commence the Endgame",
@@ -2605,6 +2788,86 @@
     ]
 }
 
+// Davriel's Shadowfugue
+{
+    "name": "Davriel's Shadowfugue",
+    "manaCost": "{3}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player discards two cards and loses 2 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "hand"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "hand",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "chooser": "TargetPlayer",
+                    "storeSelected": "discarded",
+                    "prompt": "Choose 2 cards to discard"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "discarded",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "moveType": "Discard"
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "artist": "Daarken",
+        "flavorText": "Shadows coiled around the witness's mind. Then the moment vanished, leaving only the sting of its loss.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/9/09c8fe63-37a7-478d-b9ba-33a0f6519cf1.jpg?1783933451"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Deathsprout
 {
     "name": "Deathsprout",
@@ -2686,6 +2949,125 @@
     "colorIdentityOverride": [
         "BLACK",
         "GREEN"
+    ]
+}
+
+// Deliver Unto Evil
+{
+    "name": "Deliver Unto Evil",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose up to four target cards in your graveyard. If you control a Bolas planeswalker, return those cards to your hand. Otherwise, an opponent chooses two of them. Leave the chosen cards in your graveyard and put the rest into your hand.\nExile Deliver Unto Evil.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "planeswalker Bolas"
+                }
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": "ChosenTargets",
+                        "storeAs": "gathered0"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "gathered0",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Hand"
+                        }
+                    }
+                ]
+            },
+            "otherwise": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": "ChosenTargets",
+                        "storeAs": "gathered0"
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "gathered0",
+                        "selection": {
+                            "type": "ChooseExactly",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        "chooser": "Opponent",
+                        "storeSelected": "selected1",
+                        "storeRemainder": "remainder1",
+                        "prompt": "Choose two of these cards to leave in their owner's graveyard; the rest go to their hand.",
+                        "selectedLabel": "Stay in graveyard",
+                        "remainderLabel": "Return to hand"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "remainder1",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Hand"
+                        }
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 4,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ],
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "rarity": "RARE",
+        "artist": "Seb McKinnon",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/67aa7104-7acc-4827-b763-ac053c99baab.jpg?1783933447",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "Whether you control a Bolas planeswalker is checked only as this spell resolves."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If some of the targets chosen are no longer legal targets as Deliver Unto Evil resolves, an opponent chooses among the targets that remain legal. If no targets remain legal, the spell doesn't resolve. It's put into its owner's graveyard and isn't exiled."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "You may cast Deliver Unto Evil with fewer than four targets. However, if you don't control a Bolas planeswalker as Deliver Unto Evil resolves, your opponent will choose two of however many cards you did target (or one or zero, if you chose fewer than two) and the remainder (if any) will be put into your hand."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "You may cast Deliver Unto Evil with no targets if you wish. It will be exiled, and nothing else happens."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "You choose one opponent to make the final choice of which cards remains in your graveyard, but all players may discuss and advise this choice."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -3525,6 +3907,59 @@
     ]
 }
 
+// Emergence Zone
+{
+    "name": "Emergence Zone",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{1}, {T}, Sacrifice this land: You may cast spells this turn as though they had flash.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Emergence Zone:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add {C}."
+            },
+            {
+                "id": "Emergence Zone:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": "GrantFlashToSpells",
+                "descriptionOverride": "{1}, {T}, Sacrifice this land: You may cast spells this turn as though they had flash."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "245",
+        "rarity": "UNCOMMON",
+        "artist": "Jonas De Ro",
+        "flavorText": "The Planar Bridge opened over the Chamber of the Guildpact, reducing the symbol of Ravnica's endurance to rubble.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/ab95f6e7-b806-47fe-a071-6c38b3176d94.jpg?1783933367"
+    },
+    "colorIdentityOverride": []
+}
+
 // Enforcer Griffin
 {
     "name": "Enforcer Griffin",
@@ -3632,6 +4067,61 @@
         "artist": "Randy Vargas",
         "flavorText": "An Izzet experiment begins with a \"what if,\" gets approved with a \"why not,\" and concludes with a \"eureka!\"",
         "imageUri": "https://cards.scryfall.io/normal/front/0/3/03188bc3-0ef1-40cd-9c3c-4bb4d806fb92.jpg?1783933466"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Eternal Skylord
+{
+    "name": "Eternal Skylord",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Zombie Wizard",
+    "oracleText": "When this creature enters, amass Zombies 2. (Put two +1/+1 counters on an Army you control. It's also a Zombie. If you don't control an Army, create a 0/0 black Zombie Army creature token first.)\nZombie tokens you control have flying.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Eternal Skylord:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Amass",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "subtype": "Zombie"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING",
+                "filter": {
+                    "baseFilter": "Zombie token ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "rarity": "UNCOMMON",
+        "artist": "Johan Grenier",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d48d37d2-d776-41b4-9d20-7d2f5c51f814.jpg?1783925345",
+        "rulings": [
+            {
+                "date": "2023-06-16",
+                "text": "Some cards that cause you to amass Zombies also provide bonuses to \"Zombie tokens.\" These affect any token that happens to be a Zombie, not just a Zombie Army you've amassed."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -5142,6 +5632,55 @@
     ]
 }
 
+// God-Pharaoh's Statue
+{
+    "name": "God-Pharaoh's Statue",
+    "manaCost": "{6}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "Spells your opponents cast cost {2} more to cast.\nAt the beginning of your end step, each opponent loses 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "God-Pharaoh's Statue:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "descriptionOverride": "At the beginning of your end step, each opponent loses 1 life."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "OpponentsCast",
+                "modification": {
+                    "type": "IncreaseGeneric",
+                    "amount": 2
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "238",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Kieryluk",
+        "flavorText": "A dictator's infuriating smirk, an affront to everything Ravnica stood for.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/d/7dce06ba-c1e1-45ec-82a7-fc10b0fa8870.jpg?1783933372"
+    }
+}
+
 // Grim Initiate
 {
     "name": "Grim Initiate",
@@ -5343,6 +5882,53 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Herald of the Dreadhorde
+{
+    "name": "Herald of the Dreadhorde",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Zombie Warrior",
+    "oracleText": "When this creature dies, amass Zombies 2. (Put two +1/+1 counters on an Army you control. It's also a Zombie. If you don't control an Army, create a 0/0 black Zombie Army creature token first.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Herald of the Dreadhorde:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Amass",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "subtype": "Zombie"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "artist": "Heonhwa",
+        "flavorText": "Amonkhet's dead flowed into a new world in service to their God-Pharaoh.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d7ae9cb7-a3af-4224-89a5-a72f4d09dacf.jpg?1783933444",
+        "rulings": [
+            {
+                "date": "2023-06-16",
+                "text": "To amass Zombies N, if you don't control an Army creature, create a 0/0 black Zombie Army creature token. Then you choose an Army creature you control and put N +1/+1 counters on it. If that Army isn't already a Zombie, it becomes a Zombie in addition to its other types."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -5912,6 +6498,205 @@
         "artist": "Darek Zabrocki",
         "flavorText": "\"Pardon me if I seem distracted. Part of me is reconnoitering the Tenth District.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/c/4/c4d35a34-01b7-41e1-8491-a6589175d027.jpg?1783933359"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Jace's Ruse
+{
+    "name": "Jace's Ruse",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return up to two target creatures to their owner's hand. You may search your library and/or graveyard for a card named Jace, Arcane Strategist, reveal it, and put it into your hand. If you search your library this way, shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Hand"
+                    }
+                },
+                {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "Search your library",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Library"
+                                            ],
+                                            "filter": "name:Jace, Arcane Strategist"
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library for a card named Jace, Arcane Strategist to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Search your graveyard",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Graveyard"
+                                            ],
+                                            "filter": "name:Jace, Arcane Strategist"
+                                        },
+                                        "storeAs": "searchable"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your graveyard for a card named Jace, Arcane Strategist to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Search your library and graveyard",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Library",
+                                                "Graveyard"
+                                            ],
+                                            "filter": "name:Jace, Arcane Strategist"
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library and/or graveyard for a card named Jace, Arcane Strategist to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Don't search",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": []
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "273",
+        "rarity": "RARE",
+        "artist": "Clint Cearley",
+        "flavorText": "\"The Eternals can recognize faces. They just think I look like a blue minotaur.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/03e8d2c7-cd6e-48bf-9d54-73f3d6cff0aa.jpg?1783933359",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "You may cast Jace's Ruse without choosing any target creatures. You'll just search for Jace, Arcane Strategist. However, if you choose any targets and all of those targets become illegal before Jace's Ruse resolves, the spell won't resolve and you won't search."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -7322,6 +8107,42 @@
     ]
 }
 
+// Lazotep Reaver
+{
+    "name": "Lazotep Reaver",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Zombie Beast",
+    "oracleText": "When this creature enters, amass Zombies 1. (Put a +1/+1 counter on an Army you control. It's also a Zombie. If you don't control an Army, create a 0/0 black Zombie Army creature token first.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lazotep Reaver:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Amass",
+                    "subtype": "Zombie"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "artist": "Craig J Spearing",
+        "flavorText": "Despite their many forms, the Eternals worked in chilling harmony, unburdened by instinct or emotion.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/594bbe43-a8aa-42aa-bc49-cb4f3bc05cad.jpg?1783933443"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Leyline Prowler
 {
     "name": "Leyline Prowler",
@@ -8037,6 +8858,93 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Mobilized District
+{
+    "name": "Mobilized District",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{4}: This land becomes a 3/3 Citizen creature with vigilance until end of turn. It's still a land. This ability costs {1} less to activate for each legendary creature and planeswalker you control.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Mobilized District:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Mobilized District:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}"
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "keywords": [
+                        "VIGILANCE"
+                    ],
+                    "creatureTypes": [
+                        "Citizen"
+                    ]
+                },
+                "descriptionOverride": "{4}: This land becomes a 3/3 Citizen creature with vigilance until end of turn. It's still a land. This ability costs {1} less to activate for each legendary creature and planeswalker you control.",
+                "genericCostReduction": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsCreature",
+                                    "IsPlaneswalker"
+                                ]
+                            },
+                            "IsLegendary"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "249",
+        "rarity": "RARE",
+        "artist": "Jedd Chevrier",
+        "flavorText": "Sometimes the strongest weapon you can hold in your hand is another hand.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/214792e9-a172-4547-b148-b9b368cb3432.jpg?1783933367",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "If you control four or more legendary permanents that are creatures and/or planeswalkers, the last ability of Mobilized District costs no mana to activate. A legendary planeswalker that's also a creature reduces this cost by only {1}."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If Mobilized District becomes a creature the same turn it enters the battlefield, you can't attack with it or activate its mana ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Mowu, Loyal Companion
@@ -10261,6 +11169,62 @@
         "RED",
         "GREEN"
     ]
+}
+
+// Saheeli's Silverwing
+{
+    "name": "Saheeli's Silverwing",
+    "manaCost": "{4}",
+    "typeLine": "Artifact Creature — Drake",
+    "oracleText": "Flying\nWhen this creature enters, look at the top card of target opponent's library.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Saheeli's Silverwing:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "243",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "\"Track the source of those thopters,\" Saheeli told her creation. \"And feel free to snack on as many as you want.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/b/dba77c07-5d23-4a1a-90a0-b8293848d637.jpg?1783933370"
+    }
 }
 
 // Samut's Sprint
@@ -12789,6 +13753,225 @@
         "BLUE",
         "BLACK"
     ]
+}
+
+// Ugin's Conjurant
+{
+    "name": "Ugin's Conjurant",
+    "manaCost": "{X}",
+    "typeLine": "Creature — Spirit Monk",
+    "oracleText": "This creature enters with X +1/+1 counters on it.\nIf damage would be dealt to this creature while it has a +1/+1 counter on it, prevent that damage and remove that many +1/+1 counters from this creature.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": "XValue"
+            },
+            {
+                "type": "PreventDamageByRemovingCounter",
+                "removalAmount": "EqualToDamage",
+                "requiresCounter": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Yee",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/9957ecca-5ea0-446f-bfd3-46c2aaa42f08.jpg?1783933486",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "To cast Ugin's Conjurant, first choose the value for X you'd like, then apply any cost increases, then any cost reductions. The number of counters it enters with may be different than the amount of mana you pay if an effect (such as that of Ugin, the Ineffable) causes that you pay an amount of mana other than {X}."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If Ugin's Conjurant would be dealt more damage than it has counters, you remove all of the +1/+1 counters it has on it and prevent all of that damage. If another effect is raising its toughness, it will survive until the next time it's dealt lethal damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
+// Ugin, the Ineffable
+{
+    "name": "Ugin, the Ineffable",
+    "manaCost": "{6}",
+    "typeLine": "Legendary Planeswalker — Ugin",
+    "oracleText": "Colorless spells you cast cost {2} less to cast.\n+1: Exile the top card of your library face down and look at it. Create a 2/2 colorless Spirit creature token. When that token leaves the battlefield, put the exiled card into your hand.\n−3: Destroy target permanent that's one or more colors.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ugin, the Ineffable:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "faceDown": "HIDDEN",
+                            "lookableInExile": true
+                        },
+                        {
+                            "type": "CreateToken",
+                            "power": 2,
+                            "toughness": 2,
+                            "colors": [],
+                            "creatureTypes": [
+                                "Spirit"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/2/4/243d7514-35a9-446b-be0d-a5b6b4001291.jpg?1783933354"
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "createdTokens"
+                            },
+                            "body": {
+                                "type": "CreateDelayedTrigger",
+                                "effect": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "gathered0",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Hand"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "trigger": {
+                                    "event": {
+                                        "type": "ZoneChangeEvent",
+                                        "from": "Battlefield"
+                                    }
+                                },
+                                "watchedTarget": "IterationEntity",
+                                "expiry": "DelayedTriggerExpiry.Never",
+                                "fireOnce": true,
+                                "carryCollections": [
+                                    "gathered0"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Exile the top card of your library face down and look at it. Create a 2/2 colorless Spirit creature token. When that token leaves the battlefield, put the exiled card into your hand."
+            },
+            {
+                "id": "Ugin, the Ineffable:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsPermanent",
+                                    "IsColored"
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Destroy target permanent that's one or more colors."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsColorless"
+                        ]
+                    }
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 2
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7b003521-3da3-41bf-9765-36630653f902.jpg?1783933487",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying, add any cost increases, then apply any cost reductions (such as that of Ugin). The mana value of the spell remains unchanged, no matter what the total cost to cast it was."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "A colorless spell whose mana cost is {2} or {1} will cost {0} to cast."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Once you look at the exiled face-down card once, you may look at it again any time you wish. If another player gains control of the Spirit token, that player can't look at the exiled card."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If the Spirit leaves the battlefield for any reason, you'll put the exiled card into your hand, even if Ugin left the battlefield before that happened."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If an effect such as that of Doubling Season causes Ugin to create two Spirit tokens, you still only exile one card from your library. You'll put that card into your hand the first time that either of the tokens leaves the battlefield."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "A land normally has no color, even if it can produce one or more colors of mana."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": []
 }
 
 // Unlikely Aid
