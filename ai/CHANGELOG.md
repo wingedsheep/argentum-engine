@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- Reads a variable "-X/-X" on another creature (Death Wind, Defile, Flunk, Bloodtithe Harvester, Olivia's Wrath) as removal: it keeps such a card over a filler creature when it must discard, holds it for a response or the opponent's end step like other instant removal, and values it as removal in drafts, deckbuilding and playouts
 - #4185 Reads "look at the top cards and put one into your hand" (Impulse, Sleight of Hand, Fact or Fiction, Ancient Stirrings, Duskwatch Recruiter) as card draw: it cashes such instants and abilities at the opponent's end step, holds them in its own main phase while a counterspell or trick wants the mana, and values them as card draw in drafts and playouts
 - #4184 Reads "copy a card and cast the copy" (God-Eternal Kefnet, Isochron Scepter, Spellweaver Helix, Arcane Bombardment) as card advantage instead of an effect it can't place.
 - #4183 Uses instant-speed scry abilities (Crystal Ball, Castle Vantress, the Strixhaven campuses, Theros Omens) at the opponent's end step with mana it would otherwise waste, and holds them in its own main phase while an instant in hand wants that mana — as it already did for draw abilities
