@@ -1611,7 +1611,7 @@ Blighted Woodland
 Blightreaper Thallid
 Blightspeaker
 Blightstep Pathway
-Blind Creeper	intent: ModifyStatsEffect
+Blind Creeper
 Blind Obedience
 Blind Phantasm
 Blind Seer	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
@@ -2021,7 +2021,7 @@ Breath of Darigaaz
 Breath of Fury	polarity: Aura>ConditionalOnCollectionEffect; polarity: Aura>GatherCardsEffect; polarity: Aura>SacrificeTargetEffect; polarity: Aura>SelectFromCollectionEffect
 Breath of Life
 Breathe Your Last
-Breathstealer	intent: ModifyStatsEffect
+Breathstealer
 Breeches, Eager Pillager
 Breeches, the Blastmaker	intent: FlipCoinEffect; polarity: FlipCoinEffect
 Breeding Pit
@@ -2339,7 +2339,7 @@ Canopy Surge
 Canopy Tactician
 Canopy Vista
 Cantankerous Keepers
-Canyon Crab	intent: ModifyStatsEffect
+Canyon Crab
 Canyon Crawler
 Canyon Drake
 Canyon Jerboa
@@ -2408,7 +2408,7 @@ Carrion Crow
 Carrion Cruiser	intent: Pipeline(TopOfLibrary|graveyard→graveyard|hand)
 Carrion Feeder
 Carrion Grub
-Carrion Howler	intent: ModifyStatsEffect
+Carrion Howler
 Carrion Locust
 Carrion Wall
 Carrot Cake
@@ -2500,11 +2500,11 @@ Cavalier of Night
 Cavalier of Thorns	intent: Pipeline(TopOfLibrary→battlefield|graveyard); polarity: MoveToZoneEffect
 Cavalry Drillmaster
 Cavalry Master
-Cave People	intent: ModifyStatsEffect
+Cave People
 Cave Sense
 Cave of Temptation
 Cave of the Frost Dragon
-Cavern Crawler	intent: ModifyStatsEffect
+Cavern Crawler
 Cavern Stomper	intent: GrantStaticAbilityEffect; timing: GrantStaticAbilityEffect
 Cavern Thoctar
 Cavern Whisperer	intent: ForEach>Pipeline(hand→graveyard)
@@ -2685,7 +2685,7 @@ Charismatic Conqueror
 Charismatic Vanguard
 Charitable Levy
 Charity Extractor
-Charix, the Raging Isle	intent: ModifyStatsEffect
+Charix, the Raging Isle
 Charmed Clothier	intent: CreateAuraTokenEffect
 Charmed Sleep
 Charmed Stray
@@ -3641,7 +3641,7 @@ Darkbore Pathway
 Darkheart Sliver
 Darklight Phoenix
 Darkling Stalker
-Darklit Gargoyle	intent: ModifyStatsEffect
+Darklit Gargoyle
 Darkmoss Bridge
 Darkness
 Darkness Descends
@@ -5877,18 +5877,18 @@ Flowerfoot Swordmaster
 Flowering of the White Tree
 Flowstone Armor	polarity: ModifyStatsEffect
 Flowstone Channeler	polarity: ModifyStatsEffect; timing: ModifyStatsEffect
-Flowstone Charger	intent: ModifyStatsEffect
-Flowstone Crusher	intent: ModifyStatsEffect
-Flowstone Giant	intent: ModifyStatsEffect
+Flowstone Charger
+Flowstone Crusher
+Flowstone Giant
 Flowstone Infusion	polarity: ModifyStatsEffect
-Flowstone Kavu	intent: ModifyStatsEffect
+Flowstone Kavu
 Flowstone Overseer	polarity: ModifyStatsEffect; timing: ModifyStatsEffect
 Flowstone Slide
 Flowstone Strike	polarity: ModifyStatsEffect
 Flowstone Surge
 Flowstone Thopter
-Flowstone Wall	intent: ModifyStatsEffect
-Flowstone Wyvern	intent: ModifyStatsEffect
+Flowstone Wall
+Flowstone Wyvern
 Flubs, the Fool
 Flummoxed Cyclops	intent: CantBlockEffect
 Flumph
@@ -6117,7 +6117,7 @@ Frost Trickster
 Frostbite Pyromental
 Frostboil Snarl
 Frostbridge Guard
-Frostburn Weird	intent: ModifyStatsEffect
+Frostburn Weird
 Frostcliff Siege
 Frostfist Strider
 Frostpeak Yeti	intent: GrantKeywordEffect
@@ -6540,7 +6540,7 @@ Gisela, the Broken Blade	intent: MeldEffect
 Gishath, Sun's Avatar	intent: Pipeline(TopOfLibrary→battlefield|library)
 Gitaxian Anatomist
 Gitaxian Probe
-Gitaxian Raptor	intent: ModifyStatsEffect
+Gitaxian Raptor
 Give In to Violence
 Gix's Caress	polarity: Pipeline(hand→graveyard); polarity: RevealHandEffect
 Gix's Command
@@ -6733,7 +6733,7 @@ Goblin Digging Team
 Goblin Dirigible
 Goblin Dynamo
 Goblin Electromancer
-Goblin Elite Infantry	intent: ModifyStatsEffect
+Goblin Elite Infantry
 Goblin Fire Fiend
 Goblin Firebomb
 Goblin Firebug	intent: SacrificeEffect
@@ -7016,7 +7016,7 @@ Great-Horn Krushok
 Greataxe
 Greater Auramancy
 Greater Basilisk
-Greater Forgeling	intent: ModifyStatsEffect
+Greater Forgeling
 Greater Good
 Greater Mossdog
 Greater Realm of Preservation
@@ -7524,7 +7524,7 @@ Heritage Reclamation
 Hermes, Overseer of Elpis
 Hermit Druid	intent: GatherUntilMatchEffect; intent: Pipeline(?→graveyard|hand)
 Hermitic Herbalist
-Hermitic Nautilus	intent: ModifyStatsEffect
+Hermitic Nautilus
 Hero in Training
 Hero of Bladehold
 Hero of Goma Fada
@@ -9571,7 +9571,7 @@ Looming Hoverguard	polarity: MoveToZoneEffect
 Looming Shade
 Looming Spires
 Loot, Exuberant Explorer	intent: Pipeline(TopOfLibrary→battlefield|library)
-Loot, the Anomaly	intent: ModifyStatsEffect
+Loot, the Anomaly
 Loot, the Key to Everything	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Loot, the Nexus
 Loot, the Pathfinder
@@ -10177,7 +10177,7 @@ Mercurial Transformation	intent: BecomeArtifactEffect; intent: SetBaseStatsEffec
 Meren of Clan Nel Toth
 Merfolk Assassin
 Merfolk Cave-Diver
-Merfolk Coralsmith	intent: ModifyStatsEffect
+Merfolk Coralsmith
 Merfolk Falconer
 Merfolk Looter
 Merfolk Mistbinder
@@ -10238,7 +10238,7 @@ Meticulous Commons
 Meticulous Excavation	polarity: MoveToZoneEffect
 Metropolis Angel
 Metropolis Reformer
-Metropolis Sprite	intent: ModifyStatsEffect
+Metropolis Sprite
 Miasma Demon
 Mica, Reader of Ruins	intent: CopyTargetSpellEffect
 Michelangelo's Technique	intent: Pipeline(TopOfLibrary→battlefield|library)
@@ -10470,7 +10470,7 @@ Mistral Singer
 Mistrise Village	intent: MakeNextSpellUncounterableEffect
 Mists of Littjara
 Mistvault Bridge
-Mistwalker	intent: ModifyStatsEffect
+Mistwalker
 Mistway Spy	intent: CreateGlobalTriggeredAbilityEffect
 Misty Knight, Hero for Hire
 Misty Mountains Raider
@@ -10648,7 +10648,7 @@ Mornsong Aria
 Moroii
 Morophon, the Boundless
 Morphic Pool
-Morphling	intent: ModifyStatsEffect
+Morphling
 Morselhoarder
 Mortality Spear
 Mortify
@@ -11412,7 +11412,7 @@ Onulet
 Onyx Goblet
 Onyx Talisman	intent: TapUntapEffect
 Oona's Gatewarden
-Oona's Prowler	intent: ModifyStatsEffect
+Oona's Prowler
 Oona, Queen of the Fae	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
 Ooze Patrol
 Ooze Spill
@@ -12754,7 +12754,7 @@ Ravenhill Flock
 Ravening Warg
 Ravenous Amulet
 Ravenous Baloth
-Ravenous Bloodseeker	intent: ModifyStatsEffect
+Ravenous Bloodseeker
 Ravenous Chupacabra
 Ravenous Daggertooth
 Ravenous Giant
@@ -13093,7 +13093,7 @@ Retreat to Kazandu
 Retreat to Valakut
 Retribution of the Ancients	timing: ModifyStatsEffect
 Retributive Wand
-Retrieval Agent	intent: ModifyStatsEffect
+Retrieval Agent
 Retrieve
 Retrieve the Esper
 Retriever Phoenix
@@ -13904,7 +13904,7 @@ Scientist Supreme of A.I.M.	intent: CopyTargetSpellOrAbilityEffect; polarity: Co
 Scion Summoner
 Scion of Darkness	intent: MoveToZoneEffect
 Scion of Draco
-Scion of Glaciers	intent: ModifyStatsEffect
+Scion of Glaciers
 Scion of Oona
 Scion of Stygia
 Scion of Ugin
@@ -14336,7 +14336,7 @@ Shambling Ghast
 Shambling Ghoul
 Shambling Goblin
 Shambling Shell
-Shambling Strider	intent: ModifyStatsEffect
+Shambling Strider
 Shambling Suit
 Shang-Chi, Master of Kung Fu
 Shanid, Sleepers' Scourge
@@ -14742,7 +14742,7 @@ Skittish Valesk	intent: FlipCoinEffect
 Skizzik	intent: SacrificeSelfEffect
 Skoa, Embermage
 Skola Grovedancer
-Skophos Maze-Warden	intent: ModifyStatsEffect
+Skophos Maze-Warden
 Skophos Warleader
 Skrelv's Hive
 Skrelv, Defector Mite	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
@@ -15662,7 +15662,7 @@ Storm Fleet Pyromancer
 Storm Fleet Sprinter
 Storm Fleet Spy
 Storm Front
-Storm God's Oracle	intent: ModifyStatsEffect
+Storm God's Oracle
 Storm Herald	intent: ForEach>GrantExileOnLeaveEffect; intent: Pipeline(graveyard→battlefield|exile)
 Storm Sculptor	intent: Pipeline(BattlefieldMatching→hand)
 Storm Seeker
@@ -16789,7 +16789,7 @@ Thornado
 Thornfist Striker
 Thornglint Bridge
 Thornhide Wolves
-Thornling	intent: GrantKeywordEffect; intent: ModifyStatsEffect
+Thornling	intent: GrantKeywordEffect
 Thornmantle Striker	polarity: RemoveAnyNumberOfCountersEffect
 Thornplate Intimidator	intent: ChooseActionEffect; polarity: ChooseActionEffect
 Thornscape Apprentice	intent: GrantKeywordEffect
@@ -17600,7 +17600,7 @@ Underworld Fires
 Underworld Rage-Hound
 Underworld Sentinel
 Undo	polarity: ForEachEffect
-Undulating Witness	intent: ModifyStatsEffect
+Undulating Witness
 Undying Beast
 Undying Malice	polarity: GrantTriggeredAbilityEffect; timing: GrantTriggeredAbilityEffect
 Unearth
@@ -17951,6 +17951,7 @@ Verdeloth the Ancient
 Verdigris
 Verduran Emissary
 Verduran Enchantress
+Verity Circle
 Verix Bladewing
 Vermiculos
 Vermin Gorger
@@ -18001,7 +18002,7 @@ Viashino Pyromancer
 Viashino Runner
 Viashino Sandscout
 Viashino Skeleton
-Viashino Slasher	intent: ModifyStatsEffect
+Viashino Slasher
 Viashino Slaughtermaster
 Viashino Warrior
 Vibrance
@@ -18334,7 +18335,7 @@ Wall of Tombstones	intent: SetBaseStatsEffect
 Wall of Vapor
 Wall of Vines
 Wall of Water
-Wall of Wonder	intent: CanAttackDespiteDefenderThisTurnEffect; intent: ModifyStatsEffect
+Wall of Wonder	intent: CanAttackDespiteDefenderThisTurnEffect
 Wall of Wood
 Wallop
 Walltop Sentries
@@ -18469,7 +18470,7 @@ Watchful Radstag	intent: EmitKeywordCounterEventEffect
 Watchwing Scarecrow
 Watchwolf
 Water Elemental
-Water Servant	intent: ModifyStatsEffect
+Water Servant
 Water Tribe Captain
 Water Tribe Rallier
 Water Wings	timing: GrantKeywordEffect; timing: SetBaseStatsEffect
@@ -18478,7 +18479,7 @@ Waterbender Ascension	intent: GrantKeywordEffect
 Waterbender's Restoration
 Waterbending Lesson
 Waterbending Scroll
-Watercourser	intent: ModifyStatsEffect
+Watercourser
 Waterfall Aerialist
 Waterfront Bouncer	polarity: MoveToZoneEffect
 Waterfront District
