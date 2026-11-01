@@ -339,7 +339,8 @@ object LimitedCardRater {
      * The traversal — which script slots count, how much each is discounted, how gates and
      * composites fold — lives in [EffectWalker], shared with
      * [com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer]. Only the leaf scoring below is
-     * this rater's own.
+     * this rater's own — plus opening a pipeline's "if those cards include" leaf onto both branches,
+     * which [EffectWalker.leaves] keeps whole.
      */
     private fun effectBonus(card: CardDefinition): Double =
         EffectWalker.slots(card.script).sumOf { slot ->

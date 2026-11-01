@@ -30,7 +30,8 @@ import com.wingedsheep.sdk.scripting.effects.GatedEffect
  *    would hide the pipeline's `DrawCardsEffect` from every conniving or learning card and silently
  *    move their ratings and intent tags — the wrapper was introduced after this walk existed, and
  *    descending is what keeps the numbers identical to the pre-wrapper composite.
- *  - **Everything else is a leaf**, including [com.wingedsheep.sdk.scripting.effects.ModalEffect]
+ *  - **Everything else is a leaf**, including [ConditionalOnCollectionEffect] (which
+ *    [payoffLeaves] and the rater's fold open onto both branches), [com.wingedsheep.sdk.scripting.effects.ModalEffect]
  *    modes, `ForEach` bodies and pipeline stages. Widening the walk into those would change the
  *    rater's numbers — and therefore every generated sealed deck — so it is a deliberate follow-up
  *    rather than a free improvement. [CardIntentAnalyzer] compensates by reading the script's
