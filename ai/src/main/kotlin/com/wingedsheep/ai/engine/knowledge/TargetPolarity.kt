@@ -51,6 +51,8 @@ import com.wingedsheep.sdk.scripting.effects.CounterEffect
 import com.wingedsheep.sdk.scripting.effects.CreatePredefinedTokenEffect
 import com.wingedsheep.sdk.scripting.effects.CounterTargetSource
 import com.wingedsheep.sdk.scripting.effects.CreateAuraTokenEffect
+import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfTargetEffect
+import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ExileTargetSpellEffect
@@ -273,8 +275,11 @@ object TargetPolarityAnalyzer {
                 continue
             }
             val recursion = recursionSlot(leaf, requirements)
+            val copy = ownCopySlot(leaf, requirements)
             if (recursion != null) {
                 recursions += recursion
+            } else if (copy != null) {
+                perSlot[copy] += TargetPolarity.BENEFICIAL
             } else {
                 for ((target, polarity) in classify(leaf, definitions, source)) {
                     val slot = slotOf(target, requirements) ?: continue
@@ -319,6 +324,28 @@ object TargetPolarityAnalyzer {
         val fromGraveyard = leaf.fromZone == Zone.GRAVEYARD ||
             (leaf.fromZone == null && (requirements[slot] as? TargetObject)?.filter?.zone == Zone.GRAVEYARD)
         return slot.takeIf { fromGraveyard }
+    }
+
+    /**
+     * The slot a **copy of our own permanent** names — "create a token that's a copy of target
+     * creature you control" (Electroduplicate, Kiki-Jiki) — or null.
+     *
+     * A copy does nothing to the object it copies; it hands a second one to the effect's
+     * controller. Where the slot's filter keeps it on that controller's side, the copied object's
+     * controller is the one gaining it, so the slot reads beneficial and the best permanent is the
+     * one to copy — unless the leaf hands the token to someone else ([CreateTokenCopyOfTargetEffect.controller]). Unread, the removal ranking ordered our own creatures worst first. A copy of
+     * *any* creature stays unattributed: the best copy may be an opponent's, which is a board
+     * question the two-sided simulation answers. Read off the requirement, not the leaf, as
+     * [recursionSlot] does — the leaf names only the slot.
+     */
+    private fun ownCopySlot(leaf: Effect, requirements: List<TargetRequirement>): Int? {
+        // "Target player creates a copy" (Echocasting Symposium): the copy is not ours to gain.
+        if (leaf !is CreateTokenCopyOfTargetEffect || leaf.controller != null) return null
+        val slot = slotOf(leaf.target, requirements) ?: return null
+        val filter = (requirements[slot] as? TargetObject)?.filter ?: return null
+        val ours = filter.alternatives.isEmpty() &&
+            filter.baseFilter.controllerPredicate == ControllerPredicate.ControlledByYou
+        return slot.takeIf { ours }
     }
 
     /**
