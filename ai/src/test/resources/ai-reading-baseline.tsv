@@ -208,7 +208,7 @@ Agency Coroner
 Agency Outfitter	intent: Pipeline(FromMultipleZones→battlefield)
 Agent 13, Sharon Carter
 Agent Bishop, Man in Black
-Agent Frank Horrigan	intent: ProliferateEffect
+Agent Frank Horrigan
 Agent Maria Hill
 Agent Phil Coulson
 Agent Venom
@@ -926,7 +926,7 @@ Atomize
 Atraxa's Fall
 Atraxa's Skitterfang
 Atraxa, Grand Unifier
-Atraxa, Praetors' Voice	intent: ProliferateEffect
+Atraxa, Praetors' Voice
 Atris, Oracle of Half-Truths	polarity: ChoosePileEffect; polarity: Pipeline(FromVariable|TopOfLibrary→graveyard|hand)
 Atsushi, the Blazing Sky
 Attack-in-the-Box
@@ -1600,7 +1600,7 @@ Blight Rot
 Blight Sickle
 Blight-Breath Catoblepas
 Blightbeetle
-Blightbelly Rat	intent: ProliferateEffect
+Blightbelly Rat
 Blightcaster
 Blighted Agent
 Blighted Bat	intent: GrantKeywordEffect
@@ -1646,7 +1646,7 @@ Blitzball
 Blitzball Shot
 Blizzard Brawl
 Blizzard Elemental
-Bloated Contaminator	intent: ProliferateEffect
+Bloated Contaminator
 Bloated Processor
 Bloated Toad
 Bloatfly Swarm
@@ -1748,7 +1748,7 @@ Bloodtithe Harvester
 Bloodtracker
 Bloodvial Purveyor
 Bloody Betrayal	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
-Bloom Hulk	intent: ProliferateEffect
+Bloom Hulk
 Bloom Tender
 Bloombrute
 Blooming Blast
@@ -2259,7 +2259,7 @@ Cackling Imp
 Cackling Prowler
 Cackling Slasher
 Cacophodon	intent: TapUntapEffect
-Cacophony Scamp	intent: ProliferateEffect
+Cacophony Scamp
 Cactarantula
 Cactuar
 Cactusfolk Sureshot
@@ -3151,13 +3151,13 @@ Consuming Tide
 Consuming Vortex	polarity: MoveToZoneEffect
 Consumptive Goo
 Contact Other Plane
-Contagion Clasp	intent: ProliferateEffect
-Contagion Engine	intent: ProliferateEffect; polarity: ForEachEffect
+Contagion Clasp
+Contagion Engine	polarity: ForEachEffect
 Contagious Vorrac
 Containment Breach
 Containment Construct	intent: GrantMayPlayFromExileEffect; intent: Pipeline(Entity→exile)
 Containment Priest
-Contaminant Grafter	intent: ProliferateEffect
+Contaminant Grafter
 Contaminated Aquifer
 Contaminated Bond
 Contaminated Drink
@@ -3184,7 +3184,7 @@ Coordinated Charge
 Coordinated Clobbering	polarity: ForEachEffect; polarity: Pipeline(ChosenTargets→?)
 Coordinated Maneuver
 Copper Host Crusher
-Copper Longlegs	intent: ProliferateEffect
+Copper Longlegs
 Copper Myr
 Copper Tablet
 Coppercoat Vanguard
@@ -4454,7 +4454,7 @@ Dreamspoiler Witches
 Dreamstalker Manticore
 Dreamstone Hedron
 Dreamtail Heron
-Dreamtide Whale	intent: ProliferateEffect
+Dreamtide Whale
 Dredge
 Dredger's Insight
 Dredging Claw
@@ -5196,7 +5196,7 @@ Eviscerate
 Eviscerator
 Eviscerator's Insight
 Evolution Charm
-Evolution Sage	intent: ProliferateEffect
+Evolution Sage
 Evolution Witness	intent: AdaptEffect
 Evolved Sleeper	combat: SetBaseStatsEffect; intent: AddCountersEffect; intent: SetCreatureSubtypesEffect
 Evolved Spinoderm
@@ -5319,7 +5319,7 @@ Ezekiel Sims, Spider-Totem
 Ezrim, Agency Chief
 Ezuri's Brigade
 Ezuri, Renegade Leader
-Ezuri, Stalker of Spheres	intent: ProliferateEffect
+Ezuri, Stalker of Spheres
 Fable of the Mirror-Breaker
 Fabled Passage
 Fabricate
@@ -5907,7 +5907,7 @@ Flurry of Wings
 Flusterstorm
 Flutterfox
 Flux
-Flux Channeler	intent: ProliferateEffect
+Flux Channeler
 Fly	polarity: Aura>GrantKeyword; polarity: Aura>GrantTriggeredAbility
 Flycatcher Giraffid
 Flying Carpet
@@ -6633,7 +6633,7 @@ Glissa, Herald of Predation
 Glistener Seer
 Glistening Dawn
 Glistening Deluge
-Glistening Sphere	intent: ProliferateEffect
+Glistening Sphere
 Glister Bairn
 Glitch Ghost Surveyor
 Glittering Frost
@@ -6961,7 +6961,7 @@ Grasping Shadows	intent: GrantKeywordEffect
 Grasping Thrull
 Grassland Crusader
 Grasslands
-Grateful Apparition	intent: ProliferateEffect
+Grateful Apparition
 Gratuitous Violence
 Gravblade Heavy
 Grave Bramble
@@ -7180,10 +7180,10 @@ Guiding Hydra
 Guiding Voice
 Guild Globe
 Guild Thief	intent: GrantKeywordEffect
-Guildpact Informant	intent: ProliferateEffect
+Guildpact Informant
 Guile
 Guilty Conscience
-Gulping Scraptrap	intent: ProliferateEffect
+Gulping Scraptrap
 Guma
 Gumdrop Poisoner
 Gundabad Opportunist	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
@@ -7595,7 +7595,7 @@ High Fae Negotiator
 High Fae Trickster
 High Market
 High Noon
-High Perfect Morcant	intent: ForEach>AddCountersToCollectionEffect; intent: ForEach>Pipeline(ControlledPermanents→?); intent: ProliferateEffect
+High Perfect Morcant	intent: ForEach>AddCountersToCollectionEffect; intent: ForEach>Pipeline(ControlledPermanents→?)
 High Priest of Penance
 High Sentinels of Arashin
 High Stride
@@ -7801,7 +7801,7 @@ Howltooth Hollow	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithoutPa
 Hua Tuo, Honored Physician	polarity: MoveToZoneEffect
 Huang Zhong, Shu General
 Huatli's Final Strike
-Huatli's Raptor	intent: ProliferateEffect
+Huatli's Raptor
 Huatli's Snubhorn
 Huatli, Poet of Unity	intent: ExileAndReturnTransformedEffect
 Huatli, the Sun's Heart
@@ -8086,7 +8086,7 @@ Inertia Bubble
 Inescapable Blaze
 Inevitable Defeat
 Inevitable End	polarity: Aura>GrantTriggeredAbility
-Inexorable Tide	intent: ProliferateEffect
+Inexorable Tide
 Infantry Shield
 Infantry Veteran
 Infected Defector
@@ -8712,7 +8712,7 @@ Karlov Watchdog
 Karlov of the Ghost Council
 Karma
 Karn Liberated	intent: Pipeline(FromLinkedExile→?); intent: Pipeline(hand→exile); intent: RestartGameEffect; polarity: Pipeline(hand→exile)
-Karn's Bastion	intent: ProliferateEffect
+Karn's Bastion
 Karn's Sylex
 Karn's Temporal Sundering	polarity: MoveToZoneEffect; polarity: TakeExtraTurnEffect
 Karn, Argent Defender
@@ -8905,7 +8905,7 @@ Kinzu of the Bleak Coven
 Kiora Bests the Sea God
 Kiora of Fire and Ashes
 Kiora of Salt and Sand	intent: GrantKeywordEffect; intent: TapUntapEffect
-Kiora's Dambreaker	intent: ProliferateEffect
+Kiora's Dambreaker
 Kiora's Follower	intent: TapUntapEffect
 Kiora, Behemoth Beckoner	intent: TapUntapEffect
 Kiora, Sovereign of the Deep	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→library)
@@ -10007,7 +10007,7 @@ Marshaling the Troops
 Marshals' Pathcruiser
 Martial Coup
 Martial Impetus
-Martyr for the Cause	intent: ProliferateEffect
+Martyr for the Cause
 Martyr of Dusk
 Martyr's Cry	intent: CaptureControllersEffect; intent: ForEachCapturedControllerEffect; intent: Pipeline(battlefield→exile)
 Martyr's Soul
@@ -10196,7 +10196,7 @@ Merfolk Mistbinder
 Merfolk Pupil
 Merfolk Seastalkers
 Merfolk Secretkeeper	polarity: Pipeline(TopOfLibrary→graveyard)
-Merfolk Skydiver	intent: ProliferateEffect
+Merfolk Skydiver
 Merfolk Skyscout	intent: TapUntapEffect
 Merfolk Sovereign	intent: GrantKeywordEffect
 Merfolk Trickster
@@ -10233,7 +10233,7 @@ Metallurgeon
 Metamorphic Blast	polarity: BecomeCreatureEffect
 Metamorphose	polarity: MoveToZoneEffect
 Metamorphosis
-Metastatic Evangel	intent: ProliferateEffect
+Metastatic Evangel
 Metathran Aerostat	intent: Pipeline(hand→battlefield)
 Metathran Soldier
 Metathran Transport	intent: ChangeColorEffect; polarity: ChangeColorEffect; timing: ChangeColorEffect
@@ -12559,7 +12559,7 @@ Radiant's Judgment
 Radiating Lightning
 Radioactive Spider
 Radjan Spirit	combat: RemoveKeywordEffect; intent: RemoveKeywordEffect; polarity: RemoveKeywordEffect; timing: RemoveKeywordEffect
-Radstorm	intent: ProliferateEffect
+Radstorm
 Raff Capashen, Ship's Mage
 Raff, Weatherlight Stalwart
 Raffine's Guidance
@@ -12878,7 +12878,7 @@ Reclusive Wight
 Recoil	polarity: MoveToZoneEffect
 Recollect
 Recommission
-Recon Craft Theta	intent: ProliferateEffect
+Recon Craft Theta
 Reconnaissance	intent: RemoveFromCombatEffect; intent: TapUntapEffect
 Reconnaissance Mission
 Reconstruct History
@@ -13247,7 +13247,7 @@ Rip-Clan Crasher
 Ripchain Razorkin
 Ripclaw Wrangler	intent: ForEach>Pipeline(hand→graveyard)
 Ripjaw Raptor
-Ripples of Potential	intent: ForEach>PhaseOutEffect; intent: Pipeline(?→?); intent: ProliferateEffect
+Ripples of Potential	intent: ForEach>PhaseOutEffect; intent: Pipeline(?→?)
 Ripples of Undeath
 Ripscale Predator
 Riptide
@@ -13337,7 +13337,7 @@ Roads Go Ever, Ever On
 Roadside Assistance
 Roadside Blowout	polarity: MoveToZoneEffect
 Roadside Reliquary
-Roalesk, Apex Hybrid	intent: ProliferateEffect
+Roalesk, Apex Hybrid
 Roamer's Routine
 Roaming Ghostlight	polarity: MoveToZoneEffect
 Roaming Throne
@@ -15440,7 +15440,7 @@ Stabbing Pain
 Stabilizer
 Stadium Headliner
 Stadium Tidalmage
-Staff of Compleation	intent: ProliferateEffect
+Staff of Compleation
 Staff of Domination	intent: TapUntapEffect
 Staff of Zegon	intent: ModifyStatsEffect
 Stag Beetle
@@ -16151,7 +16151,7 @@ Tainted Adversary
 Tainted Field
 Tainted Indulgence
 Tainted Isle
-Tainted Observer	intent: ProliferateEffect
+Tainted Observer
 Tainted Peak
 Tainted Treats
 Tainted Well	polarity: Aura>DrawCardsEffect; polarity: Aura>SetEnchantedLandType
@@ -16911,7 +16911,7 @@ Thrull Champion
 Thrull Retainer
 Thrull Wizard	intent: PayOrSufferEffect; polarity: PayOrSufferEffect
 Thrumming Hivepool
-Thrummingbird	intent: ProliferateEffect
+Thrummingbird
 Thrun, Breaker of Silence
 Thryx, the Sudden Storm
 Thrór's Map
@@ -17950,7 +17950,7 @@ Venom Sliver
 Venom's Hunger
 Venom, Evil Unleashed
 Venomized Cat
-Venomous Brutalizer	intent: ProliferateEffect
+Venomous Brutalizer
 Venomous Changeling
 Venomous Hierophant
 Venomous Vines
@@ -18005,7 +18005,7 @@ Vexing Beetle
 Vexing Devil
 Vexing Drone
 Vexing Gull
-Vexing Radgull	intent: ProliferateEffect
+Vexing Radgull
 Veyran, Voice of Duality
 Vial Smasher the Fierce
 Vial Smasher, Gleeful Grenadier
@@ -19068,7 +19068,7 @@ Yavimaya, Cradle of Growth
 Yawgmoth Demon
 Yawgmoth's Agenda
 Yawgmoth's Vile Offering
-Yawgmoth, Thran Physician	intent: ProliferateEffect
+Yawgmoth, Thran Physician
 Ydwen Efreet	intent: FlipCoinEffect
 Yellow Scarves Cavalry
 Yellow Scarves General
