@@ -85,9 +85,10 @@ data class GameDeckCard(
 /** One seat's recorded deck within a finished game, for the recent-games deck viewer. */
 data class GameDeckParticipant(
     val playerName: String,
-    val isAi: Boolean,
+    // Pinned: Jackson would otherwise emit `ai` / `self` for `is`-prefixed Booleans, which the client never reads.
+    @get:JsonProperty("isAi") val isAi: Boolean,
     /** True for the seat belonging to the requesting user. */
-    val isSelf: Boolean,
+    @get:JsonProperty("isSelf") val isSelf: Boolean,
     val won: Boolean,
     /** Color identity recomputed from the stored deck, canonical WUBRG order; "" = colorless. */
     val colors: String,
@@ -101,6 +102,10 @@ data class GameDecks(
     val endedAt: String,
     val gameMode: String?,
     val participants: List<GameDeckParticipant>,
+    /** The lobby's deck format (draft, sealed, …); only the admin by-match view fills it. */
+    val format: String? = null,
+    /** Whether the game's replay is stored; only the admin by-match view fills it. */
+    val hasReplay: Boolean? = null,
 )
 
 /** Global, cross-user totals for the admin dashboard. */
@@ -519,7 +524,6 @@ class StatsQueryService(
      * stranger's deck by guessing game ids). Colors are recomputed per seat from its stored deck.
      */
     fun decksForGame(userId: UUID, gameId: String): GameDecks? {
-        data class Seat(val pid: Long, val name: String, val isAi: Boolean, val isSelf: Boolean, val won: Boolean)
         val header = jdbc.query(
             """
             SELECT r.ended_at AS ended_at, r.game_mode AS game_mode
@@ -542,27 +546,75 @@ class StatsQueryService(
             ORDER BY COALESCE(p.user_id = ?, false) DESC, p.id
             """.trimIndent(),
             { rs, _ ->
-                Seat(rs.getLong("pid"), rs.getString("name"), rs.getBoolean("is_ai"), rs.getBoolean("is_self"), rs.getBoolean("won"))
+                DeckSeat(rs.getLong("pid"), rs.getString("name"), rs.getBoolean("is_ai"), rs.getBoolean("is_self"), rs.getBoolean("won"))
             },
             userId, gameId, userId,
         )
-        val cardsByPid = cardsForParticipants(seats.map { it.pid })
-        return GameDecks(
-            gameId = gameId,
-            endedAt = header.first,
-            gameMode = header.second,
-            participants = seats.map { seat ->
-                val cards = cardsByPid[seat.pid].orEmpty()
-                GameDeckParticipant(
-                    playerName = seat.name,
-                    isAi = seat.isAi,
-                    isSelf = seat.isSelf,
-                    won = seat.won,
-                    colors = deckProfiler.profile(cards.map { it.cardName }).colors,
-                    cards = enrichDeckCards(cards),
+        return GameDecks(gameId = gameId, endedAt = header.first, gameMode = header.second, participants = deckParticipants(seats))
+    }
+
+    /**
+     * Every seat's deck for one recorded match, for the admin screens — no participation check, so
+     * only an admin endpoint may call it. AI seats come first (the admin "AI vs humans" screen reads
+     * left to right as AI, then the humans it faced). Null when the match doesn't exist.
+     */
+    fun decksForMatch(matchId: Long): GameDecks? {
+        data class Header(val gameId: String, val endedAt: String, val gameMode: String?, val format: String?, val hasReplay: Boolean)
+        val header = jdbc.query(
+            """
+            SELECT r.game_id, r.ended_at, r.game_mode, r.format,
+                   EXISTS (SELECT 1 FROM game_replays gr WHERE gr.game_id = r.game_id) AS has_replay
+            FROM match_results r
+            WHERE r.id = ?
+            """.trimIndent(),
+            { rs, _ ->
+                Header(
+                    rs.getString("game_id"),
+                    rs.getTimestamp("ended_at").toInstant().toString(),
+                    rs.getString("game_mode"),
+                    rs.getString("format"),
+                    rs.getBoolean("has_replay"),
                 )
             },
+            matchId,
+        ).firstOrNull() ?: return null
+        val seats = jdbc.query(
+            """
+            SELECT p.id AS pid, COALESCE(u.display_name, p.player_name) AS name, p.is_ai AS is_ai, p.won AS won
+            FROM match_participants p
+            LEFT JOIN users u ON u.id = p.user_id
+            WHERE p.match_id = ?
+            ORDER BY p.is_ai DESC, p.id
+            """.trimIndent(),
+            { rs, _ -> DeckSeat(rs.getLong("pid"), rs.getString("name"), rs.getBoolean("is_ai"), false, rs.getBoolean("won")) },
+            matchId,
         )
+        return GameDecks(
+            gameId = header.gameId,
+            endedAt = header.endedAt,
+            gameMode = header.gameMode,
+            participants = deckParticipants(seats),
+            format = header.format,
+            hasReplay = header.hasReplay,
+        )
+    }
+
+    private data class DeckSeat(val pid: Long, val name: String, val isAi: Boolean, val isSelf: Boolean, val won: Boolean)
+
+    /** Each seat's recorded deck, enriched for the deck viewer, with colours recomputed from the cards. */
+    private fun deckParticipants(seats: List<DeckSeat>): List<GameDeckParticipant> {
+        val cardsByPid = cardsForParticipants(seats.map { it.pid })
+        return seats.map { seat ->
+            val cards = cardsByPid[seat.pid].orEmpty()
+            GameDeckParticipant(
+                playerName = seat.name,
+                isAi = seat.isAi,
+                isSelf = seat.isSelf,
+                won = seat.won,
+                colors = deckProfiler.profile(cards.map { it.cardName }).colors,
+                cards = enrichDeckCards(cards),
+            )
+        }
     }
 
     /**
@@ -1001,11 +1053,33 @@ class StatsQueryService(
      */
     fun aiVsHuman(days: Int?, bucket: AiBucket, filter: AiVsHumanFilter = AiVsHumanFilter.NONE): AiVsHumanReport {
         val now = java.time.Instant.now()
-        val since = java.sql.Timestamp.from(days?.let { now.minusSeconds(2L * it * 86_400L) } ?: java.time.Instant.EPOCH)
+        val (games, humanSeats) = aiVsHumanGames(days?.let { now.minusSeconds(2L * it * 86_400L) })
+        return AiVsHumanAggregator.aggregate(
+            games, humanSeats, days, bucket, now, engineAiHistory.timeline, filter,
+            setName = { MtgSetCatalog.byCode(it)?.displayName },
+        )
+    }
+
+    /**
+     * One human's games against the AI over the last [days] days (null = all time), under [filter]'s
+     * mode/format/set slice — the drawer behind a row of the report's humans table. [playerKey] is an
+     * [AiHumanRecord.key]: `user:<uuid>` or `guest:<name>`.
+     */
+    fun aiVsHumanPlayerGames(playerKey: String, days: Int?, filter: AiVsHumanFilter = AiVsHumanFilter.NONE): AiHumanGames {
+        val now = java.time.Instant.now()
+        val (games, humanSeats) = aiVsHumanGames(days?.let { now.minusSeconds(it * 86_400L) })
+        return AiVsHumanAggregator.humanGames(games, humanSeats, playerKey, days, now, filter)
+    }
+
+    /** Every AI-vs-human game that ended at or after [since] (null = all of them), with its human seats. */
+    private fun aiVsHumanGames(since: java.time.Instant?): Pair<List<AiMatchGame>, List<AiMatchHumanSeat>> {
+        val sinceTs = java.sql.Timestamp.from(since ?: java.time.Instant.EPOCH)
         val games = jdbc.query(
             """
             SELECT mr.id, mr.ended_at, mr.game_mode, mr.format, gr.engine_version,
                    mr.lobby_id, mr.tournament_name, t.set_codes AS lobby_set_codes,
+                   CASE WHEN gr.game_id IS NOT NULL THEN mr.game_id END AS replay_game_id,
+                   string_agg(COALESCE(mp.colors, '-'), ',' ORDER BY mp.id) FILTER (WHERE mp.is_ai) AS ai_colors,
                    bool_or(mp.won AND mp.is_ai) AS ai_won,
                    bool_or(mp.won AND NOT mp.is_ai) AS human_won
             FROM match_results mr
@@ -1015,7 +1089,7 @@ class StatsQueryService(
                 SELECT set_codes FROM tournaments WHERE lobby_id = mr.lobby_id ORDER BY id DESC LIMIT 1
             ) t ON true
             WHERE mr.ended_at >= ?
-            GROUP BY mr.id, mr.ended_at, mr.game_mode, mr.format, gr.engine_version,
+            GROUP BY mr.id, mr.ended_at, mr.game_mode, mr.format, gr.engine_version, gr.game_id, mr.game_id,
                      mr.lobby_id, mr.tournament_name, t.set_codes
             HAVING bool_or(mp.is_ai) AND bool_or(NOT mp.is_ai)
             ORDER BY mr.ended_at
@@ -1039,19 +1113,22 @@ class StatsQueryService(
                     } else {
                         lobbySetCodes(rs.getString("lobby_set_codes"), rs.getString("tournament_name"))
                     },
+                    // '-' stands in for an AI seat with no recorded colours; real identities are WUBRG letters.
+                    aiColors = rs.getString("ai_colors")?.split(',')?.map { it.takeUnless { c -> c == "-" } }.orEmpty(),
+                    replayGameId = rs.getString("replay_game_id"),
                 )
             },
-            since,
+            sinceTs,
         )
         val humanSeats = jdbc.query(
             """
-            SELECT mp.match_id, mp.user_id, mp.player_name, u.display_name, mp.won
+            SELECT mp.match_id, mp.user_id, mp.player_name, u.display_name, mp.won, mp.colors
             FROM match_participants mp
             JOIN match_results mr ON mr.id = mp.match_id
             LEFT JOIN users u ON u.id = mp.user_id
             WHERE mp.is_ai = false AND mr.ended_at >= ?
               AND EXISTS (SELECT 1 FROM match_participants a WHERE a.match_id = mp.match_id AND a.is_ai)
-            ORDER BY mr.ended_at
+            ORDER BY mr.ended_at, mp.id
             """.trimIndent(),
             { rs, _ ->
                 val userId = rs.getObject("user_id")?.toString()
@@ -1062,14 +1139,12 @@ class StatsQueryService(
                     displayName = rs.getString("display_name") ?: name,
                     isGuest = userId == null,
                     won = rs.getBoolean("won"),
+                    colors = rs.getString("colors"),
                 )
             },
-            since,
+            sinceTs,
         )
-        return AiVsHumanAggregator.aggregate(
-            games, humanSeats, days, bucket, now, engineAiHistory.timeline, filter,
-            setName = { MtgSetCatalog.byCode(it)?.displayName },
-        )
+        return games to humanSeats
     }
 
     /** Set codes by display name, to read the names a lobby game's `tournament_name` carries. */

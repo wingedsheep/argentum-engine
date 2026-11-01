@@ -282,4 +282,39 @@ class AiVsHumanAggregatorTest : FunSpec({
         report.seriesByMode.forEach { m -> m.series.map { it.start } shouldBe report.series.map { it.start } }
         report.seriesByMode.first { it.format == "DRAFT" }.series.sumOf { it.record.humanWins } shouldBe 2
     }
+
+    test("a recent game names its humans and both sides' colours, so its decks can be opened") {
+        val games = listOf(
+            AiMatchGame(1, daysAgo(1), "CASUAL", null, "abc", AiMatchOutcome.HUMAN, aiColors = listOf("BR"), replayGameId = "g-1"),
+            AiMatchGame(2, daysAgo(1).plusSeconds(60), "CASUAL", null, "abc", AiMatchOutcome.AI, aiColors = listOf(null)),
+        )
+        val seats = listOf(
+            AiMatchHumanSeat(1, "user:a", "Alice", isGuest = false, won = true, colors = "WU"),
+            AiMatchHumanSeat(2, "guest:Bob", "Bob", isGuest = true, won = false),
+        )
+        val recent = AiVsHumanAggregator.aggregate(games, seats, 7, AiBucket.DAY, now).recent
+        recent.map { it.matchId } shouldContainExactly listOf(1L, 2L)
+        recent[0].humans shouldContainExactly listOf(AiRecentHuman("user:a", "Alice", isGuest = false, won = true, colors = "WU"))
+        recent[0].aiColors shouldContainExactly listOf("BR")
+        recent[0].replayGameId shouldBe "g-1"
+        recent[1].humans.single().isGuest shouldBe true
+        recent[1].replayGameId.shouldBeNull()
+    }
+
+    test("a human's games are the ones their row counts, newest first, ignoring human exclusions") {
+        val result = AiVsHumanAggregator.humanGames(
+            mixed, mixedSeats, "user:reg", 7, now,
+            filter = AiVsHumanFilter(setCode = "RFX", excludeHumans = setOf("user:reg")),
+        )
+        result.games.map { it.matchId } shouldContainExactly listOf(1L, 2L, 3L)
+        result.human shouldBe AiHumanRecord("user:reg", "Regular", isGuest = false, games = 3, wins = 2, losses = 1, draws = 0)
+        val report = AiVsHumanAggregator.aggregate(mixed, mixedSeats, 7, AiBucket.DAY, now, filter = AiVsHumanFilter(setCode = "RFX"))
+        report.topHumans.first { it.key == "user:reg" } shouldBe result.human
+    }
+
+    test("a human with no games in the slice has no record") {
+        val result = AiVsHumanAggregator.humanGames(mixed, mixedSeats, "user:new", 7, now, filter = AiVsHumanFilter(gameMode = "TOURNAMENT"))
+        result.human.shouldBeNull()
+        result.games shouldBe emptyList()
+    }
 })

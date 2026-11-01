@@ -3,7 +3,7 @@
  * shared {@link AdminAuth} — the bootstrap password, or the signed-in admin account's token. These
  * endpoints are only mounted when the server has accounts enabled.
  */
-import type { StatBucket } from './account'
+import type { GameDecks, StatBucket } from './account'
 import { type AdminAuth, adminAuthHeaders } from './adminAuth'
 
 export interface GlobalOverview {
@@ -210,7 +210,7 @@ export interface AiVsHumanReport {
     readonly changes: AiChange[]
   }
   /** Latest games, oldest first. */
-  readonly recent: { readonly endedAt: string; readonly gameMode: string | null; readonly format: string | null; readonly outcome: AiMatchOutcome }[]
+  readonly recent: AiRecentGame[]
   /** Humans who played the AI most, from the human's side. */
   readonly topHumans: AiHumanRecord[]
   /** The filter the report was computed under, with the humans it left out. */
@@ -229,6 +229,37 @@ export interface AiVsHumanReport {
     readonly sets: { readonly code: string; readonly name: string | null; readonly games: number }[]
     readonly gamesWithoutSet: number
   }
+}
+
+/** One AI-vs-human game: who sat in it, with which colours, and how it went. */
+export interface AiRecentGame {
+  /** Opens every seat's deck through {@link fetchMatchDecks}. */
+  readonly matchId: number
+  readonly endedAt: string
+  readonly gameMode: string | null
+  readonly format: string | null
+  readonly outcome: AiMatchOutcome
+  readonly humans: AiRecentHuman[]
+  /** Each AI seat's deck colours (WUBRG, "" colourless); null when none was recorded. */
+  readonly aiColors: (string | null)[]
+  /** The game id to open the replay with; null when no replay was stored. */
+  readonly replayGameId: string | null
+}
+
+export interface AiRecentHuman {
+  /** The {@link AiHumanRecord.key} this seat belongs to. */
+  readonly key: string
+  readonly name: string
+  readonly isGuest: boolean
+  readonly won: boolean
+  readonly colors: string | null
+}
+
+/** One human's games against the AI in a slice, newest first. */
+export interface AiHumanGames {
+  /** Their record over the slice; null when they have no games in it. */
+  readonly human: AiHumanRecord | null
+  readonly games: AiRecentGame[]
 }
 
 /** A human's record against the AI, from the human's side. */
@@ -263,4 +294,21 @@ export function fetchAiVsHuman(auth: AdminAuth, days: number, bucket: 'day' | 'w
   for (const key of filter?.excludeHumans ?? []) params.append('excludeHuman', key)
   if (filter?.excludeTopHumans) params.set('excludeTopHumans', String(filter.excludeTopHumans))
   return getAdminStats<AiVsHumanReport>(auth, `/ai-vs-human?${params.toString()}`)
+}
+
+/**
+ * One human's games against the AI over the last `days` days (0 = all time), under the filter's
+ * mode/format/set slice — the same games their row in `topHumans` counts.
+ */
+export function fetchAiHumanGames(auth: AdminAuth, key: string, days: number, filter?: AiVsHumanFilter) {
+  const params = new URLSearchParams({ key, days: String(days) })
+  if (filter?.gameMode) params.set('gameMode', filter.gameMode)
+  if (filter?.format) params.set('format', filter.format)
+  if (filter?.setCode) params.set('set', filter.setCode)
+  return getAdminStats<AiHumanGames>(auth, `/ai-vs-human/player-games?${params.toString()}`)
+}
+
+/** Every seat's recorded deck for one match, AI seats first. */
+export function fetchMatchDecks(auth: AdminAuth, matchId: number) {
+  return getAdminStats<GameDecks>(auth, `/matches/${matchId}/decks`)
 }

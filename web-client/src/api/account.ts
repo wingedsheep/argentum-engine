@@ -559,6 +559,10 @@ export interface GameDecks {
   readonly endedAt: string
   readonly gameMode: string | null
   readonly participants: GameDeckParticipant[]
+  /** The lobby's deck format; only the admin by-match view sends it. */
+  readonly format?: string | null
+  /** Whether a replay is stored; only the admin by-match view sends it. */
+  readonly hasReplay?: boolean | null
 }
 
 /** A page of game history plus the total game count (for the pager). */
