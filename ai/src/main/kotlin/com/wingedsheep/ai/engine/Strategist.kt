@@ -1828,6 +1828,8 @@ class Strategist(
         val rankTarget = TargetSelection.ranker(state, action, playerId, intents, targetPolarityFromEffect)
         val slotPolarities =
             if (targetPolarityFromEffect) TargetSelection.polarities(state, action, intents) else emptyList()
+        fun rankSlot(index: Int) =
+            TargetSelection.slotRanker(state, playerId, intents, rankTarget, slotPolarities.getOrNull(index))
         fun worth(index: Int, candidates: List<EntityId>) = TargetSelection.worthTargeting(
             state, targetInfos[index], candidates, playerId, slotPolarities.getOrNull(index),
         )
@@ -1844,7 +1846,7 @@ class Strategist(
             // An optional slot left empty by choice: the heuristic path knows how to announce it.
             val worthy = worth(index, available)
             if (worthy.isEmpty()) return heuristicTargets(state, action, playerId)
-            val picks = TargetSelection.pick(state, info, worthy, rankTarget)
+            val picks = TargetSelection.pick(state, info, worthy, rankSlot(index))
             if (picks.isEmpty() || picks.size < info.minTargets) return heuristicTargets(state, action, playerId)
             picks.forEach { chosenTargets += TargetSelection.toChosenTarget(state, info, it, playerId) }
             chosenIds += picks
@@ -1870,7 +1872,7 @@ class Strategist(
             val info = targetInfos[i]
             val priorIds = chosenTargetIds.take(i).toSet()
             val ranked = worth(i, info.validTargets.filterNot { info.mustDifferFromEarlier && it in priorIds })
-                .sortedByDescending(rankTarget)
+                .sortedByDescending(rankSlot(i))
             val candidates = if (targetPolarityFromEffect) {
                 TargetSelection.simulationCandidates(state, ranked, targetCandidates, playerId, slotPolarities.getOrNull(i))
             } else {

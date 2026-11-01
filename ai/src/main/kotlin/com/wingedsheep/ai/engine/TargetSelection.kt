@@ -116,10 +116,9 @@ object TargetSelection {
         polarityFromEffect: Boolean = false,
     ): (EntityId) -> Double {
         if (polarityFromEffect) {
-            // One polarity per action, not per slot: the ranker is shared by every requirement of
-            // the action. A multi-slot action whose slots disagree ("target creature you control
-            // fights target creature you don't") reads UNKNOWN and keeps the removal ranking —
-            // which is what it got before, and its filters already split the sides.
+            // One polarity per action: a multi-slot action whose slots disagree ("target creature
+            // you control fights target creature you don't") reads UNKNOWN here and keeps the
+            // removal ranking; [slotRanker] then gives a slot read as beneficial its own order.
             val polarity = polarities(state, action, intents).distinct().singleOrNull()
             if (polarity == TargetPolarity.BENEFICIAL) {
                 // Our best permanent first, theirs last; ourselves ahead of an opponent.
@@ -146,6 +145,23 @@ object TargetSelection {
             if (beneficial && state.projectedState.isCreature(entityId)) -value else value
         }
     }
+
+    /**
+     * The ranking for one slot of a multi-slot action. [ranker] reads one polarity per action, so
+     * a slot whose own reading is [TargetPolarity.BENEFICIAL] beside a harmful one ("target creature
+     * you control deals damage equal to its power to target creature you don't control") would
+     * keep the removal ranking, which orders our own creatures worst first. That slot ranks our
+     * best first instead; every other slot keeps [actionRanker].
+     */
+    fun slotRanker(
+        state: GameState,
+        playerId: EntityId,
+        intents: IntentCatalog,
+        actionRanker: (EntityId) -> Double,
+        slotPolarity: TargetPolarity?,
+    ): (EntityId) -> Double =
+        if (slotPolarity == TargetPolarity.BENEFICIAL) { entityId -> -rank(state, entityId, playerId, intents) }
+        else actionRanker
 
     /**
      * [TargetPolarity] of each of [action]'s target slots, in [targetInfosFor] order — or empty
@@ -407,7 +423,7 @@ object TargetSelection {
                 counts += 0
                 continue
             }
-            val picks = pick(state, info, worth, rankTarget)
+            val picks = pick(state, info, worth, slotRanker(state, playerId, intents, rankTarget, slotPolarities.getOrNull(index)))
             if (picks.isEmpty()) {
                 return if (targetInfos.drop(index).all { it.minTargets == 0 }) {
                     finish()

@@ -254,6 +254,7 @@ object TargetPolarityAnalyzer {
         if (effect == null) return requirements.map { TargetPolarity.UNKNOWN }
         val perSlot = List(requirements.size) { mutableListOf<TargetPolarity>() }
         val recursions = mutableSetOf<Int>()
+        val biteSources = mutableSetOf<Int>()
         for (leaf in EffectWalker.payoffLeaves(effect)) {
             // "Destroy up to two target artifacts and/or enchantments" (Force of Vigor) runs its
             // body once per target, each seeing its target as `ContextTarget(0)`. With one slot
@@ -288,11 +289,21 @@ object TargetPolarityAnalyzer {
                     val slot = slotOf(target, requirements) ?: continue
                     perSlot[slot] += polarity
                 }
+                biteSourceSlot(leaf, requirements)?.let { biteSources += it }
             }
             if (requirements.size == 1) implicitTargetPolarity(leaf)?.let { perSlot[0] += it }
         }
         // Getting a card back is the point of a recursion slot: a finality or -1/-1 counter it
         // comes back with (Rite of the Moth, Soulcoil Viper) is the price, not the other side of it.
+        // A bite's source only lends its power while nothing else touches it: Self-Destruct deals
+        // the damage back to it and Burn Together sacrifices it — a price, not a free lend. An
+        // unread leaf counts too: it leaves no reading in the slot, but it still names it.
+        val leaves = EffectWalker.payoffLeaves(effect)
+        for (slot in biteSources) {
+            val untouched = perSlot[slot].isEmpty() &&
+                leaves.none { touchesOtherwise(it, requirements[slot], slot, definitions, source) }
+            if (untouched) perSlot[slot] += TargetPolarity.BENEFICIAL
+        }
         return perSlot.mapIndexed { slot, readings -> if (slot in recursions) TargetPolarity.BENEFICIAL else combine(readings) }
     }
 
@@ -344,7 +355,51 @@ object TargetPolarityAnalyzer {
     private fun ownCopySlot(leaf: Effect, requirements: List<TargetRequirement>): Int? {
         // "Target player creates a copy" (Echocasting Symposium): the copy is not ours to gain.
         if (leaf !is CreateTokenCopyOfTargetEffect || leaf.controller != null) return null
-        val slot = slotOf(leaf.target, requirements) ?: return null
+        return ownSideSlot(leaf.target, requirements)
+    }
+
+    /**
+     * The slot a one-sided **bite** draws its damage from — "target creature you control deals
+     * damage equal to its power to target creature you don't control" (Rabid Bite, Chandra's
+     * Ignition) — or null.
+     *
+     * Unlike a fight's fighter ([FightEffect], left unread) the source is dealt nothing back: it
+     * only lends its power, so the best creature is the one to bite with and the slot reads
+     * beneficial — when no other leaf names it ([forRequirements] applies that last). Unread, the removal ranking ordered our own creatures worst first and bit with
+     * the weakest. Only a source whose filter keeps it on our side: Breaking of the Fellowship
+     * turns an opponent's creature on its teammate, where which one is a board question.
+     */
+    private fun biteSourceSlot(leaf: Effect, requirements: List<TargetRequirement>): Int? {
+        if (leaf !is DealDamageEffect) return null
+        val damageSource = leaf.damageSource?.takeIf { it.isSlot() } ?: return null
+        return ownSideSlot(damageSource, requirements)
+    }
+
+    /**
+     * Whether [leaf] does something to slot [index] that [classify] cannot read — any mention
+     * other than a bite drawing its damage from it. A loop is read through its body.
+     */
+    private fun touchesOtherwise(
+        leaf: Effect,
+        requirement: TargetRequirement,
+        index: Int,
+        definitions: CardLookup,
+        source: CardDefinition?,
+    ): Boolean = when {
+        leaf is ForEachEffect -> EffectWalker.payoffLeaves(leaf.body)
+            .any { touchesOtherwise(it, requirement, index, definitions, source) }
+        leaf is DealDamageEffect -> namesSlot(leaf.target.toString(), requirement, index)
+        else -> classify(leaf, definitions, source).isEmpty() && namesSlot(leaf.toString(), requirement, index)
+    }
+
+    /** Whether an effect's rendered form names slot [index] (the reading audit's own test). */
+    private fun namesSlot(text: String, requirement: TargetRequirement, index: Int): Boolean =
+        (requirement.id != null && "BoundVariable(name=${requirement.id})" in text) ||
+            "ContextTarget(index=$index)" in text
+
+    /** The slot [target] names when its requirement's filter keeps it on our side of the table. */
+    private fun ownSideSlot(target: EffectTarget, requirements: List<TargetRequirement>): Int? {
+        val slot = slotOf(target, requirements) ?: return null
         val filter = (requirements[slot] as? TargetObject)?.filter ?: return null
         val ours = filter.alternatives.isEmpty() &&
             filter.baseFilter.controllerPredicate == ControllerPredicate.ControlledByYou

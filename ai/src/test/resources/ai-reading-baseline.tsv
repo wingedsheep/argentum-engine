@@ -548,7 +548,7 @@ Animate Dead	intent: EnchantPutOntoBattlefieldEffect; intent: Pipeline(graveyard
 Animate Wall	polarity: Aura>CanAttackDespiteDefender
 Animating Faerie
 Animist's Awakening	intent: Pipeline(TopOfLibrary→battlefield|library); intent: TapUntapCollectionEffect
-Animist's Might	polarity: DealDamageEffect
+Animist's Might
 Anje, Maid of Dishonor
 Ankh of Mishra
 Ankle Biter
@@ -1423,7 +1423,7 @@ Bestial Incursion
 Bestow Greatness
 Betor, Ancestor's Voice
 Betor, Kin to All
-Betrayal at the Vault	polarity: DealDamageEffect
+Betrayal at the Vault
 Betrayal of Flesh
 Betrayer's Bargain
 Bewildering Blizzard
@@ -1484,7 +1484,7 @@ Birthing Ritual	intent: Pipeline(BattlefieldMatching|TopOfLibrary→battlefield|
 Bishop of Rebirth
 Bishop of Wings
 Bishop's Soldier
-Bite Down	polarity: DealDamageEffect
+Bite Down
 Bite Down on Crime
 Biting Rain
 Biting-Palm Ninja	intent: ReflexiveTriggerEffect
@@ -2306,7 +2306,7 @@ Callous Dismissal	polarity: MoveToZoneEffect
 Callous Giant
 Callous Inspector
 Callous Oppressor
-Callous Sell-Sword	polarity: DealDamageEffect; polarity: SacrificeTargetEffect
+Callous Sell-Sword	polarity: SacrificeTargetEffect
 Caltrops	intent: DealDamageEffect
 Camel
 Camellia, the Seedmiser
@@ -2616,7 +2616,7 @@ Chandra's Embercat
 Chandra's Emberling
 Chandra's Firemaw	intent: Pipeline(FromMultipleZones→hand)
 Chandra's Flame Wave
-Chandra's Ignition	polarity: DealDamageEffect; polarity: ForEachEffect
+Chandra's Ignition
 Chandra's Incinerator
 Chandra's Magmutt
 Chandra's Outrage
@@ -2739,7 +2739,7 @@ Cho-Arrim Bruiser
 Choco, Seeker of Paradise
 Choco-Comet
 Chocobo Camp
-Chocobo Kick	polarity: DealDamageEffect
+Chocobo Kick
 Chocobo Racetrack
 Choke
 Choked Estuary
@@ -3066,7 +3066,7 @@ Commune with Spirits
 Companion of the Trials	intent: TapUntapEffect
 Compass Gnome
 Compassionate Healer
-Compel Brutality	polarity: DealDamageEffect
+Compel Brutality
 Compelled Duel
 Compelling Deterrence	polarity: MoveToZoneEffect
 Compleat Devotion
@@ -3230,7 +3230,7 @@ Cosima, God of the Voyage	intent: GrantMayPlayFromExileEffect; intent: GrantTrig
 Cosmic Cube	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→library)
 Cosmic Epiphany
 Cosmic Horror	intent: PayOrSufferEffect
-Cosmic Hunger	polarity: DealDamageEffect
+Cosmic Hunger
 Cosmic Larva
 Cosmic Rebirth
 Cosmic Spider-Man
@@ -4031,7 +4031,7 @@ Devouring Rage
 Devouring Strossus	intent: SacrificeEffect
 Devouring Sugarmaw
 Devouring Swarm
-Devouring Tendrils	polarity: DealDamageEffect
+Devouring Tendrils
 Devout Chaplain
 Devout Decree
 Devout Harpist
@@ -5868,7 +5868,7 @@ Flotsam // Jetsam	intent: ForEach>CastFromCollectionWithoutPayingCostEffect; int
 Flourishing Bloom-Kin
 Flourishing Defenses
 Flourishing Fox
-Flourishing Grapple	polarity: DealDamageEffect; timing: RemoveAllAbilitiesEffect
+Flourishing Grapple	timing: RemoveAllAbilitiesEffect
 Flourishing Hunter
 Flow State
 Flow of Ideas
@@ -6282,7 +6282,7 @@ Garruk's Uprising
 Garruk's Warsteed	intent: Pipeline(FromMultipleZones→hand)
 Garruk, Curse Breaker	intent: ForEach>TapUntapEffect
 Garruk, Cursed Huntsman	intent: CreatePermanentEmblemEffect
-Garruk, Savage Herald	intent: ForEach>GrantStaticAbilityEffect; polarity: DealDamageEffect
+Garruk, Savage Herald	intent: ForEach>GrantStaticAbilityEffect
 Garruk, Unleashed	intent: CreateGlobalTriggeredAbilityEffect
 Garruk, Veiled Butcher
 Gary Clone
@@ -6475,7 +6475,7 @@ Giant's Grasp	polarity: Aura>GainControlEffect
 Giant's Ire
 Giant's Skewer
 Giant-Sized Flying Ant
-Giantfall	polarity: DealDamageEffect
+Giantfall
 Gibbering Barricade
 Gibbering Kami
 Gideon Blackblade
@@ -7211,7 +7211,7 @@ Gyruda, Doom of Depths	intent: Pipeline(TopOfLibrary→battlefield|graveyard)
 Gysahl Greens
 H.E.R.B.I.E. Scout Unit
 HELIOS One
-HULK SMASH!	polarity: DealDamageEffect
+HULK SMASH!
 HYDRA Assault Robot
 HYDRA Infiltration	intent: Pipeline(hand→graveyard); polarity: Pipeline(hand→graveyard)
 HYDRA Troopers
@@ -7302,7 +7302,7 @@ Harbin, Vanguard Aviator
 Harbinger of the Seas
 Harbinger of the Tides	polarity: MoveToZoneEffect
 Hard Cover
-Hard-Hitting Question	polarity: DealDamageEffect
+Hard-Hitting Question
 Hard-Won Jitte
 Hardbristle Bandit
 Hardened Academic	intent: GrantKeywordEffect
@@ -7742,7 +7742,7 @@ Hornet Sting
 Horobi, Death's Wail
 Horrid Shadowspinner
 Horrid Vigor	timing: GrantKeywordEffect
-Horrific Assault	polarity: DealDamageEffect
+Horrific Assault
 Horror of Horrors
 Horses of the Bruinen	polarity: ForEachEffect
 Horseshoe Crab
@@ -7848,7 +7848,7 @@ Hunter's Axe	polarity: AttachEquipmentEffect
 Hunter's Blowgun
 Hunter's Edge
 Hunter's Mark
-Hunter's Talent	polarity: DealDamageEffect
+Hunter's Talent
 Hunting Cheetah
 Hunting Drake	polarity: MoveToZoneEffect
 Hunting Kavu
@@ -8080,7 +8080,7 @@ Inexorable Tide	intent: ProliferateEffect
 Infantry Shield
 Infantry Veteran
 Infected Defector
-Infectious Bite	polarity: DealDamageEffect
+Infectious Bite
 Infectious Horror
 Infectious Host
 Infectious Inquiry
@@ -8379,7 +8379,7 @@ It'll Quench Ya!
 Item Shopkeep
 Ith, High Arcanist	polarity: PreventDamageEffect; timing: PreventDamageEffect
 Ithilien Kingfisher
-Itzquinth, Firstborn of Gishath	polarity: DealDamageEffect
+Itzquinth, Firstborn of Gishath
 Ivory Cup
 Ivory Giant
 Ivory Guardians
@@ -9975,7 +9975,7 @@ Markov Baron
 Markov Dreadknight
 Markov Patrician
 Markov Purifier
-Markov Retribution	polarity: DealDamageEffect
+Markov Retribution
 Markov Waltzer
 Markov Warlord	intent: ForEach>CantBlockEffect
 Marooned
@@ -10054,7 +10054,7 @@ Master of the Wild Hunt	polarity: DistributeDamageAmongCollectionEffect; polarit
 Master the Way
 Master's Councillors	polarity: Pipeline(TopOfLibrary→graveyard)
 Master's Guide-Mural	intent: ReturnSelfFromExileTransformedEffect
-Master's Rebuke	polarity: DealDamageEffect
+Master's Rebuke
 Masterful Flourish
 Masterful Replication	polarity: EachPermanentBecomesCopyOfTargetEffect
 Masterwork of Ingenuity
@@ -11925,7 +11925,7 @@ Picnic Ruiner	intent: DistributeCountersAmongTargetsEffect; intent: GrantKeyword
 Pictures of Spider-Man
 Pierce Strider
 Pierce the Sky
-Piercing Exhale	polarity: DealDamageEffect
+Piercing Exhale
 Piercing Light
 Piety
 Piety Charm
@@ -12081,7 +12081,7 @@ Pollen Lullaby
 Pollen-Shield Hare
 Pollenbright Druid
 Pollenbright Wings
-Polliwallop	polarity: DealDamageEffect
+Polliwallop
 Polluted Dead
 Polluted Delta
 Polluted Mire
@@ -12380,7 +12380,7 @@ Pummeler for Hire
 Pumpkin Bombardment
 Pumpkin Bombs
 Puncturing Light
-Punishing Punch	polarity: DealDamageEffect
+Punishing Punch
 Punk Frogs
 Puppet Crafting	polarity: Aura>GrantCardType; polarity: Aura>GrantSubtype; polarity: Aura>MoveToZoneEffect; polarity: Aura>SetBasePowerToughnessStatic
 Puppet Master	intent: Pipeline(Entity→hand); polarity: Aura>ConditionalOnCollectionEffect; polarity: Aura>GatherCardsEffect; polarity: Aura>MoveCollectionEffect
@@ -12462,7 +12462,7 @@ Quandrix Cultivator
 Quandrix Pledgemage
 Quandrix, the Proof	intent: CascadeEffect
 Quantum Riddler
-Quarrel	polarity: DealDamageEffect
+Quarrel
 Quarrel's End
 Quarry Beetle
 Quartzwood Crasher
@@ -12523,7 +12523,7 @@ Rabbit Battery	intent: UnattachEquipmentEffect
 Rabbit Response
 Rabble Rousing	intent: Pipeline(TopOfLibrary→exile|library)
 Rabid Attack	timing: ForEach>ModifyStatsEffect
-Rabid Bite	polarity: DealDamageEffect
+Rabid Bite
 Rabid Gnaw
 Rabid Wombat
 Raccoon Rallier	intent: GrantKeywordEffect
@@ -12649,7 +12649,7 @@ Rally the Peasants
 Rally the Ranks
 Rally the Righteous
 Rally the Troops	intent: ForEach>TapUntapEffect
-Ram Through	polarity: DealDamageEffect
+Ram Through
 Rambling Possum
 Rambunctious Mutt
 Ramirez DePietro
@@ -13363,7 +13363,7 @@ Rockshard Elemental
 Rockslide Ambush
 Rockslide Sorcerer
 Rocksteady, Crash Courser
-Rocky Rebuke	polarity: DealDamageEffect
+Rocky Rebuke
 Rocky Roads
 Rocky Tar Pit
 Rod of Ruin
@@ -13526,7 +13526,7 @@ Run Ashore	polarity: MoveToZoneEffect; polarity: PutOnLibraryPositionOfChoiceEff
 Run Away Together	polarity: MoveToZoneEffect
 Run Behind	intent: PutOnLibraryPositionOfChoiceEffect; polarity: PutOnLibraryPositionOfChoiceEffect
 Run Out of Town	intent: PutOnLibraryPositionOfChoiceEffect; polarity: PutOnLibraryPositionOfChoiceEffect
-Run Over	polarity: DealDamageEffect
+Run Over
 Run Wild	timing: GrantActivatedAbilityEffect; timing: GrantKeywordEffect
 Runadi, Behemoth Caller
 Runaway Boulder
@@ -15565,7 +15565,7 @@ Stern Lesson
 Stern Marshal
 Stern Proctor	polarity: MoveToZoneEffect
 Stern Scolding
-Stew the Coneys	polarity: DealDamageEffect
+Stew the Coneys
 Steward of Valeron
 Steward of the Harvest
 Sticky Fingers
@@ -15771,7 +15771,7 @@ Student of Ojutai
 Studious First-Year
 Study Break
 Stuffed Bear
-Stump Stomp	polarity: DealDamageEffect
+Stump Stomp
 Stun	timing: CantBlockEffect
 Su-Chi
 Su-Chi Cave Guard
@@ -16399,7 +16399,7 @@ Tenacious Underdog
 Tend the Pests
 Tend the Sprigs
 Tender Wildguide
-Tenderize	polarity: DealDamageEffect
+Tenderize
 Tendershoot Dryad
 Tendril of the Mycotyrant
 Tendrils of Agony
@@ -18129,7 +18129,7 @@ Vivien's Arkbow	intent: Pipeline(TopOfLibrary→battlefield|library)
 Vivien's Crocodile
 Vivien's Grizzly
 Vivien's Jaguar
-Vivien, Arkbow Ranger	intent: Pipeline(sideboard→hand); polarity: DealDamageEffect
+Vivien, Arkbow Ranger	intent: Pipeline(sideboard→hand)
 Vivien, Champion of the Wilds	intent: GrantKeywordEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile|library)
 Vivien, Monsters' Advocate
 Vivisection
