@@ -49,5 +49,46 @@ class JudithTheScourgeDivaScenarioTest : ScenarioTestBase() {
 
             game.getLifeTotal(2) shouldBe 19
         }
+
+        test("a token creature dying doesn't trigger") {
+            val game = scenario()
+                .withPlayers("Alice", "Bob")
+                .withCardOnBattlefield(1, "Judith, the Scourge Diva")
+                .withCardOnBattlefield(1, "Grizzly Bears", isToken = true)
+                .withCardInHand(1, "Lightning Bolt")
+                .withLandsOnBattlefield(1, "Mountain", 1)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            game.castSpell(1, "Lightning Bolt", game.findPermanent("Grizzly Bears")!!).error shouldBe null
+            game.resolveStack()
+
+            game.findPermanent("Grizzly Bears") shouldBe null
+            game.hasPendingDecision() shouldBe false
+            game.state.stack.size shouldBe 0
+            game.getLifeTotal(2) shouldBe 20
+        }
+
+        test("Judith dying triggers her own ability") {
+            val game = scenario()
+                .withPlayers("Alice", "Bob")
+                .withCardOnBattlefield(1, "Judith, the Scourge Diva")
+                .withCardInHand(1, "Lightning Bolt")
+                .withLandsOnBattlefield(1, "Mountain", 1)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            game.castSpell(1, "Lightning Bolt", game.findPermanent("Judith, the Scourge Diva")!!).error shouldBe null
+            game.resolveStack()
+            game.isInGraveyard(1, "Judith, the Scourge Diva") shouldBe true
+
+            game.getPendingDecision().shouldNotBeNull()
+            game.selectTargets(listOf(game.player2Id)).error shouldBe null
+            game.resolveStack()
+
+            game.getLifeTotal(2) shouldBe 19
+        }
     }
 }
