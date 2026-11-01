@@ -405,6 +405,13 @@ class HoldPolicy(
         if (ability.isManaAbility || ability.timing != TimingRule.InstantSpeed) return null
         val tags = CardIntentAnalyzer.analyzeEffect(ability.effect).tags
         if (tags.isEmpty() || !tags.all { it in ACTIVATION_FLOW_TAGS }) return null
+        // A copy-and-cast (Isochron Scepter) also reads as DRAW, but the copy is a spell that wants
+        // its own window — an imprinted Fog in the opponent's combat — not the end step.
+        if (EffectWalker.payoffLeaves(ability.effect).any {
+                it is com.wingedsheep.sdk.scripting.effects.CopyCardIntoCollectionEffect ||
+                    it is com.wingedsheep.sdk.scripting.effects.CopyCollectionIntoCollectionEffect
+            }
+        ) return null
         if (isOpponentEndStep(state, playerId)) {
             return TimingVerdict.Adjust(END_STEP_WINDOW, reason = "card flow at their end step")
         }

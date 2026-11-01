@@ -3,6 +3,7 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.CardRevealedFromDrawEvent
 import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.core.pendingQuestionIsPrivate
+import com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.view.ClientEvent
 import com.wingedsheep.engine.view.ClientEventTransformer
@@ -246,6 +247,33 @@ class OptionalFirstDrawRevealTest : FunSpec({
         asked.toSet() shouldBe setOf(first, second)
         driver.reveals().single().revealedBy shouldBe listOf(asked.first())
         driver.getLifeTotal(me) shouldBe life + 2
+    }
+
+    test("a draw made after declining an optional draw replacement is still asked about, and the rest follow") {
+        val driver = newDriver()
+        val me = driver.player1
+        driver.putPermanentOnBattlefield(me, "Test Optional Revealer")
+        val pt = driver.putPermanentOnBattlefield(me, "Parallel Thoughts")
+        val exiled = driver.putCardInExile(me, "Grizzly Bears")
+        driver.replaceState(driver.state.updateEntity(pt) { c -> c.with(LinkedExileComponent(listOf(exiled))) })
+        val forest = driver.putCardOnTopOfLibrary(me, "Forest")
+        val libBefore = driver.state.getLibrary(me).size
+
+        driver.cast(me, "Test Draw Three")
+        // First card: decline Parallel Thoughts, so it is really drawn — and is the turn's first.
+        (driver.pendingDecision as YesNoDecision).prompt.contains("Test Optional Revealer") shouldBe false
+        driver.submitYesNo(me, false)
+        driver.revealQuestion()!!
+        driver.submitYesNo(me, true)
+        driver.reveals().single().cardEntityId shouldBe forest
+
+        // The remaining two draws still happen (declining the replacement each time), unasked.
+        var guard = 0
+        while (guard++ < 10 && driver.pendingDecision != null) {
+            driver.revealQuestion() shouldBe null
+            driver.submitYesNo(me, false)
+        }
+        driver.state.getLibrary(me).size shouldBe libBefore - 3
     }
 
     test("a miracle card is asked about the optional reveal first, then its miracle") {
