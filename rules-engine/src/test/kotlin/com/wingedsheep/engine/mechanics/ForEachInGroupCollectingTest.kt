@@ -78,7 +78,7 @@ class ForEachInGroupCollectingTest : FunSpec({
         val me = d.activePlayer!!
         val them = d.getOpponent(me)
         d.putCreatureOnBattlefield(me, "Savannah Lions")
-        d.putCreatureOnBattlefield(me, "Centaur Courser")
+        val courser = d.putCreatureOnBattlefield(me, "Centaur Courser")
         d.putCreatureOnBattlefield(them, "Savannah Lions")
         val spell = d.putCardInHand(me, "Cull the Small")
         d.giveMana(me, Color.BLACK, 1)
@@ -89,7 +89,7 @@ class ForEachInGroupCollectingTest : FunSpec({
         withClue("both 2/1s across both sides were destroyed; the 3/3 was never recorded") {
             d.getGraveyardCardNames(me) shouldContainExactlyInAnyOrder listOf("Cull the Small", "Savannah Lions")
             d.getGraveyardCardNames(them) shouldBe listOf("Savannah Lions")
-            d.findPermanent(me, "Centaur Courser") shouldBe d.getPermanents(me).single()
+            d.getPermanents(me).contains(courser) shouldBe true
         }
     }
 

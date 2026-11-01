@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import io.kotest.assertions.withClue
+import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 
 /**
@@ -66,7 +67,7 @@ class RakdosTheShowstopperScenarioTest : ScenarioTestBase() {
                     }
                     withClue("seed $seed: every destruction comes after the last flip") {
                         val lastFlip = events.indexOfLast { it is CoinFlipEvent }
-                        destroyed.forEach { events.indexOf(it) shouldBe events.indexOf(it).coerceAtLeast(lastFlip + 1) }
+                        destroyed.forEach { events.indexOf(it) shouldBeGreaterThan lastFlip }
                     }
                     val survivors = eligible.count { game.isOnBattlefield(it) }
                     if (survivors > 0) sawSurvivor = true
