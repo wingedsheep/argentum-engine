@@ -1455,6 +1455,9 @@
                 "type": "TargetObject",
                 "filter": {
                     "baseFilter": {
+                        "statePredicates": [
+                            "HasSingleTarget"
+                        ],
                         "anyOf": [
                             {},
                             {

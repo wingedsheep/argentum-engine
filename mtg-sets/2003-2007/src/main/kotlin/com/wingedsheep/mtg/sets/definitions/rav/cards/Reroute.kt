@@ -20,9 +20,8 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * legal. The draw follows unconditionally, as printed: an ability with no other legal target is
  * left alone and you still draw.
  *
- * "With a single target" is enforced where the shared redirect shape enforces it — at
- * resolution, where an ability carrying two targets is left untouched — rather than as a
- * targeting restriction; the same reading Willbender and Bolt Bend already ship with.
+ * "With a single target" is a targeting restriction (`withSingleTarget()`): an ability with no
+ * targets, or with several, can't be chosen at all — the same reading as Willbender and Bolt Bend.
  */
 val Reroute = card("Reroute") {
     manaCost = "{1}{R}"
@@ -32,7 +31,7 @@ val Reroute = card("Reroute") {
         "abilities can't be targeted.)\nDraw a card."
 
     spell {
-        target(TargetFilter.ActivatedAbilityOnStack)
+        target(TargetFilter.ActivatedAbilityOnStack.withSingleTarget())
         effect = Effects.ChangeTarget() then Effects.DrawCards(1)
     }
 

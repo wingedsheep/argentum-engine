@@ -23,9 +23,8 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * "pay {4} or sacrifice" patterns. The spell is NOT modal in MTG terms (no "Choose one —"
  * wording), so countsAsModalSpell = false. Both modes carry the same retarget effect.
  *
- * [Effects.ChangeTarget] + [Targets.SpellOrAbilityWithSingleTarget] is the Willbender /
- * Return the Favor retarget; the single-target restriction is enforced at resolution by
- * the change-target executor.
+ * [Effects.ChangeTarget] + `TargetFilter.SpellOrAbilityOnStack.withSingleTarget()` is the
+ * Willbender / Return the Favor retarget; "with a single target" is a targeting restriction.
  */
 val RedirectLightning = card("Redirect Lightning") {
     manaCost = "{R}"
@@ -39,7 +38,7 @@ val RedirectLightning = card("Redirect Lightning") {
             // Pay 5 life
             Mode(
                 effect = Effects.ChangeTarget(),
-                targetRequirements = listOf(TargetObject(filter = TargetFilter.SpellOrAbilityOnStack)),
+                targetRequirements = listOf(TargetObject(filter = TargetFilter.SpellOrAbilityOnStack.withSingleTarget())),
                 description = "Pay 5 life — change the target of target spell or ability " +
                     "with a single target",
                 additionalCosts = listOf(Costs.additional.PayLife(amount = 5))
@@ -47,7 +46,7 @@ val RedirectLightning = card("Redirect Lightning") {
             // Pay {2}
             Mode(
                 effect = Effects.ChangeTarget(),
-                targetRequirements = listOf(TargetObject(filter = TargetFilter.SpellOrAbilityOnStack)),
+                targetRequirements = listOf(TargetObject(filter = TargetFilter.SpellOrAbilityOnStack.withSingleTarget())),
                 description = "Pay {2} — change the target of target spell or ability " +
                     "with a single target",
                 additionalManaCost = "{2}"

@@ -36,7 +36,7 @@ val BoltBend = card("Bolt Bend") {
         )
     }
     spell {
-        val t = target(TargetFilter.SpellOrAbilityOnStack)
+        target(TargetFilter.SpellOrAbilityOnStack.withSingleTarget())
         effect = Effects.ChangeTarget()
     }
     metadata {

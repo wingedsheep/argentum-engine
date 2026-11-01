@@ -29,8 +29,9 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * kind was chosen, prompting for new targets per CR 707.10c.
  *
  * Mode 2 ("change the target of target spell or ability with a single target") uses
- * [Effects.ChangeTarget] + [Targets.SpellOrAbilityWithSingleTarget] (see Willbender). The
- * single-target restriction is enforced at resolution by the change-target executor.
+ * [Effects.ChangeTarget] + `TargetFilter.SpellOrAbilityOnStack.withSingleTarget()` (see
+ * Willbender). "With a single target" is a targeting restriction, so a spell or ability with no
+ * targets or several can't be chosen.
  */
 val ReturnTheFavor = card("Return the Favor") {
     manaCost = "{R}{R}"
@@ -54,7 +55,7 @@ val ReturnTheFavor = card("Return the Favor") {
                 // + {1} — Change the target of target spell or ability with a single target.
                 Mode(
                     effect = Effects.ChangeTarget(),
-                    targetRequirements = listOf(TargetObject(filter = TargetFilter.SpellOrAbilityOnStack)),
+                    targetRequirements = listOf(TargetObject(filter = TargetFilter.SpellOrAbilityOnStack.withSingleTarget())),
                     description = "+ {1} — Change the target of target spell or ability with a " +
                         "single target.",
                     additionalManaCost = "{1}"
