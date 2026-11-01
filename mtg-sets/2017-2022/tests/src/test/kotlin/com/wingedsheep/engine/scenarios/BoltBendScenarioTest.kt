@@ -13,6 +13,7 @@ import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 
 /**
  * Bolt Bend (WAR #115) — {3}{R} Instant.
@@ -31,6 +32,13 @@ class BoltBendScenarioTest : ScenarioTestBase() {
                 state.getEntity(it)?.get<CardComponent>()?.name == "Bolt Bend"
             }
             execute(CastSpell(player1Id, bend, listOf(ChosenTarget.Spell(stackObject)))).error shouldBe null
+        }
+
+        fun TestGame.tryBoltBendAt(stackObject: EntityId): String? {
+            val bend = state.getHand(player1Id).first {
+                state.getEntity(it)?.get<CardComponent>()?.name == "Bolt Bend"
+            }
+            return execute(CastSpell(player1Id, bend, listOf(ChosenTarget.Spell(stackObject)))).error
         }
 
         fun TestGame.activateFirstAbility(cardName: String, abilityIndex: Int, target: ChosenTarget): EntityId {
@@ -66,6 +74,59 @@ class BoltBendScenarioTest : ScenarioTestBase() {
                 withClue("the Bolt hit its own caster instead") {
                     game.getLifeTotal(1) shouldBe 20
                     game.getLifeTotal(2) shouldBe 17
+                }
+            }
+
+            test("can't target a spell with no targets") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInHand(1, "Bolt Bend")
+                    .withLandsOnBattlefield(1, "Mountain", 4)
+                    .withCardInHand(2, "Grizzly Bears")
+                    .withLandsOnBattlefield(2, "Forest", 2)
+                    .withActivePlayer(2)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpell(2, "Grizzly Bears").error shouldBe null
+                val bears = game.state.stack.last()
+                game.passPriority().error shouldBe null
+
+                withClue("a spell without a single target is not a legal Bolt Bend target") {
+                    game.tryBoltBendAt(bears) shouldNotBe null
+                }
+            }
+
+            test("can't target a spell with several targets") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInHand(1, "Bolt Bend")
+                    .withLandsOnBattlefield(1, "Mountain", 4)
+                    .withCardInHand(2, "Seeds of Strength")
+                    .withCardOnBattlefield(2, "Grizzly Bears")
+                    .withCardOnBattlefield(2, "Centaur Courser")
+                    .withLandsOnBattlefield(2, "Forest", 1)
+                    .withLandsOnBattlefield(2, "Plains", 1)
+                    .withActivePlayer(2)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val bears = game.findPermanent("Grizzly Bears")!!
+                val courser = game.findPermanent("Centaur Courser")!!
+                val seeds = game.state.getHand(game.player2Id).first {
+                    game.state.getEntity(it)?.get<CardComponent>()?.name == "Seeds of Strength"
+                }
+                game.execute(
+                    CastSpell(
+                        game.player2Id, seeds,
+                        listOf(ChosenTarget.Permanent(bears), ChosenTarget.Permanent(courser), ChosenTarget.Permanent(bears))
+                    )
+                ).error shouldBe null
+                val seedsOnStack = game.state.stack.last()
+                game.passPriority().error shouldBe null
+
+                withClue("a spell with three targets is not a legal Bolt Bend target") {
+                    game.tryBoltBendAt(seedsOnStack) shouldNotBe null
                 }
             }
 

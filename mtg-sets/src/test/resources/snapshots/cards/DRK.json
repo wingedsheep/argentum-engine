@@ -4838,7 +4838,11 @@
                     {
                         "type": "TargetObject",
                         "filter": {
-                            "baseFilter": {},
+                            "baseFilter": {
+                                "statePredicates": [
+                                    "HasSingleTarget"
+                                ]
+                            },
                             "zone": "Stack"
                         },
                         "id": "t0"

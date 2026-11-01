@@ -12845,6 +12845,9 @@
                     "baseFilter": {
                         "cardPredicates": [
                             "IsActivatedAbility"
+                        ],
+                        "statePredicates": [
+                            "HasSingleTarget"
                         ]
                     },
                     "zone": "Stack"

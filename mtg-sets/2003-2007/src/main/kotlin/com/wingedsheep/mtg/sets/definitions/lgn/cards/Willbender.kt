@@ -23,7 +23,7 @@ val Willbender = card("Willbender") {
     oracleText = "Morph {1}{U} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its morph cost.)\nWhen this creature is turned face up, change the target of target spell or ability with a single target."
 
     triggeredAbility {
-        val spellOrAbilityWithSingleTarget = target(TargetFilter.SpellOrAbilityOnStack)
+        val spellOrAbilityWithSingleTarget = target(TargetFilter.SpellOrAbilityOnStack.withSingleTarget())
         trigger = Triggers.self.turnedFaceUp()
         effect = Effects.ChangeTarget()
     }

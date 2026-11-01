@@ -20,9 +20,9 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * • One or two target creatures can't block this turn.
  *
  * "Choose one" modal spell. Mode 2 reuses the change-target machinery from Willbender /
- * Return the Favor: [Effects.ChangeTarget] + [Targets.SpellOrAbilityWithSingleTarget], whose
- * executor enforces the single-target restriction and the "must change if possible" ruling at
- * resolution. Mode 3 ("one or two target creatures") is a variable target count (minCount = 1,
+ * Return the Favor: [Effects.ChangeTarget] + `TargetFilter.SpellOrAbilityOnStack.withSingleTarget()`.
+ * "With a single target" is a targeting restriction; the executor enforces the "must change if
+ * possible" ruling at resolution. Mode 3 ("one or two target creatures") is a variable target count (minCount = 1,
  * count = 2) with a per-target [Effects.CantBlock] applied via [ForEachTargetEffect] (same shape
  * as Amazing Acrobatics' "tap one or two target creatures").
  */
@@ -44,7 +44,7 @@ val UntimelyMalfunction = card("Untimely Malfunction") {
                 },
                 Mode.withTarget(
                     effect = Effects.ChangeTarget(),
-                    target = TargetObject(filter = TargetFilter.SpellOrAbilityOnStack),
+                    target = TargetObject(filter = TargetFilter.SpellOrAbilityOnStack.withSingleTarget()),
                     description = "Change the target of target spell or ability with a single target"
                 ),
                 Mode.withTarget(
