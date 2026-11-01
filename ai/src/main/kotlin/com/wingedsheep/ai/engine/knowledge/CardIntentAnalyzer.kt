@@ -224,6 +224,7 @@ object CardIntentAnalyzer {
                 expiringPump = true
                 pumpToughness = maxOf(pumpToughness, expiringToughnessOf(effect))
             }
+            if (isExpiringProtection(effect)) expiringPump = true
             if (isExpiringGroupPump(effect)) expiringGroupPump = true
         }
 
@@ -246,6 +247,8 @@ object CardIntentAnalyzer {
         // A combat trick is an instant pump that *expires*. A "+1/+1 counter at instant speed" is
         // a permanent investment you can make whenever you like, and holding it for combat is not
         // the same decision — so it stays PUMP and never reaches [HoldPolicy]'s no-window verdict.
+        // A protective keyword that wears off at cleanup (Withstand Death's indestructible) is the
+        // same trick without the stats: spent on a fight or on removal on the stack, or wasted.
         val speed = speedOf(card, scripts, tags)
         if (speed == Speed.INSTANT && expiringPump) tags += IntentTag.COMBAT_TRICK
 
@@ -838,6 +841,15 @@ object CardIntentAnalyzer {
         if (effect.duration != Duration.EndOfTurn) return false
         return raises(effect.powerModifier) || raises(effect.toughnessModifier)
     }
+
+    /**
+     * A protective keyword granted until end of turn — "target creature gains indestructible until
+     * end of turn". Like [isExpiringPump] it buys something only before cleanup, so an instant
+     * carrying one is held for a fight or a response ([IntentTag.COMBAT_TRICK]), with no toughness.
+     */
+    private fun isExpiringProtection(effect: Effect): Boolean =
+        effect is GrantKeywordEffect && effect.duration == Duration.EndOfTurn &&
+            IntentTag.PROTECTION in keywordTags(effect.keyword)
 
     /**
      * Whether a stat modifier only ever adds. A dynamic "+X" (a count, a mana value) counts: reading
