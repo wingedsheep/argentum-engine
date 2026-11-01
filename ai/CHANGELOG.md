@@ -28,7 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
-- Reads "copy a card and cast the copy" (God-Eternal Kefnet, Isochron Scepter, Spellweaver Helix, Arcane Bombardment) as card advantage instead of an effect it can't place.
+- #4184 Reads "copy a card and cast the copy" (God-Eternal Kefnet, Isochron Scepter, Spellweaver Helix, Arcane Bombardment) as card advantage instead of an effect it can't place.
 - #4183 Uses instant-speed scry abilities (Crystal Ball, Castle Vantress, the Strixhaven campuses, Theros Omens) at the opponent's end step with mana it would otherwise waste, and holds them in its own main phase while an instant in hand wants that mana — as it already did for draw abilities
 - #4175 Drafts and builds limited decks for payoffs that name a kind of card, read from the payoff's own filter (noncreature, artifact and enchantment spells, high-power creatures, colours, mana values). Artifacts and enchantments now count as fuel for prowess. Removal with a synergy rider is no longer cut as an unfed payoff.
 - #4169 Throws Chaos Orb and Falling Star as a flick, with a human's error in speed, direction and spin instead of a timed release — it still usually hits what it aims at, but misses a little more often
