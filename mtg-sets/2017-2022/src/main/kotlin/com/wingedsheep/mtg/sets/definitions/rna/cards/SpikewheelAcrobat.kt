@@ -32,6 +32,7 @@ val SpikewheelAcrobat = card("Spikewheel Acrobat") {
         rarity = Rarity.COMMON
         collectorNumber = "118"
         artist = "Deruchenko Alexander"
+        flavorText = "Every street's a stage, and every screaming bystander's an audience."
         imageUri = "https://cards.scryfall.io/normal/front/5/8/58f70b8a-62ec-4ae6-97d2-3c6ae86a3602.jpg?1783933675"
     }
 }

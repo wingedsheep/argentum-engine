@@ -20,8 +20,8 @@ val GruulBeastmaster = card("Gruul Beastmaster") {
     manaCost = "{3}{G}"
     colorIdentity = "G"
     typeLine = "Creature — Human Shaman"
-    power = 1
-    toughness = 1
+    power = 2
+    toughness = 2
     oracleText = "Riot (This creature enters with your choice of a +1/+1 counter or haste.)\n" +
         "Whenever this creature attacks, another target creature you control gets +X/+0 until end of turn, " +
         "where X is this creature's power."
