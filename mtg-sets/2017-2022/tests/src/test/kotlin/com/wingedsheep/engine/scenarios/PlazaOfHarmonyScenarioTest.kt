@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.ChooseColorDecision
+import com.wingedsheep.engine.core.ColorChosenResponse
 import com.wingedsheep.engine.core.Outcome
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.support.GameTestDriver
@@ -15,6 +17,7 @@ import com.wingedsheep.sdk.model.EntityId
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
  * Scenario tests for Plaza of Harmony (RNA #254).
@@ -67,10 +70,13 @@ class PlazaOfHarmonyScenarioTest : FunSpec({
         driver.putLandOnBattlefield(opponent, "Gruul Guildgate")
         val plaza = driver.putLandOnBattlefield(me, "Plaza of Harmony")
 
-        driver.tapForGate(me, plaza, Color.GREEN)
+        driver.submit(ActivateAbility(me, plaza, gateAbility))
+        val choice = driver.pendingDecision.shouldBeInstanceOf<ChooseColorDecision>()
         withClue("green comes only from my Forest (not a Gate) and the opponent's Gruul Guildgate") {
-            driver.pool(me).green shouldBe 0
+            choice.availableColors shouldBe setOf(Color.WHITE, Color.BLUE)
         }
+        driver.submitDecision(me, ColorChosenResponse(choice.id, Color.WHITE)).error shouldBe null
+        driver.pool(me).white shouldBe 1
     }
 
     test("its own {C} ability always works, even with no Gate") {

@@ -106,6 +106,15 @@ class ReflectedLandManaTest : ScenarioTestBase() {
 
     private val gates = GameObjectFilter.Land.withSubtype("Gate")
 
+    private val plaza = card("Test Plaza") {
+        typeLine = "Land"
+        activatedAbility {
+            cost = Costs.Tap
+            manaAbility = true
+            effect = Effects.AddManaOfColorLandsCouldProduce(LandControllerScope.YOU, landFilter = gates)
+        }
+    }
+
     private fun TestGame.colorsFor(
         sourceId: EntityId,
         scope: LandControllerScope,
@@ -143,6 +152,7 @@ class ReflectedLandManaTest : ScenarioTestBase() {
         cardRegistry.register(colorlessLand)
         cardRegistry.register(restrictedRainbow)
         cardRegistry.register(gate)
+        cardRegistry.register(plaza)
 
         fun base() = scenario()
             .withPlayers("Player", "Opponent")
@@ -269,6 +279,21 @@ class ReflectedLandManaTest : ScenarioTestBase() {
                 .build()
 
             game.colorsFor(game.findPermanent("Test Pool")!!, LandControllerScope.YOU, gates) shouldBe emptySet()
+        }
+
+        test("a land reflected through a filtered ability reports only the filtered lands' colors") {
+            val game = base()
+                .withCardOnBattlefield(1, "Test Plaza")
+                .withCardOnBattlefield(1, "Test Gate")
+                .withCardOnBattlefield(1, "Forest")
+                .build()
+            val plazaId = game.findPermanent("Test Plaza")!!
+
+            withClue("what the Plaza could produce, as a Pool or Stone reflecting it would read it") {
+                LandManaColorInspector.colorsLandCouldProduce(
+                    game.state, game.state.projectedState, plazaId, cardRegistry, services.predicateEvaluator,
+                ) shouldBe setOf(Color.WHITE)
+            }
         }
     }
 }
