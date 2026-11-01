@@ -2683,6 +2683,7 @@ Charity Extractor
 Charix, the Raging Isle	intent: ModifyStatsEffect
 Charmed Clothier	intent: CreateAuraTokenEffect
 Charmed Sleep
+Charmed Stray
 Charming Prince
 Charming Scoundrel
 Charred Foyer // Warped Space	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
@@ -3684,6 +3685,7 @@ Dauthi Mercenary
 Dauthi Slayer
 Dauthi Voidwalker	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithoutPayingCostEffect; intent: Pipeline(exile→?)
 Davriel's Shadowfugue	intent: Pipeline(hand→graveyard)
+Davriel, Rogue Shadowmage	intent: Pipeline(hand→graveyard); polarity: Pipeline(hand→graveyard)
 Dawn Elemental
 Dawn Evangel
 Dawn of Hope
@@ -5657,6 +5659,8 @@ Final Showdown
 Final Strike
 Final Vengeance
 Finale of Devastation
+Finale of Eternity
+Finale of Glory
 Finale of Promise	intent: CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: ForEach>CopyTargetSpellEffect; intent: Pipeline(ChosenTargets|graveyard→?); polarity: CastAnyNumberFromCollectionWithoutPayingCostEffect; polarity: ForEachEffect; polarity: Pipeline(ChosenTargets|graveyard→?)
 Finale of Revelation
 Finch Formation
@@ -6464,11 +6468,13 @@ Giant-Sized Flying Ant
 Giantfall	polarity: DealDamageEffect
 Gibbering Barricade
 Gibbering Kami
+Gideon Blackblade	intent: ChooseActionEffect; polarity: ChooseActionEffect
 Gideon the Oathless
 Gideon's Company	intent: AddCountersEffect
 Gideon's Lawkeeper
 Gideon's Memorial
 Gideon's Reproach
+Gideon's Triumph	polarity: ForceSacrificeEffect
 Gideon, Champion of Justice	intent: Pipeline(BattlefieldMatching→exile); polarity: AddDynamicCountersEffect
 Gift of Compleation
 Gift of Estates
@@ -6796,6 +6802,7 @@ Goblins of the Flarg
 Goblinslide
 God-Eternal Bontu
 God-Eternal Kefnet
+God-Eternal Oketra
 God-Eternal Rhonas	intent: ForEach>GrantKeywordEffect; intent: ForEach>ModifyStatsEffect
 God-Pharaoh's Statue
 Goddric, Cloaked Reveler
@@ -6931,6 +6938,7 @@ Grasping Shadows	intent: GrantKeywordEffect
 Grasping Thrull
 Grassland Crusader
 Grasslands
+Grateful Apparition	intent: ProliferateEffect
 Gratuitous Violence
 Gravblade Heavy
 Grave Bramble
@@ -9416,6 +9424,7 @@ Liliana's Scrounger	intent: AddCountersToCollectionEffect; intent: SelectTargetE
 Liliana's Specter	intent: ForEach>Pipeline(hand→graveyard)
 Liliana's Standard Bearer
 Liliana's Steward	intent: Pipeline(hand→graveyard); polarity: Pipeline(hand→graveyard)
+Liliana's Triumph
 Liliana, Death Mage
 Liliana, Death's Majesty	intent: AddColorEffect; intent: AddCreatureTypeEffect; intent: MoveToZoneEffect
 Liliana, Dreadhorde General
@@ -9998,6 +10007,7 @@ Mass Calcify
 Mass Hysteria
 Mass Production
 Mass of Ghouls
+Massacre Girl
 Massacre Girl, Known Killer
 Massacre Girl, Most Wanted
 Massacre Wurm
@@ -12161,6 +12171,7 @@ Presumed Dead	polarity: GrantTriggeredAbilityEffect
 Pretending Poxbearers
 Prey Upon	polarity: FightEffect
 Prey's Vengeance
+Price of Betrayal	intent: RemoveAnyNumberOfCountersEffect; polarity: RemoveAnyNumberOfCountersEffect
 Price of Freedom
 Price of Loyalty	polarity: mixed(GainControlEffect+GrantKeywordEffect+ModifyStatsEffect+TapUntapEffect)
 Prickly Marmoset
@@ -15100,6 +15111,7 @@ Spare Dagger	polarity: AttachEquipmentEffect
 Spare Supplies
 Spark Double
 Spark Elemental	intent: SacrificeSelfEffect
+Spark Harvest
 Spark Jolt
 Spark Reaper
 Spark Rupture
@@ -16517,6 +16529,7 @@ The Earth Crystal	intent: DistributeCountersAmongTargetsEffect; polarity: Distri
 The Earth King
 The Echoverse Fulcrum
 The Elder Dragon War
+The Elderspell	intent: AddCountersToCollectionEffect; intent: Pipeline(ChosenTargets|ControlledPermanents→graveyard); intent: StoreNumberEffect; polarity: AddCountersToCollectionEffect; polarity: Pipeline(ChosenTargets|ControlledPermanents→graveyard); polarity: StoreNumberEffect
 The Eldest Reborn
 The Emperor of Palamecia
 The End	intent: CaptureControllersEffect; intent: ForEachCapturedControllerEffect; intent: Pipeline(ChosenTargets→exile); intent: StoreCardNameEffect; polarity: CaptureControllersEffect; polarity: ForEachCapturedControllerEffect; polarity: Pipeline(ChosenTargets→exile); polarity: StoreCardNameEffect
@@ -17011,6 +17024,7 @@ Tolarian Scholar
 Tolarian Sentinel	polarity: MoveToZoneEffect
 Tolarian Terror
 Tolarian Winds
+Toll of the Invasion	intent: AmassEffect; intent: Pipeline(hand→graveyard); intent: RevealHandEffect; polarity: Pipeline(hand→graveyard); polarity: RevealHandEffect
 Tolls of War
 Tolsimir Wolfblood
 Tolsimir, Friend to Wolves
@@ -18080,6 +18094,7 @@ Vivisection
 Vivisection Evangelist
 Vivisurgeon's Insight
 Vizier of the Menagerie
+Vizier of the Scorpion	intent: AmassEffect
 Vizkopa Vampire
 Vizzerdrix
 Vnwxt, Verbose Host
