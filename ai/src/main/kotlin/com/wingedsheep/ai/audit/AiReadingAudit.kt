@@ -26,6 +26,7 @@ import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
+import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -59,7 +60,7 @@ import java.util.Locale
  *    each non-mana ability): a slot that earns no [IntentTag] at all is invisible to every intent
  *    consumer, and is attributed to each of its leaves — except the leaves that need no tag
  *    ([needsNoIntent]: a non-keyword counter on the source itself or on its controller, damage to a
- *    player).
+ *    player, life loss).
  *  - [Check.COMBAT] — [CombatReach] over each leaf of a non-mana activated ability that changes
  *    power/toughness, keywords, P/T counters or blocking, and that combat simulation cannot see.
  *  - [Check.TIMING] — an until-end-of-turn leaf on an instant-speed activation or an instant-speed
@@ -415,7 +416,7 @@ object AiReadingAudit {
         // Every untagged step needed no tag: say so, so the ability reads as understood rather
         // than as one nobody asked about.
         if (sink.findings.size == before) {
-            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, attaches or moves its own source, adds counters for its controller, or damages a player")
+            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, attaches or moves its own source, adds counters for its controller, or damages a player or makes one lose life")
         }
     }
 
@@ -538,8 +539,8 @@ object AiReadingAudit {
     }
 
     /**
-     * The leaves that need no intent tag: equip / attach, a card moving itself and damage to a
-     * player (commented inline below), and a counter the effect puts on its own source or its own
+     * The leaves that need no intent tag: equip / attach, a card moving itself, damage to a
+     * player and life loss (commented inline below), and a counter the effect puts on its own source or its own
      * controller — a creature growing itself, a charge, oil, quest or loyalty counter, `{E}` for you. There is no target to choose and nothing
      * to hold it for, and its payoff is already on the board (the evaluator reads a grown creature's
      * projected stats) or belongs to the ability that later spends it, so it needs no intent tag. A
@@ -561,6 +562,9 @@ object AiReadingAudit {
         // answers nothing on the board, and life lost now or one window later is the same life.
         // Which player a targeted one aims at is the polarity check's question, not intent's.
         if (leaf is DealDamageEffect && isPlayerTarget(leaf.target)) return true
+        // Life loss always lands on a player, so it is the same clock — or, on "you lose N life",
+        // a drawback the simulation already prices on resolution. Either way there is nothing to tag.
+        if (leaf is LoseLifeEffect) return true
         val (counter, target) = when (leaf) {
             is AddCountersEffect -> leaf.counterType to leaf.target
             is AddDynamicCountersEffect -> leaf.counterType to leaf.target
