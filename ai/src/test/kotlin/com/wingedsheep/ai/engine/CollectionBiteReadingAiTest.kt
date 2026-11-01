@@ -35,6 +35,10 @@ class CollectionBiteReadingAiTest : ScenarioTestBase() {
             withClue("Common Goal: one or two target creatures you control each deal damage to target creature") {
                 intents.spellTargetPolarities("Common Goal") shouldBe listOf(TargetPolarity.HARMFUL, TargetPolarity.BENEFICIAL)
             }
+            withClue("Graceful Takedown: two own-side source slots, both wrapped in TargetOther") {
+                intents.spellTargetPolarities("Graceful Takedown") shouldBe
+                    listOf(TargetPolarity.HARMFUL, TargetPolarity.BENEFICIAL, TargetPolarity.BENEFICIAL)
+            }
         }
 
         test("Common Goal bites with our Craw Wurm, not Llanowar Elves and Grizzly Bears") {
