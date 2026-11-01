@@ -6175,7 +6175,8 @@
                 "date": "2019-05-03",
                 "text": "You may cast Gideon's Battle Cry while you control no creatures. You'll still search for Gideon."
             }
-        ]
+        ],
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -7454,7 +7455,8 @@
         "collectorNumber": "271",
         "artist": "Randy Gallegos",
         "flavorText": "\"Of course you're being followed!\"",
-        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a304200f-86d5-4eed-a775-cc24e72872ac.jpg?1783933359"
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a304200f-86d5-4eed-a775-cc24e72872ac.jpg?1783933359",
+        "inBooster": false
     }
 }
 
@@ -8296,7 +8298,8 @@
         "rarity": "UNCOMMON",
         "artist": "Darek Zabrocki",
         "flavorText": "\"Pardon me if I seem distracted. Part of me is reconnoitering the Tenth District.\"",
-        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c4d35a34-01b7-41e1-8491-a6589175d027.jpg?1783933359"
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c4d35a34-01b7-41e1-8491-a6589175d027.jpg?1783933359",
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -8495,7 +8498,8 @@
                 "date": "2019-05-03",
                 "text": "You may cast Jace's Ruse without choosing any target creatures. You'll just search for Jace, Arcane Strategist. However, if you choose any targets and all of those targets become illegal before Jace's Ruse resolves, the spell won't resolve and you won't search."
             }
-        ]
+        ],
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -8631,7 +8635,8 @@
                 "date": "2019-05-03",
                 "text": "Once Jace's last ability has resolved, its effect applies even if Jace has left the battlefield."
             }
-        ]
+        ],
+        "inBooster": false
     },
     "startingLoyalty": 4,
     "colorIdentityOverride": [
@@ -16361,7 +16366,8 @@
                 "date": "2019-05-03",
                 "text": "In a Two-Headed Giant game, Tezzeret's first loyalty ability causes the opposing team to lose twice X life and you gain X life."
             }
-        ]
+        ],
+        "inBooster": false
     },
     "startingLoyalty": 5,
     "colorIdentityOverride": [

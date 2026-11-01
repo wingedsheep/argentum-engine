@@ -44,6 +44,7 @@ val GideonsBattleCry = card("Gideon's Battle Cry") {
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "267"
+        inBooster = false
         artist = "Zoltan Boros"
         flavorText = "\"Break their formation! Thin their ranks! I'm right behind you!\""
         imageUri = "https://cards.scryfall.io/normal/front/5/2/52de8fc6-6d9b-402e-a6c8-4c39b0c92f07.jpg?1783933360"

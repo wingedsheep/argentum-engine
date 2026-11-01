@@ -1,6 +1,7 @@
 package com.wingedsheep.gameserver.config
 
 import com.wingedsheep.gameserver.coverage.SetCoverageService
+import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.limited.DedicatedSlotBooster
 import com.wingedsheep.sdk.limited.EchoedPairsPlayBooster
@@ -536,6 +537,45 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
         }
     }
 
+    test("every War of the Spark draft pack opens exactly one planeswalker and no Planeswalker Deck card") {
+        // taw/magic-search-engine `war/draft.yaml`: 10 commons, 3 uncommons, 1 rare or mythic, and one
+        // planeswalker — at the rare slot in 29 of 121 packs, otherwise one of the three uncommons.
+        val war = boosterGenerator.availableSets["WAR"].shouldNotBeNull()
+        war.fullyImplemented shouldBe true
+        war.boosterStrategy.shouldBeInstanceOf<DedicatedSlotBooster>()
+        val eligible = war.cards.filter { it.metadata.inBooster && !it.typeLine.isBasicLand }
+        // Scryfall `set:war is:booster -t:basic` and `set:war is:booster t:planeswalker`.
+        eligible.distinctBy { it.name }.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.COMMON to 101, Rarity.UNCOMMON to 80, Rarity.RARE to 53, Rarity.MYTHIC to 15,
+        )
+        eligible.filter { it.isPlaneswalker() }.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.UNCOMMON to 20, Rarity.RARE to 13, Rarity.MYTHIC to 3,
+        )
+        val deckExclusives = listOf(
+            "Gideon, the Oathsworn", "Desperate Lunge", "Gideon's Battle Cry", "Gideon's Company",
+            "Orzhov Guildgate", "Jace, Arcane Strategist", "Guildpact Informant", "Jace's Projection",
+            "Jace's Ruse", "Simic Guildgate", "Tezzeret, Master of the Bridge",
+        )
+        deckExclusives.forEach { eligible.map { card -> card.name } shouldNotContain it }
+        val eligibleNames = eligible.mapTo(hashSetOf()) { it.name }
+        val packs = 2000
+        var rarePlaneswalkers = 0
+        repeat(packs) {
+            val pack = boosterGenerator.generateBooster("WAR")
+            pack.size shouldBe 14
+            pack.map { it.name }.toSet().size shouldBe 14
+            withClue("pack ${pack.map { it.name }} holds an off-sheet card") {
+                pack.all { it.name in eligibleNames } shouldBe true
+            }
+            pack.count { it.isPlaneswalker() } shouldBe 1
+            pack.count { it.metadata.rarity == Rarity.COMMON } shouldBe 10
+            pack.count { it.metadata.rarity == Rarity.UNCOMMON } shouldBe 3
+            val rare = pack.single { it.metadata.rarity == Rarity.RARE || it.metadata.rarity == Rarity.MYTHIC }
+            if (rare.isPlaneswalker()) rarePlaneswalkers++
+        }
+        (rarePlaneswalkers.toDouble() / packs) shouldBe ((29.0 / 121) plusOrMinus 0.04)
+    }
+
     test("Reality Fracture is selectable as a complete set and generates a nonempty pack") {
         val fra = boosterGenerator.availableSets["FRA"].shouldNotBeNull()
         fra.setName shouldBe "Reality Fracture"
@@ -741,3 +781,5 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
         }
     }
 })
+
+private fun CardDefinition.isPlaneswalker() = CardType.PLANESWALKER in typeLine.cardTypes

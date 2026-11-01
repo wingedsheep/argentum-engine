@@ -52,6 +52,7 @@ val JaceArcaneStrategist = card("Jace, Arcane Strategist") {
     metadata {
         rarity = Rarity.MYTHIC
         collectorNumber = "270"
+        inBooster = false
         artist = "Kieran Yanner"
         imageUri = "https://cards.scryfall.io/normal/front/b/6/b6a857fb-159f-40c4-8988-da91d8521a60.jpg?1783933359"
 

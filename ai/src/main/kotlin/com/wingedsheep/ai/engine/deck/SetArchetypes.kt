@@ -1097,6 +1097,32 @@ object SetArchetypes {
                     "Let cheap permanents trade or die, then bring them back with recursion while gaining life. A grindy midrange deck that wins the long game by refusing to run out of threats."),
             )
         ),
+        "WAR" to SetSynergies(
+            setCode = "WAR",
+            setName = "War of the Spark",
+            archetypes = listOf(
+                Archetype("Fliers", listOf(Color.WHITE, Color.BLUE),
+                    "Hold the ground with sturdy creatures and taxing effects while fliers chip in from above. A tempo-control deck that pairs evasive threats with counterspells and card-drawing bodies."),
+                Archetype("Amass Control", listOf(Color.BLUE, Color.BLACK),
+                    "Grow a Zombie Army with amass while removal and bounce keep the opponent off balance. A controlling midrange deck whose Army becomes a single towering threat."),
+                Archetype("Amass Sacrifice", listOf(Color.BLACK, Color.RED),
+                    "Make Zombie Armies and other expendable bodies, then sacrifice them for damage, cards and removal. An aggressive attrition deck that pings the opponent every time a permanent goes to the graveyard."),
+                Archetype("Big Power Aggro", listOf(Color.RED, Color.GREEN),
+                    "Curve into hasty, high-power creatures and fight or bite away the blockers. A stompy aggro deck that rewards keeping the biggest creature on the board and attacking every turn."),
+                Archetype("Proliferate Counters", listOf(Color.GREEN, Color.WHITE),
+                    "Spread +1/+1 counters across a wide board and proliferate them, along with your planeswalkers' loyalty. A go-wide midrange deck whose team outgrows every blocker."),
+                Archetype("Drain Midrange", listOf(Color.WHITE, Color.BLACK),
+                    "Trade creatures and planeswalkers freely and drain the opponent each time one of yours dies. A grindy midrange deck backed by efficient removal for the threats that matter."),
+                Archetype("Spells Amass", listOf(Color.BLUE, Color.RED),
+                    "Fill the graveyard with instants and sorceries, then cash them in for a large Zombie Army. A spells deck that trades burn and card selection for the board until one big attacker ends it."),
+                Archetype("Deathtouch Value", listOf(Color.BLACK, Color.GREEN),
+                    "Ramp and fix with mana creatures, then lock up combat with deathtouch and grind out value from removal. A sturdy midrange deck that wins the long game on two-for-ones."),
+                Archetype("Heroic Aggro", listOf(Color.RED, Color.WHITE),
+                    "Target your own creatures with pump spells and combat tricks to grow them and scry. An aggressive deck that turns every trick into a bigger, harder-hitting attacker."),
+                Archetype("Proliferate Ramp", listOf(Color.GREEN, Color.BLUE),
+                    "Ramp into creatures with power 4 or greater and draw cards as they land, while proliferate grows counters and loyalty. A value-ramp deck whose late game outclasses everything else."),
+            )
+        ),
         "MOM" to SetSynergies(
             setCode = "MOM",
             setName = "March of the Machine",

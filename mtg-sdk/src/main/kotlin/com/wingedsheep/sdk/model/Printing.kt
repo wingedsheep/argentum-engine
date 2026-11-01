@@ -37,6 +37,12 @@ data class Printing(
      * Presentation only: rules identity stays [name]. Null when the printing uses the oracle name.
      */
     val printedName: String? = null,
+    /**
+     * Scryfall `booster` — false when this printing is not opened from the set's own packs (a
+     * Planeswalker Deck exclusive, a Brawl/Commander deck card), so it stays out of that set's
+     * booster pool even though its canonical card is a booster card elsewhere.
+     */
+    val inBooster: Boolean = true,
 ) {
     /** Reference form for decks and lookup APIs. */
     val ref: PrintingRef get() = PrintingRef(setCode, collectorNumber)
