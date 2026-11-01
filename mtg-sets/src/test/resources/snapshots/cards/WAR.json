@@ -4372,6 +4372,130 @@
     ]
 }
 
+// Enter the God-Eternals
+{
+    "name": "Enter the God-Eternals",
+    "manaCost": "{2}{U}{U}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Enter the God-Eternals deals 4 damage to target creature and you gain life equal to the damage dealt this way. Target player mills four cards. Amass Zombies 4. (Put four +1/+1 counters on an Army you control. It's also a Zombie. If you don't control an Army, create a 0/0 black Zombie Army creature token first.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "damageDealtVariable": "storedNumber0"
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "VariableReference",
+                        "variableName": "storedNumber0"
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "Amass",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "subtype": "Zombie"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetPlayer",
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "196",
+        "rarity": "RARE",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f67e7070-2266-4c93-8c89-084e12ba7a4e.jpg?1783933397",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "You can't cast Enter the God-Eternals without targeting a creature and a player."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If the target creature has less than 4 toughness, Enter the God-Eternals still deals 4 damage to it and you'll gain 4 life."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If the target creature is no longer a legal target as the spell resolves but the player is a legal target, no creature is dealt damage and you gain no life, but the target player still moves the top cards of their library and you still amass 4."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If the target player is no longer a legal target as the spell resolves but the creature is a legal target, the creature is dealt damage, you gain that much life, and you amass 4. No player moves cards from their library."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If both targets are no longer legal targets as the spell tries to resolve, it doesn't resolve. You don't amass 4."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If the target creature is dealt lethal damage by Enter the God-Eternals, it'll still be on the battlefield while you gain life, the target player moves cards, and you amass 4."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Erratic Visionary
 {
     "name": "Erratic Visionary",
@@ -5846,6 +5970,218 @@
     ]
 }
 
+// Gideon's Battle Cry
+{
+    "name": "Gideon's Battle Cry",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Put a +1/+1 counter on each creature you control. You may search your library and/or graveyard for a card named Gideon, the Oathsworn, reveal it, and put it into your hand. If you search your library this way, shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "Search your library",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Library"
+                                            ],
+                                            "filter": {
+                                                "cardPredicates": [
+                                                    {
+                                                        "type": "NameEquals",
+                                                        "name": "Gideon, the Oathsworn"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library for a card named Gideon, the Oathsworn to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Search your graveyard",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Graveyard"
+                                            ],
+                                            "filter": {
+                                                "cardPredicates": [
+                                                    {
+                                                        "type": "NameEquals",
+                                                        "name": "Gideon, the Oathsworn"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "storeAs": "searchable"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your graveyard for a card named Gideon, the Oathsworn to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Search your library and graveyard",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Library",
+                                                "Graveyard"
+                                            ],
+                                            "filter": {
+                                                "cardPredicates": [
+                                                    {
+                                                        "type": "NameEquals",
+                                                        "name": "Gideon, the Oathsworn"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library and/or graveyard for a card named Gideon, the Oathsworn to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Don't search",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": []
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "267",
+        "rarity": "RARE",
+        "artist": "Zoltan Boros",
+        "flavorText": "\"Break their formation! Thin their ranks! I'm right behind you!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/52de8fc6-6d9b-402e-a6c8-4c39b0c92f07.jpg?1783933360",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "You may cast Gideon's Battle Cry while you control no creatures. You'll still search for Gideon."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Gideon's Company
 {
     "name": "Gideon's Company",
@@ -6074,6 +6410,177 @@
             }
         ]
     },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Gideon, the Oathsworn
+{
+    "name": "Gideon, the Oathsworn",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Legendary Planeswalker — Gideon",
+    "oracleText": "Whenever you attack with two or more non-Gideon creatures, put a +1/+1 counter on each of those creatures.\n+2: Until end of turn, Gideon becomes a 5/5 white Soldier creature that's still a planeswalker. Prevent all damage that would be dealt to him this turn. (He can't attack if he was cast this turn.)\n−9: Exile Gideon and each creature your opponents control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gideon, the Oathsworn:1",
+                "trigger": {
+                    "type": "YouAttackEvent",
+                    "minAttackers": 2,
+                    "attackerFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Gideon"
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "FilterCollection",
+                            "from": "trigger.captured",
+                            "filter": {
+                                "statePredicates": [
+                                    "IsOnBattlefield"
+                                ]
+                            },
+                            "storeMatching": "matching0"
+                        },
+                        {
+                            "type": "AddCountersToCollection",
+                            "collectionName": "matching0",
+                            "counterType": "PLUS_ONE_PLUS_ONE"
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Gideon, the Oathsworn:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "BecomeCreature",
+                            "power": {
+                                "type": "Fixed",
+                                "amount": 5
+                            },
+                            "toughness": {
+                                "type": "Fixed",
+                                "amount": 5
+                            },
+                            "creatureTypes": [
+                                "Soldier"
+                            ],
+                            "colors": [
+                                "WHITE"
+                            ]
+                        },
+                        {
+                            "type": "PreventDamageShield",
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Gideon, the Oathsworn:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -9
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "anyOf": [
+                                        {
+                                            "cardPredicates": [
+                                                "IsCreature"
+                                            ],
+                                            "controllerPredicate": "ControlledByOpponent"
+                                        },
+                                        {
+                                            "statePredicates": [
+                                                "IsSource"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "265",
+        "rarity": "MYTHIC",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/3/43e7331d-98b8-420f-a346-3f3521c3b258.jpg?1783933361",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "A non-Gideon creature is a creature that isn't also a Gideon planeswalker. For example, Gideon's Company is a non-Gideon creature."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Any attacking Gideon creatures won't get a +1/+1 counter, but as long as two or more attacking creatures aren't Gideons, those attacking creatures each get a +1/+1 counter."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Gideon's first loyalty ability doesn't count as a creature entering the battlefield. Gideon was already on the battlefield; he only changed his types."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If Gideon becomes a creature the same turn he enters the battlefield, you can't attack with him or use any of his {T} abilities (if he gains any)."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Gideon's first loyalty ability causes him to become a creature with the creature type Soldier. He remains a planeswalker with the planeswalker type Gideon. (He also retains any other card types or subtypes he may have had.) Each subtype is correlated to the proper card type: planeswalker is only a type (not a creature type), and Soldier is just a creature type (not a planeswalker type)."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If damage that can't be prevented is dealt to Gideon after his first loyalty ability has resolved, that damage will have all applicable results: specifically, the damage is marked on Gideon (since he's a creature) and that damage causes that many loyalty counters to be removed from him (since he's a planeswalker). Even though he's also a creature, if Gideon has no loyalty counters on him, he's put into his owner's graveyard."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If Gideon has 9 loyalty as you activate his last ability, he'll be put into your graveyard and won't be exiled."
+            }
+        ],
+        "inBooster": false
+    },
+    "startingLoyalty": 4,
     "colorIdentityOverride": [
         "WHITE"
     ]
@@ -10554,6 +11061,73 @@
     ]
 }
 
+// Nahiri, Storm of Stone
+{
+    "name": "Nahiri, Storm of Stone",
+    "manaCost": "{2}{R/W}{R/W}",
+    "typeLine": "Legendary Planeswalker — Nahiri",
+    "oracleText": "During your turn, creatures you control have first strike and equip abilities you activate cost {1} less to activate.\n−X: Nahiri deals X damage to target tapped creature.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Nahiri, Storm of Stone:1",
+                "cost": "CostLoyaltyX",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": "XValue",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature tapped"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    }
+                },
+                "condition": "IsYourTurn"
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ReduceEquipCost",
+                    "amount": 1
+                },
+                "condition": "IsYourTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "233",
+        "rarity": "UNCOMMON",
+        "artist": "Aleksi Briclot",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/8806605c-0cb7-4360-96e4-afb424ccad90.jpg?1783933377"
+    },
+    "startingLoyalty": 6,
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Narset's Reversal
 {
     "name": "Narset's Reversal",
@@ -11395,6 +11969,419 @@
     },
     "startingLoyalty": 5,
     "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Niv-Mizzet Reborn
+{
+    "name": "Niv-Mizzet Reborn",
+    "manaCost": "{W}{U}{B}{R}{G}",
+    "typeLine": "Legendary Creature — Dragon Avatar",
+    "oracleText": "Flying\nWhen Niv-Mizzet enters, reveal the top ten cards of your library. For each color pair, choose a card that's exactly those colors from among them. Put the chosen cards into your hand and the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Niv-Mizzet Reborn:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 10
+                                }
+                            },
+                            "storeAs": "gathered0",
+                            "revealed": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "HasColor",
+                                        "color": "WHITE"
+                                    },
+                                    {
+                                        "type": "HasColor",
+                                        "color": "BLUE"
+                                    },
+                                    {
+                                        "type": "HasExactlyColors",
+                                        "count": 2
+                                    }
+                                ]
+                            },
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "Choose a white-blue card to put into your hand",
+                            "selectedLabel": "Put into hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "remainder1",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "HasColor",
+                                        "color": "WHITE"
+                                    },
+                                    {
+                                        "type": "HasColor",
+                                        "color": "BLACK"
+                                    },
+                                    {
+                                        "type": "HasExactlyColors",
+                                        "count": 2
+                                    }
+                                ]
+                            },
+                            "storeSelected": "selected2",
+                            "storeRemainder": "remainder2",
+                            "prompt": "Choose a white-black card to put into your hand",
+                            "selectedLabel": "Put into hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "remainder2",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "HasColor",
+                                        "color": "BLUE"
+                                    },
+                                    {
+                                        "type": "HasColor",
+                                        "color": "BLACK"
+                                    },
+                                    {
+                                        "type": "HasExactlyColors",
+                                        "count": 2
+                                    }
+                                ]
+                            },
+                            "storeSelected": "selected3",
+                            "storeRemainder": "remainder3",
+                            "prompt": "Choose a blue-black card to put into your hand",
+                            "selectedLabel": "Put into hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "remainder3",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "HasColor",
+                                        "color": "BLUE"
+                                    },
+                                    {
+                                        "type": "HasColor",
+                                        "color": "RED"
+                                    },
+                                    {
+                                        "type": "HasExactlyColors",
+                                        "count": 2
+                                    }
+                                ]
+                            },
+                            "storeSelected": "selected4",
+                            "storeRemainder": "remainder4",
+                            "prompt": "Choose a blue-red card to put into your hand",
+                            "selectedLabel": "Put into hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "remainder4",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "HasColor",
+                                        "color": "BLACK"
+                                    },
+                                    {
+                                        "type": "HasColor",
+                                        "color": "RED"
+                                    },
+                                    {
+                                        "type": "HasExactlyColors",
+                                        "count": 2
+                                    }
+                                ]
+                            },
+                            "storeSelected": "selected5",
+                            "storeRemainder": "remainder5",
+                            "prompt": "Choose a black-red card to put into your hand",
+                            "selectedLabel": "Put into hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "remainder5",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "HasColor",
+                                        "color": "BLACK"
+                                    },
+                                    {
+                                        "type": "HasColor",
+                                        "color": "GREEN"
+                                    },
+                                    {
+                                        "type": "HasExactlyColors",
+                                        "count": 2
+                                    }
+                                ]
+                            },
+                            "storeSelected": "selected6",
+                            "storeRemainder": "remainder6",
+                            "prompt": "Choose a black-green card to put into your hand",
+                            "selectedLabel": "Put into hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "remainder6",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "HasColor",
+                                        "color": "RED"
+                                    },
+                                    {
+                                        "type": "HasColor",
+                                        "color": "GREEN"
+                                    },
+                                    {
+                                        "type": "HasExactlyColors",
+                                        "count": 2
+                                    }
+                                ]
+                            },
+                            "storeSelected": "selected7",
+                            "storeRemainder": "remainder7",
+                            "prompt": "Choose a red-green card to put into your hand",
+                            "selectedLabel": "Put into hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "remainder7",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "HasColor",
+                                        "color": "RED"
+                                    },
+                                    {
+                                        "type": "HasColor",
+                                        "color": "WHITE"
+                                    },
+                                    {
+                                        "type": "HasExactlyColors",
+                                        "count": 2
+                                    }
+                                ]
+                            },
+                            "storeSelected": "selected8",
+                            "storeRemainder": "remainder8",
+                            "prompt": "Choose a red-white card to put into your hand",
+                            "selectedLabel": "Put into hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "remainder8",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "HasColor",
+                                        "color": "GREEN"
+                                    },
+                                    {
+                                        "type": "HasColor",
+                                        "color": "WHITE"
+                                    },
+                                    {
+                                        "type": "HasExactlyColors",
+                                        "count": 2
+                                    }
+                                ]
+                            },
+                            "storeSelected": "selected9",
+                            "storeRemainder": "remainder9",
+                            "prompt": "Choose a green-white card to put into your hand",
+                            "selectedLabel": "Put into hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "remainder9",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "HasColor",
+                                        "color": "GREEN"
+                                    },
+                                    {
+                                        "type": "HasColor",
+                                        "color": "BLUE"
+                                    },
+                                    {
+                                        "type": "HasExactlyColors",
+                                        "count": 2
+                                    }
+                                ]
+                            },
+                            "storeSelected": "selected10",
+                            "storeRemainder": "remainder10",
+                            "prompt": "Choose a green-blue card to put into your hand",
+                            "selectedLabel": "Put into hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "collectionFilter": {
+                                "type": "ExcludeOtherCollection",
+                                "otherCollectionName": "remainder10"
+                            },
+                            "storeMatching": "matching11"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "matching11",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder10",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "208",
+        "rarity": "MYTHIC",
+        "artist": "Raymond Swanland",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/6/56a2609d-b535-400b-81d9-72989a33c70f.jpg?1783933391",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "A \"color pair\" is exactly two colors. There are ten color pairs in Magic: white-blue, white-black, blue-black, blue-red, black-red, black-green, red-green, red-white, green-white, and green-blue."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If the top ten cards of your library don't contain all ten color pairs, you choose as many cards as you can and put those cards into your hand."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK",
+        "RED",
         "GREEN"
     ]
 }
@@ -12814,6 +13801,81 @@
     ]
 }
 
+// Roalesk, Apex Hybrid
+{
+    "name": "Roalesk, Apex Hybrid",
+    "manaCost": "{2}{G}{G}{U}",
+    "typeLine": "Legendary Creature — Human Mutant",
+    "oracleText": "Flying, trample\nWhen Roalesk enters, put two +1/+1 counters on another target creature you control.\nWhen Roalesk dies, proliferate, then proliferate again. (Choose any number of permanents and/or players, then give each another counter of each kind already there. Then do it again.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING",
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Roalesk, Apex Hybrid:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 2,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Roalesk, Apex Hybrid:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        "Proliferate",
+                        "Proliferate"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "213",
+        "rarity": "MYTHIC",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/de14b4fd-fb4e-4986-9123-69ae68b5050a.jpg?1783933389",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "You proliferate twice all while Roalesk's last ability is resolving. Nothing can happen between the two proliferations, and no player may choose to take actions."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "GREEN"
+    ]
+}
+
 // Role Reversal
 {
     "name": "Role Reversal",
@@ -13009,6 +14071,133 @@
         "flavorText": "\"Track the source of those thopters,\" Saheeli told her creation. \"And feel free to snack on as many as you want.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/d/b/dba77c07-5d23-4a1a-90a0-b8293848d637.jpg?1783933370"
     }
+}
+
+// Saheeli, Sublime Artificer
+{
+    "name": "Saheeli, Sublime Artificer",
+    "manaCost": "{1}{U/R}{U/R}",
+    "typeLine": "Legendary Planeswalker — Saheeli",
+    "oracleText": "Whenever you cast a noncreature spell, create a 1/1 colorless Servo artifact creature token.\n−2: Target artifact you control becomes a copy of another target artifact or creature you control until end of turn, except it's an artifact in addition to its other types.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Saheeli, Sublime Artificer:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Servo"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/7/6/761507d5-d36a-4123-a074-95d7f6ffb4c5.jpg?1783933348",
+                    "artifactToken": true
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Saheeli, Sublime Artificer:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "EachPermanentBecomesCopyOfTarget",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "duration": "EndOfTurn",
+                    "affected": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "exceptions": {
+                        "addedCardTypes": [
+                            "ARTIFACT"
+                        ]
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact ctrl:you"
+                        },
+                        "id": "t0"
+                    },
+                    {
+                        "type": "TargetOther",
+                        "baseRequirement": {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature|artifact ctrl:you"
+                            }
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "234",
+        "rarity": "UNCOMMON",
+        "artist": "Wesley Burt",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/a/5a10b543-d5d4-42a8-9ee8-dada59a2ad7e.jpg?1783933375",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "Saheeli's first ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Saheeli's loyalty ability causes the target artifact to copy the printed values of the target permanent, plus any copy effects that have been applied to it. It won't copy counters on that permanent or effects that have changed its power, toughness, types, color, or so on. Notably, it won't copy effects that made the target permanent become a creature."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "The target artifact is an artifact in addition to whatever types the second target has, and this exception is copiable. If something else copies the artifact later in the turn, that copy also will be an artifact."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If the target artifact copies a permanent that's copying something else, it will become whatever the target is copying."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If an effect begins to apply to the target artifact before it becomes a copy of another permanent, that effect will continue to apply."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If the target artifact becomes a creature the same turn it enters the battlefield, you can't attack with it or use any of its {T} abilities unless it has haste."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If the target artifact isn't an Equipment and becomes a copy of an Equipment, it'll become unattached when it becomes a non-Equipment artifact again."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If the target artifact is an Equipment attached to a creature and it becomes a copy of a non-Equipment permanent, it becomes unattached. If it becomes a copy of an Equipment, it remains attached."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
 }
 
 // Samut's Sprint
@@ -13665,6 +14854,128 @@
     "colorIdentityOverride": [
         "RED",
         "WHITE"
+    ]
+}
+
+// Sorin, Vengeful Bloodlord
+{
+    "name": "Sorin, Vengeful Bloodlord",
+    "manaCost": "{2}{W}{B}",
+    "typeLine": "Legendary Planeswalker — Sorin",
+    "oracleText": "During your turn, creatures and planeswalkers you control have lifelink.\n+2: Sorin deals 1 damage to target player or planeswalker.\n−X: Return target creature card with mana value X from your graveyard to the battlefield. That creature is a Vampire in addition to its other types.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Sorin, Vengeful Bloodlord:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayerOrPlaneswalker",
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Sorin deals 1 damage to target player or planeswalker."
+            },
+            {
+                "id": "Sorin, Vengeful Bloodlord:2",
+                "cost": "CostLoyaltyX",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "destination": "Battlefield"
+                        },
+                        {
+                            "type": "AddCreatureType",
+                            "subtype": "Vampire",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "CompareNumericProperty",
+                                        "property": "MANA_VALUE",
+                                        "operator": "EQ",
+                                        "amount": "XValue"
+                                    }
+                                ],
+                                "controllerPredicate": "OwnedByYou"
+                            },
+                            "zone": "Graveyard"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Return target creature card with mana value X from your graveyard to the battlefield. That creature is a Vampire in addition to its other types."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "LIFELINK",
+                    "filter": {
+                        "baseFilter": "creature|planeswalker ctrl:you"
+                    }
+                },
+                "condition": "IsYourTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "217",
+        "rarity": "RARE",
+        "artist": "Tommy Arnold",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/354fe9bd-4ec8-409c-8ce5-b29393f3d169.jpg?1783933388",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "If Sorin leaves the battlefield after you've activated his first loyalty ability during your turn but before it resolves, you'll still gain 1 life as that ability deals damage."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If a card in a graveyard has {X} in its mana cost, X is considered to be 0."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
     ]
 }
 
@@ -16940,6 +18251,102 @@
     ]
 }
 
+// Vraska, Swarm's Eminence
+{
+    "name": "Vraska, Swarm's Eminence",
+    "manaCost": "{2}{B/G}{B/G}",
+    "typeLine": "Legendary Planeswalker — Vraska",
+    "oracleText": "Whenever a creature you control with deathtouch deals damage to a player or planeswalker, put a +1/+1 counter on that creature.\n−2: Create a 1/1 black Assassin creature token with deathtouch and \"Whenever this token deals damage to a planeswalker, destroy that planeswalker.\"",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vraska, Swarm's Eminence:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientAnyOf",
+                        "options": [
+                            {
+                                "type": "RecipientPlayer",
+                                "player": "Any"
+                            },
+                            {
+                                "type": "RecipientObject",
+                                "filter": "planeswalker"
+                            }
+                        ]
+                    },
+                    "sourceFilter": "creature kw:deathtouch ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "DamageSource"
+                },
+                "descriptionOverride": "Whenever a creature you control with deathtouch deals damage to a player or planeswalker, put a +1/+1 counter on that creature."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Vraska, Swarm's Eminence:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Assassin"
+                    ],
+                    "keywords": [
+                        "DEATHTOUCH"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/b/7/b7e997ac-5a4a-4555-9b37-06c25a5db356.jpg?1783933353",
+                    "triggeredAbilities": [
+                        {
+                            "id": "Vraska, Swarm's Eminence:2",
+                            "trigger": {
+                                "type": "DealsDamageEvent",
+                                "recipient": {
+                                    "type": "RecipientObject",
+                                    "filter": "planeswalker"
+                                }
+                            },
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": "DamageRecipient",
+                                "destination": "Graveyard",
+                                "byDestruction": true
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Create a 1/1 black Assassin creature token with deathtouch and \"Whenever this token deals damage to a planeswalker, destroy that planeswalker.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "236",
+        "rarity": "UNCOMMON",
+        "artist": "Anna Steinbauer",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/59ee2974-07e9-4506-903c-457cb7327dd8.jpg?1783933375"
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Wall of Runes
 {
     "name": "Wall of Runes",
@@ -17108,5 +18515,75 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Widespread Brutality
+{
+    "name": "Widespread Brutality",
+    "manaCost": "{1}{B}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Amass Zombies 2, then the Army you amassed deals damage equal to its power to each non-Army creature. (To amass Zombies 2, put two +1/+1 counters on an Army you control. It's also a Zombie. If you don't control an Army, create a 0/0 black Zombie Army creature token first.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Amass",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "subtype": "Zombie"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "NotSubtype",
+                                        "subtype": "Army"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": "AmassedArmy",
+                            "numericProperty": "Power"
+                        },
+                        "target": "IterationEntity",
+                        "damageSource": "AmassedArmy"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "226",
+        "rarity": "RARE",
+        "artist": "Victor Adame Minguez",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/97715d22-f432-4f67-b4ea-47b8fe6edca5.jpg?1783933385",
+        "rulings": [
+            {
+                "date": "2023-06-16",
+                "text": "In the rare case that you control multiple Army creatures (perhaps because you played a creature with changeling) while you amass Zombies, you choose which of your Army creatures to put the +1/+1 counters on. If that creature isn't a Zombie, it becomes a Zombie in addition to its other types."
+            },
+            {
+                "date": "2023-06-16",
+                "text": "Some cards refer to the \"amassed Army.\" That means the Army creature you chose to receive counters, even if no counters were placed on it for some reason."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
     ]
 }
