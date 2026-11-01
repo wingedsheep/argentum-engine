@@ -1,5 +1,6 @@
 package com.wingedsheep.ai.audit
 
+import com.wingedsheep.ai.engine.knowledge.AmountSign
 import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
 import com.wingedsheep.ai.engine.knowledge.CardLookup
 import com.wingedsheep.ai.engine.knowledge.CombatReach
@@ -75,8 +76,9 @@ import java.util.Locale
  *    each non-mana ability): a slot that earns no [IntentTag] at all is invisible to every intent
  *    consumer, and is attributed to each of its leaves — except the leaves that need no tag
  *    ([needsNoIntent]: a non-keyword counter on the source itself, any counter on a player, damage to a
- *    player, life loss, a permanent untapping, moving, transforming or animating itself, an upkeep
- *    cost its controller pays or suffers on its own source, an "unless" whose suffer is life loss).
+ *    player, life loss, a permanent untapping, moving, transforming or animating itself, a creature
+ *    shifting its own P/T with a loss on either side, an upkeep cost its controller pays or suffers
+ *    on its own source, an "unless" whose suffer is life loss).
  *  - [Check.COMBAT] — [CombatReach] over each leaf of a non-mana activated ability that changes
  *    power/toughness, keywords, P/T counters or blocking, and that combat simulation cannot see.
  *  - [Check.TIMING] — an until-end-of-turn leaf on an instant-speed activation or an instant-speed
@@ -456,7 +458,7 @@ object AiReadingAudit {
         if (sink.findings.size == before && tags.isNotEmpty()) {
             sink += Finding(Check.INTENT, read = true, reason = "knows what it's for: ${tags.sorted().joinToString(", ", transform = ::tagPhrase)}")
         } else if (sink.findings.size == before) {
-            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, untaps, attaches, moves, transforms or animates its own source, adds counters for its controller, damages a player, makes one lose life, mills one, or is an unless-clause its payer suffers as an upkeep cost or life loss")
+            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, shifts the P/T of, untaps, attaches, moves, transforms or animates its own source, adds counters for its controller, damages a player, makes one lose life, mills one, or is an unless-clause its payer suffers as an upkeep cost or life loss")
         }
     }
 
@@ -616,6 +618,13 @@ object AiReadingAudit {
         // that it can block is CombatReach's; what it is worth is the creature the simulation then sees.
         // Animating another permanent stays flagged.
         if (leaf is BecomeCreatureEffect && leaf.target == EffectTarget.Self) return true
+        // A creature shifting its own P/T with a loss on either side — Flowstone's "+1/-1", Morphling's
+        // "+1/-1", Blind Creeper's "-1/-1" drawback — has no target and is no trick to hold: it is a
+        // trade on its own body the simulation prices on the board. A pure self pump already reads
+        // PUMP; a target's shift, and a self shift with no side known to be a loss, stay flagged.
+        if (leaf is ModifyStatsEffect && leaf.target == EffectTarget.Self &&
+            (AmountSign.of(leaf.powerModifier) == AmountSign.LOSS || AmountSign.of(leaf.toughnessModifier) == AmountSign.LOSS)
+        ) return true
         // Damage to a player is a clock: the evaluator prices the life it takes on resolution, it
         // answers nothing on the board, and life lost now or one window later is the same life.
         // Which player a targeted one aims at is the polarity check's question, not intent's.
