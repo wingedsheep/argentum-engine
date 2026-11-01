@@ -75,7 +75,8 @@ import com.wingedsheep.sdk.scripting.TapReason
  * never tell them apart. It defaults to [TapReason.UNSPECIFIED] and stays there for every tap site
  * the engine has not been taught to name: an unclassified cause must never masquerade as a
  * classified one, because a card reading that cause would then fire wrongly. Only the teamwork
- * additional-cost payment classifies itself today; see [TapReason] for how to add the next cause.
+ * additional-cost payment and the declare-attackers tap classify themselves today; see [TapReason]
+ * for how to add the next cause.
  *
  * **First time each turn.** Every tap through this atom increments the permanent's
  * [HasBecomeTappedComponent] count for the current turn, and [TappedEvent.firstThisTurn] records

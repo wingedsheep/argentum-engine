@@ -1,6 +1,5 @@
 package com.wingedsheep.engine.mechanics.combat
 
-import com.wingedsheep.sdk.scripting.TapReason
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.mana.ManaPool
@@ -43,6 +42,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.engine.mechanics.battle.Battles
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.sdk.scripting.TapReason
 
 /**
  * Handles the declare attackers step of combat.
