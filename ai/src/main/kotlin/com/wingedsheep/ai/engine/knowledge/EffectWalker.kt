@@ -3,6 +3,8 @@ package com.wingedsheep.ai.engine.knowledge
 import com.wingedsheep.engine.handlers.effects.composite.asConditional
 import com.wingedsheep.engine.handlers.effects.composite.asMayDecide
 import com.wingedsheep.sdk.model.CardScript
+import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenBatchEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalOnCollectionEffect
@@ -10,6 +12,9 @@ import com.wingedsheep.sdk.scripting.effects.ConniveEffect
 import com.wingedsheep.sdk.scripting.effects.LearnEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.GatedEffect
+import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
+import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 
 /**
@@ -155,6 +160,32 @@ object EffectWalker {
             else -> listOfNotNull(leaf.then, leaf.otherwise).flatMap { payoffLeaves(it) }
         }
     }
+
+    /**
+     * What a delayed trigger does when it fires, as the payoff walk reads it: [payoffLeaves] of its
+     * effect, minus the steps that only take back what the scheduling ability itself handled.
+     *
+     * "Put a creature card from your hand onto the battlefield; sacrifice it at the beginning of the
+     * next end step" (Through the Breach), "return it to its owner's hand at end of turn" (Ilharg),
+     * "when this leaves, its controller sacrifices the reanimated creature" (Animate Dead): the
+     * delayed step aims at "it" — a creature a pipeline of the ability moved, the entity a `ForEach`
+     * around it is iterating, a permanent tapped to pay its cost — and is the price of the ability,
+     * not an answer. A "you sacrifice it" can only ever take our own permanent. What remains is the
+     * delayed payoff: the draw at the next upkeep, the blocker destroyed at end of combat.
+     */
+    fun firedLeaves(delayed: CreateDelayedTriggerEffect): List<Effect> =
+        payoffLeaves(delayed.effect).filterNot(::takesBackItsOwn)
+
+    private fun takesBackItsOwn(leaf: Effect): Boolean = when (leaf) {
+        is SacrificeTargetEffect -> !leaf.sacrificedByItsController || isIt(leaf.target)
+        is MoveToZoneEffect -> leaf.destination != Zone.BATTLEFIELD && isIt(leaf.target)
+        else -> false
+    }
+
+    /** "It": an object the scheduling ability already handled, bound before the delayed trigger fires. */
+    private fun isIt(target: EffectTarget): Boolean =
+        target is EffectTarget.PipelineTarget || target is EffectTarget.TappedAsCost ||
+            target == EffectTarget.IterationEntity
 
     private object LeafCollector : Fold<List<Effect>> {
         override fun leaf(effect: Effect): List<Effect> = listOf(effect)
