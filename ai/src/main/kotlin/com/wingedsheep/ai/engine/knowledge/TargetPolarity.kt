@@ -584,7 +584,7 @@ object TargetPolarityAnalyzer {
      * other kind — charge, time, loyalty, the bespoke ones — means whatever its card makes of it,
      * and stays unread.
      */
-    private fun counterPolarity(type: CounterType): TargetPolarity? {
+    fun counterPolarity(type: CounterType): TargetPolarity? {
         type.ptDelta?.let { (power, toughness) ->
             return when {
                 power >= 0 && toughness >= 0 -> TargetPolarity.BENEFICIAL
