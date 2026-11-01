@@ -1312,8 +1312,12 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
     /** "proliferates" (CR 701.34) — fires even when nothing was chosen. */
     fun proliferates(): TriggerSpec = spec(ProliferatedEvent(player))
 
-    /** "surveils" (CR 701.25). */
-    fun surveils(): TriggerSpec = spec(SurveiledEvent(player))
+    /**
+     * "surveils" (CR 701.25); [firstTimeEachTurn] is "surveils for the first time each turn"
+     * (Whispering Snitch).
+     */
+    fun surveils(firstTimeEachTurn: Boolean = false): TriggerSpec =
+        spec(SurveiledEvent(player, firstTimeEachTurn = firstTimeEachTurn))
 
     /** "scries or surveils" (Matoya, Archon Elder). */
     fun scriesOrSurveils(): TriggerSpec = spec(ScriedOrSurveiledEvent(player))

@@ -1281,7 +1281,7 @@ Families:
 - `EventPattern.StateConditionMetEvent` — Synthetic "trigger" event used to wrap a StateTriggeredAbility's effect into a TriggeredAbility when the engine enqueues a state trigger onto the stack (CR 603.8).
 - `EventPattern.StepEvent(step: Step, player: Player)` — At the beginning of a step.
 - `EventPattern.SurveilEvent(player: Player)` — When a player would surveil a number of cards (CR 701.25).
-- `EventPattern.SurveiledEvent(player: Player)` — Whenever a player surveils (CR 701.25).
+- `EventPattern.SurveiledEvent(player: Player, firstTimeEachTurn: Boolean)` — Whenever a player surveils (CR 701.25).
 - `EventPattern.TapEvent(filter: GameObjectFilter?, batch: Boolean, tapper: Player?, reason: TapReason?, exceptReason: TapReason?, firstTimeEachTurn: Boolean)` — When a permanent becomes tapped.
 - `EventPattern.TargetsChosenEvent(player: Player)` — When a player chooses one or more targets.
 - `EventPattern.TokenCreationEvent(controller: Player, tokenFilter: GameObjectFilter?)` — When tokens would be created.

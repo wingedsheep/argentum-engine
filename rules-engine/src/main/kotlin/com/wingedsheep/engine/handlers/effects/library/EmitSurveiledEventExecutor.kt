@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.ScriedOrSurveiledThisTurnComponent
+import com.wingedsheep.engine.state.components.player.SurveiledThisTurnComponent
 import com.wingedsheep.sdk.scripting.effects.EmitSurveiledEventEffect
 import kotlin.reflect.KClass
 
@@ -41,12 +42,23 @@ class EmitSurveiledEventExecutor : EffectExecutor<EmitSurveiledEventEffect> {
             ?.let { state.getEntity(it)?.get<CardComponent>()?.name }
             ?: "Surveil"
 
-        // Turn history for "if you've scried or surveilled this turn" — recorded here, where the
-        // event is, so the condition and the trigger can never disagree.
-        val marked = state.updateEntity(playerId) { it.with(ScriedOrSurveiledThisTurnComponent) }
+        // Turn history for "if you've (scried or) surveilled this turn" — recorded here, where the
+        // event is, so the conditions and the triggers can never disagree. "First time each turn"
+        // is read before this surveil marks the player.
+        val firstThisTurn = state.getEntity(playerId)?.has<SurveiledThisTurnComponent>() != true
+        val marked = state.updateEntity(playerId) {
+            it.with(ScriedOrSurveiledThisTurnComponent).with(SurveiledThisTurnComponent)
+        }
         return EffectResult.success(
             marked,
-            listOf(SurveiledEvent(playerId = playerId, count = count, sourceName = sourceName))
+            listOf(
+                SurveiledEvent(
+                    playerId = playerId,
+                    count = count,
+                    sourceName = sourceName,
+                    firstThisTurn = firstThisTurn
+                )
+            )
         )
     }
 }
