@@ -22,6 +22,7 @@ import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
@@ -57,7 +58,8 @@ import java.util.Locale
  *  - [Check.INTENT] — [CardIntentAnalyzer.analyzeEffect] per effect slot (the spell, each trigger,
  *    each non-mana ability): a slot that earns no [IntentTag] at all is invisible to every intent
  *    consumer, and is attributed to each of its leaves — except the leaves that need no tag
- *    ([needsNoIntent]: a non-keyword counter on the source itself or on its controller).
+ *    ([needsNoIntent]: a non-keyword counter on the source itself or on its controller, damage to a
+ *    player).
  *  - [Check.COMBAT] — [CombatReach] over each leaf of a non-mana activated ability that changes
  *    power/toughness, keywords, P/T counters or blocking, and that combat simulation cannot see.
  *  - [Check.TIMING] — an until-end-of-turn leaf on an instant-speed activation or an instant-speed
@@ -413,7 +415,7 @@ object AiReadingAudit {
         // Every untagged step needed no tag: say so, so the ability reads as understood rather
         // than as one nobody asked about.
         if (sink.findings.size == before) {
-            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, attaches or moves its own source, or adds counters for its controller")
+            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, attaches or moves its own source, adds counters for its controller, or damages a player")
         }
     }
 
@@ -536,7 +538,7 @@ object AiReadingAudit {
     }
 
     /**
-     * The leaves that need no intent tag: equip / attach and a card moving itself (commented
+     * The leaves that need no intent tag: equip / attach, a card moving itself and damage to a player (commented
      * inline below), and a counter the effect puts on its own source or its own controller — a creature growing itself,
      * a charge, oil, quest or loyalty counter, `{E}` for you. There is no target to choose and nothing
      * to hold it for, and its payoff is already on the board (the evaluator reads a grown creature's
@@ -555,6 +557,10 @@ object AiReadingAudit {
         // "shuffle it into its owner's library" — has no target to aim and is no spell to time:
         // whether it is worth doing is the simulation's call on the activation or trigger.
         if (leaf is MoveToZoneEffect && leaf.target == EffectTarget.Self) return true
+        // Damage to a player is a clock: the evaluator prices the life it takes on resolution, it
+        // answers nothing on the board, and life lost now or one window later is the same life.
+        // Which player a targeted one aims at is the polarity check's question, not intent's.
+        if (leaf is DealDamageEffect && isPlayerTarget(leaf.target)) return true
         val (counter, target) = when (leaf) {
             is AddCountersEffect -> leaf.counterType to leaf.target
             is AddDynamicCountersEffect -> leaf.counterType to leaf.target
@@ -562,6 +568,13 @@ object AiReadingAudit {
         }
         if (target != EffectTarget.Self && target != EffectTarget.Controller) return false
         return Keyword.entries.none { it.name == counter.name }
+    }
+
+    /** The targets [CardIntentAnalyzer] reads as a player rather than a permanent (its `hitsAnotherPermanent`). */
+    private fun isPlayerTarget(target: EffectTarget): Boolean = when (target) {
+        is EffectTarget.PlayerRef, EffectTarget.Controller, EffectTarget.TargetController,
+        EffectTarget.ControllerOfTriggeringEntity, EffectTarget.ControllerOfDamageSource -> true
+        else -> false
     }
 
     /** Whether [effect] carries a `duration` of [Duration.EndOfTurn]. Effects share no interface for it. */
