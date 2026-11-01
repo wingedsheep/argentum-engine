@@ -771,7 +771,7 @@ Armor Sliver
 Armor Thrull
 Armor Wars
 Armorcraft Judge
-Armored Armadillo	intent: ModifyStatsEffect
+Armored Armadillo
 Armored Cancrix
 Armored Galleon
 Armored Griffin
@@ -796,7 +796,7 @@ Arni Brokenbrow	combat: SetBaseStatsEffect; intent: SetBaseStatsEffect; timing: 
 Arni Metalbrow	intent: Pipeline(hand→battlefield)
 Arni Slays the Troll
 Arni, Humble Scribe
-Arni, Renowned Champion	intent: ModifyStatsEffect
+Arni, Renowned Champion
 Arnim Zola, Bio-Fanatic
 Arnyn, Deathbloom Botanist
 Aron, Benalia's Ruin
@@ -871,7 +871,7 @@ Ashnod's Harvester
 Ashnod's Intervention	polarity: GrantTriggeredAbilityEffect
 Ashnod's Transmogrant
 Ashnod, Flesh Mechanist
-Ashroot Animist	polarity: ModifyStatsEffect
+Ashroot Animist
 Asinine Antics	intent: ForEach>CreateAuraTokenEffect
 Asmodeus the Archfiend	intent: Pipeline(FromLinkedExile→hand)
 Aspect of Lamprey	intent: Pipeline(hand→graveyard); polarity: Pipeline(hand→graveyard)
@@ -917,7 +917,7 @@ Atlantis Attacks	polarity: CreateTokenEffect; polarity: ForEachEffect
 Atmosphere Surgeon
 Atmospheric Greenhouse
 Atog
-Atogatog	intent: ModifyStatsEffect
+Atogatog
 Atomic Microsizer	intent: GrantKeywordEffect; intent: SetBaseStatsEffect; polarity: mixed(GrantKeywordEffect+SetBaseStatsEffect)
 Atomize
 Atraxa's Fall
@@ -962,7 +962,7 @@ Aurelia's Vindicator	intent: Pipeline(ChosenTargets→exile); intent: Pipeline(F
 Aurelia, the Law Above
 Aurelia, the Warleader	intent: AddCombatPhaseEffect; intent: ForEach>TapUntapEffect
 Aurification	intent: AddCountersEffect; intent: ForEach>RemoveCountersEffect
-Auriok Bladewarden	intent: ModifyStatsEffect; polarity: ModifyStatsEffect; timing: ModifyStatsEffect
+Auriok Bladewarden
 Auriok Champion
 Auriok Edgewright
 Auriok Steelshaper
@@ -1407,7 +1407,7 @@ Beorn's Hospitality
 Beorn, Reluctant Host
 Bereaved Survivor
 Berg Strider
-Berserk	polarity: CreateDelayedTriggerEffect; polarity: ModifyStatsEffect; timing: GrantKeywordEffect; timing: ModifyStatsEffect
+Berserk
 Berserk Murlodont
 Berserkers' Onslaught
 Berta, Wise Extrapolator
@@ -1968,7 +1968,7 @@ Bramble Wurm
 Brambleback Brute	combat: CantBlockEffect; intent: CantBlockEffect
 Bramblecrush
 Bramblefort Fink	combat: SetBaseStatsEffect; intent: SetBaseStatsEffect; timing: SetBaseStatsEffect
-Brambleguard Captain	intent: ModifyStatsEffect; polarity: ModifyStatsEffect
+Brambleguard Captain
 Brambleguard Veteran
 Bramblesnap
 Bramblewood Paragon
@@ -2153,7 +2153,7 @@ Builder's Blessing
 Builder's Talent
 Built to Last
 Bulette
-Bulk Up	intent: ModifyStatsEffect; polarity: ModifyStatsEffect; timing: ModifyStatsEffect
+Bulk Up
 Bull Cerodon
 Bull Hippo
 Bull's Strength
@@ -2362,7 +2362,7 @@ Capricious Sorcerer
 Captain America's Shield
 Captain America, Living Legend	intent: TapUntapEffect
 Captain America, Super-Soldier
-Captain America, Wings of Freedom	intent: ForEach>ModifyStatsEffect
+Captain America, Wings of Freedom
 Captain Howler, Sea Scourge	polarity: CreateDelayedTriggerEffect; polarity: ModifyStatsEffect
 Captain Lannery Storm
 Captain Mar-Vell, Space-Born
@@ -2748,7 +2748,7 @@ Choking Sands
 Choking Tethers
 Chomping Changeling
 Chomping Kavu
-Choose Your Weapon	polarity: ModifyStatsEffect
+Choose Your Weapon
 Chorale of the Void	intent: MoveToZoneEffect; intent: SacrificeSelfEffect; polarity: Aura>MoveToZoneEffect; polarity: Aura>SacrificeSelfEffect
 Chord of Calling
 Choreographed Sparks	intent: ModalEffect; polarity: CopyTargetSpellEffect
@@ -4010,7 +4010,7 @@ Devastating Mastery
 Devastating Onslaught
 Devastation
 Deviant Glee
-Devilish Valet	intent: ModifyStatsEffect
+Devilish Valet
 Devilthorn Fox
 Devious Cover-Up	polarity: CounterEffect; polarity: MoveToZoneEffect; polarity: Pipeline(?→?)
 Devkarin Dissident
@@ -4081,7 +4081,7 @@ Dimir Locket
 Dimir Machinations	intent: Pipeline(TopOfLibrary→exile|library); polarity: Pipeline(TopOfLibrary→exile|library)
 Dimir Signet
 Dina's Guidance
-Dina, Soul Steeper	intent: ModifyStatsEffect
+Dina, Soul Steeper
 Dingus Egg
 Dinosaur Hunter
 Dinosaur Stampede
@@ -4343,7 +4343,7 @@ Dragonback Lancer
 Dragonborn Champion
 Dragonborn Looter
 Dragonbroods' Relic
-Dragonclaw Strike	polarity: FightEffect; polarity: ModifyStatsEffect
+Dragonclaw Strike
 Dragonfire Blade
 Dragonfly Suit
 Dragonfly Swarm
@@ -5054,7 +5054,7 @@ Ephara's Warden
 Ephemeral Shields	timing: GrantKeywordEffect
 Epic Confrontation
 Epic Downfall
-Epic Fight	polarity: FightEffect; polarity: ModifyStatsEffect
+Epic Fight	polarity: FightEffect
 Epic Proportions
 Epicure of Blood
 Epitaph Golem	polarity: MoveToZoneEffect
@@ -6057,7 +6057,7 @@ Frazzle
 Free Borg Revolutionaries
 Free from Flesh	polarity: AddCountersEffect
 Freed from the Real	intent: TapUntapEffect; polarity: Aura>TapUntapEffect
-Freelance Muscle	intent: ModifyStatsEffect
+Freelance Muscle
 Freestrider Commando
 Freestrider Lookout	intent: Pipeline(TopOfLibrary→battlefield|library)
 Freeze in Place
@@ -6816,7 +6816,7 @@ Goblinslide
 God-Eternal Bontu
 God-Eternal Kefnet
 God-Eternal Oketra
-God-Eternal Rhonas	intent: ForEach>GrantKeywordEffect; intent: ForEach>ModifyStatsEffect
+God-Eternal Rhonas
 God-Pharaoh's Statue
 Goddric, Cloaked Reveler
 Godless Shrine
@@ -6840,7 +6840,7 @@ Golden Egg
 Golden Ratio
 Golden-Scale Aeronaut
 Golden-Tail Disciple
-Golden-Tail Trainer	intent: ForEach>ModifyStatsEffect
+Golden-Tail Trainer
 Goldenglow Moth
 Goldfury Strider
 Goldhound
@@ -7122,7 +7122,7 @@ Gruesome Realization
 Gruesome Scourger
 Gruff Triplets
 Grumgully, the Generous
-Grunn, the Lonely King	intent: ModifyStatsEffect
+Grunn, the Lonely King
 Gruul Guildgate
 Gruul Locket
 Gruul Signet
@@ -7493,7 +7493,7 @@ Helping Hand	intent: MoveToZoneEffect
 Helvault
 Hematite Golem
 Hematite Talisman	intent: TapUntapEffect
-Hemosymbic Mite	intent: ModifyStatsEffect; polarity: ModifyStatsEffect
+Hemosymbic Mite
 Henchbots
 Henge Guardian
 Henge Walker
@@ -7513,7 +7513,7 @@ Herald of the Sun
 Herald's Horn
 Heraldic Banner
 Herbal Poultice
-Herbology Instructor	intent: ModifyStatsEffect; polarity: ModifyStatsEffect
+Herbology Instructor
 Hercules, Prince of Power
 Herd Baloth
 Herd Gnarr
@@ -8337,7 +8337,7 @@ Iron Tusk Elephant
 Iron Verdict
 Iron Will
 Iron-Barb Hellion
-Iron-Craw Crusher	intent: ModifyStatsEffect; polarity: ModifyStatsEffect
+Iron-Craw Crusher
 Iron-Fist Pulverizer
 Iron-Shield Elf
 Ironclad Krovod
@@ -8603,7 +8603,7 @@ Juniper Order Druid	intent: TapUntapEffect
 Juniper Order Rootweaver
 Junji, the Midnight Sky
 Junk Diver
-Junk Jet	intent: ModifyStatsEffect; polarity: AttachEquipmentEffect; timing: ModifyStatsEffect
+Junk Jet
 Junk Winder
 Junkblade Bruiser
 Junktown
@@ -9283,7 +9283,7 @@ Leery Fogbeast
 Legate Lanius, Caesar's Ace
 Legion Angel	intent: Pipeline(sideboard→hand)
 Legion Extruder
-Legion Leadership	intent: GrantKeywordEffect; intent: ModifyStatsEffect; polarity: ModifyStatsEffect; timing: GrantKeywordEffect; timing: ModifyStatsEffect
+Legion Leadership
 Legion Lieutenant
 Legion Warboss
 Legion's End	intent: Pipeline(ChosenTargets|ControlledPermanents|graveyard|hand→exile); intent: StoreCardNameEffect; polarity: Pipeline(ChosenTargets|ControlledPermanents|graveyard|hand→exile); polarity: StoreCardNameEffect
@@ -10271,7 +10271,7 @@ Might of the Ancestors
 Might of the Masses
 Might of the Meek
 Might of the Old Ways
-Mightform Harmonizer	intent: ModifyStatsEffect; polarity: ModifyStatsEffect
+Mightform Harmonizer
 Mightstone
 Mightstone's Animation	polarity: Aura>DrawCardsEffect; polarity: Aura>GrantCardType; polarity: Aura>SetBasePowerToughnessStatic
 Mighty Emergence
@@ -10708,7 +10708,7 @@ Mox Sapphire
 Mox Tantalite
 Mr. Foxglove
 Mr. House, President and CEO	intent: RollDiceEffect
-Mr. Orfeo, the Boulder	intent: ModifyStatsEffect; polarity: ModifyStatsEffect
+Mr. Orfeo, the Boulder
 Ms. Bumbleflower
 Ms. Marvel, Kamala Khan
 Mtenda Herder
@@ -11457,7 +11457,7 @@ Orcish Lumberjack
 Orcish Mechanics
 Orcish Medicine
 Orcish Oriflamme
-Orcish Siegemaster	intent: ModifyStatsEffect
+Orcish Siegemaster
 Orcish Spy	intent: Pipeline(TopOfLibrary→?); polarity: Pipeline(TopOfLibrary→?)
 Orcish Vandal
 Orcish Veteran	intent: GrantKeywordEffect
@@ -11918,7 +11918,7 @@ Pia Nalaar, Consul of Revival
 Pia, Aether Ascetic
 Pia, Determined Rebuilder
 Pianna, Nomad Captain
-Picard, Leading by Example	intent: ModifyStatsEffect; polarity: ModifyStatsEffect
+Picard, Leading by Example
 Pick Your Poison
 Picklock Prankster
 Picnic Ruiner	intent: DistributeCountersAmongTargetsEffect; intent: GrantKeywordEffect; polarity: DistributeCountersAmongTargetsEffect
@@ -12551,7 +12551,7 @@ Raff Capashen, Ship's Mage
 Raff, Weatherlight Stalwart
 Raffine's Guidance
 Raffine's Informant
-Raffine's Silencer	intent: ModifyStatsEffect; polarity: ModifyStatsEffect
+Raffine's Silencer
 Raffine's Tower
 Raffine, Scheming Seer
 Raft Security Officer
@@ -12834,7 +12834,7 @@ Rebuke
 Recall	intent: Pipeline(graveyard|hand→graveyard|hand)
 Reciprocate
 Reckless Air Strike
-Reckless Amplimancer	intent: ModifyStatsEffect
+Reckless Amplimancer
 Reckless Assault
 Reckless Barbarian
 Reckless Charge
@@ -13489,7 +13489,7 @@ Rubblebelt Boar
 Rubblebelt Braggart	intent: SuspectEffect
 Rubblebelt Maverick
 Rubblebelt Recluse
-Rubblebelt Rioters	intent: ModifyStatsEffect
+Rubblebelt Rioters
 Rubinia Soulsinger
 Ruby Leech
 Ruby Medallion
@@ -15433,7 +15433,7 @@ Staggering Insight
 Staggering Size
 Staggershock
 Stalactite Dagger
-Stalactite Stalker	intent: ModifyStatsEffect; polarity: ModifyStatsEffect; timing: ModifyStatsEffect
+Stalactite Stalker	timing: ModifyStatsEffect
 Stalked Researcher	intent: CanAttackDespiteDefenderThisTurnEffect
 Stalking Assassin
 Stalking Bloodsucker
@@ -16236,7 +16236,7 @@ Tapping at the Window
 Tar Pitcher
 Taranika, Akroan Veteran
 Tarfire
-Targ Nar, Demon-Fang Gnoll	intent: ModifyStatsEffect
+Targ Nar, Demon-Fang Gnoll
 Tarkir Duneshaper
 Tarmogoyf
 Tarnation Vista
@@ -16678,7 +16678,7 @@ The Serpent Society
 The Shattered States Era
 The Shire
 The Sibsig Ceremony
-The Skullspore Nexus	intent: ModifyStatsEffect; polarity: ModifyStatsEffect; timing: ModifyStatsEffect
+The Skullspore Nexus
 The Soul Stone	intent: MoveToZoneEffect
 The Speed Demon
 The Spirit Oasis
@@ -16837,7 +16837,7 @@ Thraben Purebloods
 Thraben Valiant
 Thraben Watcher
 Thragtusk
-Thrakkus the Butcher	intent: ForEach>ModifyStatsEffect
+Thrakkus the Butcher
 Thran Dynamo
 Thran Portal
 Thran Power Suit
@@ -16969,8 +16969,8 @@ Tidings
 Tidings of War
 Tidus, Blitzball Star
 Tidy Conclusion
-Tifa Lockhart	intent: ModifyStatsEffect
-Tifa's Limit Break	polarity: ModifyStatsEffect
+Tifa Lockhart
+Tifa's Limit Break
 Tiger Claws
 Tiger-Dillo
 Tiger-Seal
@@ -17639,7 +17639,7 @@ Universal Automaton
 Universal Solvent
 University Campus
 Unknown Shores
-Unleash Fury	intent: ModifyStatsEffect; polarity: ModifyStatsEffect; timing: ModifyStatsEffect
+Unleash Fury
 Unleash Shell
 Unleash the Inferno
 Unlicensed Hearse
@@ -17649,7 +17649,7 @@ Unlucky Cabbage Merchant
 Unlucky Drop	intent: PutOnLibraryPositionOfChoiceEffect; polarity: PutOnLibraryPositionOfChoiceEffect
 Unlucky Witness	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Unnatural Aggression	polarity: FightEffect; timing: MarkExileOnDeathEffect
-Unnatural Growth	intent: ForEach>ModifyStatsEffect
+Unnatural Growth
 Unnatural Moonrise
 Unnatural Restoration
 Unnatural Speed	intent: GrantKeywordEffect; timing: GrantKeywordEffect
@@ -18377,7 +18377,7 @@ War Elemental
 War Elephant
 War Historian
 War Horn
-War Machine, Legacy of Iron	intent: ModifyStatsEffect; polarity: ModifyStatsEffect
+War Machine, Legacy of Iron
 War Mammoth
 War Oracle
 War Priest of Thune
@@ -18388,7 +18388,7 @@ War Squeak	intent: CantBlockEffect
 War of the Last Alliance
 War-Name Aspirant
 War-Torch Goblin
-War-Trained Slasher	intent: ModifyStatsEffect
+War-Trained Slasher
 Warbeast of Gorgoroth
 Warbreak Trumpeter
 Warbriar Blessing
@@ -18717,7 +18717,7 @@ Wildsize
 Wildslayer Elves
 Wildvine Pummeler
 Wildwood Escort
-Wildwood Mentor	intent: ModifyStatsEffect; polarity: ModifyStatsEffect
+Wildwood Mentor
 Wildwood Patrol
 Wildwood Scourge
 Wildwood Tracker
@@ -19007,7 +19007,7 @@ Xande, Dark Mage
 Xander's Lounge
 Xantid Swarm	intent: CantCastSpellsEffect
 Xathrid Necromancer
-Xenagos, God of Revels	intent: GrantKeywordEffect; intent: ModifyStatsEffect; polarity: ModifyStatsEffect
+Xenagos, God of Revels
 Xenic Poltergeist	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
 Xenobotanist
 Xerex Strobe-Knight
@@ -19206,7 +19206,7 @@ Zombie Outlander
 Zombify
 Zoo Escapees
 Zookeeper Mechan
-Zopandrel, Hunger Dominus	intent: AddCountersEffect; intent: ForEach>ModifyStatsEffect
+Zopandrel, Hunger Dominus	intent: AddCountersEffect
 Zoraline, Cosmos Caller
 Zoyowa Lava-Tongue
 Zoyowa's Justice	polarity: ForEachEffect
