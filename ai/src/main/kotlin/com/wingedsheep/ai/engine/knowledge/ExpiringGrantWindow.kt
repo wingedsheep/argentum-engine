@@ -23,6 +23,7 @@ import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
+import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.CantAttackEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseOptionEffect
@@ -184,7 +185,9 @@ internal object ExpiringGrantWindow {
         val expires = if (refuseUnspendable) {
             // Only creature grants and damage shields defer. A land-type change is bought to deny
             // or fix mana, and mana is spent in the main phase this floor would defer it past.
-            expiringPayoffs(ability.effect)?.all { it.kind in DEFERRABLE } == true
+            // An animation never defers: the attack planner reads the board as it stands, so a
+            // manland still a land when attackers are chosen is never in the attack it was for.
+            expiringPayoffs(ability.effect)?.all { it.kind in DEFERRABLE && !it.animates } == true
         } else {
             everyPayoffExpiresThisTurn(ability.effect)
         }
@@ -286,14 +289,13 @@ internal object ExpiringGrantWindow {
                     // Already in force, or already on its way: a second grant of the same keyword
                     // adds nothing. Pending is read for a self-grant only, where "the same ability
                     // from the same source" can only mean the same creature.
+                    val pendingOnSelf = pendingSelfGrant && payoff.target == EffectTarget.Self
                     val fresh = affected.filterNot { id ->
-                        keyword != null && (
-                            projected.hasKeyword(id, keyword) ||
-                                (pendingSelfGrant && payoff.target == EffectTarget.Self)
-                            )
+                        val alreadyHas = keyword != null && projected.hasKeyword(id, keyword)
+                        alreadyHas || (pendingOnSelf && (keyword != null || payoff.animates))
                     }
                     fresh.any {
-                        canStillFight(state, projected, playerId, it, sourceId, sourceTaps, keyword)
+                        canStillFight(state, projected, playerId, it, sourceId, sourceTaps, keyword, payoff.animates)
                     }
                 }
                 PayoffKind.LAND -> affected.any { canStillMatter(state, projected, playerId, it) }
@@ -477,7 +479,9 @@ internal object ExpiringGrantWindow {
      * planned-attack floor ([com.wingedsheep.ai.engine.AiProfile.activatedPumpsNeedAPlannedAttack]).
      */
     fun buysOnlyExpiringCreatureGrants(ability: ActivatedAbility): Boolean =
-        !ability.isManaAbility && expiringPayoffs(ability.effect)?.all { it.kind == PayoffKind.CREATURE } == true
+        // An animation is left out: the land it animates is in no planned attack until it is a creature.
+        !ability.isManaAbility &&
+            expiringPayoffs(ability.effect)?.all { it.kind == PayoffKind.CREATURE && !it.animates } == true
 
     /**
      * Whether [effect] has an end-of-turn timing reading at all — every shape [holds] and
@@ -533,10 +537,30 @@ internal object ExpiringGrantWindow {
         sourceId: EntityId?,
         sourceTaps: Boolean,
         keyword: String? = null,
+        /**
+         * The payoff *makes* [creature] a creature ("until end of turn, this land becomes a 2/1"):
+         * it is not one yet, so it is judged as the creature it is about to be: untapped, before
+         * attackers are declared (or, on their turn, with their attack still to block). Summoning
+         * sickness is left to the leaf — the animation may grant haste (Avalanche Caller), or a lord
+         * may once it is a creature — so a fresh land counts as able to attack, the generous side.
+         */
+        animates: Boolean = false,
     ): Boolean {
-        if (!projected.isCreature(creature)) return false
         val entity = state.getEntity(creature) ?: return false
         val tapsAway = sourceTaps && creature == sourceId
+        if (animates && !projected.isCreature(creature)) {
+            if (tapsAway || entity.has<TappedComponent>()) return false
+            return if (state.isActiveTurnFor(playerId)) {
+                state.step in UNTIL_ATTACKERS_DECLARED
+            } else {
+                when (state.step) {
+                    in UNTIL_ATTACKERS_DECLARED -> true
+                    Step.DECLARE_ATTACKERS -> state.getBattlefield().any { state.getEntity(it)?.has<AttackingComponent>() == true }
+                    else -> false
+                }
+            }
+        }
+        if (!projected.isCreature(creature)) return false
         return if (state.isActiveTurnFor(playerId)) {
             val blockedOnly = keyword in MATTERS_ONLY_WHEN_BLOCKED
             when (state.step) {
@@ -791,6 +815,8 @@ internal object ExpiringGrantWindow {
         val keyword: String? = null,
         /** For a [PayoffKind.SHRINK]: the toughness it takes away. */
         val toughnessLoss: Int = 0,
+        /** For a [PayoffKind.CREATURE]: the payoff is the body itself — see [canStillFight]'s `animates`. */
+        val animates: Boolean = false,
     )
 
     /**
@@ -836,6 +862,9 @@ internal object ExpiringGrantWindow {
                 }
                 leaf is SetLandTypeEffect && leaf.duration == Duration.EndOfTurn ->
                     payoffs += Payoff(PayoffKind.LAND, leaf.target)
+                // "Until end of turn, this land becomes a 2/1": a body that fights this turn or not at all.
+                leaf is BecomeCreatureEffect && leaf.duration == Duration.EndOfTurn ->
+                    payoffs += Payoff(PayoffKind.CREATURE, leaf.target, animates = true)
                 isShield(leaf) -> payoffs += Payoff(PayoffKind.SHIELD, (leaf as PreventDamageEffect).target)
                 leaf is GrantKeywordEffect && leaf.duration == Duration.EndOfTurn ->
                     payoffs += Payoff(PayoffKind.CREATURE, leaf.target, leaf.keyword)
