@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- Reads "destroy all" and "sacrifice all" wraths (Day of Judgment, Damnation, Supreme Verdict, Pernicious Deed, Child of Alara) as sweepers: it answers an opposing one with an "until end of turn" indestructible or protection ability instead of letting it resolve, and values them as removal in drafts, deckbuilding and playouts
 - Reads surveil as card selection, like scry: it uses instant-speed surveil abilities (Surveillance Phantasm, Larder Zombie, Emergent Haunting) at the opponent's end step with mana it would otherwise waste, and holds them in its main phase while an instant wants the mana; a look at the top that costs life or a sacrifice (Doom Whisperer, Zahur) — scry or surveil — no longer gets that end-step nudge.
 - Holds "prevent the next damage this turn" abilities (Samite Healer, Abuna Acolyte, Benevolent Ancestor, Circle of Protection activations) until damage can still come — an attack, a fight its creature is in, or a spell on the stack — instead of tapping them in its own main phase for a shield nothing will hit.
 - Reads a variable "-X/-X" on another creature (Death Wind, Defile, Flunk, Bloodtithe Harvester, Olivia's Wrath) as removal: it keeps such a card over a filler creature when it must discard, holds it for a response or the opponent's end step like other instant removal, and values it as removal in drafts, deckbuilding and playouts
