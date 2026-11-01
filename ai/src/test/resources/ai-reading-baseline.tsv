@@ -5526,7 +5526,7 @@ Feedback	polarity: Aura>DealDamageEffect
 Feedback Bolt
 Feeding Frenzy	timing: ModifyStatsEffect
 Feeling of Dread
-Feign Death	intent: GrantTriggeredAbilityEffect; polarity: GrantTriggeredAbilityEffect; timing: GrantTriggeredAbilityEffect
+Feign Death	polarity: GrantTriggeredAbilityEffect; timing: GrantTriggeredAbilityEffect
 Feint	timing: ForEach>PreventDamageEffect
 Feisty Spikeling
 Feldon's Cane	intent: Pipeline(graveyard→library)
@@ -9839,7 +9839,7 @@ Malachite Talisman	intent: TapUntapEffect
 Malakir Blood-Priest
 Malakir Bloodwitch
 Malakir Familiar
-Malakir Rebirth	intent: GrantTriggeredAbilityEffect; polarity: GrantTriggeredAbilityEffect; timing: GrantTriggeredAbilityEffect
+Malakir Rebirth	polarity: GrantTriggeredAbilityEffect; timing: GrantTriggeredAbilityEffect
 Malamet Battle Glyph
 Malamet Brawler
 Malamet Scythe
@@ -11166,7 +11166,7 @@ Norwood Ranger
 Norwood Riders
 Norwood Warrior
 Nosy Goblin
-Not Dead After All	intent: GrantTriggeredAbilityEffect; polarity: GrantTriggeredAbilityEffect; timing: GrantTriggeredAbilityEffect
+Not Dead After All	polarity: GrantTriggeredAbilityEffect; timing: GrantTriggeredAbilityEffect
 Not Forgotten	polarity: MoveToZoneEffect
 Not on My Watch
 Notorious Assassin
@@ -11630,7 +11630,7 @@ Pactdoll Terror
 Padeem, Consul of Innovation
 Page, Loose Leaf	intent: GatherUntilMatchEffect; intent: Pipeline(?→hand|library)
 Pain // Suffering	intent: Pipeline(hand→graveyard); polarity: Pipeline(hand→graveyard)
-Pain 101	intent: GrantKeywordEffect; intent: GrantTriggeredAbilityEffect; polarity: GrantTriggeredAbilityEffect; timing: GrantKeywordEffect; timing: GrantTriggeredAbilityEffect
+Pain 101	polarity: GrantTriggeredAbilityEffect; timing: GrantKeywordEffect; timing: GrantTriggeredAbilityEffect
 Pain Kami
 Pain for All	polarity: Aura>DealDamageEffect
 Painful Quandary
@@ -17037,6 +17037,7 @@ Titanium Golem	intent: GrantKeywordEffect
 Titanoth Rex
 Titans' Nest
 Titans' Vanguard
+Tithe Taker
 Tithebearer Giant
 Tithing Blade	intent: ReturnSelfFromExileTransformedEffect
 Tivadar's Crusade
@@ -17601,7 +17602,7 @@ Underworld Sentinel
 Undo	polarity: ForEachEffect
 Undulating Witness	intent: ModifyStatsEffect
 Undying Beast
-Undying Malice	intent: GrantTriggeredAbilityEffect; polarity: GrantTriggeredAbilityEffect; timing: GrantTriggeredAbilityEffect
+Undying Malice	polarity: GrantTriggeredAbilityEffect; timing: GrantTriggeredAbilityEffect
 Unearth
 Unearthly Blizzard	intent: ForEach>CantBlockEffect
 Uneasy Alliance
@@ -18044,7 +18045,7 @@ Villainous Ogre
 Villainous Wealth	intent: CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→exile); polarity: CastAnyNumberFromCollectionWithoutPayingCostEffect; polarity: Pipeline(TopOfLibrary→exile)
 Villainous Wrath
 Vincent Valentine
-Vincent's Limit Break	intent: ModalEffect; polarity: GrantTriggeredAbilityEffect; polarity: SetBaseStatsEffect
+Vincent's Limit Break	polarity: GrantTriggeredAbilityEffect; polarity: SetBaseStatsEffect
 Vindicate
 Vindictive Flamestoker
 Vindictive Mob	intent: SacrificeEffect
