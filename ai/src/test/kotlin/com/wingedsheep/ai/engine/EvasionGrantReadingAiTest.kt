@@ -1,12 +1,14 @@
 package com.wingedsheep.ai.engine
 
 import com.wingedsheep.ai.engine.knowledge.ExpiringGrantWindow
+import com.wingedsheep.ai.engine.knowledge.IntentCatalog
 import com.wingedsheep.ai.puzzles.AiPuzzle
 import com.wingedsheep.ai.puzzles.PuzzleCategory
 import com.wingedsheep.ai.puzzles.PuzzleMove
 import com.wingedsheep.ai.puzzles.PuzzleResult
 import com.wingedsheep.ai.puzzles.PuzzleRunner
 import com.wingedsheep.ai.puzzles.advanceToPriority
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
@@ -54,6 +56,20 @@ class EvasionGrantReadingAiTest : ScenarioTestBase() {
                 reads("Unnatural Speed") shouldBe false
             }
             withClue("a card drawn beside the trample lasts") { reads("Charge Through") shouldBe false }
+        }
+
+        test("the floor stays off while the grant still has a fight: our precombat main") {
+            val game = board(scenario(), 1, "Jump").also { it.advanceToPriority(1, Step.PRECOMBAT_MAIN) }
+            val jump = cardRegistry.requireCard("Jump").script.spellEffect!!
+            val giant = game.findPermanent("Hill Giant")!!
+            withClue("Hill Giant can still attack, so flying until end of turn can still be spent") {
+                ExpiringGrantWindow.castBuysNothing(
+                    game.state, game.player1Id, listOf(jump),
+                    listOf(ChosenTarget.Permanent(giant)),
+                    IntentCatalog.of(cardRegistry),
+                    readKeywordGrants = true,
+                ) shouldBe false
+            }
         }
 
         for (card in listOf("Jump", "Infiltrate")) {

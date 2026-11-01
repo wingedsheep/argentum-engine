@@ -1781,7 +1781,7 @@ Body Dropper
 Body Launderer
 Body of Knowledge
 Body of Research
-Bofur, Reliable Guardian
+Bofur, Reliable Guardian	timing: GrantKeywordEffect
 Bog Badger
 Bog Elemental
 Bog Glider
@@ -4970,7 +4970,7 @@ Enchanted Carriage
 Enchanted River's Grasp
 Enchantment Alteration	intent: AttachToChosenHostEffect; polarity: AttachToChosenHostEffect
 Enchantress's Presence
-Encouraging Aviator	intent: BecomePreparedEffect
+Encouraging Aviator	intent: BecomePreparedEffect; timing: GrantKeywordEffect
 Encroaching Dragonstorm
 Encroaching Mycosynth
 Encroaching Wastes
@@ -17473,7 +17473,7 @@ Twitching Doll
 Two-Headed Cerberus
 Two-Headed Giant	intent: FlipTwoCoinsEffect
 Two-Headed Giant of Foriys
-Two-Headed Hunter	intent: GrantKeywordEffect
+Two-Headed Hunter	intent: GrantKeywordEffect; timing: GrantKeywordEffect
 Two-Headed Sliver
 Two-Headed Zombie
 Ty Lee, Artful Acrobat	intent: ReflexiveTriggerEffect
