@@ -16,4 +16,5 @@ val OrzhovGuildgateReprint = Printing(
     imageUri = "https://cards.scryfall.io/normal/front/c/b/cbadf8cf-02bf-45f6-b3c1-a684d9bc5228.jpg",
     releaseDate = "2019-05-03",
     rarity = Rarity.COMMON,
+    inBooster = false,
 )

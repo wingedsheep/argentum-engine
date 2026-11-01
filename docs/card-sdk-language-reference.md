@@ -468,6 +468,9 @@ plus the frame fields:
   (Through the Omenpaths' in-universe names for Spider-Man cards). Display and search only: the deckbuilder's name
   search matches it (as Scryfall does), a card found that way shows and pins that printing, and the printing picker
   lists it. Rules, decks and lookups keep using `name`.
+- `inBooster: Boolean` — Scryfall `booster` for this printing (default `true`). `false` keeps a reprint row out of its
+  set's booster pool even though the canonical card is a booster card elsewhere — War of the Spark's Planeswalker Deck
+  Guildgates (#269, #274).
 
 `CardDefinition.withPrinting(printing)` returns a copy presenting that printing — it overlays only presentation
 metadata (set code, collector number, art, artist, Scryfall id, and the back-face art for genuine DFCs) and leaves the
@@ -482,7 +485,7 @@ building). The strategies compose:
 **Dedicated-slot boosters** — `DedicatedSlotBooster(base, slots)` adds slots that each draw from their own print
 sheet to a `StandardBooster` or `PlayBooster` base. A `DedicatedSlot(sheet, rarityWeights, rareChance, sharedRarities,
 mythicChance)` names its cards with a `SheetSelector` — `DoubleFaced`, `Battle`, `LegendaryCreature`,
-`HasSubtype(subtype)`, `Named(names)`, `Except(matching, except)` — and opens a rarity rolled from `rarityWeights`. Its sheet is the
+`Planeswalker`, `HasSubtype(subtype)`, `Named(names)`, `Except(matching, except)` — and opens a rarity rolled from `rarityWeights`. Its sheet is the
 selected cards at those rarities (plus rare and mythic when `rareChance > 0`), and they leave the base's pool unless
 their rarity is in `sharedRarities`. With `rareChance` the slot holds the pack's one rare or mythic instead, and the
 base trades its rare slot for an uncommon (`RarityCountBooster.withRareSlotAsUncommon`); the slots' chances are rolled
@@ -495,6 +498,8 @@ together, so a pack never opens two. A dry sheet (host bans) opens the rolled ra
 - March of the Machine — base `StandardBooster(8, 2)`, an `Except(DoubleFaced, Battle)` common-or-uncommon slot
   (`rareChance = 15/140`) and a `Battle` uncommon slot (`rareChance = 27/140`).
 - Dominaria / Dominaria United — base `StandardBooster(10, 2)`, a `LegendaryCreature` uncommon slot, `rareChance = 0.25`.
+- War of the Spark — base `StandardBooster(10, 2, mythicChance = 12.0 / 92)`, a `Planeswalker` uncommon slot with
+  `rareChance = 29.0 / 121` and `mythicChance = 3.0 / 29`, so every pack opens exactly one planeswalker.
 - Modern Horizons 3 — a `Named` new-to-Modern reprint slot (75% U / 22.5% R / 2.5% M) on a 6-common Play Booster.
 - Innistrad Remastered — a double-faced common slot on a 5-common Play Booster.
 - Teenage Mutant Ninja Turtles — a `Named` legendary-Turtle slot with `sharedRarities = setOf(RARE, MYTHIC)`, so the

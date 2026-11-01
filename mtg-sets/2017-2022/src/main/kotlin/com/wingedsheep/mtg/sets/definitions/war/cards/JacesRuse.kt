@@ -43,6 +43,7 @@ val JacesRuse = card("Jace's Ruse") {
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "273"
+        inBooster = false
         artist = "Clint Cearley"
         flavorText = "\"The Eternals can recognize faces. They just think I look like a blue minotaur.\""
         imageUri = "https://cards.scryfall.io/normal/front/0/3/03e8d2c7-cd6e-48bf-9d54-73f3d6cff0aa.jpg?1783933359"

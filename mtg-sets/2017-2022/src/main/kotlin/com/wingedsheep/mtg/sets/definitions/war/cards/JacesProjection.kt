@@ -40,6 +40,7 @@ val JacesProjection = card("Jace's Projection") {
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "272"
+        inBooster = false
         artist = "Darek Zabrocki"
         flavorText = "\"Pardon me if I seem distracted. Part of me is reconnoitering the Tenth District.\""
         imageUri = "https://cards.scryfall.io/normal/front/c/4/c4d35a34-01b7-41e1-8491-a6589175d027.jpg?1783933359"

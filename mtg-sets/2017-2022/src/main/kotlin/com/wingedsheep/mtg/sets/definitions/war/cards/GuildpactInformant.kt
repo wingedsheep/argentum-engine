@@ -35,6 +35,7 @@ val GuildpactInformant = card("Guildpact Informant") {
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "271"
+        inBooster = false
         artist = "Randy Gallegos"
         flavorText = "\"Of course you're being followed!\""
         imageUri = "https://cards.scryfall.io/normal/front/a/3/a304200f-86d5-4eed-a775-cc24e72872ac.jpg?1783933359"

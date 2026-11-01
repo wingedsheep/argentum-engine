@@ -16,4 +16,5 @@ val SimicGuildgateReprint = Printing(
     imageUri = "https://cards.scryfall.io/normal/front/9/8/989d6851-2a5d-4d8f-a7b8-724818236c47.jpg",
     releaseDate = "2019-05-03",
     rarity = Rarity.COMMON,
+    inBooster = false,
 )

@@ -2521,6 +2521,72 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  WAR: {
+    setCode: 'WAR',
+    setName: 'War of the Spark',
+    archetypes: [
+      {
+        name: 'Fliers',
+        colors: ['W', 'U'],
+        keyCard: 'Elite Guardmage',
+        description: 'Hold the ground with sturdy creatures and taxing effects while fliers chip in from above. A tempo-control deck that pairs evasive threats with counterspells and card-drawing bodies.',
+      },
+      {
+        name: 'Amass Control',
+        colors: ['U', 'B'],
+        keyCard: 'Gleaming Overseer',
+        description: 'Grow a Zombie Army with amass while removal and bounce keep the opponent off balance. A controlling midrange deck whose Army becomes a single towering threat.',
+      },
+      {
+        name: 'Amass Sacrifice',
+        colors: ['B', 'R'],
+        keyCard: 'Mayhem Devil',
+        description: 'Make Zombie Armies and other expendable bodies, then sacrifice them for damage, cards and removal. An aggressive attrition deck that pings the opponent every time a permanent goes to the graveyard.',
+      },
+      {
+        name: 'Big Power Aggro',
+        colors: ['R', 'G'],
+        keyCard: 'Rubblebelt Rioters',
+        description: 'Curve into hasty, high-power creatures and fight or bite away the blockers. A stompy aggro deck that rewards keeping the biggest creature on the board and attacking every turn.',
+      },
+      {
+        name: 'Proliferate Counters',
+        colors: ['G', 'W'],
+        keyCard: "Huatli's Raptor",
+        description: "Spread +1/+1 counters across a wide board and proliferate them, along with your planeswalkers' loyalty. A go-wide midrange deck whose team outgrows every blocker.",
+      },
+      {
+        name: 'Drain Midrange',
+        colors: ['W', 'B'],
+        keyCard: 'Cruel Celebrant',
+        description: 'Trade creatures and planeswalkers freely and drain the opponent each time one of yours dies. A grindy midrange deck backed by efficient removal for the threats that matter.',
+      },
+      {
+        name: 'Spells Amass',
+        colors: ['U', 'R'],
+        keyCard: 'Invade the City',
+        description: 'Fill the graveyard with instants and sorceries, then cash them in for a large Zombie Army. A spells deck that trades burn and card selection for the board until one big attacker ends it.',
+      },
+      {
+        name: 'Deathtouch Value',
+        colors: ['B', 'G'],
+        keyCard: 'Leyline Prowler',
+        description: 'Ramp and fix with mana creatures, then lock up combat with deathtouch and grind out value from removal. A sturdy midrange deck that wins the long game on two-for-ones.',
+      },
+      {
+        name: 'Heroic Aggro',
+        colors: ['R', 'W'],
+        keyCard: 'Tenth District Legionnaire',
+        description: 'Target your own creatures with pump spells and combat tricks to grow them and scry. An aggressive deck that turns every trick into a bigger, harder-hitting attacker.',
+      },
+      {
+        name: 'Proliferate Ramp',
+        colors: ['G', 'U'],
+        keyCard: 'Merfolk Skydiver',
+        description: 'Ramp into creatures with power 4 or greater and draw cards as they land, while proliferate grows counters and loyalty. A value-ramp deck whose late game outclasses everything else.',
+      },
+    ],
+  },
   MOM: {
     setCode: 'MOM',
     setName: 'March of the Machine',

@@ -76,6 +76,7 @@ val TezzeretMasterOfTheBridge = card("Tezzeret, Master of the Bridge") {
     metadata {
         rarity = Rarity.MYTHIC
         collectorNumber = "275"
+        inBooster = false
         artist = "Chase Stone"
         imageUri = "https://cards.scryfall.io/normal/front/9/e/9ee1eea2-961f-445d-b035-6baed454f289.jpg?1783933355"
 

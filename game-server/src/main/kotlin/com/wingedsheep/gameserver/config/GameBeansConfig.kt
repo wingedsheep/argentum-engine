@@ -231,7 +231,7 @@ private fun MtgSet.boosterCardPool(
                 withArt.copy(
                     metadata = withArt.metadata.copy(
                         rarity = printing.rarity,
-                        inBooster = limitedCardNames != null || withArt.metadata.inBooster,
+                        inBooster = limitedCardNames != null || (withArt.metadata.inBooster && printing.inBooster),
                     ),
                 )
             }
