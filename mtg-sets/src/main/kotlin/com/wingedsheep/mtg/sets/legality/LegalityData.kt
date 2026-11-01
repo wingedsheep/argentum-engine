@@ -95,7 +95,15 @@ object LegalityData {
         return stream.use { it.readBytes().toString(Charsets.UTF_8) }
     }
 
-    private val formatsByName: Map<String, DeckFormat> = DeckFormat.entries.associateBy { it.name }
+    /**
+     * The sync writes each Scryfall key upper-cased (`legalities.standardbrawl` → `STANDARDBRAWL`),
+     * which is the enum name for every format except the ones whose [DeckFormat.scryfallKey] drops
+     * the underscore. Keying by both spellings keeps those formats from silently reading as legal
+     * nowhere — Standard Brawl did, so no card qualified and no deck could be built or validated.
+     */
+    private val formatsByName: Map<String, DeckFormat> = DeckFormat.entries.flatMap { format ->
+        listOfNotNull(format.name, format.scryfallKey?.uppercase()).map { it to format }
+    }.toMap()
 
     private fun parseRaw(text: String): Map<String, Set<DeckFormat>> {
         val raw: Map<String, List<String>> = parser.decodeFromString(mapSerializer, text)

@@ -132,4 +132,26 @@ class CastableLimitedDeckTest : FunSpec({
         val creatureCount = deck.entries.sumOf { (name, n) -> if (name.contains("Wall")) n else 0 }
         creatureCount shouldBeGreaterThanOrEqual CREATURES_PER_40
     }
+
+    test("a devoid card is castable only where its cost is, whatever its colour") {
+        // Writhing Chrysalis is colourless (devoid) at {2}{R}{G}: a constructed U/R deck ran four.
+        castableWithColors(real("Writhing Chrysalis"), setOf(Color.BLUE, Color.RED)) shouldBe false
+        castableWithColors(real("Writhing Chrysalis"), setOf(Color.RED, Color.GREEN)) shouldBe true
+    }
+
+    test("a Room is castable only where both doors are") {
+        // Funeral Room // Awakening Hall has no cost of its own; its doors cost {2}{B} and {6}{B}{B}.
+        val room = real("Funeral Room // Awakening Hall")
+        castableWithColors(room, setOf(Color.GREEN, Color.WHITE)) shouldBe false
+        castableWithColors(room, setOf(Color.BLACK, Color.WHITE)) shouldBe true
+        spellColors(room) shouldBe setOf(Color.BLACK)
+    }
+
+    test("a mana rock that makes none of the deck's colours doesn't fit it") {
+        // Mardu Banner taps for R, W or B: filler in a U/G deck, fixing in an R/W one.
+        fitsDeckColors(real("Mardu Banner"), setOf(Color.BLUE, Color.GREEN)) shouldBe false
+        fitsDeckColors(real("Mardu Banner"), setOf(Color.RED, Color.WHITE)) shouldBe true
+        // A plain colourless artifact still fits anywhere.
+        fitsDeckColors(creature("Golem", "{3}"), setOf(Color.BLUE, Color.GREEN)) shouldBe true
+    }
 })

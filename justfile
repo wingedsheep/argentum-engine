@@ -317,6 +317,15 @@ install-gradle-init:
 prune-worktrees DAYS="7" *ARGS:
     scripts/prune-worktree-builds.sh --days {{DAYS}} {{ARGS}}
 
+# Removes a worktree only when it has been idle for --hours (24), its HEAD is in origin/main or a merged PR, it has no
+# uncommitted or untracked change, and no running java/gradle process references it. Branches stay.
+#   just remove-merged-worktrees            # what would go, and why the rest stay
+#   just remove-merged-worktrees --hours 72 --apply   # remove the ones idle for 3 days
+# Remove worktrees whose work already landed (DRY RUN unless --apply)
+[group: 'env']
+remove-merged-worktrees *ARGS:
+    scripts/remove-merged-worktrees.sh {{ARGS}}
+
 # `org.gradle.daemon.idletimeout` covers only the Gradle daemon; the Kotlin compile daemon is a
 # separate 6g JVM that outlives it. Reaps idle, orphaned (worktree deleted) and sick (GC-thrashing)
 # daemons; scripts/gradle-locked runs it automatically. Never touches kotlin-lsp.

@@ -3,6 +3,9 @@ package com.wingedsheep.ai.engine.deck
 import com.wingedsheep.ai.draftsim.DraftsimCardOps
 import com.wingedsheep.ai.draftsim.DraftsimData
 import com.wingedsheep.ai.draftsim.DraftsimSetTables
+import com.wingedsheep.ai.engine.LimitedCardRater
+import com.wingedsheep.sdk.model.CardDefinition
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.pow
 import kotlin.random.Random
 
@@ -25,6 +28,24 @@ internal object ConstructedRatings {
         DraftsimData.tablesFor(DraftsimData.ratedSetCodes()).copy(archetypes = emptyMap())
 
     fun ops(): DraftsimCardOps = DraftsimCardOps(tables())
+
+    private val cachedOps by lazy { ops() }
+    private val cache = ConcurrentHashMap<String, Double>()
+
+    /**
+     * How good [card] is, for a constructed or Commander build: its Draftsim rating, else what
+     * [LimitedCardRater] reads off it (17Lands win rate, else the effect heuristic).
+     *
+     * Not Draftsim's rarity ladder, which is what the builders fell back to before. A constructed
+     * pool is mostly cards no limited table rates, and the ladder ranks every unrated rare above
+     * every unrated uncommon — so Weather Maker and Leyline Axe came in over Swords to Plowshares,
+     * and a whole-card-base Legacy deck ran no removal at all. The heuristic reads what a card does:
+     * exile removal rates as removal whatever its rarity. Cached per name, so the whole card base is
+     * rated once per process rather than once per build.
+     */
+    fun rate(card: CardDefinition): Double = cache.getOrPut(card.name) {
+        (cachedOps.rating(card.name) ?: LimitedCardRater.rate(card)).coerceAtLeast(MIN_WEIGHT)
+    }
 
     /** Floor on a sampling weight; a zero would make `1/w` divide by zero. */
     const val MIN_WEIGHT = 0.1

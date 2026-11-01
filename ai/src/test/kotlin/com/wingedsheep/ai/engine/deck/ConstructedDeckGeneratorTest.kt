@@ -3,6 +3,7 @@ package com.wingedsheep.ai.engine.deck
 import com.wingedsheep.ai.draftsim.DraftsimData
 import com.wingedsheep.ai.draftsim.DraftsimDeckShape
 import com.wingedsheep.engine.limited.BoosterGenerator
+import com.wingedsheep.mtg.sets.MtgSetCatalog
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.DeckFormat
@@ -20,6 +21,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
+import io.kotest.matchers.ints.shouldBeInRange
 import io.kotest.matchers.ints.shouldBeLessThanOrEqual
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -277,8 +279,9 @@ class ConstructedDeckGeneratorTest : FunSpec({
 
         val deck = gen.generate(listOf("AAA"), DeckFormat.MODERN)
 
+        // A constructed land count, set by the curve: never limited's 17, never a flood.
         val lands = deck.entries.filter { it.key.startsWith("Forest") }.sumOf { it.value }
-        lands shouldBe shape.landCount
+        lands shouldBeInRange 21..25
     }
 
     test("never exceeds the four-copy limit") {
@@ -369,8 +372,7 @@ class ConstructedDeckGeneratorTest : FunSpec({
     val basicNames = setOf("Plains", "Island", "Swamp", "Mountain", "Forest")
     fun isBasic(key: String) = key.substringBefore('#') in basicNames
 
-    fun wideGenerator(seed: Long): ConstructedDeckGenerator {
-        val cards = widePool()
+    fun wideGenerator(seed: Long, cards: List<CardDefinition> = widePool()): ConstructedDeckGenerator {
         val allBasics = listOf(
             CardDefinition.basicLand("Plains", Subtype.PLAINS, ScryfallMetadata(collectorNumber = "301")),
             CardDefinition.basicLand("Island", Subtype.ISLAND, ScryfallMetadata(collectorNumber = "302")),
@@ -395,7 +397,8 @@ class ConstructedDeckGeneratorTest : FunSpec({
 
             withClue("seed $seed: ${deck.entries.joinToString { "${it.value}x ${it.key}" }}") {
                 deck.values.sum() shouldBe deckSize
-                deck.filterKeys(::isBasic).values.sum() shouldBe shape.landCount
+                // The land count follows the curve: this low-curve pool runs 21–24, never limited's 17.
+                deck.filterKeys(::isBasic).values.sum() shouldBeInRange 21..24
                 // Density: most of the spell slots are in three- and four-ofs, not 1-of filler.
                 count { spells.getValue(it) >= 3 } shouldBeGreaterThanOrEqual copies * 3 / 4
                 spells.size shouldBeLessThanOrEqual 14
@@ -445,6 +448,73 @@ class ConstructedDeckGeneratorTest : FunSpec({
         withClue("deck was $deck") {
             deck.keys.contains(lord.name) shouldBe true
             deck.filterKeys { it.startsWith("Elf ") }.values.sum() shouldBeGreaterThanOrEqual 24
+        }
+    }
+
+    // 2026-11-01 deckbuilding review: whole-card-base constructed decks all ran 24 basics on one
+    // template curve, never played a dual land, and seated dead cards — four Auratogs with no
+    // enchantment, four Wraths of God in a twenty-creature deck.
+
+    val catalog by lazy { MtgSetCatalog.all.flatMap { it.cards }.associateBy { it.name } }
+    fun real(name: String, rarity: Rarity = Rarity.MYTHIC): CardDefinition {
+        val card = catalog[name] ?: error("$name is not in the card catalog")
+        return card.copy(legalFormats = modern, metadata = card.metadata.copy(rarity = rarity))
+    }
+    fun landsIn(deck: Map<String, Int>, cards: List<CardDefinition>): Int {
+        val lands = cards.filter { it.isLand }.map { it.name }.toSet()
+        return deck.filterKeys { isBasic(it) || it.substringBefore('#') in lands }.values.sum()
+    }
+
+    test("the land count follows the curve: a low curve runs fewer lands than a high one") {
+        val low = (1..30).map { card("W Low $it", if (it % 2 == 0) "{W}" else "{1}{W}", Rarity.COMMON, modern) }
+        val high = (1..30).map { card("W High $it", "{${2 + it % 3}}{W}", Rarity.COMMON, modern) }
+
+        val lowLands = landsIn(wideGenerator(1, low).generate(DeckFormat.MODERN), low)
+        val highLands = landsIn(wideGenerator(1, high).generate(DeckFormat.MODERN), high)
+
+        withClue("low curve ran $lowLands lands, high curve $highLands") {
+            (lowLands < highLands) shouldBe true
+            lowLands shouldBeInRange 21..23
+            highLands shouldBeInRange 24..25
+        }
+    }
+
+    test("plays the pool's dual lands for its colours") {
+        val cards = (1..20).map { card("G Body $it", "{${it % 3}}{G}", Rarity.COMMON, modern) } +
+            (1..20).map { card("W Body $it", "{${it % 3}}{W}", Rarity.COMMON, modern) } +
+            real("Savannah", Rarity.RARE)
+
+        val deck = wideGenerator(1, cards).generate(DeckFormat.MODERN)
+
+        withClue("deck was $deck") { deck["Savannah"] shouldBe 4 }
+    }
+
+    test("a sweeper stays out of a deck full of creatures") {
+        val cards = (1..30).map { card("W Body $it", "{${it % 3}}{W}", Rarity.COMMON, modern) } + real("Wrath of God")
+
+        (1L..3L).forEach { seed ->
+            val deck = wideGenerator(seed, cards).generate(DeckFormat.MODERN)
+            withClue("seed $seed: $deck") { deck.containsKey("Wrath of God") shouldBe false }
+        }
+    }
+
+    test("a payoff with nothing to feed it stays out, and comes in once the deck feeds it") {
+        // Auratog: "Sacrifice an enchantment: put two +1/+1 counters on Auratog."
+        val bodies = (1..30).map { card("W Body $it", "{${it % 3}}{W}", Rarity.COMMON, modern) }
+        val enchantments = (1..12).map { i ->
+            cardDef("W Aura $i") {
+                manaCost = "{${i % 2}}{W}"
+                typeLine = "Enchantment"
+                metadata { rarity = Rarity.RARE }
+            }.copy(legalFormats = modern)
+        }
+
+        val starved = wideGenerator(1, bodies + real("Auratog")).generate(DeckFormat.MODERN)
+        withClue("starved deck was $starved") { starved.containsKey("Auratog") shouldBe false }
+
+        val fed = wideGenerator(1, bodies + enchantments + real("Auratog")).generate(DeckFormat.MODERN)
+        withClue("fed deck was $fed") {
+            if (fed.keys.count { it.startsWith("W Aura") } >= 2) fed.containsKey("Auratog") shouldBe true
         }
     }
 })

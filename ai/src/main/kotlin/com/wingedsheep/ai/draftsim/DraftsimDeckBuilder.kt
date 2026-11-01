@@ -114,6 +114,10 @@ class DraftsimDeckBuilder(
         const val SPELL_SHORTFALL_PENALTY = 0.3
         // Most cards [shortfallSplash] adds to a 23-spell deck; scaled to the shape.
         const val SPLASH_CARDS_PER_23 = 4
+        // [lightColorCap]: a colour this few cards strictly need gets a splash's sources, not a main
+        // colour's — its hungriest card's pips plus this many per 17 lands.
+        const val LIGHT_COLOR_CARDS = 2
+        const val LIGHT_COLOR_EXTRA_SOURCES_PER_17 = 3
         val COLOR_TO_BASIC = mapOf("W" to "Plains", "U" to "Island", "B" to "Swamp", "R" to "Mountain", "G" to "Forest")
         // Ten three-color guild shells for the sealed good-stuff build.
         val THREE_COLOR = DraftsimDeckScorerGuilds.THREE_COLOR
@@ -498,6 +502,7 @@ class DraftsimDeckBuilder(
         ) { color -> usefulLands.count { land -> color in landFixing(land) } }
         // §3.5 splash floor for demanded colors beyond the top 2.
         splashFloor(basics, basicDemand, deckCards, usefulLands)
+        lightColorCap(basics, basicDemand, deckCards, usefulLands, splashColor)
         // §3.6 trim to 17 total.
         trimLands(basics, usefulLands.size, lands)
 
@@ -528,6 +533,43 @@ class DraftsimDeckBuilder(
                 basics[donor.key] = donor.value - 1
                 basics[color] = (basics[color] ?: 0) + 1
                 shortfall--
+            }
+        }
+    }
+
+    /**
+     * A colour only [LIGHT_COLOR_CARDS] or fewer cards strictly need (plain pips — a hybrid pip the
+     * other colour pays doesn't count) is a splash in all but name: hold its sources to what a splash
+     * gets — its hungriest card's pips plus three, counting the pool lands that make it — and hand the
+     * rest to the colour that needs them. Without this, a near mono-white BLB deck with Mabel and one
+     * Agate Assault ran six Mountains, because each colour's floor is set by its most demanding card
+     * whether one card asks or twelve do.
+     */
+    private fun lightColorCap(
+        basics: MutableMap<String, Int>,
+        demand: Map<String, Double>,
+        deckCards: List<DraftsimPoolCard>,
+        usefulLands: List<DraftsimPoolCard>,
+        splashColor: String?,
+    ) {
+        if (basics.count { it.value > 0 } < 2) return
+        val needing = demand.keys.associateWith { color ->
+            deckCards.filter { (DraftsimMana.castRequirement(it.card.manaCost).plainPips[color] ?: 0) > 0 }
+        }
+        for (color in demand.keys) {
+            if (color == splashColor) continue
+            val cards = needing.getValue(color)
+            if (cards.isEmpty() || cards.size > LIGHT_COLOR_CARDS) continue
+            val main = demand.keys.filter { it != color && needing.getValue(it).size > LIGHT_COLOR_CARDS }
+                .maxByOrNull { demand.getValue(it) } ?: continue
+            val maxPips = cards.maxOf { DraftsimMana.castRequirement(it.card.manaCost).plainPips[color] ?: 0 }
+            val target = maxPips + (LIGHT_COLOR_EXTRA_SOURCES_PER_17 * landTarget + 8) / 17
+            val fromLands = usefulLands.count { color in landFixing(it) }
+            var excess = fromLands + (basics[color] ?: 0) - target
+            while (excess > 0 && (basics[color] ?: 0) > 0) {
+                basics[color] = basics.getValue(color) - 1
+                basics[main] = (basics[main] ?: 0) + 1
+                excess--
             }
         }
     }

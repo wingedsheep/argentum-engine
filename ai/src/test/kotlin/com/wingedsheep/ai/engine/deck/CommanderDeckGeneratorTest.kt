@@ -500,4 +500,18 @@ class CommanderDeckGeneratorTest : FunSpec({
 
         withClue("$flyers flyers of ${picks.size}") { (flyers * 2 > picks.size) shouldBe true }
     }
+
+    test("a commander whose identity can't fill the library isn't picked over one that can") {
+        // 2026-11-01: a Bloomburrow-only Commander deck drew Eluge (mono-blue) from a set with too
+        // few blue singletons to fill a 99, and seated 46 lands. The narrow identity bias still
+        // applies — but only among commanders the pool can actually build.
+        val thin = (1..20).map { spell("Blue $it", "{${it % 4}}{U}") } +
+            (1..10).map { spell("Colorless $it", "{${it % 4}}") } +
+            (1..80).map { spell("Green $it", "{${it % 6}}{G}") } +
+            listOf(legend("Mono Blue Legend", "{2}{U}"), legend("Green Blue Legend", "{1}{G}{U}"))
+        repeat(20) { seed ->
+            val deck = generatorOver(thin, kotlin.random.Random(seed)).generate(listOf("AAA"), DeckFormat.COMMANDER)!!
+            withClue("seed $seed") { deck.commander shouldBe "Green Blue Legend" }
+        }
+    }
 })

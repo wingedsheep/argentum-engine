@@ -52,15 +52,18 @@ class EffectWalkerTest : FunSpec({
         }
     }
 
-    test("a conniving trigger is worth its draw in the limited heuristic") {
+    test("a conniving trigger is worth its draw and its conditional counter in the limited heuristic") {
         // Renamed off both rating tables so `rate` falls through to the structural heuristic —
         // every printed conniving card has a vendored Draftsim pick rating that would shadow it.
         val probe = AimScientists.copy(name = "Connive Heuristic Probe")
         val withoutTrigger = probe.copy(script = probe.script.copy(triggeredAbilities = emptyList()))
 
-        withClue("DrawCards(1) scores 0.6, discounted by 0.8 for living on a triggered ability") {
+        withClue(
+            "DrawCards(1) scores 0.6 and the \"if you discarded a nonland card\" +1/+1 counter 0.4 x 0.6 " +
+                "for its condition, together discounted by 0.8 for living on a triggered ability",
+        ) {
             (LimitedCardRater.rate(probe) - LimitedCardRater.rate(withoutTrigger)) shouldBe
-                (0.48 plusOrMinus 1e-9)
+                (0.672 plusOrMinus 1e-9)
         }
     }
 })
