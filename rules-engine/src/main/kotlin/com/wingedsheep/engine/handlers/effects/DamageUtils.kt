@@ -3354,9 +3354,13 @@ object DamageUtils {
     }
 
     /**
-     * Visit every battlefield or emblem replacement effect of type [T] whose `appliesTo`
-     * is a [EventPattern.LifeLossEvent] matching [losingPlayerId] and whose
-     * [restrictionsOf]-extracted conditions all hold against the source's controller.
+     * Visit every replacement effect of type [T] in force — printed on a battlefield permanent,
+     * held by an emblem, or granted for a duration ([GameState.grantedReplacementEffects], e.g. Angel
+     * of Grace's "until end of turn, damage that would reduce your life total to less than 1 reduces
+     * it to 1 instead") — whose `appliesTo` is a [EventPattern.LifeLossEvent] matching
+     * [losingPlayerId] and whose [restrictionsOf]-extracted conditions all hold against the source's
+     * controller. Enumerated through [com.wingedsheep.engine.replacement.ActiveReplacements], so a
+     * grant's "you" is the player who made it, and it outlives the object it was anchored to.
      *
      * Shared scaffold for [applyStaticLifeLossModification] (`ModifyLifeLoss`)
      * and [applyLifeLossFloors] (`LifeLossFloor`); each function keeps the actual
@@ -3371,39 +3375,33 @@ object DamageUtils {
         youIncludesSharedLife: Boolean = false,
         action: (T) -> Unit
     ) {
-        // Battlefield permanents, then emblems (which sit in no zone the battlefield scan sees).
-        for (entityId in state.getBattlefield().asSequence() + state.emblemReplacementHolders.asSequence()) {
-            val container = state.getEntity(entityId) ?: continue
-            val replacementComponent = state.activeReplacementSource(entityId) ?: continue
-            val sourceControllerId = replacementHostController(state, entityId) ?: continue
+        for (active in com.wingedsheep.engine.replacement.ActiveReplacements.all(state) { it is T }) {
+            val effect = active.effect as T
+            val sourceControllerId = active.controllerId
 
-            for (effect in replacementComponent.replacementEffects) {
-                if (effect !is T) continue
+            val pattern = effect.appliesTo
+            if (pattern !is EventPattern.LifeLossEvent) continue
 
-                val pattern = effect.appliesTo
-                if (pattern !is EventPattern.LifeLossEvent) continue
-
-                val playerMatches = when (pattern.player) {
-                    Player.Each, Player.Any -> true
-                    Player.You -> losingPlayerId == sourceControllerId ||
-                        (youIncludesSharedLife && state.teamLifeOwnerOf(losingPlayerId) == state.teamLifeOwnerOf(sourceControllerId))
-                    // Not `!= sourceControllerId`: a teammate is not an opponent (CR 102.3).
-                    Player.EachOpponent -> state.isOpponentOf(losingPlayerId, sourceControllerId)
-                    else -> false
-                }
-                if (!playerMatches) continue
-
-                val restrictions = restrictionsOf(effect)
-                if (restrictions.isNotEmpty()) {
-                    val context = EffectContext(
-                        sourceId = entityId,
-                        controllerId = sourceControllerId,
-                    )
-                    if (restrictions.any { !predicateEvaluator.conditions.evaluate(state, it, context) }) continue
-                }
-
-                action(effect)
+            val playerMatches = when (pattern.player) {
+                Player.Each, Player.Any -> true
+                Player.You -> losingPlayerId == sourceControllerId ||
+                    (youIncludesSharedLife && state.teamLifeOwnerOf(losingPlayerId) == state.teamLifeOwnerOf(sourceControllerId))
+                // Not `!= sourceControllerId`: a teammate is not an opponent (CR 102.3).
+                Player.EachOpponent -> state.isOpponentOf(losingPlayerId, sourceControllerId)
+                else -> false
             }
+            if (!playerMatches) continue
+
+            val restrictions = restrictionsOf(effect)
+            if (restrictions.isNotEmpty()) {
+                val context = EffectContext(
+                    sourceId = active.sourceId,
+                    controllerId = sourceControllerId,
+                )
+                if (restrictions.any { !predicateEvaluator.conditions.evaluate(state, it, context) }) continue
+            }
+
+            action(effect)
         }
     }
 
