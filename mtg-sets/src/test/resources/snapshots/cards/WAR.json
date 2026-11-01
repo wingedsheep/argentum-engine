@@ -320,6 +320,76 @@
     ]
 }
 
+// Arboreal Grazer
+{
+    "name": "Arboreal Grazer",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "Reach\nWhen this creature enters, you may put a land card from your hand onto the battlefield tapped.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 3
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Arboreal Grazer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "land"
+                            },
+                            "storeAs": "put_candidates"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "put_candidates",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "putting"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "putting",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "Tapped"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "149",
+        "artist": "Jason Rainville",
+        "flavorText": "\"We fight to stop a tyrant, but we also fight for the gentle creatures who have no concept of what befalls their world.\"\n—Vivien Reid",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c4a5f86f-44a8-4735-909a-770586d33a15.jpg?1783933418"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Arlinn's Wolf
 {
     "name": "Arlinn's Wolf",
@@ -570,6 +640,100 @@
     ]
 }
 
+// Awakening of Vitu-Ghazi
+{
+    "name": "Awakening of Vitu-Ghazi",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Put nine +1/+1 counters on target land you control. It becomes a legendary 0/0 Elemental creature with haste named Vitu-Ghazi. It's still a land.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 9,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "BecomeCreature",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "keywords": [
+                        "HASTE"
+                    ],
+                    "creatureTypes": [
+                        "Elemental"
+                    ],
+                    "addTypes": [
+                        "LEGENDARY"
+                    ],
+                    "duration": "Permanent"
+                },
+                {
+                    "type": "BecomeArtifact",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "cardTypes": null,
+                    "subtypes": null,
+                    "colors": null,
+                    "loseAllAbilities": false,
+                    "name": "Vitu-Ghazi"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "land ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "rarity": "RARE",
+        "artist": "Jaime Jones",
+        "flavorText": "The Eternal armies advanced on Vitu-Ghazi. At Nissa's command, Vitu-Ghazi advanced on them.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b42b2fb4-8016-462c-8764-2639adec931f.jpg?1783933417",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "Awakening of Vitu-Ghazi doesn't untap the land that becomes a creature."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "The target land loses the name it had, and its name is just Vitu-Ghazi. It keeps any types and abilities it had."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Awakening of Vitu-Ghazi's effect lasts indefinitely. It doesn't wear off during the cleanup step."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Band Together
 {
     "name": "Band Together",
@@ -742,6 +906,67 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Bioessence Hydra
+{
+    "name": "Bioessence Hydra",
+    "manaCost": "{3}{G}{U}",
+    "typeLine": "Creature — Hydra Mutant",
+    "oracleText": "Trample\nThis creature enters with a +1/+1 counter on it for each loyalty counter on planeswalkers you control.\nWhenever one or more loyalty counters are put on planeswalkers you control, put that many +1/+1 counters on this creature.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bioessence Hydra:1",
+                "trigger": {
+                    "type": "CountersPlacedEvent",
+                    "counterType": "LOYALTY",
+                    "filter": "planeswalker ctrl:you",
+                    "batch": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_COUNTERS_PLACED_AMOUNT"
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever one or more loyalty counters are put on planeswalkers you control, put that many +1/+1 counters on this creature."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "planeswalker",
+                    "aggregation": "SUM",
+                    "counterType": "LOYALTY"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "186",
+        "rarity": "RARE",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/b/fb01a161-49a1-407c-8410-6933bc8f7b6a.jpg?1783933402"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
     ]
 }
 
@@ -2359,6 +2584,76 @@
     ]
 }
 
+// Domri's Ambush
+{
+    "name": "Domri's Ambush",
+    "manaCost": "{R}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Put a +1/+1 counter on target creature you control. Then that creature deals damage equal to its power to target creature or planeswalker you don't control.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "damageSource": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|planeswalker ctrl:opponent"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "192",
+        "rarity": "UNCOMMON",
+        "artist": "Victor Adame Minguez",
+        "flavorText": "\"When civilization teeters on the brink, I'll be there to kick it the rest of the way.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b0dcae59-e9be-45a8-8ed8-5b47309bb716.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Domri, Anarch of Bolas
 {
     "name": "Domri, Anarch of Bolas",
@@ -3933,6 +4228,43 @@
     ]
 }
 
+// Forced Landing
+{
+    "name": "Forced Landing",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Put target creature with flying on the bottom of its owner's library.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Library",
+            "placement": "Bottom"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature kw:flying"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "161",
+        "artist": "Svetlin Velinov",
+        "flavorText": "The druid knew only one spell, a charm to encourage rapid plant growth. When airborne Eternals invaded her arboretum, she had to get creative.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5cb319a7-564c-4748-82cf-c26ab110c32c.jpg?1783933414"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Gideon's Company
 {
     "name": "Gideon's Company",
@@ -4368,6 +4700,131 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// God-Eternal Rhonas
+{
+    "name": "God-Eternal Rhonas",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Legendary Creature — Zombie God",
+    "oracleText": "Deathtouch\nWhen God-Eternal Rhonas enters, double the power of each other creature you control until end of turn. Those creatures gain vigilance until end of turn.\nWhen God-Eternal Rhonas dies or is put into exile from the battlefield, you may put it into its owner's library third from the top.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "God-Eternal Rhonas:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "EntityProperty",
+                                    "entity": "IterationEntity",
+                                    "numericProperty": "Power"
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "VIGILANCE",
+                                "target": "IterationEntity"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "When God-Eternal Rhonas enters, double the power of each other creature you control until end of turn. Those creatures gain vigilance until end of turn."
+            },
+            {
+                "id": "God-Eternal Rhonas:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Put God-Eternal Rhonas into its owner's library third from the top?"
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Library",
+                        "fromZone": "Graveyard",
+                        "positionFromTop": 2
+                    }
+                },
+                "descriptionOverride": "When God-Eternal Rhonas dies, you may put it into its owner's library third from the top."
+            },
+            {
+                "id": "God-Eternal Rhonas:3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Exile"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Put God-Eternal Rhonas into its owner's library third from the top?"
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Library",
+                        "fromZone": "Exile",
+                        "positionFromTop": 2
+                    }
+                },
+                "descriptionOverride": "When God-Eternal Rhonas is put into exile from the battlefield, you may put it into its owner's library third from the top."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "163",
+        "rarity": "MYTHIC",
+        "artist": "Lius Lasahido",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0eb444f0-69cc-47c8-8cd6-1f9edad5d903.jpg?1783933412",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "Rhonas's first triggered ability affects only creatures you control at the time it resolves. Creatures you begin to control later in the turn won't have their power doubled or gain vigilance."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If an effect instructs you to \"double\" a creature's power, that creature gets +X/+0, where X is its power as that effect begins to apply."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -5480,6 +5937,83 @@
     "startingLoyalty": 5,
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Jiang Yanggu, Wildcrafter
+{
+    "name": "Jiang Yanggu, Wildcrafter",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Planeswalker — Yanggu",
+    "oracleText": "Each creature you control with a +1/+1 counter on it has \"{T}: Add one mana of any color.\"\n−1: Put a +1/+1 counter on target creature.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Jiang Yanggu, Wildcrafter:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -1
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Put a +1/+1 counter on target creature."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Jiang Yanggu, Wildcrafter:1",
+                    "cost": "CostTap",
+                    "effect": "AddManaOfChoice",
+                    "timing": "ManaAbility",
+                    "isManaAbility": true,
+                    "descriptionOverride": "{T}: Add one mana of any color."
+                },
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "164",
+        "rarity": "UNCOMMON",
+        "artist": "Anna Steinbauer",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/0/10e0d47d-b13c-4d48-881f-8aaa347ef209.jpg?1783933410"
+    },
+    "startingLoyalty": 3,
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -6946,6 +7480,51 @@
     ]
 }
 
+// Mowu, Loyal Companion
+{
+    "name": "Mowu, Loyal Companion",
+    "manaCost": "{3}{G}",
+    "typeLine": "Legendary Creature — Dog",
+    "oracleText": "Vigilance, trample\nIf one or more +1/+1 counters would be put on Mowu, that many plus one +1/+1 counters are put on it instead.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE",
+        "TRAMPLE"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "ModifyCounterPlacement",
+                "appliesTo": {
+                    "type": "CounterPlacementEvent",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": {
+                            "statePredicates": [
+                                "IsSource"
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "167",
+        "rarity": "UNCOMMON",
+        "artist": "Kimonas Theodossiou",
+        "flavorText": "Wherever Yanggu goes, Mowu follows—sometimes at his side, sometimes obscuring him from view entirely.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/4/f41a191c-c42e-42ec-89bd-cc1bc215ffbc.jpg?1783933409"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Naga Eternal
 {
     "name": "Naga Eternal",
@@ -7488,6 +8067,118 @@
         "BLUE",
         "BLACK",
         "RED"
+    ]
+}
+
+// Nissa's Triumph
+{
+    "name": "Nissa's Triumph",
+    "manaCost": "{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for up to two basic Forest cards. If you control a Nissa planeswalker, instead search your library for up to three land cards. Reveal those cards, put them into your hand, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "planeswalker Nissa"
+                }
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "FromZone",
+                            "zone": "Library",
+                            "filter": "land"
+                        },
+                        "storeAs": "searchable",
+                        "search": true
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "searchable",
+                        "selection": {
+                            "type": "ChooseUpTo",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        },
+                        "storeSelected": "found",
+                        "prompt": "Search your library for up to three land cards to put into your hand",
+                        "selectedLabel": "Put into your hand"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "found",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Hand"
+                        },
+                        "revealed": true
+                    },
+                    "ShuffleLibrary",
+                    "EmitLibrarySearchedEvent"
+                ]
+            },
+            "otherwise": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "FromZone",
+                            "zone": "Library",
+                            "filter": "basicland Forest"
+                        },
+                        "storeAs": "searchable",
+                        "search": true
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "searchable",
+                        "selection": {
+                            "type": "ChooseUpTo",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        "storeSelected": "found",
+                        "prompt": "Search your library for up to two basic Forest cards to put into your hand",
+                        "selectedLabel": "Put into your hand"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "found",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Hand"
+                        },
+                        "revealed": true
+                    },
+                    "ShuffleLibrary",
+                    "EmitLibrarySearchedEvent"
+                ]
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "170",
+        "rarity": "UNCOMMON",
+        "artist": "Kieran Yanner",
+        "flavorText": "Her triumph came not from destroying the unnatural, but from fostering life.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/9/7946b256-ae79-4b99-8bf4-0d627baf9044.jpg?1783933409"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -8066,6 +8757,85 @@
     ]
 }
 
+// Planewide Celebration
+{
+    "name": "Planewide Celebration",
+    "manaCost": "{5}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose four. You may choose the same mode more than once.\n• Create a 2/2 Citizen creature token that's all colors.\n• Return target permanent card from your graveyard to your hand.\n• Proliferate.\n• You gain 4 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 2,
+                        "toughness": 2,
+                        "colors": [
+                            "WHITE",
+                            "BLUE",
+                            "BLACK",
+                            "RED",
+                            "GREEN"
+                        ],
+                        "creatureTypes": [
+                            "Citizen"
+                        ]
+                    },
+                    "description": "Create a 2/2 Citizen creature token that's all colors"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Hand"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "permanent own:you",
+                                "zone": "Graveyard"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Return target permanent card from your graveyard to your hand"
+                },
+                {
+                    "effect": "Proliferate",
+                    "description": "Proliferate"
+                },
+                {
+                    "effect": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    },
+                    "description": "You gain 4 life"
+                }
+            ],
+            "chooseCount": 4,
+            "allowRepeat": true
+        }
+    },
+    "metadata": {
+        "collectorNumber": "172",
+        "rarity": "RARE",
+        "artist": "Wisnu Tan",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/11016840-56b6-4759-bde6-3dc0e339e87e.jpg?1783933409"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Pledge of Unity
 {
     "name": "Pledge of Unity",
@@ -8326,6 +9096,39 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Raging Kronch
+{
+    "name": "Raging Kronch",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "This creature can't attack alone.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnlessCoAttacker",
+                "coAttackerFilter": {
+                    "cardPredicates": [
+                        "IsCreature"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "artist": "Steve Prescott",
+        "flavorText": "\"Seeing so much easy prey makes her crazy. See how she snorts and drools?\"\n—Dhuuz, kronch wrangler",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/e/ae38aa2d-6c0e-409a-bfc7-ed4281457670.jpg?1783933422"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -8831,6 +9634,139 @@
         "flavorText": "Samut's war was intensely personal. Every hour she faced enemies she once loved as friends and horrors she once revered as gods.",
         "imageUri": "https://cards.scryfall.io/normal/front/9/4/94bda699-2b5d-4f5b-bee5-792b99d2b64a.jpg"
     },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Sarkhan the Masterless
+{
+    "name": "Sarkhan the Masterless",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Legendary Planeswalker — Sarkhan",
+    "oracleText": "Whenever a creature attacks you or a planeswalker you control, each Dragon you control deals 1 damage to that creature.\n+1: Until end of turn, each planeswalker you control becomes a 4/4 red Dragon creature and gains flying.\n−3: Create a 4/4 red Dragon creature token with flying.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sarkhan the Masterless:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsAttackingYouOrYourPlaneswalkers"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "permanent Dragon ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "TriggeringEntity",
+                        "damageSource": "IterationEntity"
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Sarkhan the Masterless:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "planeswalker ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "BecomeCreature",
+                        "target": "IterationEntity",
+                        "power": {
+                            "type": "Fixed",
+                            "amount": 4
+                        },
+                        "toughness": {
+                            "type": "Fixed",
+                            "amount": 4
+                        },
+                        "keywords": [
+                            "FLYING"
+                        ],
+                        "creatureTypes": [
+                            "Dragon"
+                        ],
+                        "removeTypes": [
+                            "PLANESWALKER"
+                        ],
+                        "colors": [
+                            "RED"
+                        ]
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Sarkhan the Masterless:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Dragon"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/a/1/a195b254-bc3c-4259-9219-5a9e085d7947.jpg?1783933349"
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "143",
+        "rarity": "RARE",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2bb96971-5bf1-4ae3-98f4-7cd7a614bf97.jpg?1783933422",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "A planeswalker that becomes a creature due to Sarkhan's first loyalty ability can't attack unless you've controlled it continuously since your turn began."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Once Sarkhan's first loyalty ability has resolved, each planeswalker you control (including Sarkhan) is no longer a planeswalker for the rest of the turn. They don't lose any loyalty counters or abilities, and you can still activate their loyalty abilities if you haven't done so yet this turn. They don't lose loyalty if they're dealt damage while they're not planeswalkers."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
     "colorIdentityOverride": [
         "RED"
     ]
@@ -9478,6 +10414,120 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Storm the Citadel
+{
+    "name": "Storm the Citadel",
+    "manaCost": "{4}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Until end of turn, creatures you control get +2/+2 and gain \"Whenever this creature deals combat damage to a player or planeswalker, destroy target artifact or enchantment defending player controls.\"",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": "IterationEntity"
+                    },
+                    {
+                        "type": "GrantTriggeredAbility",
+                        "ability": {
+                            "id": "Storm the Citadel:1",
+                            "trigger": {
+                                "type": "DealsDamageEvent",
+                                "damageType": "DamageCombat",
+                                "recipient": {
+                                    "type": "RecipientAnyOf",
+                                    "options": [
+                                        {
+                                            "type": "RecipientPlayer",
+                                            "player": "Any"
+                                        },
+                                        {
+                                            "type": "RecipientObject",
+                                            "filter": "planeswalker"
+                                        }
+                                    ]
+                                }
+                            },
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Graveyard",
+                                "byDestruction": true
+                            },
+                            "targetRequirement": {
+                                "type": "TargetObject",
+                                "filter": {
+                                    "baseFilter": {
+                                        "cardPredicates": [
+                                            {
+                                                "type": "Or",
+                                                "predicates": [
+                                                    "IsArtifact",
+                                                    "IsEnchantment"
+                                                ]
+                                            }
+                                        ],
+                                        "controllerPredicate": {
+                                            "type": "ControlledByReferencedPlayer",
+                                            "target": {
+                                                "type": "PlayerRef",
+                                                "player": "DefendingPlayer"
+                                            }
+                                        }
+                                    }
+                                },
+                                "id": "t0"
+                            },
+                            "descriptionOverride": "Whenever this creature deals combat damage to a player or planeswalker, destroy target artifact or enchantment defending player controls."
+                        },
+                        "target": "IterationEntity"
+                    }
+                ]
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "178",
+        "rarity": "UNCOMMON",
+        "artist": "Grzegorz Rutkowski",
+        "flavorText": "\"If we die, we die. But we cannot let him win.\"\n—Ajani Goldmane",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/04b3b12e-bef7-409e-86b3-9e90640e598c.jpg?1783933404",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "Storm the Citadel affects only creatures you control at the time it resolves. Creatures you begin to control later in the turn won't get +2/+2 or gain the triggered ability."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If a creature is attacking a planeswalker, the controller of the planeswalker is the defending player."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -10260,6 +11310,85 @@
     ]
 }
 
+// Tibalt, Rakish Instigator
+{
+    "name": "Tibalt, Rakish Instigator",
+    "manaCost": "{2}{R}",
+    "typeLine": "Legendary Planeswalker — Tibalt",
+    "oracleText": "Your opponents can't gain life.\n−2: Create a 1/1 red Devil creature token with \"When this token dies, it deals 1 damage to any target.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tibalt, Rakish Instigator:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Devil"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/7/2/72dc3d65-1729-4541-9dc3-bd673e9bdc5d.jpg?1783933349",
+                    "triggeredAbilities": [
+                        {
+                            "id": "Tibalt, Rakish Instigator:1",
+                            "trigger": {
+                                "type": "ZoneChangeEvent",
+                                "from": "Battlefield",
+                                "to": "Graveyard"
+                            },
+                            "effect": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "targetRequirement": {
+                                "type": "AnyTarget",
+                                "id": "t0"
+                            },
+                            "descriptionOverride": "When this token dies, it deals 1 damage to any target."
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Create a 1/1 red Devil creature token with \"When this token dies, it deals 1 damage to any target.\""
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "PreventLifeGain",
+                "appliesTo": {
+                    "type": "LifeGainEvent",
+                    "player": "EachOpponent"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "146",
+        "rarity": "UNCOMMON",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f9a24dc-8bc3-4528-8780-57fb108fdfbf.jpg?1783933421"
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Time Wipe
 {
     "name": "Time Wipe",
@@ -10954,6 +12083,91 @@
         "rarity": "RARE",
         "artist": "Zack Stella",
         "imageUri": "https://cards.scryfall.io/normal/front/e/e/eecc846f-5b78-4d54-8d29-642ad7a852bc.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Vivien's Grizzly
+{
+    "name": "Vivien's Grizzly",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Bear Spirit",
+    "oracleText": "{3}{G}: Look at the top card of your library. If it's a creature or planeswalker card, you may reveal it and put it into your hand. If you don't put the card into your hand, put it on the bottom of your library.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Vivien's Grizzly:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "creature|planeswalker",
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "Reveal the card and put it into your hand?",
+                            "selectedLabel": "Reveal and put into your hand",
+                            "remainderLabel": "Put on the bottom of your library"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "182",
+        "artist": "Lius Lasahido",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/37f2571b-6756-462c-9e71-3121fa458160.jpg?1783933403"
     },
     "colorIdentityOverride": [
         "GREEN"
