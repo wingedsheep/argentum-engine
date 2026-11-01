@@ -1,3 +1,57 @@
+// Aeromunculus
+{
+    "name": "Aeromunculus",
+    "manaCost": "{1}{G}{U}",
+    "typeLine": "Creature — Homunculus Mutant",
+    "oracleText": "Flying\n{2}{G}{U}: Adapt 1. (If this creature has no +1/+1 counters on it, put a +1/+1 counter on it.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Aeromunculus:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{G}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Adapt",
+                    "amount": 1
+                },
+                "descriptionOverride": "{2}{G}{U}: Adapt 1."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "artist": "Simon Dominic",
+        "flavorText": "\"The absence of binocular vision imposes certain challenges for a flying creature, which are overcome via echolocation.\"\n—Simic research notes",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/671c94c1-df52-4985-ad78-3e1c9c78df18.jpg?1783933659",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "You can always activate an ability that will cause a creature to adapt. As that ability resolves, if the creature has a +1/+1 counter on it for any reason, you simply won't put any +1/+1 counters on it."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If a creature somehow loses all of its +1/+1 counters, it can adapt again and get more +1/+1 counters."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Amplifire
 {
     "name": "Amplifire",
@@ -822,6 +876,120 @@
         "BLACK",
         "WHITE"
     ]
+}
+
+// Bedeck // Bedazzle
+{
+    "name": "Bedeck // Bedazzle",
+    "manaCost": "",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +3/-3 until end of turn.\n//\nDestroy target nonbasic land. Bedazzle deals 2 damage to target opponent or planeswalker.",
+    "metadata": {
+        "collectorNumber": "221",
+        "rarity": "RARE",
+        "artist": "Randy Vargas",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5873efa-d573-4435-81ad-48df2ca5c7f2.jpg?1783933629",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "You can't cast Bedazzle without a target nonbasic land and a target opponent or planeswalker. If one of the targets is illegal when Bedazzle tries to resolve, the other is still affected as appropriate."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Bedeck",
+            "manaCost": "{B/R}{B/R}",
+            "typeLine": "Instant",
+            "oracleText": "Target creature gets +3/-3 until end of turn.",
+            "script": {
+                "spellEffect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Bedazzle",
+            "manaCost": "{4}{B}{R}",
+            "typeLine": "Instant",
+            "oracleText": "Destroy target nonbasic land. Bedazzle deals 2 damage to target opponent or planeswalker.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t2"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsLand",
+                                    {
+                                        "type": "Not",
+                                        "predicate": "IsBasicLand"
+                                    }
+                                ]
+                            }
+                        },
+                        "id": "t1"
+                    },
+                    {
+                        "type": "TargetOpponentOrPlaneswalker",
+                        "id": "t2"
+                    }
+                ]
+            }
+        }
+    ],
+    "hasNoManaCost": true
 }
 
 // Bedevil
@@ -1650,6 +1818,150 @@
     ]
 }
 
+// Carnival // Carnage
+{
+    "name": "Carnival // Carnage",
+    "manaCost": "",
+    "typeLine": "Instant",
+    "oracleText": "Carnival deals 1 damage to target creature or planeswalker and 1 damage to that permanent's controller.\n//\nCarnage deals 3 damage to target opponent. That player discards two cards.",
+    "metadata": {
+        "collectorNumber": "222",
+        "rarity": "UNCOMMON",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d1dbc559-c78c-4675-9582-9c28f8151bc7.jpg?1783933629",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "If the target permanent is an illegal target by the time Carnival tries to resolve, the spell doesn't resolve. No player is dealt damage."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If the target player is an illegal target by the time Carnage tries to resolve, the spell doesn't resolve. No player discards."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Carnival",
+            "manaCost": "{B/R}",
+            "typeLine": "Instant",
+            "oracleText": "Carnival deals 1 damage to target creature or planeswalker and 1 damage to that permanent's controller.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "TargetController"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetCreatureOrPlaneswalker",
+                        "id": "t0"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Carnage",
+            "manaCost": "{2}{B}{R}",
+            "typeLine": "Sorcery",
+            "oracleText": "Carnage deals 3 damage to target opponent. That player discards two cards.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand",
+                                        "player": {
+                                            "type": "BoundVariable",
+                                            "name": "t1"
+                                        }
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    },
+                                    "chooser": "TargetPlayer",
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 2 cards to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard",
+                                        "player": {
+                                            "type": "BoundVariable",
+                                            "name": "t1"
+                                        }
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t1"
+                    }
+                ]
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
 // Carrion Imp
 {
     "name": "Carrion Imp",
@@ -2304,6 +2616,203 @@
     ]
 }
 
+// Collision // Colossus
+{
+    "name": "Collision // Colossus",
+    "manaCost": "",
+    "typeLine": "Instant",
+    "oracleText": "Collision deals 6 damage to target creature with flying.\n//\nTarget creature gets +4/+2 and gains trample until end of turn.",
+    "metadata": {
+        "collectorNumber": "223",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Rainville",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/b/9bd15da6-2b86-4dba-951d-318c7d9a5dde.jpg?1783933628"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Collision",
+            "manaCost": "{1}{R/G}",
+            "typeLine": "Instant",
+            "oracleText": "Collision deals 6 damage to target creature with flying.",
+            "script": {
+                "spellEffect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 6
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature kw:flying"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Colossus",
+            "manaCost": "{R}{G}",
+            "typeLine": "Instant",
+            "oracleText": "Target creature gets +4/+2 and gains trample until end of turn.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 4
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "TRAMPLE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t1"
+                    }
+                ]
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
+// Consecrate // Consume
+{
+    "name": "Consecrate // Consume",
+    "manaCost": "",
+    "typeLine": "Instant",
+    "oracleText": "Exile target card from a graveyard.\nDraw a card.\n//\nTarget player sacrifices a creature with the greatest power among creatures they control. You gain life equal to its power.",
+    "metadata": {
+        "collectorNumber": "224",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/00320106-ce51-46a9-b0f9-79b3baf4e505.jpg?1783933627"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Consecrate",
+            "manaCost": "{1}{W/B}",
+            "typeLine": "Instant",
+            "oracleText": "Exile target card from a graveyard.\nDraw a card.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {},
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Consume",
+            "manaCost": "{2}{W}{B}",
+            "typeLine": "Sorcery",
+            "oracleText": "Target player sacrifices a creature with the greatest power among creatures they control. You gain life equal to its power.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForceSacrifice",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "HasGreatestPower"
+                                ]
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "SacrificedAsCost",
+                                "numericProperty": "Power"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t1"
+                    }
+                ]
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
 // Consign to the Pit
 {
     "name": "Consign to the Pit",
@@ -2857,6 +3366,113 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Depose // Deploy
+{
+    "name": "Depose // Deploy",
+    "manaCost": "",
+    "typeLine": "Instant",
+    "oracleText": "Tap target creature.\nDraw a card.\n//\nCreate two 1/1 colorless Thopter artifact creature tokens with flying, then you gain 1 life for each creature you control.",
+    "metadata": {
+        "collectorNumber": "225",
+        "rarity": "UNCOMMON",
+        "artist": "Sara Winters",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/ab0ba4ef-9e82-4177-a80f-8fa6f6a5bd60.jpg?1783933627",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "You create Thopters and gain life all while Deploy is resolving. Nothing can happen between the two, and no player may choose to take actions."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If the target creature is an illegal target by the time Depose tries to resolve, the spell doesn't resolve. You don't draw a card. If the target is legal but not tapped (most likely because it was already tapped), you do draw a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Depose",
+            "manaCost": "{1}{W/U}",
+            "typeLine": "Instant",
+            "oracleText": "Tap target creature.\nDraw a card.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Deploy",
+            "manaCost": "{2}{W}{U}",
+            "typeLine": "Instant",
+            "oracleText": "Create two 1/1 colorless Thopter artifact creature tokens with flying, then you gain 1 life for each creature you control.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [],
+                            "creatureTypes": [
+                                "Thopter"
+                            ],
+                            "keywords": [
+                                "FLYING"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/8/d/8dd768c3-f278-41f8-b329-8403391d6326.jpg?1783933601",
+                            "artifactToken": true
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "hasNoManaCost": true
 }
 
 // Domri, Chaos Bringer
@@ -5786,6 +6402,137 @@
     ]
 }
 
+// Incubation // Incongruity
+{
+    "name": "Incubation // Incongruity",
+    "manaCost": "",
+    "typeLine": "Sorcery",
+    "oracleText": "Look at the top five cards of your library. You may reveal a creature card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.\n//\nExile target creature. That creature's controller creates a 3/3 green Frog Lizard creature token.",
+    "metadata": {
+        "collectorNumber": "226",
+        "rarity": "UNCOMMON",
+        "artist": "Mike Bierek",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd3a4d6e-34ae-4047-a9c7-11e28b0a276d.jpg?1783933630",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "If the target creature is an illegal target by the time Incongruity tries to resolve, the spell doesn't resolve. No player creates a Frog Lizard token."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Incubation",
+            "manaCost": "{G/U}",
+            "typeLine": "Sorcery",
+            "oracleText": "Look at the top five cards of your library. You may reveal a creature card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "creature",
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "prompt": "You may reveal a creature card from among them and put it into your hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Incongruity",
+            "manaCost": "{1}{G}{U}",
+            "typeLine": "Instant",
+            "oracleText": "Exile target creature. That creature's controller creates a 3/3 green Frog Lizard creature token.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "CreateToken",
+                            "power": 3,
+                            "toughness": 3,
+                            "colors": [
+                                "GREEN"
+                            ],
+                            "creatureTypes": [
+                                "Frog",
+                                "Lizard"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/4/9/495d3391-6311-418e-b55a-10c0af751026.jpg?1783933604",
+                            "controller": "TargetController"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
 // Incubation Druid
 {
     "name": "Incubation Druid",
@@ -7785,6 +8532,95 @@
     ]
 }
 
+// Rafter Demon
+{
+    "name": "Rafter Demon",
+    "manaCost": "{2}{B}{R}",
+    "typeLine": "Creature — Demon",
+    "oracleText": "Spectacle {3}{B}{R} (You may cast this spell for its spectacle cost rather than its mana cost if an opponent lost life this turn.)\nWhen this creature enters, if its spectacle cost was paid, each opponent discards a card.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rafter Demon:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "discarded"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    }
+                },
+                "interveningIf": {
+                    "type": "CastChoiceMade",
+                    "slot": "SELF_ALTERNATIVE_COST_PAID"
+                }
+            }
+        ],
+        "selfAlternativeCost": {
+            "manaCost": "{3}{B}{R}",
+            "condition": {
+                "type": "Compare",
+                "left": {
+                    "type": "TurnTracking",
+                    "player": "EachOpponent",
+                    "tracker": "LIFE_LOST"
+                },
+                "operator": "GTE",
+                "right": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "196",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bf8dad4d-bc4f-46fb-892c-dbf6481cdc46.jpg"
+    }
+}
+
 // Ragefire
 {
     "name": "Ragefire",
@@ -7883,6 +8719,54 @@
         "artist": "Sung Choi",
         "flavorText": "\"This trinket will gain you admittance to some painfully exclusive gatherings.\"\n—Exava, blood witch",
         "imageUri": "https://cards.scryfall.io/normal/front/4/f/4fd60d9b-2282-4b32-9bff-efb2bcf87d22.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
+// Rakdos Roustabout
+{
+    "name": "Rakdos Roustabout",
+    "manaCost": "{1}{B}{R}",
+    "typeLine": "Creature — Ogre Warrior",
+    "oracleText": "Whenever this creature becomes blocked, it deals 1 damage to the player or planeswalker it's attacking.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rakdos Roustabout:1",
+                "trigger": "BecomesBlockedEvent",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "AttackedBy",
+                        "attacker": "Self"
+                    }
+                },
+                "descriptionOverride": "Whenever this creature becomes blocked, it deals 1 damage to the player or planeswalker it's attacking."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "198",
+        "artist": "Lucas Graciano",
+        "flavorText": "\"That one has a bright future—perfect instincts for the rhythm of mayhem.\"\n—Judith",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/e/5ed534af-e16a-4d1d-8884-938fc7e13ca8.jpg?1783933641",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "An ability that triggers when a creature becomes blocked triggers only once if two or more creatures block it."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLACK",
@@ -8195,6 +9079,88 @@
     ]
 }
 
+// Repudiate // Replicate
+{
+    "name": "Repudiate // Replicate",
+    "manaCost": "",
+    "typeLine": "Instant",
+    "oracleText": "Counter target activated or triggered ability. (Mana abilities can't be targeted.)\n//\nCreate a token that's a copy of target creature you control.",
+    "metadata": {
+        "collectorNumber": "227",
+        "rarity": "RARE",
+        "artist": "Victor Adame Minguez",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f6200937-3146-4972-ab83-051ade3b7a52.jpg?1783933626",
+        "rulings": [
+            {
+                "date": "2024-01-12",
+                "text": "Abilities that create replacement effects, such as a permanent entering the battlefield tapped or with counters on it, can't be targeted."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "The token copies exactly what was printed on the original creature and nothing else (unless that creature is copying something else or is a token). It doesn't copy whether that creature is tapped or untapped, whether it has any counters on it or Auras and Equipment attached to it, or any non-copy effects."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Repudiate",
+            "manaCost": "{G/U}{G/U}",
+            "typeLine": "Instant",
+            "oracleText": "Counter target activated or triggered ability. (Mana abilities can't be targeted.)",
+            "script": {
+                "spellEffect": {
+                    "type": "Counter",
+                    "target": "CounterTarget.Ability"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsActivatedOrTriggeredAbility"
+                                ]
+                            },
+                            "zone": "Stack"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Replicate",
+            "manaCost": "{1}{G}{U}",
+            "typeLine": "Sorcery",
+            "oracleText": "Create a token that's a copy of target creature you control.",
+            "script": {
+                "spellEffect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t1"
+                    }
+                ]
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
 // Resolute Watchdog
 {
     "name": "Resolute Watchdog",
@@ -8255,6 +9221,115 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Revival // Revenge
+{
+    "name": "Revival // Revenge",
+    "manaCost": "",
+    "typeLine": "Sorcery",
+    "oracleText": "Return target creature card with mana value 3 or less from your graveyard to the battlefield.\n//\nDouble your life total. Target opponent loses half their life, rounded up.",
+    "metadata": {
+        "collectorNumber": "228",
+        "rarity": "RARE",
+        "artist": "Paul Scott Canavan",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/50ae0831-f3ba-4535-bfb6-feefbbc15275.jpg?1783933626",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "To double a player's life total, that player gains as much life as needed so that their life total is twice the number it was before. If their life total was negative, that player loses as much life as needed so that their life total is twice as far below 0 as it was before. Other effects interact with this life gain or loss accordingly."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If a card in a graveyard has {X} in its mana cost, X is considered to be 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Revival",
+            "manaCost": "{W/B}{W/B}",
+            "typeLine": "Sorcery",
+            "oracleText": "Return target creature card with mana value 3 or less from your graveyard to the battlefield.",
+            "script": {
+                "spellEffect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature mv<=3 own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Revenge",
+            "manaCost": "{4}{W}{B}",
+            "typeLine": "Sorcery",
+            "oracleText": "Double your life total. Target opponent loses half their life, rounded up.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "SetLifeTotal",
+                            "amount": {
+                                "type": "Multiply",
+                                "amount": {
+                                    "type": "LifeTotal",
+                                    "player": "You"
+                                },
+                                "multiplier": 2
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Divide",
+                                "numerator": {
+                                    "type": "LifeTotal",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t1"
+                                    }
+                                },
+                                "denominator": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t1"
+                    }
+                ]
+            }
+        }
+    ],
+    "hasNoManaCost": true
 }
 
 // Rhythm of the Wild
@@ -8553,6 +9628,41 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Rubblebelt Runner
+{
+    "name": "Rubblebelt Runner",
+    "manaCost": "{1}{R}{G}",
+    "typeLine": "Creature — Lizard Warrior",
+    "oracleText": "This creature can't be blocked by creature tokens.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        "IsToken"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "202",
+        "artist": "Deruchenko Alexander",
+        "flavorText": "The sly, stealthy warriors of the Slizt Clan survive by hiding in high ground and ambushing their enemies. Other Gruul call them skulkers and cowards, but only from a safe distance.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/78cc4e02-949f-4879-9f32-7c33490d0b45.jpg?1783933638"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
     ]
 }
 
@@ -9308,6 +10418,102 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Sharktocrab
+{
+    "name": "Sharktocrab",
+    "manaCost": "{2}{G}{U}",
+    "typeLine": "Creature — Shark Octopus Crab",
+    "oracleText": "{2}{G}{U}: Adapt 1. (If this creature has no +1/+1 counters on it, put a +1/+1 counter on it.)\nWhenever one or more +1/+1 counters are put on this creature, tap target creature an opponent controls. That creature doesn't untap during its controller's next untap step.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sharktocrab:2",
+                "trigger": {
+                    "type": "CountersPlacedEvent",
+                    "counterType": "PLUS_ONE_PLUS_ONE"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilAfterAffectedControllersNextUntap"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Sharktocrab:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{G}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Adapt",
+                    "amount": 1
+                },
+                "descriptionOverride": "{2}{G}{U}: Adapt 1."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "206",
+        "rarity": "UNCOMMON",
+        "artist": "Jehan Choo",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e0f31228-0c47-4c51-932d-50fdec965f15.jpg?1783933636",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "Sharktocrab's triggered ability can target a creature that's already tapped. That creature won't untap during its controller's next untap step."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "An ability that triggers when counters are put on a permanent will trigger if that permanent somehow enters the battlefield with those counters."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "You can always activate an ability that will cause a creature to adapt. As that ability resolves, if the creature has a +1/+1 counter on it for any reason, you simply won't put any +1/+1 counters on it."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If a creature somehow loses all of its +1/+1 counters, it can adapt again and get more +1/+1 counters."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
     ]
 }
 
@@ -11163,6 +12369,101 @@
     ]
 }
 
+// Thrash // Threat
+{
+    "name": "Thrash // Threat",
+    "manaCost": "",
+    "typeLine": "Instant",
+    "oracleText": "Target creature you control deals damage equal to its power to target creature or planeswalker you don't control.\n//\nCreate a 4/4 red and green Beast creature token with trample.",
+    "metadata": {
+        "collectorNumber": "229",
+        "rarity": "RARE",
+        "artist": "Winona Nelson",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2eefd8c1-96ce-4d7a-8aaf-29c35d634dda.jpg?1783933625",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "If either target is an illegal target as Thrash tries to resolve, the creature you control won't deal damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Thrash",
+            "manaCost": "{R/G}{R/G}",
+            "typeLine": "Instant",
+            "oracleText": "Target creature you control deals damage equal to its power to target creature or planeswalker you don't control.",
+            "script": {
+                "spellEffect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "damageSource": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    },
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature|planeswalker ctrl:opponent"
+                        },
+                        "id": "t1"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Threat",
+            "manaCost": "{2}{R}{G}",
+            "typeLine": "Sorcery",
+            "oracleText": "Create a 4/4 red and green Beast creature token with trample.",
+            "script": {
+                "spellEffect": {
+                    "type": "CreateToken",
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [
+                        "RED",
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Beast"
+                    ],
+                    "keywords": [
+                        "TRAMPLE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/8/7/87ec9ade-1e06-43c9-97df-55465cabdf32.jpg?1783933602"
+                }
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
 // Tin Street Dodger
 {
     "name": "Tin Street Dodger",
@@ -11918,6 +13219,98 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Warrant // Warden
+{
+    "name": "Warrant // Warden",
+    "manaCost": "",
+    "typeLine": "Instant",
+    "oracleText": "Put target attacking or blocking creature on top of its owner's library.\n//\nCreate a 4/4 white and blue Sphinx creature token with flying and vigilance.",
+    "metadata": {
+        "collectorNumber": "230",
+        "rarity": "RARE",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/0070651d-79aa-4ea6-b703-6ecd3528b548.jpg?1783933626",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "An \"attacking creature\" is one that has been declared as an attacker or put onto the battlefield attacking during this combat. Unless that creature leaves combat, it continues to be an attacking creature through the end of combat step, even if the player it was attacking has left the game or the planeswalker it was attacking has left combat. Similarly, a \"blocking creature\" is one that has been declared as a blocker or put onto the battlefield blocking during this combat."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Warrant",
+            "manaCost": "{W/U}{W/U}",
+            "typeLine": "Instant",
+            "oracleText": "Put target attacking or blocking creature on top of its owner's library.",
+            "script": {
+                "spellEffect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Library",
+                    "placement": "Top"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "StateOr",
+                                        "predicates": [
+                                            "IsAttacking",
+                                            "IsBlocking"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Warden",
+            "manaCost": "{3}{W}{U}",
+            "typeLine": "Sorcery",
+            "oracleText": "Create a 4/4 white and blue Sphinx creature token with flying and vigilance.",
+            "script": {
+                "spellEffect": {
+                    "type": "CreateToken",
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [
+                        "WHITE",
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Sphinx"
+                    ],
+                    "keywords": [
+                        "FLYING",
+                        "VIGILANCE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/f/8/f82ba894-7b10-45ae-9322-60ef85a2869d.jpg?1783933602"
+                }
+            }
+        }
+    ],
+    "hasNoManaCost": true
 }
 
 // Watchful Giant
