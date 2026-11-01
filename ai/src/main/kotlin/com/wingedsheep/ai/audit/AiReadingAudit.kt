@@ -44,6 +44,8 @@ import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.effects.TransformEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.targets.TargetOpponent
+import com.wingedsheep.sdk.scripting.targets.TargetPlayer
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import java.util.Locale
 
@@ -71,7 +73,7 @@ import java.util.Locale
  *  - [Check.INTENT] — [CardIntentAnalyzer.analyzeEffect] per effect slot (the spell, each trigger,
  *    each non-mana ability): a slot that earns no [IntentTag] at all is invisible to every intent
  *    consumer, and is attributed to each of its leaves — except the leaves that need no tag
- *    ([needsNoIntent]: a non-keyword counter on the source itself or on its controller, damage to a
+ *    ([needsNoIntent]: a non-keyword counter on the source itself, any counter on a player, damage to a
  *    player, life loss, a permanent untapping, moving, transforming or animating itself, an upkeep
  *    cost its controller pays or suffers on its own source, an "unless" whose suffer is life loss).
  *  - [Check.COMBAT] — [CombatReach] over each leaf of a non-mana activated ability that changes
@@ -272,7 +274,7 @@ object AiReadingAudit {
                 }
             }
             if (spell != null) {
-                intent(spell, sink)
+                intent(spell, sink, script.targetRequirements)
                 if (face.instantSpeed) {
                     // HoldPolicy holds a COMBAT_TRICK spell whole, so every expiring leaf on it (the
                     // keyword beside the pump, too) waits for the same fight or response. Not a
@@ -302,7 +304,7 @@ object AiReadingAudit {
             abilityPolarity(ability.effect, ability.targetRequirements, lookup, sink) {
                 TargetPolarityAnalyzer.forAbility(card, ability, lookup)
             }
-            intent(ability.effect, sink)
+            intent(ability.effect, sink, ability.targetRequirements)
             combat(ability, sink)
             if (ability.timing == TimingRule.InstantSpeed) {
                 timing(ability.effect, sink) { ExpiringGrantWindow.hasExpiringReading(it, creatureGrants = true) }
@@ -325,7 +327,7 @@ object AiReadingAudit {
             if (TargetlessEntry.handsBackTheEntry(trigger) && !movesToHand(trigger.effect)) {
                 sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only hands back what this permanent exiled, when it leaves")
             } else {
-                intent(trigger.effect, sink)
+                intent(trigger.effect, sink, reqs)
             }
             modal(trigger.effect, sink)
             out += AbilityReading(AbilityRef(AbilityKind.TRIGGERED, i + 1, faceName, describe { trigger.description }), sink.findings)
@@ -334,7 +336,7 @@ object AiReadingAudit {
         // ── State triggers ──────────────────────────────────────────────────
         script.stateTriggeredAbilities.forEachIndexed { i, trigger ->
             val sink = Sink()
-            intent(trigger.effect, sink)
+            intent(trigger.effect, sink, emptyList())
             modal(trigger.effect, sink)
             out += AbilityReading(AbilityRef(AbilityKind.STATE_TRIGGER, i + 1, faceName, describe { trigger.description }), sink.findings)
         }
@@ -416,7 +418,10 @@ object AiReadingAudit {
      * Intent per ability, not per leaf: a pipeline's plumbing ("shuffle", "select from the gathered
      * cards") earns no tag of its own and needs none when a sibling leaf reads the ability.
      */
-    private fun intent(root: Effect, sink: Sink) {
+    private fun intent(root: Effect, sink: Sink, reqs: List<TargetRequirement>) {
+        // "Target opponent gets a poison counter": the bound slot is a player, so the counter is a clock too.
+        val playerSlots = reqs.filter { it is TargetPlayer || it is TargetOpponent }.mapNotNullTo(HashSet()) { it.id }
+        val noIntent = { leaf: Effect -> needsNoIntent(leaf) || countsOnAPlayerSlot(leaf, playerSlots) }
         val tags = CardIntentAnalyzer.analyzeEffect(root).tags
         // Card selection alone doesn't read an ability: scry is a rider on half the cards that
         // carry it, so a scry beside an unread payoff must not hide that payoff from the audit.
@@ -430,12 +435,12 @@ object AiReadingAudit {
         // labelled by that effect — the step it schedules, not the scheduling. Its price ("sacrifice
         // it at end step") needs no intent, like a gate's cost: EffectWalker.firedLeaves drops it.
         val leaves = fired(EffectWalker.payoffLeaves(root))
-        val unreadLeaves = leaves.filterNot(::needsNoIntent)
+        val unreadLeaves = leaves.filterNot(noIntent)
         labels(unreadLeaves.filterNot { it is ForEachEffect }).filterNot { it.first in NO_INTENT_PIPELINES }.forEach { (label, leaf) ->
             sink += gap(Check.INTENT, unread, label, step(leaves, leaf))
         }
         for (each in unreadLeaves.filterIsInstance<ForEachEffect>()) {
-            labels(fired(EffectWalker.payoffLeaves(each.body)).filterNot(::needsNoIntent)).filterNot { it.first in NO_INTENT_PIPELINES }.forEach { (label, _) ->
+            labels(fired(EffectWalker.payoffLeaves(each.body)).filterNot(noIntent)).filterNot { it.first in NO_INTENT_PIPELINES }.forEach { (label, _) ->
                 sink += gap(Check.INTENT, unread, "ForEach>$label", step(leaves, each))
             }
         }
@@ -630,8 +635,21 @@ object AiReadingAudit {
             is AddDynamicCountersEffect -> leaf.counterType to leaf.target
             else -> return false
         }
-        if (target != EffectTarget.Self && target != EffectTarget.Controller) return false
+        // A counter on a player (poison, rad, energy) is a clock or a resource, like life loss: no
+        // permanent to answer, nothing to hold, and which player gets it is the polarity check's question.
+        if (isPlayerTarget(target)) return true
+        if (target != EffectTarget.Self) return false
         return Keyword.entries.none { it.name == counter.name }
+    }
+
+    /** A counter placed on a bound target slot that only a player can fill (see [needsNoIntent]'s player counters). */
+    private fun countsOnAPlayerSlot(leaf: Effect, playerSlots: Set<String>): Boolean {
+        val target = when (leaf) {
+            is AddCountersEffect -> leaf.target
+            is AddDynamicCountersEffect -> leaf.target
+            else -> return false
+        }
+        return (target as? EffectTarget.BoundVariable)?.name in playerSlots
     }
 
     private fun movesToHand(effect: Effect): Boolean = EffectWalker.leaves(effect).any { leaf ->
