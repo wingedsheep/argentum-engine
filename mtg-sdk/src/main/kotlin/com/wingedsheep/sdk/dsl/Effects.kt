@@ -3306,12 +3306,14 @@ object Effects {
      * Add one mana of any color that a land in the given scope could produce.
      * Used for cards like Fellwar Stone (OPPONENTS), Exotic Orchard (OPPONENTS),
      * Reflecting Pool (YOU). Sugar for
-     * `AddManaOfChoice(ManaColorSet.LandsCouldProduce(scope))`.
+     * `AddManaOfChoice(ManaColorSet.LandsCouldProduce(scope, landFilter))`; [landFilter] narrows
+     * the lands read (Plaza of Harmony: "a Gate you control" is `Land.withSubtype("Gate")`).
      */
     fun AddManaOfColorLandsCouldProduce(
         scope: LandControllerScope,
-        restriction: ManaRestriction? = null
-    ): Effect = AddManaOfChoiceEffect(ManaColorSet.LandsCouldProduce(scope), DynamicAmount.Fixed(1), restriction)
+        restriction: ManaRestriction? = null,
+        landFilter: GameObjectFilter? = null,
+    ): Effect = AddManaOfChoiceEffect(ManaColorSet.LandsCouldProduce(scope, landFilter), DynamicAmount.Fixed(1), restriction)
 
     /**
      * Add one mana of any color in your commander's color identity. Used by Arcane Signet

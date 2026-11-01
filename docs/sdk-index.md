@@ -1393,7 +1393,7 @@ Families:
 - `ManaColorSet.ColorsOf(entity: EffectTarget)` — The colors of one object — entity resolved against the running effect: a pipeline-gathered card (`EffectTarget.PipelineTarget`), a target, the source (`EffectTarget.Self`).
 - `ManaColorSet.CommanderIdentity` — The union of color identities of every commander registered to the controller (Partner / Background sum their identities).
 - `ManaColorSet.ExceptChosenColor(base: ManaColorSet)` — base minus the color chosen earlier in this resolution (`ChooseColorThenEffect`'s chosen-color context) — "any **other** color".
-- `ManaColorSet.LandsCouldProduce(scope: LandControllerScope)` — The union of colors that any land in the given scope could produce (CR 106.7 / Fellwar Stone rulings).
+- `ManaColorSet.LandsCouldProduce(scope: LandControllerScope, landFilter: GameObjectFilter?)` — The union of colors that any land in the given scope could produce (CR 106.7 / Fellwar Stone rulings).
 - `ManaColorSet.SourceChosenColor` — The single color recorded on the source permanent's `CastChoicesComponent` (set when it entered the battlefield, e.g., via `EntersWithChoice(COLOR)`).
 - `ManaColorSet.Specific(colors: Set<Color>)` — A fixed, hand-authored set of colors (e.g., `{R}{G}` for Mossfire Valley).
 - `ManaColorSet.Union(members: List<ManaColorSet>)` — The union of several pools — the player picks one color from any of them.

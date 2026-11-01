@@ -969,7 +969,7 @@ class PredicateEvaluator(
             // Reads the land's mana abilities off its definition (Naga Vitalist); fails closed with no registry.
             CardPredicate.CouldProduceColorlessMana -> cardRegistry?.let {
                 com.wingedsheep.engine.mechanics.mana.LandManaColorInspector
-                    .landCouldProduceColorless(state, projected, entityId, it)
+                    .landCouldProduceColorless(state, projected, entityId, it, this)
             } ?: false
 
             // Color predicates - use projected colors
