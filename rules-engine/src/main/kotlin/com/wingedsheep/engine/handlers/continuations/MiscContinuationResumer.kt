@@ -656,6 +656,7 @@ class MiscContinuationResumer(
                         context = context,
                         won = settled.results.firstOrNull() == true,
                         winsSoFar = continuation.winsSoFar,
+                        cardRegistry = services.cardRegistry,
                         decisionHandler = decisionHandler,
                         priorEvents = settled.events
                     )

@@ -6693,10 +6693,12 @@ object Effects {
      * won under [storeWinsAs] (Fiery Gambit). [FlipCoins]'s open-ended sibling: the run length is
      * discovered rather than given, and a lost flip ends it before the "flip again?" choice is
      * offered. Losing the first flip stores 0, which makes every `GTE 1` payoff gate fall away on its
-     * own — no separate "has no effect" branch needed.
+     * own — no separate "has no effect" branch needed. [mayStop] `false` drops the "flip again?"
+     * choice: the run continues until a flip is lost (Mirror March's "flip a coin until you lose a
+     * flip").
      */
-    fun FlipCoinsUntilLoss(storeWinsAs: String = "wins"): Effect =
-        com.wingedsheep.sdk.scripting.effects.FlipCoinsUntilLossEffect(storeWinsAs)
+    fun FlipCoinsUntilLoss(storeWinsAs: String = "wins", mayStop: Boolean = true): Effect =
+        com.wingedsheep.sdk.scripting.effects.FlipCoinsUntilLossEffect(storeWinsAs, mayStop)
 
     /**
      * [target] skips their next [part] — `TurnPart.DRAW_STEP` ("you skip your next draw step":

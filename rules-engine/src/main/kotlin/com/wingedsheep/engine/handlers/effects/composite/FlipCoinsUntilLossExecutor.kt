@@ -105,6 +105,7 @@ class FlipCoinsUntilLossExecutor(
                     context = context,
                     won = resolution.results.firstOrNull() == true,
                     winsSoFar = winsSoFar,
+                    cardRegistry = cardRegistry,
                     decisionHandler = decisionHandler,
                     priorEvents = priorEvents + resolution.events
                 )
@@ -122,6 +123,7 @@ class FlipCoinsUntilLossExecutor(
             context: EffectContext,
             won: Boolean,
             winsSoFar: Int,
+            cardRegistry: CardRegistry,
             decisionHandler: DecisionHandler,
             priorEvents: List<GameEvent>
         ): EffectResult {
@@ -134,15 +136,31 @@ class FlipCoinsUntilLossExecutor(
 
             val wins = winsSoFar + 1
 
-            // Backstop, not a game rule: the loop is only bounded by the flipper answering "stop", and
-            // a forced-win replacement plus an always-yes automated answer would never produce one.
+            // Backstop, not a game rule: under a forced-win replacement no flip can be lost, so the run
+            // is bounded only by the flipper answering "stop" — which an always-yes automated answer
+            // never gives, and the mandatory form (mayStop = false) never offers.
             // Far above any real run — the card that motivates this pays out fully at three.
             if (wins >= GameLimits.MAX_COIN_FLIPS_PER_EFFECT) {
                 System.err.println(
                     "GameLimits: flip-until-loss reached $wins won flips — stopping " +
-                        "(likely a forced-win replacement with an automated 'continue' answer)."
+                        "(likely a forced-win replacement with a mandatory run or an automated 'continue' answer)."
                 )
                 return finish(state, effect.storeWinsAs, wins, priorEvents)
+            }
+
+            // The mandatory form ("flip a coin until you lose a flip") has no choice to offer: a won
+            // flip is simply followed by the next one. Each coin still goes through flipOnce, so a
+            // Krark's Thumb pause mid-run keeps this effect (and its mayStop) in its frame.
+            if (!effect.mayStop) {
+                return flipOnce(
+                    state = state,
+                    effect = effect,
+                    context = context,
+                    winsSoFar = wins,
+                    cardRegistry = cardRegistry,
+                    decisionHandler = decisionHandler,
+                    priorEvents = priorEvents
+                )
             }
 
             val sourceId = context.sourceId
