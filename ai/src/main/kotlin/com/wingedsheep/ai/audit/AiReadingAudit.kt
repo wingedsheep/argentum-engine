@@ -406,18 +406,18 @@ object AiReadingAudit {
         val before = sink.findings.size
         val leaves = EffectWalker.payoffLeaves(root)
         val unreadLeaves = leaves.filterNot(::needsNoIntent)
-        labels(unreadLeaves.filterNot { it is ForEachEffect }).forEach { (label, leaf) ->
+        labels(unreadLeaves.filterNot { it is ForEachEffect }).filterNot { it.first in NO_INTENT_PIPELINES }.forEach { (label, leaf) ->
             sink += gap(Check.INTENT, unread, label, step(leaves, leaf))
         }
         for (each in unreadLeaves.filterIsInstance<ForEachEffect>()) {
-            labels(EffectWalker.payoffLeaves(each.body).filterNot(::needsNoIntent)).forEach { (label, _) ->
+            labels(EffectWalker.payoffLeaves(each.body).filterNot(::needsNoIntent)).filterNot { it.first in NO_INTENT_PIPELINES }.forEach { (label, _) ->
                 sink += gap(Check.INTENT, unread, "ForEach>$label", step(leaves, each))
             }
         }
         // Every untagged step needed no tag: say so, so the ability reads as understood rather
         // than as one nobody asked about.
         if (sink.findings.size == before) {
-            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, untaps, attaches or moves its own source, adds counters for its controller, or damages a player or makes one lose life")
+            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, untaps, attaches or moves its own source, adds counters for its controller, damages a player, makes one lose life, or mills one")
         }
     }
 
@@ -642,6 +642,15 @@ object AiReadingAudit {
         }.distinct().sorted().ifEmpty { listOf("?") }
         return "Pipeline(${from.joinToString("|")}→${to.joinToString("|")})"
     }
+
+    /**
+     * Whole pipelines that need no intent tag. Milling — the top of a library put into its owner's
+     * graveyard — always lands on a player, like life loss: on an opponent it is a clock the
+     * simulation prices on resolution, on you it is fuel for whatever later reads the graveyard. It
+     * answers nothing on the board and has no window to hold for; which player a targeted mill aims
+     * at is the polarity check's question, not intent's.
+     */
+    private val NO_INTENT_PIPELINES = setOf("Pipeline(TopOfLibrary→graveyard)")
 
     private val PIPELINE_STAGES = setOf(
         "GatherCardsEffect", "MoveCollectionEffect", "SelectFromCollectionEffect", "FilterCollectionEffect",
