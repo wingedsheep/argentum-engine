@@ -12889,6 +12889,16 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   cost {1} more to activate" →
   `IncreaseActivatedAbilityCost(GroupFilter(GameObjectFilter.Planeswalker.opponentControls()), DynamicAmounts.fixed(1), loyaltyAbilitiesOnly = true)`.
   (Carth the Lion's loyalty-symbol surcharge is the separate `LoyaltyAbilitiesCostAdditional`.)
+  `reach` is the same `ActivatedAbilityReach` axis as on `ReduceActivatedAbilityCost` (default
+  `MATCHING_PERMANENTS`). `ActivatedAbilityReach.ACTIVATED_BY_OPPONENTS` taxes every ability an
+  **opponent** of the static's controller activates, from any zone (an opponent's cycling from hand
+  pays too), whose source matches `filter`'s base filter; the static's controller's own activations
+  are untouched. A "during your turn" gate wraps it in `ConditionalStaticAbility(…, Conditions.IsYourTurn)`
+  — the activated-ability cost statics honour that wrapper, evaluated against the static's
+  controller. Tithe Taker: "During your turn, … abilities your opponents activate cost {1} more to
+  activate unless they're mana abilities" →
+  `ConditionalStaticAbility(IncreaseActivatedAbilityCost(GroupFilter(GameObjectFilter.Any), DynamicAmounts.fixed(1), excludeManaAbilities = true, reach = ActivatedAbilityReach.ACTIVATED_BY_OPPONENTS), Conditions.IsYourTurn)`
+  (its spell half is `ModifySpellCost(SpellCostTarget.OpponentsCast(GameObjectFilter.Any), CostModification.IncreaseGeneric(1), gating = CostGating.OnlyIf(Conditions.IsYourTurn))`).
 - `LoyaltyAbilitiesCostAdditional(amount = 1)` — planeswalkers' loyalty abilities this permanent's
   controller activates cost an additional [+`amount`]. Carth the Lion: "Planeswalkers' loyalty abilities
   you activate cost an additional [+1] to activate" → `LoyaltyAbilitiesCostAdditional(1)`. The surcharge is
