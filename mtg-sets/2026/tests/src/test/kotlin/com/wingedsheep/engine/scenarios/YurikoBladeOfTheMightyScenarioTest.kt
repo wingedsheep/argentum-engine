@@ -50,6 +50,30 @@ class YurikoBladeOfTheMightyScenarioTest : ScenarioTestBase() {
                 val bears = game.findPermanent("Grizzly Bears")!!
                 game.state.projectedState.hasKeyword(bears, Keyword.DOUBLE_STRIKE) shouldBe false
             }
+
+            // CR 506.6: alone against *that player* — a second attacker on a planeswalker doesn't count.
+            test("the player's only attacker gains double strike while another attacks a planeswalker") {
+                val game = game(Phase.COMBAT, Step.DECLARE_ATTACKERS) { it.withCardOnBattlefield(2, "Liliana Vess") }
+                game.declareAttackersWithPermanentTargets(
+                    playerAttackers = mapOf("Grizzly Bears" to 2),
+                    permanentAttackers = mapOf("Yuriko, Blade of the Mighty" to "Liliana Vess")
+                ).error shouldBe null
+                game.resolveStack()
+
+                val projected = game.state.projectedState
+                projected.hasKeyword(game.findPermanent("Grizzly Bears")!!, Keyword.DOUBLE_STRIKE) shouldBe true
+                projected.hasKeyword(game.findPermanent("Yuriko, Blade of the Mighty")!!, Keyword.DOUBLE_STRIKE) shouldBe false
+            }
+
+            test("attacking a planeswalker alone isn't attacking a player alone") {
+                val game = game(Phase.COMBAT, Step.DECLARE_ATTACKERS) { it.withCardOnBattlefield(2, "Liliana Vess") }
+                game.declareAttackersWithPermanentTargets(
+                    permanentAttackers = mapOf("Grizzly Bears" to "Liliana Vess")
+                ).error shouldBe null
+                game.resolveStack()
+
+                game.state.projectedState.hasKeyword(game.findPermanent("Grizzly Bears")!!, Keyword.DOUBLE_STRIKE) shouldBe false
+            }
         }
 
         context("during combat, players can't cast spells or activate non-mana abilities") {

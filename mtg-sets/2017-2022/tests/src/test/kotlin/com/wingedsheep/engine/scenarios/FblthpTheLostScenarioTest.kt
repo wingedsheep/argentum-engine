@@ -142,7 +142,10 @@ class FblthpTheLostScenarioTest : FunSpec({
         // In response, a spell targets Fblthp: its shuffle trigger resolves first and it leaves.
         cast(driver, me, unsummon, listOf(ChosenTarget.Permanent(fblthp)))
 
-        driver.state.getZone(ZoneKey(me, Zone.LIBRARY)) shouldContain fblthp
+        // Shuffled away — though the enters trigger's two draws can pull it straight back off the
+        // shuffled library, so it's in the library or (drawn again) the hand, never the battlefield.
+        driver.state.getBattlefield() shouldNotContain fblthp
+        (driver.state.getZone(ZoneKey(me, Zone.LIBRARY)) + driver.state.getZone(ZoneKey(me, Zone.HAND))) shouldContain fblthp
         driver.getHandSize(me) shouldBe handBefore - 2 + 2
     }
 

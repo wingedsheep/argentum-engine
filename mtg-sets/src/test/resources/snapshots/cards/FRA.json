@@ -8820,17 +8820,9 @@
                 "id": "Jiang Yanggu, Alone:1",
                 "trigger": {
                     "type": "AttackEvent",
-                    "filter": {
-                        "cardPredicates": [
-                            "IsCreature"
-                        ],
-                        "statePredicates": [
-                            "IsAttackingAnOpponent"
-                        ],
-                        "controllerPredicate": "ControlledByYou"
-                    },
+                    "filter": "creature ctrl:you",
                     "requires": [
-                        "AttacksAlone"
+                        "AttacksPlayerAlone"
                     ]
                 },
                 "binding": "ANY",
@@ -21567,17 +21559,9 @@
                 "id": "Yuriko, Blade of the Mighty:1",
                 "trigger": {
                     "type": "AttackEvent",
-                    "filter": {
-                        "cardPredicates": [
-                            "IsCreature"
-                        ],
-                        "statePredicates": [
-                            "IsAttackingAnOpponent"
-                        ],
-                        "controllerPredicate": "ControlledByYou"
-                    },
+                    "filter": "creature ctrl:you",
                     "requires": [
-                        "AttacksAlone"
+                        "AttacksPlayerAlone"
                     ]
                 },
                 "binding": "ANY",

@@ -1186,11 +1186,17 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
          * with-another-matching-creature, …) is one new sealed-case + one
          * matcher branch, not a new field here.
          *
+         * On an `ANY`/`OTHER` binding a per-attacker predicate is checked against each attacker
+         * the trigger fires for, not against the trigger's source.
+         *
          * Current cases: [AttackPredicate.Alone],
          * [AttackPredicate.AttackerCountAtLeast],
          * [AttackPredicate.AttackersTotalPowerAtLeast],
          * [AttackPredicate.FirstTimeEachTurn],
-         * [AttackPredicate.DefenderIsPlayer].
+         * [AttackPredicate.DefenderIsPlayer],
+         * [AttackPredicate.DefenderIsBattle],
+         * [AttackPredicate.AloneAgainstPlayer],
+         * [AttackPredicate.AttackedAlongsideGreaterPower].
          */
         val requires: Set<AttackPredicate> = emptySet(),
     ) : EventPattern {

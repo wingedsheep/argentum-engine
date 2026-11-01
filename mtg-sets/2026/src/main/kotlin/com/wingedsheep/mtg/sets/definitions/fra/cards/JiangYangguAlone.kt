@@ -13,10 +13,9 @@ import com.wingedsheep.sdk.scripting.events.AttackPredicate
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
- * Jiang Yanggu, Alone — "attacks a player alone" is the lone declared attacker
- * ([AttackPredicate.Alone]) whose defender is a player: a creature you control can only attack a
- * player who is your opponent, so `attackingAnOpponent()` on the attacker filter is exactly "a
- * player" (it excludes planeswalkers and battles).
+ * Jiang Yanggu, Alone — "attacks a player alone" is [AttackPredicate.AloneAgainstPlayer]
+ * (CR 506.6): the only creature declared as attacking that player. Other creatures attacking a
+ * planeswalker, a battle or another player don't stop it.
  *
  * The +1/+1 counters are counted on resolution, after the loot, so the card just discarded counts.
  */
@@ -33,7 +32,7 @@ val JiangYangguAlone = card("Jiang Yanggu, Alone") {
     keywords(Keyword.MENACE)
 
     triggeredAbility {
-        trigger = Triggers.a(GameObjectFilter.Creature.youControl().attackingAnOpponent()).attacks(setOf(AttackPredicate.Alone))
+        trigger = Triggers.a(GameObjectFilter.Creature.youControl()).attacks(setOf(AttackPredicate.AloneAgainstPlayer))
         effect = Patterns.Hand.discardCards(1) then
             Effects.DrawCards(1) then
             Effects.AddDynamicCounters(
