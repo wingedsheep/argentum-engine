@@ -1,0 +1,771 @@
+{
+  "set phasers to . . .": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "captain james t. kirk": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "blood crypt": {
+    "archetypes": [],
+    "fixing": [
+      "B",
+      "R"
+    ],
+    "splashable": true
+  },
+  "breeding pool": {
+    "archetypes": [],
+    "fixing": [
+      "U",
+      "G"
+    ],
+    "splashable": false
+  },
+  "godless shrine": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "B"
+    ],
+    "splashable": true
+  },
+  "hallowed fountain": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U"
+    ],
+    "splashable": true
+  },
+  "overgrown tomb": {
+    "archetypes": [],
+    "fixing": [
+      "B",
+      "G"
+    ],
+    "splashable": true
+  },
+  "sacred foundry": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "R"
+    ],
+    "splashable": true
+  },
+  "steam vents": {
+    "archetypes": [],
+    "fixing": [
+      "U",
+      "R"
+    ],
+    "splashable": true
+  },
+  "stomping ground": {
+    "archetypes": [],
+    "fixing": [
+      "R",
+      "G"
+    ],
+    "splashable": true
+  },
+  "temple garden": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "G"
+    ],
+    "splashable": true
+  },
+  "watery grave": {
+    "archetypes": [],
+    "fixing": [
+      "U",
+      "B"
+    ],
+    "splashable": true
+  },
+  "captain benjamin sisko": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "command decision": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "excalbian gamemaster": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "federation field medic": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "free borg revolutionaries": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": true
+  },
+  "test of conviction": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "federation probe": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "humpback whales": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": true
+  },
+  "jett reno, problem solver": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "test of priorities": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "grand nagus zek": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "rogue artificial intelligence": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": true
+  },
+  "captain michael burnham": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "d-7 battle cruiser": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "exploratory mission": {
+    "archetypes": [],
+    "fixing": [
+      "R"
+    ],
+    "splashable": true
+  },
+  "horta": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": true
+  },
+  "pah-wraith": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "perils of the past": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "planetary patrol": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "quark, humble proprietor": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "cold-blooded crew": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "dathon and picard at el-adrel": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "final frontier": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "jadzia dax, living legacy": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "saurian explorer": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "test of courage": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "xenobotanist": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "all good things...": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "cleveland booker, empath": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "constable odo": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "dal r'el, augment orphan": {
+    "archetypes": [],
+    "fixing": [
+      "R",
+      "G"
+    ],
+    "splashable": true
+  },
+  "d'vana tendi, optimistic ensign": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "hit it!": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "live long and prosper": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "lore, positronic provocateur": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "l'rell, fierce visionary": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "mirror universe intrusion": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "the destruction of praxis": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "genesis effect": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": true
+  },
+  "sarcophagus, ship of the dead": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "culber and stamets, star-crossed": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": true
+  },
+  "david and carol marcus, creators": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "dr. leonard \"bones\" mccoy": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "genesis device": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "warp speed": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": true
+  },
+  "worf, honor-bound warrior": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "class-f shuttlecraft": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "warp core": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "andoria": {
+    "archetypes": [],
+    "fixing": [
+      "U",
+      "R"
+    ],
+    "splashable": true
+  },
+  "bajor": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "R"
+    ],
+    "splashable": true
+  },
+  "cardassia prime": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "B"
+    ],
+    "splashable": true
+  },
+  "earth, sector 001": {
+    "archetypes": [],
+    "fixing": [
+      "U",
+      "G"
+    ],
+    "splashable": false
+  },
+  "federation outpost": {
+    "archetypes": [],
+    "fixing": [
+      "W"
+    ],
+    "splashable": true
+  },
+  "ferenginar": {
+    "archetypes": [],
+    "fixing": [
+      "B",
+      "G"
+    ],
+    "splashable": true
+  },
+  "orion": {
+    "archetypes": [],
+    "fixing": [
+      "R",
+      "G"
+    ],
+    "splashable": true
+  },
+  "qo'nos": {
+    "archetypes": [],
+    "fixing": [
+      "B",
+      "R"
+    ],
+    "splashable": true
+  },
+  "quark's bar": {
+    "archetypes": [],
+    "fixing": [
+      "R"
+    ],
+    "splashable": true
+  },
+  "risa": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "G"
+    ],
+    "splashable": true
+  },
+  "romulus": {
+    "archetypes": [],
+    "fixing": [
+      "U",
+      "B"
+    ],
+    "splashable": true
+  },
+  "spatial anomaly": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": true
+  },
+  "starfleet academy": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "subspace anomaly": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": true
+  },
+  "unexplored territory": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "the unicomplex": {
+    "archetypes": [],
+    "fixing": [
+      "B"
+    ],
+    "splashable": true
+  },
+  "vulcan": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U"
+    ],
+    "splashable": true
+  },
+  "plains": {
+    "archetypes": [],
+    "fixing": [
+      "W"
+    ],
+    "splashable": false
+  },
+  "island": {
+    "archetypes": [],
+    "fixing": [
+      "U"
+    ],
+    "splashable": false
+  },
+  "swamp": {
+    "archetypes": [],
+    "fixing": [
+      "B"
+    ],
+    "splashable": false
+  },
+  "mountain": {
+    "archetypes": [],
+    "fixing": [
+      "R"
+    ],
+    "splashable": false
+  },
+  "forest": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "rok-tahk, budding scientist": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "artificial anomaly": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": true
+  },
+  "ni'var science academy": {
+    "archetypes": [],
+    "fixing": [
+      "U"
+    ],
+    "splashable": true
+  },
+  "encounter the unknown": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "stable wormhole": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "u.s.s. voyager, lone wanderer": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "gaseous anomaly": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "temporal anomaly": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "emergency holographic crew": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "the naked time": {
+    "archetypes": [],
+    "fixing": [
+      "R"
+    ],
+    "splashable": true
+  },
+  "savvy profiteer": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "rishkar, peema renegade": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "tatyova, benthic druid": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "hull breach": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "jhoira, weatherlight captain": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "riku of many paths": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
+  },
+  "minamo, school at water's edge": {
+    "archetypes": [],
+    "fixing": [
+      "U"
+    ],
+    "splashable": false
+  },
+  "talon gates of madara": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "phyrexian tower": {
+    "archetypes": [],
+    "fixing": [
+      "B"
+    ],
+    "splashable": true
+  },
+  "shizo, death's storehouse": {
+    "archetypes": [],
+    "fixing": [
+      "B"
+    ],
+    "splashable": true
+  }
+}
