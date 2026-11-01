@@ -1133,7 +1133,7 @@ class CastPermissionUtils(
                         ) continue
                         if (!activationReached(
                                 state, ability.reach, ability.filter, entityId, owner, sourceId, activatorId,
-                                requireSourceOnBattlefield = sourceOnBattlefield,
+                                sourceInScope = sourceOnBattlefield,
                             )
                         ) continue
                         net += evaluator.evaluate(
@@ -1155,7 +1155,7 @@ class CastPermissionUtils(
                         // (Skyseer's Chariot names a card, and its hand copy's cycling pays too).
                         if (!activationReached(
                                 state, ability.reach, ability.filter, entityId, owner, sourceId, activatorId,
-                                requireSourceOnBattlefield = true,
+                                sourceInScope = true,
                             )
                         ) continue
                         net -= evaluator.evaluate(
@@ -1176,7 +1176,7 @@ class CastPermissionUtils(
      * ability of [sourceId] by [activatorId], per its [reach]:
      * - `MATCHING_PERMANENTS` — the source matches [filter]'s scope (see
      *   [activatedAbilityReductionApplies]), and for a reduction only while the source is on the
-     *   battlefield ([requireSourceOnBattlefield]).
+     *   battlefield ([sourceInScope] carries that; a tax passes `true`, reaching any zone).
      * - `ACTIVATED_BY_YOU` / `ACTIVATED_BY_OPPONENTS` — the activator, not the source's zone or
      *   controller, decides ("abilities you / your opponents activate": a hand card's cycling counts),
      *   and the source matches [filter]'s base filter wherever it is.
@@ -1189,11 +1189,11 @@ class CastPermissionUtils(
         owner: EntityId,
         sourceId: EntityId,
         activatorId: EntityId,
-        requireSourceOnBattlefield: Boolean,
+        sourceInScope: Boolean,
     ): Boolean {
         val activatorMatches = when (reach) {
             ActivatedAbilityReach.MATCHING_PERMANENTS ->
-                return requireSourceOnBattlefield &&
+                return sourceInScope &&
                     activatedAbilityReductionApplies(state, staticSourceId, filter, sourceId)
             ActivatedAbilityReach.ACTIVATED_BY_YOU -> activatorId == owner
             ActivatedAbilityReach.ACTIVATED_BY_OPPONENTS -> state.isOpponentOf(activatorId, owner)
