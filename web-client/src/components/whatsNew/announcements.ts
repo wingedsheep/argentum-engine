@@ -30,6 +30,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-war',
+    date: '2026-11-01',
+    kind: 'set',
+    setCode: 'WAR',
+    title: 'War of the Spark is complete',
+    body:
+      "War of the Spark is the Ravnica finale: Bolas's Dreadhorde invades, and every pack holds a planeswalker, from uncommon walkers with a static ability to the mythic bombs. Amass builds a growing Zombie Army, proliferate pumps counters and loyalty alike, and every colour pair has a plan, from wide teams of soldiers to an ever-growing undead army.",
+    tryIf: 'planeswalker-heavy Limited, counters and proliferate',
+  },
+  {
     id: 'set-m20',
     date: '2026-10-31',
     kind: 'set',

@@ -510,6 +510,24 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
       { name: 'Heroic', inPlay: 'Targeting your own creature with Auras and tricks grows it, rewarding aggression but leaving you exposed to removal in response.' },
     ],
   },
+  WAR: {
+    tagline: 'A planeswalker in every pack: boards fill with walkers to attack and defend, Zombie Armies grow with amass, and proliferate pushes counters and loyalty higher every turn.',
+    setting: 'Ravnica under invasion, as Nicol Bolas and his Dreadhorde of Eternals turn the guild city into a battlefield for the Gatewatch and their allies.',
+    gameplay: 'Every pack holds a planeswalker, so most games feature several: attacking them down is often worth more than hitting the player, and holding back blockers to protect your own matters. Blue-black and black-red amass a single Zombie Army that keeps growing, green-white and green-blue proliferate +1/+1 counters and loyalty, white-black drains whenever creatures and walkers die, and red-white rewards targeting its own creatures. Cheap removal like Despark and Tyrant\'s Scorn keeps the rare walkers in check.',
+    tips: [
+      'Uncommon planeswalkers are strong picks: their static ability works the moment they land, and the minus ability is usually a spell in its own right.',
+      'Attack planeswalkers early; a walker left alone for two turns usually pays for itself several times over.',
+      'Amass cards all grow the same Army, so a deck full of them turns several small effects into one big threat.',
+    ],
+    tryIf: 'planeswalker-heavy Limited, counters and proliferate',
+    power: 4, speed: 3, complexity: 4,
+    themes: ['counters', 'tokens', 'multicolor'],
+    mechanics: [
+      { name: 'Planeswalkers', inPlay: 'One in every pack; combat becomes a question of whether to hit the player or the walker, and protecting your own walker shapes blocks.' },
+      { name: 'Amass', inPlay: 'Puts +1/+1 counters on your one Zombie Army, creating it first if needed, so every amass card stacks into the same growing creature.' },
+      { name: 'Proliferate', inPlay: 'Adds one more of each kind of counter you choose, growing +1/+1 counters, Armies and planeswalker loyalty at once.' },
+    ],
+  },
   M20: {
     tagline: 'A classic core-set format with an Elemental twist: solid two-colour decks, cheap removal and a handful of rare bombs, with Elementals tying blue, red and green together.',
     setting: 'A core set with no plane, headlined by Chandra, the five Cavaliers and an Elemental subtheme.',

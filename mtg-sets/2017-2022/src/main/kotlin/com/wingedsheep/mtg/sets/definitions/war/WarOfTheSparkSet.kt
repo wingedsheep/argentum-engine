@@ -18,7 +18,6 @@ object WarOfTheSparkSet : MtgSet {
     override val code = "WAR"
     override val displayName = "War of the Spark"
     override val releaseDate = "2019-05-03"
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
