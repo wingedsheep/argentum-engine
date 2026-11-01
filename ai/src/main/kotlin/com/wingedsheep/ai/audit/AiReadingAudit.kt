@@ -8,6 +8,7 @@ import com.wingedsheep.ai.engine.knowledge.ExpiringGrantWindow
 import com.wingedsheep.ai.engine.knowledge.IntentTag
 import com.wingedsheep.ai.engine.knowledge.TargetPolarity
 import com.wingedsheep.ai.engine.knowledge.TargetPolarityAnalyzer
+import com.wingedsheep.ai.engine.knowledge.TargetlessEntry
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
@@ -317,7 +318,15 @@ object AiReadingAudit {
             abilityPolarity(trigger.effect, reqs, lookup, sink) {
                 TargetPolarityAnalyzer.forRequirements(trigger.effect, reqs, lookup, source = card)
             }
-            intent(trigger.effect, sink)
+            // "When this leaves the battlefield, return the exiled card" (O-Ring, Fiend Hunter, champion)
+            // needs no intent: it never stands alone — it is the price of the entry's exile, with no
+            // target to aim and no window to choose, and the entry trigger already carries the reading.
+            // One that puts the cards into a hand stays flagged: that can be a payoff (Hoarding Dragon).
+            if (TargetlessEntry.handsBackTheEntry(trigger) && !movesToHand(trigger.effect)) {
+                sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only hands back what this permanent exiled, when it leaves")
+            } else {
+                intent(trigger.effect, sink)
+            }
             modal(trigger.effect, sink)
             out += AbilityReading(AbilityRef(AbilityKind.TRIGGERED, i + 1, faceName, describe { trigger.description }), sink.findings)
         }
@@ -623,6 +632,10 @@ object AiReadingAudit {
         }
         if (target != EffectTarget.Self && target != EffectTarget.Controller) return false
         return Keyword.entries.none { it.name == counter.name }
+    }
+
+    private fun movesToHand(effect: Effect): Boolean = EffectWalker.leaves(effect).any { leaf ->
+        leaf is MoveCollectionEffect && (leaf.destination as? CardDestination.ToZone)?.zone == Zone.HAND
     }
 
     /** A leaf that only sacrifices, taps or phases out its own source — the "suffer" of an upkeep cost. */
