@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- #PR Casts a protective trick (Fake Your Own Death, Feign Death, Blossoming Defense) in response to removal aimed at its creature instead of holding it for combat, and reads a granted "when this dies, return it to the battlefield" as protection
 - #4230 Reads amass (War of the Spark, Lord of the Rings) as making a creature token: aims removal at a permanent that amasses every turn (Dreadhorde Invasion) over an idle one, and values amass cards in drafts and on the board as token makers
 - #4228 Equips an Equipment that grants a trigger paying its controller (Ceremonial Knife, Spare Dagger, Sunfire Torch, Infantry Shield) onto its best creature rather than its worst, and reads Auras granting such triggers (Sticky Fingers, Cathar's Call) as gifts for its own creatures
 - #4224 Stops paying to animate a manland (Restless Spire, Mishra's Factory, Crawling Barrens) once it has no fight left this turn — in its own postcombat main or the opponent's end step — while still animating one to attack

@@ -705,6 +705,10 @@ class HoldPolicy(
     private fun responseWindowFor(state: GameState, playerId: EntityId, pump: CardIntent): TimingVerdict {
         val projected = state.projectedState
         var unreadable = false
+        // A trick that also protects (hexproof, indestructible, regeneration, a dies-and-returns
+        // grant) can answer removal toughness is no defence against. Whether it answers *this* one
+        // (indestructible doesn't stop exile) is the simulation's call: no bonus, but no veto.
+        var protectable = false
 
         for (stackId in state.stack) {
             val container = state.getEntity(stackId) ?: continue
@@ -725,14 +729,25 @@ class HoldPolicy(
 
             // Null reach on a card we *did* read is destruction, exile or bounce — toughness is no
             // defence against any of them — or a dynamic amount (X burn, a -X/-X) whose size the
-            // static reading cannot bound; see [CardIntent.removalReach]. No pump is priced against either.
-            val reach = threat.removalReach ?: continue
+            // static reading cannot bound; see [CardIntent.removalReach]. No pump is priced against
+            // either — but a trick that also protects may still answer one ([protectable]).
+            val reach = threat.removalReach
+            if (reach == null) {
+                if (IntentTag.PROTECTION in pump.tags && threat.tags.any { it in REMOVAL_TAGS } &&
+                    victims.any { projected.isCreature(it) }
+                ) protectable = true
+                continue
+            }
             if (victims.any { savedByPump(state, projected, it, reach, pump) }) {
                 return TimingVerdict.Adjust(RESPONSE_WINDOW)
             }
         }
 
-        return if (unreadable) TimingVerdict.Adjust(RESPONSE_WINDOW) else TimingVerdict.NoWindow
+        return when {
+            unreadable -> TimingVerdict.Adjust(RESPONSE_WINDOW)
+            protectable -> TimingVerdict.Neutral
+            else -> TimingVerdict.NoWindow
+        }
     }
 
     /**
