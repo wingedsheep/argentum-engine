@@ -111,7 +111,7 @@ object UntargetableByRules {
      * the targets of spells or abilities") among the battlefield's projected static abilities,
      * with the permanent that holds it. Read off projection, so a printed lock, a granted one and
      * ability loss are all handled the way projection handles them. Empty in the common case;
-     * callers compute it once per targeting attempt and only consult it for off-battlefield cards.
+     * callers compute it once per targeting attempt and consult it for every non-player candidate.
      */
     fun zoneLocks(state: GameState): List<Pair<EntityId, CardsInZonesCantBeTargeted>> {
         val projected = state.projectedState
