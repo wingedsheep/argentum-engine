@@ -34,6 +34,7 @@ import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.ScryEffect
 import com.wingedsheep.sdk.scripting.effects.SurveilEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
+import com.wingedsheep.sdk.scripting.effects.TransformEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import java.util.Locale
@@ -63,7 +64,7 @@ import java.util.Locale
  *    each non-mana ability): a slot that earns no [IntentTag] at all is invisible to every intent
  *    consumer, and is attributed to each of its leaves — except the leaves that need no tag
  *    ([needsNoIntent]: a non-keyword counter on the source itself or on its controller, damage to a
- *    player, life loss).
+ *    player, life loss, a permanent untapping, moving or transforming itself).
  *  - [Check.COMBAT] — [CombatReach] over each leaf of a non-mana activated ability that changes
  *    power/toughness, keywords, P/T counters or blocking, and that combat simulation cannot see.
  *  - [Check.TIMING] — an until-end-of-turn leaf on an instant-speed activation or an instant-speed
@@ -570,6 +571,10 @@ object AiReadingAudit {
         // ability, or a blocker after it attacked), which the simulation already sees on the board.
         // Untapping a *chosen* target stays flagged.
         if (leaf is TapUntapEffect && !leaf.tap && leaf.target == EffectTarget.Self) return true
+        // A permanent transforming itself (a werewolf, a DFC's "transform this") has no target and is
+        // no spell to time: its payoff is the face it becomes, which the simulation sees on the board.
+        // Transforming another permanent stays flagged.
+        if (leaf is TransformEffect && leaf.target == EffectTarget.Self) return true
         // Damage to a player is a clock: the evaluator prices the life it takes on resolution, it
         // answers nothing on the board, and life lost now or one window later is the same life.
         // Which player a targeted one aims at is the polarity check's question, not intent's.
