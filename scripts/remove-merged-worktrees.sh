@@ -12,7 +12,7 @@
 #     (squash merges leave no ancestry in main, so the PR is the proof).
 # And it is skipped when:
 #   * it is the main worktree or the current one, or it is locked;
-#   * it was active within --hours (default 24): any file in it changed (build output included)
+#   * it was active within --hours (default 1): any file in it changed (build output included)
 #     or its HEAD moved (newest reflog entry — not the reflog file's mtime, which `git gc`
 #     rewrites; not the index's, which any `git status` refreshes). Agents start from a fresh
 #     worktree at origin/main, which would otherwise read as "landed" the moment it exists;
@@ -25,12 +25,12 @@
 #
 # Usage:
 #   scripts/remove-merged-worktrees.sh            # list what would go and why the rest stay
-#   scripts/remove-merged-worktrees.sh --hours 72 --apply
+#   scripts/remove-merged-worktrees.sh --hours 6 --apply
 
 set -euo pipefail
 
 APPLY=0
-HOURS=24
+HOURS=1
 while [ $# -gt 0 ]; do
     case "$1" in
         --apply) APPLY=1; shift ;;

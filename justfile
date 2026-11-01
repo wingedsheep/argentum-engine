@@ -317,10 +317,10 @@ install-gradle-init:
 prune-worktrees DAYS="7" *ARGS:
     scripts/prune-worktree-builds.sh --days {{DAYS}} {{ARGS}}
 
-# Removes a worktree only when it has been idle for --hours (24), its HEAD is in origin/main or a merged PR, it has no
+# Removes a worktree only when it has been idle for --hours (1), its HEAD is in origin/main or a merged PR, it has no
 # uncommitted or untracked change, and no running java/gradle process references it. Branches stay.
 #   just remove-merged-worktrees            # what would go, and why the rest stay
-#   just remove-merged-worktrees --hours 72 --apply   # remove the ones idle for 3 days
+#   just remove-merged-worktrees --apply           # remove them (idle 1h+; --hours N to widen)
 # Remove worktrees whose work already landed (DRY RUN unless --apply)
 [group: 'env']
 remove-merged-worktrees *ARGS:
