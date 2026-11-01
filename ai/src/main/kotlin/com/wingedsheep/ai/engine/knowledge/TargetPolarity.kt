@@ -49,6 +49,8 @@ import com.wingedsheep.sdk.scripting.effects.CantBeRegeneratedEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
 import com.wingedsheep.sdk.scripting.effects.CounterEffect
 import com.wingedsheep.sdk.scripting.effects.CreatePredefinedTokenEffect
+import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
+import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.CounterTargetSource
 import com.wingedsheep.sdk.scripting.effects.CreateAuraTokenEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfTargetEffect
@@ -78,6 +80,7 @@ import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.scripting.targets.TargetOther
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import java.util.concurrent.ConcurrentHashMap
@@ -581,24 +584,62 @@ object TargetPolarityAnalyzer {
     /**
      * What a triggered ability granted to the enchanted creature does for that creature's
      * controller, who controls the granted ability: its leaves aimed at the creature itself
-     * ([EffectTarget.Self] inside the quotes) read like any other slot, and a card draw or life
-     * gain for its controller is a benefit. A granted ability with no readable leaf, or with any
-     * leaf this cannot call, reads [TargetPolarity.UNKNOWN] — "enchanted creature has '…'" can be a
-     * curse as easily as a gift.
+     * ([EffectTarget.Self] inside the quotes) read like any other slot, and a card draw, life
+     * gain or token for its controller is a benefit. A target the granted ability names is its
+     * controller's to pick — Spare Dagger's "deals 1 damage to any target" goes where they aim it —
+     * so a slot reads as a benefit too, unless its filter keeps it on their own side and the leaf
+     * hurts it ("sacrifice target creature you control" is a price). A granted ability with no
+     * readable leaf, or with any leaf this cannot call, reads [TargetPolarity.UNKNOWN] —
+     * "enchanted creature has '…'" can be a curse as easily as a gift.
      */
-    private fun grantedTriggerPolarity(ability: TriggeredAbility): TargetPolarity {
+    private fun grantedTriggerPolarity(ability: TriggeredAbility): TargetPolarity =
+        grantedEffectPolarity(ability.effect, listOfNotNull(ability.targetRequirement))
+
+    private fun grantedEffectPolarity(effect: Effect, requirements: List<TargetRequirement>): TargetPolarity {
         val readings = mutableListOf<TargetPolarity>()
-        for (leaf in EffectWalker.payoffLeaves(ability.effect)) {
+        for (leaf in EffectWalker.payoffLeaves(effect)) {
+            // "You may sacrifice Spare Dagger. When you do, it deals 1 damage to any target": the
+            // optional action is a price the controller opts into, the reflexive effect the payoff.
+            if (leaf is ReflexiveTriggerEffect && leaf.optional) {
+                readings += grantedEffectPolarity(leaf.reflexiveEffect, leaf.reflexiveTargetRequirements)
+                continue
+            }
             val classified = classify(leaf)
             val reading = when {
                 classified.isNotEmpty() -> classified.map { (target, polarity) ->
-                    if (target == EffectTarget.Self) polarity else TargetPolarity.UNKNOWN
+                    when {
+                        target == EffectTarget.Self -> polarity
+                        target.isSlot() -> controllersPick(target, polarity, requirements)
+                        else -> TargetPolarity.UNKNOWN
+                    }
                 }
                 else -> listOf(controllerPolarity(leaf) ?: TargetPolarity.UNKNOWN)
             }
             readings += reading
         }
         return combine(readings)
+    }
+
+    /**
+     * A slot of an ability its controller resolves: they aim a harmful leaf at someone else and a
+     * helpful one at their own, so either way it serves them — except a harmful leaf whose filter
+     * allows only their own objects. A slot whose requirement isn't in [requirements] (a reflexive
+     * trigger's own target), or isn't an object filter ("any target"), has no such filter to keep
+     * it home.
+     */
+    private fun controllersPick(
+        target: EffectTarget,
+        polarity: TargetPolarity,
+        requirements: List<TargetRequirement>,
+    ): TargetPolarity {
+        if (polarity != TargetPolarity.HARMFUL) return TargetPolarity.BENEFICIAL
+        // "Another target creature you control" keeps the same side as "target creature you control".
+        val requirement = slotOf(target, requirements)?.let { requirements[it] }
+            ?.let { (it as? TargetOther)?.baseRequirement ?: it } ?: return TargetPolarity.BENEFICIAL
+        val filter = (requirement as? TargetObject)?.filter ?: return TargetPolarity.BENEFICIAL
+        val ownSideOnly = filter.alternatives.isEmpty() &&
+            filter.baseFilter.controllerPredicate == ControllerPredicate.ControlledByYou
+        return if (ownSideOnly) TargetPolarity.HARMFUL else TargetPolarity.BENEFICIAL
     }
 
     /** A player-facing leaf's polarity for the ability's controller, when it is aimed at them. */
@@ -609,6 +650,10 @@ object TargetPolarityAnalyzer {
             is DrawCardsEffect -> if (isController(leaf.target)) TargetPolarity.BENEFICIAL else null
             is GainLifeEffect -> if (isController(leaf.target)) TargetPolarity.BENEFICIAL else null
             is LoseLifeEffect -> if (isController(leaf.target)) TargetPolarity.HARMFUL else null
+            // A token with no other controller named is the ability controller's (Ceremonial
+            // Knife's Blood, Infantry Shield's mobilized Warriors).
+            is CreateTokenEffect -> if (leaf.controller.let { it == null || isController(it) }) TargetPolarity.BENEFICIAL else null
+            is CreatePredefinedTokenEffect -> if (leaf.controller.let { it == null || isController(it) }) TargetPolarity.BENEFICIAL else null
             else -> null
         }
     }
