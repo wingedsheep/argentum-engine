@@ -34,6 +34,7 @@ import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.effects.PhaseOutEffect
+import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
@@ -81,7 +82,8 @@ import java.util.Locale
  *  - [Check.TIMING] — an until-end-of-turn leaf on an instant-speed activation or an instant-speed
  *    spell with no reading in [ExpiringGrantWindow] (abilities) or in the combat-trick / group-pump
  *    reading [com.wingedsheep.ai.engine.knowledge.HoldPolicy] gets from [CardIntentAnalyzer]
- *    (spells; a combat trick is held whole, so each of its expiring leaves reads).
+ *    (spells; a combat trick is held whole, so each of its expiring leaves reads, and a prevention
+ *    spell's shield is timed by simulation through the damage it stops).
  *  - [Check.MODAL] — a "choose more than one" modal whose per-extra-mode cost has no picker in
  *    `TargetSelection.payEscalateCost`, so the AI can only ever choose one mode.
  *
@@ -284,7 +286,11 @@ object AiReadingAudit {
                     timing(spell, sink) { leaf ->
                         ExpiringGrantWindow.hasExpiringReading(leaf, creatureGrants = false) ||
                             (heldWhole || (leaf is ModifyStatsEffect && IntentTag.COMBAT_TRICK in intent.tags)) ||
-                            (leaf is ForEachEffect && intent.expiringGroupPump)
+                            (leaf is ForEachEffect && intent.expiringGroupPump) ||
+                            // A prevention spell needs no hold: cast before any damage it could stop,
+                            // it leaves the simulated board unchanged for a card, and cast into the
+                            // damage, simulation through that damage prices it.
+                            leaf is PreventDamageEffect
                     }
                 }
                 modal(spell, sink)

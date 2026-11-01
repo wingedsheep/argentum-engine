@@ -37,9 +37,10 @@ class AiReadingAuditSnapshotTest : FunSpec({
         "Adamant Will" to emptyList(),
         // An end-of-turn damage shield on an activation waits for damage that can still come.
         "Abuna Acolyte" to emptyList(),
+        // A prevention spell's shield is timed by simulation through the damage it stops.
+        "Angelsong" to emptyList(),
         // Unread — the effect types the audit names as the work to do.
         "Defy Gravity" to listOf("timing: GrantKeywordEffect"),
-        "Angelsong" to listOf("timing: PreventDamageEffect"),
         "Abzan Charm" to listOf("polarity: DistributeCountersAmongTargetsEffect"),
         "Act on Impulse" to listOf("intent: GrantMayPlayFromExileEffect", "intent: Pipeline(TopOfLibrary→exile)"),
         "Alchemist's Vial" to listOf(
