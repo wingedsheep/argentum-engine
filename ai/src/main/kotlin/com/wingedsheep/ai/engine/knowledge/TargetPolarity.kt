@@ -333,13 +333,14 @@ object TargetPolarityAnalyzer {
      * A copy does nothing to the object it copies; it hands a second one to the effect's
      * controller. Where the slot's filter keeps it on that controller's side, the copied object's
      * controller is the one gaining it, so the slot reads beneficial and the best permanent is the
-     * one to copy. Unread, the removal ranking ordered our own creatures worst first. A copy of
+     * one to copy — unless the leaf hands the token to someone else ([CreateTokenCopyOfTargetEffect.controller]). Unread, the removal ranking ordered our own creatures worst first. A copy of
      * *any* creature stays unattributed: the best copy may be an opponent's, which is a board
      * question the two-sided simulation answers. Read off the requirement, not the leaf, as
      * [recursionSlot] does — the leaf names only the slot.
      */
     private fun ownCopySlot(leaf: Effect, requirements: List<TargetRequirement>): Int? {
-        if (leaf !is CreateTokenCopyOfTargetEffect) return null
+        // "Target player creates a copy" (Echocasting Symposium): the copy is not ours to gain.
+        if (leaf !is CreateTokenCopyOfTargetEffect || leaf.controller != null) return null
         val slot = slotOf(leaf.target, requirements) ?: return null
         val filter = (requirements[slot] as? TargetObject)?.filter ?: return null
         val ours = filter.alternatives.isEmpty() &&
