@@ -1110,7 +1110,13 @@ class CastPermissionUtils(
             val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
             val cardDef = state.getEntity(entityId)?.faceUpCardDefinition(cardRegistry) ?: continue
             val controllerId by lazy { state.getEntity(entityId)?.get<ControllerComponent>()?.playerId }
-            for (ability in cardDef.liveStaticAbilities(state, entityId)) {
+            for (printed in cardDef.liveStaticAbilities(state, entityId)) {
+                // A "during your turn" tax (Tithe Taker) is a ConditionalStaticAbility around the
+                // cost static; its condition is read against the static's controller.
+                val ability = if (printed is ConditionalStaticAbility) {
+                    val owner = controllerId ?: continue
+                    activeStaticAbility(state, printed, entityId, owner) ?: continue
+                } else printed
                 when (ability) {
                     is com.wingedsheep.sdk.scripting.ReduceActivatedAbilityCost -> {
                         if (ability.onceOnlyKind != null && ability.onceOnlyKind != onceOnlyKind) continue
@@ -1125,19 +1131,11 @@ class CastPermissionUtils(
                         if (ability.firstEachTurn &&
                             (activatorId != owner || activatedMatchingPermanentThisTurn(state, entityId, owner, ability.filter))
                         ) continue
-                        val reaches = when (ability.reach) {
-                            ActivatedAbilityReach.MATCHING_PERMANENTS -> sourceOnBattlefield &&
-                                activatedAbilityReductionApplies(state, entityId, ability.filter, sourceId)
-                            // "Abilities you activate": the activator, not the source's zone or
-                            // controller, decides — a hand card's cycling counts.
-                            ActivatedAbilityReach.ACTIVATED_BY_YOU -> activatorId == owner &&
-                                !(ability.filter.excludeSelf && entityId == sourceId) &&
-                                predicateEvaluator.matches(
-                                    state, state.projectedState, sourceId, ability.filter.baseFilter,
-                                    PredicateContext(sourceId = entityId, controllerId = owner)
-                                )
-                        }
-                        if (!reaches) continue
+                        if (!activationReached(
+                                state, ability.reach, ability.filter, entityId, owner, sourceId, activatorId,
+                                sourceInScope = sourceOnBattlefield,
+                            )
+                        ) continue
                         net += evaluator.evaluate(
                             state,
                             ability.amount,
@@ -1152,8 +1150,14 @@ class CastPermissionUtils(
                         if (ability.excludeManaAbilities && isManaAbility) continue
                         // Eidolon of Obstruction taxes only loyalty abilities (CR 606).
                         if (ability.loyaltyAbilitiesOnly && !isLoyaltyAbility) continue
-                        if (!activatedAbilityReductionApplies(state, entityId, ability.filter, sourceId)) continue
                         val owner = controllerId ?: continue
+                        // The default reach has always taxed a matching source wherever it is
+                        // (Skyseer's Chariot names a card, and its hand copy's cycling pays too).
+                        if (!activationReached(
+                                state, ability.reach, ability.filter, entityId, owner, sourceId, activatorId,
+                                sourceInScope = true,
+                            )
+                        ) continue
                         net -= evaluator.evaluate(
                             state,
                             ability.amount,
@@ -1165,6 +1169,41 @@ class CastPermissionUtils(
             }
         }
         return net to floor
+    }
+
+    /**
+     * Whether a cost static on [staticSourceId] (controlled by [owner]) sees the activation of an
+     * ability of [sourceId] by [activatorId], per its [reach]:
+     * - `MATCHING_PERMANENTS` — the source matches [filter]'s scope (see
+     *   [activatedAbilityReductionApplies]), and for a reduction only while the source is on the
+     *   battlefield ([sourceInScope] carries that; a tax passes `true`, reaching any zone).
+     * - `ACTIVATED_BY_YOU` / `ACTIVATED_BY_OPPONENTS` — the activator, not the source's zone or
+     *   controller, decides ("abilities you / your opponents activate": a hand card's cycling counts),
+     *   and the source matches [filter]'s base filter wherever it is.
+     */
+    private fun activationReached(
+        state: GameState,
+        reach: ActivatedAbilityReach,
+        filter: com.wingedsheep.sdk.scripting.filters.unified.GroupFilter,
+        staticSourceId: EntityId,
+        owner: EntityId,
+        sourceId: EntityId,
+        activatorId: EntityId,
+        sourceInScope: Boolean,
+    ): Boolean {
+        val activatorMatches = when (reach) {
+            ActivatedAbilityReach.MATCHING_PERMANENTS ->
+                return sourceInScope &&
+                    activatedAbilityReductionApplies(state, staticSourceId, filter, sourceId)
+            ActivatedAbilityReach.ACTIVATED_BY_YOU -> activatorId == owner
+            ActivatedAbilityReach.ACTIVATED_BY_OPPONENTS -> state.isOpponentOf(activatorId, owner)
+        }
+        return activatorMatches &&
+            !(filter.excludeSelf && staticSourceId == sourceId) &&
+            predicateEvaluator.matches(
+                state, state.projectedState, sourceId, filter.baseFilter,
+                PredicateContext(sourceId = staticSourceId, controllerId = owner)
+            )
     }
 
     /**

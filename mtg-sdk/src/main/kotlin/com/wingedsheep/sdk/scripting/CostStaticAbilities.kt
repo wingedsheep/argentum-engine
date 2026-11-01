@@ -1199,7 +1199,7 @@ data class ReduceActivatedAbilityCost(
     val firstEachTurn: Boolean = false
 ) : StaticAbility {
     init {
-        require(!(firstEachTurn && reach == ActivatedAbilityReach.ACTIVATED_BY_YOU)) {
+        require(!(firstEachTurn && reach != ActivatedAbilityReach.MATCHING_PERMANENTS)) {
             "firstEachTurn counts activations of permanents; use the MATCHING_PERMANENTS reach"
         }
     }
@@ -1214,12 +1214,13 @@ data class ReduceActivatedAbilityCost(
             val noun = filter.baseFilter.description
             val article = if (noun.firstOrNull()?.lowercaseChar() in setOf('a', 'e', 'i', 'o', 'u')) "an" else "a"
             append("The first activated ability of $article $noun you activate each turn")
-        } else if (reach == ActivatedAbilityReach.ACTIVATED_BY_YOU) {
+        } else if (reach != ActivatedAbilityReach.MATCHING_PERMANENTS) {
+            val who = reach.activatorPhrase
             append(
                 when {
-                    keyword != null -> "${keyword.displayName} abilities you activate"
-                    onceOnlyKind != null -> "${onceOnlyKind.displayName.replaceFirstChar { it.uppercase() }} abilities you activate"
-                    else -> "Abilities you activate"
+                    keyword != null -> "${keyword.displayName} abilities $who"
+                    onceOnlyKind != null -> "${onceOnlyKind.displayName.replaceFirstChar { it.uppercase() }} abilities $who"
+                    else -> "Abilities $who"
                 }
             )
             if (excludeManaAbilities) append(" that aren't mana abilities")
@@ -1249,24 +1250,36 @@ data class ReduceActivatedAbilityCost(
 }
 
 /**
- * Which activations a [ReduceActivatedAbilityCost] sees.
+ * Which activations a [ReduceActivatedAbilityCost] or [IncreaseActivatedAbilityCost] sees.
  */
 @Serializable
-enum class ActivatedAbilityReach {
+enum class ActivatedAbilityReach(
+    /** How the description names the activator ("you activate"); empty for [MATCHING_PERMANENTS]. */
+    val activatorPhrase: String,
+) {
     /**
      * Abilities of permanents on the battlefield that the static's `filter` matches, whoever
      * activates them — "activated abilities of creatures you control" (Training Grounds). An ability
      * activated from a hand or graveyard card is not reduced (Training Grounds' ruling: cycling and
      * unearth are untouched).
      */
-    MATCHING_PERMANENTS,
+    MATCHING_PERMANENTS(""),
 
     /**
      * Every ability the static's controller activates, from any zone — the battlefield, a hand
      * card's cycling or channel, a graveyard card's unearth — whose source matches the static's
      * `filter.baseFilter`. "Abilities you activate" (Zirda, the Dawnwaker).
      */
-    ACTIVATED_BY_YOU
+    ACTIVATED_BY_YOU("you activate"),
+
+    /**
+     * Every ability an **opponent** of the static's controller activates, from any zone, whose
+     * source matches the static's `filter.baseFilter` — the opponent-side mirror of
+     * [ACTIVATED_BY_YOU]. "Abilities your opponents activate cost {1} more to activate" (Tithe
+     * Taker): the activator decides, so an opponent's cycling from hand is taxed, and so is an
+     * ability of a permanent the static's controller owns that an opponent activates.
+     */
+    ACTIVATED_BY_OPPONENTS("your opponents activate")
 }
 
 /**
@@ -1296,6 +1309,12 @@ enum class ActivatedAbilityReach {
  *   flag) — Eidolon of Obstruction's "Loyalty abilities of planeswalkers your opponents control cost
  *   {1} more to activate". The tax is mana prepended to the loyalty cost ("{1}, +1:"); the loyalty
  *   change itself is untouched.
+ * @property reach Which activations the tax sees — the same axis as
+ *   [ReduceActivatedAbilityCost.reach]. The default taxes abilities of battlefield sources [filter]
+ *   matches; [ActivatedAbilityReach.ACTIVATED_BY_OPPONENTS] is Tithe Taker's "abilities your
+ *   opponents activate cost {1} more to activate unless they're mana abilities" — every opponent
+ *   activation from any zone whose source matches [filter]'s `baseFilter`. Wrap it in a
+ *   [ConditionalStaticAbility] for a "during your turn" gate.
  */
 @SerialName("IncreaseActivatedAbilityCost")
 @Serializable
@@ -1303,14 +1322,20 @@ data class IncreaseActivatedAbilityCost(
     val filter: GroupFilter,
     val amount: DynamicAmount,
     val excludeManaAbilities: Boolean = false,
-    val loyaltyAbilitiesOnly: Boolean = false
+    val loyaltyAbilitiesOnly: Boolean = false,
+    val reach: ActivatedAbilityReach = ActivatedAbilityReach.MATCHING_PERMANENTS
 ) : StaticAbility {
     override val description: String = buildString {
-        append(filter.description.replaceFirstChar { it.uppercase() })
         val kind = if (loyaltyAbilitiesOnly) "loyalty" else "activated"
+        if (reach == ActivatedAbilityReach.MATCHING_PERMANENTS) {
+            append(filter.description.replaceFirstChar { it.uppercase() })
+            append("'s $kind abilities")
+        } else {
+            append(if (loyaltyAbilitiesOnly) "Loyalty abilities ${reach.activatorPhrase}" else "Abilities ${reach.activatorPhrase}")
+        }
         when (amount) {
-            is DynamicAmount.Fixed -> append("'s $kind abilities cost {${amount.amount}} more to activate")
-            else -> append("'s $kind abilities cost {X} more to activate, where X is ${amount.description}")
+            is DynamicAmount.Fixed -> append(" cost {${amount.amount}} more to activate")
+            else -> append(" cost {X} more to activate, where X is ${amount.description}")
         }
         if (excludeManaAbilities) append(" unless they're mana abilities")
     }
