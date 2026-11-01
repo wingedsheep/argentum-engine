@@ -30,6 +30,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
+import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.sdk.scripting.references.Player
 
 /**
@@ -69,7 +70,10 @@ internal object CardAsks {
         val asks = LinkedHashMap<GameObjectFilter, Double>()
         var fedByAnyDeck = false
         fun add(filter: GameObjectFilter?, wanted: Double, spells: Boolean) {
-            if (filter == null || opponents(filter) || namesCreatureType(filter) || namesTokenType(filter)) return
+            if (filter == null || opponents(filter)) return
+            // "Whenever an enchanted creature dies" is fed by the deck's Auras, not its creatures.
+            attachmentAsk(filter)?.let { asks.merge(it, wanted, ::minOf); return }
+            if (namesCreatureType(filter) || namesTokenType(filter)) return
             when (PrintedFilter.isNarrow(filter, spells)) {
                 true -> asks.merge(filter, wanted, ::minOf)
                 false -> fedByAnyDeck = true
@@ -105,6 +109,26 @@ internal object CardAsks {
         if (fedByAnyDeck) return emptyList()
         return asks.map { (filter, wanted) -> CardAsk(filter, wanted) }
     }
+
+    /**
+     * The kind of card that makes a permanent match [filter] when the filter asks for an attachment
+     * rather than a printed trait: an enchanted creature needs an Aura on it, an equipped one an
+     * Equipment. Hateful Eidolon's "whenever an enchanted creature dies" reads every creature as
+     * printed-equal — a deck with no Aura never triggers it — so the ask is for the Auras.
+     *
+     * [SynergyAxes] reads the same scope to keep such a trigger off the generic death axis.
+     */
+    internal fun attachmentAsk(filter: GameObjectFilter): GameObjectFilter? {
+        val states = filter.statePredicates + filter.anyOf.flatMap { it.statePredicates }
+        return when {
+            states.any { it == StatePredicate.IsEnchanted || it is StatePredicate.IsEnchantedByAura } -> AURAS
+            states.any { it == StatePredicate.IsEquipped } -> EQUIPMENT
+            else -> null
+        }
+    }
+
+    private val AURAS: GameObjectFilter = GameObjectFilter.Enchantment.withSubtype(Subtype.AURA.value)
+    private val EQUIPMENT: GameObjectFilter = GameObjectFilter.Artifact.withSubtype("Equipment")
 
     private fun scripts(card: CardDefinition): List<CardScript> = listOf(card.script) + card.cardFaces.map { it.script }
 

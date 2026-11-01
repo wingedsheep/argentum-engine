@@ -517,6 +517,64 @@ class ConstructedDeckGeneratorTest : FunSpec({
             if (fed.keys.count { it.startsWith("W Aura") } >= 2) fed.containsKey("Auratog") shouldBe true
         }
     }
+    // 2026-11-01 deck review, second pass: Unstable Glyphbridge (an enters-the-battlefield wipe on
+    // an artifact) and Bane of the Living (a creature's -X/-X) slipped past the sweeper rule, which
+    // only knew noncreature wraths written as one group; Hateful Eidolon ran with no Aura beside it;
+    // a Highlander build took Emrakul, the Promised End on rating alone.
+
+    test("an enters-the-battlefield wipe and a creature's symmetric -X/-X stay out of a creature deck") {
+        val cards = (1..30).map { card("W Body $it", "{${it % 3}}{W}", Rarity.COMMON, modern) } +
+            (1..30).map { card("B Body $it", "{${it % 3}}{B}", Rarity.COMMON, modern) } +
+            real("Unstable Glyphbridge") + real("Bane of the Living")
+
+        (1L..3L).forEach { seed ->
+            val deck = wideGenerator(seed, cards).generate(DeckFormat.MODERN)
+            withClue("seed $seed: $deck") {
+                deck.containsKey("Unstable Glyphbridge") shouldBe false
+                deck.containsKey("Bane of the Living") shouldBe false
+            }
+        }
+    }
+
+    test("an Aura payoff stays out of a deck with no Auras") {
+        val bodies = (1..30).map { card("B Body $it", "{${it % 3}}{B}", Rarity.COMMON, modern) }
+
+        val deck = wideGenerator(1, bodies + real("Hateful Eidolon")).generate(DeckFormat.MODERN)
+
+        withClue("deck was $deck") { deck.containsKey("Hateful Eidolon") shouldBe false }
+    }
+
+    test("a spell above seven mana with nothing to pay it down stays out") {
+        val bodies = (1..30).map { card("W Body $it", "{${it % 3}}{W}", Rarity.COMMON, modern) }
+        val cards = bodies + real("Emrakul, the Promised End")
+
+        val constructed = wideGenerator(1, cards).generate(DeckFormat.MODERN)
+        withClue("deck was $constructed") { constructed.containsKey("Emrakul, the Promised End") shouldBe false }
+    }
+    test("a Highlander build leaves out a wipe of its own side") {
+        val highlander = setOf(DeckFormat.HIGHLANDER)
+        val bodies = (1..80).map { card("HW Body $it", "{${it % 4}}{W}", Rarity.COMMON, highlander) }
+        val wrath = real("Wrath of God").copy(legalFormats = highlander)
+
+        val deck = wideGenerator(1, bodies + wrath).generate(DeckFormat.HIGHLANDER)
+
+        withClue("deck was $deck") { deck.containsKey("Wrath of God") shouldBe false }
+    }
+
+    test("a second colour gets the sources its cards need, not just its share of the pips") {
+        // Thirty double-white cards and four one-pip black ones: the pip share alone gave black
+        // five of twenty-five basics.
+        val white = (1..30).map { card("WW Body $it", "{${it % 3}}{W}{W}", Rarity.COMMON, modern) }
+        val black = (1..4).map { card("B Gem $it", "{2}{B}", Rarity.MYTHIC, modern) }
+
+        val deck = wideGenerator(1, white + black).generate(DeckFormat.MODERN)
+
+        withClue("deck was $deck") {
+            if (deck.keys.any { it.startsWith("B Gem") }) {
+                deck.filterKeys { it.substringBefore('#') == "Swamp" }.values.sum() shouldBeGreaterThanOrEqual 9
+            }
+        }
+    }
 })
 
 /** Fixed seed for [ConstructedDeckGeneratorTest]'s generators. */

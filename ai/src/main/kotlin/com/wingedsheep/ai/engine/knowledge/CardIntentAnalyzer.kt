@@ -97,6 +97,7 @@ object CardIntentAnalyzer {
 
     private val cardCache = ConcurrentHashMap<String, CardIntent>()
     private val selfCache = ConcurrentHashMap<String, CardIntent>()
+    private val ownSweepCache = ConcurrentHashMap<String, Boolean>()
     private val faceCache = ConcurrentHashMap<FaceKey, CardIntent>()
 
     private data class FaceKey(val cardName: String, val faceName: String)
@@ -402,17 +403,40 @@ object CardIntentAnalyzer {
      *
      * A gather of only our own permanents is a drawback or a cost, not an answer, and stays unread.
      */
-    private fun destroyAllTags(root: Effect): Set<IntentTag> {
+    private fun destroyAllTags(root: Effect): Set<IntentTag> = destroyAll(root, eachPlayer = null).tags
+
+    /**
+     * [destroyAllTags]'s reading, plus whether a whole group it wipes can hold our own creatures.
+     *
+     * [eachPlayer] is the iteration a `ForEach` over players runs the pipeline in, or null outside
+     * one. Inside it, `Player.You` is the *iterated* player, so "gather the creatures you control,
+     * destroy them" spans every player the iteration visits — the Winnowing shape Unstable
+     * Glyphbridge and Tragic Arrogance are written in. Outside it, the same gather is our own side
+     * only, a drawback or a cost, and stays unread.
+     */
+    private fun destroyAll(root: Effect, eachPlayer: Player?): DestroyAllReading {
         val leaves = readingLeaves(root)
         // Collection name -> whether it is still a whole group rather than a picked few.
         val groups = HashMap<String, Boolean>()
+        // Collections whose gather can include our own creatures.
+        val ours = HashSet<String>()
         for (leaf in leaves) {
             if (leaf !is GatherCardsEffect) continue
-            val source = leaf.source as? CardSource.BattlefieldMatching ?: continue
-            if (source.player == Player.You || source.filter.controllerPredicate == ControllerPredicate.ControlledByYou) continue
+            val (player, filter) = when (val source = leaf.source) {
+                is CardSource.BattlefieldMatching -> source.player to source.filter
+                is CardSource.ControlledPermanents -> source.player to source.filter
+                else -> continue
+            }
+            val ownOnly = player == Player.You || filter.controllerPredicate == ControllerPredicate.ControlledByYou
+            if (ownOnly && eachPlayer == null) continue
+            if (filter.controllerPredicate == ControllerPredicate.ControlledByYou && eachPlayer != null) continue
             groups[leaf.storeAs] = true
+            val opponentsOnly = opponentsOnly(filter.controllerPredicate) ||
+                (player == Player.You && eachPlayer != null && !includesYou(eachPlayer)) ||
+                player in OPPONENT_PLAYERS
+            if (!opponentsOnly && SynergyAxes.couldBeCreature(filter)) ours += leaf.storeAs
         }
-        if (groups.isEmpty()) return emptySet()
+        if (groups.isEmpty()) return DestroyAllReading.NONE
         do {
             val before = groups.toMap()
             for (leaf in leaves) {
@@ -420,18 +444,97 @@ object CardIntentAnalyzer {
                 for (name in derivedCollections(leaf, groups.keys)) {
                     val parentIsGroup = sourcesOf(leaf).any { groups[it] == true }
                     groups[name] = (groups[name] ?: false) || (parentIsGroup && name != picked)
+                    if (sourcesOf(leaf).any { it in ours }) ours += name
                 }
             }
         } while (groups != before)
-        var tags = emptySet<IntentTag>()
+        var reading = DestroyAllReading.NONE
         for (leaf in leaves) {
             if (leaf !is MoveCollectionEffect || leaf.from !in groups) continue
             if ((leaf.destination as? CardDestination.ToZone)?.zone != Zone.GRAVEYARD) continue
             if (leaf.moveType != MoveType.Destroy && leaf.moveType != MoveType.Sacrifice) continue
-            if (groups[leaf.from] == true) return setOf(IntentTag.REMOVAL, IntentTag.SWEEPER)
-            tags = setOf(IntentTag.REMOVAL)
+            reading = if (groups[leaf.from] == true) {
+                DestroyAllReading(setOf(IntentTag.REMOVAL, IntentTag.SWEEPER), reading.hitsOwnSide || leaf.from in ours)
+            } else {
+                DestroyAllReading(setOf(IntentTag.REMOVAL) + reading.tags, reading.hitsOwnSide)
+            }
         }
-        return tags
+        return reading
+    }
+
+    private data class DestroyAllReading(val tags: Set<IntentTag>, val hitsOwnSide: Boolean) {
+        companion object {
+            val NONE = DestroyAllReading(emptySet(), hitsOwnSide = false)
+        }
+    }
+
+    /** Whether an iteration over [players] visits the ability's controller. */
+    private fun includesYou(players: Player): Boolean = players !in OPPONENT_PLAYERS
+
+    private val OPPONENT_PLAYERS: Set<Player> = setOf(
+        Player.EachOpponent, Player.AnOpponent, Player.TargetOpponent, Player.ChosenOpponent,
+        Player.DefendingPlayer, Player.EachDefendingPlayer, Player.EachAttackedPlayer,
+    )
+
+    /**
+     * Whether [card] has a sweeper that can also hit its own controller's creatures — Wrath of God,
+     * Pyroclasm, Bane of the Living's "all creatures get -X/-X", Unstable Glyphbridge — rather than
+     * a one-sided one (Plague Wind, Massacre Wurm) that only clears the opponent's board, or a wipe
+     * of something no creature is (Global Ruin's lands, an artifact wipe).
+     *
+     * Reads the spell and its triggered abilities, not its activated ones: a symmetric activation
+     * (Pestilence, Thrashing Wumpus) is a choice the controller makes each turn, and a creature
+     * deck can simply not use it, while a wrath on resolution or an enters-the-battlefield wipe
+     * happens whether the deck likes it or not. This is the deckbuilder's question — "does this
+     * fight the rest of my deck?" — and nothing else reads it.
+     */
+    fun sweepsOwnSide(card: CardDefinition): Boolean = ownSweepCache.getOrPut(card.name) {
+        (listOf(card.script) + card.cardFaces.map { it.script }).any { script ->
+            EffectWalker.slots(script).any { it.origin != EffectWalker.Origin.ACTIVATED && ownSideSweep(it.effect) } ||
+                script.stateTriggeredAbilities.any { ownSideSweep(it.effect) }
+        }
+    }
+
+    private fun ownSideSweep(root: Effect): Boolean {
+        if (destroyAll(root, eachPlayer = null).hitsOwnSide) return true
+        return readingLeaves(root).any { leaf ->
+            when {
+                leaf is ForEachEffect -> when (val space = leaf.space) {
+                    is IterationSpace.Group -> IntentTag.SWEEPER in tagsOf(leaf) && groupHitsYou(space.filter)
+                    is IterationSpace.Players ->
+                        includesYou(space.players) &&
+                            (destroyAll(leaf.body, eachPlayer = space.players).hitsOwnSide || ownSideSweep(leaf.body))
+                    else -> false
+                }
+                IntentTag.SWEEPER !in tagsOf(leaf) -> false
+                else -> (groupTargetOf(leaf) as? EffectTarget.GroupRef)?.let { groupHitsYou(it.filter) } ?: false
+            }
+        }
+    }
+
+    /** The target of the leaf shapes [removalTags] reads a group off. */
+    private fun groupTargetOf(effect: Effect): EffectTarget? = when (effect) {
+        is MoveToZoneEffect -> effect.target
+        is MoveUntilSourceLeavesEffect -> effect.target
+        is DealDamageEffect -> effect.target
+        is ModifyStatsEffect -> effect.target
+        is SetBaseStatsEffect -> effect.target
+        is AddCountersEffect -> effect.target
+        is AddDynamicCountersEffect -> effect.target
+        else -> null
+    }
+
+    private fun groupHitsYou(group: GroupFilter): Boolean =
+        !opponentsOnly(group.baseFilter.controllerPredicate) && SynergyAxes.couldBeCreature(group.baseFilter)
+
+    /** "Creatures your opponents control", "creatures you don't control" (Plague Wind), and the like. */
+    private fun opponentsOnly(predicate: ControllerPredicate?): Boolean = when (predicate) {
+        ControllerPredicate.ControlledByOpponent,
+        ControllerPredicate.ControlledByTargetOpponent,
+        ControllerPredicate.ControlledByDefendingPlayer -> true
+        is ControllerPredicate.Not -> predicate.predicate == ControllerPredicate.ControlledByYou
+        is ControllerPredicate.And -> predicate.predicates.any(::opponentsOnly)
+        else -> false
     }
 
     /** The collections [leaf] reads from, for the steps [derivedCollections] follows. */
@@ -596,10 +699,14 @@ object CardIntentAnalyzer {
         // body, and promote it to a sweeper when the iteration spans a whole group of permanents.
         is ForEachEffect -> {
             val inner = effectTags(effect.body)
-            if (effect.space is IterationSpace.Group && IntentTag.REMOVAL in inner) {
-                inner + IntentTag.SWEEPER
-            } else {
-                inner
+            val space = effect.space
+            when {
+                space is IterationSpace.Group && IntentTag.REMOVAL in inner -> inner + IntentTag.SWEEPER
+                // "For each player, destroy the creatures they control (but one)": the pipeline
+                // gathers `You` — the iterated player — so it only reads as a wrath in the
+                // iteration's frame. See [destroyAll].
+                space is IterationSpace.Players -> inner + destroyAll(effect.body, eachPlayer = space.players).tags
+                else -> inner
             }
         }
 

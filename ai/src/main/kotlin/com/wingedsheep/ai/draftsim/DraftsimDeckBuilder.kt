@@ -1,6 +1,7 @@
 package com.wingedsheep.ai.draftsim
 
 import com.wingedsheep.ai.engine.PipDemand
+import kotlin.math.ceil
 import kotlin.math.max
 
 /** A physical pool card: [card] + a stable [instanceId] (the identity used in all dedup sets). */
@@ -118,6 +119,9 @@ class DraftsimDeckBuilder(
         // colour's — its hungriest card's pips plus this many per 17 lands.
         const val LIGHT_COLOR_CARDS = 2
         const val LIGHT_COLOR_EXTRA_SOURCES_PER_17 = 3
+        // [buildManabase]: the fewest sources per 17 lands a colour more than [LIGHT_COLOR_CARDS]
+        // cards need gets — the usual limited floor for a deck's second colour.
+        const val MAIN_COLOR_SOURCES_PER_17 = 7
         val COLOR_TO_BASIC = mapOf("W" to "Plains", "U" to "Island", "B" to "Swamp", "R" to "Mountain", "G" to "Forest")
         // Ten three-color guild shells for the sealed good-stuff build.
         val THREE_COLOR = DraftsimDeckScorerGuilds.THREE_COLOR
@@ -490,11 +494,19 @@ class DraftsimDeckBuilder(
         // most demanding card needs, [PipDemand.sourcesNeeded]) where another color has room. A
         // splash colour has no such floor — it would claim a main colour's share of the lands — and
         // gets its few sources from §3.5 instead.
+        //
+        // A colour more than [LIGHT_COLOR_CARDS] cards need is a main colour however light each of
+        // its pips is, and gets at least [MAIN_COLOR_SOURCES_PER_17]: a one-pip card's floor is a
+        // splash's six, and a red-green deck with eight one-pip green cards came out on six Forests
+        // because the floor only ever looked at the hungriest card.
+        val mainColorFloor = ceil(MAIN_COLOR_SOURCES_PER_17 * lands / 17.0).toInt()
         val floors = basicDemand.keys.filter { it != splashColor }.associateWith { color ->
-            deckCards.maxOfOrNull { pc ->
+            val needing = deckCards.count { (DraftsimMana.castRequirement(it.card.manaCost).plainPips[color] ?: 0) > 0 }
+            val hungriest = deckCards.maxOfOrNull { pc ->
                 val pips = DraftsimMana.castRequirement(pc.card.manaCost).plainPips[color] ?: 0
                 PipDemand.sourcesNeeded(pips.toDouble(), lands)
             } ?: 0
+            if (needing > LIGHT_COLOR_CARDS) max(hungriest, mainColorFloor) else hungriest
         }
         val basics = PipDemand.allocate(
             basicDemand.keys.associateWith { weighted[it] ?: 0.0 }, basicsCount, floors,

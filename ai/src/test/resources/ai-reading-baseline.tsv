@@ -687,7 +687,7 @@ Archdemon of Unx
 Archdruid's Charm
 Archenemy's Charm
 Archers' Parapet
-Archfiend of Depravity	intent: Pipeline(ControlledPermanents→graveyard)
+Archfiend of Depravity
 Archfiend of Despair
 Archfiend of Ifnir
 Archfiend of the Dross	intent: LoseGameEffect; intent: RemoveCountersEffect
@@ -3274,7 +3274,7 @@ Crack Open
 Cracked Skull	intent: LookAtTargetHandEffect; intent: Pipeline(hand→graveyard)
 Crackle with Power
 Crackling Cyclops
-Crackling Doom	intent: ForEach>Pipeline(ControlledPermanents→graveyard)
+Crackling Doom
 Crackling Emergence	polarity: Aura>AnimateLandGroup; polarity: Aura>GrantKeyword
 Crackling Triton
 Cradle Clearcutter
@@ -3986,7 +3986,7 @@ Desperate Research
 Desperate Ritual
 Despise	intent: Pipeline(hand→graveyard); intent: RevealHandEffect; polarity: Pipeline(hand→graveyard); polarity: RevealHandEffect
 Despoil
-Destined Confrontation	intent: ForEach>Pipeline(ControlledPermanents→graveyard)
+Destined Confrontation
 Destiny Spinner	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect; timing: BecomeCreatureEffect
 Destroy Evil
 Destructive Digger
@@ -5786,7 +5786,7 @@ Flare of Denial
 Flare of Duplication	intent: CopyTargetSpellEffect; polarity: CopyTargetSpellEffect
 Flare of Faith
 Flare of Fortitude	timing: ForEach>GrantKeywordEffect; timing: LockLifeGainEffect; timing: LockLifeLossEffect
-Flare of Malice	intent: ForEach>Pipeline(ControlledPermanents→graveyard)
+Flare of Malice
 Flaring Cinder
 Flash Conscription	polarity: mixed(GainControlEffect+GrantKeywordEffect+GrantTriggeredAbilityEffect+TapUntapEffect); timing: GrantKeywordEffect; timing: GrantTriggeredAbilityEffect
 Flash Counter
@@ -6610,7 +6610,7 @@ Glitch Ghost Surveyor
 Glittering Frost
 Glittering Stockpile
 Glittermonger
-Global Ruin	intent: ForEach>Pipeline(ControlledPermanents→graveyard)
+Global Ruin
 Gloom
 Gloom Pangolin
 Gloom Ripper
@@ -7975,7 +7975,7 @@ Impede Momentum
 Impending Doom
 Imperial Aerosaur
 Imperial Ceratops
-Imperial Edict	intent: Pipeline(ControlledPermanents→graveyard); polarity: Pipeline(ControlledPermanents→graveyard)
+Imperial Edict	polarity: Pipeline(ControlledPermanents→graveyard)
 Imperial Hellkite
 Imperial Lancer
 Imperial Oath
@@ -9404,7 +9404,7 @@ Likeness Looter	intent: EachPermanentBecomesCopyOfTargetEffect; polarity: EachPe
 Lilah, Undefeated Slickshot	intent: MarkSpellExileOnResolveEffect
 Liliana Vess	intent: Pipeline(graveyard→battlefield); intent: Pipeline(hand→graveyard); polarity: Pipeline(hand→graveyard)
 Liliana of the Dark Realms	intent: ChooseActionEffect; intent: CreatePermanentEmblemEffect; polarity: ChooseActionEffect
-Liliana of the Veil	intent: ChoosePileEffect; intent: ForEach>Pipeline(hand→graveyard); intent: Pipeline(ControlledPermanents→graveyard); polarity: ForceSacrificeEffect; polarity: Pipeline(ControlledPermanents→graveyard)
+Liliana of the Veil	intent: ForEach>Pipeline(hand→graveyard); polarity: ForceSacrificeEffect; polarity: Pipeline(ControlledPermanents→graveyard)
 Liliana the Faultless
 Liliana the Repentant
 Liliana's Caress
@@ -12746,7 +12746,7 @@ Rayblade Trooper
 Razaketh, the Foulblooded
 Raze the Effigy
 Raze to the Ground
-Razia's Purification	intent: ForEach>Pipeline(ControlledPermanents→graveyard)
+Razia's Purification
 Razia, Boros Archangel	intent: RedirectNextDamageEffect; polarity: RedirectNextDamageEffect; timing: RedirectNextDamageEffect
 Razor Barrier	intent: ChooseActionEffect; polarity: ChooseActionEffect
 Razor Golem
@@ -13279,7 +13279,7 @@ Riverwalk Technique	intent: ModalEffect; polarity: PutOnLibraryPositionOfChoiceE
 Riverwheel Aerialists
 Riverwheel Sweep
 Riveteers Ascendancy
-Riveteers Charm	intent: ModalEffect; polarity: Pipeline(ControlledPermanents→graveyard); polarity: Pipeline(graveyard→exile)
+Riveteers Charm	polarity: Pipeline(ControlledPermanents→graveyard); polarity: Pipeline(graveyard→exile)
 Riveteers Decoy
 Riveteers Initiate	intent: GrantKeywordEffect
 Riveteers Overlook
@@ -15044,7 +15044,7 @@ Soul Salvage
 Soul Sear	timing: RemoveKeywordEffect
 Soul Search	polarity: Pipeline(hand→exile); polarity: RevealHandEffect
 Soul Separator
-Soul Shatter	intent: ForEach>Pipeline(ControlledPermanents→graveyard)
+Soul Shatter
 Soul Shred
 Soul Transfer
 Soul Warden
@@ -17617,7 +17617,7 @@ Unsparing Boltcaster
 Unspeakable Symbol
 Unstable Amulet	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Unstable Experiment
-Unstable Glyphbridge	intent: CantAttackGroupEffect; intent: ForEach>Pipeline(ControlledPermanents→graveyard); intent: ReturnSelfFromExileTransformedEffect
+Unstable Glyphbridge	intent: CantAttackGroupEffect; intent: ReturnSelfFromExileTransformedEffect
 Unstable Hulk
 Unstable Mutation	polarity: Aura>AddCountersEffect; polarity: Aura>ModifyStats
 Unstable Obelisk
@@ -18509,7 +18509,7 @@ Weftblade Enhancer
 Weftstalker Ardent
 Weftwalking
 Wei Ambush Force
-Wei Assassins	intent: Pipeline(ControlledPermanents→graveyard); polarity: Pipeline(ControlledPermanents→graveyard)
+Wei Assassins	polarity: Pipeline(ControlledPermanents→graveyard)
 Wei Elite Companions
 Wei Infantry
 Wei Night Raiders	intent: Pipeline(hand→graveyard)
@@ -18736,7 +18736,7 @@ Wingshield Agent
 Wingspan Mentor
 Wingspan Stride
 Winnow
-Winnowing	intent: ForEach>GatherSubtypesEffect; intent: ForEach>Pipeline(ControlledPermanents→graveyard)
+Winnowing
 Winota, Joiner of Forces
 Winter Blast
 Winter Moon
