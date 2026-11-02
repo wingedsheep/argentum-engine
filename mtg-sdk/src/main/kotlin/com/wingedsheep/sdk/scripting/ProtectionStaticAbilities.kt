@@ -726,6 +726,12 @@ data object GrantCantLoseGameFromLife : StaticAbility {
  * Only spells and abilities this permanent's controller controls get the bypass, and it reaches
  * "hexproof from [quality]" as well (CR 702.11e). Does NOT suppress shroud (shroud still prevents
  * targeting by all players).
+ *
+ * A resolving effect can hand it out for a duration with
+ * [com.wingedsheep.sdk.dsl.Effects.GrantStaticAbility]; granted to a player
+ * (`EffectTarget.Controller`) that player is the "you", and the bypass outlives the source.
+ * Detection Tower — "{1}, {T}: Until end of turn, your opponents and creatures your opponents
+ * control with hexproof can be the targets …" — grants it to its activator for end of turn.
  */
 @SerialName("SuppressHexproofForGroup")
 @Serializable
