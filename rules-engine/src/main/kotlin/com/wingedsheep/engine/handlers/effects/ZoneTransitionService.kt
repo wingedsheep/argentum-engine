@@ -196,7 +196,9 @@ data class ZoneEntryOptions(
     /**
      * Characteristics the entrant has as it enters ("they enter as 5/5 creatures in addition to
      * their other types", `EntersWithCharacteristics`). Applied as the object arrives, before the
-     * rest of entry, so entry replacements and enters triggers see them. Ignored face down.
+     * rest of entry, so entry replacements and enters triggers see them. A face-down entrant
+     * carries them on its [FaceDownModeComponent] instead, as the face-down characteristics the
+     * effect specifies (CR 708.2a) — they replace the 2/2 rather than layering onto the card.
      */
     val entersWith: com.wingedsheep.sdk.scripting.effects.EntersWithCharacteristics? = null
 )
@@ -1814,7 +1816,7 @@ class ZoneTransitionService(
                     updated = updated.with(options.morphData)
                 }
                 if (options.faceDownMode != null) {
-                    updated = updated.with(FaceDownModeComponent(options.faceDownMode))
+                    updated = updated.with(FaceDownModeComponent(options.faceDownMode, options.entersWith))
                 }
             }
 

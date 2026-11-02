@@ -60,8 +60,9 @@ enum class FaceDownMode(
     CLOAK(WardCost.Mana("{2}"), MYSTERIOUS_CREATURE_HELPER_CARD_IMAGE_URI),
 
     /**
-     * Face down with no turn-up procedure — e.g. a card exiled face down for Hideaway. It is
-     * simply hidden; nothing lets it be turned face up in place.
+     * Face down with no turn-up procedure of its own — a card exiled face down for Hideaway, or
+     * put onto the battlefield face down by Tezzeret, Cruel Machinist. It is simply hidden; on the
+     * battlefield only a printed morph or disguise ability (CR 702.37e / 702.168d) turns it up.
      */
     HIDDEN
 }

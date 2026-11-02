@@ -2061,7 +2061,13 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   noncreature permanents and then become creatures"): "[creatures] enter tapped" replacements, creature-gated entry
   counters and "whenever a creature enters" triggers all see it. The change is a permanent floating effect on that
   object, gone when it leaves (CR 400.7); a later effect that sets P/T wins by timestamp, counters apply on top.
-  Ignored face down and for non-battlefield destinations; an Aura entering through the attach prompt doesn't take it.
+  Ignored for non-battlefield destinations; an Aura entering through the attach prompt doesn't take it.
+  **Face down** (`faceDown = …` on the same move) it is instead the face-down characteristics the effect specifies
+  (CR 708.2a): the types/subtypes/colors join the face-down creature's and `power`/`toughness` replace its 2/2, as
+  copiable values that end when the permanent is turned face up — **Tezzeret, Cruel Machinist**'s −7 (`move(chosen,
+  BATTLEFIELD, faceDown = FaceDownMode.HIDDEN, entersWith = EntersWithCharacteristics(addedCardTypes = {ARTIFACT},
+  power = 5, toughness = 5))`, "They're 5/5 artifact creatures"). A `HIDDEN` face-down permanent has no turn-up
+  procedure of its own, but one whose card prints morph or disguise can still be turned face up that way.
   `EntersWithCharacteristics.creature(power, toughness, vararg subtypes)` builds the common shape. **Dance of the
   Manse** (`If(X ≥ 6, move(targets, entersWith = creature(4, 4)), otherwise = move(targets))`), **Relive the Past**
   (`move(gather(ChosenTargets), BATTLEFIELD, entersWith = creature(5, 5, "Elemental"))`).

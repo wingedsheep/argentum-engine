@@ -111,18 +111,27 @@ class StateProjector {
                 // Disguise (CR 702.168a) and cloak (CR 701.58a) list one more: ward {2}. It is part
                 // of this characteristic-defining effect, not an ability of the card underneath,
                 // so it lives on the mode and ends the moment the permanent is turned face up.
-                val faceDownWard = container.get<FaceDownModeComponent>()?.mode?.faceDownWard
+                // The effect that put it onto the battlefield face down may specify others instead
+                // (CR 708.2a) — Tezzeret, Cruel Machinist's "They're 5/5 artifact creatures".
+                val modeComponent = container.get<FaceDownModeComponent>()
+                val faceDownWard = modeComponent?.mode?.faceDownWard
+                val specified = modeComponent?.characteristics
                 projectedValues[entityId] = MutableProjectedValues(
-                    power = 2,
-                    toughness = 2,
+                    power = specified?.power ?: 2,
+                    toughness = specified?.toughness ?: 2,
                     keywords = if (faceDownWard != null) {
                         mutableSetOf(Keyword.WARD.name)
                     } else {
                         mutableSetOf()
                     },
-                    colors = mutableSetOf(),
-                    types = mutableSetOf("CREATURE"),
-                    subtypes = mutableSetOf(),
+                    colors = specified?.addedColors?.mapTo(linkedSetOf()) { it.name } ?: mutableSetOf(),
+                    types = linkedSetOf("CREATURE").apply {
+                        specified?.addedCardTypes?.forEach { add(it.name) }
+                    },
+                    subtypes = linkedSetOf<String>().apply {
+                        specified?.creatureSubtypes?.forEach { add(it.value) }
+                        specified?.addedSubtypes?.forEach { add(it.value) }
+                    },
                     controllerId = container.get<ControllerComponent>()?.playerId,
                     isFaceDown = true
                 )
