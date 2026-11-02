@@ -1129,19 +1129,20 @@ class ZoneTransitionService(
                 }
                 val entryCopy = entryCopyChoice?.takeIf { it.copiedCard != null && !options.faceDown }
                 for (rider in entryCopy?.replacement?.entersWithCounters.orEmpty()) {
-                    val count = EntersWithReplacements.copyEntryCounterCount(
+                    val kinds = EntersWithReplacements.copyEntryCounters(
                         newState, rider, entityId, entryCopy?.copiedEntity, destControllerId, xValue = null,
                         predicateEvaluator = predicateEvaluator)
-                    if (entryCounterTotals != null) {
-                        val kind = rider.counterType
-                        entryCounterTotals[kind] = (entryCounterTotals[kind] ?: 0) + count
-                    } else {
-                        val (afterCounters, counterEvents) = EntersWithReplacements.placeEntryCounters(
-                            newState, entityId, rider.counterType,
-                            count, destControllerId, newState.getEntity(entityId)?.get<CardComponent>()?.name ?: "",
-                            predicateEvaluator = predicateEvaluator)
-                        newState = afterCounters
-                        events.addAll(counterEvents)
+                    for ((kind, count) in kinds) {
+                        if (entryCounterTotals != null) {
+                            entryCounterTotals[kind] = (entryCounterTotals[kind] ?: 0) + count
+                        } else {
+                            val (afterCounters, counterEvents) = EntersWithReplacements.placeEntryCounters(
+                                newState, entityId, kind,
+                                count, destControllerId, newState.getEntity(entityId)?.get<CardComponent>()?.name ?: "",
+                                predicateEvaluator = predicateEvaluator)
+                            newState = afterCounters
+                            events.addAll(counterEvents)
+                        }
                     }
                 }
                 if (entryCounterTotals != null) {
