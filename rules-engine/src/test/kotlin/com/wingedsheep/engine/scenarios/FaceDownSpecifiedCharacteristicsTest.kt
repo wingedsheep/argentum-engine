@@ -100,7 +100,7 @@ class FaceDownSpecifiedCharacteristicsTest : FunSpec({
         d.state.getEntity(bear)!!.has<MorphDataComponent>() shouldBe false
     }
 
-    test("the opponent sees a face-down 5/5 artifact creature") {
+    test("both players see a face-down 5/5 artifact creature") {
         val d = driver()
         val (bear) = putDown(d, plain.name)
         val transformer = ClientStateTransformer(
@@ -112,6 +112,13 @@ class FaceDownSpecifiedCharacteristicsTest : FunSpec({
         view.power shouldBe 5
         view.basePower shouldBe 5
         view.baseToughness shouldBe 5
+
+        // Its controller sees the card, measured against the face-down 5/5 artifact creature it
+        // is — not as a 2/2 Bear pumped +3/+3 and granted the artifact type.
+        val own = transformer.transform(d.state, d.player1).cards[bear]!!
+        own.basePower shouldBe 5
+        own.baseToughness shouldBe 5
+        own.grantedCardTypes shouldBe emptySet()
     }
 
     test("a copy of one is a face-up 5/5 artifact creature with no other characteristics") {

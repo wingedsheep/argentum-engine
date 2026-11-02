@@ -483,6 +483,12 @@ internal class CardProjector(
 
         val castFace = castFace(frame)
         val typeLine = displayedTypeLine(frame, castFace, characteristics.rawKeywords)
+        // What the stat breakdown and "granted types" measure against: the printed card, or — for
+        // a face-down permanent its controller sees — its face-down characteristics (CR 708.2a: a
+        // plain 2/2 creature, or Tezzeret's 5/5 artifact creature), not the hidden card's.
+        val faceBaseline = if (frame.isFaceDown && onBattlefield) {
+            container.copiableCardComponent() ?: cardComponent
+        } else cardComponent
         val choices = chosenValues(frame)
         val zoneStatus = zoneStatus(frame)
         val spell = spellOnStackProjector.project(
@@ -514,8 +520,8 @@ internal class CardProjector(
             // A non-permanent cast face (Omen/Adventure/split half) has no power/toughness.
             power = if (castFace != null) null else characteristics.power,
             toughness = if (castFace != null) null else characteristics.toughness,
-            basePower = cardComponent.baseStats?.basePower,
-            baseToughness = cardComponent.baseStats?.baseToughness,
+            basePower = faceBaseline.baseStats?.basePower,
+            baseToughness = faceBaseline.baseStats?.baseToughness,
             damage = container.get<DamageComponent>()?.amount,
             keywords = characteristics.keywords,
             abilityFlags = characteristics.abilityFlags,
@@ -631,7 +637,7 @@ internal class CardProjector(
                 grantedSubtypes(frame, typeLine.subtypes)
             } else emptySet(),
             grantedCardTypes = if (onBattlefield) {
-                val printed = cardComponent.typeLine.cardTypes.map { it.name }.toSet()
+                val printed = faceBaseline.typeLine.cardTypes.map { it.name }.toSet()
                 typeLine.cardTypes.map { it.name }.filterNot { it in printed }.toSet()
             } else frame.projectedState.crossZoneGrantedCardTypes(frame.entityId)
                 .filterNot { name -> cardComponent.typeLine.cardTypes.any { it.name == name } }
