@@ -15,7 +15,6 @@ object GuildsOfRavnicaSet : MtgSet {
     override val code = "GRN"
     override val displayName = "Guilds of Ravnica"
     override val releaseDate = "2018-10-05"
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
