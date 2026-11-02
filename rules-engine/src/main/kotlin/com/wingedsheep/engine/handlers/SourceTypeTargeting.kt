@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers
 
+import com.wingedsheep.engine.mechanics.targeting.SourceKindProtection
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.EntityId
@@ -55,6 +56,8 @@ object SourceTypeTargeting {
         targetingSourceType: TargetingSourceType
     ): Boolean {
         if (targetingSourceType == TargetingSourceType.SPELL || sourceId == null) return false
+        // An ANY-typed caller (a modal re-check) may still be validating a spell: read it off the source.
+        if (targetingSourceType == TargetingSourceType.ANY && SourceKindProtection.isSpell(state, sourceId)) return false
         val projected = state.projectedState
         val byOpponent = projected.getController(targetId)?.let { it != controllerId } ?: false
         return sourceCardTypes(state, sourceId).any { type ->
