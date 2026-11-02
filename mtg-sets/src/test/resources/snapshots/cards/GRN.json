@@ -809,6 +809,85 @@
     ]
 }
 
+// Blood Operative
+{
+    "name": "Blood Operative",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Creature — Vampire Assassin",
+    "oracleText": "Lifelink\nWhen this creature enters, you may exile target card from a graveyard.\nWhenever you surveil, if this card is in your graveyard, you may pay 3 life. If you do, return this card to your hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Blood Operative:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Exile"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {},
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Blood Operative:2",
+                "trigger": "SurveiledEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayLife",
+                            "amount": 3
+                        }
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Hand",
+                        "fromZone": "Graveyard"
+                    }
+                },
+                "activeZones": [
+                    "Graveyard"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "rarity": "RARE",
+        "artist": "Livia Prima",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/000ac9e5-3c95-4e87-9424-109e2eea6b45.jpg?1783934178"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Boros Challenger
 {
     "name": "Boros Challenger",
@@ -1027,6 +1106,99 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Bounty of Might
+{
+    "name": "Bounty of Might",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +3/+3 until end of turn.\nTarget creature gets +3/+3 until end of turn.\nTarget creature gets +3/+3 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t2"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t1"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t2"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "rarity": "RARE",
+        "artist": "Even Amundsen",
+        "flavorText": "\"I am the very soul of battle, but even I would never advise open war with the Conclave.\"\n—Aurelia",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/9/e9a950d8-e6e2-42d6-83d7-a60c15d2035d.jpg?1783934154"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -1432,6 +1604,134 @@
     "colorIdentityOverride": [
         "RED",
         "WHITE"
+    ]
+}
+
+// Charnel Troll
+{
+    "name": "Charnel Troll",
+    "manaCost": "{1}{B}{G}",
+    "typeLine": "Creature — Troll",
+    "oracleText": "Trample\nAt the beginning of your upkeep, exile a creature card from your graveyard. If you do, put a +1/+1 counter on this creature. Otherwise, sacrifice it.\n{B}{G}, Discard a creature card: Put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Charnel Troll:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": "creature"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "selectedLabel": "Exile"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "storeMovedAs": "moved2"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "moved2",
+                            "ifNotEmpty": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": "Self"
+                            },
+                            "ifEmpty": {
+                                "type": "SacrificeTarget",
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your upkeep, exile a creature card from your graveyard. If you do, put a +1/+1 counter on this creature. Otherwise, sacrifice it."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Charnel Troll:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{B}{G}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomDiscard",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "160",
+        "rarity": "RARE",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/1/71fec229-e22c-4655-8640-02d0ec472be0.jpg?1783934139",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "You can't choose not to exile a creature card from your graveyard if you have one to exile."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "You can activate Charnel Troll's last ability during your upkeep before its triggered ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
     ]
 }
 
@@ -2060,6 +2360,107 @@
     "hasNoManaCost": true
 }
 
+// Creeping Chill
+{
+    "name": "Creeping Chill",
+    "manaCost": "{3}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Creeping Chill deals 3 damage to each opponent and you gain 3 life.\nWhen Creeping Chill is put into your graveyard from your library, you may exile it. If you do, Creeping Chill deals 3 damage to each opponent and you gain 3 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            ]
+        },
+        "triggeredAbilities": [
+            {
+                "id": "Creeping Chill:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Library",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "MoveToZone",
+                                "target": "Self",
+                                "destination": "Exile",
+                                "fromZone": "Graveyard"
+                            }
+                        },
+                        "then": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "DealDamage",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    },
+                                    "target": {
+                                        "type": "PlayerRef",
+                                        "player": "EachOpponent"
+                                    }
+                                },
+                                {
+                                    "type": "GainLife",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "descriptionOverride": "You may exile Creeping Chill. If you do, Creeping Chill deals 3 damage to each opponent and you gain 3 life."
+                },
+                "activeZones": [
+                    "Graveyard"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "rarity": "UNCOMMON",
+        "artist": "Wisnu Tan",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f5456173-7a08-4b5c-8450-7123375f4a86.jpg?1783934178",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "In a Two-Headed Giant game, Creeping Chill causes the opposing team to lose 6 life and you gain 3 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Crush Contraband
 {
     "name": "Crush Contraband",
@@ -2337,6 +2738,65 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Deadly Visit
+{
+    "name": "Deadly Visit",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target creature.\nSurveil 2. (Look at the top two cards of your library, then put any number of them into your graveyard and the rest on top of your library in any order.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "Surveil",
+                    "count": 2
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "artist": "Scott Murphy",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/6/462fe190-5264-42d8-bd27-23c5aa0c641f.jpg?1783934178",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "You'll surveil before resolving any abilities that trigger on the target creature dying."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Deadly Visit can target a creature that's indestructible. It won't be destroyed, but you'll surveil."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "Some spells that instruct you to surveil require targets. You can't cast a spell without choosing legal targets. If all of those targets become illegal, the spell doesn't resolve and you won't surveil."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -2996,6 +3456,102 @@
     "colorIdentityOverride": [
         "BLUE",
         "BLACK"
+    ]
+}
+
+// District Guide
+{
+    "name": "District Guide",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Elf Scout",
+    "oracleText": "When this creature enters, you may search your library for a basic land card or Gate card, reveal it, put it into your hand, then shuffle.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "District Guide:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            {
+                                                "type": "Or",
+                                                "predicates": [
+                                                    "IsBasicLand",
+                                                    {
+                                                        "type": "And",
+                                                        "predicates": [
+                                                            "IsLand",
+                                                            {
+                                                                "type": "HasSubtype",
+                                                                "subtype": "Gate"
+                                                            }
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a basic land or land Gate card to put into your hand",
+                                "selectedLabel": "Put into your hand"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                },
+                                "revealed": true
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "128",
+        "rarity": "UNCOMMON",
+        "artist": "Tianhua X",
+        "flavorText": "\"The route is direct but challenging. Incidentally, how are you with heights?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/1/c150deec-3287-40ef-9b9c-c22bf5d70b02.jpg?1783934152"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -4415,6 +4971,112 @@
     "colorIdentityOverride": []
 }
 
+// Glowspore Shaman
+{
+    "name": "Glowspore Shaman",
+    "manaCost": "{B}{G}",
+    "typeLine": "Creature — Elf Shaman",
+    "oracleText": "When this creature enters, mill three cards. You may put a land card from your graveyard on top of your library. (To mill a card, put the top card of your library into your graveyard.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Glowspore Shaman:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 3
+                                        },
+                                        "isMill": true
+                                    },
+                                    "storeAs": "milled"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "milled",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": "land"
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered1",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected2",
+                            "prompt": "You may put a land card from your graveyard on top of your library",
+                            "selectedLabel": "Put on top of library",
+                            "remainderLabel": "Leave in graveyard",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Top"
+                            },
+                            "order": "ControllerChooses"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, mill three cards. You may put a land card from your graveyard on top of your library."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "173",
+        "rarity": "UNCOMMON",
+        "artist": "Lars Grant-West",
+        "flavorText": "From death she grows living grandeur.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/08fe260a-d204-4e75-b3e5-0cd9b4ca7084.jpg?1783934134",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "The land card you put on top of your library may be one that you just milled or one that was already there."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Golgari Findbroker
 {
     "name": "Golgari Findbroker",
@@ -4531,6 +5193,58 @@
     ]
 }
 
+// Golgari Raiders
+{
+    "name": "Golgari Raiders",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Elf Warrior",
+    "oracleText": "Haste\nUndergrowth — This creature enters with a +1/+1 counter on it for each creature card in your graveyard.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Graveyard",
+                    "filter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "130",
+        "rarity": "UNCOMMON",
+        "artist": "David Palumbo",
+        "flavorText": "What the Golgari can't claim through patient undercity expansion, they seize in brazen topside sorties.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/37284ba8-441c-4cf6-95c6-6a0f52e6d36d.jpg?1783934153",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "If you return Golgari Raiders from your graveyard to the battlefield, its undergrowth ability counts itself."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Creature cards with other types, such as artifact creature cards, count for undergrowth abilities."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Because tokens aren't cards, they never count for undergrowth abilities."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Grappling Sundew
 {
     "name": "Grappling Sundew",
@@ -4573,6 +5287,146 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Gruesome Menagerie
+{
+    "name": "Gruesome Menagerie",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose a creature card with mana value 1 in your graveyard, then do the same for creature cards with mana value 2 and 3. Return those cards to the battlefield.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "creature mv=1",
+                    "storeSelected": "selected1",
+                    "prompt": "Choose a creature card with mana value 1 in your graveyard",
+                    "selectedLabel": "Return to the battlefield"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "creature mv=2",
+                    "storeSelected": "selected2",
+                    "prompt": "Choose a creature card with mana value 2 in your graveyard",
+                    "selectedLabel": "Return to the battlefield"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "creature mv=3",
+                    "storeSelected": "selected3",
+                    "prompt": "Choose a creature card with mana value 3 in your graveyard",
+                    "selectedLabel": "Return to the battlefield"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "gathered0",
+                    "collectionFilter": {
+                        "type": "ExcludeOtherCollection",
+                        "otherCollectionName": "selected1"
+                    },
+                    "storeMatching": "matching4"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "matching4",
+                    "collectionFilter": {
+                        "type": "ExcludeOtherCollection",
+                        "otherCollectionName": "selected2"
+                    },
+                    "storeMatching": "matching5"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "matching5",
+                    "collectionFilter": {
+                        "type": "ExcludeOtherCollection",
+                        "otherCollectionName": "selected3"
+                    },
+                    "storeMatching": "matching6"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "gathered0",
+                    "collectionFilter": {
+                        "type": "ExcludeOtherCollection",
+                        "otherCollectionName": "matching6"
+                    },
+                    "storeMatching": "matching7"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "matching7",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "RARE",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "\"Variety is also the spice of death.\"\n—Cevraya, Golgari shaman",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/3/73c0e4d9-bf0d-4e28-a647-9010701a915e.jpg?1783934175",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "Gruesome Menagerie doesn't target the cards to return. You choose them while it's resolving. No players may take actions between the time you make each choice and the time you return them to the battlefield."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If a card in your graveyard has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If you don't have a creature card in your graveyard with one mana value, you just continue on to the next."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "All of the returned cards enter the battlefield at the same time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -4833,6 +5687,125 @@
     "colorIdentityOverride": [
         "RED",
         "WHITE"
+    ]
+}
+
+// Hatchery Spider
+{
+    "name": "Hatchery Spider",
+    "manaCost": "{5}{G}{G}",
+    "typeLine": "Creature — Spider",
+    "oracleText": "Reach\nUndergrowth — When you cast this spell, reveal the top X cards of your library, where X is the number of creature cards in your graveyard. You may put a green permanent card with mana value X or less from among them onto the battlefield. Put the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 7
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hatchery Spider:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Count",
+                                    "player": "You",
+                                    "zone": "Graveyard",
+                                    "filter": "creature"
+                                }
+                            },
+                            "storeAs": "gathered0",
+                            "revealed": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsPermanent",
+                                    {
+                                        "type": "HasColor",
+                                        "color": "GREEN"
+                                    },
+                                    {
+                                        "type": "ManaValueAtMostDynamic",
+                                        "amount": {
+                                            "type": "Count",
+                                            "player": "You",
+                                            "zone": "Graveyard",
+                                            "filter": "creature"
+                                        }
+                                    }
+                                ]
+                            },
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "You may put a green permanent card with mana value X or less onto the battlefield"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "rarity": "RARE",
+        "artist": "Livia Prima",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/b/0b841904-202c-4b42-869a-e345112ab1c8.jpg?1783934150",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "Hatchery Spider's ability triggers as you cast it, and that ability resolves before the spell itself. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If a card in your library has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "A land card that produces green mana, even a Forest, normally has no color."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Creature cards with other types, such as artifact creature cards, count for undergrowth abilities."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -5271,6 +6244,116 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Izoni, Thousand-Eyed
+{
+    "name": "Izoni, Thousand-Eyed",
+    "manaCost": "{2}{B}{B}{G}{G}",
+    "typeLine": "Legendary Creature — Elf Shaman",
+    "oracleText": "Undergrowth — When Izoni enters, create a 1/1 black and green Insect creature token for each creature card in your graveyard.\n{B}{G}, Sacrifice another creature: You gain 1 life and draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Izoni, Thousand-Eyed:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": "creature"
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLACK",
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Insect"
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Izoni, Thousand-Eyed:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{B}{G}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{B}{G}, Sacrifice another creature: You gain 1 life and draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "180",
+        "rarity": "RARE",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/5/75955b0e-12d6-40ba-aab5-b7b7e2bde121.jpg?1783934132",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "You can activate Izoni's last ability while its undergrowth ability is on the stack. This will increase the number of Insect tokens you'll create."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Creature cards with other types, such as artifact creature cards, count for undergrowth abilities."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Because tokens aren't cards, they never count for undergrowth abilities."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
     ]
 }
 
@@ -6383,6 +7466,66 @@
     ]
 }
 
+// Lotleth Giant
+{
+    "name": "Lotleth Giant",
+    "manaCost": "{6}{B}",
+    "typeLine": "Creature — Zombie Giant",
+    "oracleText": "Undergrowth — When this creature enters, it deals 1 damage to target opponent for each creature card in your graveyard.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lotleth Giant:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": "creature"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "rarity": "UNCOMMON",
+        "artist": "Alex Konstad",
+        "flavorText": "\"I prefer the big and looming to the small and skittering.\"\n—Cevraya, Golgari shaman",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/1/b1dc38b7-52f7-4394-b095-5442429ab291.jpg?1783934174",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "Because tokens aren't cards, they never count for undergrowth abilities."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Creature cards with other types, such as artifact creature cards, count for undergrowth abilities."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Loxodon Restorer
 {
     "name": "Loxodon Restorer",
@@ -6631,6 +7774,55 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Mephitic Vapors
+{
+    "name": "Mephitic Vapors",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "All creatures get -1/-1 until end of turn.\nSurveil 2. (Look at the top two cards of your library, then put any number of them into your graveyard and the rest on top of your library in any order.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "Surveil",
+                    "count": 2
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "artist": "Darek Zabrocki",
+        "flavorText": "Ravnica's safest strongholds are often neither.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/675640ba-37e7-4231-8524-87e8b87ea46f.jpg?1783934174"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -7144,6 +8336,86 @@
     ]
 }
 
+// Never Happened
+{
+    "name": "Never Happened",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent reveals their hand. You choose a nonland card from that player's graveyard or hand and exile it.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "RevealHand",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromMultipleZones",
+                        "zones": [
+                            "Hand",
+                            "Graveyard"
+                        ],
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "nonland",
+                    "storeSelected": "selected2",
+                    "prompt": "Choose a nonland card from their hand or graveyard to exile",
+                    "showAllCards": true,
+                    "alwaysPrompt": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "artist": "Aaron Miller",
+        "flavorText": "Dimir assassins have the precision to slay a single memory.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/289d3746-9e54-4983-9daa-f1a7afbdedad.jpg?1783934172"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Nightveil Predator
 {
     "name": "Nightveil Predator",
@@ -7339,6 +8611,89 @@
     "colorIdentityOverride": [
         "BLUE",
         "BLACK"
+    ]
+}
+
+// Nullhide Ferox
+{
+    "name": "Nullhide Ferox",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "Hexproof\nYou can't cast noncreature spells.\n{2}: This creature loses all abilities until end of turn. Any player may activate this ability.\nIf a spell or ability an opponent controls causes you to discard this card, put it onto the battlefield instead of putting it into your graveyard.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "HEXPROOF"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Nullhide Ferox:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "RemoveAllAbilities",
+                    "target": "Self"
+                },
+                "restrictions": [
+                    "AnyPlayerMay"
+                ]
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "PlayersCantCastSpells",
+                "affected": "You",
+                "spellFilter": {
+                    "cardPredicates": [
+                        "IsNoncreature"
+                    ]
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "RedirectZoneChange",
+                "newDestination": "Battlefield",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Hand",
+                    "to": "Graveyard"
+                },
+                "selfOnly": true,
+                "requiredCause": "DiscardedByOpponentEffect"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "rarity": "MYTHIC",
+        "artist": "Filip Burburan",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/24c30bb0-06ba-432b-a20c-6fa79b0dc68a.jpg?1783934148",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "Nullhide Ferox's activated ability can be activated only while it's on the battlefield. Players can't, for example, activate it to try to stop its replacement effect from putting it onto the battlefield."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Once Nullhide Ferox's activated ability has resolved, it can gain new abilities. It won't lose those abilities."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Once Nullhide Ferox has lost its activated ability that makes it lose its abilities, that ability can't be activated again until the turn's over."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
