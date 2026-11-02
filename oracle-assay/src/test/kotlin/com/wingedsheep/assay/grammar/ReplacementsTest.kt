@@ -151,8 +151,8 @@ class ReplacementsTest : StringSpec({
             EntersWithChoice(ChoiceType.CREATURE_ON_BATTLEFIELD)
     }
 
-    // The three `CardNamePool` values are three noun phrases rather than an adjective slot the
-    // widest one would have to leave empty. Nevermore, Gideon's Intervention, Petrified Hamlet.
+    // The `CardNamePool` values are noun phrases rather than an adjective slot the widest one
+    // would have to leave empty. Nevermore, Gideon's Intervention, Petrified Hamlet, Alpine Moon.
     "the card-name pool is a word in the noun phrase" {
         choice("As ~ enters, choose a card name.") shouldBe
             EntersWithChoice(ChoiceType.CARD_NAME, cardNamePool = CardNamePool.ANY)
@@ -160,6 +160,9 @@ class ReplacementsTest : StringSpec({
             EntersWithChoice(ChoiceType.CARD_NAME, cardNamePool = CardNamePool.NONLAND)
         choice("As ~ enters, choose a land card name.") shouldBe
             EntersWithChoice(ChoiceType.CARD_NAME, cardNamePool = CardNamePool.LAND)
+        choice("As ~ enters, choose a nonbasic land card name.") shouldBe
+            EntersWithChoice(ChoiceType.CARD_NAME, cardNamePool = CardNamePool.NONBASIC_LAND)
+        roundTrips("As ~ enters, choose a nonbasic land card name.")
     }
 
     // Sorcerous Spyglass. The look and the wider pool are spelled together on every corpus line that

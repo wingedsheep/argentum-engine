@@ -227,6 +227,7 @@ object Replacements {
         "an opponent" to EntersWithChoice(ChoiceType.OPPONENT),
         "a land card name" to EntersWithChoice(ChoiceType.CARD_NAME, cardNamePool = CardNamePool.LAND),
         "a nonland card name" to EntersWithChoice(ChoiceType.CARD_NAME, cardNamePool = CardNamePool.NONLAND),
+        "a nonbasic land card name" to EntersWithChoice(ChoiceType.CARD_NAME, cardNamePool = CardNamePool.NONBASIC_LAND),
         "a card name" to EntersWithChoice(ChoiceType.CARD_NAME, cardNamePool = CardNamePool.ANY),
     )
 

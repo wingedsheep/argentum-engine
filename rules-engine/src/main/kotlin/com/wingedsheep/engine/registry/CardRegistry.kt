@@ -151,6 +151,15 @@ class CardRegistry(private val parent: CardRegistry? = null) {
     }
 
     /**
+     * Get the names of every registered land card that isn't a basic land (Alpine Moon's "choose a
+     * nonbasic land card name"). Unique names only; [landCardNames] minus the Basic supertype.
+     */
+    fun nonbasicLandCardNames(): Set<String> {
+        val own = cardsByName.values.filter { it.isLand && !it.typeLine.isBasicLand }.map { it.name }.toSet()
+        return if (parent == null) own else own + parent.nonbasicLandCardNames().filter { it !in cardsByName }
+    }
+
+    /**
      * The names offered by an `EntersWithChoice(ChoiceType.CARD_NAME)` drawing from [pool] — the
      * single place the pool-to-registry mapping lives, so every naming path (spell resolution,
      * land drop, leyline opening) offers the same option set.
@@ -159,6 +168,7 @@ class CardRegistry(private val parent: CardRegistry? = null) {
         com.wingedsheep.sdk.scripting.CardNamePool.ANY -> allCardNames()
         com.wingedsheep.sdk.scripting.CardNamePool.LAND -> landCardNames()
         com.wingedsheep.sdk.scripting.CardNamePool.NONLAND -> nonlandCardNames()
+        com.wingedsheep.sdk.scripting.CardNamePool.NONBASIC_LAND -> nonbasicLandCardNames()
     }
 
     /**
