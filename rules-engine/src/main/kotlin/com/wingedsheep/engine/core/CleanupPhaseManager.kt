@@ -110,6 +110,7 @@ import com.wingedsheep.engine.state.components.player.TurnedPermanentFaceUpThisT
 import com.wingedsheep.engine.state.components.player.PlayerDescendedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.OpponentCreaturesExiledThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PlayerEffectRemoval
+import com.wingedsheep.engine.state.components.player.PlayerNoMaximumHandSizeComponent
 import com.wingedsheep.engine.state.components.player.MayCastCreaturesFromGraveyardWithForageComponent
 import com.wingedsheep.engine.state.components.player.PlayerHexproofComponent
 import com.wingedsheep.engine.state.components.player.PlayerHexproofFromComponent
@@ -310,6 +311,15 @@ class CleanupPhaseManager(
             val cantLoseLife = result.getEntity(member)?.get<CantLoseLifeComponent>()
             if (cantLoseLife?.removeOn == PlayerEffectRemoval.UntilYourNextTurn) {
                 result = result.updateEntity(member) { it.without<CantLoseLifeComponent>() }
+            }
+        }
+        // "You have no maximum hand size until your next turn" (Deep Space Scan) lapses on the same
+        // post-untap hook, keyed off the effect's controller rather than the affected player.
+        for (playerId in result.turnOrder) {
+            val noMax = result.getEntity(playerId)?.get<PlayerNoMaximumHandSizeComponent>() ?: continue
+            if (noMax.removeOn != PlayerEffectRemoval.UntilYourNextTurn) continue
+            if ((noMax.expiresForPlayerId ?: playerId) in activeTeam) {
+                result = result.updateEntity(playerId) { it.without<PlayerNoMaximumHandSizeComponent>() }
             }
         }
         // Memory Vessel's "they can't play cards from their hand until your next turn" expires on

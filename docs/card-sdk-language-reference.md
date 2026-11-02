@@ -1852,8 +1852,12 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   "Your life total can't change" (CR 119.7–8) is both locks: `LockLifeGain(...) then LockLifeLoss(...)`
   (Flare of Fortitude).
 - `LoseGame(target, message?)` — target loses the game.
-- `RemoveMaximumHandSize(target?)` — "target has no maximum hand size for the rest of the game"
-  (default target: controller). One-shot resolution effect that confers a permanent, player-scoped
+- `RemoveMaximumHandSize(target?, duration?)` — "target has no maximum hand size for the rest of the game"
+  (default target: controller). `duration = Duration.UntilYourNextTurn` reads "… until your next turn"
+  (Deep Space Scan, Live Long and Prosper): the component then carries `removeOn = UntilYourNextTurn`
+  keyed to the effect's controller and lapses after their next untap step, so this turn's cleanup
+  discards nothing. A later temporary grant never downgrades a rest-of-game one; only those two
+  durations are accepted. One-shot resolution effect that confers a permanent, player-scoped
   property via `PlayerNoMaximumHandSizeComponent` — unlike the battlefield-only `NoMaximumHandSize`
   *static ability* (§9, Reliquary Tower / Thought Vessel), it survives the source leaving any zone
   (e.g. Wisdom of Ages exiles itself on resolution). The component carries the effect's timestamp

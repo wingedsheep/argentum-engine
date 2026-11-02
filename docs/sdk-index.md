@@ -1044,7 +1044,7 @@ Families:
 - `RemoveDamageShieldEffect(target: EffectTarget)` — One-shot destruction-replacement shield: the next time the target permanent would be destroyed this turn, remove all damage marked on it instead.
 - `RemoveFromCombatEffect(target: EffectTarget, unblockSoleBlockedAttackers: Boolean)` — Remove a creature from combat.
 - `RemoveKeywordEffect(keyword: String, target: EffectTarget, duration: Duration)` — Remove a keyword or ability flag from a target until end of turn.
-- `RemoveMaximumHandSizeEffect(target: EffectTarget)` — Removes the target player's maximum hand size for the rest of the game ("you have no maximum hand size for the rest of the game").
+- `RemoveMaximumHandSizeEffect(target: EffectTarget, duration: Duration)` — Removes the target player's maximum hand size for the rest of the game ("you have no maximum hand size for the rest of the game"), or for a shorter duration ("you have no maximum hand size until yo…
 - `RemoveSuspectedEffect(target: EffectTarget)` — "It's no longer suspected" (CR 701.60c) — the inverse of the whole suspect bundle.
 - `RepeatDynamicTimesEffect(amount: DynamicAmount, body: Effect)` — Repeat a body effect N times, where N is determined by a DynamicAmount.
 - `RepeatWhileEffect(body: Effect, repeatCondition: RepeatCondition, collectCollections: Map<String, String>)` — Repeat a body effect in a do-while loop controlled by a RepeatCondition.
