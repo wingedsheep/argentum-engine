@@ -103,6 +103,32 @@ class StatRelevanceTest : ScenarioTestBase() {
             StatRelevance.thresholdBonus(3, 3, none, theirs) shouldBe (0.0 plusOrMinus EPSILON)
         }
 
+        test("on the whole board, a creature theirs beats adds nothing to their worth") {
+            // Their Hill Giant facing our Alpine Grizzly (4/2), with and without our Savannah Lions
+            // (2/1) beside it. The Giant beats the Lions, not the Grizzly. As a share, the Lions
+            // raised the Giant from none of our board to half of it — so losing the Lions for
+            // nothing made their Giant cheaper and read as a gain for us.
+            fun giant(withLions: Boolean, wholeBoard: Boolean): Double {
+                val powers = if (withLions) intArrayOf(4, 2) else intArrayOf(4)
+                val toughnesses = if (withLions) intArrayOf(2, 1) else intArrayOf(2)
+                return StatRelevance.thresholdBonus(3, 3, none, StatContext(powers, toughnesses, null, wholeBoard))
+            }
+            giant(withLions = true, wholeBoard = true) shouldBe (giant(withLions = false, wholeBoard = true) plusOrMinus EPSILON)
+            giant(withLions = true, wholeBoard = false) shouldBeGreaterThan giant(withLions = false, wholeBoard = false)
+        }
+
+        test("on the whole board, it agrees with the share at both ends, and killing the last resister pays in full") {
+            // Our Hill Giant facing their Grizzly Bears (beaten) and Craw Wurm (resists it), then the
+            // Bears alone.
+            val withWurm = StatContext(intArrayOf(2, 6), intArrayOf(2, 4), null, wholeBoard = true)
+            StatRelevance.thresholdBonus(3, 3, none, withWurm) shouldBe (0.0 plusOrMinus EPSILON)
+            val bearsAlone = StatContext(intArrayOf(2), intArrayOf(2), null, wholeBoard = true)
+            StatRelevance.thresholdBonus(3, 3, none, bearsAlone) shouldBe
+                ((StatRelevance.BEATS + StatRelevance.OUTLASTS) plusOrMinus EPSILON)
+            StatRelevance.thresholdBonus(3, 3, none, StatContext(intArrayOf(), intArrayOf(), null, wholeBoard = true)) shouldBe
+                ((StatRelevance.BEATS + StatRelevance.OUTLASTS) plusOrMinus EPSILON)
+        }
+
         test("an empty opposing board satisfies both fight thresholds, so killing their last creature costs nothing") {
             val game = scenario().withPlayers().withCardOnBattlefield(1, "Grizzly Bears").build()
             val context = StatContext.facing(game.state, game.state.projectedState, game.player1Id, null)

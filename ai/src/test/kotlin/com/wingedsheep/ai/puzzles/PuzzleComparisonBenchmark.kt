@@ -181,6 +181,8 @@ class PuzzleComparisonBenchmark : ScenarioTestBase() {
                 // Pressing a winning position — the damage an attack deals credited by how far the
                 // board it leaves dominates — off and on, on top of everything live.
                 AiProfile.LIVE_WITHOUT_PRESSURE,
+                // The combat-trade fixes (marked damage, monotone thresholds, block math, swaps).
+                AiProfile.LIVE_WITHOUT_TRADE_FIXES,
                 AiProfile.LIVE,
                 // Phase 7's rollout evaluator, isolated from Phases 4 and 6 so the column is
                 // attributable to the rollouts alone.

@@ -68,13 +68,18 @@ def parse_instant(text: str | None) -> datetime | None:
         return None
 
 
+def is_ai(player: dict) -> bool:
+    """The server reports AI seats as `isAi`; older builds sent `ai`."""
+    return bool(player.get("isAi", player.get("ai")))
+
+
 def wanted(game: dict, args: argparse.Namespace) -> bool:
     if not game.get("hasReplay") or not game.get("endedAt"):
         return False
     if args.mode and game.get("gameMode", "").upper() != args.mode.upper():
         return False
     players = game.get("players") or []
-    ai = sum(1 for p in players if p.get("ai"))
+    ai = sum(1 for p in players if is_ai(p))
     humans = len(players) - ai
     if ai == 0:
         return False
@@ -90,10 +95,10 @@ def summarize(game: dict) -> dict:
         "gameMode": game.get("gameMode"),
         "format": game.get("format"),
         "tournamentName": game.get("tournamentName"),
-        "players": [{"name": p.get("name"), "ai": bool(p.get("ai")), "won": bool(p.get("won"))} for p in players],
-        "aiSeats": [p.get("name") for p in players if p.get("ai")],
+        "players": [{"name": p.get("name"), "ai": bool(is_ai(p)), "won": bool(p.get("won"))} for p in players],
+        "aiSeats": [p.get("name") for p in players if is_ai(p)],
         "winnerName": game.get("winnerName"),
-        "aiWon": any(p.get("ai") and p.get("won") for p in players),
+        "aiWon": any(is_ai(p) and p.get("won") for p in players),
         "replayFile": f"{game['gameId']}.replay.json",
     }
 
