@@ -11839,10 +11839,14 @@ in the declare-blockers step, even before the turn-based block action has comple
   the symmetric "each player may play an additional land on each of their turns" (Rites of
   Flourishing, Ghirapur Orrery) or `Player.EachOpponent`, all relative to the source's projected
   controller. `count = null` is "you may play **any number of** lands on each of your turns"
-  (Fastbond) — unbounded rather than a large constant, and it wins over every finite grant. Read by
-  `LandDropUtils.getAdditionalLandDrops` (null = unlimited), which scans the whole battlefield (a
-  symmetric grant usually sits on another player's side) and unwraps a `ConditionalStaticAbility`;
-  both `PlayLandHandler` and `EnumerationContext` ask `LandDropUtils.hasLandPlayLeft`. Pair it with
+  (Fastbond) — unbounded rather than a large constant, and it wins over every finite grant. A
+  `ProjectedStaticAbility`: `LandDropUtils.getAdditionalLandDrops` (null = unlimited) reads it off every
+  battlefield permanent's projected statics (a symmetric grant usually sits on another player's side),
+  so a printed one, one behind a `ConditionalStaticAbility` (projection honors the gate), one gained from
+  a resolved `Effects.GrantStaticAbility(GrantAdditionalLandDrop(), EffectTarget.Self, Duration.Permanent)`
+  (Nog, Ambitious Cadet) and one handed out by the `GrantStaticAbility` static all count, "you" being the
+  holder's controller, and a holder that loses all abilities stops granting. Both `PlayLandHandler` and
+  `EnumerationContext` ask `LandDropUtils.hasLandPlayLeft`. Pair it with
   `DynamicAmounts.landsPlayedThisTurn()` for "if it wasn't the first land you played this turn".
 - `Effects.PlayAdditionalLands(count)` — the one-shot sibling: "you may play [count] additional lands
   **this turn**" (Explore, Summer Bloom). `count` is an `Int` or a `DynamicAmount` read once as the
@@ -12890,7 +12894,7 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
 
 **Alternative play / cast permissions** (let a player play or cast cards from non-hand zones)
 
-- `MayPlayLandsFromGraveyard` — play lands from your graveyard (no per-turn cap). (Icetill Explorer) For a land play that shares a once-per-turn allowance with graveyard casts, use `MayCastFromGraveyard(playsLands = true)` (Serra Paragon).
+- `MayPlayLandsFromGraveyard` — play lands from your graveyard (no per-turn cap). (Icetill Explorer) A `ProjectedStaticAbility`, read by `LandDropUtils.hasGraveyardLandPlayPermission` off the projected statics of the permanents you control (plus emblems), so it also works gained from a resolved `Effects.GrantStaticAbility(..., Duration.Permanent)` (Nog, Ambitious Cadet) or granted by the `GrantStaticAbility` static. For a land play that shares a once-per-turn allowance with graveyard casts, use `MayCastFromGraveyard(playsLands = true)` (Serra Paragon).
 - `MayPlayPermanentsFromGraveyard` — Muldrotha: play a land + cast one permanent spell of each
   permanent type from your graveyard each turn (per-type-per-turn cap).
 - `EquipAbilitiesAtInstantSpeed` — the controller may activate equip abilities any time they could

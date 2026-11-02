@@ -13,8 +13,10 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantAdditionalLandDrop
+import com.wingedsheep.sdk.scripting.MayPlayLandsFromGraveyard
 import com.wingedsheep.sdk.scripting.PlayersCantPlayLands
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.engine.state.components.identity.emblemStaticAbilitiesOf
 import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
@@ -111,14 +113,9 @@ object LandDropUtils {
      * any applicable grant of "any number of lands" (Fastbond)? Shared by `PlayLandHandler` and the
      * legal-action enumerator so the two can never disagree.
      */
-    fun hasLandPlayLeft(
-        state: GameState,
-        playerId: EntityId,
-        cardRegistry: CardRegistry,
-        conditionEvaluator: ConditionEvaluator
-    ): Boolean {
+    fun hasLandPlayLeft(state: GameState, playerId: EntityId): Boolean {
         val remaining = state.getEntity(playerId)?.get<LandDropsComponent>()?.remaining ?: 0
-        val bonus = getAdditionalLandDrops(state, playerId, cardRegistry, conditionEvaluator) ?: return true
+        val bonus = getAdditionalLandDrops(state, playerId) ?: return true
         return remaining + bonus > 0
     }
 
@@ -127,46 +124,49 @@ object LandDropUtils {
      * that apply to the given player. Multiple sources are additive; null when any of them grants
      * "any number of lands" (Fastbond) — unlimited, not a large number, so nothing overflows.
      *
-     * A [ConditionalStaticAbility] wrapper is unwrapped and its condition evaluated against the
-     * source permanent, so "as long as …" gates are honored — Thranduil's Company only grants the
-     * extra drop while you control another Elf. Without the unwrap the grant silently no-ops, the
-     * same trap [com.wingedsheep.engine.core.MaximumHandSize] documents for `SetMaximumHandSize`.
+     * Read off each permanent's *projected* static abilities, so every route counts: printed
+     * (Oracle of Mul Daya; a Class level or unlocked Room door), gained from a resolved effect
+     * (Nog, Ambitious Cadet), or granted by a [com.wingedsheep.sdk.scripting.GrantStaticAbility].
+     * Projection already honors a [ConditionalStaticAbility] gate (Thranduil's Company only grants
+     * the extra drop while you control another Elf) and drops the grant from a permanent that has
+     * lost all its abilities. "You" is the holder's projected controller.
      */
-    fun getAdditionalLandDrops(
-        state: GameState,
-        playerId: EntityId,
-        cardRegistry: CardRegistry,
-        conditionEvaluator: ConditionEvaluator
-    ): Int? {
+    fun getAdditionalLandDrops(state: GameState, playerId: EntityId): Int? {
         // Scans the whole battlefield, not just [playerId]'s permanents: a symmetric grant
         // (`affected = Player.Each` — Rites of Flourishing) usually sits on someone else's side.
         val projected = state.projectedState
         var bonus = 0
         for (entityId in state.getBattlefield()) {
-            val container = state.getEntity(entityId) ?: continue
-            val cardDef = container.faceUpCardDefinition(cardRegistry) ?: continue
-            val sourceController = projected.getController(entityId) ?: continue
-            // Class levels and unlocked Room doors carry statics outside `script.staticAbilities`.
-            for (ability in RoomFaceStatics.activeStaticAbilities(container, cardDef)) {
-                val grant = when (ability) {
-                    is GrantAdditionalLandDrop -> ability
-                    is ConditionalStaticAbility -> {
-                        val inner = ability.ability as? GrantAdditionalLandDrop ?: continue
-                        val context = EffectContext(sourceId = entityId, controllerId = sourceController)
-                        if (!conditionEvaluator.evaluate(state, ability.condition, context)) continue
-                        inner
-                    }
-                    else -> continue
-                }
+            val abilities = projected.getStaticAbilities(entityId)
+            if (abilities.isEmpty()) continue
+            val holderController = projected.getController(entityId) ?: continue
+            for (grant in abilities) {
+                if (grant !is GrantAdditionalLandDrop) continue
                 val grantsPlayer = when (grant.affected) {
                     Player.Each -> true
-                    Player.EachOpponent -> playerId != sourceController &&
-                        playerId in state.getOpponents(sourceController)
-                    else -> playerId == sourceController
+                    Player.EachOpponent -> playerId != holderController &&
+                        playerId in state.getOpponents(holderController)
+                    else -> playerId == holderController
                 }
                 if (grantsPlayer) bonus += grant.count ?: return null
             }
         }
         return bonus
+    }
+
+    /**
+     * Whether [playerId] may play lands from their graveyard through a
+     * [MayPlayLandsFromGraveyard] (Crucible of Worlds; no per-turn tracking — the land drop is
+     * the limit): one among the projected static abilities of a permanent they control —
+     * printed, gated (Glacierwood Siege's Sultai mode, honored by projection), or gained (Nog,
+     * Ambitious Cadet) — or an emblem they have (Wrenn and Realmbreaker's −7). Shared by
+     * `PlayLandHandler` and the graveyard-play enumerator so the two can never disagree.
+     */
+    fun hasGraveyardLandPlayPermission(state: GameState, playerId: EntityId): Boolean {
+        val projected = state.projectedState
+        return state.getBattlefield().any { entityId ->
+            projected.getController(entityId) == playerId &&
+                projected.getStaticAbilities(entityId).any { it is MayPlayLandsFromGraveyard }
+        } || state.emblemStaticAbilitiesOf(playerId).any { (_, ability) -> ability is MayPlayLandsFromGraveyard }
     }
 }

@@ -4235,6 +4235,141 @@
     ]
 }
 
+// Nog, Ambitious Cadet
+{
+    "name": "Nog, Ambitious Cadet",
+    "manaCost": "{B}{G}",
+    "typeLine": "Legendary Creature — Ferengi Rogue",
+    "oracleText": "Menace\n{1}: If Nog is a Rogue, he becomes a Ferengi Scout with base power and toughness 3/4 and gains \"Whenever Nog becomes tapped, surveil 2.\"\n{3}: If Nog is a Scout, he becomes a Ferengi Officer and gains \"You may play lands from your graveyard\" and \"You may play an additional land on each of your turns.\"",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Nog, Ambitious Cadet:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": "Rogue"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SetCreatureSubtypes",
+                                "subtypes": [
+                                    "Ferengi",
+                                    "Scout"
+                                ]
+                            },
+                            {
+                                "type": "SetBaseStats",
+                                "target": "Self",
+                                "power": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "toughness": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            },
+                            {
+                                "type": "GrantTriggeredAbility",
+                                "ability": {
+                                    "id": "Nog, Ambitious Cadet:1",
+                                    "trigger": "TapEvent",
+                                    "effect": {
+                                        "type": "Surveil",
+                                        "count": 2
+                                    },
+                                    "descriptionOverride": "Whenever Nog becomes tapped, surveil 2."
+                                },
+                                "target": "Self",
+                                "duration": "Permanent"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "If Nog is a Rogue, he becomes a Ferengi Scout with base power and toughness 3/4 and gains \"Whenever Nog becomes tapped, surveil 2.\""
+            },
+            {
+                "id": "Nog, Ambitious Cadet:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": "Scout"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SetCreatureSubtypes",
+                                "subtypes": [
+                                    "Ferengi",
+                                    "Officer"
+                                ]
+                            },
+                            {
+                                "type": "GrantStaticAbility",
+                                "ability": "MayPlayLandsFromGraveyard",
+                                "target": "Self",
+                                "duration": "Permanent"
+                            },
+                            {
+                                "type": "GrantStaticAbility",
+                                "ability": "GrantAdditionalLandDrop",
+                                "target": "Self",
+                                "duration": "Permanent"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "If Nog is a Scout, he becomes a Ferengi Officer and gains \"You may play lands from your graveyard\" and \"You may play an additional land on each of your turns.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "249",
+        "rarity": "RARE",
+        "artist": "Darren Tan",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b513dd60-8573-467b-9c6a-855a0ba86fca.jpg?1793101384"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Open Communications
 {
     "name": "Open Communications",

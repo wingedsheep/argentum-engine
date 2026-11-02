@@ -796,6 +796,13 @@ class StaticAbilityHandler(
                 modification = Modification.GrantStaticAbility(ability),
                 affectsFilter = AffectsFilter.Self,
             )
+            // Land-play permissions, read from the holder's projected statics (LandDropUtils,
+            // GraveyardLandPlay), so printed, resolved-effect and GrantStaticAbility routes all count
+            // and a ConditionalStaticAbility gate is honored by projection itself.
+            is GrantAdditionalLandDrop, is MayPlayLandsFromGraveyard -> ContinuousEffectData(
+                modification = Modification.GrantStaticAbility(ability),
+                affectsFilter = AffectsFilter.Self,
+            )
             // Printed, these are also stamped as controller-grant markers (addContinuousEffectComponent);
             // projecting them too is what lets a resolved-effect grant count ("It gains 'You can't
             // lose the game…'" — The Book of Exalted Deeds): PlayerLifeLossCheck reads both routes.
@@ -1344,7 +1351,6 @@ class StaticAbilityHandler(
             is com.wingedsheep.sdk.scripting.SpendAnyManaTypeForSpells,
             is com.wingedsheep.sdk.scripting.PayLifeForColoredMana,
             is SpendManaAsColor,
-            is GrantAdditionalLandDrop,
             is GrantFlashToSpellType,
             is GrantMayCastFromLinkedExile,
             is GrantWarpToCardsInHand,
@@ -1357,7 +1363,6 @@ class StaticAbilityHandler(
             is com.wingedsheep.sdk.scripting.GraveyardCreaturesHaveSneak,
             is MayCastSelfFromZones,
             is MayCastWithoutPayingManaCost,
-            is MayPlayLandsFromGraveyard,
             is MayPlayPermanentsFromGraveyard,
             is com.wingedsheep.sdk.scripting.MayPlayCardsFromExile,
             // Equip-timing/cost permissions (consulted by CastPermissionUtils /

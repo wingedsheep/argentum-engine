@@ -93,7 +93,7 @@ class PlayLandHandler(
         }
 
         // Check land drop availability (accounts for static ability bonuses)
-        if (!LandDropUtils.hasLandPlayLeft(state, action.playerId, cardRegistry, conditionEvaluator)) {
+        if (!LandDropUtils.hasLandPlayLeft(state, action.playerId)) {
             return "You have already played a land this turn"
         }
 
@@ -966,7 +966,7 @@ class PlayLandHandler(
         playerId: EntityId,
         cardId: EntityId
     ): Boolean {
-        if (hasLandGraveyardPlayPermission(state, playerId)) return true
+        if (LandDropUtils.hasGraveyardLandPlayPermission(state, playerId)) return true
         if (findGraveyardPlayPermissionSource(state, playerId, CardType.LAND.name) != null) return true
         // Mayhem (CR 702.187c): a Mayhem land discarded this turn may be played from the graveyard.
         val discardedThisTurn = state.getEntity(playerId)
@@ -980,32 +980,6 @@ class PlayLandHandler(
             ) return true
         }
         return false
-    }
-
-    /**
-     * Returns true if the player controls a permanent — or has an emblem — with
-     * [MayPlayLandsFromGraveyard] (Crucible of Worlds style — no per-turn usage tracking needed).
-     */
-    private fun hasLandGraveyardPlayPermission(state: GameState, playerId: EntityId): Boolean {
-        for (entityId in state.getBattlefield(playerId)) {
-            val cardDef = state.getEntity(entityId)?.faceUpCardDefinition(cardRegistry) ?: continue
-            val classLevel = state.getEntity(entityId)?.get<ClassLevelComponent>()?.currentLevel
-            for (ability in cardDef.script.effectiveStaticAbilities(classLevel)) {
-                // Unwrap mode/condition-gated abilities (e.g. Glacierwood Siege's Sultai mode)
-                // and honor the gate against this source permanent.
-                if (ability is ConditionalStaticAbility) {
-                    if (ability.ability is MayPlayLandsFromGraveyard &&
-                        evaluateStaticGate(state, ability.condition, entityId, playerId)
-                    ) {
-                        return true
-                    }
-                } else if (ability is MayPlayLandsFromGraveyard) {
-                    return true
-                }
-            }
-        }
-        // An emblem the player has (Wrenn and Realmbreaker's −7) grants it from outside every zone.
-        return state.emblemStaticAbilitiesOf(playerId).any { (_, ability) -> ability is MayPlayLandsFromGraveyard }
     }
 
     /**

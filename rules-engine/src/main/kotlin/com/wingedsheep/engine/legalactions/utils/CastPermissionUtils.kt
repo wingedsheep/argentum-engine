@@ -1460,7 +1460,7 @@ class CastPermissionUtils(
      * player's side; Fastbond's "any number of lands")? See [LandDropUtils.hasLandPlayLeft].
      */
     fun hasLandPlayLeft(state: GameState, playerId: EntityId): Boolean =
-        LandDropUtils.hasLandPlayLeft(state, playerId, cardRegistry, conditionEvaluator)
+        LandDropUtils.hasLandPlayLeft(state, playerId)
 
     /**
      * Shared by action validation and enumeration. "N times rather than once" permissions set a
@@ -1594,30 +1594,10 @@ class CastPermissionUtils(
                     return true
                 }
             }
-            // Crucible of Worlds style: unlimited land plays from graveyard (land-drop is the limit).
-            // Unwrap mode/condition-gated abilities (e.g. Glacierwood Siege's Sultai mode) and honor
-            // the gate against this source permanent.
-            if (typeName == com.wingedsheep.sdk.core.CardType.LAND.name) {
-                val classLevel = state.getEntity(entityId)
-                    ?.get<com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent>()?.currentLevel
-                for (ability in cardDef.script.effectiveStaticAbilities(classLevel)) {
-                    if (ability is com.wingedsheep.sdk.scripting.ConditionalStaticAbility) {
-                        if (ability.ability is MayPlayLandsFromGraveyard) {
-                            val context = com.wingedsheep.engine.handlers.EffectContext(
-                                sourceId = entityId,
-                                controllerId = playerId,
-                            )
-                            if (conditionEvaluator.evaluate(state, ability.condition, context)) return true
-                        }
-                    } else if (ability is MayPlayLandsFromGraveyard) {
-                        return true
-                    }
-                }
-            }
         }
-        // An emblem the player has (Wrenn and Realmbreaker's −7) grants it from outside every zone.
+        // Crucible of Worlds style: unlimited land plays from graveyard (land-drop is the limit).
         return typeName == com.wingedsheep.sdk.core.CardType.LAND.name &&
-            state.emblemStaticAbilitiesOf(playerId).any { (_, ability) -> ability is MayPlayLandsFromGraveyard }
+            LandDropUtils.hasGraveyardLandPlayPermission(state, playerId)
     }
 
     /**
