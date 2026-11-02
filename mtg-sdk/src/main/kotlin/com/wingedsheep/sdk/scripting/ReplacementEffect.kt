@@ -2689,8 +2689,7 @@ data class CopyEntryCounters(
                     append("it enters with $countText additional counters of each kind for each counter of " +
                         "that kind the copied permanent has on it")
                 }
-                ifCopiedMatches?.let { append(" if the copied object matches: ${it.description}") }
-                ifEntrantMatches?.let { append(" if it's ${it.description}") }
+                appendConditions()
                 return@buildString
             }
             val plusOne = counterType == CounterType.PLUS_ONE_PLUS_ONE
@@ -2707,17 +2706,21 @@ data class CopyEntryCounters(
                 val plural = if (countText == "1") "" else "s"
                 append("it enters with $article ${counterType.printed} counter$plural on it")
             }
-            when (ifCopiedMatches) {
-                null -> {}
-                GameObjectFilter.Any.youControl() -> append(" if you control that creature")
-                else -> append(" if the copied object matches: ${ifCopiedMatches.description}")
-            }
-            ifEntrantMatches?.let { filter ->
-                val desc = filter.description
-                if (filter == GameObjectFilter.Creature) append(" if it's a creature")
-                else append(" if it's ${if (desc.first().lowercaseChar() in "aeiou") "an" else "a"} $desc")
-            }
+            appendConditions()
         }
+
+    private fun StringBuilder.appendConditions() {
+        when (ifCopiedMatches) {
+            null -> {}
+            GameObjectFilter.Any.youControl() -> append(" if you control that creature")
+            else -> append(" if the copied object matches: ${ifCopiedMatches.description}")
+        }
+        ifEntrantMatches?.let { filter ->
+            val desc = filter.description
+            if (filter == GameObjectFilter.Creature) append(" if it's a creature")
+            else append(" if it's ${if (desc.first().lowercaseChar() in "aeiou") "an" else "a"} $desc")
+        }
+    }
 }
 
 // =============================================================================
