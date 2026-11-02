@@ -415,7 +415,7 @@ class GatedEffectExecutor(
             predicateEvaluator = predicateEvaluator
         ).filterNot {
             (cost.excludeSource && it == context.sourceId) ||
-                state.projectedState.hasKeyword(it, com.wingedsheep.sdk.core.AbilityFlag.CANT_BE_SACRIFICED)
+                !com.wingedsheep.engine.mechanics.cost.SacrificeCostLegality.canBeSacrificed(state, it)
         }
 
     /**

@@ -17,15 +17,22 @@ import com.wingedsheep.sdk.model.EntityId
  *   "Sacrifice a creature" with only creatures, "Sacrifice this creature", emerge, casualty.
  *
  * Sacrifices a *resolving* spell or ability performs (an edict, exploit, "sacrifice it unless you
- * pay") never consult this — they are neither casting nor activating.
+ * pay") ask only [canBeSacrificed] — they are neither casting nor activating.
  */
 object SacrificeCostLegality {
 
-    fun canSacrificeForCost(state: GameState, permanentId: EntityId): Boolean {
-        val projected = state.projectedState
-        return !projected.hasKeyword(permanentId, AbilityFlag.CANT_BE_SACRIFICED) &&
-            !projected.hasKeyword(permanentId, AbilityFlag.CANT_BE_SACRIFICED_FOR_COSTS)
-    }
+    /**
+     * Whether a permanent may be sacrificed **at all** — the question every sacrifice a resolving
+     * spell or ability performs asks (edicts, "sacrifice N", a pipeline's sacrifice move, "sacrifice
+     * it"). [AbilityFlag.CANT_BE_SACRIFICED] says no; a player told to sacrifice a permanent can't
+     * choose one that can't be sacrificed, and a forced sacrifice of one simply doesn't happen.
+     */
+    fun canBeSacrificed(state: GameState, permanentId: EntityId): Boolean =
+        !state.projectedState.hasKeyword(permanentId, AbilityFlag.CANT_BE_SACRIFICED)
+
+    fun canSacrificeForCost(state: GameState, permanentId: EntityId): Boolean =
+        canBeSacrificed(state, permanentId) &&
+            !state.projectedState.hasKeyword(permanentId, AbilityFlag.CANT_BE_SACRIFICED_FOR_COSTS)
 
     /** [candidates] narrowed to the permanents a cost may sacrifice. */
     fun sacrificeableForCost(state: GameState, candidates: List<EntityId>): List<EntityId> =

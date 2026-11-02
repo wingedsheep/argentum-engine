@@ -8,6 +8,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.mechanics.CompelledActionImmunity
+import com.wingedsheep.engine.mechanics.cost.SacrificeCostLegality
 import com.wingedsheep.sdk.scripting.CompelledAction
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -138,7 +139,7 @@ class ForceSacrificeExecutor(
         return BattlefieldFilterUtils.findMatchingOnBattlefield(
             state, filter.youControl(), PredicateContext(controllerId = playerId, sourceId = sourceId),
             predicateEvaluator = zones.predicateEvaluator
-        )
+        ).filter { SacrificeCostLegality.canBeSacrificed(state, it) }
     }
 
     private fun presentSacrificeDecision(
