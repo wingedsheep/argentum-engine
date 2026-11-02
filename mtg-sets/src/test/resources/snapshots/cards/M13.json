@@ -1077,6 +1077,43 @@
     ]
 }
 
+// Smelt
+{
+    "name": "Smelt",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target artifact.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "149",
+        "artist": "Zoltan Boros",
+        "flavorText": "\"Looks like that wasn't darksteel after all.\"\n—Koth of the Hammer",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/2/723cb7e3-3f48-41fa-aa08-bdc59225e44f.jpg?1783940478"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Switcheroo
 {
     "name": "Switcheroo",

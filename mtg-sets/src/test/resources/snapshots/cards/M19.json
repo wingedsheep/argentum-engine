@@ -938,6 +938,87 @@
     ]
 }
 
+// Apex of Power
+{
+    "name": "Apex of Power",
+    "manaCost": "{7}{R}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exile the top seven cards of your library. Until end of turn, you may cast spells from among them.\nIf this spell was cast from your hand, add ten mana of any one color.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 7
+                        }
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    }
+                },
+                {
+                    "type": "GrantMayPlayFromExile",
+                    "from": "gathered0",
+                    "nonLandOnly": true
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "WasCastFromHand"
+                    },
+                    "then": {
+                        "type": "AddManaOfChoice",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 10
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "129",
+        "rarity": "MYTHIC",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"As I desire, so it shall be.\"\n—Nicol Bolas",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/8/c827bccf-38f9-4a7c-bd0e-038594a9f63b.jpg?1783934556",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "Apex of Power doesn't change when you can cast the exiled cards. For example, if you exile a sorcery card, you can cast it only during your main phase when the stack is empty."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Casting an exiled card causes it to leave exile. You can't cast it multiple times."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Any cards not cast, including land cards, remain in exile."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If an effect copies Apex of Power, the copy wasn't cast at all, so you won't add ten mana."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Arcane Encyclopedia
 {
     "name": "Arcane Encyclopedia",
@@ -1246,6 +1327,69 @@
     ]
 }
 
+// Brawl-Bash Ogre
+{
+    "name": "Brawl-Bash Ogre",
+    "manaCost": "{2}{B}{R}",
+    "typeLine": "Creature — Ogre Warrior",
+    "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\nWhenever this creature attacks, you may sacrifice another creature. If you do, this creature gets +2/+2 until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Brawl-Bash Ogre:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "Sacrifice",
+                            "filter": "creature",
+                            "excludeSource": true
+                        }
+                    },
+                    "then": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": "Self"
+                    }
+                },
+                "descriptionOverride": "Whenever this creature attacks, you may sacrifice another creature. If you do, this creature gets +2/+2 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "213",
+        "rarity": "UNCOMMON",
+        "artist": "Even Amundsen",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/8/38b9f9d7-a00d-4a90-9d7a-88ece10af328.jpg?1783934522",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "While resolving the triggered ability of Brawl-Bash Ogre, you can't sacrifice multiple creatures to give it +2/+2 more than once."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Bristling Boar
 {
     "name": "Bristling Boar",
@@ -1385,6 +1529,122 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Chaos Wand
+{
+    "name": "Chaos Wand",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{4}, {T}: Target opponent exiles cards from the top of their library until they exile an instant or sorcery card. You may cast that card without paying its mana cost. Then put the exiled cards that weren't cast this way on the bottom of that library in a random order.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Chaos Wand:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherUntilMatch",
+                            "player": "TargetOpponent",
+                            "filter": "instant|sorcery",
+                            "storeMatch": "matched0",
+                            "storeRevealed": "revealed0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "revealed0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "matched0",
+                            "ifNotEmpty": {
+                                "type": "Gated",
+                                "gate": "Gate.MayDecide",
+                                "then": {
+                                    "type": "CastFromCollectionWithoutPayingCost",
+                                    "from": "matched0"
+                                }
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "revealed0",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "InZone",
+                                        "zone": "Exile"
+                                    }
+                                ]
+                            },
+                            "storeMatching": "matching4"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "matching4",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "player": "TargetOpponent",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{4}, {T}: Target opponent exiles cards from the top of their library until they exile an instant or sorcery card. You may cast that card without paying its mana cost. Then put the exiled cards that weren't cast this way on the bottom of that library in a random order."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "228",
+        "rarity": "RARE",
+        "artist": "Kari Christensen",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/62ff0730-6dd9-42d2-be0d-655d04adf229.jpg?1783934515",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "If the opponent exiles their entire library without exiling an instant or sorcery card, that player stops exiling cards, and the exiled cards are put into their library in a random order."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If you don't cast the exiled instant or sorcery card, it's put on the bottom of that library with the other cards."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If you wish to cast the exiled card, you must cast it while Chaos Wand's ability is resolving. You can't cast it later in the turn. A spell cast this way may be cast at a time you normally wouldn't be able to cast a spell of that type, but other restrictions (such as \"Cast this spell only during combat\") are enforced."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If the exiled card has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Cleansing Nova
@@ -1724,6 +1984,72 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Demanding Dragon
+{
+    "name": "Demanding Dragon",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nWhen this creature enters, it deals 5 damage to target opponent unless that player sacrifices a creature of their choice.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Demanding Dragon:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomSacrifice",
+                            "filter": "creature"
+                        }
+                    },
+                    "suffer": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 5
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "player": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, it deals 5 damage to target opponent unless that player sacrifices a creature of their choice."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "rarity": "RARE",
+        "artist": "Chris Rahn",
+        "flavorText": "A knight's devotion to their steed goes only so far.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/31b73282-6207-4207-8b9c-86a8f9a263a2.jpg?1783934556"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -2111,6 +2437,41 @@
         "artist": "Bram Sels",
         "flavorText": "\"Burn. Burn. Keep. Burn.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0d0a9fa-75c9-4492-accd-bc9f79407453.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Doublecast
+{
+    "name": "Doublecast",
+    "manaCost": "{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "When you next cast an instant or sorcery spell this turn, copy that spell. You may choose new targets for the copy.",
+    "script": {
+        "spellEffect": "CopyNextSpellCast"
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "rarity": "UNCOMMON",
+        "artist": "Even Amundsen",
+        "flavorText": "First the insult, then the encore.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/e/be8875d8-fe8c-4721-aa8d-978bf72e9c26.jpg?1783934555",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "If you cast one Doublecast after another, you'll copy the second Doublecast. Each resolves, creating two delayed triggered abilities. The next spell you cast after that will be copied twice. If that spell is also a Doublecast, the following spell will be copied three times, and so on."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "A copy is created even if the spell that caused Doublecast's ability to trigger has been countered by the time that ability resolves. The copy resolves before the original spell."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "The copy that Doublecast's ability creates is created on the stack, so it's not \"cast.\" Abilities that trigger when a player casts a spell won't trigger."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "RED"
@@ -3752,6 +4113,80 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Inferno Hellion
+{
+    "name": "Inferno Hellion",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Hellion",
+    "oracleText": "Trample (This creature can deal excess combat damage to the player or planeswalker it's attacking.)\nAt the beginning of each end step, if this creature attacked or blocked this turn, its owner shuffles it into their library.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Inferno Hellion:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Library",
+                    "placement": "Shuffled",
+                    "fromZone": "Battlefield"
+                },
+                "interveningIf": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    "AttackedThisTurn"
+                                ]
+                            }
+                        },
+                        {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    "BlockedThisTurn"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of each end step, if this creature attacked or blocked this turn, its owner shuffles it into their library."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "rarity": "UNCOMMON",
+        "artist": "Jason A. Engle",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9cd11004-5b8f-4c71-bde0-eb75eed869b0.jpg?1783934549",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "Inferno Hellion's owner shuffles it into their library only if it's on the battlefield as its last ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -5609,6 +6044,72 @@
     ]
 }
 
+// Palladia-Mors, the Ruiner
+{
+    "name": "Palladia-Mors, the Ruiner",
+    "manaCost": "{3}{R}{G}{W}",
+    "typeLine": "Legendary Creature — Elder Dragon",
+    "oracleText": "Flying, vigilance, trample\nPalladia-Mors has hexproof as long as it hasn't dealt damage yet.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE",
+        "TRAMPLE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "HEXPROOF",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "EntityMatches",
+                        "entity": "Self",
+                        "filter": {
+                            "statePredicates": [
+                                "HasDealtDamage"
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "219",
+        "rarity": "MYTHIC",
+        "artist": "Svetlin Velinov",
+        "flavorText": "Sister of Nicol Bolas. Survivor of the Elder Dragon War. The most vicious of her kin.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/6/4663bd13-243e-4b8c-9ca8-158576b58803.jpg?1783934520",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "If Palladia-Mors leaves the battlefield and returns, it's considered a new object, even if it's represented by the same card. It has hexproof again until it deals damage."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If a triggered ability triggers at the same time that Paladia-Mors deals damage for the first time, targets are chosen for that ability after Palladia-Mors no longer has hexproof."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Patient Rebuilding
 {
     "name": "Patient Rebuilding",
@@ -6708,6 +7209,228 @@
     ]
 }
 
+// Sarkhan's Dragonfire
+{
+    "name": "Sarkhan's Dragonfire",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Sarkhan's Dragonfire deals 3 damage to any target.\nLook at the top five cards of your library. You may reveal a red card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "red",
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "prompt": "You may reveal a red card from among them and put it into your hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "298",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "flavorText": "\"I am most myself when I am least human.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/9/b96a7320-089a-4a7e-813f-49ca1620df76.jpg?1783934484",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "If the chosen target is an illegal target when Sarkhan's Dragonfire tries to resolve, the spell doesn't resolve. You won't look at the top five cards of your library."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Sarkhan's Unsealing
+{
+    "name": "Sarkhan's Unsealing",
+    "manaCost": "{3}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you cast a creature spell with power 4, 5, or 6, this enchantment deals 4 damage to any target.\nWhenever you cast a creature spell with power 7 or greater, this enchantment deals 4 damage to each opponent and each creature and planeswalker they control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sarkhan's Unsealing:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "PowerAtLeast",
+                                "min": 4
+                            },
+                            {
+                                "type": "PowerAtMost",
+                                "max": 6
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "damageSource": "Self"
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever you cast a creature spell with power 4, 5, or 6, this enchantment deals 4 damage to any target."
+            },
+            {
+                "id": "Sarkhan's Unsealing:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "PowerAtLeast",
+                                "min": 7
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 4
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            },
+                            "damageSource": "Self"
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature|planeswalker ctrl:opponent"
+                                }
+                            },
+                            "body": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever you cast a creature spell with power 7 or greater, this enchantment deals 4 damage to each opponent and each creature and planeswalker they control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "155",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/d/edfa8c8c-8013-46d5-8e80-3d9285fe81c8.jpg?1783934548",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "If you cast a creature spell that will enter the battlefield with a number of +1/+1 counters, such as Hungering Hydra, those counters aren't considered when determining whether either ability of Sarkhan's Unsealing triggers. Similarly, effects that will raise the creature's power once it has entered the battlefield won't apply."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Each of the triggered abilities of Sarkhan's Unsealing resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If a creature card's power is written as * and an ability defines its power, that ability applies while the creature spell is on the stack. Sarkhan's unsealing checks its power only as you finish paying costs; it doesn't matter what the spell's power is as you begin to cast it or when the triggered ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Sarkhan's Whelp
 {
     "name": "Sarkhan's Whelp",
@@ -6767,6 +7490,293 @@
         "artist": "Craig J Spearing",
         "imageUri": "https://cards.scryfall.io/normal/front/0/7/07135c4d-b4de-4054-800a-11090ed32692.jpg?1783934487"
     },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Sarkhan, Dragonsoul
+{
+    "name": "Sarkhan, Dragonsoul",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Legendary Planeswalker — Sarkhan",
+    "oracleText": "+2: Sarkhan deals 1 damage to each opponent and each creature your opponents control.\n−3: Sarkhan deals 4 damage to target player or planeswalker.\n−9: Search your library for any number of Dragon creature cards, put them onto the battlefield, then shuffle.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Sarkhan, Dragonsoul:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:opponent"
+                                }
+                            },
+                            "body": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Sarkhan, Dragonsoul:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayerOrPlaneswalker",
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Sarkhan, Dragonsoul:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -9
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "creature Dragon"
+                            },
+                            "storeAs": "gathered0",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected1",
+                            "prompt": "Search your library for any number of Dragon creature cards"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "296",
+        "rarity": "MYTHIC",
+        "artist": "Yongjae Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/59715c84-8eed-41ad-aaf9-cfcce4445254.jpg?1783934484",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "In a Two-Headed Giant game, Sarkhan's first ability causes the opposing team to lose 2 life."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Sarkhan, Fireblood
+{
+    "name": "Sarkhan, Fireblood",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Legendary Planeswalker — Sarkhan",
+    "oracleText": "+1: You may discard a card. If you do, draw a card.\n+1: Add two mana in any combination of colors. Spend this mana only to cast Dragon spells.\n−7: Create four 5/5 red Dragon creature tokens with flying.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Sarkhan, Fireblood:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        },
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "descriptionOverride": "You may discard a card. If you do, draw a card."
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Sarkhan, Fireblood:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "AddDynamicMana",
+                    "amountSource": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "allowedColors": [
+                        "WHITE",
+                        "BLUE",
+                        "BLACK",
+                        "RED",
+                        "GREEN"
+                    ],
+                    "restriction": {
+                        "type": "SubtypeSpellsOnly",
+                        "subtypes": [
+                            "Dragon"
+                        ]
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Sarkhan, Fireblood:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "power": 5,
+                    "toughness": 5,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Dragon"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "rarity": "MYTHIC",
+        "artist": "Grzegorz Rutkowski",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/3553a70e-75de-4a8c-9b20-92cd4a317101.jpg?1783934548",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "Because it's a loyalty ability, Sarkhan's second ability isn't a mana ability. It can be activated only any time you could cast a sorcery. It uses the stack and can be responded to."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "A \"Dragon spell\" refers only to a spell that has the Dragon subtype, regardless of its name. For example, Dragon's Hoard isn't a Dragon spell."
+            }
+        ]
+    },
+    "startingLoyalty": 3,
     "colorIdentityOverride": [
         "RED"
     ]
@@ -8223,6 +9233,63 @@
     ]
 }
 
+// Thud
+{
+    "name": "Thud",
+    "manaCost": "{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "As an additional cost to cast this spell, sacrifice a creature.\nThud deals damage equal to the sacrificed creature's power to any target.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "EntityProperty",
+                "entity": "SacrificedAsCost",
+                "numericProperty": "Power"
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "163",
+        "rarity": "UNCOMMON",
+        "artist": "Kev Walker",
+        "flavorText": "\"Give 'em a push.\"\n—Mogwin, goblin delinquent",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/11bed78a-c579-424a-8fcc-322ce2630dbc.jpg?1783934543",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "The sacrificed creature's last known existence on the battlefield is checked to determine its power."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "You must sacrifice exactly one creature to cast Thud; you can't cast it without sacrificing a creature, and you can't sacrifice additional creatures."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Transmogrifying Wand
 {
     "name": "Transmogrifying Wand",
@@ -8433,6 +9500,136 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Vaevictis Asmadi, the Dire
+{
+    "name": "Vaevictis Asmadi, the Dire",
+    "manaCost": "{3}{B}{R}{G}",
+    "typeLine": "Legendary Creature — Elder Dragon",
+    "oracleText": "Flying\nWhenever Vaevictis Asmadi attacks, for each player, choose target permanent that player controls. Those players sacrifice those permanents. Each player who sacrificed a permanent this way reveals the top card of their library, then puts it onto the battlefield if it's a permanent card.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vaevictis Asmadi, the Dire:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "CaptureControllers",
+                            "from": "gathered0",
+                            "storeAs": "controllers1"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Sacrifice",
+                            "storeMovedAs": "moved2"
+                        },
+                        {
+                            "type": "ForEachCapturedController",
+                            "collection": "moved2",
+                            "originalCollection": "gathered0",
+                            "controllerSnapshot": "controllers1",
+                            "countVariable": "count3",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeAs": "gathered4",
+                                    "revealed": true
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered4",
+                                    "selection": "SelectAll",
+                                    "filter": "permanent",
+                                    "storeSelected": "selected5"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "selected5",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Battlefield"
+                                    },
+                                    "underOwnersControl": true
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent"
+                    },
+                    "id": "t0",
+                    "dynamicMaxCount": {
+                        "type": "PlayerCount",
+                        "scope": "Each"
+                    },
+                    "dynamicMinCount": {
+                        "type": "PlayerCount",
+                        "scope": "Each"
+                    },
+                    "differentControllers": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "225",
+        "rarity": "MYTHIC",
+        "artist": "Steven Belledin",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d19fdc00-21eb-48dc-966a-6b634dc5a2c4.jpg?1783934517",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "You must target one of your permanents to sacrifice as well."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Vaevictis's triggered ability resolves during the declare attackers step, before blockers are chosen. A creature targeted by its ability won't be around to block, and creatures put onto the battlefield with its ability may be able to do so."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If any of the target permanents aren't sacrificed (most likely because one of them became an illegal target, such as by gaining hexproof), that permanent's controller won't reveal the top card of their library or put it onto the battlefield."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If any player controls no permanents, Vaevictis's ability won't have sufficient legal targets, so it's removed from the stack without any effect."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED",
+        "GREEN"
     ]
 }
 
