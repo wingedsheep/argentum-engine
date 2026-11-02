@@ -87,7 +87,10 @@ class NogAmbitiousCadetScenarioTest : ScenarioTestBase() {
 
                 val nog = game.findPermanent(nogName)!!
                 game.state.projectedState.getSubtypes(nog) shouldBe setOf("Ferengi", "Officer")
-                withClue("the Scout's base 3/4 stays") { game.state.projectedState.getPower(nog) shouldBe 3 }
+                withClue("the Scout's base 3/4 stays") {
+                    game.state.projectedState.getPower(nog) shouldBe 3
+                    game.state.projectedState.getToughness(nog) shouldBe 4
+                }
 
                 val handForest = game.findCardsInHand(1, "Forest").single()
                 game.execute(PlayLand(game.player1Id, handForest)).error shouldBe null
@@ -95,6 +98,11 @@ class NogAmbitiousCadetScenarioTest : ScenarioTestBase() {
                 withClue("the second land play comes from the graveyard") {
                     game.execute(PlayLand(game.player1Id, graveyardForest)).error shouldBe null
                     game.findPermanents("Forest").size shouldBe 2
+                }
+
+                game.activateNog(0)
+                withClue("the Rogue ability does nothing once Nog is an Officer") {
+                    game.state.projectedState.getSubtypes(nog) shouldBe setOf("Ferengi", "Officer")
                 }
             }
         }

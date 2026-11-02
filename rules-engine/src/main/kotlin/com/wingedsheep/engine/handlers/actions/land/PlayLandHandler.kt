@@ -38,9 +38,6 @@ import com.wingedsheep.sdk.scripting.EntersTapped
 import com.wingedsheep.sdk.scripting.ChoiceType
 import com.wingedsheep.sdk.scripting.EntersWithChoice
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
-import com.wingedsheep.sdk.scripting.MayPlayLandsFromGraveyard
-import com.wingedsheep.engine.state.components.identity.emblemStaticAbilitiesOf
-import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
 import com.wingedsheep.sdk.scripting.MayPlayPermanentsFromGraveyard
 import com.wingedsheep.engine.legalactions.utils.LandDropUtils
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
@@ -848,7 +845,7 @@ class PlayLandHandler(
 
     /**
      * Check if a land card is in the player's graveyard and there's permission to play it.
-     * Handles both Crucible-style (MayPlayLandsFromGraveyard, no usage tracking) and
+     * Handles both Crucible-style ([com.wingedsheep.sdk.scripting.MayPlayLandsFromGraveyard], no usage tracking) and
      * Muldrotha-style (MayPlayPermanentsFromGraveyard, per-type usage tracked).
      */
     private fun isInGraveyardWithPlayPermission(
@@ -984,8 +981,8 @@ class PlayLandHandler(
 
     /**
      * Evaluate a [ConditionalStaticAbility] gating condition against a specific source
-     * permanent. Used so a mode/condition-gated graveyard-play permission only applies
-     * while its gate holds (e.g. Glacierwood Siege only when "Sultai" is the chosen mode).
+     * permanent. Used so a condition-gated play-from-the-top-of-your-library permission only
+     * applies while its gate holds.
      */
     private fun evaluateStaticGate(
         state: GameState,

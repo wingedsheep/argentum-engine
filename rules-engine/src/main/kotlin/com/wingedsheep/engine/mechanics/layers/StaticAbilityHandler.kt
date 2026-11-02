@@ -796,8 +796,8 @@ class StaticAbilityHandler(
                 modification = Modification.GrantStaticAbility(ability),
                 affectsFilter = AffectsFilter.Self,
             )
-            // Land-play permissions, read from the holder's projected statics (LandDropUtils,
-            // GraveyardLandPlay), so printed, resolved-effect and GrantStaticAbility routes all count
+            // Land-play permissions, read from the holder's projected statics (LandDropUtils.getAdditionalLandDrops /
+            // hasGraveyardLandPlayPermission), so printed, resolved-effect and GrantStaticAbility routes all count
             // and a ConditionalStaticAbility gate is honored by projection itself.
             is GrantAdditionalLandDrop, is MayPlayLandsFromGraveyard -> ContinuousEffectData(
                 modification = Modification.GrantStaticAbility(ability),

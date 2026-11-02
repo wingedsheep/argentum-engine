@@ -30,7 +30,7 @@ object LandDropUtils {
      *
      * Scans the whole battlefield, not just [playerId]'s: the lock is usually somebody else's
      * enchantment. A [ConditionalStaticAbility] wrapper is unwrapped and evaluated against its own
-     * source, the same way the land-drop bonus above is, so an "as long as …" gate is honored
+     * source, so an "as long as …" gate is honored
      * instead of silently locking forever.
      *
      * [landCardId] scopes the question to one candidate card, which is what a *filtered* lock

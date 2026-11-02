@@ -139,7 +139,7 @@ class GainedLandPlayStaticsTest : FunSpec({
         val graveyardForest = driver.putCardInGraveyard(player, "Forest")
         driver.gainGrants(cadetId)
         // Cast, not placed: the lose-all-abilities effect needs a timestamp later than the gain
-        // (CR 613.7a — an ability gained *after* it would survive).
+        // (CR 613.7 — an ability gained *after* it would survive).
         val humilityCard = driver.putCardInHand(player, "Land Grant Humility")
         driver.giveColorlessMana(player, 2)
         driver.castSpell(player, humilityCard).outcome shouldBe Outcome.Done

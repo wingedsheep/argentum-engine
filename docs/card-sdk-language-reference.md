@@ -10863,8 +10863,9 @@ staticAbility {
   holder *has* the ability and its "you" is the holder's controller. Nerd Rage:
   `GrantStaticAbility(NoMaximumHandSize(), Filters.EnchantedCreature)` — an Aura on an opponent's creature frees
   the opponent's hand. `ability` is typed `ProjectedStaticAbility` — the sealed marker for kinds whose engine
-  read consults the holder's projected statics (`ProjectedState.getStaticAbilities`): today `NoMaximumHandSize`,
-  `Enlist`, `GrantCantLoseGame`, `GrantOpponentsCantWinGame` and `ModifySpellCost` (Cloudsteel Kirin: "Equipped
+  read consults the holder's projected statics (`ProjectedState.getStaticAbilities`): every implementor of
+  `ProjectedStaticAbility` in `docs/sdk-index.md` — among them `NoMaximumHandSize`, `Enlist`, `GrantCantLoseGame`,
+  `GrantOpponentsCantWinGame`, `GrantAdditionalLandDrop`, `MayPlayLandsFromGraveyard` and `ModifySpellCost` (Cloudsteel Kirin: "Equipped
   creature has 'You can't lose the game and your opponents can't win the game'" is one `GrantStaticAbility` per
   clause over `Filters.EquippedCreature`). A granted `ModifySpellCost` is one modifier per holder, read relative to
   that holder — Jubilant Skybonder's "Creatures you control with flying have 'Spells your opponents cast that target
