@@ -46,6 +46,9 @@ val DetectionTower = card("Detection Tower") {
             EffectTarget.Controller,
             Duration.EndOfTurn
         )
+        description = "{1}, {T}: Until end of turn, your opponents and creatures your opponents control " +
+            "with hexproof can be the targets of spells and abilities you control as though they didn't " +
+            "have hexproof."
     }
 
     metadata {
