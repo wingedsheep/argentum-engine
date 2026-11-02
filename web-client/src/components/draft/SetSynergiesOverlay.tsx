@@ -2521,6 +2521,42 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  RNA: {
+    setCode: 'RNA',
+    setName: 'Ravnica Allegiance',
+    archetypes: [
+      {
+        name: 'Azorius Addendum',
+        colors: ['W', 'U'],
+        keyCard: 'Dovin\'s Acuity',
+        description: 'Hold the ground with high-toughness creatures and fliers, then cast instants in your main phase for their addendum bonuses. A patient tempo-control deck that wins in the air while taxing and tapping blockers.',
+      },
+      {
+        name: 'Orzhov Afterlife',
+        colors: ['W', 'B'],
+        keyCard: 'Knight of the Last Breath',
+        description: 'Trade creatures freely, since afterlife leaves flying Spirits behind, then sacrifice the leftovers for value and drain. A grindy midrange deck whose board keeps refilling itself.',
+      },
+      {
+        name: 'Rakdos Spectacle',
+        colors: ['B', 'R'],
+        keyCard: 'Rakdos Firewheeler',
+        description: 'Chip in early damage with cheap attackers and pings, then cast spectacle spells at a discount once the opponent has lost life. A relentless aggro deck that turns every point of damage into a cheaper threat.',
+      },
+      {
+        name: 'Gruul Riot',
+        colors: ['R', 'G'],
+        keyCard: 'Rhythm of the Wild',
+        description: 'Curve out with riot and bloodrush creatures, choosing haste or a +1/+1 counter each time, and pump attackers from hand. A stompy aggro deck that wants the biggest creatures attacking every turn.',
+      },
+      {
+        name: 'Simic Adapt',
+        colors: ['G', 'U'],
+        keyCard: 'Combine Guildmage',
+        description: 'Adapt creatures and spread +1/+1 counters, then cash them in on payoffs that reward counters landing. A value-ramp deck whose evolving board outgrows everything across the table.',
+      },
+    ],
+  },
   WAR: {
     setCode: 'WAR',
     setName: 'War of the Spark',

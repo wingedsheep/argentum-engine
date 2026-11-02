@@ -60,7 +60,7 @@ val FirebladeArtist = card("Fireblade Artist") {
     }
 
     metadata {
-        rarity = Rarity.COMMON
+        rarity = Rarity.UNCOMMON
         collectorNumber = "172"
         artist = "Steve Argyle"
         flavorText = "\"Let's find out what kind of audience you are. Festive? Fearless?\""

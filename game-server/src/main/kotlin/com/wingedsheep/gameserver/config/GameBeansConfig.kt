@@ -115,7 +115,7 @@ class GameBeansConfig(
                 val pool = set.boosterCardPool(cardRegistry, limitedNames)
                 val allExtras = if (limitedNames == null) emptyList() else {
                     set.boosterCardPool(cardRegistry, limitedCardNames = null)
-                        .filterNot { it.name in limitedNames }
+                        .filterNot { limitedNames.admits(it.name) }
                         .map { it.copy(metadata = it.metadata.copy(inBooster = true)) }
                 }
                 val extrasByName = allExtras.associateBy { it.name }
@@ -190,6 +190,13 @@ private fun List<CardDefinition>.withLegalities(): List<CardDefinition> =
     map { LegalityData.stamp(it) }
 
 /**
+ * Whether a set's Scryfall booster-name list admits [cardName]. The list names a split card by its
+ * first half ("Carnival"), where the engine names it by both halves ("Carnival // Carnage").
+ */
+private fun Set<String>.admits(cardName: String): Boolean =
+    cardName in this || cardName.substringBefore(" // ") in this
+
+/**
  * The card pool a set contributes to booster / sealed / draft generation.
  *
  * A set contributes both its own [MtgSet.cards] and every distinct reprinted card in
@@ -211,7 +218,7 @@ private fun MtgSet.boosterCardPool(
 ): List<CardDefinition> {
     val eligibleOwnCards = cards.stamp(this)
         .asSequence()
-        .filter { limitedCardNames == null || it.name in limitedCardNames }
+        .filter { limitedCardNames == null || limitedCardNames.admits(it.name) }
         .map { card ->
             if (limitedCardNames == null) card
             else card.copy(metadata = card.metadata.copy(inBooster = true))
@@ -220,7 +227,7 @@ private fun MtgSet.boosterCardPool(
     val ownNames = eligibleOwnCards.asSequence().map { it.name }.toHashSet()
     val resolvedReprints = printings
         .asSequence()
-        .filter { limitedCardNames == null || it.name in limitedCardNames }
+        .filter { limitedCardNames == null || limitedCardNames.admits(it.name) }
         .filter { it.name !in ownNames }
         .groupBy { it.name }
         .mapNotNull { (_, treatments) ->

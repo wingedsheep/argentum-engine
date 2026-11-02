@@ -242,6 +242,20 @@ class SetArchetypesTest : StringSpec({
             listOf("Sacrifice Knights", "Knights", "Knights Aggro")
     }
 
+    "Ravnica Allegiance exposes one archetype per guild" {
+        val synergies = SetArchetypes.getForSet("RNA")!!
+
+        synergies.setName shouldBe "Ravnica Allegiance"
+        synergies.archetypes.associate { it.name to it.colors.toSet() } shouldBe mapOf(
+            "Azorius Addendum" to setOf(Color.WHITE, Color.BLUE),
+            "Orzhov Afterlife" to setOf(Color.WHITE, Color.BLACK),
+            "Rakdos Spectacle" to setOf(Color.BLACK, Color.RED),
+            "Gruul Riot" to setOf(Color.RED, Color.GREEN),
+            "Simic Adapt" to setOf(Color.GREEN, Color.BLUE),
+        )
+        synergies.archetypes.all { it.creatureTypes.isEmpty() } shouldBe true
+    }
+
     "Core Set 2020 exposes one archetype per gold signpost uncommon" {
         val synergies = SetArchetypes.getForSet("M20")!!
 

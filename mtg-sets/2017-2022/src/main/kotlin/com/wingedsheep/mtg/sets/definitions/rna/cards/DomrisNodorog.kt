@@ -48,6 +48,7 @@ val DomrisNodorog = card("Domri's Nodorog") {
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "272"
+        inBooster = false
         artist = "Svetlin Velinov"
         flavorText = "\"Good girl.\""
         imageUri = "https://cards.scryfall.io/normal/front/1/a/1abe58d8-67d1-4719-8e84-27747dea3506.jpg?1783933607"

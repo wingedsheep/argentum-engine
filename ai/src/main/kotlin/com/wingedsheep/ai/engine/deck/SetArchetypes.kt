@@ -1097,6 +1097,22 @@ object SetArchetypes {
                     "Let cheap permanents trade or die, then bring them back with recursion while gaining life. A grindy midrange deck that wins the long game by refusing to run out of threats."),
             )
         ),
+        "RNA" to SetSynergies(
+            setCode = "RNA",
+            setName = "Ravnica Allegiance",
+            archetypes = listOf(
+                Archetype("Azorius Addendum", listOf(Color.WHITE, Color.BLUE),
+                    "Hold the ground with high-toughness creatures and fliers, then cast instants in your main phase for their addendum bonuses. A patient tempo-control deck that wins in the air while taxing and tapping blockers."),
+                Archetype("Orzhov Afterlife", listOf(Color.WHITE, Color.BLACK),
+                    "Trade creatures freely, since afterlife leaves flying Spirits behind, then sacrifice the leftovers for value and drain. A grindy midrange deck whose board keeps refilling itself."),
+                Archetype("Rakdos Spectacle", listOf(Color.BLACK, Color.RED),
+                    "Chip in early damage with cheap attackers and pings, then cast spectacle spells at a discount once the opponent has lost life. A relentless aggro deck that turns every point of damage into a cheaper threat."),
+                Archetype("Gruul Riot", listOf(Color.RED, Color.GREEN),
+                    "Curve out with riot and bloodrush creatures, choosing haste or a +1/+1 counter each time, and pump attackers from hand. A stompy aggro deck that wants the biggest creatures attacking every turn."),
+                Archetype("Simic Adapt", listOf(Color.GREEN, Color.BLUE),
+                    "Adapt creatures and spread +1/+1 counters, then cash them in on payoffs that reward counters landing. A value-ramp deck whose evolving board outgrows everything across the table."),
+            )
+        ),
         "WAR" to SetSynergies(
             setCode = "WAR",
             setName = "War of the Spark",

@@ -46,6 +46,7 @@ val ChargingWarBoar = card("Charging War Boar") {
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "271"
+        inBooster = false
         artist = "Izzy"
         imageUri = "https://cards.scryfall.io/normal/front/0/2/02cef5a4-e8fd-4ebd-b121-67059308c772.jpg"
     }

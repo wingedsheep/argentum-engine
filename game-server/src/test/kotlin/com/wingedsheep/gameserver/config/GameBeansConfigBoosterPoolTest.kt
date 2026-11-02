@@ -193,6 +193,55 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
         }
     }
 
+    test("Ravnica Allegiance draft pack opens 10 commons, 3 uncommons, a rare or mythic and a Guildgate") {
+        // RNA draft sheets (taw/magic-search-engine, mtg.wtf/pack/rna): 10 commons, 3 uncommons,
+        // 1 rare/mythic (rares weighted 2, mythics 1 -> 15/121), and a land slot that is always one of the
+        // five Guildgates, which the common sheet never carries. The foil replacing a common is not modelled.
+        val rna = boosterGenerator.availableSets["RNA"].shouldNotBeNull()
+        rna.fullyImplemented shouldBe true
+        val strategy = rna.boosterStrategy.shouldBeInstanceOf<LandSlotBooster>()
+        strategy.base shouldBe StandardBooster(commons = 10, mythicChance = 15.0 / 121)
+        strategy.nonbasicChance shouldBe 1.0
+        val gates = strategy.nonbasicLandNames
+        gates shouldBe setOf("Azorius Guildgate", "Gruul Guildgate", "Orzhov Guildgate", "Rakdos Guildgate", "Simic Guildgate")
+        val eligible = rna.cards.filter {
+            it.metadata.inBooster && !it.typeLine.isBasicLand && !it.meldResult && it.name !in gates
+        }
+        // The draft sheets by distinct name: commons (with Gateway Plaza), uncommons and rares/mythics;
+        // the Planeswalker Deck cards and the buy-a-box promo are off every sheet.
+        eligible.distinctBy { it.name }.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.COMMON to 101, Rarity.UNCOMMON to 80, Rarity.RARE to 53, Rarity.MYTHIC to 15,
+        )
+        val eligibleNames = eligible.map { it.name }.toSet()
+        eligibleNames shouldContain "Gateway Plaza"
+        // Scryfall's booster list names split cards by their first half; the pool still admits them.
+        eligibleNames shouldContain "Carnival // Carnage"
+        for (deckOnly in listOf("Dovin, Architect of Law", "Domri, City Smasher", "Ragefire", "The Haunt of Hightower")) {
+            eligibleNames shouldNotContain deckOnly
+        }
+        var mythics = 0
+        val packs = 3000
+        repeat(packs) {
+            val pack = boosterGenerator.generateBooster("RNA")
+            pack.size shouldBe 15
+            pack.map { it.name }.toSet().size shouldBe 15
+            withClue("pack ${pack.map { it.name }} holds an off-sheet card outside the land slot") {
+                pack.dropLast(1).all { it.name in eligibleNames } shouldBe true
+            }
+            pack.dropLast(1).count { it.metadata.rarity == Rarity.COMMON } shouldBe 10
+            pack.count { it.metadata.rarity == Rarity.UNCOMMON } shouldBe 3
+            (pack.last().name in gates) shouldBe true
+            mythics += pack.count { it.metadata.rarity == Rarity.MYTHIC }
+        }
+        (mythics.toDouble() / packs) shouldBe (15.0 / 121 plusOrMinus 0.025)
+        // A host ban on every Guildgate falls back to a basic land in the land slot.
+        repeat(20) {
+            val pack = boosterGenerator.generateBooster("RNA", bannedCardNames = gates)
+            pack.size shouldBe 15
+            pack.last().typeLine.isBasicLand shouldBe true
+        }
+    }
+
     test("Ikoria draft pack opens 10 commons, 3 uncommons, a rare or mythic and a gain land or basic") {
         // IKO draft sheets (taw/magic-search-engine, mtg.wtf/pack/iko-draft): 10 commons, 3 uncommons,
         // 1 rare/mythic (rares weighted 2, mythics 1 -> 15/121), and a basic_or_gainland slot where the ten
@@ -709,7 +758,7 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
         // foil/List/Special Guest/bonus-sheet cards).
         val expected = mapOf(
             "ARN" to 8, "ATQ" to 8, "DRK" to 8, "FEM" to 8, "LEG" to 15, "PTK" to 8,
-            "POR" to 13, "P02" to 13, "S99" to 13, "VOW" to 14, "KHM" to 15, "IKO" to 15, "M20" to 15, "LCI" to 15, "MOM" to 14,
+            "POR" to 13, "P02" to 13, "S99" to 13, "VOW" to 14, "KHM" to 15, "IKO" to 15, "M20" to 15, "RNA" to 15, "LCI" to 15, "MOM" to 14,
             "MKM" to 13, "OTJ" to 13, "MH3" to 13, "BLB" to 13, "DSK" to 14, "FDN" to 14, "INR" to 13,
             "DFT" to 14, "TDM" to 14, "FIN" to 14, "EOE" to 13, "SPM" to 14, "TLA" to 14, "ECL" to 13,
             "TMT" to 14, "SOS" to 13, "MSH" to 14, "HOB" to 14, "ZNR" to 14, "STX" to 15,

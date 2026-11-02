@@ -51,6 +51,7 @@ val DomriCitySmasher = card("Domri, City Smasher") {
     metadata {
         rarity = Rarity.MYTHIC
         collectorNumber = "269"
+        inBooster = false
         artist = "Eric Deschamps"
         imageUri = "https://cards.scryfall.io/normal/front/8/f/8fe16cdb-90df-4670-a084-55c505791d85.jpg?1783933610"
         ruling("2019-01-25", "Domri's first and third abilities affect only creatures you control at the time they resolve. Creatures you begin to control later in the turn won't get +1/+1 or gain haste if his first ability has resolved, and won't gain trample or get three +1/+1 counters if his third ability has resolved.")

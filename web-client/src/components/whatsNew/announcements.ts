@@ -30,6 +30,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-rna',
+    date: '2026-11-02',
+    kind: 'set',
+    setCode: 'RNA',
+    title: 'Ravnica Allegiance is complete',
+    body:
+      'Ravnica Allegiance brings back five guilds, each with its own mechanic: Azorius addendum rewards main-phase instants, Orzhov afterlife leaves flying Spirits behind, Rakdos spectacle discounts spells once the opponent is bleeding, Gruul riot hands out haste or counters, and Simic adapt grows its creatures. Every pack opens a Guildgate, so dipping into a third colour is easy.',
+    tryIf: 'guild-based two-colour Limited and aggressive or counters-driven decks',
+  },
+  {
     id: 'set-war',
     date: '2026-11-01',
     kind: 'set',
