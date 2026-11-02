@@ -305,6 +305,53 @@ object CombatMath {
     }
 
     /**
+     * Who dies when [attacker] and [blocker] fight one-on-one: `(attacker dies, blocker dies)`.
+     *
+     * Plays the combat damage steps out (CR 510, 702.4, 702.7): a first-strike step in which first
+     * and double strikers deal damage, then a regular step in which every creature still alive
+     * without first strike deals it. So a double striker hits twice, a first striker that kills
+     * takes nothing back — deathtouch included — and marked damage counts. Indestructible survives.
+     * Board-only: no tricks, triggers or damage prevention.
+     */
+    fun duel(
+        state: GameState,
+        projected: ProjectedState,
+        attacker: EntityId,
+        blocker: EntityId,
+    ): Pair<Boolean, Boolean> {
+        val aKeywords = projected.getKeywords(attacker)
+        val bKeywords = projected.getKeywords(blocker)
+        val aPower = projected.getPower(attacker) ?: 0
+        val bPower = projected.getPower(blocker) ?: 0
+        val aLeft = (projected.getToughness(attacker) ?: 0) - (state.getEntity(attacker)?.get<DamageComponent>()?.amount ?: 0)
+        val bLeft = (projected.getToughness(blocker) ?: 0) - (state.getEntity(blocker)?.get<DamageComponent>()?.amount ?: 0)
+        val aIndestructible = Keyword.INDESTRUCTIBLE.name in aKeywords
+        val bIndestructible = Keyword.INDESTRUCTIBLE.name in bKeywords
+        val aDeathtouch = Keyword.DEATHTOUCH.name in aKeywords
+        val bDeathtouch = Keyword.DEATHTOUCH.name in bKeywords
+        val aDouble = Keyword.DOUBLE_STRIKE.name in aKeywords
+        val bDouble = Keyword.DOUBLE_STRIKE.name in bKeywords
+        val aFirst = aDouble || Keyword.FIRST_STRIKE.name in aKeywords
+        val bFirst = bDouble || Keyword.FIRST_STRIKE.name in bKeywords
+
+        var toAttacker = 0
+        var toBlocker = 0
+        var aDead = false
+        var bDead = false
+        fun step(aDeals: Boolean, bDeals: Boolean) {
+            val aHit = aDeals && !aDead && aPower > 0
+            val bHit = bDeals && !bDead && bPower > 0
+            if (aHit) toBlocker += if (aDeathtouch) maxOf(aPower, bLeft) else aPower
+            if (bHit) toAttacker += if (bDeathtouch) maxOf(bPower, aLeft) else bPower
+            aDead = !aIndestructible && toAttacker >= aLeft
+            bDead = !bIndestructible && toBlocker >= bLeft
+        }
+        if (aFirst || bFirst) step(aFirst, bFirst)
+        step(!aFirst || aDouble, !bFirst || bDouble)
+        return aDead to bDead
+    }
+
+    /**
      * Does [blocker] survive being blocked by / blocking [attacker]?
      * Checks if the attacker's power is enough to kill the blocker.
      */

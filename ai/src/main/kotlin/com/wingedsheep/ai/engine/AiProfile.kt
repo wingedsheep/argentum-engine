@@ -1470,6 +1470,51 @@ data class AiProfile(
      * by `AttacksReadTheRaceTest`; `just arena live-without-crackback-stress live 300` prices it.
      */
     val stressCrackBack: Boolean = false,
+    /**
+     * Score an attack plan's aftermath as **cleanup leaves it** (CR 514.2): this combat's marked
+     * damage gone and every "until end of turn" effect ended — the board the crack-back actually
+     * meets.
+     *
+     * Found by `CombatTradePropertyTest`: at 12 life, with Pensive Minotaur, Savannah Lions and
+     * Trained Armodon facing Spined Wurm and two Hill Giants, `LIVE` attacked with the Lions alone.
+     * A Hill Giant blocks it and kills it for free. But the post-combat board still showed two
+     * damage on that Giant, so the crack-back estimate let the Minotaur "kill" it, and the swing
+     * back read three points smaller than the one facing a board that still had the Lions. Losing a
+     * creature for nothing outscored not attacking by four points. In 450 random boards the
+     * defender could eat every attacker for free in 12 of the attacks `LIVE` declared.
+     *
+     * The until-end-of-turn half is from a logged game (`80bb6b97`, turn 18): at 4 life, Tragic
+     * Banshee's entry gave Lightshell Duo −1/−1 until end of turn, and the crack-back read the
+     * Duo as a 2/3. Against its real 3/4 the swing back was lethal; `LIVE` attacked with two of its
+     * three creatures for five non-lethal damage and died on the next turn.
+     */
+    val crackBackAfterCleanup: Boolean = false,
+    /**
+     * Two corrections to the block heuristic — which is both the seed of the AI's own blocks and
+     * the opponent model every attack plan is simulated against:
+     *
+     * - **One-on-one blocks are played out step by step** ([CombatMath.duel]). The heuristic counted
+     *   any blocker in front of deathtouch as dead, though a first striker that kills the attacker
+     *   takes nothing back, and counted a double striker's power once. So a Youthful Knight was
+     *   never seen eating Typhoid Rats for free — `LIVE` attacked the Rats into it, and left the
+     *   free kill on the table as the defender — and a Wind Drake looked like it survived a Raging
+     *   Redcap, so the opponent model traded the Drake instead of eating the Redcap with Colossal
+     *   Dreadmaw (`CombatTradePropertyTest`).
+     * - **The attacker chooses which gang blockers die.** A gang block's cost was the blockers a
+     *   toughness-ascending walk reaches — the most blockers, not the most valuable. A 3/3 blocked
+     *   by a 1/1 and a 3/3 was priced at the 1/1, though the attacker puts all three damage on
+     *   the 3/3. Now it is the most valuable set the attacker's power can kill (CR 510.1c).
+     */
+    val soundBlockMath: Boolean = false,
+    /**
+     * Blocking local search also tries **swapping the creature that makes a block** for an idle
+     * one. It could remove a block, add one or move one to another attacker, but never ask
+     * whether a cheaper body does the same job, so the seed's choice of blocker was final. At 17
+     * life with Trained Armodon and Giant Spider facing Typhoid Rats, `LIVE` blocked with the
+     * Spider — the heuristic's trade value does not count reach — and the search could not
+     * compare it to the Armodon (`CombatTradePropertyTest`).
+     */
+    val blockSearchTriesSwaps: Boolean = false,
     /** Non-null profiles may only be selected automatically for this set. Arena selection stays explicit. */
     val restrictedToSet: String? = null,
 ) {
@@ -2411,6 +2456,7 @@ data class AiProfile(
                 statsReadTheBoard = true,
                 growthPotential = true,
                 entryTriggersAreSpent = true,
+                thresholdsWholeBoard = true,
             ),
             activatedPumpsNeedAPlannedAttack = true,
             attackPlaneswalkers = true,
@@ -2437,6 +2483,9 @@ data class AiProfile(
             minimalLethalInPods = true,
             blockTriggersKill = true,
             stressCrackBack = true,
+            crackBackAfterCleanup = true,
+            soundBlockMath = true,
+            blockSearchTriesSwaps = true,
             threatAwareDefender = true,
             borrowedCreaturesGoHome = true,
             holdXSpellsForBiggerX = true,
@@ -2457,6 +2506,20 @@ data class AiProfile(
         val LIVE_WITHOUT_GROWTH = LIVE.copy(
             id = "live-without-growth",
             creatureValuation = LIVE.creatureValuation.copy(growthPotential = false),
+        )
+
+        /**
+         * [LIVE] without the combat-trade fixes found by `CombatTradePropertyTest` —
+         * [crackBackAfterCleanup], [soundBlockMath], [blockSearchTriesSwaps] and
+         * [com.wingedsheep.ai.engine.evaluation.CreatureValuation.thresholdsWholeBoard]:
+         * `just arena live-without-trade-fixes live 300` prices them together.
+         */
+        val LIVE_WITHOUT_TRADE_FIXES = LIVE.copy(
+            id = "live-without-trade-fixes",
+            crackBackAfterCleanup = false,
+            soundBlockMath = false,
+            blockSearchTriesSwaps = false,
+            creatureValuation = LIVE.creatureValuation.copy(thresholdsWholeBoard = false),
         )
 
         /**

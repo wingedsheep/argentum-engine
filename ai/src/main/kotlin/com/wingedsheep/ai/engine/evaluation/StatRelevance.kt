@@ -89,7 +89,11 @@ object StatRelevance {
             survived++
             if (power > 0 && (deathtouch || power >= context.opposingToughnesses[i])) beaten++
         }
-        var bonus = BEATS * share(beaten, opposing) + OUTLASTS * share(survived, opposing)
+        var bonus = if (context.wholeBoard) {
+            (if (beaten == opposing) BEATS else 0.0) + (if (survived == opposing) OUTLASTS else 0.0)
+        } else {
+            BEATS * share(beaten, opposing) + OUTLASTS * share(survived, opposing)
+        }
         if (opposing == 0 && power <= 0) bonus -= BEATS // a 0-power wall wins no fight, even on an empty board
         val reach = context.shownReach
         if (reach != null && (indestructible || toughness > reach)) bonus += OUT_OF_REACH
@@ -108,11 +112,19 @@ object StatRelevance {
  * @property opposingToughnesses each opposing creature's settled toughness, in the same order.
  * @property shownReach the biggest size-limited removal the opponents have shown at the decision
  *   root, or null when they have shown none (or the evaluation was not rooted).
+ * @property wholeBoard [CreatureValuation.thresholdsWholeBoard]: pay each fight bonus only when the
+ *   creature beats (or outlasts) *every* opposing creature, instead of the share it does. A share
+ *   has the opposing board in its denominator, so a creature it beats raises it: our own Savannah
+ *   Lions made every opposing creature that eats it worth more, and with four of them that came to
+ *   more than the Lions itself — losing it for nothing scored as a gain. All-or-nothing agrees with
+ *   the share wherever the share is 0 or 1 (an empty board, a board all beaten, one it cannot
+ *   beat), and a creature that cannot fight it back no longer moves anything.
  */
 class StatContext(
     val opposingPowers: IntArray,
     val opposingToughnesses: IntArray,
     val shownReach: Int?,
+    val wholeBoard: Boolean = false,
 ) {
     companion object {
         /** The context for creatures controlled by [controller], read off this leaf's board. */
@@ -121,6 +133,7 @@ class StatContext(
             projected: ProjectedState,
             controller: EntityId,
             shownReach: Map<EntityId, Int>?,
+            wholeBoard: Boolean = false,
         ): StatContext {
             val powers = ArrayList<Int>()
             val toughnesses = ArrayList<Int>()
@@ -137,7 +150,7 @@ class StatContext(
                 }
                 shownReach?.get(opponent)?.let { reach = maxOf(reach ?: 0, it) }
             }
-            return StatContext(powers.toIntArray(), toughnesses.toIntArray(), reach)
+            return StatContext(powers.toIntArray(), toughnesses.toIntArray(), reach, wholeBoard)
         }
 
         /**

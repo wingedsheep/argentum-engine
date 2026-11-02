@@ -235,6 +235,17 @@ data class CreatureValuation(
      * `XSpellPatienceTest`.
      */
     val entryTriggersAreSpent: Boolean = false,
+    /**
+     * Under [statsReadTheBoard], pay a creature's fight bonuses only when it beats — or outlasts —
+     * the **whole** opposing board, rather than the share of it ([StatContext.wholeBoard]).
+     *
+     * The share made the evaluation non-monotone in our own creatures: every opposing creature that
+     * beats our Savannah Lions counted it in its share, so the Lions raised all of them. At 11 life
+     * with Alpine Grizzly and the Lions facing Grizzly Bears, Pensive Minotaur and two Hill Giants,
+     * the board scored 1.1 *higher* with the Lions dead, and `LIVE` sent it in alone to be eaten
+     * (`CombatTradePropertyTest`). [com.wingedsheep.ai.engine.AiProfile.LIVE] ships it.
+     */
+    val thresholdsWholeBoard: Boolean = false,
 ) {
     companion object {
         /** Neither correction: what every number published before 2026-08-10 was measured on. */
@@ -334,7 +345,7 @@ object BoardPresence : BoardFeature {
         for (playerId in side) {
             // One read of the opposing board per player, not one per creature.
             val statContext = if (creatureValuation.statsReadTheBoard) {
-                StatContext.facing(state, projected, playerId, shownReach)
+                StatContext.facing(state, projected, playerId, shownReach, creatureValuation.thresholdsWholeBoard)
             } else {
                 null
             }
@@ -463,7 +474,9 @@ object BoardPresence : BoardFeature {
 
         if (projected.isCreature(entityId)) {
             val context = statContext ?: if (creatureValuation.statsReadTheBoard) {
-                projected.getController(entityId)?.let { StatContext.facing(state, projected, it, null) }
+                projected.getController(entityId)?.let {
+                    StatContext.facing(state, projected, it, null, creatureValuation.thresholdsWholeBoard)
+                }
             } else {
                 null
             }

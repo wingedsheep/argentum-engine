@@ -21,6 +21,7 @@ import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.PlayerLostComponent
@@ -169,6 +170,31 @@ class CombatAdvisor(
      * [AiProfile.stressCrackBack] carries the argument; needs [cardRegistry].
      */
     stressCrackBack: Boolean = false,
+    /**
+     * Score an attack plan's aftermath as it stands once cleanup has run (CR 514.2): damage marked
+     * in this combat is gone and every "until end of turn" effect has ended by the crack-back. A
+     * blocker that took two from our attacker is not a creature our 2/3 can kill on their turn, and
+     * a creature shrunk until end of turn swings back at full size ([scoreAttackOutcome]).
+     * [AiProfile.crackBackAfterCleanup] carries the argument.
+     */
+    private val crackBackAfterCleanup: Boolean = false,
+    /**
+     * Block arithmetic that reads the interactions the heuristic passes got wrong
+     * ([AiProfile.soundBlockMath]):
+     * - a one-on-one block is played out step by step ([CombatMath.duel], read by
+     *   [findSingleBlocker]): a first striker that kills a deathtouch attacker survives it, and a
+     *   double striker hits twice;
+     * - a gang block costs the blockers the attacker *chooses* to kill, which is the most valuable
+     *   set its power can reach, not the most blockers ([attackerKillValue]).
+     */
+    private val soundBlockMath: Boolean = false,
+    /**
+     * Let blocking local search swap which creature makes a block — an idle blocker in place of an
+     * assigned one on the same attacker ([generateBlockMutations]). Without it the search can
+     * remove a block or add one but never ask whether a cheaper body does the same job.
+     * [AiProfile.blockSearchTriesSwaps] carries the argument.
+     */
+    private val blockSearchTriesSwaps: Boolean = false,
 ) {
     /** See [anticipateCombatResponses]; null when off. */
     private val responses: CombatResponses? =
@@ -826,6 +852,22 @@ class CombatAdvisor(
             }
         }
 
+        // 2b. Swap: put an idle blocker in place of an assigned one on the same attacker — the
+        //     same block made by a different body, so a trade is paid with the cheaper creature.
+        if (blockSearchTriesSwaps) {
+            for ((blockerId, targets) in currentPlan) {
+                if (blockerId in mandatoryBlockerIds) continue
+                val attacker = targets.singleOrNull() ?: continue
+                for (replacement in unassignedBlockers.take(3)) {
+                    if (!canBlock(state, projected, attacker, replacement)) continue
+                    val mutation = currentPlan.toMutableMap()
+                    mutation.remove(blockerId)
+                    mutation[replacement] = listOf(attacker)
+                    mutations.add(mutation)
+                }
+            }
+        }
+
         // 3. Move: try moving a blocker from a low-value assignment to an unblocked attacker
         if (unblockedAttackers.isNotEmpty()) {
             val worstAssignment = currentPlan.entries
@@ -966,21 +1008,8 @@ class CombatAdvisor(
                         if (survivingPower < aToughness) continue
                     }
 
-                    // Cost of the gang-block = sum of every blocker the attacker can kill
-                    // with its power (MTG rule 702.19c: attacker assigns lethal damage in order).
-                    // The attacker picks the order that kills as many blockers as possible, so
-                    // start from the lowest-toughness blocker.
-                    val blockersByToughness = listOf(b1, b2)
-                        .sortedBy { projected.getToughness(it) ?: 0 }
-                    var damageLeft = aPower
-                    var dyingValue = 0.0
-                    for (b in blockersByToughness) {
-                        val bToughness = projected.getToughness(b) ?: 0
-                        if (damageLeft >= bToughness) {
-                            dyingValue += CombatMath.combatTradeValue(projected, b)
-                            damageLeft -= bToughness
-                        }
-                    }
+                    // Cost of the gang block: the blockers the attacker's damage kills ([gangBlockCost]).
+                    val dyingValue = gangBlockCost(state, projected, attacker, listOf(b1, b2))
                     if (attackerValue > dyingValue * 1.2) {
                         blockerMap[b1] = listOf(attacker)
                         blockerMap[b2] = listOf(attacker)
@@ -1036,17 +1065,7 @@ class CombatAdvisor(
 
                         // Value check: attacker must be worth more than the blockers we lose.
                         // Use combatTradeValue (ignores tapped/sickness state multipliers).
-                        val blockersByToughness = listOf(b1, b2, b3)
-                            .sortedBy { projected.getToughness(it) ?: 0 }
-                        var damageLeft = aPower
-                        var dyingValue = 0.0
-                        for (b in blockersByToughness) {
-                            val bToughness = projected.getToughness(b) ?: 0
-                            if (damageLeft >= bToughness) {
-                                dyingValue += CombatMath.combatTradeValue(projected, b)
-                                damageLeft -= bToughness
-                            }
-                        }
+                        val dyingValue = gangBlockCost(state, projected, attacker, listOf(b1, b2, b3))
                         if (attackerValue > dyingValue * 1.2) {
                             blockerMap[b1] = listOf(attacker)
                             blockerMap[b2] = listOf(attacker)
@@ -1061,6 +1080,65 @@ class CombatAdvisor(
                 }
             }
         }
+    }
+
+    /**
+     * What a gang block of [blockers] on [attacker] costs in creatures, in
+     * [CombatMath.combatTradeValue] units.
+     *
+     * Legacy reading: walk the blockers toughness-ascending and charge each one the attacker's
+     * power still reaches — the most blockers it can kill. Under [soundBlockMath] it is
+     * [attackerKillValue]: the attacker orders its damage (CR 510.1c), so it kills the most
+     * *valuable* set it can reach — a 3/3 blocked by a 1/1 token and our 3/3 kills the 3/3.
+     */
+    private fun gangBlockCost(
+        state: GameState,
+        projected: ProjectedState,
+        attacker: EntityId,
+        blockers: List<EntityId>,
+    ): Double {
+        if (soundBlockMath) return attackerKillValue(state, projected, attacker, blockers)
+        var damageLeft = projected.getPower(attacker) ?: 0
+        var dyingValue = 0.0
+        for (b in blockers.sortedBy { projected.getToughness(it) ?: 0 }) {
+            val bToughness = projected.getToughness(b) ?: 0
+            if (damageLeft >= bToughness) {
+                dyingValue += CombatMath.combatTradeValue(projected, b)
+                damageLeft -= bToughness
+            }
+        }
+        return dyingValue
+    }
+
+    /**
+     * The most [CombatMath.combatTradeValue] [attacker] can destroy among [blockers] with one
+     * combat's damage: each blocker it kills takes its lethal share — what is left of its toughness
+     * after marked damage, or a single point from a deathtouch source — and indestructible blockers
+     * cannot be killed. Blockers number at most three here, so every subset is tried.
+     */
+    private fun attackerKillValue(
+        state: GameState,
+        projected: ProjectedState,
+        attacker: EntityId,
+        blockers: List<EntityId>,
+    ): Double {
+        val power = projected.getPower(attacker) ?: 0
+        if (power <= 0) return 0.0
+        val deathtouch = Keyword.DEATHTOUCH.name in projected.getKeywords(attacker)
+        val killable = blockers.filter { Keyword.INDESTRUCTIBLE.name !in projected.getKeywords(it) }
+        val lethal = killable.map { b ->
+            if (deathtouch) 1
+            else ((projected.getToughness(b) ?: 0) - (state.getEntity(b)?.get<DamageComponent>()?.amount ?: 0)).coerceAtLeast(1)
+        }
+        val values = killable.map { CombatMath.combatTradeValue(projected, it) }
+        var best = 0.0
+        for (mask in 1 until (1 shl killable.size)) {
+            var cost = 0
+            var value = 0.0
+            for (i in killable.indices) if (mask and (1 shl i) != 0) { cost += lethal[i]; value += values[i] }
+            if (cost <= power && value > best) best = value
+        }
+        return best
     }
 
     /**
@@ -1155,18 +1233,24 @@ class CombatAdvisor(
                 }
                 val weKillThem = bPower >= aToughness || bHasDeathtouch
                 val bIsIndestructible = Keyword.INDESTRUCTIBLE.name in bKeywords
+                val blockerDealsDamage = CombatMath.blockerDealsDamage(state, projected, attacker, blockerId)
+                // The fight played out step by step: a first striker that kills a deathtouch
+                // attacker takes nothing back, and a double striker hits twice.
+                val duel = if (soundBlockMath) CombatMath.duel(state, projected, attacker, blockerId) else null
                 val weSurvive = if (bIsIndestructible) {
                     true // indestructible creatures always survive combat
                 } else if (blockTrigger != null) {
                     !blockTrigger.destroysItself
+                } else if (duel != null) {
+                    !duel.second
                 } else if (!aHasDeathtouch) {
                     (bToughness > aPower) ||
                         (bHasFirstStrike && !aHasFirstStrike && weKillThem)
                 } else {
                     false
                 }
-                val blockerDealsDamage = CombatMath.blockerDealsDamage(state, projected, attacker, blockerId)
-                val effectivelyKillThem = blockTrigger != null || (weKillThem && blockerDealsDamage)
+                val effectivelyKillThem = blockTrigger != null ||
+                    (duel?.first ?: (weKillThem && blockerDealsDamage))
 
                 val info = BlockInfo(blockerId, effectivelyKillThem, weSurvive, blockerValue)
                 if (predicate(info)) info else null
@@ -1816,20 +1900,26 @@ class CombatAdvisor(
         attackerMap: Map<EntityId, EntityId>,
         settleExpiring: Boolean,
     ): Double {
-        val postCombat = when {
-            settleExpiring ->
-                simulated.copy(floatingEffects = simulated.floatingEffects.filter { it.duration != Duration.EndOfTurn })
-            // A creature stolen until end of turn goes home at cleanup, before anything this score
-            // prices happens: it cannot block the crack-back for us, and if it died attacking, the
-            // opponent lost it. Read as ours, it was a blocker to keep home and an asset to protect,
-            // and the AI cast Threaten and then declared no attack.
-            borrowedCreaturesGoHome -> simulated.copy(
-                floatingEffects = simulated.floatingEffects.filterNot {
-                    it.duration == Duration.EndOfTurn && it.effect.layer == Layer.CONTROL
+        val postCombat = if (settleExpiring) {
+            simulated.copy(floatingEffects = simulated.floatingEffects.filter { it.duration != Duration.EndOfTurn })
+        } else {
+            simulated.copy(
+                floatingEffects = simulated.floatingEffects.filterNot { effect ->
+                    effect.duration == Duration.EndOfTurn && if (effect.effect.layer == Layer.CONTROL) {
+                        // A creature stolen until end of turn goes home at cleanup, before anything
+                        // this score prices happens: it cannot block the crack-back for us, and if it
+                        // died attacking, the opponent lost it. Read as ours, it was a blocker to keep
+                        // home and an asset to protect, and the AI cast Threaten and then declared no
+                        // attack.
+                        borrowedCreaturesGoHome
+                    } else {
+                        // Every other "until end of turn" effect ends at cleanup too (CR 514.2): a
+                        // creature shrunk for the turn swings back at full size.
+                        crackBackAfterCleanup
+                    }
                 },
             )
-            else -> simulated
-        }
+        }.let { if (crackBackAfterCleanup) withoutMarkedDamage(it) else it }
         val postProjected = postCombat.projectedState
         // Under [attacksReadTheRace] the board is read as it stands at our next untap: the
         // crack-back below is what a tapped attacker costs, and the evaluator's tapped discount and
@@ -1913,6 +2003,15 @@ class CombatAdvisor(
 
         return baseScore + crackBackPenalty + followUp + pressure - advisorPenalty
     }
+
+    /**
+     * [state] with every permanent's marked damage removed — the board as cleanup leaves it
+     * (CR 514.2), which is the board the opponent's next attack meets.
+     */
+    private fun withoutMarkedDamage(state: GameState): GameState =
+        state.getBattlefield().fold(state) { acc, id ->
+            if (acc.getEntity(id)?.has<DamageComponent>() == true) acc.updateEntity(id) { it.without<DamageComponent>() } else acc
+        }
 
     /**
      * Time as a resource: what the damage this combat deals is worth to the side that is ahead.

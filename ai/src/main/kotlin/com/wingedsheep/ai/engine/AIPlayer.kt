@@ -309,6 +309,9 @@ class AIPlayer(
                 threatAwareDefender = profile.threatAwareDefender,
                 blockTriggersKill = profile.blockTriggersKill,
                 stressCrackBack = profile.stressCrackBack,
+                crackBackAfterCleanup = profile.crackBackAfterCleanup,
+                soundBlockMath = profile.soundBlockMath,
+                blockSearchTriesSwaps = profile.blockSearchTriesSwaps,
             )
             val responder = DecisionResponder(
                 simulator, evaluator,

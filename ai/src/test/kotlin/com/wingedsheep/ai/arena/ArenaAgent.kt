@@ -164,6 +164,9 @@ object ArenaAgents {
         // LIVE without pressing a winning position. `just arena live-without-pressure live 300`
         // prices the flag on top of everything it ships with.
         ArenaAgent("live-without-pressure", AiProfile.LIVE_WITHOUT_PRESSURE),
+        // LIVE before the combat-trade fixes: `just arena live-without-trade-fixes live 300` prices
+        // the marked-damage, threshold, block-math and swap fixes together.
+        ArenaAgent("live-without-trade-fixes", AiProfile.LIVE_WITHOUT_TRADE_FIXES),
         // LIVE pricing creatures by their current body only: `just arena live-without-growth live 300`
         // prices the recurring +1/+1-counter growth estimate.
         ArenaAgent("live-without-growth", AiProfile.LIVE_WITHOUT_GROWTH),
