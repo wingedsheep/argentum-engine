@@ -10,6 +10,7 @@ import com.wingedsheep.ai.engine.lifePoolsOf
 import com.wingedsheep.ai.engine.sidesFor
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.permissions.MayPlayPermission
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
@@ -1044,8 +1045,9 @@ object CardAdvantage : BoardFeature {
             return cardValue(held, topdeckPenalty)
         }
         val hand = state.getZone(playerId, Zone.HAND)
-        val lands = hand.count { state.getEntity(it)?.get<CardComponent>()?.isLand == true }
-        return cardValue(hand.size - lands + pendingDelayedDraws(state, playerId), topdeckPenalty) +
+        val fromExile = playableFromExile(state, playerId)
+        val lands = (hand + fromExile).count { state.getEntity(it)?.get<CardComponent>()?.isLand == true }
+        return cardValue(hand.size + fromExile.size - lands + pendingDelayedDraws(state, playerId), topdeckPenalty) +
             landsInHandValue(landsInPlay(state, projected, playerId), lands)
     }
 
@@ -1156,7 +1158,7 @@ object CardAdvantage : BoardFeature {
         projected: ProjectedState? = null,
     ): Double {
         val hand = state.getZone(playerId, Zone.HAND)
-        val held = hand.size + pendingDelayedDraws(state, playerId)
+        val held = hand.size + playableFromExile(state, playerId).size + pendingDelayedDraws(state, playerId)
         if (!landDropIsNotCardLoss) return held.toDouble()
         val drops = state.getEntity(playerId)?.get<LandDropsComponent>()?.remaining ?: 0
         val lands = hand.count { state.getEntity(it)?.get<CardComponent>()?.isLand == true }
@@ -1169,6 +1171,34 @@ object CardAdvantage : BoardFeature {
         }
         return held - earmarked - surplusLands(lands, drops, lookahead) * (1.0 - SURPLUS_LAND_CARD)
     }
+
+    /**
+     * Cards [playerId] may play from exile through a permission that outlasts this turn — the cards
+     * an impulse draw ("exile the top two cards of your library; until the end of your next turn,
+     * you may play those cards") or a theft ("you may cast it for as long as you control this
+     * creature") hands them. Counted as held, beside the hand: a card you can play next turn is a
+     * card, wherever it waits. Without this every such spell read as a card spent for nothing.
+     * A permission behind a [MayPlayPermission.condition] is not counted: whether it will be
+     * honored is a question about a later board.
+     */
+    private fun playableFromExile(state: GameState, playerId: EntityId): List<EntityId> {
+        if (state.mayPlayPermissions.isEmpty()) return emptyList()
+        return state.mayPlayPermissions.asSequence()
+            .filter { it.controllerId == playerId && it.condition == null && outlastsThisTurn(state, it) }
+            .flatMap { it.cardIds }
+            .filter { state.logicalZone(it)?.zoneType == Zone.EXILE }
+            .distinct()
+            .toList()
+    }
+
+    /**
+     * Whether a play permission is still open after this turn's cleanup — "until the end of your
+     * next turn", "for as long as it remains exiled", "for as long as you control this creature".
+     * A window that closes this turn is left to the search: casting the card is a legal action the
+     * line can take now, and a card it can't get to before cleanup is not a card held.
+     */
+    private fun outlastsThisTurn(state: GameState, permission: MayPlayPermission): Boolean =
+        permission.permanent || (permission.expiresAfterTurn ?: return false) > state.turnNumber
 
     /**
      * Cards [playerId] is already owed by a pending step-based delayed trigger it controls — "draw a
