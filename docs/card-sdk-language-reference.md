@@ -1807,11 +1807,16 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
 - `LoseLife(amount, target)` — target loses life. The dynamic overload also accepts
   `origin = LifeLossOrigin.RADIATION` to distinguish loss from the inherent radiation ability;
   the default `EFFECT` preserves existing definitions and ordinary life-loss triggers.
-- `DrainLife(amount, from = EachOpponent, to = Controller)` — each player in `from` loses `amount`
+- `DrainLife(amount, from = EachOpponent, to = Controller, amountPerLoser = false)` — each player in `from` loses `amount`
   life, then `to` gains life equal to the total *actually* lost (each loss honors `ModifyLifeLoss`
   replacements) as a single life-gain event — "Each opponent loses X life. You gain life equal to
   the life lost this way." (Exsanguinate). Prefer this over `LoseLife + GainLife` whenever the gain
-  is worded "equal to the life lost this way".
+  is worded "equal to the life lost this way". `amountPerLoser = true` measures `amount` once per
+  losing player, with `Player.You` inside it meaning *that* player (the rebinding `ForEachPlayer`
+  gives its body), all measured before anyone loses life — "each opponent loses life equal to the
+  life that player lost this turn. You gain life equal to the life lost this way" is
+  `DrainLife(DynamicAmounts.lifeLostThisTurn(), amountPerLoser = true)`
+  (Gul Dukat, Colonial Prefect).
 - `SetLifeTotal(amount, target)` — set target's life total to N.
 - `ExchangeLifeAndStat(target, stat, player)` — swap a player's life total with a creature's power or
   toughness (CR 701.12g). `stat` is `CreatureStat.POWER` (default, Evra, Halcyon Witness) or

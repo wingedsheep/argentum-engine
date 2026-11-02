@@ -512,12 +512,17 @@ object Effects {
      * Life drain: each player in [from] loses [amount] life, then [to] gains life equal to
      * the total life actually lost this way, as a single life-gain event ("Each opponent
      * loses X life. You gain life equal to the life lost this way." — Exsanguinate).
+     *
+     * [amountPerLoser] measures [amount] once per losing player, with `Player.You` inside it
+     * meaning *that* player ("each opponent loses life equal to the life that player lost this
+     * turn" — Gul Dukat, Colonial Prefect); the gain still goes to [to].
      */
     fun DrainLife(
         amount: DynamicAmount,
         from: EffectTarget = EffectTarget.PlayerRef(Player.EachOpponent),
-        to: EffectTarget = EffectTarget.Controller
-    ): Effect = com.wingedsheep.sdk.scripting.effects.DrainLifeEffect(amount, from, to)
+        to: EffectTarget = EffectTarget.Controller,
+        amountPerLoser: Boolean = false
+    ): Effect = com.wingedsheep.sdk.scripting.effects.DrainLifeEffect(amount, from, to, amountPerLoser)
 
     /**
      * Life drain with a fixed amount — see [DrainLife].

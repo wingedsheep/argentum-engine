@@ -69,13 +69,20 @@ data class LoseLifeEffect(
  * The gain is keyed to the life *actually* lost — each loss honors `ModifyLifeLoss`
  * replacements individually — and lands as a single life-gain event after all losses
  * (one lifegain trigger, not one per opponent).
+ *
+ * [amountPerLoser] measures [amount] separately for each losing player, read the way
+ * `ForEachPlayer` reads its body: `Player.You` inside [amount] is the player losing life, while
+ * [to] still names the drain's controller. "Each opponent loses life equal to the life that
+ * player lost this turn. You gain life equal to the life lost this way." (Gul Dukat, Colonial
+ * Prefect). Every player's amount is measured before anyone loses life.
  */
 @SerialName("DrainLife")
 @Serializable
 data class DrainLifeEffect(
     val amount: DynamicAmount,
     val from: EffectTarget = EffectTarget.PlayerRef(Player.EachOpponent),
-    val to: EffectTarget = EffectTarget.Controller
+    val to: EffectTarget = EffectTarget.Controller,
+    val amountPerLoser: Boolean = false
 ) : Effect {
     /** Convenience constructor for fixed amounts */
     constructor(
@@ -85,7 +92,8 @@ data class DrainLifeEffect(
     ) : this(DynamicAmount.Fixed(amount), from, to)
 
     override val description: String =
-        "${from.description.replaceFirstChar { it.uppercase() }} loses ${amount.description} life. " +
+        "${from.description.replaceFirstChar { it.uppercase() }} loses ${amount.description} life" +
+            (if (amountPerLoser) " (measured for that player)" else "") + ". " +
             "${to.description.replaceFirstChar { it.uppercase() }} gains life equal to the life lost this way"
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
