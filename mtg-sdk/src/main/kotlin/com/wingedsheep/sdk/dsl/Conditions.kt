@@ -1856,6 +1856,14 @@ object Conditions {
         )
 
     /**
+     * "If you faced a dilemma this turn" (The Caretaker) — at least [atLeast] times this turn the
+     * player chose one or more modes for a spell or ability
+     * ([com.wingedsheep.sdk.scripting.values.TurnTracker.DILEMMAS_FACED]).
+     */
+    fun YouFacedADilemmaThisTurn(atLeast: Int = 1, player: Player = Player.You): ConditionInterface =
+        trackerAtLeast(com.wingedsheep.sdk.scripting.values.TurnTracker.DILEMMAS_FACED, atLeast, player)
+
+    /**
      * "If you've paid or lost N or more {E} this turn" (Izzet Generatorium) — every energy counter
      * removed from the player this turn, paid as a cost or lost to an effect
      * ([com.wingedsheep.sdk.scripting.values.TurnTracker.ENERGY_PAID_OR_LOST]).

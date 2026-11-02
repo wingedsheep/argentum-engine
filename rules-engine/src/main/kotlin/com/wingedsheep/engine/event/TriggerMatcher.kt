@@ -737,6 +737,10 @@ class TriggerMatcher(
                     matchesPlayer(state, trigger.player, event.playerId, controllerId, sourceId) &&
                     (!trigger.firstTimeEachTurn || event.firstThisTurn)
             }
+            is EventPattern.DilemmaFacedEvent -> {
+                event is com.wingedsheep.engine.core.DilemmaFacedEvent &&
+                    matchesPlayer(state, trigger.player, event.playerId, controllerId, sourceId)
+            }
             is EventPattern.ProliferatedEvent -> {
                 event is com.wingedsheep.engine.core.ProliferatedEvent &&
                     matchesPlayer(state, trigger.player, event.playerId, controllerId, sourceId)

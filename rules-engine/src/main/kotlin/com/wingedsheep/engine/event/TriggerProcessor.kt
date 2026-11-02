@@ -995,13 +995,20 @@ class TriggerProcessor(
 
         // "…that hasn't been chosen (this turn)": commit the picks to the source's memory now that
         // they're final, so the next trigger of this same object offers what's left.
-        val stateWithMemory = chosenModeIndices.fold(state) { acc, modeIndex ->
+        val stateWithChoices = chosenModeIndices.fold(state) { acc, modeIndex ->
             ChosenModeMemory.record(
                 acc, ability.sourceId, modeIndex,
                 ever = recordChosenModesOnSource,
                 thisTurn = recordChosenModesThisTurn
             )
         }
+        // Choosing a modal trigger's modes as it goes on the stack is facing a dilemma — unless
+        // the mode was drawn at random, which nobody chose.
+        val randomMode = (ability.effect as? com.wingedsheep.sdk.scripting.effects.ModalEffect)?.chooseAtRandom == true
+        val (stateWithMemory, dilemmaEvents) = com.wingedsheep.engine.mechanics.modal.Dilemmas.face(
+            stateWithChoices, ability.controllerId, ability.sourceName,
+            if (randomMode) 0 else chosenModeIndices.size
+        )
 
         val boundModeRequirements = chosenModeIndices.mapIndexed { ordinal, modeIndex ->
             val requirements = modes[modeIndex].targetRequirements
@@ -1024,11 +1031,12 @@ class TriggerProcessor(
         val flatTargets = outerTargets + resolvedModeTargets.flatten()
         val flatRequirements = outerTargetRequirements + boundModeRequirements.flatten()
 
-        return stackResolver.putTriggeredAbility(
+        val placed = stackResolver.putTriggeredAbility(
             stateWithMemory, component, flatTargets,
             targetRequirements = flatRequirements,
             triggerCause = triggerCause
         )
+        return if (dilemmaEvents.isEmpty()) placed else placed.copy(events = dilemmaEvents + placed.events)
     }
 
     /** The context a mode's target-time amounts read: the ability going on the stack. */

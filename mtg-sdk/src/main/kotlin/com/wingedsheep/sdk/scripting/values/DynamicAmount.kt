@@ -405,6 +405,16 @@ enum class TurnTracker {
      */
     LOYALTY_ABILITIES_ACTIVATED,
     /**
+     * Number of dilemmas the player has faced this turn — one per time they chose one or more modes
+     * for a spell or ability (casting a modal spell, activating a modal ability, putting a modal
+     * triggered ability on the stack, or a mode choice made while an ability resolves), however many
+     * modes that choice took. Backed by `DilemmasFacedThisTurnComponent`, reset to 0 for every
+     * player at the start of each turn. "For each dilemma you've faced this turn" (Captain Benjamin
+     * Sisko); `Conditions.YouFacedADilemmaThisTurn` is the "if you faced a dilemma this turn" gate
+     * (The Caretaker). The matching trigger is `Triggers.you.facesADilemma()`.
+     */
+    DILEMMAS_FACED,
+    /**
      * How many energy counters ({E}) the player has paid or lost this turn — every energy counter
      * removed from the player, whether paid as a cost or removed by an effect. Gaining energy never
      * nets against it. Backed by `PlayerCountersRemovedThisTurnComponent`, recorded at the settle
@@ -508,6 +518,7 @@ enum class TurnTracker {
                 "${player.possessive} control this turn"
         LOYALTY_ABILITIES_ACTIVATED ->
             "the number of loyalty abilities ${player.description} activated this turn"
+        DILEMMAS_FACED -> "the number of dilemmas ${player.description} faced this turn"
     }
 }
 

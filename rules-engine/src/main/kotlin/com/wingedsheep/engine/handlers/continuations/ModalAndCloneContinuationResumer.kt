@@ -376,9 +376,14 @@ class ModalAndCloneContinuationResumer(
         // For single-mode flow, preserve revert-to-mode-selection by passing the full modes list
         // when there's only one chosen mode and it needs targets. For multi-mode, don't allow cancel.
         val allowCancelBackToModes = continuation.chooseCount == 1 && chosenModes.size == 1
+        // A mode choice made while an ability resolves is still facing a dilemma; declining every
+        // pick of a "choose up to" isn't.
+        val (stateAfterDilemma, dilemmaEvents) = com.wingedsheep.engine.mechanics.modal.Dilemmas.face(
+            state, continuation.controllerId, continuation.sourceName ?: "modal ability", chosenModes.size
+        )
         return processChosenModeQueue(
             services = services,
-            state = state,
+            state = stateAfterDilemma,
             queue = chosenModes,
             controllerId = continuation.controllerId,
             sourceId = continuation.sourceId,
@@ -391,7 +396,7 @@ class ModalAndCloneContinuationResumer(
             pipeline = continuation.pipeline,
             resolvingTriggeredAbility = continuation.resolvingTriggeredAbility,
             objectReferences = continuation.objectReferences,
-            accumulatedEvents = emptyList(),
+            accumulatedEvents = dilemmaEvents,
             checkForMore = checkForMore
         )
     }

@@ -1900,6 +1900,9 @@ is PermanentsSacrificedEvent -> {
             is RingTemptedEvent,
             is ScriedEvent,
             is SurveiledEvent,
+            // Internal signal for "whenever you face a dilemma" triggers; the cast, activation or
+            // trigger whose modes were chosen is what the log shows.
+            is DilemmaFacedEvent,
             // Internal signal for "whenever you proliferate" triggers; the counters themselves are
             // surfaced by their own CountersAddedEvents.
             is ProliferatedEvent,
