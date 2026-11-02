@@ -11226,8 +11226,11 @@ staticAbility {
   (`CounterLimitCheck`, CR 704.5r). A cast entrant's own printed limit caps its entry counters;
   limits granted to it by other permanents apply once it is on the battlefield.
 - `CantBeSacrificed(filter, scope = Scope.ANY)` — matching permanents can't be sacrificed (projects the
-  `AbilityFlag.CANT_BE_SACRIFICED` flag, honored by the sacrifice executor — a sacrifice that can't
-  happen simply no-ops — and by every sacrifice *cost*, which can't take such a permanent). Wrap in
+  `AbilityFlag.CANT_BE_SACRIFICED` flag, read through `SacrificeCostLegality.canBeSacrificed`). Every
+  resolving sacrifice honours it: an edict or "sacrifice a creature" never offers such a permanent (a
+  player with no other candidate sacrifices nothing), "sacrifice it" and a pipeline's
+  `MoveType.Sacrifice` move leave it on the battlefield and out of the moved collection, and a
+  "you may sacrifice … If you do" gate isn't offered on it. Every sacrifice *cost* refuses it too. Wrap in
   `ConditionalStaticAbility` for time-restricted forms, e.g. Zurgo,
   Thunder's Decree: `ConditionalStaticAbility(CantBeSacrificed(GroupFilter(Token.youControl().withSubtype("Warrior"))), IsInStep(listOf(Step.END)))`.
   `scope = CantBeSacrificed.Scope.CASTING_AND_ACTIVATION_COSTS` narrows it to costs: "Players can't

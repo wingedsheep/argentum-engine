@@ -198,7 +198,7 @@ class ReflexiveTriggerEffectExecutor(
             BattlefieldFilterUtils.findMatchingOnBattlefield(
                 state, action.filter.youControl(), context, excludeSelfId = excludeId,
                 predicateEvaluator = predicateEvaluator
-            ).size >= action.count
+            ).count { com.wingedsheep.engine.mechanics.cost.SacrificeCostLegality.canBeSacrificed(state, it) } >= action.count
         }
         is ChooseActionEffect -> action.choices.any { choice ->
             checkFeasibility(state, context.controllerId, choice.feasibilityCheck, predicateEvaluator, manaSolver, publicOnly)

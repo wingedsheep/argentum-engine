@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.mechanics.CompelledActionImmunity
+import com.wingedsheep.engine.mechanics.cost.SacrificeCostLegality
 import com.wingedsheep.sdk.scripting.CompelledAction
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -99,7 +100,7 @@ class SacrificeExecutor(
         val matches = BattlefieldFilterUtils.findMatchingOnBattlefield(
             state, effect.filter.youControl(), context,
             predicateEvaluator = zones.predicateEvaluator
-        )
+        ).filter { SacrificeCostLegality.canBeSacrificed(state, it) }
         return if (effect.excludeSource && sourceId != null) {
             matches.filter { it != sourceId }
         } else {
