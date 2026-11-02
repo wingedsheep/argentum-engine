@@ -41,6 +41,10 @@ class SkipUntapFilterTest : FunSpec({
         manaCost = "{0}"; typeLine = "Instant"
         spell { val t = target(Targets.Player); effect = Effects.SkipUntap(t, GameObjectFilter.Creature, lockedAtResolution = true) }
     }
+    val flicker = card("Flicker For Untap") {
+        manaCost = "{0}"; typeLine = "Instant"
+        spell { val t = target(TargetFilter.Creature); effect = Effects.Exile(t) then Effects.PutOntoBattlefieldUnderYourControl(t) }
+    }
     val steal = card("Steal For Untap") {
         manaCost = "{0}"; typeLine = "Instant"
         spell { val t = target(TargetFilter.Permanent); effect = Effects.GainControl(t) }
@@ -48,7 +52,7 @@ class SkipUntapFilterTest : FunSpec({
     val trinket = card("Untap Test Trinket") { typeLine = "Artifact" }
 
     fun driver() = GameTestDriver().apply {
-        registerCards(TestCards.all + listOf(freezeArtifactsAndCreatures, freezeLands, freezeCreatures, sleepCreatures, steal, trinket))
+        registerCards(TestCards.all + listOf(freezeArtifactsAndCreatures, freezeLands, freezeCreatures, sleepCreatures, flicker, steal, trinket))
         initMirrorMatch(Deck.of("Forest" to 40)); passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
     fun cast(d: GameTestDriver, name: String, target: EntityId) {
@@ -131,6 +135,17 @@ class SkipUntapFilterTest : FunSpec({
 
         d.replaceState(untap(d).state)
         d.tapped(theirBear) shouldBe false
+    }
+
+    test("locked at resolution: a held creature flickered into a new object untaps") {
+        val d = driver(); val me = d.activePlayer!!
+        val bear = d.putCreatureOnBattlefield(me, "Grizzly Bears").also(d::tapPermanent)
+        cast(d, sleepCreatures.name, me)
+        cast(d, flicker.name, bear)
+        d.tapPermanent(bear)
+
+        d.replaceState(untap(d).state)
+        d.tapped(bear) shouldBe false
     }
 
     test("the description reads the filter the way Oracle prints it") {

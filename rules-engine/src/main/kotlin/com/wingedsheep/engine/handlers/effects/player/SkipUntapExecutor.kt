@@ -28,7 +28,8 @@ import kotlin.reflect.KClass
  * Mana Vapors, Blinding Beam) are unchanged.
  *
  * A [SkipUntapEffect.lockedAtResolution] effect (Sleep) adds no filter: it snapshots the matching
- * permanents the player controls now (projected) into the component's entity set instead.
+ * permanents the player controls now (projected) into the component's object set instead, as
+ * [com.wingedsheep.engine.state.ObjectRef]s so a flickered permanent is a new object it doesn't hold.
  */
 class SkipUntapExecutor(
     private val predicateEvaluator: PredicateEvaluator
@@ -55,8 +56,8 @@ class SkipUntapExecutor(
                             state, projected, id, effect.permanents,
                             PredicateContext(controllerId = targetPlayerId)
                         )
-                    }
-                    pending.copy(entities = pending.entities + locked)
+                    }.mapNotNull(state::objectRef)
+                    pending.copy(objects = pending.objects + locked)
                 }
             )
         }

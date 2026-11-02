@@ -757,14 +757,15 @@ data object SkipCombatPhasesComponent : Component
  * its own filter rather than replacing the first, since both apply to the same step.
  *
  * Read by `BeginningPhaseManager.performUntapStep` against the projected permanents the player
- * controls *at that step*, and consumed (removed) once the step is processed. [entities] holds the
- * permanents a locked-at-resolution effect fixed (Sleep): each stays tapped at that step if this
- * player still controls it.
+ * controls *at that step*, and consumed (removed) once the step is processed. [objects] holds the
+ * permanents a locked-at-resolution effect fixed (Sleep), as rules objects: each stays tapped at that
+ * step if it is still the same object (not flickered into a new one, CR 400.7) and this player still
+ * controls it.
  */
 @Serializable
 data class SkipUntapComponent(
     val permanents: List<GameObjectFilter> = emptyList(),
-    val entities: Set<EntityId> = emptySet()
+    val objects: Set<com.wingedsheep.engine.state.ObjectRef> = emptySet()
 ) : Component
 
 /**
