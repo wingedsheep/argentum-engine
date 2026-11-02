@@ -31,17 +31,22 @@ import kotlinx.serialization.Serializable
  * @property replacesLifeReduction this rider is a [com.wingedsheep.sdk.scripting.ReplaceLifeReductionToZero]
  *   application whose [subjectId] is the player whose life total was protected; while it is pending,
  *   further reductions of that total are part of the same replaced event
+ * @property effect the rest as a card effect; `null` for an engine-side rest — [chooseEnteringAttackTarget]
+ * @property chooseEnteringAttackTarget the rest is CR 508.4's choice of what [subjectId], a creature
+ *   that just entered tapped and attacking through a global replacement, is attacking
+ *   ([com.wingedsheep.engine.handlers.effects.EnteringAttackChoice]); asked of [controllerId]
  */
 @Serializable
 data class PendingReplacementRider(
-    val effect: Effect,
+    val effect: Effect?,
     val hostId: EntityId,
     val controllerId: EntityId,
     val subjectId: EntityId,
     val amount: Int = 0,
     val countersRemoved: Int = 0,
     val replacesLifeReduction: Boolean = false,
-    val replacementChain: Set<ReplacementEffectIdentity>? = null
+    val replacementChain: Set<ReplacementEffectIdentity>? = null,
+    val chooseEnteringAttackTarget: Boolean = false,
 )
 
 /**
@@ -75,7 +80,9 @@ object ReplacementRiders {
             if (remaining.isNotEmpty()) current = current.pushContinuation(
                 com.wingedsheep.engine.core.ReplacementRidersContinuation(remaining))
             val previousChain = current.activeReplacementChain
-            val result = execute(current.copy(activeReplacementChain = rider.replacementChain ?: previousChain),
+            val result = if (rider.effect == null) {
+                com.wingedsheep.engine.handlers.effects.EnteringAttackChoice.ask(current, rider.subjectId, rider.controllerId)
+            } else execute(current.copy(activeReplacementChain = rider.replacementChain ?: previousChain),
                 rider.effect, contextFor(current, rider))
             events += result.events
             current = result.state

@@ -926,6 +926,16 @@ internal class PermanentEntry(
         // entity is on the battlefield so its controller/type resolve for the filter. CR 614: an
         // applicable "enters untapped" replacement still wins, and a self-EntersTapped that already
         // tapped it stands. Sneak sets its own tapped-and-attacking state below, so skip it here.
+        // "Instead it enters tapped and attacking" (PermanentsEnterTapped.attackDefender — Kira
+        // Nerys, Firebrand): a tapped-and-attacking entry, so an "enters untapped" replacement
+        // doesn't undo the tap. A sneaked permanent is already attacking its own defender.
+        if (!spellComponent.wasSneaked &&
+            com.wingedsheep.engine.handlers.effects.EnterTappedReplacements
+                .entersAttacking(newState, spellId, predicateEvaluator = conditionEvaluator.predicates)
+        ) {
+            return com.wingedsheep.engine.handlers.effects.EnterTappedReplacements
+                .enterTappedAndAttacking(newState, spellId, controllerId)
+        }
         if (cardDef != null && !spellComponent.castFaceDown && !spellComponent.wasSneaked) {
             val alreadyTapped = newState.getEntity(spellId)?.has<TappedComponent>() == true
             val entersUntapped = com.wingedsheep.engine.handlers.effects.EnterUntappedReplacements

@@ -45,23 +45,46 @@ object EnterTappedReplacements {
         enteringEntityId: EntityId,
         enteringControllerId: EntityId,
         predicateEvaluator: PredicateEvaluator
-    ): Boolean {
-        for (active in ActiveReplacements.all(state) { it is PermanentsEnterTapped }) {
-            val effect = active.effect as? PermanentsEnterTapped ?: continue
-            if (!active.granted && active.sourceId == enteringEntityId) continue
-            if (!matchesEnterFilter(effect.appliesTo, enteringEntityId, active.sourceId, active.controllerId, state, predicateEvaluator = predicateEvaluator)) continue
+    ): Boolean = applicable(state, enteringEntityId, predicateEvaluator).any()
+
+    /**
+     * True if an applicable [PermanentsEnterTapped] says "instead it enters tapped **and attacking**"
+     * ([PermanentsEnterTapped.attackDefender] — Kira Nerys, Firebrand). Such an entry is a
+     * tapped-and-attacking one: the seam taps it whatever an "enters untapped" replacement says (like
+     * every other tapped-and-attacking entry) and hands it to [EnteringAttackChoice.enter], which
+     * decides whether and what it attacks.
+     */
+    fun entersAttacking(
+        state: GameState,
+        enteringEntityId: EntityId,
+        predicateEvaluator: PredicateEvaluator
+    ): Boolean = applicable(state, enteringEntityId, predicateEvaluator).any { it.attackDefender != null }
+
+    /**
+     * Tap [entityId], which just entered under [controllerId] through an applicable
+     * [entersAttacking] replacement, and make it attacking ([EnteringAttackChoice.enter]).
+     */
+    fun enterTappedAndAttacking(state: GameState, entityId: EntityId, controllerId: EntityId): GameState =
+        EnteringAttackChoice.enter(state.updateEntity(entityId) { it.with(TappedComponent) }, entityId, controllerId)
+
+    private fun applicable(
+        state: GameState,
+        enteringEntityId: EntityId,
+        predicateEvaluator: PredicateEvaluator
+    ): Sequence<PermanentsEnterTapped> = ActiveReplacements.all(state) { it is PermanentsEnterTapped }
+        .asSequence()
+        .filter { active ->
+            val effect = active.effect as PermanentsEnterTapped
+            if (!active.granted && active.sourceId == enteringEntityId) return@filter false
+            if (!matchesEnterFilter(effect.appliesTo, enteringEntityId, active.sourceId, active.controllerId, state, predicateEvaluator = predicateEvaluator)) return@filter false
             // Optional gate evaluated against the replacement *source*, mirroring
             // RedirectDamage.condition — e.g. Ashling's Prerogative's tap clause applies only
             // while the mode it chose as it entered is the one this effect was written for.
-            val gate = effect.condition
-            if (gate != null) {
-                val gateContext = EffectContext(sourceId = active.sourceId, controllerId = active.controllerId)
-                if (!predicateEvaluator.conditions.evaluate(state, gate, gateContext)) continue
-            }
-            return true
+            val gate = effect.condition ?: return@filter true
+            val gateContext = EffectContext(sourceId = active.sourceId, controllerId = active.controllerId)
+            predicateEvaluator.conditions.evaluate(state, gate, gateContext)
         }
-        return false
-    }
+        .map { it.effect as PermanentsEnterTapped }
 
     /**
      * Resolve global "[filter] enter tapped/untapped" replacements for a token [tokenId] just
@@ -88,6 +111,9 @@ object EnterTappedReplacements {
         attacking: Boolean = false,
         predicateEvaluator: PredicateEvaluator
     ): GameState {
+        if (!attacking && entersAttacking(state, tokenId, predicateEvaluator)) {
+            return enterTappedAndAttacking(state, tokenId, controllerId)
+        }
         val entersUntapped = EnterUntappedReplacements.entersUntapped(state, tokenId, controllerId, predicateEvaluator = predicateEvaluator)
         return when {
             definedTapped && !attacking && entersUntapped ->

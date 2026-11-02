@@ -373,6 +373,7 @@ val engineSerializersModule = SerializersModule {
         subclass(PayOrSufferMillOrderContinuation::class)
         subclass(EffectCopyAuraEntryContinuation::class)
         subclass(EnteringAttackDefenderContinuation::class)
+        subclass(EnteringAttackChoiceContinuation::class)
         subclass(CloneAuraEntryContinuation::class)
         subclass(CloneEntersContinuation::class)
         subclass(MutateMergeContinuation::class)

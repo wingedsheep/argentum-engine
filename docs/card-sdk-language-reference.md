@@ -19366,7 +19366,7 @@ The priority groups are (CR 616.1a–f):
   untapped regardless). Edge not covered: a same-event simultaneous mass-entry where the source itself is
   among the entering permanents (the source isn't yet consulted), and a land tapped via a generic
   `OnEnterRun` self-tap (e.g. Game Trail) is not overridden.
-- `PermanentsEnterTapped(appliesTo = ZoneChangeEvent(filter, to = Zone.BATTLEFIELD), condition = null)` — the global/group
+- `PermanentsEnterTapped(appliesTo = ZoneChangeEvent(filter, to = Zone.BATTLEFIELD), condition = null, attackDefender = null)` — the global/group
   counterpart of the self-only `EntersTapped`: "[filter] enter the battlefield tapped" (Zhao, the Moon
   Slayer — "Nonbasic lands enter tapped", `filter = GameObjectFilter.NonbasicLand`; also expresses
   Imposing Sovereign / Authority of the Consuls "creatures your opponents control enter tapped"). Like
@@ -19385,6 +19385,18 @@ The priority groups are (CR 616.1a–f):
   odd-mana-value half on `SourceChosenModeIs("even")`. Reach for it whenever the clause would otherwise
   want a `ConditionalStaticAbility` wrapper — a runtime replacement can't be wrapped in one, because it is
   stamped into the replacement component rather than projected through the layer system.
+  **`attackDefender = EnteringAttackDefender.CONTROLLER_CHOOSES`** turns it into "instead it enters **tapped
+  and attacking**" (Kira Nerys, Firebrand: `PermanentsEnterTapped(appliesTo = ZoneChangeEvent(Creature.youControl(),
+  to = BATTLEFIELD), condition = Conditions.YouControl(GameObjectFilter.Creature.attacking()), attackDefender =
+  CONTROLLER_CHOOSES)`). Default `null` = just tapped; `JOIN_SOURCE` / `RETURNED_ATTACKER` are rejected (a
+  replacement has no source attack to join). The resolving-spell, effect-move and token seams ask
+  `EnterTappedReplacements.entersAttacking` and hand the entrant to `EnteringAttackChoice`: it is tapped
+  regardless of any "enters untapped" replacement (like every tapped-and-attacking entry), and attacks only if it
+  is a creature and not a battle (CR 506.3a / 506.3e) whose controller is an attacking player in combat (CR
+  506.3b). With one legal defender it attacks it at once; with several, its controller chooses (CR 508.4) — the
+  question is queued as a replacement rider drained when the putting effect ends (or at the settle boundary),
+  before SBAs and trigger detection, so "enters attacking" triggers see it. It is attacking but never
+  "attacked". A land play can't happen during combat, so that seam only ever taps.
 - `PutOntoBattlefieldThen(effect, putter = Player.Each, condition = null, appliesTo = ZoneChangeEvent(filter, to = Zone.BATTLEFIELD))`
   — "If [putter] would put [filter] onto the battlefield, that player instead puts it onto the battlefield,
   then [effect]" (Land Equilibrium: `putter = Player.EachOpponent`, `filter = GameObjectFilter.Land`,

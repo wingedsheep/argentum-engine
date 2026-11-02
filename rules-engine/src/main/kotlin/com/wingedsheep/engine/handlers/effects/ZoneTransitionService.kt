@@ -1882,6 +1882,13 @@ class ZoneTransitionService(
         val selfEntersTapped = !options.faceDown &&
             selfEntersTapped(withDayboundEntry, entityId, controllerId)
         val withTapResolved = when {
+            // "Instead it enters tapped and attacking" (PermanentsEnterTapped.attackDefender —
+            // Kira Nerys, Firebrand): a tapped-and-attacking entry, so — like options.tappedAndAttacking
+            // — an "enters untapped" replacement doesn't undo the tap. A face-down entrant is a 2/2
+            // creature and is read as one by the filter.
+            !options.tappedAndAttacking &&
+                EnterTappedReplacements.entersAttacking(withDayboundEntry, entityId, predicateEvaluator = predicateEvaluator) ->
+                EnterTappedReplacements.enterTappedAndAttacking(withDayboundEntry, entityId, controllerId)
             // A tapped entry — asked for by the effect (ramp/fetch) or printed on the card itself
             // — overridden by "enters untapped" (The Wandering Minstrel). Two applicable entry
             // replacements leave the order to the permanent's controller (CR 616.1e); the engine
