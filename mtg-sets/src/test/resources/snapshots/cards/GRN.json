@@ -75,6 +75,72 @@
     ]
 }
 
+// Arclight Phoenix
+{
+    "name": "Arclight Phoenix",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Phoenix",
+    "oracleText": "Flying, haste\nAt the beginning of combat on your turn, if you've cast three or more instant and sorcery spells this turn, return this card from your graveyard to the battlefield.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Arclight Phoenix:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
+                },
+                "activeZones": [
+                    "Graveyard"
+                ],
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "SpellsCastThisTurn",
+                        "filter": "instant|sorcery"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "descriptionOverride": "At the beginning of combat on your turn, if you've cast three or more instant and sorcery spells this turn, return this card from your graveyard to the battlefield."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "91",
+        "rarity": "MYTHIC",
+        "artist": "Slawomir Maniak",
+        "flavorText": "Some storms never blow over.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/787de9ce-02c5-4a17-a88b-d38e83dbeb0b.jpg?1783934168",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "Because the beginning of combat step is before attackers are declared, you can attack with Arclight Phoenix during the same combat it returns to the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Artful Takedown
 {
     "name": "Artful Takedown",
@@ -549,6 +615,63 @@
     ]
 }
 
+// Barging Sergeant
+{
+    "name": "Barging Sergeant",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Minotaur Soldier",
+    "oracleText": "Haste\nMentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE",
+        "MENTOR"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Barging Sergeant:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "PowerLessThanEntity",
+                                    "reference": "Self"
+                                }
+                            ],
+                            "statePredicates": [
+                                "IsAttacking"
+                            ]
+                        }
+                    }
+                },
+                "descriptionOverride": "Mentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "artist": "Filip Burburan",
+        "flavorText": "\"Don't stop till your horns come out their back.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/52a54ebc-008a-4180-a023-2e1d5318780c.jpg?1783934166"
+    }
+}
+
 // Barrier of Bones
 {
     "name": "Barrier of Bones",
@@ -609,6 +732,122 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Beacon Bolt
+{
+    "name": "Beacon Bolt",
+    "manaCost": "{1}{U}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Beacon Bolt deals damage to target creature equal to the total number of instant and sorcery cards you own in exile and in your graveyard.\nJump-start (You may cast this card from your graveyard by discarding a card in addition to paying its other costs. Then exile this card.)",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Add",
+                "left": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Exile",
+                    "filter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ],
+                        "statePredicates": [
+                            "IsFaceUp"
+                        ]
+                    }
+                },
+                "right": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Graveyard",
+                    "filter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ],
+                        "statePredicates": [
+                            "IsFaceUp"
+                        ]
+                    }
+                }
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "MayCastSelfFromZones",
+                "zones": [
+                    "Graveyard"
+                ],
+                "additionalCost": {
+                    "type": "AdditionalAtom",
+                    "atom": "AtomDiscard"
+                },
+                "exileCastThisWay": "ON_ANY_STACK_EXIT"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "rarity": "UNCOMMON",
+        "artist": "Titus Lunter",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/39c9e4b5-364b-4c0b-bb47-266563a6abf2.jpg?1783934142",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "Beacon Bolt is still on the stack while you count your instant and sorcery cards in your graveyard and in exile. It doesn't count itself."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If any exiled cards you own are face down, they have no characteristics. If they're normally instants or sorceries, they won't be counted."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "You must still follow any timing restrictions and permissions when casting a spell with jump-start, including those based on the card's type. For instance, you can cast a sorcery using jump-start only when you could normally cast a sorcery."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "A spell cast using jump-start will always be exiled afterward, whether it resolves, it's countered, or it leaves the stack in some other way."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If an effect allows you to pay an alternative cost rather than a spell's mana cost, you may pay that alternative cost when you jump-start a spell. You'll still discard a card as an additional cost to cast it."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If a card with jump-start is put into your graveyard during your turn, you'll be able to cast it right away if it's legal to do so, before an opponent can take any actions."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
     ]
 }
 
@@ -885,6 +1124,79 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Book Devourer
+{
+    "name": "Book Devourer",
+    "manaCost": "{5}{R}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "Trample\nWhenever this creature deals combat damage to a player, you may discard all the cards in your hand. If you do, draw that many cards.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Book Devourer:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "VariableReference",
+                                    "variableName": "gathered0_count"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "rarity": "UNCOMMON",
+        "artist": "Kev Walker",
+        "flavorText": "\"Not my first edition of *The Advokist and the Urchin*!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/01dfe640-5bd2-4d0b-8977-887b2ed4c2dd.jpg?1783934166"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -2360,6 +2672,149 @@
     "hasNoManaCost": true
 }
 
+// Cosmotronic Wave
+{
+    "name": "Cosmotronic Wave",
+    "manaCost": "{3}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Cosmotronic Wave deals 1 damage to each creature your opponents control. Creatures your opponents control can't block this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "CantBlockGroup",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "95",
+        "artist": "Titus Lunter",
+        "flavorText": "\"This sort of innovation occurs when you set out to improve an electric tea kettle and misplace a decimal.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/69c5bafa-8cd8-4158-98e0-46dc74c027c0.jpg?1783934165"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Crackling Drake
+{
+    "name": "Crackling Drake",
+    "manaCost": "{U}{U}{R}{R}",
+    "typeLine": "Creature — Drake",
+    "oracleText": "Flying\nCrackling Drake's power is equal to the total number of instant and sorcery cards you own in exile and in your graveyard.\nWhen this creature enters, draw a card.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "Add",
+                "left": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Exile",
+                    "filter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ],
+                        "statePredicates": [
+                            "IsFaceUp"
+                        ]
+                    }
+                },
+                "right": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Graveyard",
+                    "filter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ],
+                        "statePredicates": [
+                            "IsFaceUp"
+                        ]
+                    }
+                }
+            }
+        },
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Crackling Drake:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "163",
+        "rarity": "UNCOMMON",
+        "artist": "Victor Adame Minguez",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f00fa3a7-e3e2-4b23-a126-a076e75b5dbd.jpg?1783934138",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "If any exiled cards you own are face down, they have no characteristics. If they're normally instants or sorceries, they won't be counted."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "The ability that defines Crackling Drake's power works in all zones."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Creeping Chill
 {
     "name": "Creeping Chill",
@@ -3203,6 +3658,72 @@
     ]
 }
 
+// Direct Current
+{
+    "name": "Direct Current",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Direct Current deals 2 damage to any target.\nJump-start (You may cast this card from your graveyard by discarding a card in addition to paying its other costs. Then exile this card.)",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 2
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "MayCastSelfFromZones",
+                "zones": [
+                    "Graveyard"
+                ],
+                "additionalCost": {
+                    "type": "AdditionalAtom",
+                    "atom": "AtomDiscard"
+                },
+                "exileCastThisWay": "ON_ANY_STACK_EXIT"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "artist": "Dan Murayama Scott",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/166b0d75-824c-4c04-833b-7f7c69569a18.jpg?1783934165",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "You must still follow any timing restrictions and permissions when casting a spell with jump-start, including those based on the card's type. For instance, you can cast a sorcery using jump-start only when you could normally cast a sorcery."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "A spell cast using jump-start will always be exiled afterward, whether it resolves, it's countered, or it leaves the stack in some other way."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If an effect allows you to pay an alternative cost rather than a spell's mana cost, you may pay that alternative cost when you jump-start a spell. You'll still discard a card as an additional cost to cast it."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If a card with jump-start is put into your graveyard during your turn, you'll be able to cast it right away if it's legal to do so, before an opponent can take any actions."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Discovery // Dispersal
 {
     "name": "Discovery // Dispersal",
@@ -4003,6 +4524,73 @@
     ]
 }
 
+// Erratic Cyclops
+{
+    "name": "Erratic Cyclops",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Cyclops Shaman",
+    "oracleText": "Trample\nWhenever you cast an instant or sorcery spell, this creature gets +X/+0 until end of turn, where X is that spell's mana value.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 8
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Erratic Cyclops:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGERING_SPELL_MANA_VALUE"
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever you cast an instant or sorcery spell, Erratic Cyclops gets +X/+0 until end of turn, where X is that spell's mana value."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "98",
+        "rarity": "RARE",
+        "artist": "Milivoj Ćeran",
+        "flavorText": "\"The League accepts no responsibility for former members and the damage they may cause.\"\n—Maree, Izzet chamberlain",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c310df89-d894-40ab-ae34-7d0bfd19a1af.jpg?1783934165",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "If a spell has {X} in its mana cost, include the value chosen for that X when determining the mana value of that spell."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Erratic Cyclops's triggered ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            }
+        ]
+    }
+}
+
 // Erstwhile Trooper
 {
     "name": "Erstwhile Trooper",
@@ -4195,6 +4783,200 @@
     "colorIdentityOverride": [
         "BLUE",
         "BLACK"
+    ]
+}
+
+// Expansion // Explosion
+{
+    "name": "Expansion // Explosion",
+    "manaCost": "",
+    "typeLine": "Instant",
+    "oracleText": "Copy target instant or sorcery spell with mana value 4 or less. You may choose new targets for the copy.\n//\nExplosion deals X damage to any target. Target player draws X cards.",
+    "metadata": {
+        "collectorNumber": "224",
+        "rarity": "RARE",
+        "artist": "Deruchenko Alexander",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e0644c92-4d67-475e-8c8e-0e2c493682fb.jpg?1783934112",
+        "rulings": [
+            {
+                "date": "2024-01-12",
+                "text": "If one of Explosion's two targets becomes illegal, the other is affected as appropriate."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "The copy will have the same targets as the spell it's copying unless you choose new ones. You may change any number of the targets, including all of them or none of them. If, for one of the targets, you can't choose a new legal target, then it remains unchanged (even if the current target is illegal)."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "If the spell that's copied has an X whose value was determined as it was cast (like Banefire does), the copy will have the same value of X."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "Expansion can copy any instant or sorcery spell with an appropriate mana value, not just one with targets."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "If a spell has {X} in its mana cost, include the value chosen for that X when determining the mana value of that spell."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "The copy is created on the stack, so it's not \"cast.\" Abilities that trigger when a player casts a spell won't trigger."
+            },
+            {
+                "date": "2022-12-08",
+                "text": "If you copy a spell that's half of a split card, the copy copies that same half. For example, if you copy Assault, the copy is also Assault, not Battery."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Expansion",
+            "manaCost": "{U/R}{U/R}",
+            "typeLine": "Instant",
+            "oracleText": "Copy target instant or sorcery spell with mana value 4 or less. You may choose new targets for the copy.",
+            "script": {
+                "spellEffect": {
+                    "type": "CopyTargetSpell",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "instant|sorcery mv<=4",
+                            "zone": "Stack"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Explosion",
+            "manaCost": "{X}{U}{U}{R}{R}",
+            "typeLine": "Instant",
+            "oracleText": "Explosion deals X damage to any target. Target player draws X cards.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": "XValue",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": "XValue",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t2"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t1"
+                    },
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t2"
+                    }
+                ]
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
+// Experimental Frenzy
+{
+    "name": "Experimental Frenzy",
+    "manaCost": "{3}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "You may look at the top card of your library any time.\nYou may play lands and cast spells from the top of your library.\nYou can't play lands or cast spells from your hand.\n{3}{R}: Destroy this enchantment.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Experimental Frenzy:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "descriptionOverride": "{3}{R}: Destroy this enchantment."
+            }
+        ],
+        "staticAbilities": [
+            "LookAtTopOfLibrary",
+            {
+                "type": "PlayLandsAndCastFilteredFromTopOfLibrary",
+                "spellFilter": {}
+            },
+            {
+                "type": "PlayersCantPlayLands",
+                "affected": "You",
+                "landFilter": {
+                    "statePredicates": [
+                        {
+                            "type": "InZone",
+                            "zone": "Hand"
+                        }
+                    ]
+                }
+            },
+            {
+                "type": "PlayersCantCastSpells",
+                "affected": "You",
+                "fromZones": [
+                    "Hand"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "rarity": "RARE",
+        "artist": "Simon Dominic",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4b8f32e2-5dc8-4f1b-8a69-d3ae06378ed8.jpg?1783934164",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "You can play a land card on top of your library only if you have available land plays remaining."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "You'll still pay all costs for a spell you cast from your library, including additional costs. You may also pay alternative costs."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "You can't cast spells or play lands from your hand, but you may take other actions with those cards (such as discarding them to activate their cycling or bloodrush abilities)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -5077,6 +5859,214 @@
     ]
 }
 
+// Goblin Banneret
+{
+    "name": "Goblin Banneret",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Goblin Soldier",
+    "oracleText": "Mentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)\n{1}{R}: This creature gets +2/+0 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "MENTOR"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Goblin Banneret:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "PowerLessThanEntity",
+                                    "reference": "Self"
+                                }
+                            ],
+                            "statePredicates": [
+                                "IsAttacking"
+                            ]
+                        }
+                    }
+                },
+                "descriptionOverride": "Mentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Goblin Banneret:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "102",
+        "rarity": "UNCOMMON",
+        "artist": "Viktor Titov",
+        "flavorText": "The Boros banner stands tall even if its bearer doesn't.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/90b3b56c-5236-4319-b17e-5f71143a7906.jpg?1783934162"
+    }
+}
+
+// Goblin Cratermaker
+{
+    "name": "Goblin Cratermaker",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Goblin Warrior",
+    "oracleText": "{1}, Sacrifice this creature: Choose one —\n• This creature deals 2 damage to target creature.\n• Destroy target colorless nonland permanent.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Goblin Cratermaker:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Goblin Cratermaker deals 2 damage to target creature"
+                        },
+                        {
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                },
+                                "destination": "Graveyard",
+                                "byDestruction": true
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": {
+                                            "cardPredicates": [
+                                                "IsNonland",
+                                                "IsPermanent",
+                                                "IsColorless"
+                                            ]
+                                        }
+                                    },
+                                    "id": "t1"
+                                }
+                            ],
+                            "description": "Destroy target colorless nonland permanent"
+                        }
+                    ],
+                    "countsAsModalSpell": false
+                },
+                "descriptionOverride": "{1}, Sacrifice Goblin Cratermaker: Choose one — it deals 2 damage to target creature; or destroy target colorless nonland permanent."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "103",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/86ecaedc-08f1-4de7-aae8-056df57940e0.jpg?1783934162"
+    }
+}
+
+// Goblin Locksmith
+{
+    "name": "Goblin Locksmith",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Goblin Rogue",
+    "oracleText": "Whenever this creature attacks, creatures with defender can't block this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Goblin Locksmith:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "CantBlockGroup",
+                    "filter": {
+                        "baseFilter": "creature kw:defender"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "artist": "Mark Behm",
+        "flavorText": "\"He's got more finesse than most goblins. He smashes windows with his fist rather than his forehead.\"\n—Arrester Polgar",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/f/cf2bed0a-990a-499a-af0a-52b77557d7cb.jpg"
+    }
+}
+
 // Golgari Findbroker
 {
     "name": "Golgari Findbroker",
@@ -5287,6 +6277,91 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Gravitic Punch
+{
+    "name": "Gravitic Punch",
+    "manaCost": "{3}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature you control deals damage equal to its power to target player.\nJump-start (You may cast this card from your graveyard by discarding a card in addition to paying its other costs. Then exile this card.)",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "EntityProperty",
+                "entity": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "numericProperty": "Power"
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t1"
+            },
+            "damageSource": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetPlayer",
+                "id": "t1"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "MayCastSelfFromZones",
+                "zones": [
+                    "Graveyard"
+                ],
+                "additionalCost": {
+                    "type": "AdditionalAtom",
+                    "atom": "AtomDiscard"
+                },
+                "exileCastThisWay": "ON_ANY_STACK_EXIT"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "105",
+        "artist": "Randy Vargas",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/5/05fe0428-6e7d-49d4-9a29-80a3589f565a.jpg?1783934162",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "If the target creature or the target player is an illegal target as Gravitic Punch tries to resolve, the creature won't deal damage."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "You must still follow any timing restrictions and permissions when casting a spell with jump-start, including those based on the card's type. For instance, you can cast a sorcery using jump-start only when you could normally cast a sorcery."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "A spell cast using jump-start will always be exiled afterward, whether it resolves, it's countered, or it leaves the stack in some other way."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If an effect allows you to pay an alternative cost rather than a spell's mana cost, you may pay that alternative cost when you jump-start a spell. You'll still discard a card as an additional cost to cast it."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If a card with jump-start is put into your graveyard during your turn, you'll be able to cast it right away if it's legal to do so, before an opponent can take any actions."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -5831,6 +6906,62 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Hellkite Whelp
+{
+    "name": "Hellkite Whelp",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nWhenever this creature attacks, it deals 1 damage to target creature defending player controls.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hellkite Whelp:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "controllerPredicate": "ControlledByDefendingPlayer"
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "rarity": "UNCOMMON",
+        "artist": "Johann Bodin",
+        "flavorText": "\"They play by spitting fire at each other. Don't be offended if one gives you a love-scorch.\"\n—Esfir, Rakdos dragon wrangler",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/5/65e902e8-bbd5-40fe-a655-45d3d3bc9fde.jpg?1783934162"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
