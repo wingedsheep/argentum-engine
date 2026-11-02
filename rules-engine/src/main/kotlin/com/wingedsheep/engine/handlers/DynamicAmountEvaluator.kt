@@ -475,8 +475,8 @@ class DynamicAmountEvaluator(
             is DynamicAmount.ExtraTurnsBegunThisGame ->
                 resolveUnifiedPlayerIds(state, amount.player, context, projectedState).sumOf { playerId ->
                     state.getEntity(playerId)
-                        ?.get<com.wingedsheep.engine.state.components.player.ExtraTurnsBegunThisGameComponent>()
-                        ?.count ?: 0
+                        ?.get<com.wingedsheep.engine.state.components.player.ExtraTurnsComponent>()
+                        ?.begun ?: 0
                 }
 
             // Unlocked doors among Rooms the player controls (CR 709.5). Reads per-face door

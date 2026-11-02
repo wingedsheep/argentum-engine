@@ -5,7 +5,9 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.player.ExtraTurnsComponent
 import com.wingedsheep.engine.state.components.player.LoseAtEndStepComponent
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.engine.state.components.player.SkipNextTurnComponent
 import com.wingedsheep.sdk.scripting.effects.TakeExtraTurnEffect
 import kotlin.reflect.KClass
@@ -54,19 +56,10 @@ class TakeExtraTurnExecutor : EffectExecutor<TakeExtraTurnEffect> {
             return EffectResult.success(state)
         }
 
-        // "Take an extra turn" is modeled as every other player skipping their next turn,
-        // which inserts one extra turn for the taker regardless of player count.
-        val otherPlayerIds = state.getOpponents(turnTakerId)
-        if (otherPlayerIds.isEmpty()) {
+        if (state.getOpponents(turnTakerId).isEmpty()) {
             return EffectResult.error(state, "No opponent found")
         }
-        var newState = otherPlayerIds.fold(state) { acc, otherPlayerId ->
-            acc.updateEntity(otherPlayerId) { container ->
-                val existing = container.get<SkipNextTurnComponent>() ?: SkipNextTurnComponent(0)
-                container.with(existing.copy(turns = existing.turns + 1,
-                    extraTurnBypasses = existing.extraTurnBypasses + 1))
-            }
-        }
+        var newState = insertExtraTurn(state, turnTakerId)
 
         // "During that turn, power-up abilities can't be activated" (Kang the Conqueror). Stamp the
         // next turn to actually begin: skipped turns never call `TurnManager.startTurn`, so they
@@ -92,5 +85,27 @@ class TakeExtraTurnExecutor : EffectExecutor<TakeExtraTurnEffect> {
         }
 
         return EffectResult.success(newState)
+    }
+
+    companion object {
+        /**
+         * Insert one extra turn for [takerId], already past the prevention check. "Take an extra
+         * turn" is modeled as every other player skipping their next turn, which inserts one extra
+         * turn for the taker regardless of player count; the taker's [ExtraTurnsComponent.pending]
+         * marks their next turn to begin as that extra turn.
+         */
+        fun insertExtraTurn(state: GameState, takerId: EntityId): GameState {
+            val bypassed = state.getOpponents(takerId).fold(state) { acc, otherPlayerId ->
+                acc.updateEntity(otherPlayerId) { container ->
+                    val existing = container.get<SkipNextTurnComponent>() ?: SkipNextTurnComponent(0)
+                    container.with(existing.copy(turns = existing.turns + 1,
+                        extraTurnBypasses = existing.extraTurnBypasses + 1))
+                }
+            }
+            return bypassed.updateEntity(takerId) { container ->
+                val extra = container.get<ExtraTurnsComponent>() ?: ExtraTurnsComponent()
+                container.with(extra.copy(pending = extra.pending + 1))
+            }
+        }
     }
 }

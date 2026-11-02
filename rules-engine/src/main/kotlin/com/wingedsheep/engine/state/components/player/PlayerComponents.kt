@@ -1804,13 +1804,18 @@ data class CardsCycledThisGameComponent(val countsByName: Map<String, Int> = emp
 data class SpellsCastThisGameComponent(val count: Int = 0) : Component
 
 /**
- * How many extra turns this player has begun this game. Never cleared. Incremented by
- * `TurnManager` when a turn starts that the extra-turn bypasses inserted (an extra turn, CR 500.7);
- * backs [com.wingedsheep.sdk.scripting.values.DynamicAmount.ExtraTurnsBegunThisGame] — "if you
- * haven't begun an extra turn this game" (H.M.S. Bounty, Unlikely Timeship).
+ * A player's extra turns (CR 500.7). [pending] counts extra turns created for them that haven't
+ * begun yet — incremented by `TakeExtraTurnExecutor.insertExtraTurn` (behind the extra-turn
+ * prevention check) and spent by `TurnManager` when their next turn begins or is skipped. [begun]
+ * is never cleared: it backs [com.wingedsheep.sdk.scripting.values.DynamicAmount.ExtraTurnsBegunThisGame]
+ * — "if you haven't begun an extra turn this game" (H.M.S. Bounty, Unlikely Timeship).
+ *
+ * The scheduling itself still runs through the opponents' `SkipNextTurnComponent.extraTurnBypasses`;
+ * this component only gives the taker's turn its extra-turn identity, which the bypass walk can't:
+ * when the taker isn't the active player, the bypass on the active player is spent a turn later.
  */
 @Serializable
-data class ExtraTurnsBegunThisGameComponent(val count: Int = 0) : Component
+data class ExtraTurnsComponent(val pending: Int = 0, val begun: Int = 0) : Component
 
 /**
  * Tracks the number of permanents (tokens included) put into this player's hand from the

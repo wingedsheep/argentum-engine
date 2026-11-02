@@ -1,7 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
-import com.wingedsheep.engine.state.components.player.ExtraTurnsBegunThisGameComponent
+import com.wingedsheep.engine.state.components.player.ExtraTurnsComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.trk.cards.HMSBountyUnlikelyTimeship
@@ -48,7 +48,7 @@ class HMSBountyUnlikelyTimeshipScenarioTest : FunSpec({
     }
 
     fun GameTestDriver.extraTurnsBegun(player: EntityId): Int =
-        state.getEntity(player)?.get<ExtraTurnsBegunThisGameComponent>()?.count ?: 0
+        state.getEntity(player)?.get<ExtraTurnsComponent>()?.begun ?: 0
 
     test("connecting while you control a Whale draws a card and takes one extra turn") {
         val d = newDriver()

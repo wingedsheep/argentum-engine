@@ -17479,7 +17479,7 @@ both spellings, and the ability its bare-noun line grants says "Regenerate this 
   Timeship ("If you control a Whale and haven't begun an extra turn this game, take an extra turn after
   this one"): `Effects.If(Conditions.All(Conditions.YouControl(Permanent.withSubtype("Whale")),
   Conditions.CompareAmounts(DynamicAmounts.extraTurnsBegunThisGame(), EQ, 0)), Effects.TakeExtraTurn())`.
-  Backed by the never-cleared per-player `ExtraTurnsBegunThisGameComponent`, stamped by `TurnManager`.
+  Backed by `ExtraTurnsComponent` (`pending` set as the extra turn is created, spent as the taker's next turn begins or is skipped; `begun` never cleared).
 - `CraftedMaterialsTotalPower` — total printed power of the cards exiled to craft the source
   permanent (CR 702.167c). Reads the source's `CraftedFromExiledComponent`. Used for the
   `*`-power CDA on Mastercraft Raptor (Saheeli's Lattice back face). Evaluates to 0 when the

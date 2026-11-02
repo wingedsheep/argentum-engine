@@ -14,8 +14,6 @@ data class TurnStartReplacementContinuation(
     val nextPlayerId: EntityId,
     val options: List<TurnStartFollowUp>,
     val followUps: List<TurnStartFollowUp>,
-    /** Whether this occurrence is an extra turn the bypasses inserted, so beginning it is counted. */
-    val extraTurn: Boolean = false,
 ) : AnswerContinuation
 
 /** Remaining first actions in the next actual turn, followed by that turn's untap step. */
