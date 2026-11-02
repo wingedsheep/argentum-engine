@@ -28,7 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
-- Chooses modes for budget modal spells (the Bloomburrow Seasons) by simulating every spend of the pawprint budget, instead of repeating the cheapest mode — Season of Loss takes a lethal drain instead of five sacrifice rounds
+- #4287 Chooses modes for budget modal spells (the Bloomburrow Seasons) by simulating every spend of the pawprint budget, instead of repeating the cheapest mode — Season of Loss takes a lethal drain instead of five sacrifice rounds
 - #4280 Builds decks only with cards whose activated abilities it can pay for — a card's activation mana must fit the deck's colours or colours at least three of its pool lands make — so The Wandering Minstrel ({G}{U}, five-colour pump) stays out of a G/U deck without fixing
 - #4254 Proliferates only the recipients that help it — its own counters and an opponent's -1/-1, stun or poison — instead of every permanent and player with a counter, opponents' +1/+1 and loyalty counters included
 - #4253 Reads "creatures your opponents control can't block this turn" and "creatures you control can't be blocked this turn" group effects as team evasion (Rumbling Ruin, Barrage of Boulders, Aragorn), so it values and times them like other evasion grants instead of as a vanilla body
