@@ -128,7 +128,7 @@ class CounterTypeTest : DescribeSpec({
             CounterType.ACORN, CounterType.INGREDIENT, CounterType.RAD, CounterType.PHYRESIS,
             CounterType.MUSTER, CounterType.GLYPH, CounterType.MATRIX, CounterType.HATCHLING,
             CounterType.SCREAM, CounterType.SLEEP, CounterType.PIN, CounterType.CARRION,
-            CounterType.PUPA)
+            CounterType.PUPA, CounterType.PHYLACTERY)
 
         /** The values of the retired `object Counters` string constants, verbatim. */
         val LEGACY_SPELLINGS: Map<CounterType, String> = mapOf(
