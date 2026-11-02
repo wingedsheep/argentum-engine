@@ -103,14 +103,6 @@ data class SpellOnStackComponent(
     val additionalCostPayXLifeAmount: Int? = null,  // For pay-X-life additional costs (e.g., Vicious Rivalry); non-null (incl. 0) marks the spell and is coalesced into xValue at resolution
     val castFromZone: Zone? = null,  // Zone the spell was cast from (e.g., HAND for normal casting)
     /**
-     * Every player's game-long cast count as it stood just before this spell became cast, frozen
-     * at cast time so a spell cast in response doesn't move it. Read by
-     * `DynamicAmount.SpellsCastThisGame(beforeThisSpell = true)` — "if this spell is the first spell
-     * you've cast this game" (First Contact). Null for an object that wasn't cast: a copy isn't cast
-     * (CR 707.10), so StackPlacement clears it.
-     */
-    val spellsCastThisGameBefore: Map<EntityId, Int>? = null,
-    /**
      * Which alternative casting cost paid for this spell (CR 118.9), or null for a normal cast.
      * The individual `was*` flags below drive *rules* behaviour (warp exiles, evoke sacrifices,
      * cleave swaps the effect); this records the player's declared choice as such so the client

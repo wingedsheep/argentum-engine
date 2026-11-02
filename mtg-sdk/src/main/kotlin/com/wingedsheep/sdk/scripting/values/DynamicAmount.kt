@@ -2128,13 +2128,6 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
      * `SelfAlternativeCost` is "if this spell is the first spell you've cast this game" (Once Upon a
      * Time). A multi-player [player] scope sums across those players.
      *
-     * @param beforeThisSpell Count only the casts made *before this spell became cast* — the count is
-     *   frozen onto the spell as it's cast, so a spell cast in response doesn't move it. A resolving
-     *   spell reads "if this spell is the first spell you've cast this game" (First Contact) as
-     *   `Compare(SpellsCastThisGame(beforeThisSpell = true), EQ, 0)` gated by `WasCast`. An object
-     *   that wasn't cast (a copy, CR 707.10; an ability) has no frozen count and reads the live one.
-     *   The game-long twin of [SpellsCastThisTurn]'s `beforeTriggeringSpell`.
-     *
      * Neighbours: [SpellsCastThisTurn] carries a per-turn cast *history* (filters, zones, card types)
      * that is cleared each turn, so a game-long scope would mean keeping every record forever for a
      * count nothing filters yet; [CardsCycledThisGame] is the same game-long, per-player shape over a
@@ -2142,15 +2135,10 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
      */
     @SerialName("SpellsCastThisGame")
     @Serializable
-    data class SpellsCastThisGame(
-        val player: Player = Player.You,
-        val beforeThisSpell: Boolean = false,
-    ) : DynamicAmount {
-        override val description: String = buildString {
-            append(if (player == Player.You) "the number of spells you've cast" else "the number of spells ${player.description} has cast")
-            if (beforeThisSpell) append(" before this spell")
-            append(" this game")
-        }
+    data class SpellsCastThisGame(val player: Player = Player.You) : DynamicAmount {
+        override val description: String =
+            if (player == Player.You) "the number of spells you've cast this game"
+            else "the number of spells ${player.description} has cast this game"
     }
 
     /**

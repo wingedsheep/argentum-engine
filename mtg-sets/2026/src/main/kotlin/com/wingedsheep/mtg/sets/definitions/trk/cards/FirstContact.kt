@@ -15,9 +15,9 @@ import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
  * Mill four cards. You may put a permanent card from among them into your hand. If this spell is the
  * first spell you've cast this game, you gain 2 life.
  *
- * "First spell" is judged as of the cast: the count is frozen onto the spell as it becomes cast, so a
- * spell cast in response doesn't take the life away. A copy wasn't cast (CR 707.10), so `WasCast`
- * keeps it from claiming to be first.
+ * "First spell" is judged as of the cast: the game cast count is captured as the spell becomes cast
+ * (it already counts this spell, so "first" is a count of 1), and a spell cast in response doesn't
+ * take the life away. A copy wasn't cast (CR 707.10), so `WasCast` keeps it from claiming to be first.
  */
 val FirstContact = card("First Contact") {
     manaCost = "{1}{G}"
@@ -28,6 +28,7 @@ val FirstContact = card("First Contact") {
         "four cards of your library into your graveyard.)"
 
     spell {
+        captureAtCast("gameCasts", DynamicAmounts.spellsCastThisGame())
         effect = Effects.Pipeline {
             val milled = mill(4)
             val selected = chooseUpTo(
@@ -43,11 +44,7 @@ val FirstContact = card("First Contact") {
             run(Effects.If(
                 condition = Conditions.All(
                     Conditions.WasCast,
-                    Conditions.CompareAmounts(
-                        DynamicAmounts.spellsCastThisGame(beforeThisSpell = true),
-                        ComparisonOperator.EQ,
-                        0,
-                    ),
+                    Conditions.CompareAmounts(DynamicAmounts.capturedAtCast("gameCasts"), ComparisonOperator.EQ, 1),
                 ),
                 then = Effects.GainLife(2)
             ))

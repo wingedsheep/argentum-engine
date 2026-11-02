@@ -2565,13 +2565,13 @@
                                 {
                                     "type": "Compare",
                                     "left": {
-                                        "type": "SpellsCastThisGame",
-                                        "beforeThisSpell": true
+                                        "type": "CapturedAtCast",
+                                        "captureName": "gameCasts"
                                     },
                                     "operator": "EQ",
                                     "right": {
                                         "type": "Fixed",
-                                        "amount": 0
+                                        "amount": 1
                                     }
                                 }
                             ]
@@ -2586,7 +2586,13 @@
                     }
                 }
             ]
-        }
+        },
+        "castTimeCaptures": [
+            {
+                "captureName": "gameCasts",
+                "value": "SpellsCastThisGame"
+            }
+        ]
     },
     "metadata": {
         "collectorNumber": "199",

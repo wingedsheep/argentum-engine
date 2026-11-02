@@ -66,11 +66,7 @@
             "com.wingedsheep.engine.state.components.stack.SpellOnStackComponent": {
                 "type": "com.wingedsheep.engine.state.components.stack.SpellOnStackComponent",
                 "casterId": "player-1",
-                "castFromZone": "Hand",
-                "spellsCastThisGameBefore": {
-                    "player-1": 0,
-                    "player-2": 0
-                }
+                "castFromZone": "Hand"
             },
             "com.wingedsheep.engine.state.components.stack.TargetsComponent": {
                 "type": "com.wingedsheep.engine.state.components.stack.TargetsComponent",
