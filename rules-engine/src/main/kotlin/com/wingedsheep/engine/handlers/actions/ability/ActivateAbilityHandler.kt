@@ -243,7 +243,7 @@ class ActivateAbilityHandler(
         // Choosing the modes of a modal ability is facing a dilemma.
         val (recorded, dilemmaEvents) = if (modal != null) {
             com.wingedsheep.engine.mechanics.modal.Dilemmas.face(
-                recordedActivation, action.playerId, activation.cardComponent.name,
+                recordedActivation, action.playerId, activation.sourceName,
                 action.chosenModes.orEmpty().size
             )
         } else recordedActivation to emptyList()

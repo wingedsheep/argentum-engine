@@ -86,6 +86,12 @@ data class ModalContinuation(
     val recordChosenModesThisTurn: Boolean = false,
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
     val resolvingTriggeredAbility: com.wingedsheep.sdk.scripting.TriggeredAbility? = null,
+    /**
+     * True when this mode menu was re-offered by cancelling back out of a mode's target picker:
+     * the first pick already recorded the dilemma (and fired its triggers), so re-picking is the
+     * same choice, not a second dilemma.
+     */
+    val dilemmaAlreadyFaced: Boolean = false,
 ) : AnswerContinuation
 
 /**

@@ -1,6 +1,9 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.BudgetModalResponse
+import com.wingedsheep.engine.core.CancelDecisionResponse
+import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.DilemmaFacedEvent
@@ -15,7 +18,10 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.dsl.mode
+import com.wingedsheep.sdk.scripting.effects.BudgetMode
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.references.Player
@@ -66,6 +72,26 @@ class FaceADilemmaTest : ScenarioTestBase() {
         manaCost = "{0}"; typeLine = "Sorcery"
         spell { effect = CompositeEffect(listOf(Effects.GainLife(1), ModalEffect.chooseOne(gain(1), draw))) }
     }
+    private val nestedTargeted = card("Test Nested Targeted Choice") {
+        manaCost = "{0}"; typeLine = "Sorcery"
+        spell {
+            effect = CompositeEffect(listOf(Effects.GainLife(1), ModalEffect.chooseOne(
+                mode("Tap target creature") {
+                    val creature = target(TargetFilter.Creature)
+                    effect = Effects.Tap(creature)
+                },
+                draw
+            )))
+        }
+    }
+    private val budget = card("Test Budget Modal") {
+        manaCost = "{0}"; typeLine = "Sorcery"
+        spell {
+            effect = Effects.BudgetModal(budget = 2, modes = listOf(
+                BudgetMode(cost = 1, effect = Effects.GainLife(1), description = "Gain 1 life")
+            ))
+        }
+    }
     private val modalArtifact = card("Test Dilemma Artifact") {
         manaCost = "{0}"; typeLine = "Artifact"
         activatedAbility {
@@ -105,7 +131,7 @@ class FaceADilemmaTest : ScenarioTestBase() {
     }
 
     init {
-        cardRegistry.register(listOf(watcher, chooseOne, chooseTwo, plain, giftLike, nested, modalArtifact,
+        cardRegistry.register(listOf(watcher, chooseOne, chooseTwo, plain, giftLike, nested, nestedTargeted, budget, modalArtifact,
             modalEtb, randomEtb, counter, gate))
 
         fun game(active: Int = 1, vararg hand: Pair<Int, String>, battlefield: List<Pair<Int, String>> = emptyList()): TestGame {
@@ -190,6 +216,32 @@ class FaceADilemmaTest : ScenarioTestBase() {
             g.submitDecision(OptionChosenResponse(pick.id, 1)).error shouldBe null
             g.dilemmas(1) shouldBe 1
             g.resolveStack()
+            g.getLifeTotal(2) shouldBe 19
+        }
+
+        test("cancelling back out of a mode's target prompt and re-picking is still one dilemma") {
+            val g = game(1, 1 to nestedTargeted.name)
+            g.cast(1, nestedTargeted.name, emptyList()).error shouldBe null
+            repeat(2) { g.passPriority() }
+            val first = g.getPendingDecision() as ChooseOptionDecision
+            g.submitDecision(OptionChosenResponse(first.id, 0)).error shouldBe null
+            val targets = g.getPendingDecision() as ChooseTargetsDecision
+            g.submitDecision(CancelDecisionResponse(targets.id)).error shouldBe null
+            val again = g.getPendingDecision() as ChooseOptionDecision
+            g.submitDecision(OptionChosenResponse(again.id, 1)).error shouldBe null
+            g.resolveStack()
+            g.dilemmas(1) shouldBe 1
+            g.getLifeTotal(2) shouldBe 19
+        }
+
+        test("picking a budget modal's modes faces one dilemma") {
+            val g = game(1, 1 to budget.name)
+            g.cast(1, budget.name, emptyList()).error shouldBe null
+            repeat(2) { g.passPriority() }
+            val pick = g.getPendingDecision()!!
+            g.submitDecision(BudgetModalResponse(pick.id, listOf(0, 0))).error shouldBe null
+            g.resolveStack()
+            g.dilemmas(1) shouldBe 1
             g.getLifeTotal(2) shouldBe 19
         }
 

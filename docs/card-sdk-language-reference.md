@@ -9940,8 +9940,8 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
   took: casting a modal spell, activating a modal ability, putting a modal trigger on the stack, or a mode
   choice made while an ability resolves. Not a spell copy (it inherits its modes), a "choose at random"
   trigger, or a gift-style `ModalEffect` with `countsAsModalSpell = false`. Pattern
-  `EventPattern.DilemmaFacedEvent`; the per-turn count is `TurnTracker.DILEMMAS_FACED` (Elim Garak,
-  Simple Tailor).
+  `EventPattern.DilemmaFacedEvent` (Elim Garak, Simple Tailor); the per-turn count is
+  `TurnTracker.DILEMMAS_FACED` (Captain Benjamin Sisko).
 - `Triggers.you.scriesOrSurveils()` — the combined look-at-top trigger; fires once per scry **and**
   once per surveil (Matoya, Archon Elder).
 - `Triggers.you.proliferates()` — fires once per proliferate (CR 701.34), after the counters are

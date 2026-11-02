@@ -14,8 +14,8 @@ import com.wingedsheep.sdk.model.EntityId
  * Called from every point a player *chooses* modes: casting a modal spell
  * ([com.wingedsheep.engine.mechanics.stack.SpellCaster]), activating a modal ability
  * ([com.wingedsheep.engine.handlers.actions.ability.ActivateAbilityHandler]), putting a modal
- * triggered ability on the stack ([com.wingedsheep.engine.event.TriggerProcessor]) and a mode
- * choice made while an ability resolves
+ * triggered ability on the stack ([com.wingedsheep.engine.event.TriggerProcessor]), and a mode
+ * choice made while an ability resolves — a nested modal or a budget modal's pick
  * ([com.wingedsheep.engine.handlers.continuations.ModalAndCloneContinuationResumer]). A spell copy
  * inherits its modes rather than choosing them, so the copy paths never call it.
  */

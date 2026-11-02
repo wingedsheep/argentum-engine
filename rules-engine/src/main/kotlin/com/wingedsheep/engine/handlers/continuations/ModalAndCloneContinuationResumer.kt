@@ -377,9 +377,11 @@ class ModalAndCloneContinuationResumer(
         // when there's only one chosen mode and it needs targets. For multi-mode, don't allow cancel.
         val allowCancelBackToModes = continuation.chooseCount == 1 && chosenModes.size == 1
         // A mode choice made while an ability resolves is still facing a dilemma; declining every
-        // pick of a "choose up to" isn't.
+        // pick of a "choose up to" isn't, and neither is re-picking after cancelling back out of
+        // the first pick's target prompt.
         val (stateAfterDilemma, dilemmaEvents) = com.wingedsheep.engine.mechanics.modal.Dilemmas.face(
-            state, continuation.controllerId, continuation.sourceName ?: "modal ability", chosenModes.size
+            state, continuation.controllerId, continuation.sourceName ?: "modal ability",
+            if (continuation.dilemmaAlreadyFaced) 0 else chosenModes.size
         )
         return processChosenModeQueue(
             services = services,
@@ -1675,7 +1677,12 @@ class ModalAndCloneContinuationResumer(
             controllerId = continuation.controllerId,
         )
 
-        val result = services.effectExecutorRegistry.execute(state, CompositeEffect(effects), context).toExecutionResult()
+        // Picking a budget modal's modes ("choose up to five {P} worth of modes") is facing a dilemma.
+        val (stateAfterDilemma, dilemmaEvents) = com.wingedsheep.engine.mechanics.modal.Dilemmas.face(
+            state, continuation.controllerId, continuation.sourceName ?: "modal spell", sortedIndices.size
+        )
+        val executed = services.effectExecutorRegistry.execute(stateAfterDilemma, CompositeEffect(effects), context).toExecutionResult()
+        val result = executed.copy(events = dilemmaEvents + executed.events)
         if (result.outcome is Outcome.Paused) return result
         return checkForMore(result.state, result.events.toList())
     }
@@ -1815,7 +1822,8 @@ class ModalAndCloneContinuationResumer(
             triggeringEntityId = continuation.triggeringEntityId,
             outerTargets = continuation.outerTargets,
             outerNamedTargets = continuation.outerNamedTargets,
-            pipeline = continuation.pipeline
+            pipeline = continuation.pipeline,
+            dilemmaAlreadyFaced = true
         )
 
         return state.suspendForDecision(
