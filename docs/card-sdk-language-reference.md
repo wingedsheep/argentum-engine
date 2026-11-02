@@ -2021,7 +2021,7 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   Voyage**: `EntryCounter(PLUS_ONE_PLUS_ONE, count = voyage.amount)` after
   `storeNumber(countersOnSelf(VOYAGE))`; the exiled card's counters are gone once it leaves exile). A
   count of zero or less places none.
-- `EntersWithCharacteristics(addedCardTypes, addedSubtypes, addedColors, power?, toughness?)` — characteristics
+- `EntersWithCharacteristics(addedCardTypes, addedSubtypes, addedColors, power?, toughness?, creatureSubtypes?)` — characteristics
   a card an effect puts onto the battlefield has **as it enters**, carried as `entersWith` on `MoveToZoneEffect`
   (also `Effects.PutOntoBattlefieldFromGraveyard(…, entersWith = …)`) and `MoveCollectionEffect` (pipeline
   `move` / `moveTracked`). Everything *adds* — "in addition to their other types" — and `power`/`toughness`
@@ -2034,6 +2034,16 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   `EntersWithCharacteristics.creature(power, toughness, vararg subtypes)` builds the common shape. **Dance of the
   Manse** (`If(X ≥ 6, move(targets, entersWith = creature(4, 4)), otherwise = move(targets))`), **Relive the Past**
   (`move(gather(ChosenTargets), BATTLEFIELD, entersWith = creature(5, 5, "Elemental"))`).
+  `creatureSubtypes` is the one axis that *replaces*: the card's creature types become exactly that set (non-creature
+  subtypes stay; a changeling loses the rest too), applied before `addedSubtypes`.
+- `Effects.Assimilate(target, fromZone?)` — Star Trek's **assimilate**: "put it onto the battlefield under your control with a
+  +1/+1 counter. It's a Borg artifact creature and loses all other creature types." A move to the battlefield under the
+  effect's controller with a +1/+1 entry counter and `EntersWithCharacteristics.assimilated()` (adds artifact + creature,
+  `creatureSubtypes = {Borg}`), so it is a Borg artifact creature *as it enters*. **Death Is Irrelevant**
+  (`Effects.Assimilate(target(TargetFilter.CreatureInGraveyard), fromZone = Zone.GRAVEYARD)` — `fromZone` skips the move if the card left that zone, and lets the AI read it as recursion). A card chosen at resolution uses a pipeline
+  `move(chosen, ToZone(BATTLEFIELD), addCounterType = PLUS_ONE_PLUS_ONE, entersWith = assimilated())` — **Borg Cube**
+  gathers `CardSource.FromLinkedExile()`, assimilates inside `ifNotEmpty(…, filter = Creature)` and `orElse` exiles its
+  target with `ExileLinkedToSource` ("If you can't, exile up to one target creature").
 - `ExileAndGrantOwnerPlayPermission(target, until?)` — exile + owner may play it (Garth-style).
 - `ExileOpponentsGraveyards()` — exile every card in each opponent's graveyard.
 - `MoveUntilSourceLeaves(target, destination)` — move an object to a non-battlefield, non-stack zone and return it to its previous zone immediately when the source's battlefield visit ends. The return does not use the stack and survives loss of the source's abilities. An exile also populates the ordinary linked-exile pile for client display and linked abilities. Returning permanents enter under their owner's control; tokens and objects that have since left the destination do not return. If the source has already left (including leaving and returning), the initial move does nothing. Ossification uses `Effects.MoveUntilSourceLeaves(victim, Zone.EXILE)` with no leaves trigger.

@@ -1834,6 +1834,27 @@ object Effects {
         MoveToZoneEffect(target, Zone.BATTLEFIELD, if (tapped) ZonePlacement.Tapped else ZonePlacement.Default)
 
     /**
+     * Assimilate (Star Trek): "Put it onto the battlefield under your control with a +1/+1 counter.
+     * It's a Borg artifact creature and loses all other creature types." — a move to the battlefield
+     * under the effect's controller with a +1/+1 entry counter and
+     * [EntersWithCharacteristics.assimilated] as its entry rider, so the permanent is already a Borg
+     * artifact creature as it arrives (entry replacements and "whenever an artifact creature enters"
+     * triggers see it). [target] may be in any zone — a graveyard card (Death Is Irrelevant) or an
+     * exiled one. [fromZone] is the zone the card is assimilated from ("target creature card from a
+     * graveyard" → `Zone.GRAVEYARD`): the move is skipped if it has left that zone, and the AI reads
+     * a graveyard assimilation as recursion. For a card chosen at resolution, use a pipeline `move`
+     * with the same rider.
+     */
+    fun Assimilate(target: EffectTarget, fromZone: Zone? = null): Effect = MoveToZoneEffect(
+        target,
+        Zone.BATTLEFIELD,
+        fromZone = fromZone,
+        controllerOverride = EffectTarget.Controller,
+        entryCounters = listOf(EntryCounter(CounterType.PLUS_ONE_PLUS_ONE)),
+        entersWith = com.wingedsheep.sdk.scripting.effects.EntersWithCharacteristics.assimilated()
+    )
+
+    /**
      * "Return target creature card from your graveyard to the battlefield." — the return that is
      * *guarded* on the card still being in the graveyard.
      *
