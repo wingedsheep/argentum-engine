@@ -22,6 +22,7 @@ import io.kotest.matchers.shouldBe
  * `SkipUntapEffect`'s `permanents` filter — "[permanents] that player controls don't untap during
  * their next untap step". The filter is read at that untap step, against what the player controls
  * then (Icebreaker Kraken ruling, 2021-02-05), and two such effects each hold their own permanents.
+ * With `lockedAtResolution` (Sleep) the set is fixed as the effect resolves instead.
  */
 class SkipUntapFilterTest : FunSpec({
     val freezeArtifactsAndCreatures = card("Freeze Artifacts And Creatures") {
@@ -36,6 +37,10 @@ class SkipUntapFilterTest : FunSpec({
         manaCost = "{0}"; typeLine = "Instant"
         spell { val t = target(Targets.Player); effect = Effects.SkipUntap(t, GameObjectFilter.Creature) }
     }
+    val sleepCreatures = card("Lock Creatures Now") {
+        manaCost = "{0}"; typeLine = "Instant"
+        spell { val t = target(Targets.Player); effect = Effects.SkipUntap(t, GameObjectFilter.Creature, lockedAtResolution = true) }
+    }
     val steal = card("Steal For Untap") {
         manaCost = "{0}"; typeLine = "Instant"
         spell { val t = target(TargetFilter.Permanent); effect = Effects.GainControl(t) }
@@ -43,7 +48,7 @@ class SkipUntapFilterTest : FunSpec({
     val trinket = card("Untap Test Trinket") { typeLine = "Artifact" }
 
     fun driver() = GameTestDriver().apply {
-        registerCards(TestCards.all + listOf(freezeArtifactsAndCreatures, freezeLands, freezeCreatures, steal, trinket))
+        registerCards(TestCards.all + listOf(freezeArtifactsAndCreatures, freezeLands, freezeCreatures, sleepCreatures, steal, trinket))
         initMirrorMatch(Deck.of("Forest" to 40)); passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
     fun cast(d: GameTestDriver, name: String, target: EntityId) {
@@ -99,7 +104,38 @@ class SkipUntapFilterTest : FunSpec({
         d.tapped(artifact) shouldBe false
     }
 
+    test("locked at resolution: the creatures held then stay tapped, one gained later untaps") {
+        val d = driver(); val me = d.activePlayer!!; val other = d.getOpponent(me)
+        val bear = d.putCreatureOnBattlefield(me, "Grizzly Bears").also(d::tapPermanent)
+        val forest = d.putPermanentOnBattlefield(me, "Forest").also(d::tapPermanent)
+        cast(d, sleepCreatures.name, me)
+        val theirBear = d.putCreatureOnBattlefield(other, "Grizzly Bears").also(d::tapPermanent)
+        cast(d, steal.name, theirBear)
+
+        d.replaceState(untap(d).state)
+        d.tapped(bear) shouldBe true
+        d.tapped(forest) shouldBe false
+        d.tapped(theirBear) shouldBe false
+        d.state.getEntity(me)!!.has<SkipUntapComponent>() shouldBe false
+
+        d.tapPermanent(theirBear)
+        d.replaceState(untap(d).state)
+        d.tapped(bear) shouldBe false
+    }
+
+    test("locked at resolution: a held creature that changes control untaps under its new controller") {
+        val d = driver(); val me = d.activePlayer!!; val other = d.getOpponent(me)
+        val theirBear = d.putCreatureOnBattlefield(other, "Grizzly Bears").also(d::tapPermanent)
+        cast(d, sleepCreatures.name, other)
+        cast(d, steal.name, theirBear)
+
+        d.replaceState(untap(d).state)
+        d.tapped(theirBear) shouldBe false
+    }
+
     test("the description reads the filter the way Oracle prints it") {
+        SkipUntapEffect(EffectTarget.PlayerRef(Player.TargetPlayer), GameObjectFilter.Creature, lockedAtResolution = true)
+            .description shouldBe "Creatures target player controls now don't untap during that player's next untap step"
         SkipUntapEffect(EffectTarget.PlayerRef(Player.TargetOpponent)).description shouldBe
             "Creatures and lands target opponent controls don't untap during their next untap step"
         SkipUntapEffect(EffectTarget.PlayerRef(Player.TargetOpponent), GameObjectFilter.Artifact or GameObjectFilter.Creature)

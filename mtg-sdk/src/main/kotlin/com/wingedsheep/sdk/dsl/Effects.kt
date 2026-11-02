@@ -6702,13 +6702,16 @@ object Effects {
     /**
      * [permanents] [target] player controls don't untap during their next untap step — creatures
      * and lands by default (Exhaustion); `GameObjectFilter.Land` for Mana Vapors,
-     * `Artifact or Creature` for Icebreaker Kraken. Matched against what they control at that step.
+     * `Artifact or Creature` for Icebreaker Kraken. Matched against what they control at that step,
+     * unless [lockedAtResolution]: then only the ones they control as it resolves (Sleep's "those
+     * creatures don't untap during that player's next untap step").
      */
     fun SkipUntap(
         target: EffectTarget,
         permanents: com.wingedsheep.sdk.scripting.GameObjectFilter =
-            com.wingedsheep.sdk.scripting.GameObjectFilter.Creature or com.wingedsheep.sdk.scripting.GameObjectFilter.Land
-    ): Effect = com.wingedsheep.sdk.scripting.effects.SkipUntapEffect(target, permanents)
+            com.wingedsheep.sdk.scripting.GameObjectFilter.Creature or com.wingedsheep.sdk.scripting.GameObjectFilter.Land,
+        lockedAtResolution: Boolean = false
+    ): Effect = com.wingedsheep.sdk.scripting.effects.SkipUntapEffect(target, permanents, lockedAtResolution)
 
     /** [target] player skips their combat phases during their next turn (False Peace). */
     fun SkipCombatPhases(target: EffectTarget): Effect = com.wingedsheep.sdk.scripting.effects.SkipCombatPhasesEffect(target)

@@ -104,7 +104,7 @@ class PlayerExecutors(
         PayAnyAmountOfLifeAsEntersExecutor(amountEvaluator = zones.predicateEvaluator.amounts),
         RecordValueAsEnteredExecutor(amountEvaluator = zones.predicateEvaluator.amounts),
         SkipNextTurnExecutor(amountEvaluator = zones.predicateEvaluator.amounts),
-        SkipUntapExecutor(),
+        SkipUntapExecutor(zones.predicateEvaluator),
         TakeExtraTurnExecutor(),
         TheRingTemptsYouExecutor()
     )

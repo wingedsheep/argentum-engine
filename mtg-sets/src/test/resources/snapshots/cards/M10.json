@@ -2185,6 +2185,80 @@
     ]
 }
 
+// Sleep
+{
+    "name": "Sleep",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Tap all creatures target player controls. Those creatures don't untap during that player's next untap step.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "controllerPredicate": {
+                                    "type": "ControlledByReferencedPlayer",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "TapUntap",
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "SkipUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "permanents": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    },
+                    "lockedAtResolution": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Rahn",
+        "flavorText": "\"I give them dreams so wondrous that they hesitate to return to the world of the conscious.\"\n—Garild, merfolk mage",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/133be4f4-1daa-41b6-b509-9e64c6b00059.jpg?1783942388",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "The second part of Sleep's ability affects all creatures the targeted player controls as Sleep resolves, not only the ones that Sleep actually caused to become tapped."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Solemn Offering
 {
     "name": "Solemn Offering",
