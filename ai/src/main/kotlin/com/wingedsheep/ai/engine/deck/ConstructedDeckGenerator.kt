@@ -116,7 +116,7 @@ class ConstructedDeckGenerator(
         )
 
         val build = when (shape) {
-            DeckShape.CONSTRUCTED -> constructedBuild(pool)
+            DeckShape.CONSTRUCTED -> constructedBuild(pool, evenColours = setCodes.isEmpty())
             DeckShape.HIGHLANDER -> draftsimBuild(pool, shape)
         }
         val deckList = build
@@ -205,7 +205,7 @@ class ConstructedDeckGenerator(
      * fewer lands than a midrange one. Up to [MAX_DUAL_COPIES] of them are the pool's lands that make
      * both colours ([pickDualLands]); the rest are basics split by the deck's coloured pips.
      */
-    private fun constructedBuild(pool: List<CardDefinition>): Map<String, Int>? {
+    private fun constructedBuild(pool: List<CardDefinition>, evenColours: Boolean): Map<String, Int>? {
         val shape = DeckShape.CONSTRUCTED
         val spells = pool.filterNot { it.isLand }.distinctBy { it.name }
         if (spells.isEmpty()) return null
@@ -214,7 +214,7 @@ class ConstructedDeckGenerator(
         val quality = spells.associate { card ->
             card.name to ConstructedRatings.rate(card) * curveDiscount(card) * random.nextDouble(1 - JITTER, 1 + JITTER)
         }
-        val colours = pickColours(spells, quality)
+        val colours = pickColours(spells, quality, evenColours)
         val castable = spells.filter { castableIn(it, colours) }.sortedByDescending { quality.getValue(it.name) }
         // The best cards overall, plus the colours' best interaction whether or not it made that
         // cut: over a whole card base the top 150 can be all creatures, which left the interaction
@@ -432,22 +432,43 @@ class ConstructedDeckGenerator(
     }
 
     /**
-     * The two colours to build in: the pair whose [CORE_SIZE] best castable cards rate highest,
-     * drawn among the [COLOUR_CHOICES] best pairs with a weight steep enough that a clearly better
+     * The two colours to build in. Each colour pair is judged by the summed rating of its
+     * [CORE_SIZE] best castable cards.
+     *
+     * A build scoped to chosen sets ([evenColours] false) plays the pool's best colours: the pair
+     * is drawn among the [COLOUR_CHOICES] best with a weight steep enough that a clearly better
      * pair nearly always wins. A one-colour pool lands on a pair holding its colour; the basics
      * then follow the cards actually played.
+     *
+     * A build from a whole format's card base ([evenColours] true) leads with a colour drawn
+     * evenly instead, then takes a partner among that colour's qualifying pairs, weighted mildly
+     * toward the stronger ([PARTNER_SHARPNESS]). A pair qualifies at [MIN_PAIR_SHARE] of the best
+     * pair's value when each of its colours supplies [MIN_CORE_PER_COLOUR] of its core cards. The
+     * steep draw put white in 17 of 19 generated Standard decks, though over a whole format every
+     * pair scores within a few percent of the best: white's slight edge in limited ratings won
+     * nearly every draw. A lead colour with no qualifying pair passes to the next colour in the draw.
      */
-    private fun pickColours(spells: List<CardDefinition>, quality: Map<String, Double>): Set<Color> {
+    private fun pickColours(spells: List<CardDefinition>, quality: Map<String, Double>, evenColours: Boolean): Set<Color> {
         val pairs = Color.entries.flatMapIndexed { i, a -> Color.entries.drop(i + 1).map { b -> setOf(a, b) } }
-        val value = pairs.associateWith { pair ->
-            spells.filter { castableIn(it, pair) }
-                .map { quality.getValue(it.name) }
-                .sortedDescending()
-                .take(CORE_SIZE)
-                .sum()
+        val cores = pairs.associateWith { pair ->
+            spells.filter { castableIn(it, pair) }.sortedByDescending { quality.getValue(it.name) }.take(CORE_SIZE)
         }
+        val value = cores.mapValues { (_, core) -> core.sumOf { quality.getValue(it.name) } }
         val best = value.values.max()
         if (best <= 0.0) return pairs.first()
+        if (evenColours) {
+            // A pair one of whose colours adds next to nothing is the other colour played alone: it
+            // scores like that colour's best pair, so without this a lead colour could take an
+            // empty partner and turn a two-colour pool into a mono-coloured deck.
+            val real = pairs.filter { pair ->
+                pair.all { colour -> cores.getValue(pair).count { colour in it.colors } >= MIN_CORE_PER_COLOUR }
+            }
+            for (lead in Color.entries.shuffled(random)) {
+                val playable = real.filter { lead in it && value.getValue(it) >= best * MIN_PAIR_SHARE }
+                if (playable.isEmpty()) continue
+                return playable.weightedSample(1, random) { (value.getValue(it) / best).pow(PARTNER_SHARPNESS) }.first()
+            }
+        }
         return value.entries.sortedByDescending { it.value }
             .take(COLOUR_CHOICES)
             .weightedSample(1, random) { (it.value / best).pow(COLOUR_SHARPNESS) }
@@ -650,6 +671,15 @@ class ConstructedDeckGenerator(
         private const val CORE_SIZE = 12
         private const val COLOUR_CHOICES = 3
         private const val COLOUR_SHARPNESS = 8.0
+
+        /** Of a pair's [CORE_SIZE] best cards, each colour must supply at least this many. */
+        private const val MIN_CORE_PER_COLOUR = 3
+
+        /** A colour pair worth less than this share of the best pair is never built. */
+        private const val MIN_PAIR_SHARE = 0.85
+
+        /** How hard the lead colour's partner leans toward its stronger pairs: weight (value / best)^this. */
+        private const val PARTNER_SHARPNESS = 2.0
 
         /** Top cards tried as the build-around, and the top cards that may support it. */
         private const val ANCHOR_CHOICES = 8

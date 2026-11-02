@@ -418,6 +418,23 @@ class ConstructedDeckGeneratorTest : FunSpec({
         }
     }
 
+    test("whole-format builds spread over every colour, not the best-rated one") {
+        // Five equally deep colours: an even draw puts each colour in two of the five pairs, so in
+        // about 40% of decks. Drawing among the best few pairs used to hand one colour nearly all.
+        val byName = widePool().associateBy { it.name }
+        val decks = 40
+        val colourCounts = (1L..decks.toLong()).flatMap { seed ->
+            wideGenerator(seed).generate(DeckFormat.MODERN).keys
+                .filterNot(::isBasic)
+                .flatMap { byName.getValue(it).colors }
+                .toSet()
+        }.groupingBy { it }.eachCount()
+
+        withClue("decks per colour: $colourCounts") {
+            Color.entries.forEach { colour -> (colourCounts[colour] ?: 0) shouldBeInRange 8..26 }
+        }
+    }
+
     test("a build-around's tribe fills the deck") {
         // A rare Elf lord whose text names its tribe, twenty Elves and sixty equally rated strangers.
         // The lord reads as the deck's plan, so it goes in and the Elves beat the strangers to the slots.
