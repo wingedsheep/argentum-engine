@@ -58,7 +58,7 @@ data class CollectionContainsMatch(
 }
 
 /**
- * Condition: "if two cards in the named collection share a card type".
+ * Condition: "if two cards in the named collection share a card type" (or, with [all], every card).
  *
  * True when at least two distinct cards in the stored pipeline [collection] have a card type
  * (artifact, battle, creature, enchantment, instant, kindred, land, planeswalker, sorcery — CR
@@ -71,13 +71,20 @@ data class CollectionContainsMatch(
  * [collection], inside both an [com.wingedsheep.sdk.dsl.Effects.If] (for the
  * "draw a card") and a [com.wingedsheep.sdk.scripting.effects.RepeatCondition.WhileCondition] (for
  * the "repeat this process").
+ *
+ * With [all] set, the condition instead asks whether **every** card in the collection has one card
+ * type in common (the intersection of their card types is non-empty) — "if all cards exiled with
+ * this Saga share a card type" (All Good Things...). A single card trivially qualifies; an empty
+ * collection is false (there is no card type for nothing to share).
  */
 @SerialName("CollectionSharesCardType")
 @Serializable
 data class CollectionSharesCardType(
-    val collection: String
+    val collection: String,
+    val all: Boolean = false,
 ) : Condition {
-    override val description: String = "if two of those cards share a card type"
+    override val description: String =
+        if (all) "if all of those cards share a card type" else "if two of those cards share a card type"
     override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 

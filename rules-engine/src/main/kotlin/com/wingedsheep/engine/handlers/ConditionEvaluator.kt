@@ -2515,11 +2515,19 @@ class ConditionEvaluator(
         context: EffectContext
     ): Boolean {
         val collection = context.pipeline.storedCollections[condition.collection] ?: return false
-        if (collection.size < 2) return false
-        val seenTypes = mutableSetOf<com.wingedsheep.sdk.core.CardType>()
         val unknown = context.pipeline.storedCollections[
             com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations.UNDEFINED + ":" + condition.collection
         ].orEmpty().toSet()
+        if (condition.all) {
+            // "All of those cards share a card type": one card type common to every card.
+            val typeSets = collection.filter { it !in unknown }.map { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.cardTypes.orEmpty()
+            }
+            if (typeSets.isEmpty()) return false
+            return typeSets.reduce { acc, types -> acc intersect types }.isNotEmpty()
+        }
+        if (collection.size < 2) return false
+        val seenTypes = mutableSetOf<com.wingedsheep.sdk.core.CardType>()
         for (entityId in collection) {
             if (entityId in unknown) continue
             val cardTypes = state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.cardTypes ?: continue
