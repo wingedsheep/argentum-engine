@@ -546,6 +546,21 @@ object LimitedCardRater {
                 (chosen + flexibility).coerceAtMost(COMPOSITE_CAP)
             }
 
+            // "Choose up to five {P} worth of modes": worth the distinct modes its budget buys,
+            // best first, plus the choice. Repeats are left out — a second copy of a mode is
+            // rarely worth the first (a second "draw for each creature that died" draws again,
+            // a second sacrifice round needs creatures to eat).
+            is BudgetModalEffect -> {
+                var remaining = effect.budget
+                var chosen = 0.0
+                effect.modes.map { it.cost to EffectWalker.fold(it.effect, LimitedScoreFold) }
+                    .sortedByDescending { it.second }
+                    .forEach { (cost, value) ->
+                        if (cost <= remaining && value > 0.0) { chosen += value; remaining -= cost.coerceAtLeast(0) }
+                    }
+                (chosen + MODAL_FLEXIBILITY).coerceAtMost(COMPOSITE_CAP)
+            }
+
             // "Add {R} or {G}", "sacrifice an artifact or discard a card; if you do, draw two": a
             // choice the controller makes on resolution is worth its best branch, as a one-mode
             // modal is. A branch an opponent picks (a punisher) is theirs to minimise, so no
