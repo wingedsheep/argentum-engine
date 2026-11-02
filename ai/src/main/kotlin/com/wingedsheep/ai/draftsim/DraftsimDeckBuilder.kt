@@ -123,6 +123,10 @@ class DraftsimDeckBuilder(
         // time: a splash's cost in play — the colour-screwed draw, the main-colour basics it takes —
         // runs past what the castability weight charges, so only a clear gain pays for it.
         const val SPLASH_MIN_GAIN = 0.1
+        // [wideBuilds]: lands fixing its colours a four- or five-colour build needs before it's tried,
+        // and the castable power it must gain over every narrower build to be offered at all.
+        val WIDE_MIN_LAND_FIXERS = mapOf(4 to 4.0, 5 to 6.0)
+        const val WIDE_MIN_GAIN = 0.1
         // Final-score points (0–10 scale) per creature below the floor / per spell below the target.
         const val CREATURE_SHORTFALL_PENALTY = 0.2
         const val SPELL_SHORTFALL_PENALTY = 0.3
@@ -219,17 +223,40 @@ class DraftsimDeckBuilder(
             // The best three-colour shells, built like any pair, whatever the pool's fixing: the final
             // score decides whether the cards a third colour adds outweigh what its manabase costs.
             // The good-stuff build above is a single top-16-ratings shell and rarely the one a wedge
-            // set's fixing points at.
+            // set's fixing points at. So are the exact colours of each three-colour bomb, which the
+            // ranking may leave out.
             val cards = pool.map { it.card }
-            // No four-colour shells: played out (2026-11, 40 games over ten sets), a four-colour build
-            // lost to the same pool's two-colour one even on pools full of fixing.
-            builds += deckScorer.rankShells(cards)
-                .take(SHELL_CANDIDATES)
-                .map { shell -> refine(greedyBuild(pool, shell.name, shell.colors), pool) }
+            val bombColors = nonlandCards.filter { ops.ratingOrDefault(it) >= BOMB }
+                .map { card -> DraftsimMana.COLORS.filter { it in ops.colorsOf(card) } }
+            val shells = deckScorer.rankShells(cards).take(SHELL_CANDIDATES).map { it.name to it.colors } +
+                bombColors.filter { it.size == 3 }.map { it.joinToString("") to it }
+            builds += shells.distinctBy { it.second.toSet() }
+                .map { (name, colors) -> refine(greedyBuild(pool, name, colors), pool) }
+            builds += wideBuilds(pool, cards, bombColors, builds)
         }
         val byId = pool.associateBy { it.instanceId }
         // The good-stuff build and a fixed shell can land on the same colours; offer the better one.
         return builds.sortedByDescending { playableScore(it, byId) }.distinctBy { it.colors.toSet() }
+    }
+
+    /**
+     * Four- and five-colour builds — the best-ranked one and each gold bomb's own colours — kept only
+     * when they are clearly the better deck: the pool's lands fix them ([WIDE_MIN_LAND_FIXERS]) and
+     * they beat every narrower build's [DraftsimBuild.castablePower] by [WIDE_MIN_GAIN]. A four-colour
+     * mythic beside a pile of tri-lands, or a deck of Vivid payoffs, can clear that; most pools can't.
+     * Played out (2026-11), four-colour builds chosen on a slim modelled edge — with no gain bar —
+     * lost to the same pool's narrower build; the bar is a splash's, and the fixing must be lands.
+     */
+    private fun wideBuilds(
+        pool: List<DraftsimPoolCard>, cards: List<ScorerCard>, bombColors: List<List<String>>, narrower: List<DraftsimBuild>,
+    ): List<DraftsimBuild> {
+        val bar = (narrower.maxOfOrNull { it.castablePower } ?: return emptyList()) + WIDE_MIN_GAIN
+        val candidates = (deckScorer.rankWide(cards).take(1).map { it.colors } + bombColors.filter { it.size >= 4 })
+            .distinctBy { it.toSet() }
+            .filter { colors -> deckScorer.landFixers(cards, colors) >= WIDE_MIN_LAND_FIXERS.getValue(colors.size) }
+        return candidates
+            .map { colors -> refine(greedyBuild(pool, "${colors.size}-colour ${colors.joinToString("")}", colors), pool) }
+            .filter { it.castablePower >= bar }
     }
 
     /**

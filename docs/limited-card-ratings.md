@@ -187,8 +187,13 @@ The Draftsim deckbuild builds several candidate decks per pool and offers the be
 `playableScore`. Which colours a pool is built in is decided there:
 
 - **Candidates.** Each top-ranked pair, with its bomb splash and without one; the single
-  "good stuff" shell; and, in sealed, the three best three-colour shells whatever the pool's fixing.
-  No four-colour shells: played out, they lost to the same pool's two-colour build.
+  "good stuff" shell; and, in sealed, the three best three-colour shells whatever the pool's fixing,
+  plus each three-colour bomb's own colours.
+- **Four and five colours** are rare by design. The best-ranked four- or five-colour hypothesis and
+  each four- or five-colour bomb's colours are built only when the pool's *lands* fix them (four
+  fixing lands for four colours, six for five), and offered only when their castable power beats
+  every narrower build's by the splash margin. A four-colour mythic beside a pile of tri-lands, or an
+  Invasion domain deck on nine sac-lands, clears it; on the 400 measured pools, two decks did.
 - **Castable power.** `DraftsimCastability` puts each spell's chance of being cast on curve —
   hypergeometric, from the finished deck's coloured sources — against the same spell's on a main
   colour's nine sources. The ported score's quality term saturates on any real deck, so the build

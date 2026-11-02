@@ -45,6 +45,7 @@ class DraftsimDeckScorer(private val tables: DraftsimSetTables) {
         const val SET_BASELINE = 2.0   // sW: sX is empty in the bundle ⇒ B = 2 always.
 
         val TWO_COLOR_PAIRS = listOf("WU", "UB", "BR", "RG", "GW", "WB", "UR", "BG", "RW", "GU")
+        val WIDE_COLOR_SETS = listOf("WUBR", "WUBG", "WURG", "WBRG", "UBRG", "WUBRG")
 
         /**
          * Rating points a colour-count payoff (Vivid, domain, converge) gains per deck colour past
@@ -204,6 +205,15 @@ class DraftsimDeckScorer(private val tables: DraftsimSetTables) {
     fun rankShells(pool: List<ScorerCard>): List<DraftsimArchetypeRank> = THREE_COLOR
         .map { (combo, guild) -> scoreHypothesis(pool, combo.map { it.toString() }, null).copy(name = guild) }
         .sortedByDescending { it.score }
+
+    /** The five four-colour hypotheses and the five-colour one, best first. */
+    fun rankWide(pool: List<ScorerCard>): List<DraftsimArchetypeRank> = WIDE_COLOR_SETS
+        .map { combo -> scoreHypothesis(pool, combo.map { it.toString() }, null).copy(name = "${combo.length}-colour $combo") }
+        .sortedByDescending { it.score }
+
+    /** The fixing [pool]'s lands bring a deck in [colors] ([DraftsimCardOps.fixerWeight] summed). */
+    fun landFixers(pool: List<ScorerCard>, colors: List<String>): Double =
+        pool.filter { ops.isLand(it) }.sumOf { ops.fixerWeight(it, colors) }
 
     /** `C2`: colors appearing on ≥2 of an archetype's tagged cards. */
     private fun colorsOnAtLeastTwo(nonland: List<ScorerCard>, archName: String): List<String> {

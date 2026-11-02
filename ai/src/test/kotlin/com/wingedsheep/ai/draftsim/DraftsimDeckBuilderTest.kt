@@ -301,6 +301,43 @@ class DraftsimDeckBuilderTest : FunSpec({
         best.colors.toSet() shouldBe setOf("R", "G")
     }
 
+    // Four and five colours are rare, but not forbidden: a four-colour mythic beside a pool full of
+    // tri-lands is the better deck in its own colours, and the build is offered when its castable
+    // power clears every narrower build's by a splash's margin.
+    fun fourColourPool(withLands: Boolean): Pair<List<DraftsimPoolCard>, DraftsimSetTables> {
+        val ratings = HashMap<String, Double>()
+        val cards = mutableListOf<DraftsimPoolCard>()
+        var n = 0
+        fun add(card: ScorerCard, rating: Double) {
+            ratings[DraftsimData.nameKey(card.name)] = rating
+            cards += DraftsimPoolCard(card, "id-${n++}")
+        }
+        val curve = listOf("{1}", "{2}", "{3}", "{1}", "{2}", "{4}")
+        for (c in listOf("W", "U", "B", "G")) for (i in 1..7) add(BCard("Mono$c$i", "${curve[i % 6]}{$c}", "Creature — Soldier", listOf(c)), 2.7)
+        add(BCard("Atraxa, Grand Unifier", "{3}{G}{W}{U}{B}", "Legendary Creature — Phyrexian Angel", listOf("W", "U", "B", "G")), 5.0)
+        add(BCard("Esper Sentinel", "{1}{W}{U}{B}", "Creature — Sphinx", listOf("W", "U", "B")), 4.2)
+        add(BCard("Abzan Charm", "{W}{B}{G}", "Instant", listOf("W", "B", "G")), 4.0)
+        add(BCard("Sultai Charm", "{B}{G}{U}", "Instant", listOf("U", "B", "G")), 4.0)
+        if (withLands) {
+            for (tri in listOf(listOf("W", "U", "B"), listOf("W", "B", "G"), listOf("U", "B", "G"), listOf("W", "U", "G"))) {
+                for (i in 1..2) add(BCard("Tri ${tri.joinToString("")} $i", "", "Land", colorIdentity = tri), 2.0)
+            }
+        }
+        return cards to DraftsimSetTables(ratings, HashSet(), emptyMap())
+    }
+
+    test("a four-colour mythic and the tri-lands to carry it build four colours") {
+        val (pool, tables) = fourColourPool(withLands = true)
+        val best = DraftsimDeckBuilder(tables).buildDecks(pool, mode = "sealed").first()
+        best.colors.toSet() shouldBe setOf("W", "U", "B", "G")
+    }
+
+    test("the same four-colour mythic off basics alone stays at three colours or fewer") {
+        val (pool, tables) = fourColourPool(withLands = false)
+        val best = DraftsimDeckBuilder(tables).buildDecks(pool, mode = "sealed").first()
+        (best.colors.size <= 3) shouldBe true
+    }
+
     // A drafted pool with only 19 castable spells in its pair used to make up the four-card gap in
     // basics: 21 lands beside 19 spells (2026-10-31 games 2d31a409, 8d182668, ee882769 ran 22/18).
     // A light black splash fills it instead, and the deck runs at most one land over 17.
