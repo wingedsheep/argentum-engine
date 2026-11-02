@@ -208,7 +208,7 @@ object Replacements {
     /**
      * Every noun phrase an as-it-enters choice can take, paired with the value it denotes.
      *
-     * The three `CARD_NAME` rows are one field's three published values, and the pool is a *word in
+     * The four `CARD_NAME` rows are one field's four published values, and the pool is a *word in
      * the noun phrase* rather than a slot for the same reason the kind of choice is: "a nonland card
      * name" and "a land card name" are noun phrases, not one noun phrase with an adjective slot the
      * `ANY` spelling would then have to leave empty.

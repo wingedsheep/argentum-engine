@@ -2888,8 +2888,9 @@ data class EntersWithChoice(
     val maxValue: Int = 0,
     /**
      * When [choiceType] is [ChoiceType.CARD_NAME], which names are offered — a pool of just land
-     * names ([CardNamePool.LAND], the default matching Petrified Hamlet) or every registered card
-     * name ([CardNamePool.ANY], "choose any card name" à la Sorcerous Spyglass / Pithing Needle).
+     * names ([CardNamePool.LAND], the default matching Petrified Hamlet), nonland or nonbasic land
+     * names ([CardNamePool.NONLAND], [CardNamePool.NONBASIC_LAND]), or every registered card name
+     * ([CardNamePool.ANY], "choose any card name" à la Sorcerous Spyglass / Pithing Needle).
      * Ignored for every other choice type.
      */
     val cardNamePool: CardNamePool = CardNamePool.LAND,

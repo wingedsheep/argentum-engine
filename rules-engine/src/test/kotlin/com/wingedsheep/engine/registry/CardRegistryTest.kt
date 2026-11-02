@@ -37,7 +37,7 @@ class CardRegistryTest : FunSpec({
         metadata = ScryfallMetadata(collectorNumber = collectorNumber),
     )
 
-    fun nonbasicLand(name: String, typeLine: String = "Land") = CardDefinition(
+    fun land(name: String, typeLine: String = "Land") = CardDefinition(
         name = name,
         manaCost = ManaCost.ZERO,
         typeLine = TypeLine.parse(typeLine),
@@ -107,9 +107,9 @@ class CardRegistryTest : FunSpec({
 
     test("the nonbasic-land pool offers lands without the Basic supertype, across both layers") {
         val live = CardRegistry().apply {
-            register(listOf(forest(), nonbasicLand("Wastes", "Basic Land"), nonbasicLand("Field of Ruin"), bear("Grizzly Bears", 2)))
+            register(listOf(forest(), land("Wastes", "Basic Land"), land("Field of Ruin"), bear("Grizzly Bears", 2)))
         }
-        val overlay = CardRegistry(parent = live).apply { register(nonbasicLand("Okina, Temple to the Grandfathers", "Legendary Land")) }
+        val overlay = CardRegistry(parent = live).apply { register(land("Okina, Temple to the Grandfathers", "Legendary Land")) }
 
         live.cardNamesIn(CardNamePool.NONBASIC_LAND) shouldContainExactly listOf("Field of Ruin")
         overlay.cardNamesIn(CardNamePool.NONBASIC_LAND) shouldContainExactlyInAnyOrder listOf("Field of Ruin", "Okina, Temple to the Grandfathers")
