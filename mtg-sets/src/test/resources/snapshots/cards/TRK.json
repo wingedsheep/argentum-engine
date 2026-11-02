@@ -1927,6 +1927,44 @@
     ]
 }
 
+// Deep Space Scan
+{
+    "name": "Deep Space Scan",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Strange new worlds — Draw X cards, where X is the number of differently named lands you control. You have no maximum hand size until your next turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land",
+                        "aggregation": "DISTINCT_NAMES"
+                    }
+                },
+                {
+                    "type": "RemoveMaximumHandSize",
+                    "duration": "UntilYourNextTurn"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "rarity": "RARE",
+        "artist": "Andreia Ugrai",
+        "flavorText": "Neutrino spectrometry and quark resonance scans formed the foundation of Starfleet sensor tech, but active subspace flux analysis changed the game.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/15ffeda3-28ac-4adf-9844-d7b051aae227.jpg?1792508172"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Earth, Sector 001
 {
     "name": "Earth, Sector 001",
@@ -2759,6 +2797,56 @@
     "colorIdentityOverride": [
         "BLACK",
         "RED"
+    ]
+}
+
+// Live Long and Prosper
+{
+    "name": "Live Long and Prosper",
+    "manaCost": "{5}{W}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "This spell can't be countered.\nDouble your life total. Draw cards equal to the number of cards in your hand. You have no maximum hand size until your next turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "SetLifeTotal",
+                    "amount": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "LifeTotal",
+                            "player": "You"
+                        },
+                        "multiplier": 2
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Hand"
+                    }
+                },
+                {
+                    "type": "RemoveMaximumHandSize",
+                    "duration": "UntilYourNextTurn"
+                }
+            ]
+        },
+        "cantBeCountered": true
+    },
+    "metadata": {
+        "collectorNumber": "244",
+        "rarity": "RARE",
+        "artist": "Stella Spente",
+        "flavorText": "\"Logic is the beginning of wisdom, not the end.\"\n—Mr. Spock",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0fc50ffc-3b4d-4fb3-898f-c308a63eb6e9.jpg?1792508356"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
     ]
 }
 

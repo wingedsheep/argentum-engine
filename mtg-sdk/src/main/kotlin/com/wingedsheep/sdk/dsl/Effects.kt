@@ -1515,10 +1515,15 @@ object Effects {
      * "[target] has no maximum hand size for the rest of the game." A one-shot resolution effect
      * that confers a permanent, player-scoped property (survives the source leaving play), as
      * opposed to the battlefield-only [com.wingedsheep.sdk.scripting.NoMaximumHandSize] static
-     * ability used by Reliquary Tower / Thought Vessel. Used by Wisdom of Ages.
+     * ability used by Reliquary Tower / Thought Vessel. Used by Wisdom of Ages. Pass
+     * `duration = Duration.UntilYourNextTurn` for "... no maximum hand size until your next turn"
+     * (Deep Space Scan).
      */
-    fun RemoveMaximumHandSize(target: EffectTarget = EffectTarget.Controller): Effect =
-        com.wingedsheep.sdk.scripting.effects.RemoveMaximumHandSizeEffect(target)
+    fun RemoveMaximumHandSize(
+        target: EffectTarget = EffectTarget.Controller,
+        duration: com.wingedsheep.sdk.scripting.Duration = com.wingedsheep.sdk.scripting.Duration.Permanent
+    ): Effect =
+        com.wingedsheep.sdk.scripting.effects.RemoveMaximumHandSizeEffect(target, duration)
 
     /**
      * "It becomes day" (CR 731.1). Sets the game's day/night designation to day, cascading any

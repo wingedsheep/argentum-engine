@@ -1009,21 +1009,31 @@ data object PlayerCitysBlessingComponent : Component
 data object PlayerEnduringStoryComponent : Component
 
 /**
- * Marks a player as having no maximum hand size for the rest of the game.
+ * Marks a player as having no maximum hand size for the rest of the game (or until a player's next
+ * turn).
  *
  * Conferred by resolution effects like Wisdom of Ages ("You have no maximum hand size for the
  * rest of the game"). Distinct from the battlefield-only
  * [com.wingedsheep.sdk.scripting.NoMaximumHandSize] static ability (Reliquary Tower, Thought
  * Vessel), which only applies while its permanent is in play. Like the city's blessing, this is
- * permanent for the rest of the game — cleanup never removes it, so it has no `removeOn` field.
+ * permanent for the rest of the game by default — cleanup never removes it.
  *
  * [timestamp] is the [com.wingedsheep.engine.state.GameState.timestamp] of the effect that
  * conferred it: maximum-hand-size effects apply in timestamp order (CR 613.11), so a later
  * "your maximum hand size is N" static still sets a limit (see
  * [com.wingedsheep.engine.core.MaximumHandSize.effective]).
+ *
+ * A temporary grant ("you have no maximum hand size until your next turn" — Deep Space Scan)
+ * carries [removeOn] = [PlayerEffectRemoval.UntilYourNextTurn] and [expiresForPlayerId], the
+ * effect's controller whose next turn ends it; cleanup drops it after that player's untap step.
+ * A rest-of-game grant never gets downgraded by a later temporary one.
  */
 @Serializable
-data class PlayerNoMaximumHandSizeComponent(val timestamp: Long) : Component
+data class PlayerNoMaximumHandSizeComponent(
+    val timestamp: Long,
+    val removeOn: PlayerEffectRemoval = PlayerEffectRemoval.Permanent,
+    val expiresForPlayerId: EntityId? = null
+) : Component
 
 /**
  * Reduces a player's maximum hand size by [amount] for the rest of the game (Inspired Idea,

@@ -1487,7 +1487,8 @@ data class ChangeSpeedEffect(
 
 /**
  * Removes the target player's maximum hand size for the rest of the game
- * ("you have no maximum hand size for the rest of the game").
+ * ("you have no maximum hand size for the rest of the game"), or for a shorter [duration]
+ * ("you have no maximum hand size until your next turn" — Deep Space Scan, Live Long and Prosper).
  *
  * Unlike [com.wingedsheep.sdk.scripting.NoMaximumHandSize] — a permanent's *static* ability
  * that only applies while that permanent is on the battlefield (Reliquary Tower, Thought Vessel)
@@ -1498,14 +1499,25 @@ data class ChangeSpeedEffect(
  *
  * @param target The player who loses their maximum hand size. Defaults to the ability's
  *   controller, matching "you have no maximum hand size for the rest of the game".
+ * @param duration How long the player has no maximum hand size: [Duration.Permanent] (the rest of
+ *   the game, the default) or [Duration.UntilYourNextTurn] — keyed to the effect's controller, so it
+ *   lapses after the untap step of *their* next turn even when [target] is another player.
  */
 @SerialName("RemoveMaximumHandSize")
 @Serializable
 data class RemoveMaximumHandSizeEffect(
-    val target: EffectTarget = EffectTarget.Controller
+    val target: EffectTarget = EffectTarget.Controller,
+    val duration: Duration = Duration.Permanent
 ) : Effect {
+    init {
+        require(duration == Duration.Permanent || duration == Duration.UntilYourNextTurn) {
+            "RemoveMaximumHandSize supports Duration.Permanent and Duration.UntilYourNextTurn, not $duration"
+        }
+    }
+
     override val description: String =
-        "${target.description.replaceFirstChar { it.uppercase() }} has no maximum hand size for the rest of the game"
+        "${target.description.replaceFirstChar { it.uppercase() }} has no maximum hand size " +
+            if (duration == Duration.Permanent) "for the rest of the game" else duration.description
 }
 
 /**
