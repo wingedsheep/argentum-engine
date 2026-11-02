@@ -912,7 +912,7 @@ Families:
 - `GrantCantBeBlockedExceptByColorEffect(filter: GroupFilter, canOnlyBeBlockedByColor: Color, duration: Duration)` — Grant evasion to a group of creatures until end of turn.
 - `GrantCantBeBlockedExceptByEffect(target: EffectTarget, blockerFilter: GameObjectFilter, duration: Duration)` — Grant a creature an evasion restriction until end of turn: it "can't be blocked except by creatures matching blockerFilter." The one-shot, floating-effect counterpart to the static com.wingedsheep.…
 - `GrantCastCreaturesFromGraveyardWithForageEffect(duration: Duration)` — Grant permission to cast creature spells from your graveyard by paying the forage additional cost.
-- `GrantCounterPlacementModifierEffect(modifier: Int, duration: Duration, counterType: CounterType, recipient: Recipient)` — Install a temporary, duration-scoped counter-placement-*modifier* replacement effect, controlled by the resolving ability's controller.
+- `GrantCounterPlacementModifierEffect(modifier: Int, duration: Duration, counterType: CounterType?, recipient: Recipient, placer: Player)` — Install a temporary, duration-scoped counter-placement-*modifier* replacement effect, controlled by the resolving ability's controller.
 - `GrantDamageBonusEffect(bonusAmount: Int, sourceFilter: GameObjectFilter, target: EffectTarget, duration: Duration)` — Grant a flat damage bonus to a player's sources for the specified duration.
 - `GrantEmbalmEffect(target: EffectTarget, cost: ManaCost?, duration: Duration)` — Grant Embalm (CR 702.128) to a target creature card in a graveyard.
 - `GrantEscapeEffect(target: EffectTarget, cost: ManaCost?, additionalCost: AdditionalCost?, duration: Duration)` — Grant Escape (CR 702.138) to a target card in a graveyard.

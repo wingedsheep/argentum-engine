@@ -589,6 +589,48 @@
     ]
 }
 
+// Brad Boimler, Eager Ensign
+{
+    "name": "Brad Boimler, Eager Ensign",
+    "manaCost": "{1}{W}",
+    "typeLine": "Legendary Creature — Human Officer",
+    "oracleText": "Lifelink\nWhenever Brad Boimler becomes tapped, until end of turn, if one or more counters would be put on a permanent you control, that many plus one of each of those kinds of counters are put on that permanent instead.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Brad Boimler, Eager Ensign:1",
+                "trigger": "TapEvent",
+                "effect": {
+                    "type": "GrantCounterPlacementModifier",
+                    "counterType": null,
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": "permanent ctrl:you"
+                    },
+                    "placer": "Any"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "rarity": "UNCOMMON",
+        "artist": "Andreas Zafiratos",
+        "flavorText": "\"We all joined Starfleet to dive headfirst into the unknown.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a6bf1525-2212-46d0-ad4d-1dbaa2e3b3cd.jpg?1784036739"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Captain Benjamin Sisko
 {
     "name": "Captain Benjamin Sisko",

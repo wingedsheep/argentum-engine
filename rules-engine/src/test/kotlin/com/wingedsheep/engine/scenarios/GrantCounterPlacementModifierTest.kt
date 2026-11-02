@@ -174,4 +174,64 @@ class GrantCounterPlacementModifierTest : FunSpec({
             predicateEvaluator = PredicateEvaluator(cardRegistry = null), byEffect = true
         ) shouldBe 3
     }
+    // Brad Boimler's shape: any counter kind (counterType = null), any placer (Player.Any), on a
+    // permanent the modifier's controller controls. Installed straight into the store so the
+    // chokepoint's kind and placer axes are tested on their own.
+    fun withAnyKindAnyPlacer(): Triple<GameTestDriver, com.wingedsheep.sdk.model.EntityId, com.wingedsheep.sdk.model.EntityId> {
+        val driver = createDriver()
+        driver.initMirrorMatch(deck = Deck.of("Plains" to 40), startingLife = 20)
+        val activePlayer = driver.activePlayer!!
+        val opponent = driver.getOpponent(activePlayer)
+        driver.replaceState(
+            driver.state.copy(
+                activeCounterPlacementModifiers = listOf(
+                    com.wingedsheep.engine.state.ActiveCounterPlacementModifier(
+                        modifier = 1,
+                        controllerId = activePlayer,
+                        counterType = null,
+                        recipient = com.wingedsheep.sdk.scripting.events.Recipient.PermanentYouControl,
+                        duration = com.wingedsheep.sdk.scripting.Duration.EndOfTurn,
+                        placer = com.wingedsheep.sdk.scripting.references.Player.Any,
+                    )
+                )
+            )
+        )
+        return Triple(driver, activePlayer, opponent)
+    }
+
+    test("any-kind modifier adds one to every counter kind on a permanent you control") {
+        val (driver, activePlayer, _) = withAnyKindAnyPlacer()
+        val myCreature = driver.putCreatureOnBattlefield(activePlayer, "Centaur Courser")
+        for (kind in listOf(CounterType.PLUS_ONE_PLUS_ONE, CounterType.MINUS_ONE_MINUS_ONE, CounterType.CHARGE)) {
+            withClue("$kind") {
+                ReplacementEffectUtils.applyCounterPlacementModifiers(
+                    driver.state, myCreature, kind, 2, placerId = activePlayer,
+                    predicateEvaluator = PredicateEvaluator(cardRegistry = null), byEffect = true
+                ) shouldBe 3
+            }
+        }
+    }
+
+    test("any-placer modifier applies to counters an opponent puts on your permanent, not on theirs") {
+        val (driver, activePlayer, opponent) = withAnyKindAnyPlacer()
+        val myCreature = driver.putCreatureOnBattlefield(activePlayer, "Centaur Courser")
+        val theirCreature = driver.putCreatureOnBattlefield(opponent, "Centaur Courser")
+        ReplacementEffectUtils.applyCounterPlacementModifiers(
+            driver.state, myCreature, CounterType.MINUS_ONE_MINUS_ONE, 1, placerId = opponent,
+            predicateEvaluator = PredicateEvaluator(cardRegistry = null), byEffect = true
+        ) shouldBe 2
+        ReplacementEffectUtils.applyCounterPlacementModifiers(
+            driver.state, theirCreature, CounterType.PLUS_ONE_PLUS_ONE, 1, placerId = opponent,
+            predicateEvaluator = PredicateEvaluator(cardRegistry = null), byEffect = true
+        ) shouldBe 1
+    }
+
+    test("any-placer modifier also covers counters no player places (a turn-based action)") {
+        val (driver, activePlayer, _) = withAnyKindAnyPlacer()
+        val myCreature = driver.putCreatureOnBattlefield(activePlayer, "Centaur Courser")
+        ReplacementEffectUtils.applyCounterPlacementModifiers(
+            driver.state, myCreature, CounterType.LORE, 1, placerId = null,
+            predicateEvaluator = PredicateEvaluator(cardRegistry = null), byEffect = false
+        ) shouldBe 2
+    }
 })

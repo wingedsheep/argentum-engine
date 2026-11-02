@@ -2029,17 +2029,19 @@ data class CastSpellRecord(
  *
  * @property modifier Additional counters placed (negative reduces; chokepoint floors at 0).
  * @property controllerId The player who controls this modifier ("you").
- * @property counterType Which counter kind the modifier applies to.
+ * @property counterType Which counter kind the modifier applies to; null = every kind.
  * @property recipient Which recipients the modifier applies to, relative to [controllerId].
  * @property duration How long the modifier stays active.
+ * @property placer Whose placements it modifies, relative to [controllerId] (You / Any / EachOpponent).
  */
 @Serializable
 data class ActiveCounterPlacementModifier(
     val modifier: Int,
     val controllerId: EntityId,
-    val counterType: com.wingedsheep.sdk.core.CounterType,
+    val counterType: com.wingedsheep.sdk.core.CounterType?,
     val recipient: com.wingedsheep.sdk.scripting.events.Recipient,
     val duration: com.wingedsheep.sdk.scripting.Duration,
+    val placer: com.wingedsheep.sdk.scripting.references.Player = com.wingedsheep.sdk.scripting.references.Player.You,
 )
 
 private val SHARED_OBJECT_ZONES = setOf(Zone.BATTLEFIELD, Zone.STACK, Zone.EXILE, Zone.COMMAND, Zone.ANTE)

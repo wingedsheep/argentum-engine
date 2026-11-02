@@ -2516,29 +2516,34 @@ object Effects {
      * resolving ability's controller — the activated/spell-granted analogue of the static
      * `ModifyCounterPlacement` replacement (Hardened Scales).
      *
-     * While active, if the controller would put [counterType] counters on a recipient matching
-     * [recipient] (resolved relative to that controller — the default "a creature you control"
-     * means a creature the controller controls), [modifier] additional counters are placed
-     * instead. The store is consulted from the single counter-placement chokepoint, so every
+     * While active, if a player matching [placer] (default: the controller; Player.Any for the
+     * passive "would be put") would put counters matching [counterType] (null = every kind, each
+     * kind its own placement) on a recipient matching [recipient] (resolved relative to that
+     * controller — the default "a creature you control" means a creature the controller
+     * controls), [modifier] additional counters are placed instead. The store is consulted from the single counter-placement chokepoint, so every
      * counter-adding effect honors it; it expires per [duration] (default end of turn).
      *
      * Defaults reproduce the common case (+1/+1, creature you control, until end of turn), which is
      * Prairie Dog's "{4}{W}: Until end of turn, if you would put one or more +1/+1 counters on a
-     * creature you control, put that many plus one +1/+1 counters on it instead."
+     * creature you control, put that many plus one +1/+1 counters on it instead." Brad Boimler
+     * (TRK) is `counterType = null, recipient = PermanentYouControl, placer = Player.Any`.
      */
     fun GrantCounterPlacementModifier(
         modifier: Int = 1,
         duration: Duration = Duration.EndOfTurn,
-        counterType: CounterType =
+        counterType: CounterType? =
             CounterType.PLUS_ONE_PLUS_ONE,
         recipient: com.wingedsheep.sdk.scripting.events.Recipient =
-            com.wingedsheep.sdk.scripting.events.Recipient.CreatureYouControl
+            com.wingedsheep.sdk.scripting.events.Recipient.CreatureYouControl,
+        placer: com.wingedsheep.sdk.scripting.references.Player =
+            com.wingedsheep.sdk.scripting.references.Player.You
     ): Effect =
         com.wingedsheep.sdk.scripting.effects.GrantCounterPlacementModifierEffect(
             modifier = modifier,
             duration = duration,
             counterType = counterType,
-            recipient = recipient
+            recipient = recipient,
+            placer = placer
         )
 
     /**

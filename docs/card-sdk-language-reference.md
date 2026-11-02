@@ -2576,16 +2576,21 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   target is snapshotted first, then doubled as its own placement, so per-kind replacements apply and counters
   added by this effect are never re-doubled. No-op when the target has no counters at all. Zimone, Paradox
   Sculptor.
-- `GrantCounterPlacementModifier(modifier?, duration?, counterType?, recipient?)` — install a **temporary,
+- `GrantCounterPlacementModifier(modifier?, duration?, counterType?, recipient?, placer?)` — install a **temporary,
   duration-scoped, controller-scoped** counter-placement modifier: the activated/spell-granted analogue of the
-  static `ModifyCounterPlacement` replacement (Hardened Scales). While active, if the *controller* of the effect
-  would put `counterType` counters (default `+1/+1`) on a recipient matching `recipient` (default
+  static `ModifyCounterPlacement` replacement (Hardened Scales). While active, if a player matching `placer`
+  (default `Player.You` — the effect's controller; `Player.Any` for the passive "would be put", `Player.EachOpponent`)
+  would put `counterType` counters (default `+1/+1`; `null` = every kind, each kind its own placement) on a
+  recipient matching `recipient` (default
   `Recipient.CreatureYouControl`, resolved relative to that controller), `modifier` additional counters
   (default `+1`) are placed instead. Recorded in a turn-scoped store on the game state and consulted from the
   single counter-placement chokepoint (so every AddCounters-style effect honors it); expires per `duration`
   (default `Duration.EndOfTurn`) via end-of-turn cleanup. Negative `modifier` reduces (floored at 0). Prairie Dog
   (OTJ): "{4}{W}: Until end of turn, if you would put one or more +1/+1 counters on a creature you control, put
   that many plus one +1/+1 counters on it instead." → `GrantCounterPlacementModifier()` with all defaults.
+  Brad Boimler, Eager Ensign (TRK): "until end of turn, if one or more counters would be put on a permanent you
+  control, that many plus one of each of those kinds of counters are put on that permanent instead." →
+  `GrantCounterPlacementModifier(counterType = null, recipient = Recipient.PermanentYouControl, placer = Player.Any)`.
 - `RemoveCounters(type, count, target)` — remove N counters. `count` is an `Int` or a `DynamicAmount` evaluated at
   resolution (`RemoveCountersEffect.count` is a `DynamicAmount`). On its own the effect removes as many as the
   target carries, up to `count`. As the cost of `Effects.MayPay` it is **all-or-nothing**: the "yes" is only

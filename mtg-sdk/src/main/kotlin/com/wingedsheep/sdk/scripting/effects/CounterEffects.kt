@@ -821,9 +821,11 @@ data class RemoveCountersFromAmongEffect(
  * Winding Constrictor). Where `ModifyCounterPlacement` lives on a permanent for as long as
  * that permanent is on the battlefield, this effect records a modifier in a turn-scoped store
  * on the game state, controller-scoped exactly like the static version: while it is active, if
- * the *controller* would put counters matching [counterType] on a recipient matching [recipient]
- * (resolved relative to that controller — e.g. "a creature you control" means a creature the
- * controller controls), [modifier] additional counters are placed instead.
+ * a player matching [placer] (default: the controller) would put counters matching [counterType]
+ * on a recipient matching [recipient] (resolved relative to that controller — e.g. "a creature
+ * you control" means a creature the controller controls), [modifier] additional counters are
+ * placed instead. A null [counterType] covers every kind, each kind placed counting as its own
+ * placement — "that many plus one of each of those kinds of counters".
  *
  * The store is consulted from the single counter-placement chokepoint, so every counter-adding
  * effect (AddCounters, AddDynamicCounters, Explore, enters-with-counters, proliferate-driven,
@@ -831,38 +833,53 @@ data class RemoveCountersFromAmongEffect(
  * (typically [Duration.EndOfTurn]) via the normal end-of-turn cleanup.
  *
  * General by construction — parameterized over [modifier] (positive or negative), [duration],
- * [counterType] and [recipient]. The defaults reproduce the most common case ("+1/+1 counters
- * on a creature you control, until end of turn"), which is what Prairie Dog's
- * "{4}{W}: Until end of turn, if you would put one or more +1/+1 counters on a creature you
- * control, put that many plus one +1/+1 counters on it instead" needs.
+ * [counterType], [recipient] and [placer]. The defaults reproduce the most common case ("if you
+ * would put +1/+1 counters on a creature you control, until end of turn").
  *
  * Examples:
  * - Prairie Dog (OTJ): `GrantCounterPlacementModifierEffect()` — +1, EndOfTurn, +1/+1, creature you control.
- * - A hypothetical "until end of turn, put one fewer counter…": `modifier = -1`.
+ * - Brad Boimler, Eager Ensign (TRK): "until end of turn, if one or more counters would be put on
+ *   a permanent you control, that many plus one of each of those kinds of counters are put on that
+ *   permanent instead" — `counterType = null`, `recipient = Recipient.PermanentYouControl`,
+ *   `placer = Player.Any`.
  *
  * @property modifier Additional counters placed (negative reduces; the chokepoint floors the
  *        resulting count at 0).
  * @property duration How long the modifier stays active (default [Duration.EndOfTurn]).
- * @property counterType Which counter kind the modifier applies to (default +1/+1).
+ * @property counterType Which counter kind the modifier applies to (default +1/+1; null = every kind).
  * @property recipient Which recipients the modifier applies to, resolved relative to the
  *        controller (default "a creature you control").
+ * @property placer Whose placements it modifies, relative to the controller: [Player.You]
+ *        (default, "if you would put"), [Player.Any] ("if one or more counters would be put") or
+ *        [Player.EachOpponent].
  */
 @SerialName("GrantCounterPlacementModifier")
 @Serializable
 data class GrantCounterPlacementModifierEffect(
     val modifier: Int = 1,
     val duration: Duration = Duration.EndOfTurn,
-    val counterType: CounterType = CounterType.PLUS_ONE_PLUS_ONE,
-    val recipient: Recipient = Recipient.CreatureYouControl
+    val counterType: CounterType? = CounterType.PLUS_ONE_PLUS_ONE,
+    val recipient: Recipient = Recipient.CreatureYouControl,
+    val placer: Player = Player.You
 ) : Effect {
+    init {
+        require(placer == Player.Any || placer == Player.You || placer == Player.EachOpponent) {
+            "GrantCounterPlacementModifierEffect.placer is a relation to the controller: Any, You or EachOpponent"
+        }
+    }
+
     override val description: String = buildString {
         val durationText = if (duration == Duration.Permanent) "" else "${duration.description.replaceFirstChar { it.uppercase() }}, "
         append(durationText)
-        append("if you would put one or more ${counterType.printed} counters on ${recipient.description}, ")
-        if (modifier >= 0) {
-            append("put that many plus $modifier ${counterType.printed} counter${if (modifier != 1) "s" else ""} on it instead")
-        } else {
-            append("put that many minus ${-modifier} ${counterType.printed} counter${if (-modifier != 1) "s" else ""} on it instead")
+        val kind = counterType?.let { "${it.printed} " } ?: ""
+        val amount = kotlin.math.abs(modifier)
+        val sign = if (modifier >= 0) "plus" else "minus"
+        val extra = if (counterType == null) "$amount of each of those kinds of counters"
+        else "$amount $kind" + "counter${if (amount != 1) "s" else ""}"
+        when (placer) {
+            Player.You -> append("if you would put one or more ${kind}counters on ${recipient.description}, put that many $sign $extra on it instead")
+            Player.EachOpponent -> append("if an opponent would put one or more ${kind}counters on ${recipient.description}, they put that many $sign $extra on it instead")
+            else -> append("if one or more ${kind}counters would be put on ${recipient.description}, that many $sign $extra are put on it instead")
         }
     }
 }
