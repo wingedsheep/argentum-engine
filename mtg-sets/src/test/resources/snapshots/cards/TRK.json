@@ -3024,6 +3024,83 @@
     ]
 }
 
+// Lwaxana Troi, Charming Guest
+{
+    "name": "Lwaxana Troi, Charming Guest",
+    "manaCost": "{1}{R}",
+    "typeLine": "Legendary Creature — Betazoid Advisor",
+    "oracleText": "You may choose not to untap Lwaxana Troi during your untap step.\n{2}, {T}: Choose another target creature you control. For as long as Lwaxana Troi remains tapped, if a triggered ability of that creature triggers, that ability triggers an additional time.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "flags": [
+        "MAY_NOT_UNTAP"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Lwaxana Troi, Charming Guest:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "GrantStaticAbility",
+                    "ability": {
+                        "type": "AdditionalSourceTriggers",
+                        "sourceFilter": {
+                            "statePredicates": [
+                                "IsSource"
+                            ]
+                        },
+                        "excludeSelf": false,
+                        "description": "If a triggered ability of this creature triggers, that ability triggers an additional time"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": {
+                        "type": "WhileSourceTapped",
+                        "sourceDescription": "Lwaxana Troi"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{2}, {T}: Choose another target creature you control. For as long as Lwaxana Troi remains tapped, if a triggered ability of that creature triggers, that ability triggers an additional time."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "157",
+        "rarity": "RARE",
+        "artist": "Marta Nael",
+        "flavorText": "\"Hello, Jean-Luc.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/19bf2f2f-4be2-4958-bfab-eb46c9ca1995.jpg?1793013189"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Make It So
 {
     "name": "Make It So",

@@ -95,6 +95,7 @@ class TriggerDetector(
     private val deathAndLeaveDetector = DeathAndLeaveTriggerDetector(abilityResolver, matcher)
     private val damageDetector = DamageTriggerDetector(abilityResolver, matcher, predicateEvaluator = predicateEvaluator)
     private val attachmentDetector = AttachmentTriggerDetector(abilityResolver, matcher)
+    private val sourceTriggerDoublers = SourceTriggerDoublers(cardRegistry, predicateEvaluator, conditionEvaluator)
 
     /**
      * File an ANY-bound [EventPattern.DealsDamageEvent] observer under the damage-observer index it
@@ -5316,7 +5317,8 @@ class TriggerDetector(
     }
 
     /**
-     * Duplicate triggers for [AdditionalSourceTriggers] static abilities (e.g., Twinflame Travelers).
+     * Duplicate triggers for [AdditionalSourceTriggers] static abilities (e.g., Twinflame Travelers),
+     * printed or granted by a resolving effect (Lwaxana Troi) — see [SourceTriggerDoublers].
      *
      * For each pending trigger whose source permanent matches a doubler's filter and is
      * controlled by the doubler's controller, add an extra copy. Self-exclusion (the doubler's
@@ -5330,49 +5332,7 @@ class TriggerDetector(
         triggers: MutableList<PendingTrigger>
     ) {
         if (triggers.isEmpty()) return
-        val registry = cardRegistry
-        val projected = state.projectedState
-
-        data class SourceDoubler(
-            val doublerSourceId: EntityId,
-            val controllerId: EntityId,
-            val filter: GameObjectFilter,
-            val excludeSelf: Boolean,
-            val alsoSource: Boolean
-        )
-        val doublers = mutableListOf<SourceDoubler>()
-
-        for (permanentId in state.getBattlefield()) {
-            val container = state.getEntity(permanentId) ?: continue
-            val card = container.get<CardComponent>() ?: continue
-            if (container.has<FaceDownComponent>() || projected.hasLostAllAbilities(permanentId)) continue
-            val controllerId = projected.getController(permanentId) ?: continue
-            val cardDef = registry.getCard(card.cardDefinitionId) ?: continue
-            // Route through RoomFaceStatics so a doubler printed on an *unlocked* Room face
-            // (CR 709.5) is honoured, not just one in the card's top-level script.
-            for (ability in RoomFaceStatics.activeStaticAbilities(container, cardDef)) {
-                if (ability is AdditionalSourceTriggers) {
-                    // Optional gate ("As long as Cloud is equipped, …") — evaluated against the
-                    // doubler source. When it fails, the whole doubler is inert this batch.
-                    val gate = ability.condition
-                    if (gate != null && !conditionEvaluator.evaluate(
-                            state, gate,
-                            EffectContext(sourceId = permanentId, controllerId = controllerId)
-                        )
-                    ) continue
-                    doublers.add(
-                        SourceDoubler(
-                            doublerSourceId = permanentId,
-                            controllerId = controllerId,
-                            filter = ability.sourceFilter,
-                            excludeSelf = ability.excludeSelf,
-                            alsoSource = ability.alsoSource
-                        )
-                    )
-                }
-            }
-        }
-
+        val doublers = sourceTriggerDoublers.collect(state)
         if (doublers.isEmpty()) return
 
         val duplicates = mutableListOf<PendingTrigger>()
@@ -5380,22 +5340,9 @@ class TriggerDetector(
         val originals = triggers.toList()
         for (doubler in doublers) {
             for (trigger in originals) {
-                if (trigger.controllerId != doubler.controllerId) continue
-                val triggerSourceId = trigger.sourceId
-                // `alsoSource` doubles the doubler's own triggered abilities regardless of the
-                // filter — the "or ~ itself" leg of "a triggered ability of ~ or an Equipment
-                // attached to it" (Cloud, Midgar Mercenary).
-                if (doubler.alsoSource && triggerSourceId == doubler.doublerSourceId) {
+                if (sourceTriggerDoublers.doubles(state, doubler, trigger.sourceId, trigger.controllerId)) {
                     duplicates.add(trigger)
-                    continue
                 }
-                if (doubler.excludeSelf && triggerSourceId == doubler.doublerSourceId) continue
-                if (!predicateEvaluator.matches(
-                        state, projected, triggerSourceId, doubler.filter,
-                        PredicateContext(controllerId = doubler.controllerId, sourceId = doubler.doublerSourceId)
-                    )
-                ) continue
-                duplicates.add(trigger)
             }
         }
 
