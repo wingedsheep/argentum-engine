@@ -563,7 +563,7 @@ object DynamicAmounts {
 
     /**
      * The number of creature types (CR 205.3m) among the permanents matching [filter] that
-     * [player] controls — a Human Officer and a Human Scientist count two. Reads projected
+     * [player] controls — a Human Officer and a Human Scientist count three. Reads projected
      * subtypes, so a changeling contributes every creature type.
      */
     fun creatureTypesAmong(

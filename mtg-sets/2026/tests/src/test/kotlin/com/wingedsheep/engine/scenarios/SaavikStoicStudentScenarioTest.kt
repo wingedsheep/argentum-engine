@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
  * Saavik, Stoic Student ({4}{W} Legendary Creature — Vulcan Advisor, 2/2):
@@ -35,11 +36,10 @@ class SaavikStoicStudentScenarioTest : ScenarioTestBase() {
             game.castSpell(1, "Saavik, Stoic Student").error shouldBe null
             game.resolveStack()
 
-            // The attacking Hill Giant is the only legal target; select it if the engine asks.
-            if (game.getPendingDecision() is ChooseTargetsDecision) {
-                game.selectTargets(listOf(giant)).error shouldBe null
-                game.resolveStack()
-            }
+            // The enters trigger targets a creature, so it prompts even with one legal target.
+            game.getPendingDecision().shouldBeInstanceOf<ChooseTargetsDecision>()
+            game.selectTargets(listOf(giant)).error shouldBe null
+            game.resolveStack()
 
             withClue("Vulcan + Advisor + Bear = 3 damage (the Borg adds nothing) kills the 3/3 Hill Giant") {
                 game.isOnBattlefield("Hill Giant") shouldBe false
