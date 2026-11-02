@@ -2,6 +2,8 @@ package com.wingedsheep.engine.registry
 
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.core.TypeLine
+import com.wingedsheep.sdk.scripting.CardNamePool
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CharacteristicValue
 import com.wingedsheep.sdk.model.ScryfallMetadata
@@ -33,6 +35,12 @@ class CardRegistryTest : FunSpec({
         name = "Forest",
         subtype = Subtype.FOREST,
         metadata = ScryfallMetadata(collectorNumber = collectorNumber),
+    )
+
+    fun land(name: String, typeLine: String = "Land") = CardDefinition(
+        name = name,
+        manaCost = ManaCost.ZERO,
+        typeLine = TypeLine.parse(typeLine),
     )
 
     fun power(card: CardDefinition?) = card?.creatureStats?.power
@@ -95,5 +103,16 @@ class CardRegistryTest : FunSpec({
         live.allCardNames() shouldContainExactlyInAnyOrder listOf("Grizzly Bears", "Forest")
         live.landCardNames() shouldContainExactly listOf("Forest")
         live.getCard("Grizzly Bears")?.name shouldBe "Grizzly Bears"
+    }
+
+    test("the nonbasic-land pool offers lands without the Basic supertype, across both layers") {
+        val live = CardRegistry().apply {
+            register(listOf(forest(), land("Wastes", "Basic Land"), land("Field of Ruin"), bear("Grizzly Bears", 2)))
+        }
+        val overlay = CardRegistry(parent = live).apply { register(land("Okina, Temple to the Grandfathers", "Legendary Land")) }
+
+        live.cardNamesIn(CardNamePool.NONBASIC_LAND) shouldContainExactly listOf("Field of Ruin")
+        overlay.cardNamesIn(CardNamePool.NONBASIC_LAND) shouldContainExactlyInAnyOrder listOf("Field of Ruin", "Okina, Temple to the Grandfathers")
+        overlay.cardNamesIn(CardNamePool.LAND) shouldContainExactlyInAnyOrder listOf("Forest", "Wastes", "Field of Ruin", "Okina, Temple to the Grandfathers")
     }
 })

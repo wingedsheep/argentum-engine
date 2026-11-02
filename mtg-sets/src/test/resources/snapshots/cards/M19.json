@@ -248,6 +248,81 @@
     ]
 }
 
+// Alpine Moon
+{
+    "name": "Alpine Moon",
+    "manaCost": "{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "As this enchantment enters, choose a nonbasic land card name.\nLands your opponents control with the chosen name lose all land types and abilities, and they gain \"{T}: Add one mana of any color.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "SetLandTypesForGroup",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsLand",
+                            "NameEqualsChosenComponent"
+                        ],
+                        "controllerPredicate": "ControlledByOpponent"
+                    }
+                },
+                "landTypes": []
+            },
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Alpine Moon:1",
+                    "cost": "CostTap",
+                    "effect": "AddManaOfChoice",
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                },
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsLand",
+                            "NameEqualsChosenComponent"
+                        ],
+                        "controllerPredicate": "ControlledByOpponent"
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CARD_NAME",
+                "cardNamePool": "NONBASIC_LAND"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "128",
+        "rarity": "RARE",
+        "artist": "Alayna Danner",
+        "flavorText": "\"A rare and fascinating phenomenon.\"\n—Tamiyo",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/2435c810-2baf-4e3b-80ce-542b94694901.jpg?1783934557",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "Alpine Moon's effect doesn't affect supertypes or other card types. It won't remove the artifact card type from an artifact land or remove the legendary supertype from a legendary land."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If an affected land has an ability that triggers \"when\" it enters the battlefield, it will lose that ability before it triggers."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If an affected land has an ability that causes it to enter the battlefield tapped, it will lose that ability before it applies. The same is also true of any other abilities that modify how a land enters the battlefield or apply \"as\" a land enters the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Angel of the Dawn
 {
     "name": "Angel of the Dawn",

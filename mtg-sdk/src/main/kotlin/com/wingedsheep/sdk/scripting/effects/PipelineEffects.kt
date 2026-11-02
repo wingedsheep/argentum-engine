@@ -1649,11 +1649,7 @@ data class ChooseOptionEffect(
             OptionType.COLOR -> "a color"
             OptionType.BASIC_LAND_TYPE -> "a basic land type"
             OptionType.CARD_TYPE -> "a card type"
-            OptionType.CARD_NAME -> when (cardNamePool) {
-                CardNamePool.ANY -> "a card name"
-                CardNamePool.NONLAND -> "a nonland card name"
-                CardNamePool.LAND -> "a land card name"
-            }
+            OptionType.CARD_NAME -> cardNamePool.nounPhrase
         })
     }
 }
