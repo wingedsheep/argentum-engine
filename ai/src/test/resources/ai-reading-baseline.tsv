@@ -897,6 +897,7 @@ Assault on Osgiliath
 Assaultron Dominator
 Assemble the Legion
 Assemble the Players
+Assembly Specialist
 Assembly-Worker
 Assert Authority
 Assert Perfection
@@ -2388,6 +2389,7 @@ Captain America's Shield
 Captain America, Living Legend	intent: TapUntapEffect
 Captain America, Super-Soldier
 Captain America, Wings of Freedom
+Captain Benjamin Sisko	intent: CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→exile)
 Captain Howler, Sea Scourge	polarity: CreateDelayedTriggerEffect; polarity: ModifyStatsEffect
 Captain Lannery Storm
 Captain Mar-Vell, Space-Born
@@ -4887,6 +4889,7 @@ Elfhame Palace
 Elfhame Sanctuary	intent: SkipStepOrPhaseEffect
 Elfhame Wurm
 Elfsworn Giant
+Elim Garak, Simple Tailor
 Eliminate
 Eliminate the Competition
 Eliminate the Impossible
@@ -9963,6 +9966,7 @@ Maja, Bretagard Protector
 Majestic Auricorn
 Majestic Metamorphosis	polarity: BecomeCreatureEffect; timing: BecomeCreatureEffect
 Make Disappear
+Make It So
 Make Your Mark
 Make Your Move
 Make Your Own Luck
@@ -14267,13 +14271,13 @@ Seashell Cameo
 Seaside Citadel
 Seaside Haven
 Seasinger
-Season of Gathering	intent: BudgetModalEffect
+Season of Gathering
 Season of Growth
-Season of Loss	intent: BudgetModalEffect
+Season of Loss
 Season of Renewal
-Season of Weaving	intent: BudgetModalEffect
-Season of the Bold	intent: BudgetModalEffect
-Season of the Burrow	intent: BudgetModalEffect
+Season of Weaving
+Season of the Bold
+Season of the Burrow
 Season of the Witch
 Seasoned Consultant
 Seasoned Cryomancer

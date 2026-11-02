@@ -749,6 +749,14 @@ object CardIntentAnalyzer {
             if (perMode.all { IntentTag.COUNTERSPELL in it }) union else union - IntentTag.COUNTERSPELL
         }
 
+        // "Choose up to five {P} worth of modes" (the Bloomburrow Seasons) can spend its budget on
+        // any one mode, so it reads as the union of its modes exactly as "choose one" does.
+        is BudgetModalEffect -> {
+            val perMode = effect.modes.map { mode -> effectTags(mode.effect) }
+            val union = perMode.flatMapTo(HashSet()) { it }
+            if (perMode.all { IntentTag.COUNTERSPELL in it }) union else union - IntentTag.COUNTERSPELL
+        }
+
         else -> emptySet()
     }
 
@@ -831,6 +839,7 @@ object CardIntentAnalyzer {
             effect.counterType.ptDelta?.second?.takeIf { it < 0 && hitsAnotherPermanent(effect.target) }?.let { -it * effect.count }
         // The largest creature any one mode answers, the union [tagsOf] reads for the tags.
         is ModalEffect -> effect.modes.flatMap { readingLeaves(it.effect) }.mapNotNull { reachOf(it) }.maxOrNull()
+        is BudgetModalEffect -> effect.modes.flatMap { readingLeaves(it.effect) }.mapNotNull { reachOf(it) }.maxOrNull()
         else -> null
     }
 
