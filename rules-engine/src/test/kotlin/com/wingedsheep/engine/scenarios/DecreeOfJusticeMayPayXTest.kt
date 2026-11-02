@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseNumberDecision
+import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -17,10 +18,10 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  *  Soldier creature tokens."
  *
  * The trigger lowers to `GatedEffect(gate = Gate.MayPayX, then = CreateTokenEffect(X 1/1 Soldiers))`,
- * resolved by `GatedEffectExecutor.executeMayPayX`: a 0..max-affordable number chooser whose chosen
- * value is paid in generic mana and bound into `then`'s context as X. The three cases pin the gate's
- * success / decline / unaffordable-skip branches against the card's oracle rulings ("X can be zero,
- * but then [nothing happens]").
+ * resolved by `GatedEffectExecutor.executeMayPayX`: a "Pay {X}?" yes/no, then on yes a
+ * 0..max-affordable number chooser whose chosen value is paid in generic mana and bound into
+ * `then`'s context as X. Declining and paying {0} are separate answers (X = 0 is a payment); the
+ * cases pin pay / pay-zero / decline / no-mana against the card's ruling that X can be zero.
  */
 class DecreeOfJusticeMayPayXTest : ScenarioTestBase() {
 
@@ -45,8 +46,12 @@ class DecreeOfJusticeMayPayXTest : ScenarioTestBase() {
                 // The "when you cycle" trigger resolves before the cycling draw and pauses on the
                 // MayPayX number chooser. Cycling tapped 3 of 6 Plains, leaving 3 payable.
                 game.resolveStack()
+                withClue("MayPayX first asks whether to pay at all") {
+                    game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
+                }
+                game.answerYesNo(true)
                 val decision = game.getPendingDecision()
-                withClue("MayPayX must surface a number chooser") {
+                withClue("Paying surfaces a number chooser") {
                     decision.shouldBeInstanceOf<ChooseNumberDecision>()
                 }
                 withClue("Max X = untapped Plains after cycling = 3") {
@@ -61,7 +66,7 @@ class DecreeOfJusticeMayPayXTest : ScenarioTestBase() {
                 }
             }
 
-            test("declining (X=0) creates no tokens") {
+            test("paying X=0 creates no tokens") {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")
                     .withCardInHand(1, "Decree of Justice")
@@ -74,19 +79,44 @@ class DecreeOfJusticeMayPayXTest : ScenarioTestBase() {
 
                 game.cycleCard(1, "Decree of Justice")
                 game.resolveStack()
+                game.answerYesNo(true)
                 game.getPendingDecision().shouldBeInstanceOf<ChooseNumberDecision>()
 
                 game.chooseNumber(0)
                 game.resolveStack()
 
-                withClue("Declining the payment should create no tokens (X can be zero → nothing)") {
+                withClue("Paying {0} creates zero tokens") {
                     game.findPermanents("Soldier Token").shouldBe(emptyList())
                 }
             }
 
-            test("no payable mana skips the gate silently — no number chooser, no tokens") {
-                // Exactly enough Plains for cycling {2}{W} (3) and none left over: the gate is
-                // unaffordable, so executeMayPayX skips without prompting (former executor parity).
+            test("declining creates no tokens and asks for no number") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInHand(1, "Decree of Justice")
+                    .withLandsOnBattlefield(1, "Plains", 6)
+                    .withCardInLibrary(1, "Grizzly Bears")
+                    .withCardInLibrary(1, "Hill Giant")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.cycleCard(1, "Decree of Justice")
+                game.resolveStack()
+                game.answerYesNo(false)
+
+                withClue("Declining ends the gate without a number chooser") {
+                    (game.getPendingDecision() is ChooseNumberDecision) shouldBe false
+                }
+                game.resolveStack()
+                withClue("Declining the payment creates no tokens") {
+                    game.findPermanents("Soldier Token").shouldBe(emptyList())
+                }
+            }
+
+            test("with no payable mana, paying is still offered and pays X=0 without a number chooser") {
+                // Exactly enough Plains for cycling {2}{W} (3) and none left over: {0} is the only
+                // payment, so "yes" pays it outright.
                 val game = scenario()
                     .withPlayers("Player1", "Player2")
                     .withCardInHand(1, "Decree of Justice")
@@ -99,10 +129,15 @@ class DecreeOfJusticeMayPayXTest : ScenarioTestBase() {
 
                 game.cycleCard(1, "Decree of Justice")
                 game.resolveStack()
-
-                withClue("Unaffordable MayPayX must not pause for a number chooser") {
-                    game.hasPendingDecision() shouldBe false
+                withClue("Paying {0} is still a choice") {
+                    game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
                 }
+                game.answerYesNo(true)
+
+                withClue("With nothing payable but 0, no number chooser follows") {
+                    (game.getPendingDecision() is ChooseNumberDecision) shouldBe false
+                }
+                game.resolveStack()
                 withClue("No mana to pay → no Soldier tokens") {
                     game.findPermanents("Soldier Token").shouldBe(emptyList())
                 }

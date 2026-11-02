@@ -3755,6 +3755,124 @@
     ]
 }
 
+// Isareth the Awakener
+{
+    "name": "Isareth the Awakener",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "Deathtouch\nWhenever Isareth attacks, you may pay {X}. When you do, return target creature card with mana value X from your graveyard to the battlefield with a corpse counter on it. If that creature would leave the battlefield, exile it instead of putting it anywhere else.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Isareth the Awakener:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayPayX",
+                    "then": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": []
+                        },
+                        "optional": false,
+                        "reflexiveEffect": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "MoveToZone",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "destination": "Battlefield",
+                                    "fromZone": "Graveyard",
+                                    "entryCounters": [
+                                        {
+                                            "counterType": "CORPSE"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "GrantExileOnLeave",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            ]
+                        },
+                        "reflexiveTargetRequirements": [
+                            {
+                                "type": "TargetObject",
+                                "filter": {
+                                    "baseFilter": {
+                                        "cardPredicates": [
+                                            "IsCreature",
+                                            {
+                                                "type": "CompareNumericProperty",
+                                                "property": "MANA_VALUE",
+                                                "operator": "EQ",
+                                                "amount": "XValue"
+                                            }
+                                        ],
+                                        "controllerPredicate": "OwnedByYou"
+                                    },
+                                    "zone": "Graveyard"
+                                },
+                                "id": "t0"
+                            }
+                        ],
+                        "descriptionOverride": "return target creature card with mana value X from your graveyard to the battlefield with a corpse counter on it. If that creature would leave the battlefield, exile it instead of putting it anywhere else."
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "rarity": "RARE",
+        "artist": "Jason Rainville",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/74e49567-8ad6-4ce9-a55d-4db5e0fd9532.jpg?1783934568",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "Isareth's triggered ability goes on the stack without a target. While that ability is resolving, you may pay {X}. When you do, a second ability triggers and you pick a target creature card to return. This is different from abilities that say \"If you do . . .\" in that players may cast spells and activate abilities after mana is paid and the target creature card is chosen, but before that card is returned."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Because all attacking creatures are chosen at once, a creature returned this way can't attack during the same combat as it returns, even if it has haste."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If a card in your graveyard has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If you somehow remove a corpse counter from a creature Isareth has returned to the battlefield, the replacement effect that will exile it continues to apply. The counter is only to help remind you which creatures will be exiled if they would leave the battlefield."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If Isareth leaves the battlefield, the replacement effect continues to apply. If one of the creatures it returned would leave the battlefield, it'll be exiled instead."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Because to die means to be put into a graveyard from the battlefield, a creature that is exiled instead doesn't \"die.\" Abilities that would trigger when it dies won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Isolate
 {
     "name": "Isolate",

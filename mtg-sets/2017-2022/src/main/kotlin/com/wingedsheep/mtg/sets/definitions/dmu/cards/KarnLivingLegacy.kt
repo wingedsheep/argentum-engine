@@ -27,10 +27,9 @@ private const val KARN_EMBLEM = "Tap an untapped artifact you control: This embl
  * −7: You get an emblem with "Tap an untapped artifact you control: This emblem deals 1 damage to
  * any target."
  *
- * The −1's "pay any amount of mana" is [Effects.MayPayX]: paying 0 looks at no cards, which is
- * exactly the decline branch. The −7 emblem's ability is the emblem's *own*
- * (`ownedActivatedAbilities`), so the emblem is the source of the damage and the ability keeps
- * working after Karn is gone.
+ * The −1's "pay any amount of mana" is [Effects.MayPayX]: declining and paying 0 both look at no
+ * cards. The −7 emblem's ability is the emblem's *own* (`ownedActivatedAbilities`), so the emblem
+ * is the source of the damage and the ability keeps working after Karn is gone.
  */
 val KarnLivingLegacy = card("Karn, Living Legacy") {
     val emblemPing = grantedActivatedAbility {

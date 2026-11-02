@@ -3005,9 +3005,8 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
     stored count to a modal's `dynamicChooseCount` is the "choose up to **that many** —" payoff (Hawkeye), and it
     is equally at home in "put **that many** +1/+1 counters" (`DynamicAmounts.timesPaid()` into `AddCounters`).
   - Distinct from `Gate.MayPayX`, which is a single *variable-size* generic payment binding X: no cap, no repeat
-    unit, no colored pips. **Mind the opposite floor conventions** when picking between them: `MayPayX` prompts
-    `0..max` and reads 0 as "decline", while `PayRepeatedly` prompts `1..cap` because the wrapper already asked
-    the decline question. Reach for `MayPayX` when the payment *is* X; for `PayRepeatedly` when a fixed unit —
+    unit, no colored pips. Both ask the decline question first: `MayPayX` then prompts `0..max`, where 0 is a
+    real payment ("pay {0}"), while `PayRepeatedly` prompts `1..cap`. Reach for `MayPayX` when the payment *is* X; for `PayRepeatedly` when a fixed unit —
     especially a colored one — repeats.
 
 ### Tokens & emblems
@@ -4619,12 +4618,14 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
     paused/continuation-drain paths. The executor pre-pushes a `GatedActionContinuation` so a paused
     action auto-resumes and evaluates after its own continuations drain. Replaces `Effects.IfYouDo`
     (see "Sequencing & conditional" below).
-  - `Gate.MayPayX` — **not a yes/no, a number chooser.** "You may pay {X}. If you do, [then]." The
-    decision-maker is prompted for a number 0..(most generic mana they can produce); paying X > 0
-    succeeds → `then` runs with the chosen X bound into the context (read via `DynamicAmount.XValue`),
-    X = 0 declines → `otherwise`. An unaffordable gate (no mana) is skipped silently. A parameterless
-    `data object` (the {X} cost is implicit). The executor builds a `ChooseNumberDecision` and reuses
-    the existing `MayPayXContinuation`/`resumeMayPayX` to auto-tap and bind X. Replaces
+  - `Gate.MayPayX` — **a yes/no, then a number chooser.** "You may pay {X}. If you do, [then]." The
+    decision-maker is asked "Pay {X}?": no declines → `otherwise`. Yes prompts for a number
+    0..(most generic mana they can produce) and `then` runs with the chosen X bound into the context
+    (read via `DynamicAmount.XValue`). **X = 0 is a payment, not a decline** — "when you do, return
+    target creature card with mana value X" can return a mana value 0 card (Isareth the Awakener,
+    Halo Forager). With no mana available, yes pays X = 0 without the number prompt. A parameterless
+    `data object` (the {X} cost is implicit). One `MayPayXContinuation` answers both prompts
+    (`resumeMayPayX`), auto-tapping and binding X. Replaces
     `Effects.MayPayX` (see "Optional & gated" below). For the *repeated fixed* cost — "pay {1} up
     to three times", where the count rather than the size is the variable — use
     `Effects.PayRepeatedly` (see "Mana" above) as the gate's cost or as a reflexive trigger's action.
@@ -4757,8 +4758,9 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
 - `Effects.MayPayX(then, decisionMaker = null)` — "You may pay {X}. If you do, [then]." Lowers to
   `GatedEffect(Gate.MayPayX, then = then, decisionMaker = decisionMaker)`. `decisionMaker` routes the
   number prompt *and* the payment to another player ("that player may pay any amount of mana" —
-  Power Leak passes `PlayerRef(Player.TriggeringPlayer)`). Prompts a 0..max-affordable number chooser; paying X auto-taps
-  X generic mana and binds the chosen X into `then`'s context (read via `DynamicAmount.XValue`).
+  Power Leak passes `PlayerRef(Player.TriggeringPlayer)`). Asks "Pay {X}?", then a 0..max-affordable number chooser
+  (0 is a real payment); paying X auto-taps X generic mana and binds the chosen X into `then`'s context (read via
+  `DynamicAmount.XValue`).
   Decree of Justice's cycling trigger, Hollow Specter's combat-damage trigger.
 - `Effects.MayPayAnyAmountOfLife(then)` — "You may pay any amount of life. If you do, [then]." Lowers to
   `GatedEffect(Gate.MayPayAnyAmountOfLife, then = then)`; `then` reads the life paid as

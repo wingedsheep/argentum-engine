@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseNumberDecision
+import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.core.NumberChosenResponse
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
@@ -71,6 +72,10 @@ class PowerLeakScenarioTest : FunSpec({
     fun resolveAndPay(board: Board, x: Int) {
         val driver = board.driver
         driver.bothPass()
+        val consent = driver.pendingDecision
+        consent.shouldBeInstanceOf<YesNoDecision>()
+        consent.playerId shouldBe board.victim
+        driver.submitYesNo(board.victim, true).error shouldBe null
         val decision = driver.pendingDecision
         decision.shouldBeInstanceOf<ChooseNumberDecision>()
         withClue("the enchanted enchantment's controller chooses and pays, up to their own mana") {
@@ -131,9 +136,11 @@ class PowerLeakScenarioTest : FunSpec({
         }
     }
 
-    test("with no mana to pay, there is no prompt and the full 2 damage is dealt") {
+    test("with no mana to pay, paying {0} asks for no number and the full 2 damage is dealt") {
         val board = setUp(islands = 0)
         board.driver.bothPass()
+        board.driver.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
+        board.driver.submitYesNo(board.victim, true).error shouldBe null
         board.driver.pendingDecision shouldBe null
         board.driver.getLifeTotal(board.victim) shouldBe 18
     }

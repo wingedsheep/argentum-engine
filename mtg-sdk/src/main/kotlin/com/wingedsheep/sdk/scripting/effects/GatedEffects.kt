@@ -314,12 +314,12 @@ sealed interface Gate {
 
     /**
      * Optionally pay a *variable* amount of generic mana — "You may pay {X}. If you do, [then]."
-     * Unlike [MayPay] (a fixed cost resolved by a yes/no), here the *amount* is the decision: the
-     * decision-maker is prompted for a number from 0 to the most generic mana they can currently
-     * produce. Paying X > 0 succeeds → [GatedEffect.then] runs with the chosen X bound into the
-     * resolution context (read via `DynamicAmount.XValue`); declining (X = 0) is failure →
-     * [GatedEffect.otherwise] (none for the current cards). An unaffordable gate (no mana available)
-     * is skipped silently. Carries no fields — the {X} cost is implicit and the amount is chosen at
+     * Unlike [MayPay] (a fixed cost), the *amount* is also a decision: after "Pay {X}?" (no →
+     * [GatedEffect.otherwise]) the decision-maker names a number from 0 to the most generic mana
+     * they can currently produce, and [GatedEffect.then] runs with that X bound into the resolution
+     * context (read via `DynamicAmount.XValue`). X = 0 is a real payment, not a decline — Isareth
+     * the Awakener can return a mana value 0 creature card; with no mana available, "yes" pays
+     * X = 0 without the number prompt. Carries no fields — the {X} cost is implicit and the amount is chosen at
      * resolution. Replaces the `Effects.MayPayX` wrapper (see its facade).
      */
     @SerialName("Gate.MayPayX")

@@ -61,6 +61,7 @@ class RoseRoomTreasurerScenarioTest : ScenarioTestBase() {
                 game.castSpell(1, "Test Beast").error shouldBe null
                 game.resolveStack()
 
+                game.answerYesNo(true).error shouldBe null
                 (game.getPendingDecision() is ChooseNumberDecision) shouldBe true
                 game.chooseNumber(3).error shouldBe null
 
@@ -82,8 +83,7 @@ class RoseRoomTreasurerScenarioTest : ScenarioTestBase() {
                 game.castSpell(1, "Test Beast").error shouldBe null
                 game.resolveStack()
 
-                (game.getPendingDecision() is ChooseNumberDecision) shouldBe true
-                game.chooseNumber(0).error shouldBe null
+                game.answerYesNo(false).error shouldBe null
                 game.resolveStack()
 
                 game.hasPendingDecision() shouldBe false

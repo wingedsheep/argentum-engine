@@ -85,6 +85,7 @@ class JuganDefendsTheTempleScenarioTest : ScenarioTestBase() {
                     val before = game.findPermanents("Grizzly Bears").toSet()
                     game.castSpell(1, "Grizzly Bears").error shouldBe null
                     game.resolveStack()
+                    game.answerYesNo(true).error shouldBe null
                     game.getPendingDecision().shouldBeInstanceOf<ChooseNumberDecision>()
                     game.chooseNumber(1).error shouldBe null
                     game.resolveStack()

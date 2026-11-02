@@ -64,6 +64,7 @@ class WildbornPreserverScenarioTest : ScenarioTestBase() {
                 game.castSpell(1, "Test Beast").error shouldBe null
                 game.resolveStack()
 
+                game.answerYesNo(true).error shouldBe null
                 val decision = game.getPendingDecision()
                 (decision is ChooseNumberDecision) shouldBe true
                 game.chooseNumber(3).error shouldBe null
@@ -72,7 +73,7 @@ class WildbornPreserverScenarioTest : ScenarioTestBase() {
                 plusOneCounters(game) shouldBe 3
             }
 
-            test("declining the payment (X = 0) leaves the Preserver untouched") {
+            test("declining the payment leaves the Preserver untouched") {
                 val game = scenario()
                     .withPlayers()
                     .withCardOnBattlefield(1, "Wildborn Preserver")
@@ -85,8 +86,7 @@ class WildbornPreserverScenarioTest : ScenarioTestBase() {
                 game.castSpell(1, "Test Beast").error shouldBe null
                 game.resolveStack()
 
-                (game.getPendingDecision() is ChooseNumberDecision) shouldBe true
-                game.chooseNumber(0).error shouldBe null
+                game.answerYesNo(false).error shouldBe null
                 game.resolveStack()
 
                 plusOneCounters(game) shouldBe 0

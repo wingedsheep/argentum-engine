@@ -124,9 +124,8 @@ class GatedEffectExecutor(
             return executeDoAction(state, gate, effect, context)
         }
 
-        // Gate.MayPayX: a number-chooser pay-gate, not a yes/no — prompt 0..max affordable generic
-        // mana, pay the chosen X, and run `then` with X bound into the context. Reuses the existing
-        // MayPayXContinuation / resumeMayPayX machinery (only the type recognition moved onto the frame).
+        // Gate.MayPayX: "Pay {X}?" and then, on yes, a 0..max affordable number chooser — X = 0 is a
+        // real payment, distinct from declining. Both answers go to MayPayXContinuation / resumeMayPayX.
         if (gate is Gate.MayPayX) {
             return executeMayPayX(state, effect, context)
         }
@@ -316,7 +315,7 @@ class GatedEffectExecutor(
             is Gate.MayPay -> effect.hint
             is Gate.WhenCondition -> effect.hint // unreachable: handled by the synchronous branch above
             is Gate.DoAction -> effect.hint // unreachable: handled by the action-drain branch above
-            is Gate.MayPayX -> effect.hint // unreachable: handled by the number-chooser branch above
+            is Gate.MayPayX -> effect.hint // unreachable: handled by its own yes/no-then-number branch above
             is Gate.MayPayAnyAmountOfLife -> effect.hint // unreachable: handled by the number-chooser branch above
             is Gate.OnceEachTurn -> effect.hint // unreachable: handled by the budget branch above
         }
@@ -594,11 +593,13 @@ class GatedEffectExecutor(
     }
 
     /**
-     * Resolve a [Gate.MayPayX] gate (the lowered `Effects.MayPayX`). Computes the most generic mana
-     * the decision-maker can produce and, if any, pauses with a 0..max number chooser; the existing
-     * [MayPayXContinuation] resumer (`resumeMayPayX`) then auto-taps the chosen X and runs
-     * [GatedEffect.then] with `xValue` bound into the context. An unaffordable gate (max <= 0) falls
-     * through to [GatedEffect.otherwise] (or nothing), mirroring the former executor's silent skip.
+     * Resolve a [Gate.MayPayX] gate (the lowered `Effects.MayPayX`). Two answers, because declining
+     * and paying {0} are different choices: X = 0 is a real payment, so "you may pay {X}. When you
+     * do, return target creature card with mana value X" can return a mana value 0 card (Isareth
+     * the Awakener, Halo Forager). First a "Pay {X}?" yes/no — "no" runs [GatedEffect.otherwise]
+     * (or nothing) — then, on "yes", a 0..max-affordable number chooser; [MayPayXContinuation]
+     * answers both (`resumeMayPayX`), auto-tapping the chosen X and running [GatedEffect.then] with
+     * `xValue` bound. With no mana available the "yes" pays X = 0 without asking for a number.
      */
     private fun executeMayPayX(
         state: GameState,
@@ -609,31 +610,27 @@ class GatedEffectExecutor(
             ?.let { TargetResolutionUtils.resolvePlayerTarget(it, context, state) }
             ?: context.controllerId
 
-        val maxAffordable = manaSolver.getAvailableManaCount(state, playerId)
-        if (maxAffordable <= 0) {
-            return effect.otherwise
-                ?.let { effectExecutor(state, it, context) }
-                ?: EffectResult.success(state)
-        }
-
         val sourceName = context.sourceId?.let { sourceId ->
             state.getEntity(sourceId)?.get<CardComponent>()?.name
         }
+        val decisionContext = decisionContext(context, sourceName)
 
-        val decision = { decisionId: String -> ChooseNumberDecision(
+        val decision = { decisionId: String -> YesNoDecision(
             id = decisionId,
             playerId = playerId,
-            prompt = "Pay {X}? Choose X (0 to decline)",
-            context = decisionContext(context, sourceName),
-            minValue = 0,
-            maxValue = maxAffordable
+            prompt = SourceReferenceText.sentence(effect, SourceReferenceText.referenceFor(state, context.sourceId)),
+            context = decisionContext,
+            yesText = "Pay {X}",
+            noText = "Don't pay",
+            hint = effect.hint
         ) }
 
         val continuation = MayPayXContinuation(
             playerId = playerId,
             sourceName = sourceName,
             effect = effect.then,
-            maxX = maxAffordable,
+            otherwise = effect.otherwise,
+            decisionContext = decisionContext,
             effectContext = context
         )
 
