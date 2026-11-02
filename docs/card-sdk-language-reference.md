@@ -18213,6 +18213,15 @@ the rider twice (Pyromancer's Goggles: "That many copies will be created").
   until the permanent leaves the battlefield. `keyword = Keyword.RIOT` (Domri, Chaos Bringer) is
   read at resolution: the spell's enters-with counter-or-haste choice is synthesized from the frozen
   grant (`RiotSynthesis`), so the rider gives real riot, not a display-only keyword.
+- `ManaSpellRider.EntersWithCountersWhenSpent(spellFilter, counterType = PLUS_ONE_PLUS_ONE, count = 1)` — Guildmages'
+  Forum (`GameObjectFilter.Creature and GameObjectFilter.Multicolored`): "If that mana is spent on a [filter] spell,
+  that creature enters with an additional +1/+1 counter on it." Like `GrantsKeywordWhenSpent` it puts **nothing**
+  on the stack: on a match (at payment time, against the spell's cast characteristics) the counters are owed to
+  the spell (`SpellOnStackComponent.additionalEntryCounters`) and placed as the permanent enters, so
+  counter-placement replacements (Hardened Scales) apply then; a countered spell carries none into its next
+  zone, a copy owes none, and each rider-carrying mana spent owes its own `count`. For the *triggered* wording —
+  "When you spend this mana to cast …, it enters with an additional +1/+1 counter" (Jade Orb of Dragonkind) —
+  use `TriggersWhenSpent` with `AddCounters(…, TriggeringEntity)` instead.
 
 ### `ManaExpiry`<a id="manaexpiry"></a>
 

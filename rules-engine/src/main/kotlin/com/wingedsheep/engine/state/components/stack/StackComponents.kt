@@ -42,7 +42,8 @@ data class SpellOnStackComponent(
      * counter-placement replacements see them then. Bought with the optional "pay any amount of
      * mana" additional cost of an `AdditionalManaForEntryCounters` static (Chorus of the Conclave),
      * or put on the spell while it's on the stack by a counter effect — "that creature enters with
-     * an additional +1/+1 counter on it" (Runadi, Jade Orb of Dragonkind). Fixed when owed, so the
+     * an additional +1/+1 counter on it" (Runadi, Jade Orb of Dragonkind), or at payment time by a
+     * `ManaSpellRider.EntersWithCountersWhenSpent` (Guildmages' Forum). Fixed when owed, so the
      * counters arrive even if whatever granted them has left the battlefield before the spell
      * resolves. Not copied (CR 707.2): a copy of the spell owes nothing.
      */
