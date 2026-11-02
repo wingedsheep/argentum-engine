@@ -1696,6 +1696,11 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
                     if (excludeSelf || excludeTriggeringEntity) append("other ")
                     append(pluralize(filter.description))
                 }
+                Aggregation.DISTINCT_CREATURE_TYPES -> {
+                    append("the number of creature types among ")
+                    if (excludeSelf || excludeTriggeringEntity) append("other ")
+                    append(pluralize(filter.description))
+                }
                 Aggregation.DISTINCT_COUNTER_TYPES -> {
                     append("the number of different kinds of counters among ")
                     if (excludeSelf || excludeTriggeringEntity) append("other ")
@@ -1895,6 +1900,10 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
                 }
                 Aggregation.DISTINCT_PLANESWALKER_SUBTYPES -> {
                     append("the number of planeswalker types among ")
+                    append(pluralize(filter.description))
+                }
+                Aggregation.DISTINCT_CREATURE_TYPES -> {
+                    append("the number of creature types among ")
                     append(pluralize(filter.description))
                 }
                 Aggregation.DISTINCT_COUNTER_TYPES -> {

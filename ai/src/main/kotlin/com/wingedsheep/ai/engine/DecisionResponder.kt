@@ -206,7 +206,7 @@ class DecisionResponder(
             is SplitPilesDecision -> respondSplitPiles(state, decision, playerId)
             is ChooseOptionDecision -> respondOption(state, decision, playerId)
             is ChooseReplacementDecision -> respondReplacement(decision)
-            is BudgetModalDecision -> respondBudgetModal(decision)
+            is BudgetModalDecision -> respondBudgetModal(state, decision, playerId)
             is FlipOntoBattlefieldDecision -> FlipAim.respond(state, decision, playerId)
             is AssignDamageDecision -> respondDamageAssignment(state, decision)
             is CombatResolutionDecision -> respondCombatResolution(state, decision, playerId)
@@ -1342,7 +1342,53 @@ class DecisionResponder(
 
     // ── Budget modal ─────────────────────────────────────────────────────
 
-    private fun respondBudgetModal(decision: BudgetModalDecision): DecisionResponse {
+    /**
+     * "Choose up to five {P} worth of modes" (the Bloomburrow Seasons). Every spend of the budget
+     * is simulated — each multiset of modes whose pawprints fit, the empty one included, since the
+     * modes run in printed order whatever order they were picked in — and the one leaving the best
+     * board wins. A five-pawprint Season has sixteen such spends, so this stays cheap.
+     *
+     * Cheapest-first was the old answer and is still the fallback (an answer asked for outside a
+     * live decision, or a budget too wide to enumerate): it cast Season of Loss as five rounds of
+     * "each player sacrifices a creature" even with lethal sitting in the three-pawprint mode.
+     */
+    private fun respondBudgetModal(state: GameState, decision: BudgetModalDecision, playerId: EntityId): DecisionResponse {
+        if (state.pendingDecision?.id == decision.id) {
+            val spends = budgetSpends(decision)
+            if (spends != null) {
+                val best = spends.maxByOrNull { selected ->
+                    evaluateResult(state, simulator.simulateDecision(state, BudgetModalResponse(decision.id, selected)), playerId)
+                }
+                if (best != null) return BudgetModalResponse(decision.id, best)
+            }
+        }
+        return BudgetModalResponse(decision.id, greedyBudgetModes(decision))
+    }
+
+    /**
+     * Every multiset of mode indices whose costs fit [BudgetModalDecision.budget], largest spends
+     * first so a tie keeps the fuller one; a free mode is taken at most once. Null when there are
+     * more than [MAX_BUDGET_SPENDS] — the caller falls back to the greedy answer.
+     */
+    private fun budgetSpends(decision: BudgetModalDecision): List<List<Int>>? {
+        val spends = mutableListOf<List<Int>>()
+        fun extend(from: Int, remaining: Int, chosen: List<Int>): Boolean {
+            spends += chosen
+            if (spends.size > MAX_BUDGET_SPENDS) return false
+            for (index in from until decision.modes.size) {
+                val cost = decision.modes[index].cost
+                if (cost > remaining) continue
+                // A free mode never consumes budget: take it once, then move past it.
+                val next = if (cost <= 0) index + 1 else index
+                if (!extend(next, remaining - cost.coerceAtLeast(0), chosen + index)) return false
+            }
+            return true
+        }
+        if (!extend(0, decision.budget, emptyList())) return null
+        return spends.sortedByDescending { selected -> selected.sumOf { decision.modes[it].cost } }
+    }
+
+    private fun greedyBudgetModes(decision: BudgetModalDecision): List<Int> {
         // Greedy: pick cheapest mode repeatedly until budget exhausted
         val sorted = decision.modes.withIndex().sortedBy { it.value.cost }
         val selected = mutableListOf<Int>()
@@ -1360,7 +1406,7 @@ class DecisionResponder(
                 remaining -= mode.cost
             }
         }
-        return BudgetModalResponse(decision.id, selected)
+        return selected
     }
 
     // ── Damage assignment ────────────────────────────────────────────────
@@ -1859,6 +1905,12 @@ class DecisionResponder(
     private companion object {
         /** Score movement below this is the evaluation not seeing a proliferate recipient. */
         const val PROLIFERATE_EPSILON = 1e-6
+
+        /**
+         * The most budget-modal spends simulated one by one. A five-pawprint Season with {P},
+         * {P}{P} and {P}{P}{P} modes has 16; a wider budget falls back to cheapest-first.
+         */
+        const val MAX_BUDGET_SPENDS = 40
 
         /**
          * An option list longer than this is open-ended — every creature type, every card name —

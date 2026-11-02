@@ -372,7 +372,13 @@ value class Subtype(val value: String) {
             "Whale", "Wizard", "Wolf", "Wolverine", "Wombat", "Worm", "Wraith",
             "Wurm",
             "Yeti",
-            "Zombie", "Zubera"
+            "Zombie", "Zubera",
+            // Star Trek (TRK) species and creature types.
+            "Aenar", "Android", "Bajoran", "Betazoid", "Bolian", "Borg", "Brikar",
+            "Cardassian", "Denobulan", "El-Aurian", "Excalbian", "Ferengi", "Hirogen",
+            "Illyrian", "Jem'Hadar", "Kelpien", "Kwejian", "Medusan", "Melkotian",
+            "Na'kuhl", "Orion", "Q", "Romulan", "Talaxian", "Talosian", "Tamarian",
+            "Tellarite", "Tholian", "Tribble", "Trill", "Vau-N'Akat", "Vorta", "Xindi"
         ).sorted()
 
         /** All artifact types per comprehensive rules 205.3g. */

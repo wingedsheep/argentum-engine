@@ -217,11 +217,11 @@ Pay the printed cost and discard this card to find and reveal a basic land, put 
 
 Cards: Cold-Blooded Crew, Free Borg Revolutionaries, Horta, Humpback Whales, Rogue Artificial Intelligence
 
-### - [ ] Federation (5 cards)
+### - [x] Federation (5 cards)
 
 Ability word counting the distinct creature types among non-Borg creatures you control, for mana, damage, pump, selection or spell copies.
 
-**Engine support:** ❌ Missing aggregation over the union of creature subtypes of a filtered projected group. Distinct CARD types and largest shared tribe counts are different quantities.
+**Engine support:** ✅ `Aggregation.DISTINCT_CREATURE_TYPES`; facade `DynamicAmounts.federation()` (non-Borg creatures you control). The Star Trek creature types are in `Subtype.ALL_CREATURE_TYPES`.
 
 Cards: Captain Jonathan Archer, Hoshi Sato, Exolinguist, Infinite Diversity, Saavik, Stoic Student, Starfleet Academy
 

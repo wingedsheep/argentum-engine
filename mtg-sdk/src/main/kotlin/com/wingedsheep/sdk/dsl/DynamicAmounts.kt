@@ -562,6 +562,27 @@ object DynamicAmounts {
         )
 
     /**
+     * The number of creature types (CR 205.3m) among the permanents matching [filter] that
+     * [player] controls — a Human Officer and a Human Scientist count three. Reads projected
+     * subtypes, so a changeling contributes every creature type.
+     */
+    fun creatureTypesAmong(
+        filter: GameObjectFilter = GameObjectFilter.Creature,
+        player: Player = Player.You,
+    ): DynamicAmount = DynamicAmount.AggregateBattlefield(
+        player = player,
+        filter = filter,
+        aggregation = Aggregation.DISTINCT_CREATURE_TYPES
+    )
+
+    /**
+     * Federation (Star Trek ability word) — "the number of creature types among non-Borg
+     * creatures you control".
+     */
+    fun federation(player: Player = Player.You): DynamicAmount =
+        creatureTypesAmong(GameObjectFilter.Creature.notSubtype(Subtype("Borg")), player)
+
+    /**
      * Number of differently named lands [player] controls.
      * Used for cards like All-Fates Scroll: counts each land you control once,
      * but only if its English name isn't shared with another already-counted land.

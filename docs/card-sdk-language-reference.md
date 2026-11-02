@@ -17210,7 +17210,11 @@ forbids `DynamicAmount.X` in card definitions.
   also carries are excluded rather than a fixed planeswalker-type list included, so a newly printed
   walker is never silently missed; facade `DynamicAmounts.planeswalkerTypes(player)` — Tam, the
   Possibility's "proliferate X times, where X is the number of planeswalker types among
-  planeswalkers you control"), `DISTINCT_COUNTER_TYPES` (the number of different kinds of counters present
+  planeswalkers you control"), `DISTINCT_CREATURE_TYPES` (creature types, CR 205.3m, among the
+  matched permanents — a Human Officer and a Human Scientist count three; reads projected subtypes, so a
+  changeling contributes every creature type; facades `DynamicAmounts.creatureTypesAmong(filter, player)`
+  and `DynamicAmounts.federation(player)` — Star Trek's Federation ability word, "the number of creature
+  types among non-Borg creatures you control"), `DISTINCT_COUNTER_TYPES` (the number of different kinds of counters present
   across the group — same kind on several permanents counts once), and `DISTINCT_VALUES`
   (the number of *distinct values* of the configured `property` — Selvala, Eager Trailblazer's
   "the number of different powers among creatures you control" via
