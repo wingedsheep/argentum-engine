@@ -295,6 +295,11 @@ class Strategist(
      * null check — the numbers are already being computed either way, so recording adds no search.
      */
     private val insightSink: AiInsightSink? = null,
+    /**
+     * [AiProfile.holdRemovalForUnseenThreats]: the opponents' decklists, so removal patience can
+     * weigh the creatures still to come. Null leaves [HoldPolicy] reading the board alone.
+     */
+    private val opponentKnowledge: com.wingedsheep.ai.engine.hidden.OpponentKnowledge? = null,
 ) {
     private val holdPolicy = HoldPolicy(
         intents,
@@ -319,6 +324,7 @@ class Strategist(
         borrowedCreaturesGoHome = borrowedCreaturesGoHome,
         boardPresenceWeight = boardPresenceWeight,
         legalActions = simulator::getLegalActions,
+        opponentKnowledge = opponentKnowledge,
     )
 
     /**

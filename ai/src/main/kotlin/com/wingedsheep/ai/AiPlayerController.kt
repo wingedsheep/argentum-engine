@@ -44,6 +44,15 @@ interface AiPlayerController {
      */
     fun setDeckList(deckList: Map<String, Int>, archetype: String? = null)
 
+    /**
+     * Where to read each opponent's registered decklist (card name → copies), by player id; null
+     * for a seat with no list. The engine AI may know its opponents' full decklists — a deliberate
+     * design decision — and reads them as it needs them, since a seat is wired before every
+     * opponent has registered a deck. Server-side only: nothing read here reaches a client.
+     * Controllers that make no use of it ignore it.
+     */
+    fun setOpponentDeckListSource(source: (EntityId) -> Map<String, Int>?) {}
+
     // =========================================================================
     // Draft Picking
     // =========================================================================

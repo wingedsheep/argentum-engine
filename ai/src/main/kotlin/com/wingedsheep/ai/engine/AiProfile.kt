@@ -1515,6 +1515,20 @@ data class AiProfile(
      * compare it to the Armodon (`CombatTradePropertyTest`).
      */
     val blockSearchTriesSwaps: Boolean = false,
+    /**
+     * Raise [holdRemovalForBetterTargets]' bar for the creatures the opponent has **not drawn yet**,
+     * read off their decklist ([com.wingedsheep.ai.engine.knowledge.UnseenThreats]). Live games
+     * hand the engine AI every opponent's registered decklist — a deliberate decision — through
+     * [com.wingedsheep.ai.engine.hidden.OpponentKnowledge]; without one this reads nothing.
+     *
+     * 2026-11-02 review of games against people, game `7988f9c0` turn 7: the AI exiled a 2/3
+     * Greenhouse Propagator with its only Refute Destiny, from a deck holding Ruric Thar, two
+     * Titanbones and Hexhaven Invigorator — and the opponent's hand already held a Titanbones and
+     * Ruric Thar. The bar now weighs the clearly better creatures still unseen, how few one-card
+     * answers we hold against them, and the chance they arrive within a few draws; every release in
+     * `Patience.factorFor` still applies. Pinned by `RemovalForUnseenThreatsTest`.
+     */
+    val holdRemovalForUnseenThreats: Boolean = false,
     /** Non-null profiles may only be selected automatically for this set. Arena selection stays explicit. */
     val restrictedToSet: String? = null,
 ) {
@@ -2486,6 +2500,7 @@ data class AiProfile(
             crackBackAfterCleanup = true,
             soundBlockMath = true,
             blockSearchTriesSwaps = true,
+            holdRemovalForUnseenThreats = true,
             threatAwareDefender = true,
             borrowedCreaturesGoHome = true,
             holdXSpellsForBiggerX = true,

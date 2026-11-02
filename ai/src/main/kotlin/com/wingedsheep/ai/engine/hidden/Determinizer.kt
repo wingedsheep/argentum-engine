@@ -87,16 +87,20 @@ class Determinizer internal constructor(
             val hidden = hiddenCards(state, opponentId, viewerId, inFlightPins)
             if (hidden.isEmpty()) continue
 
+            fun permuted(): List<CardDefinition> {
+                val existing = hidden.mapNotNull { id ->
+                    state.getEntity(id)?.get<CardComponent>()?.let { cardRegistry.getCard(it.cardDefinitionId) }
+                }
+                return currentRng.shuffle(existing).also { currentRng = it.second }.first
+            }
             val definitions = when (val model = models[opponentId] ?: fallback) {
                 is OpponentModel.KnownDecklist -> fromKnownDecklist(state, opponentId, hidden, model, currentRng)
                     .also { currentRng = it.second }
                     .first
-                OpponentModel.IdentityPermutation -> {
-                    val existing = hidden.mapNotNull { id ->
-                        state.getEntity(id)?.get<CardComponent>()?.let { cardRegistry.getCard(it.cardDefinitionId) }
-                    }
-                    currentRng.shuffle(existing).also { currentRng = it.second }.first
-                }
+                    // A list that cannot fill every hidden slot (cards added to the library this
+                    // game, a list registered short) is no reason to search the real identities.
+                    .ifEmpty { permuted() }
+                OpponentModel.IdentityPermutation -> permuted()
             }
 
             if (definitions.size != hidden.size) continue

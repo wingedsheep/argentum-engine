@@ -69,6 +69,11 @@ class LlmAiPlayerController(
         logger.info("AI deck context set: {} unique cards, {} total", deckList.size, deckList.values.sum())
     }
 
+    /** The LLM is not told the opponent's list; its engine fallback reads it. */
+    override fun setOpponentDeckListSource(source: (EntityId) -> Map<String, Int>?) {
+        fallback?.setOpponentDeckListSource(source)
+    }
+
     // =========================================================================
     // Public decision methods
     // =========================================================================

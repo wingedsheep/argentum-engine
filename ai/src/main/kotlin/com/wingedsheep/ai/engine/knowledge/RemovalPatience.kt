@@ -40,6 +40,15 @@ import com.wingedsheep.sdk.model.EntityId
  * genuinely wants, so the Disenchant that killed the constant is untouched twice over — it is not
  * a creature, and [discount] declines on non-creature targets by construction.
  *
+ * ## The creatures still to come
+ *
+ * When the opponent's decklist is known (live games, by design — see
+ * [com.wingedsheep.ai.engine.hidden.OpponentKnowledge]), the bar also rises toward the best creature
+ * they have not drawn yet that this card could answer instead, priced by the chance it arrives within
+ * a few draws and by how few answers we hold ([UnseenThreats]). The larger of the two shortfalls is
+ * charged, never their sum. A target that would kill us on its own within a few attacks is exempt
+ * from that second bar: something hurting us now is answered now.
+ *
  * ## The releases
  *
  * Patience that never ends is just a dead card. [Patience.factorFor] owns when it ends — we are
@@ -79,6 +88,11 @@ object RemovalPatience {
         synergy: SynergyPresence? = null,
         /** When set, the growth and production still to come count toward its worth ([GrowthPotential]). */
         growth: GrowthPotential? = null,
+        /**
+         * When set, the opponent's decklist raises the bar for the creatures they have not drawn
+         * yet ([UnseenThreats]) — a nudge on top of the fair-trade bar, under the same releases.
+         */
+        unseenThreats: UnseenThreats? = null,
     ): Double {
         // A sweeper's worth is the whole board it answers, and it names no targets to judge.
         if (IntentTag.SWEEPER in intent.tags) return 0.0
@@ -88,7 +102,7 @@ object RemovalPatience {
         // A body with a removal rider (Flametongue Kavu) is not a card spent on the removal — you
         // keep the 4/2. Only a card whose *whole* purchase is the answer is making this trade.
         if (card.isCreature) return 0.0
-        if (intent.tags.none { it in ANSWERED_BY_ONE_CARD }) return 0.0
+        if (!isOneCardAnswer(intent)) return 0.0
 
         val projected = state.projectedState
         val victim = targets
@@ -115,8 +129,25 @@ object RemovalPatience {
             (synergy?.payoffValue(state, projected, victim) ?: 0.0) +
             (growth?.value(state, projected, victim, victimCard.name) ?: 0.0)
         val fairTrade = Patience.FAIR_TRADE_VALUE_PER_MANA * card.manaValue
-        return boardPresenceWeight * patience * (fairTrade - worth).coerceAtLeast(0.0)
+        // Two bars, one shortfall: the target must clear the removal's own price and, when the
+        // opponent's list is known, the creatures still to come. Taking the larger rather than the
+        // sum keeps a 1/1 under a Murder charged no more than either reading alone would.
+        // A creature already hurting us is answered now, whatever is still in their deck.
+        val hurting = (projected.getPower(victim) ?: 0) * UnseenThreats.HURTING_WITHIN_ATTACKS >=
+            state.lifeTotal(playerId)
+        val stillToCome = unseenThreats?.takeUnless { hurting }?.let { threats ->
+            projected.getController(victim)?.let { threats.shortfall(state, playerId, it, worth, card, intent) }
+        } ?: 0.0
+        return boardPresenceWeight * patience * maxOf(fairTrade - worth, stillToCome, 0.0)
     }
+
+    /**
+     * Whether [intent] spends one whole card to answer one permanent — the spells this file judges,
+     * and the answers [UnseenThreats] counts in hand.
+     */
+    internal fun isOneCardAnswer(intent: CardIntent): Boolean =
+        IntentTag.SWEEPER !in intent.tags && IntentTag.FIGHT !in intent.tags &&
+            intent.tags.any { it in ANSWERED_BY_ONE_CARD }
 
     /** The intents that spend one whole card to answer one permanent. */
     private val ANSWERED_BY_ONE_CARD = setOf(

@@ -30,6 +30,10 @@ class JevAiPlayerController(
         fallback.setDeckList(deckList, archetype)
     }
 
+    override fun setOpponentDeckListSource(source: (EntityId) -> Map<String, Int>?) {
+        fallback.setOpponentDeckListSource(source)
+    }
+
     override fun chooseAction(state: ClientGameState, legalActions: List<LegalActionInfo>,
                               pendingDecision: PendingDecision?, recentGameLog: List<String>): ActionResponse = guarded(
         { fallback.chooseAction(state, legalActions, pendingDecision, recentGameLog) }
