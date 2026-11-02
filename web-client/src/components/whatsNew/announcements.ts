@@ -30,6 +30,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-grn',
+    date: '2026-11-02',
+    kind: 'set',
+    setCode: 'GRN',
+    title: 'Guilds of Ravnica is complete',
+    body:
+      'Guilds of Ravnica opens the return to the city-plane with five guilds: Boros mentor grows smaller attackers, Dimir surveil sculpts your draws, Golgari undergrowth feeds off creatures in your graveyard, Izzet jump-start casts spells twice, and Selesnya convoke taps a wide board to cast big spells early. Every pack opens a Guildgate, so splashing a third colour is easy.',
+    tryIf: 'guild-based two-colour Limited, graveyard value and spells-matter tempo',
+  },
+  {
     id: 'set-rna',
     date: '2026-11-02',
     kind: 'set',

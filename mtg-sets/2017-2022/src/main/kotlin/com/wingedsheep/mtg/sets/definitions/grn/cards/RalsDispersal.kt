@@ -40,6 +40,7 @@ val RalsDispersal = card("Ral's Dispersal") {
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "266"
+        inBooster = false
         artist = "Lake Hurwitz"
         imageUri = "https://cards.scryfall.io/normal/front/a/2/a2660fae-6459-446d-85dc-3c9126c81cb3.jpg?1783934094"
         ruling("2018-10-05", "If the target creature becomes an illegal target for Ral’s Dispersal, the spell doesn’t resolve. You don’t search for Ral, Caller of Storms.")

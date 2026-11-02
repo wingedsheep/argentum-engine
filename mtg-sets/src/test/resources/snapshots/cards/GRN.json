@@ -451,7 +451,8 @@
         "rarity": "UNCOMMON",
         "artist": "Magali Villeneuve",
         "flavorText": "When the Erstwhile were unearthed from their tombs, they became a ready-made army for Vraska.",
-        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f4840f1-3db3-4ba6-b75b-bbd87251a3af.jpg?1783934093"
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f4840f1-3db3-4ba6-b75b-bbd87251a3af.jpg?1783934093",
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "BLACK",
@@ -7233,7 +7234,8 @@
         "rarity": "MYTHIC",
         "artist": "Simon Dominic",
         "flavorText": "The ultimate answer to intrigue and subtlety.",
-        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f5e6dc5f-fd83-4166-a5da-cd953722642a.jpg?1783934092"
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f5e6dc5f-fd83-4166-a5da-cd953722642a.jpg?1783934092",
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -8206,7 +8208,8 @@
         "collectorNumber": "270",
         "artist": "Ben Wootten",
         "flavorText": "The kraul once skulked in the outskirts of Golgari society, but with Vraska's rise, they became valued forces of the Swarm.",
-        "imageUri": "https://cards.scryfall.io/normal/front/1/3/133d9d56-d906-4252-9954-e34cc8564ced.jpg?1783934094"
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/133d9d56-d906-4252-9954-e34cc8564ced.jpg?1783934094",
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -11173,7 +11176,8 @@
         "collectorNumber": "267",
         "artist": "Grzegorz Rutkowski",
         "flavorText": "Ral had wielded lightning all his life but had never harnessed the power of an entire guild.",
-        "imageUri": "https://cards.scryfall.io/normal/front/a/5/a59b4e5b-e9e0-4507-b9e7-8fba7e3a54f9.jpg?1783934094"
+        "imageUri": "https://cards.scryfall.io/normal/front/a/5/a59b4e5b-e9e0-4507-b9e7-8fba7e3a54f9.jpg?1783934094",
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "RED"
@@ -11609,7 +11613,8 @@
                 "date": "2018-10-05",
                 "text": "If the target creature becomes an illegal target for Ral’s Dispersal, the spell doesn’t resolve. You don’t search for Ral, Caller of Storms."
             }
-        ]
+        ],
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -11670,7 +11675,8 @@
                 "date": "2018-10-05",
                 "text": "Whether you control a Ral planeswalker is checked as the ability triggers and as it resolves. After it has resolved while you controlled a Ral planeswalker, Ral’s Staticaster keeps the bonus for the rest of the turn even if you lose your planeswalker."
             }
-        ]
+        ],
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "BLUE",
@@ -11772,7 +11778,8 @@
                 "date": "2018-10-05",
                 "text": "If some of the targets become illegal for Ral's second ability, the original division of damage still applies, and the damage that would have been dealt to illegal targets isn't dealt at all."
             }
-        ]
+        ],
+        "inBooster": false
     },
     "startingLoyalty": 4,
     "colorIdentityOverride": [
@@ -15577,7 +15584,8 @@
                 "date": "2018-10-05",
                 "text": "The amount of life gained is equal to the destroyed creature’s toughness as it last existed on the battlefield. If it wasn’t destroyed (most likely because it has indestructible), you gain life equal to its toughness as it currently exists on the battlefield."
             }
-        ]
+        ],
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "BLACK",
@@ -15835,7 +15843,8 @@
         "collectorNumber": "269",
         "rarity": "MYTHIC",
         "artist": "Magali Villeneuve",
-        "imageUri": "https://cards.scryfall.io/normal/front/4/2/4299dbe6-c94d-4ecc-8bfd-741d2649cba1.jpg?1783934095"
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/4299dbe6-c94d-4ecc-8bfd-741d2649cba1.jpg?1783934095",
+        "inBooster": false
     },
     "startingLoyalty": 5,
     "colorIdentityOverride": [

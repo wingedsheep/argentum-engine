@@ -48,6 +48,7 @@ val RalCallerOfStorms = card("Ral, Caller of Storms") {
     metadata {
         rarity = Rarity.MYTHIC
         collectorNumber = "265"
+        inBooster = false
         artist = "Kieran Yanner"
         imageUri = "https://cards.scryfall.io/normal/front/c/4/c44f0c60-5732-4c25-9ba9-4829f1891762.jpg?1783934096"
         ruling(

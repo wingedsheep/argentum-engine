@@ -25,6 +25,7 @@ val PrecisionBolt = card("Precision Bolt") {
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "267"
+        inBooster = false
         artist = "Grzegorz Rutkowski"
         flavorText = "Ral had wielded lightning all his life but had never harnessed the power of an entire guild."
         imageUri = "https://cards.scryfall.io/normal/front/a/5/a59b4e5b-e9e0-4507-b9e7-8fba7e3a54f9.jpg?1783934094"

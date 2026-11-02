@@ -26,6 +26,7 @@ val ImperviousGreatwurm = card("Impervious Greatwurm") {
     metadata {
         rarity = Rarity.MYTHIC
         collectorNumber = "273"
+        inBooster = false
         artist = "Simon Dominic"
         flavorText = "The ultimate answer to intrigue and subtlety."
         imageUri = "https://cards.scryfall.io/normal/front/f/5/f5e6dc5f-fd83-4166-a5da-cd953722642a.jpg?1783934092"

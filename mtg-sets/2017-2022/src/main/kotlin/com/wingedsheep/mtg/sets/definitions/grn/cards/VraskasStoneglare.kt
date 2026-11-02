@@ -46,6 +46,7 @@ val VraskasStoneglare = card("Vraska's Stoneglare") {
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "272"
+        inBooster = false
         artist = "Yongjae Choi"
         imageUri = "https://cards.scryfall.io/normal/front/2/7/27fc4db6-a5f5-4254-ae64-c8eaf2c98030.jpg?1783934093"
         ruling("2018-10-05", "If the target creature becomes an illegal target for Vraska’s Stoneglare, the spell doesn’t resolve. You don’t gain life or search for Vraska, Regal Gorgon.")

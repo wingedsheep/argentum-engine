@@ -61,6 +61,7 @@ val VraskaRegalGorgon = card("Vraska, Regal Gorgon") {
     metadata {
         rarity = Rarity.MYTHIC
         collectorNumber = "269"
+        inBooster = false
         artist = "Magali Villeneuve"
         imageUri = "https://cards.scryfall.io/normal/front/4/2/4299dbe6-c94d-4ecc-8bfd-741d2649cba1.jpg?1783934095"
     }

@@ -24,6 +24,7 @@ val KraulRaider = card("Kraul Raider") {
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "270"
+        inBooster = false
         artist = "Ben Wootten"
         flavorText = "The kraul once skulked in the outskirts of Golgari society, but with Vraska's rise, they became valued forces of the Swarm."
         imageUri = "https://cards.scryfall.io/normal/front/1/3/133d9d56-d906-4252-9954-e34cc8564ced.jpg?1783934094"

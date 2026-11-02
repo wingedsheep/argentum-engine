@@ -242,6 +242,20 @@ class SetArchetypesTest : StringSpec({
             listOf("Sacrifice Knights", "Knights", "Knights Aggro")
     }
 
+    "Guilds of Ravnica exposes one archetype per guild signpost uncommon" {
+        val synergies = SetArchetypes.getForSet("GRN")!!
+
+        synergies.setName shouldBe "Guilds of Ravnica"
+        synergies.archetypes.associate { it.name to it.colors.toSet() } shouldBe mapOf(
+            "Boros Mentor" to setOf(Color.WHITE, Color.RED),
+            "Dimir Surveil" to setOf(Color.BLUE, Color.BLACK),
+            "Golgari Undergrowth" to setOf(Color.BLACK, Color.GREEN),
+            "Izzet Spells" to setOf(Color.BLUE, Color.RED),
+            "Selesnya Convoke" to setOf(Color.GREEN, Color.WHITE),
+        )
+        synergies.archetypes.all { it.creatureTypes.isEmpty() } shouldBe true
+    }
+
     "Ravnica Allegiance exposes one archetype per guild" {
         val synergies = SetArchetypes.getForSet("RNA")!!
 
