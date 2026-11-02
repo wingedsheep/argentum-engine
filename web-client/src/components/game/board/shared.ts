@@ -913,6 +913,8 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.HOUR,
   // The Magic Mirror's growing upkeep draw.
   CounterType.KNOWLEDGE,
+  // Phylactery Lich's anchor: the Lich is sacrificed once no permanent you control has one.
+  CounterType.PHYLACTERY,
   CounterType.PLUS_ONE_PLUS_TWO,
   CounterType.PLUS_TWO_PLUS_TWO,
   CounterType.MINUS_TWO_MINUS_TWO,

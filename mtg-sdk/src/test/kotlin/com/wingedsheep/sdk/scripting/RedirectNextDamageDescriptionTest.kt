@@ -19,6 +19,15 @@ class RedirectNextDamageDescriptionTest : DescribeSpec({
         }
     }
 
+    describe("singularPermanentDescription") {
+        it("puts the controller after the singular noun") {
+            GameObjectFilter.Artifact.youControl().singularPermanentDescription shouldBe "artifact you control"
+            GameObjectFilter.NonlandPermanent.youControl().singularPermanentDescription shouldBe
+                "nonland permanent you control"
+            GameObjectFilter.Artifact.singularPermanentDescription shouldBe "artifact"
+        }
+    }
+
     describe("RedirectNextDamageEffect") {
         it("describes an until-your-next-turn filter shield") {
             RedirectNextDamageEffect(

@@ -2553,6 +2553,7 @@ const passiveCounterPalette: Record<string, CounterBadgePalette> = {
   TASK: { bg: 'rgba(64, 50, 18, 0.95)', border: 'rgba(240, 200, 110, 0.7)', color: '#fbe9c0' },
   HOUR: { bg: 'rgba(24, 36, 72, 0.95)', border: 'rgba(150, 170, 235, 0.7)', color: '#d4dcfa' },
   KNOWLEDGE: { bg: 'rgba(20, 50, 90, 0.95)', border: 'rgba(120, 180, 230, 0.6)', color: '#a0c8e8' },
+  PHYLACTERY: { bg: 'rgba(28, 18, 40, 0.95)', border: 'rgba(170, 130, 210, 0.7)', color: '#d4bfe8' },
   TRAINING: { bg: 'rgba(48, 40, 22, 0.95)', border: 'rgba(214, 170, 90, 0.7)', color: '#ecd09a' },
   MINUS_ZERO_MINUS_ONE: { bg: 'rgba(60, 20, 20, 0.95)', border: 'rgba(220, 120, 120, 0.7)', color: '#e09c9c' },
   MINUS_ZERO_MINUS_TWO: { bg: 'rgba(60, 20, 20, 0.95)', border: 'rgba(220, 120, 120, 0.7)', color: '#e09c9c' },

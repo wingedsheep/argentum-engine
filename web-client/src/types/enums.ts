@@ -716,6 +716,7 @@ export enum CounterType {
   TASK = 'TASK',
   HOUR = 'HOUR',
   KNOWLEDGE = 'KNOWLEDGE',
+  PHYLACTERY = 'PHYLACTERY',
 }
 
 export const CounterTypeDisplayNames: Record<CounterType, string> = {
@@ -881,6 +882,7 @@ export const CounterTypeDisplayNames: Record<CounterType, string> = {
   [CounterType.TASK]: 'Task',
   [CounterType.HOUR]: 'Hour',
   [CounterType.KNOWLEDGE]: 'Knowledge',
+  [CounterType.PHYLACTERY]: 'Phylactery',
 }
 
 /**

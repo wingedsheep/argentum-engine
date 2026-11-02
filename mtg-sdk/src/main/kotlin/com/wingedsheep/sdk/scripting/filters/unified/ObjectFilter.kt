@@ -179,6 +179,18 @@ data class GameObjectFilter(
         }
 
     /**
+     * This filter as a singular noun phrase over permanents, the controller after the noun as Oracle
+     * prints it: "artifact you control", "nonland permanent an opponent controls". Pair it with
+     * [indefiniteArticle] for "choose an artifact you control".
+     */
+    val singularPermanentDescription: String
+        get() {
+            val controller = controllerPredicate?.description?.takeIf { it.isNotEmpty() }
+                ?: return permanentNounPhrase(plural = false)
+            return copy(controllerPredicate = null).permanentNounPhrase(plural = false, scope = controller)
+        }
+
+    /**
      * This filter as a noun phrase over permanents, with the controller [scope] placed where Oracle
      * puts it — after the noun, ahead of any trailing clause: "Frog, Rabbit, Raccoon, or Squirrel
      * creature**s** you control that entered the battlefield this turn". A filter with no type words

@@ -933,6 +933,13 @@ value class CounterType(val name: String) {
          */
         val KNOWLEDGE = CounterType("KNOWLEDGE")
 
+        /**
+         * Phylactery counter (M19 — Phylactery Lich). A pure marker with no inherent rule: the Lich
+         * puts one on an artifact you control as it enters, and its state trigger sacrifices it when
+         * you control no permanent with one.
+         */
+        val PHYLACTERY = CounterType("PHYLACTERY")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -1097,6 +1104,7 @@ value class CounterType(val name: String) {
             TASK,
             HOUR,
             KNOWLEDGE,
+            PHYLACTERY,
         )
 
         /**
