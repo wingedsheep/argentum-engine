@@ -90,11 +90,15 @@ export interface AdminGamePlayer {
   readonly userId: string | null
   readonly isAi: boolean
   readonly won: boolean
+  /** The seat's deck colours, WUBRG ("" colourless); null when no deck was recorded. */
+  readonly colors: string | null
   readonly location: PlayerLocation | null
 }
 
 /** A recorded game in the admin global game list, with every seat. */
 export interface AdminRecentGame {
+  /** Opens every seat's deck through {@link fetchMatchDecks}. */
+  readonly matchId: number
   readonly gameId: string
   readonly endedAt: string
   readonly gameMode: string | null
@@ -102,6 +106,8 @@ export interface AdminRecentGame {
   readonly players: AdminGamePlayer[]
   readonly winnerName: string | null
   readonly hasReplay: boolean
+  /** True when at least one seat's decklist was recorded. */
+  readonly hasDecks: boolean
   readonly tournamentName: string | null
 }
 
