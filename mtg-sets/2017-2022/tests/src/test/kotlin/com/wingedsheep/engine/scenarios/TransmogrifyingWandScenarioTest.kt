@@ -48,25 +48,32 @@ class TransmogrifyingWandScenarioTest : ScenarioTestBase() {
             game.state.projectedState.getToughness(ox) shouldBe 4
         }
 
-        test("can't be activated at instant speed") {
+        test("activates only as a sorcery: refused in combat, allowed in a main phase") {
             val game = scenario()
                 .withPlayers("Player1", "Player2")
-                .withCardOnBattlefield(1, "Transmogrifying Wand")
-                .withLandsOnBattlefield(1, "Plains", 1)
+                .withCardInHand(1, "Transmogrifying Wand")
+                .withLandsOnBattlefield(1, "Plains", 4)
                 .withCardOnBattlefield(2, "Hill Giant")
-                .withActivePlayer(2)
-                .withPriorityPlayer(1)
+                .withActivePlayer(1)
                 .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                 .build()
 
+            game.castSpell(1, "Transmogrifying Wand").error shouldBe null
+            game.resolveStack()
             val wand = game.findPermanent("Transmogrifying Wand")!!
             val abilityId = cardRegistry.getCard("Transmogrifying Wand")!!.script.activatedAbilities[0].id
-            game.execute(
+            fun activate() = game.execute(
                 ActivateAbility(
                     game.player1Id, wand, abilityId,
                     targets = listOf(ChosenTarget.Permanent(game.findPermanent("Hill Giant")!!)),
                 )
-            ).error shouldNotBe null
+            )
+
+            game.passUntilPhase(Phase.COMBAT, Step.BEGIN_COMBAT)
+            activate().error shouldNotBe null
+
+            game.passUntilPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
+            activate().error shouldBe null
         }
     }
 }

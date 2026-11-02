@@ -31,6 +31,7 @@ val Waterknot = card("Waterknot") {
     triggeredAbility {
         trigger = Triggers.self.enters()
         effect = Effects.Tap(EffectTarget.EnchantedCreature)
+        description = "When this Aura enters, tap enchanted creature."
     }
 
     staticAbility {

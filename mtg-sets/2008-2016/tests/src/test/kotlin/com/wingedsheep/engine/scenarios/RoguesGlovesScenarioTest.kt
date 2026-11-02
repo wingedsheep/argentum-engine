@@ -27,10 +27,9 @@ class RoguesGlovesScenarioTest : ScenarioTestBase() {
             game.declareNoBlockers().error shouldBe null
             game.passUntilPhase(Phase.COMBAT, Step.COMBAT_DAMAGE)
             game.resolveStack()
-            if (game.hasPendingDecision()) {
-                game.answerYesNo(true).error shouldBe null
-                game.resolveStack()
-            }
+            game.hasPendingDecision() shouldBe true // the "you may" prompt
+            game.answerYesNo(true).error shouldBe null
+            game.resolveStack()
 
             game.getLifeTotal(2) shouldBe 18
             game.handSize(1) shouldBe 1

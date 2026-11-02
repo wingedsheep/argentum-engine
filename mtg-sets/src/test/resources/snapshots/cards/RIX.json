@@ -3793,7 +3793,8 @@
                 "effect": {
                     "type": "TapUntap",
                     "target": "EnchantedCreature"
-                }
+                },
+                "descriptionOverride": "When this Aura enters, tap enchanted creature."
             }
         ],
         "staticAbilities": [

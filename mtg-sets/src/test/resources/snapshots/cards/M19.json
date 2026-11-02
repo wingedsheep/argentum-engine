@@ -2462,7 +2462,8 @@
                         "baseFilter": "nonland permanent ctrl:opponent"
                     },
                     "id": "t0"
-                }
+                },
+                "descriptionOverride": "When this enchantment enters, exile target nonland permanent an opponent controls until this enchantment leaves the battlefield."
             },
             {
                 "id": "Hieromancer's Cage:2",

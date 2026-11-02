@@ -23,6 +23,7 @@ val HieromancersCage = card("Hieromancer's Cage") {
         trigger = Triggers.self.enters()
         val t = target(TargetFilter.NonlandPermanentOpponentControls)
         effect = Effects.ExileUntilLeaves(t)
+        description = "When this enchantment enters, exile target nonland permanent an opponent controls until this enchantment leaves the battlefield."
     }
 
     triggeredAbility {
