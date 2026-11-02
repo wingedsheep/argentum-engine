@@ -20,9 +20,9 @@ val Ionize = card("Ionize") {
 
     spell {
         target(TargetFilter.SpellOnStack)
-        // Deal the damage while the spell is still on the stack so `TargetController` can read
-        // its controller; countering first moves the spell away and the lookup fails. Both happen
-        // in one resolution with nothing in between, so the order is imperceptible to players.
+        // Damage first, the same order as Undermine: both happen in one resolution with nothing in
+        // between, and the 2 damage lands even if the spell can't be countered, so the order is
+        // imperceptible to players.
         effect = Effects.DealDamage(2, EffectTarget.TargetController) then Effects.CounterSpell()
     }
 
