@@ -453,6 +453,114 @@
     ]
 }
 
+// Captain Jonathan Archer
+{
+    "name": "Captain Jonathan Archer",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Creature — Human Officer",
+    "oracleText": "When Captain Archer enters, create Porthos, a legendary 1/1 green Dog creature token.\nFederation — {G}, {T}: Target creature you control gets +X/+X until end of turn, where X is the number of creature types among non-Borg creatures you control. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Captain Jonathan Archer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Dog"
+                    ],
+                    "name": "Porthos",
+                    "legendary": true
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Captain Jonathan Archer:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{G}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "Borg"
+                                }
+                            ]
+                        },
+                        "aggregation": "DISTINCT_CREATURE_TYPES"
+                    },
+                    "toughnessModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "Borg"
+                                }
+                            ]
+                        },
+                        "aggregation": "DISTINCT_CREATURE_TYPES"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "186",
+        "rarity": "RARE",
+        "artist": "Julia Metzger",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a4518ea3-5f56-4f1d-9024-2bf06ac98786.jpg?1792508262"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Captain's Tutelage
 {
     "name": "Captain's Tutelage",
@@ -3460,6 +3568,84 @@
         "rarity": "UNCOMMON",
         "artist": "Charles Chaisson",
         "imageUri": "https://cards.scryfall.io/normal/front/1/6/16a4d8ed-a918-4dfe-9976-0b68adb26afa.jpg?1792753861"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Saavik, Stoic Student
+{
+    "name": "Saavik, Stoic Student",
+    "manaCost": "{4}{W}",
+    "typeLine": "Legendary Creature — Vulcan Advisor",
+    "oracleText": "Flash\nFederation — When Saavik enters, she deals X damage to target attacking or blocking creature an opponent controls, where X is the number of creature types among non-Borg creatures you control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Saavik, Stoic Student:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "Borg"
+                                }
+                            ]
+                        },
+                        "aggregation": "DISTINCT_CREATURE_TYPES"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                {
+                                    "type": "StateOr",
+                                    "predicates": [
+                                        "IsAttacking",
+                                        "IsBlocking"
+                                    ]
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByOpponent"
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "rarity": "UNCOMMON",
+        "artist": "Mushk Rizvi",
+        "flavorText": "\"I don't believe this was a fair test of my command abilities.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/3783c530-a2da-4dc1-811a-0a9a412c8e78.jpg?1785981363"
     },
     "colorIdentityOverride": [
         "WHITE"

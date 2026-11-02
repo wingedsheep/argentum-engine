@@ -79,6 +79,13 @@ private val PERMANENT_TYPE_NAMES: Set<String> =
  */
 private val CREATURE_TYPE_NAMES: Set<String> = Subtype.ALL_CREATURE_TYPES.toSet()
 
+/** An entity's printed creature types — every one for a changeling (CR 702.73a). */
+private fun baseCreatureTypes(state: GameState, entityId: EntityId): Set<String> {
+    val card = state.getEntity(entityId)?.get<CardComponent>() ?: return emptySet()
+    if (Keyword.CHANGELING in card.baseKeywords) return CREATURE_TYPE_NAMES
+    return card.typeLine.subtypes.mapNotNullTo(mutableSetOf()) { it.value.takeIf { v -> v in CREATURE_TYPE_NAMES } }
+}
+
 /** The four creature types a party draws from (CR 700.8), in bit order for [largestParty]. */
 private val PARTY_ROLES: List<String> = listOf("Cleric", "Rogue", "Warrior", "Wizard")
 
@@ -1563,6 +1570,14 @@ class DynamicAmountEvaluator(
                     ?: emptySet()
                 ).filterNotTo(mutableSetOf()) { it in CREATURE_TYPE_NAMES }
             }.size
+            // CR 205.3m — creature types only. Projected subtypes already carry a changeling's
+            // every creature type and any layer-4 change; a projected entry with no subtypes means an
+            // effect erased them, so only an unprojected entity reads base.
+            Aggregation.DISTINCT_CREATURE_TYPES -> matchingEntities.flatMapTo(mutableSetOf<String>()) { entityId ->
+                (projection.getProjectedValues(entityId)?.subtypes
+                    ?: baseCreatureTypes(state, entityId)
+                ).filterTo(mutableSetOf()) { it in CREATURE_TYPE_NAMES }
+            }.size
             // Counters are physically stored on the permanent (base state, not layered), so read
             // CountersComponent directly. The map only holds kinds with a positive count
             // (CountersComponent.withRemoved drops the key at zero), so every key is a present kind.
@@ -1674,6 +1689,13 @@ class DynamicAmountEvaluator(
                     } else {
                         typeLine.subtypes.map { it.value }.filterNotTo(mutableSetOf()) { it in CREATURE_TYPE_NAMES }
                     }
+                }.size
+            }
+            // Off the battlefield there is no projection: printed subtypes, and a changeling card
+            // has every creature type in every zone (CR 702.73a).
+            Aggregation.DISTINCT_CREATURE_TYPES -> {
+                matchingEntities.flatMapTo(mutableSetOf<String>()) { entityId ->
+                    baseCreatureTypes(state, entityId)
                 }.size
             }
             Aggregation.DISTINCT_COUNTER_TYPES -> {
