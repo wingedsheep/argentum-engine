@@ -72,6 +72,8 @@ tasks.withType<Test>().configureEach {
         "aiReadingAudit", "aiReadingAuditDir", "aiReadingBaseline",
         // `just ai-card`: one card's AI reading and rating (ai/.../audit/AiCardReport).
         "aiCard", "aiCardOut",
+        // `just deck-colours`: colour counts of the AI's limited builds (ai/.../engine/DeckColourBenchmark).
+        "deckColours", "deckColourPods", "deckColourSet", "deckColourSeed",
     )) {
         System.getProperty(prop)?.let { systemProperty(prop, it) }
     }

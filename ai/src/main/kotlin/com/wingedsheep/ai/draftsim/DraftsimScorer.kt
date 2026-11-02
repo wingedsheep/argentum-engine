@@ -342,8 +342,13 @@ class DraftsimScorer(private val tables: DraftsimSetTables) {
         }
     }
 
-    /** `Bm(nonland, arch)`: archetype → colors on ≥3 of its cards (plus colors ≥30% as frequent). */
-    fun archColorMap(nonland: List<ScorerCard>): Map<String, List<String>> {
+    /**
+     * `Bm(nonland, arch)`: archetype → colors on ≥3 of its cards (plus colors ≥30% as frequent), most
+     * tagged first. [maxColors] keeps only that many: the deckbuilder holds a named archetype to its two
+     * deepest colours, since a set whose archetypes are colourless themes (FRA's "Jace Empowerment"
+     * tags cards of all five) would otherwise build three or four colours with no fixing bar.
+     */
+    fun archColorMap(nonland: List<ScorerCard>, maxColors: Int = Int.MAX_VALUE): Map<String, List<String>> {
         if (tables.archetypes.isEmpty()) return emptyMap()
         val perArch = HashMap<String, HashMap<String, Int>>()
         for (card in nonland) {
@@ -355,7 +360,9 @@ class DraftsimScorer(private val tables: DraftsimSetTables) {
         }
         return perArch.mapValues { (_, counts) ->
             val top = counts.values.maxOrNull() ?: 0
-            counts.filterValues { it >= 3 || it >= 0.3 * top }.keys.toList()
+            counts.filterValues { it >= 3 || it >= 0.3 * top }.entries
+                .sortedWith(compareByDescending<Map.Entry<String, Int>> { it.value }.thenBy { DraftsimMana.COLORS.indexOf(it.key) })
+                .take(maxColors).map { it.key }
         }.filterValues { it.isNotEmpty() }
     }
 
