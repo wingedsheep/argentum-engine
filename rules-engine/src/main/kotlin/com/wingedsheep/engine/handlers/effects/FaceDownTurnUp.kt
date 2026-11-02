@@ -17,7 +17,8 @@ import com.wingedsheep.sdk.scripting.effects.FaceDownMode
  * manifested, cloaked or disguised creature reuses the entire morph turn-up machinery for free.
  *
  * Returns `null` when the permanent has no way to be turned face up (a non-morph card entered as
- * morph, a manifested non-creature card per CR 701.40b, or [FaceDownMode.HIDDEN]).
+ * morph, a manifested non-creature card per CR 701.40b, or a [FaceDownMode.HIDDEN] card without
+ * morph or disguise).
  */
 object FaceDownTurnUp {
 
@@ -77,8 +78,11 @@ object FaceDownTurnUp {
                 disguiseProcedure(cardDef)
             )
 
-            // Exiled / hidden face down — no in-place turn-up procedure.
-            FaceDownMode.HIDDEN -> emptyList()
+            // Hidden face down (Tezzeret, Cruel Machinist's -7) — the mode itself offers no
+            // turn-up procedure, but a card that prints morph or disguise can still be turned face
+            // up that way (CR 702.37e / 702.168d read the face-up card's cost). Only battlefield
+            // entries ask; a card exiled face down (Hideaway) never gets turn-up data.
+            FaceDownMode.HIDDEN -> listOfNotNull(morphProcedure(cardDef), disguiseProcedure(cardDef))
         }
 
     private fun morphProcedure(cardDef: CardDefinition?): TurnUpProcedure? =

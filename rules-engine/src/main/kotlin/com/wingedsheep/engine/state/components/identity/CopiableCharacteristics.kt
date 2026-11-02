@@ -5,6 +5,7 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.components.stack.EntitySnapshot
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.engine.state.ComponentContainer
+import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.TypeLine
@@ -18,14 +19,23 @@ import com.wingedsheep.sdk.model.CreatureStats
 fun ComponentContainer.copiableCardComponent(): CardComponent? {
     val card = get<CardComponent>() ?: return null
     if (has<FaceDownComponent>()) {
-        val mode = get<FaceDownModeComponent>()?.mode
+        val modeComponent = get<FaceDownModeComponent>()
+        val mode = modeComponent?.mode
         val ward = mode?.faceDownWard
+        // CR 708.2a: characteristics the face-down entry specified are copiable values too.
+        val specified = modeComponent?.characteristics
+        val typeLine = TypeLine(
+            // Printed order: "Artifact Creature".
+            cardTypes = specified?.addedCardTypes.orEmpty().filterNotTo(linkedSetOf()) { it == CardType.CREATURE } + CardType.CREATURE,
+            subtypes = specified?.creatureSubtypes.orEmpty() + specified?.addedSubtypes.orEmpty(),
+        )
         return CardComponent(
             cardDefinitionId = "face-down",
             name = "",
             manaCost = ManaCost.ZERO,
-            typeLine = TypeLine.parse("Creature"),
-            baseStats = CreatureStats(2, 2),
+            typeLine = typeLine,
+            baseStats = CreatureStats(specified?.power ?: 2, specified?.toughness ?: 2),
+            colors = specified?.addedColors.orEmpty(),
             baseKeywords = if (ward == null) emptySet() else setOf(Keyword.WARD),
             copyWardCosts = listOfNotNull(ward),
             ownerId = card.ownerId,

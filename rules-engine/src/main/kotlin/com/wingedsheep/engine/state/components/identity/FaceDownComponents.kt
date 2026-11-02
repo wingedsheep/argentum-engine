@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.scripting.CostReductionSource
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.EntersWithCharacteristics
 import com.wingedsheep.sdk.scripting.effects.FaceDownMode
 import kotlinx.serialization.Serializable
 
@@ -119,9 +120,18 @@ data object HasDisguiseAbilityComponent : Component
  * disguise and cloak list among the face-down permanent's characteristics
  * ([FaceDownMode.faceDownWard], CR 702.168a / 701.58a). Present only while the permanent is face
  * down — turning it face up ends the characteristic-defining effect and drops the marker.
+ *
+ * [characteristics] is what the effect that put the permanent onto the battlefield face down
+ * specified instead of the plain 2/2 (CR 708.2a: "unless otherwise specified by the effect") —
+ * Tezzeret, Cruel Machinist's "They're 5/5 artifact creatures". Added types/subtypes/colors join
+ * the face-down creature's, and power/toughness replace the 2/2. Like the 2/2 itself these are the
+ * permanent's copiable values, and they end with the rest of the marker when it is turned face up.
  */
 @Serializable
-data class FaceDownModeComponent(val mode: FaceDownMode) : Component
+data class FaceDownModeComponent(
+    val mode: FaceDownMode,
+    val characteristics: EntersWithCharacteristics? = null,
+) : Component
 
 /**
  * A face-down permanent that turns face up *instead of* becoming tapped, assigning or dealing

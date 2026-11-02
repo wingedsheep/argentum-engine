@@ -56,7 +56,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *
  * The return is deliberately two steps, matching the oracle order. `FaceDownMode.HIDDEN` is the
  * right mode for the intermediate state: the card is not being disguised or cloaked, so it gets no
- * ward {2} and no turn-up procedure of its own (2024-02-02 ruling) — `TurnFaceUpEffect` then flips
+ * ward {2} (2024-02-02 ruling) — `TurnFaceUpEffect` then flips
  * it without a cost. Going face down and back up rather than straight to the battlefield face up is
  * what makes a disguise creature's "when this is turned face up" trigger fire on the way back.
  *

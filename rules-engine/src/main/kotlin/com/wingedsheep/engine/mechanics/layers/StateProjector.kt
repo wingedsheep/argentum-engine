@@ -14,6 +14,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.battlefield.chosenCreatureType
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.copiableCardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownModeComponent
 import com.wingedsheep.engine.state.components.identity.RingBearerComponent
 import com.wingedsheep.engine.state.components.identity.ToxicComponent
@@ -111,18 +112,23 @@ class StateProjector {
                 // Disguise (CR 702.168a) and cloak (CR 701.58a) list one more: ward {2}. It is part
                 // of this characteristic-defining effect, not an ability of the card underneath,
                 // so it lives on the mode and ends the moment the permanent is turned face up.
+                // The effect that put it onto the battlefield face down may specify others instead
+                // (CR 708.2a) — Tezzeret, Cruel Machinist's "They're 5/5 artifact creatures".
+                // copiableCardComponent() is the one mapping of those face-down values; the copy
+                // effects, the client view and this base all read it.
+                val faceDownCard = container.copiableCardComponent()
                 val faceDownWard = container.get<FaceDownModeComponent>()?.mode?.faceDownWard
                 projectedValues[entityId] = MutableProjectedValues(
-                    power = 2,
-                    toughness = 2,
+                    power = faceDownCard?.baseStats?.basePower ?: 2,
+                    toughness = faceDownCard?.baseStats?.baseToughness ?: 2,
                     keywords = if (faceDownWard != null) {
                         mutableSetOf(Keyword.WARD.name)
                     } else {
                         mutableSetOf()
                     },
-                    colors = mutableSetOf(),
-                    types = mutableSetOf("CREATURE"),
-                    subtypes = mutableSetOf(),
+                    colors = faceDownCard?.colors?.mapTo(linkedSetOf()) { it.name } ?: mutableSetOf(),
+                    types = faceDownCard?.let { extractTypes(it) } ?: mutableSetOf("CREATURE"),
+                    subtypes = faceDownCard?.typeLine?.subtypes?.mapTo(linkedSetOf()) { it.value } ?: mutableSetOf(),
                     controllerId = container.get<ControllerComponent>()?.playerId,
                     isFaceDown = true
                 )

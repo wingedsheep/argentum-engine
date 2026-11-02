@@ -409,8 +409,13 @@ data class EntryCounter(
  * [creatureSubtypes] is the one axis that *replaces* rather than adds: the card's creature types
  * become exactly that set (assimilate's "loses all other creature types").
  *
- * Carried by [MoveToZoneEffect.entersWith] and [MoveCollectionEffect.entersWith]; ignored for a
- * face-down entry, for any destination but the battlefield, and for an Aura entering through the
+ * For a face-down entry these are instead the face-down characteristics the effect specifies
+ * (CR 708.2a): added types/subtypes/colors join the face-down creature's and [power]/[toughness]
+ * replace its 2/2, as copiable values that end when it is turned face up ("They're 5/5 artifact
+ * creatures", Tezzeret, Cruel Machinist).
+ *
+ * Carried by [MoveToZoneEffect.entersWith] and [MoveCollectionEffect.entersWith]; ignored for any
+ * destination but the battlefield, and for an Aura entering through the
  * attach/enchant prompt (an Aura that is also a creature can't stay attached anyway). Replacements
  * that ask whether a creature would enter (Containment Priest) judge the entrant with it applied. The closest neighbours are
  * `BecomeCreatureEffect` (a resolving effect on a permanent already in play, with a duration) and
