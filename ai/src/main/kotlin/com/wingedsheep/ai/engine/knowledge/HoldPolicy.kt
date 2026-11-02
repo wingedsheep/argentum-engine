@@ -63,6 +63,12 @@ class HoldPolicy(
      */
     private val payoffsReadTheirFuel: Boolean = false,
     /**
+     * Under [holdRemovalForBetterTargets], a creature's recurring growth and repeatable production
+     * ([com.wingedsheep.ai.engine.evaluation.GrowthPotential]) count toward whether it is worth the
+     * removal spell — Kiora of Fire and Ashes on nine lands is not a 2/2.
+     */
+    private val removalWorthReadsGrowth: Boolean = false,
+    /**
      * [AiProfile.holdCountersForBetterSpells][com.wingedsheep.ai.engine.AiProfile.holdCountersForBetterSpells]
      * — charge a counterspell for answering a spell smaller than what the caster can still deploy.
      * See [CounterPatience].
@@ -312,6 +318,7 @@ class HoldPolicy(
             RemovalPatience.discount(
                 state, playerId, intent, card, cast.targets, boardPresenceWeight,
                 synergy = if (payoffsReadTheirFuel) synergy else null,
+                growth = if (removalWorthReadsGrowth) intents.growth else null,
             )
         } else {
             0.0

@@ -132,6 +132,12 @@ class Strategist(
     /** [AiProfile.payoffsReadTheirFuel] — passed through to [HoldPolicy]'s removal bar. */
     private val payoffsReadTheirFuel: Boolean = false,
     /**
+     * The profile's [com.wingedsheep.ai.engine.evaluation.CreatureValuation.growthPotential] —
+     * passed through to [HoldPolicy]'s removal bar, so the growth and production the board prices
+     * also count toward whether a target is worth the removal spell.
+     */
+    private val removalWorthReadsGrowth: Boolean = false,
+    /**
      * [AiProfile.holdCountersForBetterSpells] — passed straight through to [HoldPolicy], which
      * hands it to [com.wingedsheep.ai.engine.knowledge.CounterPatience].
      */
@@ -295,6 +301,7 @@ class Strategist(
         tricksWaitForBlocks = combatTricksWaitForBlocks,
         holdRemovalForBetterTargets = holdRemovalForBetterTargets,
         payoffsReadTheirFuel = payoffsReadTheirFuel,
+        removalWorthReadsGrowth = removalWorthReadsGrowth,
         holdCountersForBetterSpells = holdCountersForBetterSpells,
         cashCantripsInTheEndStep = cashCantripsInTheEndStep,
         holdFlashPermanentsForAmbush = holdFlashPermanentsForAmbush,
