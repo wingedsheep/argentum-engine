@@ -746,6 +746,23 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
+     * Whenever a player faces a dilemma — "You face a dilemma as you choose one or more modes for a
+     * spell or ability" (Star Trek). Fires once per mode choice, not once per mode: casting a modal
+     * spell, activating a modal ability, putting a modal triggered ability on the stack, or a mode
+     * choice made while an ability resolves. Copies of a spell keep the original's modes without
+     * choosing, so they don't face one; neither does a gift-style yes/no choice built on
+     * [com.wingedsheep.sdk.scripting.effects.ModalEffect] with `countsAsModalSpell = false`. The
+     * per-turn count is `TurnTracker.DILEMMAS_FACED`.
+     */
+    @SerialName("DilemmaFacedEvent")
+    @Serializable
+    data class DilemmaFacedEvent(
+        val player: Player = Player.You
+    ) : EventPattern {
+        override val description: String = "${player.description} faces a dilemma"
+    }
+
+    /**
      * Whenever a player scries **or** surveils (CR 701.22 / 701.25) — the combined look-at-top
      * trigger used by "Whenever you scry or surveil, …" (Matoya, Archon Elder). Matches either a
      * scry or a surveil event from [player]; the cards-looked-at count is exposed the same way as

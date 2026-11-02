@@ -1319,6 +1319,12 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
     fun surveils(firstTimeEachTurn: Boolean = false): TriggerSpec =
         spec(SurveiledEvent(player, firstTimeEachTurn = firstTimeEachTurn))
 
+    /**
+     * "faces a dilemma" — chooses one or more modes for a spell or ability (Elim Garak, Simple
+     * Tailor). One event per mode choice, however many modes it took.
+     */
+    fun facesADilemma(): TriggerSpec = spec(DilemmaFacedEvent(player))
+
     /** "scries or surveils" (Matoya, Archon Elder). */
     fun scriesOrSurveils(): TriggerSpec = spec(ScriedOrSurveiledEvent(player))
 

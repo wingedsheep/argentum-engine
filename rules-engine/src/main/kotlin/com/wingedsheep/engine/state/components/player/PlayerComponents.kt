@@ -1438,6 +1438,17 @@ data class LoyaltyAbilitiesActivatedThisTurnComponent(
 ) : Component
 
 /**
+ * Number of dilemmas this player has faced during the current turn — mode choices for spells and
+ * abilities, one per choice. Advanced only by [com.wingedsheep.engine.mechanics.modal.Dilemmas];
+ * reset to 0 for every player at turn start by TurnManager. Backs
+ * [com.wingedsheep.sdk.scripting.values.TurnTracker.DILEMMAS_FACED].
+ */
+@Serializable
+data class DilemmasFacedThisTurnComponent(
+    val count: Int = 0
+) : Component
+
+/**
  * One "you may activate loyalty abilities of [filter] more freely" permission: [instantSpeed] lifts
  * the sorcery-timing half of CR 606.3 (Jace's Machinations), [times] raises the once-per-turn half
  * (Urza Assembles the Titans; 1 leaves it alone), and [additionalActivations] adds to it (The Chain

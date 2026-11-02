@@ -561,6 +561,24 @@ data class SurveiledEvent(
 ) : GameEvent
 
 /**
+ * A player just faced a dilemma — chose one or more modes for a spell or ability ("You face a
+ * dilemma as you choose one or more modes for a spell or ability"). Emitted once per mode choice,
+ * whatever the number of modes, by [com.wingedsheep.engine.mechanics.modal.Dilemmas], which also
+ * advances the player's `DilemmasFacedThisTurnComponent`. Drives
+ * [com.wingedsheep.sdk.scripting.EventPattern.DilemmaFacedEvent] triggers; internal-only on the
+ * client (the cast / activation / trigger it rides on is what the log shows).
+ *
+ * @property playerId The player who chose the modes.
+ * @property sourceName The spell or ability source the modes were chosen for (for display).
+ */
+@Serializable
+@SerialName("DilemmaFacedEvent")
+data class DilemmaFacedEvent(
+    val playerId: EntityId,
+    val sourceName: String
+) : GameEvent
+
+/**
  * A player just finished a `discover N` (CR 701.55). Fires once per discover, after the whole
  * process — including the "cast for free or put into hand" decision — resolves (CR 701.55b). Drives
  * "Whenever you discover" triggers; see [com.wingedsheep.sdk.scripting.EventPattern.DiscoveredEvent].

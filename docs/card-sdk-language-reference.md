@@ -8355,7 +8355,7 @@ put on the player by anyone: "whenever you get one or more {E}", `CountersPlaced
 `permanentTurnedFaceUp(filter)`, `searchesLibrary()`, `shufflesLibrary()`, `gainsLife(firstTimeEachTurn?)`,
 `losesLife(batch?, exactly?, firstTimeEachTurn?)`, `paysLife()`, `losesGame()`, `sacrifices(filter, batch?)`,
 `sacrificesAnother(filter)`, `taps(filter, batch?)`, `tapsLandForMana(land?)`, `createsToken(token?)`,
-`exploits(nontoken?)`, `commitsCrime()`, `givesAGift()`, `scries()`, `surveils()`, `scriesOrSurveils()`, `proliferates()`,
+`exploits(nontoken?)`, `commitsCrime()`, `givesAGift()`, `scries()`, `surveils()`, `scriesOrSurveils()`, `facesADilemma()`, `proliferates()`,
 `discovers()`, `collectsEvidence()`, `forages()`, `foretells()`, `investigates(firstTimeEachTurn?)`, `solvesACase()`, `clashes(andWins?)`,
 `isTemptedByTheRing(bearerChosen?)`, `bends(types)`, `manifestsDread()`, `expends(n)`,
 `venturesIntoTheDungeon()`, `completesADungeon()`, `takesTheInitiative()`, `becomesTheMonarch()`,
@@ -9935,6 +9935,13 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
   Automatically emitted by `Patterns.Library.surveil(N)`. Reads the same `TRIGGER_SCRY_COUNT`
   ("cards looked at"). Used by Golbez. `surveils(firstTimeEachTurn = true)` is "whenever you surveil
   for the first time each turn" (Whispering Snitch): only the player's first surveil event that turn.
+- `Triggers.you.facesADilemma()` — "whenever you face a dilemma" (Star Trek: "You face a dilemma as you
+  choose one or more modes for a spell or ability"). One event per mode choice, however many modes it
+  took: casting a modal spell, activating a modal ability, putting a modal trigger on the stack, or a mode
+  choice made while an ability resolves. Not a spell copy (it inherits its modes), a "choose at random"
+  trigger, or a gift-style `ModalEffect` with `countsAsModalSpell = false`. Pattern
+  `EventPattern.DilemmaFacedEvent` (Elim Garak, Simple Tailor); the per-turn count is
+  `TurnTracker.DILEMMAS_FACED` (Captain Benjamin Sisko).
 - `Triggers.you.scriesOrSurveils()` — the combined look-at-top trigger; fires once per scry **and**
   once per surveil (Matoya, Archon Elder).
 - `Triggers.you.proliferates()` — fires once per proliferate (CR 701.34), after the counters are
@@ -16615,6 +16622,8 @@ default to "you" so card authors don't need to pass it explicitly.
   ability this turn" (Kiora of Salt and Sand). A `Compare` over
   `TurnTracking(player, TurnTracker.LOYALTY_ABILITIES_ACTIVATED)`: turn history on the player, so it stays
   true after that planeswalker dies or the ability is countered.
+- `YouFacedADilemmaThisTurn(atLeast = 1, player = Player.You)` — "if you faced a dilemma this turn" (The
+  Caretaker). A `Compare` over `TurnTracking(player, TurnTracker.DILEMMAS_FACED)`.
 - `YouPaidOrLostEnergyThisTurn(atLeast, player = Player.You)` — "if you've paid or lost N or more {E} this
   turn" (Izzet Generatorium). A `Compare` over `TurnTracking(player, TurnTracker.ENERGY_PAID_OR_LOST)`.
 - `TriggeringSpellMatches(filter)` — intervening-if guard: the spell that triggered this ability
@@ -18461,6 +18470,10 @@ this turn").
   counted at activation (CR 602.2) on the per-player `LoyaltyAbilitiesActivatedThisTurnComponent` and reset
   for every player at turn start. Wrapped by `Conditions.YouActivatedLoyaltyAbilityThisTurn` (Kiora of Salt
   and Sand).
+- `DILEMMAS_FACED` — how many dilemmas the player faced this turn: one per mode choice for a spell or
+  ability (see `Triggers.you.facesADilemma()`), on the per-player `DilemmasFacedThisTurnComponent`, reset for
+  every player at turn start; facade `DynamicAmounts.dilemmasFacedThisTurn()`. "For each dilemma you've faced this turn" (Captain Benjamin Sisko); wrapped by
+  `Conditions.YouFacedADilemmaThisTurn`.
 - `ENERGY_PAID_OR_LOST` — how many energy counters were removed from the player this turn, paid as a cost
   or lost to an effect; energy gained never nets against it. Recorded by `CounterHistory.recordRemovals` at
   the settle boundary from every `CountersRemovedEvent` on the player (so no payment path has to remember

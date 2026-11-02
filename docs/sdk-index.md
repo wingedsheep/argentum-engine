@@ -1227,6 +1227,7 @@ Families:
 - `EventPattern.DesignationTakenEvent(designation: PlayerDesignation, player: Player)` — Whenever a player takes a single-holder designation — "when you take the initiative", "whenever you become the monarch".
 - `EventPattern.DestroyEvent(filter: GameObjectFilter)` — Replacement-only: a permanent matching filter would be **destroyed** (CR 701.8) — by a "destroy" effect or by the lethal-damage / deathtouch state-based actions (CR 704.5g, 704.5h).
 - `EventPattern.DieRolledEvent(player: Player, minimumResult: Int?, maximumResult: Int?, batch: Boolean, naturalResult: Int?)` — A numerical die roll — each individual die, or (`batch`) each roll instruction for one roller; scopes on its roller and, per die, its final result.
+- `EventPattern.DilemmaFacedEvent(player: Player)` — Whenever a player faces a dilemma — "You face a dilemma as you choose one or more modes for a spell or ability" (Star Trek).
 - `EventPattern.DiscardEvent(player: Player, cardFilter: GameObjectFilter?, batch: Boolean, firstTimeEachTurn: Boolean, cause: ZoneChangeCause)` — When a player would discard a card.
 - `EventPattern.DiscoveredEvent(player: Player)` — Whenever player discovers (CR 701.57).
 - `EventPattern.DoorUnlockedEvent(player: Player)` — A door of a Room becomes unlocked (CR 709.5h).

@@ -855,6 +855,13 @@ object DynamicAmounts {
         DynamicAmount.TurnTracking(player, TurnTracker.CARDS_DRAWN)
 
     /**
+     * The number of dilemmas [player] has faced this turn — one per time they chose one or more
+     * modes for a spell or ability (Captain Benjamin Sisko).
+     */
+    fun dilemmasFacedThisTurn(player: Player = Player.You): DynamicAmount =
+        DynamicAmount.TurnTracking(player, TurnTracker.DILEMMAS_FACED)
+
+    /**
      * The number of untapped lands [player] controlled at the beginning of this turn — an untap-step
      * snapshot taken before anything untaps (Power Surge).
      */

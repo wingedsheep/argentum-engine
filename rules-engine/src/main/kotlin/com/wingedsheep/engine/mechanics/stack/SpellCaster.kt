@@ -370,6 +370,13 @@ internal class SpellCaster(
             )
         )
 
+        // Choosing the modes of a (true) modal spell is facing a dilemma; gift-style ModalEffects
+        // report zero modes here and don't.
+        val (afterDilemma, dilemmaEvents) =
+            com.wingedsheep.engine.mechanics.modal.Dilemmas.face(newState, casterId, spellName, reportedChosenModesCount)
+        newState = afterDilemma
+        events.addAll(1, dilemmaEvents)
+
         newState = announceTargets(newState, cardId, casterId, spellName, effectiveTargets, events)
         addPermissionRiderEvents(state, castFromZone, cardId, casterId, events)
 

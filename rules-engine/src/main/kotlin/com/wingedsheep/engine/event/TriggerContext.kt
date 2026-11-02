@@ -499,6 +499,9 @@ data class TriggerContext(
                 is com.wingedsheep.engine.core.ProliferatedEvent -> TriggerContext(
                     triggeringPlayerId = event.playerId
                 )
+                is com.wingedsheep.engine.core.DilemmaFacedEvent -> TriggerContext(
+                    triggeringPlayerId = event.playerId
+                )
                 is com.wingedsheep.engine.core.SurveiledEvent -> TriggerContext(
                     triggeringPlayerId = event.playerId,
                     scryCount = event.count

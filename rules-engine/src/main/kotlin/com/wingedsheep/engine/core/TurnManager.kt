@@ -222,6 +222,8 @@ class TurnManager(
                     .without<com.wingedsheep.engine.state.components.player.PermanentAbilitiesActivatedThisTurnComponent>()
                     // Loyalty activations reset each turn (Kiora of Salt and Sand's gate).
                     .with(LoyaltyAbilitiesActivatedThisTurnComponent(count = 0))
+                    // Dilemmas faced reset each turn (Captain Benjamin Sisko, The Caretaker).
+                    .with(com.wingedsheep.engine.state.components.player.DilemmasFacedThisTurnComponent(count = 0))
                     // Cards discarded this turn reset for every player (Mayhem gate + Green Goblin count).
                     .with(CardsDiscardedThisTurnComponent(cardIds = emptyList()))
                     // Lands played this turn (with zone-of-origin) reset (Spider-Man 2099).
