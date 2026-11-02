@@ -2,7 +2,7 @@
 
 **Set Size:** 254 cards
 **Release Date:** November 13, 2026
-**Implemented:** 73 / 254
+**Implemented:** 74 / 254
 > Preview snapshot from October 28, 2026. Scryfall currently marks every TRK printing as `booster: false`, so all cards appear under Extras. Refresh the bootstrap as previews and booster classifications change; this is not the final set size.
 
 | Section    | Total | Done |
@@ -178,7 +178,7 @@
 - [x] Plains
 - [ ] Planetary Bombardment
 - [x] Planetary Patrol
-- [ ] Plasma Cascade
+- [x] Plasma Cascade
 - [x] Primary Unimatrix Adjunct
 - [ ] Pure Energy
 - [ ] Q, Stacking the Deck
