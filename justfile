@@ -856,7 +856,7 @@ e2e-trace TRACE:
 # Watch an AI vs AI match in a headed browser. Params (all optional):
 #   MODEL1, MODEL2   — LLM model ids; pass "" "" for built-in engine AIs (no LLM calls)
 #   SETS             — set code or comma-separated list, e.g. "BLB" or "ONS,LGN,SCG"
-#   HEURISTIC        — "true" (fast heuristic deck build) or "false" (LLM deck build)
+#   SKIP_LLM_DECK    — "true" (fast Draftsim deck build) or "false" (LLM deck build)
 #   PROFILE          — "true" enables React render profiler; report prints at the end
 # Examples:
 #   just watch-ai-match                                      # default BLB match with LLMs
@@ -865,9 +865,9 @@ e2e-trace TRACE:
 #   just watch-ai-match "" "" "ONS,LGN,SCG"                  # engine-vs-engine Onslaught block
 #   just watch-ai-match "" "" "BLB" "true" "true"            # engine-vs-engine BLB with profiler
 [group: 'e2e']
-[doc("AI vs AI match in a headed browser — params: MODEL1 MODEL2 SETS HEURISTIC PROFILE (pass \"\" \"\" for engine-vs-engine)")]
-watch-ai-match MODEL1="z-ai/glm-5.1" MODEL2="qwen/qwen3.6-plus" SETS="BLB" HEURISTIC="true" PROFILE="false":
-    cd e2e-scenarios && AI_MATCH=true AI_MODEL_P1={{MODEL1}} AI_MODEL_P2={{MODEL2}} AI_HEURISTIC_DECK={{HEURISTIC}} AI_SET_CODES={{SETS}} PROFILE={{PROFILE}} SKIP_WEB_SERVER=true npx playwright test tests/general/ai-match --headed
+[doc("AI vs AI match in a headed browser — params: MODEL1 MODEL2 SETS SKIP_LLM_DECK PROFILE (pass \"\" \"\" for engine-vs-engine)")]
+watch-ai-match MODEL1="z-ai/glm-5.1" MODEL2="qwen/qwen3.6-plus" SETS="BLB" SKIP_LLM_DECK="true" PROFILE="false":
+    cd e2e-scenarios && AI_MATCH=true AI_MODEL_P1={{MODEL1}} AI_MODEL_P2={{MODEL2}} AI_SKIP_LLM_DECK={{SKIP_LLM_DECK}} AI_SET_CODES={{SETS}} PROFILE={{PROFILE}} SKIP_WEB_SERVER=true npx playwright test tests/general/ai-match --headed
 
 # Watch an engine-vs-engine AI match using two fixed pre-built decks. Sealed pool +
 # deckbuilding are skipped entirely. Each deck JSON is a `{ "Card Name": count }` object;

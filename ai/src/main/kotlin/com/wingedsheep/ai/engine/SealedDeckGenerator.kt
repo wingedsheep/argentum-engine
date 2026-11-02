@@ -1,22 +1,16 @@
 package com.wingedsheep.ai.engine
 
-import com.wingedsheep.ai.assist.DeckBuildRequest
-import com.wingedsheep.ai.assist.DraftsimDeckBuildAdvisor
 import com.wingedsheep.ai.engine.deck.GeneratedDeck
 import com.wingedsheep.engine.limited.BoosterGenerator
 import com.wingedsheep.engine.limited.SideboardDerivation
 import com.wingedsheep.sdk.model.CardDefinition
-import org.slf4j.LoggerFactory
 
 /**
  * Generates a 40-card sealed deck by opening 8 boosters from a set and
  * selecting a playable build from the resulting pool.
  *
- * The build itself comes from the Draftsim autobuilder ([DraftsimDeckBuildAdvisor]) — the same
- * archetype-aware, ratings-driven engine the deckbuild "Auto-build" button uses — so quick/AI games
- * get the same quality of automatic build as a human clicking Auto-build, backed by Draftsim's
- * per-set ratings/removal/archetype tables. The [buildHeuristicSealedDeck] color-and-curve heuristic
- * remains as a safety net for the rare pool Draftsim can't build from.
+ * The build itself is [buildLimitedDeck] — the Draftsim autobuilder every AI seat builds limited
+ * decks with, the same engine as the deckbuild "Auto-build" button's default.
  *
  * Basic land names in the output are distributed across art variants
  * from the selected set.
@@ -70,7 +64,7 @@ class SealedDeckGenerator(
         requireNotNull(boosterGenerator.availableSets[setCode]) { "Unknown set code: $setCode" }
 
         val pool = boosterGenerator.generateSealedPool(setCode, boosterCount = 8)
-        val deck = buildSealedDeck(pool, setCode)
+        val deck = buildLimitedDeck(pool, listOf(setCode))
 
         return pinnedToPool(deck, pool, boosterGenerator.getBasicLands(setCode))
     }
@@ -96,7 +90,7 @@ class SealedDeckGenerator(
         setCodes.forEach { requireNotNull(boosterGenerator.availableSets[it]) { "Unknown set code: $it" } }
 
         val pool = boosterGenerator.generateSealedPool(setCodes, boosterCount = 8)
-        val deck = buildSealedDeck(pool, setCodes.first())
+        val deck = buildLimitedDeck(pool, listOf(setCodes.first()))
 
         return pinnedToPool(deck, pool, boosterGenerator.getBasicLands(setCodes))
     }
@@ -119,31 +113,7 @@ class SealedDeckGenerator(
         )
     }
 
-    /**
-     * Builds a sealed deck from [pool] with the Draftsim autobuilder, scoped to [setCode] so it loads
-     * that set's ratings/removal/archetype tables. Sets without a Draftsim ratings file still build
-     * (the scorer falls back to a rarity ladder). Falls back to [buildHeuristicSealedDeck] only if
-     * Draftsim throws or yields an empty list — the heuristic always produces a legal 40-card deck.
-     */
-    private fun buildSealedDeck(pool: List<CardDefinition>, setCode: String): Map<String, Int> {
-        val result = runCatching {
-            DraftsimDeckBuildAdvisor.buildDeck(DeckBuildRequest(pool = pool, setCodes = listOf(setCode)))
-        }.getOrElse { error ->
-            logger.warn("Draftsim build failed for set '{}'; falling back to heuristic", setCode, error)
-            null
-        }
-        val build = result?.builds?.getOrNull(result.recommended)
-        if (build != null && build.deckList.isNotEmpty()) return build.deckList
-
-        if (result != null) {
-            logger.warn("Draftsim produced no build for set '{}'; falling back to heuristic", setCode)
-        }
-        return buildHeuristicSealedDeck(pool)
-    }
-
     private companion object {
-        private val logger = LoggerFactory.getLogger(SealedDeckGenerator::class.java)
-
         /**
          * Minimum distinct-card count for a set to be opened as a standalone sealed pool. Excludes
          * small supplementary sets (e.g. "The Big Score", BIG, ~30 cards) that can't fill 8 boosters

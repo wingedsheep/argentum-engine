@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- #4315 Builds its draft and sealed lobby decks with the Draftsim autobuilder its quick-game decks already used — archetype ratings, synergy, three-colour and splash builds with fixing — instead of the plain two-colour colour-and-curve heuristic
 - #4312 Builds whole-format constructed decks in every colour pair rather than nearly always white: leads with a colour drawn evenly and pairs it with a partner that keeps the deck within 85% of the best pair
 - #4310 Against a many-set constructed deck on Auto, builds a fresh deck for the format every game instead of picking a built-in starter (which could be a one-set Bloomburrow intro deck)
 - #4298 Builds sealed decks in three colours when the cards a third colour adds outweigh what its mana costs — weighing every spell by how reliably the manabase casts it on curve and reading fixing (duals, basic-land searches, any-colour rocks, Treasure) off the cards on every set — splashes bombs only with two lands' worth of fixing for the colour (a mana rock or dork counts half, a free one a whole land), goes to four or five colours only when the pool fixes them and the deck is clearly better, and values Vivid, domain and converge cards more in wider decks

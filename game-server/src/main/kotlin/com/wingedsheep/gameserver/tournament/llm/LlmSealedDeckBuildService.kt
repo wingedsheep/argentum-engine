@@ -1,6 +1,6 @@
 package com.wingedsheep.gameserver.tournament.llm
 
-import com.wingedsheep.ai.engine.buildHeuristicSealedDeck
+import com.wingedsheep.ai.engine.buildLimitedDeck
 import com.wingedsheep.ai.llm.AiConfig
 import com.wingedsheep.ai.llm.ChatMessage
 import com.wingedsheep.ai.llm.LlmClient
@@ -13,12 +13,11 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
 /**
- * Builds a 40-card **sealed** deck from a pool. Shared by the human tournament lobby
- * ([com.wingedsheep.gameserver.handler.LobbyHandler]) and the dev LLM tournament.
+ * Builds a 40-card **sealed** deck from a pool for the dev LLM tournament.
  *
- * - **heuristic**: [com.wingedsheep.ai.engine.buildHeuristicSealedDeck] — fast, free, deterministic.
+ * - **draftsim**: [buildLimitedDeck] — the Draftsim autobuilder every engine-AI seat uses; fast, free.
  * - **llm**: a single-shot sealed prompt to the given model; parsed + validated against the pool,
- *   padded/trimmed to 40, basics as plain `Forest`/`Mountain`/… names. Falls back to heuristic if
+ *   padded/trimmed to 40, basics as plain `Forest`/`Mountain`/… names. Falls back to Draftsim if
  *   the LLM is unavailable or returns an unusable list.
  *
  * NB: emits **plain card names** (incl. plain basic-land names) so the engine's `CardRegistry`
@@ -35,23 +34,25 @@ class LlmSealedDeckBuildService(
     private val basics = setOf("Plains", "Island", "Swamp", "Mountain", "Forest")
 
     /**
+     * @param setCodes the sets the pool was opened from, for Draftsim's per-set tables
      * @param useLlm caller's intent to use model-driven building (ANDed with config + key availability)
      * @param modelOverride the model to build with (null → server's configured deckbuilding model)
      * @param usageSink optional token/cost callback for the LLM call
      */
     fun build(
         pool: List<CardDefinition>,
+        setCodes: List<String>,
         useLlm: Boolean,
         modelOverride: String? = null,
         usageSink: ((LlmUsage) -> Unit)? = null
     ): Map<String, Int> {
         val ai = gameProperties.ai
         // An explicit per-tournament "LLM" choice (useLlm) overrides the server's
-        // `heuristic-deckbuilding` convenience flag — that flag only governs casual vs-AI play.
+        // `skip-llm-deckbuilding` convenience flag — that flag only governs casual vs-AI play.
         val canLlm = useLlm && ai.enabled && ai.effectiveApiKey.isNotBlank()
         if (!canLlm) {
             logger.info(
-                "Sealed deckbuild → HEURISTIC. requestedLlm={}, aiEnabled={}, apiKeyPresent={}",
+                "Sealed deckbuild → DRAFTSIM. requestedLlm={}, aiEnabled={}, apiKeyPresent={}",
                 useLlm, ai.enabled, ai.effectiveApiKey.isNotBlank()
             )
         }
@@ -59,14 +60,14 @@ class LlmSealedDeckBuildService(
             try {
                 val deck = tryLlmSealedDeck(pool, ai, modelOverride, usageSink)
                 if (deck != null) return deck
-                logger.info("LLM sealed deckbuild returned nothing, falling back to heuristic")
+                logger.info("LLM sealed deckbuild returned nothing, falling back to Draftsim")
             } catch (e: Exception) {
-                logger.warn("LLM sealed deckbuild failed (model={}), falling back to heuristic: {}",
+                logger.warn("LLM sealed deckbuild failed (model={}), falling back to Draftsim: {}",
                     modelOverride ?: ai.effectiveDeckbuildingModel, e.message)
             }
         }
-        val deck = buildHeuristicSealedDeck(pool)
-        logger.info("Heuristic sealed deck ({} cards)", deck.values.sum())
+        val deck = buildLimitedDeck(pool, setCodes)
+        logger.info("Draftsim sealed deck ({} cards)", deck.values.sum())
         return deck
     }
 

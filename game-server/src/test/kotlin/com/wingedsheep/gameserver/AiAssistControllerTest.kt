@@ -146,4 +146,10 @@ class AiAssistControllerTest : FunSpec({
         advisors.draft.any { it.id == "heuristic" } shouldBe true
         advisors.deckbuild.any { it.id == "heuristic" } shouldBe true
     }
+
+    test("Auto-build defaults to Draftsim, the builder the AI seats build their own decks with") {
+        val controller = AiAssistController(registry, InMemoryLobbyRepository())
+
+        controller.advisors().deckbuild.first().id shouldBe "draftsim"
+    }
 })

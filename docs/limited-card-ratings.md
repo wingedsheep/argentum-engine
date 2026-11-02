@@ -96,8 +96,8 @@ how a format plays. It is the floor, not the goal.
 | Consumer | Ratings used |
 |----------|--------------|
 | AI draft picks (`EngineAiPlayerController.chooseDraftPick`, Winston, grid) | Draftsim tables for the pack's sets, with fallback ratings and synergy (below) |
-| Draftsim deckbuild (`DraftsimDeckBuildAdvisor`) — AI quick-game sealed decks, the human Auto-build | Same |
-| AI deck from a tournament pool (`HeuristicDeckBuilder`) | `LimitedCardRater.rate` |
+| Draftsim deckbuild (`DraftsimDeckBuildAdvisor`, via `buildLimitedDeck`) — every AI limited deck (quick games, draft and sealed lobby pools), the human Auto-build's default engine | Same |
+| "Heuristic" Auto-build engine (`HeuristicDeckBuilder`), and the fallback when Draftsim builds nothing | `LimitedCardRater.rate` |
 | "Draftsim" Suggest Pick advisor | Draftsim tables only (rarity ladder for unrated cards) |
 | "Heuristic" Suggest Pick advisor (`LimitedPickScorer`) | Rarity and oracle-text keywords — no tables |
 | Constructed and Commander generators (`ConstructedRatings`) | Every manifest table merged, cube tables excluded; a narrow hoser keeps 60% of its rating. A hoser, a one-damage pinger, or a card that only aims into a graveyard (Coffin Purge) fills no interaction slot |

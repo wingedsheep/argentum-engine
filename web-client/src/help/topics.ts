@@ -920,7 +920,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
         'Auto-build proposes the best deck it can make from your pool, lands included. If you have already started, it becomes Complete deck and keeps your picks while it fills the gaps.',
         'When the engine finds several decks, the strip under the top bar lists them as Builds — click one to switch. Undo puts back the deck you had before, as long as you haven’t edited it since.',
         'Card scores rates every card in your pool, and in your deck list, so you can make the cuts yourself. Scores use your deck so far for colour context; when the deck changes, the strip offers Re-score. Click Card scores again to hide them.',
-        'With more than one engine on the server, the picker at the start of the AI group chooses which one Auto-build and Card scores use.',
+        'With more than one engine on the server, the picker at the start of the AI group chooses which one Auto-build and Card scores use. The default, Draftsim, is the builder the AI opponents build their own limited decks with; Heuristic is a simpler colour-and-curve builder.',
       ] },
       { kind: 'tip', text: 'Assistance is off by default, so nobody in a competitive pod gets it unless the host turns it on for everyone. A draft or sealed game against the AI starts right away, so you choose it on the launch panel instead, under AI assistance.' },
     ],

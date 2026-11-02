@@ -164,7 +164,7 @@ function SetupForm({
   const [pickerOpen, setPickerOpen] = useState(false)
   const [playerCount, setPlayerCount] = useState(2)
   const [gamesPerMatch, setGamesPerMatch] = useState(3)
-  const [deckbuild, setDeckbuild] = useState<'heuristic' | 'llm'>('heuristic')
+  const [deckbuild, setDeckbuild] = useState<'draftsim' | 'llm'>('draftsim')
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
@@ -201,7 +201,7 @@ function SetupForm({
           setCodes,
           playerCount,
           gamesPerMatch,
-          heuristicDeckbuilding: deckbuild === 'heuristic',
+          skipLlmDeckbuilding: deckbuild === 'draftsim',
         }),
       })
       const data = await res.json() as { lobbyId: string; message: string }
@@ -252,8 +252,8 @@ function SetupForm({
       <label style={styles.label}>Deck building</label>
       <div style={styles.radioRow}>
         <label style={styles.radioLabel}>
-          <input type="radio" checked={deckbuild === 'heuristic'} onChange={() => setDeckbuild('heuristic')} />
-          Heuristic (fast)
+          <input type="radio" checked={deckbuild === 'draftsim'} onChange={() => setDeckbuild('draftsim')} />
+          Draftsim (fast)
         </label>
         <label style={styles.radioLabel}>
           <input type="radio" checked={deckbuild === 'llm'} onChange={() => setDeckbuild('llm')} />

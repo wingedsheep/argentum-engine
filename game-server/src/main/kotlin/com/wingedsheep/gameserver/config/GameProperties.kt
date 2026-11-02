@@ -95,10 +95,10 @@ data class AiProperties(
     val timeoutMs: Long = 300000,
     val thinkingDelayMs: Long = 500,
     /**
-     * When true, AI sealed decks are always built with the deterministic heuristic builder,
-     * skipping the LLM regardless of per-request flags. Useful for fully local play vs AI.
+     * When true, AI limited decks never ask the LLM: they are always built by the Draftsim
+     * autobuilder, regardless of per-request flags. Useful for fully local play vs AI.
      */
-    val heuristicDeckbuilding: Boolean = false,
+    val skipLlmDeckbuilding: Boolean = false,
     /**
      * Local testing mode: record what the engine AI considered on every decision and expose it over
      * `/api/dev/ai-insight`, so a human can browse the AI's options with the scores it gave them and

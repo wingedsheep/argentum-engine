@@ -3,10 +3,10 @@ package com.wingedsheep.ai.assist
 import com.wingedsheep.sdk.model.CardDefinition
 
 /**
- * A pluggable engine that builds (or completes) a deck from a card pool. The heuristic engine
- * ([HeuristicDeckBuildAdvisor]) ships today; LLM- ([com.wingedsheep.ai.llm.AiDeckBuilder]) and
- * MCTS-backed engines can be added later by implementing this interface and registering them in
- * [AdvisorCatalog].
+ * A pluggable engine that builds (or completes) a deck from a card pool. The Draftsim autobuilder
+ * ([DraftsimDeckBuildAdvisor], the default) and the colour-and-curve heuristic
+ * ([HeuristicDeckBuildAdvisor]) ship today; LLM- or MCTS-backed engines can be added by implementing
+ * this interface and registering them in [AdvisorCatalog].
  *
  * Operates on resolved [CardDefinition]s (the server resolves pool card names against the registry),
  * because building needs the full card — colors, types, mana cost, and the effect tree the heuristic

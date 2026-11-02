@@ -103,6 +103,7 @@ class LlmTournamentService(
                         val bucket = "build:${participant.id.value}"
                         val deck = deckBuildService.build(
                             pool = participant.pool,
+                            setCodes = listOf(tournament.setCode),
                             useLlm = useLlm,
                             modelOverride = participant.modelId,
                             usageSink = { usage -> costTracker.record(bucket, usage) }

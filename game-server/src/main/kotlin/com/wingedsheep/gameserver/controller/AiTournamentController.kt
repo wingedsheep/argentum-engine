@@ -37,8 +37,8 @@ class AiTournamentController(
         /** Optional per-player model overrides. Index 0 = player 1, index 1 = player 2, etc.
          *  Falls back to the server's configured model for any unspecified slots. */
         val models: List<String>? = null,
-        /** Skip LLM deck building and use the fast heuristic builder instead. */
-        val heuristicDeckbuilding: Boolean? = null,
+        /** Skip LLM deck building and use the Draftsim autobuilder instead. */
+        val skipLlmDeckbuilding: Boolean? = null,
         /**
          * Games played per pairing. Defaults to the lobby default (3) — a two-AI sandbox that
          * plays a single game is over almost as soon as you have finished opening the tab.
@@ -88,7 +88,7 @@ class AiTournamentController(
                     setCodes = setCodes,
                     playerCount = playerCount,
                     models = request?.models,
-                    heuristicDeckbuilding = request?.heuristicDeckbuilding,
+                    skipLlmDeckbuilding = request?.skipLlmDeckbuilding,
                     gamesPerMatch = request?.gamesPerMatch?.coerceIn(1, 9)
                 )
             }
