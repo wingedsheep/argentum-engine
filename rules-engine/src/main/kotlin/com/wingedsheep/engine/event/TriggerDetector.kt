@@ -509,6 +509,10 @@ class TriggerDetector(
         // Duality). The cast-cause analogue of duplicateAttackTriggers.
         duplicateCastOrCopyTriggers(state, events, triggers)
 
+        // Duplicate life-gain triggers caused by the doubler's controller gaining life (Dr. Beverly
+        // Crusher). The life-gain-cause analogue of duplicateCastOrCopyTriggers.
+        duplicateLifeGainTriggers(state, events, triggers)
+
         // Duplicate death/leave-the-battlefield triggers caused by a creature dying (Teysa Karlov;
         // The Masamune's granted ability). The death-cause analogue of duplicateAttackTriggers.
         duplicateDeathTriggers(state, events, triggers)
@@ -5043,6 +5047,67 @@ class TriggerDetector(
             }
         }
         triggers.addAll(duplicates)
+    }
+
+    /**
+     * Duplicate triggers caused by a player gaining life for [AdditionalLifeGainTriggers] statics
+     * (Dr. Beverly Crusher). A life-gain triggered ability of a permanent the doubler's controller
+     * controls, triggered by that same player gaining life, fires an additional time per copy.
+     */
+    private fun duplicateLifeGainTriggers(
+        state: GameState,
+        events: List<EngineGameEvent>,
+        triggers: MutableList<PendingTrigger>
+    ) {
+        if (triggers.isEmpty()) return
+        val gainers = events.mapNotNullTo(mutableSetOf()) { event ->
+            (event as? LifeChangedEvent)?.takeIf { it.reason == LifeChangeReason.LIFE_GAIN }?.playerId
+        }
+        if (gainers.isEmpty()) return
+
+        val projected = state.projectedState
+        val doublersByPlayer = mutableMapOf<EntityId, Int>()
+        for (permanentId in state.getBattlefield()) {
+            val container = state.getEntity(permanentId) ?: continue
+            val card = container.get<CardComponent>() ?: continue
+            if (container.has<FaceDownComponent>() || projected.hasLostAllAbilities(permanentId)) continue
+            val controllerId = projected.getController(permanentId) ?: continue
+            if (controllerId !in gainers) continue
+            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            val classLevel = container.get<ClassLevelComponent>()?.currentLevel
+            for (ability in cardDef.script.effectiveStaticAbilities(classLevel)) {
+                val applies = when (ability) {
+                    is AdditionalLifeGainTriggers -> true
+                    is ConditionalStaticAbility -> ability.ability is AdditionalLifeGainTriggers &&
+                        conditionEvaluator.evaluate(
+                            state, ability.condition,
+                            EffectContext(sourceId = permanentId, controllerId = controllerId)
+                        )
+                    else -> false
+                }
+                if (applies) doublersByPlayer.merge(controllerId, 1, Int::plus)
+            }
+        }
+        if (doublersByPlayer.isEmpty()) return
+
+        val battlefield = state.getBattlefield().toSet()
+        val duplicates = mutableListOf<PendingTrigger>()
+        for (trigger in triggers) {
+            val copies = doublersByPlayer[trigger.controllerId] ?: continue
+            // "of a permanent you control" — not an emblem's or a spell's ability.
+            if (trigger.sourceId !in battlefield) continue
+            if (!isLifeGainPattern(trigger.ability.trigger)) continue
+            // "you gaining life" — the life gain that caused it is the doubler controller's own.
+            if (trigger.triggerContext.triggeringPlayerId != trigger.controllerId) continue
+            repeat(copies) { duplicates.add(trigger) }
+        }
+        triggers.addAll(duplicates)
+    }
+
+    private fun isLifeGainPattern(pattern: EventPattern): Boolean = when (pattern) {
+        is EventPattern.LifeGainEvent -> true
+        is EventPattern.AnyOf -> pattern.events.any(::isLifeGainPattern)
+        else -> false
     }
 
     /**

@@ -1965,6 +1965,46 @@
     ]
 }
 
+// Dr. Beverly Crusher
+{
+    "name": "Dr. Beverly Crusher",
+    "manaCost": "{2}{W}",
+    "typeLine": "Legendary Creature — Human Doctor",
+    "oracleText": "If you gaining life causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time.\nWhenever you gain life, put a +1/+1 counter on Dr. Crusher.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dr. Beverly Crusher:1",
+                "trigger": "LifeGainEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            "AdditionalLifeGainTriggers"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "rarity": "MYTHIC",
+        "artist": "Mattia Rangoni",
+        "flavorText": "\"Damn. Where are the calluses we doctors are supposed to grow over our feelings?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/f/ef9c5790-d909-4271-90bd-5fa4816ddd6b.jpg?1784065540"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Dr. McCoy, Surly Surgeon
 {
     "name": "Dr. McCoy, Surly Surgeon",
