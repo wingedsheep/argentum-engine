@@ -1,7 +1,21 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.GameConfig
+import com.wingedsheep.engine.core.GameInitializer
 import com.wingedsheep.engine.core.LifeChangedEvent
+import com.wingedsheep.engine.core.PlayerConfig
+import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.handlers.effects.life.DrainLifeExecutor
+import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
+import com.wingedsheep.engine.state.components.player.LifeLostAmountThisTurnComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
+import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.effects.DrainLifeEffect
 import com.wingedsheep.sdk.core.*
 import com.wingedsheep.sdk.dsl.*
 import com.wingedsheep.sdk.scripting.EventPattern
@@ -87,6 +101,33 @@ class DrainLifePerLoserAmountTest : ScenarioTestBase() {
             g.getLifeTotal(2) shouldBe 2
             gains.size shouldBe 1
             g.getLifeTotal(1) shouldBe 27
+        }
+
+        test("in multiplayer each opponent loses their own amount, and the gain is one event for the sum") {
+            val registry = CardRegistry().also { it.register(TestCards.all) }
+            val config = GameConfig(
+                players = (1..3).map { PlayerConfig("Player $it", Deck.of("Forest" to 40)) },
+                startingPlayerIndex = 0,
+                skipMulligans = true,
+            )
+            val init = GameInitializer(registry).initializeGame(config)
+            val p = init.playerIds
+            fun GameState.lost(player: EntityId, amount: Int) =
+                updateEntity(player) { it.with(LifeLostAmountThisTurnComponent(amount)) }
+            val state = init.state.lost(p[0], 7).lost(p[1], 3).lost(p[2], 5)
+
+            val result = DrainLifeExecutor(PredicateEvaluator(cardRegistry = null).amounts).execute(
+                state,
+                DrainLifeEffect(lifeLostThisTurn, amountPerLoser = true),
+                EffectContext(sourceId = null, controllerId = p[0])
+            )
+
+            fun life(player: EntityId) = result.state.getEntity(player)?.get<LifeTotalComponent>()?.life
+            life(p[1]) shouldBe 17
+            life(p[2]) shouldBe 15
+            life(p[0]) shouldBe 28
+            result.events.filterIsInstance<LifeChangedEvent>()
+                .count { it.playerId == p[0] } shouldBe 1
         }
 
         test("a player who lost no life this turn loses nothing, and the drainer gains nothing") {

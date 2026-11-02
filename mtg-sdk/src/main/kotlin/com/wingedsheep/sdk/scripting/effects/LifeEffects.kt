@@ -92,8 +92,12 @@ data class DrainLifeEffect(
     ) : this(DynamicAmount.Fixed(amount), from, to)
 
     override val description: String =
-        "${from.description.replaceFirstChar { it.uppercase() }} loses ${amount.description} life" +
-            (if (amountPerLoser) " (measured for that player)" else "") + ". " +
+        (if (amountPerLoser) {
+            "${from.description.replaceFirstChar { it.uppercase() }} loses life equal to " +
+                "${amount.description}, \"you\" meaning that player. "
+        } else {
+            "${from.description.replaceFirstChar { it.uppercase() }} loses ${amount.description} life. "
+        }) +
             "${to.description.replaceFirstChar { it.uppercase() }} gains life equal to the life lost this way"
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
