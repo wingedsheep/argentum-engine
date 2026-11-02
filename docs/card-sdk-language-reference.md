@@ -10908,7 +10908,11 @@ staticAbility {
   asking `ControllerHexproof.appliesAgainst`. **Kaya, Bane of the Dead** — "your opponents and permanents
   your opponents control with hexproof …" — is `SuppressHexproofForGroup(GroupFilter(GameObjectFilter.Permanent
   .opponentControls()), players = Player.EachOpponent)`. Checked again at resolution, so a target chosen
-  through it becomes illegal once the permanent leaves.
+  through it becomes illegal once the permanent leaves. "Until end of turn, …" from a resolving ability
+  is the same static handed out with `Effects.GrantStaticAbility(SuppressHexproofForGroup(...),
+  EffectTarget.Controller, Duration.EndOfTurn)`: the activating player holds it, so it lasts the turn
+  even after the source leaves (CR 611.2a) — **Detection Tower** (`AllCreaturesOpponentsControl`,
+  `players = Player.EachOpponent`).
 - `GrantHexproofFromToGroup(scope, filter = attachedCreature())` — "[filter] have hexproof from [scope]"
   (CR 702.11d): adds the same projected `HEXPROOF_FROM_*` keyword a printed `KeywordAbility.Hexproof(scope)`
   uses (`HexproofFromRules.keywordsFor`), so it blocks targeting by matching spells and abilities

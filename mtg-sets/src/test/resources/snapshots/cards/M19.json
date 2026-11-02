@@ -1207,6 +1207,78 @@
     "colorIdentityOverride": []
 }
 
+// Detection Tower
+{
+    "name": "Detection Tower",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{1}, {T}: Until end of turn, your opponents and creatures your opponents control with hexproof can be the targets of spells and abilities you control as though they didn't have hexproof.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Detection Tower:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Detection Tower:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "GrantStaticAbility",
+                    "ability": {
+                        "type": "SuppressHexproofForGroup",
+                        "players": "EachOpponent"
+                    },
+                    "target": "Controller"
+                },
+                "descriptionOverride": "{1}, {T}: Until end of turn, your opponents and creatures your opponents control with hexproof can be the targets of spells and abilities you control as though they didn't have hexproof."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "249",
+        "rarity": "RARE",
+        "artist": "Adam Paquette",
+        "flavorText": "Its light exposes enemies and lays secrets bare.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/02f99756-d334-4dba-a375-ba3d91ecae62.jpg?1783934505",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "Your opponents and creatures your opponents control don't actually lose hexproof, although you will ignore hexproof for purposes of choosing targets of spells and abilities you control."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Creatures your opponents control with \"hexproof from [quality]\" abilities can be targeted as though they didn't have those abilities as well."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Because Detection Tower's last ability doesn't change the characteristics of any permanents, the set of creatures affected by it is constantly updated. Creatures that come under your opponents' control later in the turn can be targeted as though they didn't have hexproof."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Diamond Mare
 {
     "name": "Diamond Mare",
