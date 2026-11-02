@@ -103,9 +103,13 @@ private fun buildFreshSealedDeck(pool: List<CardDefinition>, targetSize: Int): M
     // Pick top 2 colors. Only a pool too thin in them to fill the spell slots splashes a third.
     val bestColors = colorScores.entries.sortedByDescending { it.value }.take(2).map { it.key }.toSet()
 
+    // Colours the pool's on-colour lands fix beyond the pair — a Bant tri-land in a G/U deck makes
+    // white — so a card whose activation needs one is still playable ([ActivationMana]).
+    val fixed = fixingColors(poolLands.filter { landFitsColors(it, bestColors) })
+
     // Cards castable off the chosen colors, best first — by each copy's *marginal* value, so a
     // second copy of a legend ranks below the first (see [rankByMarginalValue]).
-    val ranked = rankByMarginalValue(nonLands.filter { fitsDeckColors(it, bestColors) }) { ratings[it] ?: 0.0 }
+    val ranked = rankByMarginalValue(nonLands.filter { fitsDeckColors(it, bestColors, fixed) }) { ratings[it] ?: 0.0 }
 
     // On-color non-basic lands (capped at 4 per name) are fixed first: the mana-support check
     // below needs to know which colors they already make.
@@ -143,6 +147,7 @@ private fun buildFreshSealedDeck(pool: List<CardDefinition>, targetSize: Int): M
         nonLands = nonLands,
         ratings = ratings,
         mainColors = bestColors,
+        fixed = fixed,
         taken = selection.selected.map { it.card },
         need = minOf(targetSize - maxLands - selection.selected.size, targetSize * SPLASH_CARDS_PER_40 / 40),
     )
@@ -201,6 +206,7 @@ private fun lightSplash(
     nonLands: List<CardDefinition>,
     ratings: Map<CardDefinition, Double>,
     mainColors: Set<Color>,
+    fixed: Set<Color>,
     taken: List<CardDefinition>,
     need: Int,
 ): Splash? {
@@ -211,7 +217,7 @@ private fun lightSplash(
         val withSplash = mainColors + color
         val copies = mutableMapOf<String, Int>()
         val cards = offColour
-            .filter { fitsDeckColors(it, withSplash) && strictPips(it, color) == 1 && !DeckDependencies.inert(it, taken) }
+            .filter { fitsDeckColors(it, withSplash, fixed) && strictPips(it, color) == 1 && !DeckDependencies.inert(it, taken) }
             .sortedByDescending { ratings[it] ?: 0.0 }
             .filter { card ->
                 val n = (takenNames[card.name] ?: 0) + (copies[card.name] ?: 0)
@@ -494,8 +500,11 @@ private fun completeSealedDeck(
     // Fill spell slots with the best on-color (or colorless) candidates not already maxed out.
     // Copies the player already locked count toward the legend discount: a locked legend's next
     // copy from the pool is already its second.
+    val fixed = fixingColors(
+        pool.filter { it.typeLine.isLand && (!it.typeLine.isBasicLand || it.typeLine.isSnow) && landFitsColors(it, bestColors) },
+    )
     val candidates = rankByMarginalValue(
-        pool.filter { !it.typeLine.isLand && fitsDeckColors(it, bestColors) },
+        pool.filter { !it.typeLine.isLand && fitsDeckColors(it, bestColors, fixed) },
         alreadyIncluded = { name -> locked[name] ?: 0 },
     ) { ratings[it] ?: 0.0 }.map { it.slot.card }
     for (card in candidates) {
@@ -643,11 +652,19 @@ internal fun castableWithColors(card: CardDefinition, deckColors: Set<Color>): B
 
 /**
  * [card] earns a slot in a deck playing [deckColors]: castable off them ([castableWithColors]),
- * and not a mana rock that makes only other colours. A colourless rock is always castable, but a
- * Mardu Banner (R/W/B) in a U/G deck is three mana for a colourless card that fixes nothing.
+ * not a mana rock that makes only other colours, and with activated abilities the deck can pay
+ * for ([ActivationMana]) — off [deckColors] or the colours its lands fix ([fixed]). A colourless
+ * rock is always castable, but a Mardu Banner (R/W/B) in a U/G deck is three mana for a colourless
+ * card that fixes nothing; The Wandering Minstrel casts for {G}{U}, but a G/U deck never pays its
+ * {3}{W}{U}{B}{R}{G} pump.
  */
-internal fun fitsDeckColors(card: CardDefinition, deckColors: Set<Color>): Boolean =
-    castableWithColors(card, deckColors) && !offColorManaRock(card, deckColors)
+internal fun fitsDeckColors(card: CardDefinition, deckColors: Set<Color>, fixed: Set<Color> = emptySet()): Boolean =
+    castableWithColors(card, deckColors) && !offColorManaRock(card, deckColors) &&
+        ActivationMana.payable(card, deckColors + fixed)
+
+/** Colours at least [ActivationMana.FIXING_SOURCES] of [lands] (one entry per copy) produce. */
+internal fun fixingColors(lands: List<CardDefinition>): Set<Color> =
+    Color.entries.filter { color -> lands.count { color in producedColors(it) } >= ActivationMana.FIXING_SOURCES }.toSet()
 
 private fun offColorManaRock(card: CardDefinition, deckColors: Set<Color>): Boolean {
     if (card.typeLine.isLand || card.typeLine.isCreature) return false
