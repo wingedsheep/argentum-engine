@@ -257,17 +257,27 @@ class AiGameManager(
         onMulliganKeep: (EntityId) -> Unit = { _ -> },
         onMulliganTake: (EntityId) -> Unit = { _ -> },
         onBottomCards: (EntityId, List<EntityId>) -> Unit = { _, _ -> },
-    ): AiWebSocketSession = AiWebSocketSession(
-        aiPlayerId = aiPlayerId,
-        controller = controller,
-        thinkingDelayMs = gameProperties.ai.thinkingDelayMs,
-        onActionReady = onActionReady,
-        onMulliganKeep = onMulliganKeep,
-        onMulliganTake = onMulliganTake,
-        onBottomCards = onBottomCards,
-        allowActionsOnlyFallback = controller is EngineAiPlayerController || controller is LlmAiPlayerController || controller is JevAiPlayerController,
-        actionGate = gameSession?.let { aiInsightService.gateFor(it.sessionId) },
-    )
+    ): AiWebSocketSession {
+        // The AI may know every opponent's registered decklist — a deliberate design decision. It
+        // is read lazily (a seat is wired before every opponent has registered a deck) and stays
+        // server-side: the controller holds it as search knowledge, never in a client message.
+        if (gameSession != null) {
+            controller.setOpponentDeckListSource { seat ->
+                if (seat == aiPlayerId) null else gameSession.getStartingDeckCardCounts(seat)
+            }
+        }
+        return AiWebSocketSession(
+            aiPlayerId = aiPlayerId,
+            controller = controller,
+            thinkingDelayMs = gameProperties.ai.thinkingDelayMs,
+            onActionReady = onActionReady,
+            onMulliganKeep = onMulliganKeep,
+            onMulliganTake = onMulliganTake,
+            onBottomCards = onBottomCards,
+            allowActionsOnlyFallback = controller is EngineAiPlayerController || controller is LlmAiPlayerController || controller is JevAiPlayerController,
+            actionGate = gameSession?.let { aiInsightService.gateFor(it.sessionId) },
+        )
+    }
 
     /**
      * Wire the AI plumbing common to every bring-up path: synthetic [AiWebSocketSession],

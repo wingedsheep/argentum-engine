@@ -5,6 +5,7 @@ import com.wingedsheep.ai.engine.advisor.CardAdvisorRegistry
 import com.wingedsheep.ai.engine.evaluation.*
 import com.wingedsheep.ai.engine.knowledge.IntentCatalog
 import com.wingedsheep.ai.engine.hidden.Determinizer
+import com.wingedsheep.ai.engine.hidden.OpponentKnowledge
 import com.wingedsheep.ai.engine.hidden.OpponentModel
 import com.wingedsheep.ai.insight.AiInsightSink
 import com.wingedsheep.ai.engine.rollout.CandidateEvaluator
@@ -51,7 +52,20 @@ class AIPlayer(
      * [MeaningfulActionFilter.canAutoPassWithoutEnumerating] can decide from the state alone.
      */
     private val useMeaningfulFilter: Boolean = false,
+    /**
+     * What this seat knows of its opponents' decklists — the [Determinizer]'s sampling models and
+     * the unseen cards removal patience reads. Empty unless a caller teaches it ([learnOpponentDecklist]).
+     */
+    val opponentKnowledge: OpponentKnowledge? = null,
 ) {
+    /**
+     * Tell this AI [opponentId]'s registered decklist (card name → copies). Live games hand the AI
+     * every opponent's full list by design; see [OpponentKnowledge].
+     */
+    fun learnOpponentDecklist(opponentId: EntityId, cards: Map<String, Int>) {
+        opponentKnowledge?.learnDecklist(opponentId, cards)
+    }
+
     init {
         responder.forcedPlayPicker = { state, seat ->
             val plays = simulator.getLegalActions(state, seat)
@@ -259,6 +273,7 @@ class AIPlayer(
             val intents = if (profile.useCardIntent) IntentCatalog.of(cardRegistry) else IntentCatalog.NONE
 
             val simulator = newSimulator()
+            val opponentKnowledge = OpponentKnowledge(cardRegistry, opponentModels)
             // Raw Phase 9 vectors contain CardIntent-derived facts even when the surrounding
             // legacy-based arena profile deliberately keeps Phase 6 timing/targeting behavior off.
             // Give only the evaluator the full catalog so the fitted training schema and runtime
@@ -393,16 +408,18 @@ class AIPlayer(
                     stateSampler = if (profile.determinizeHiddenInformation) {
                         val determinizer = Determinizer(cardRegistry)
                         val sampler: (GameState, EntityId) -> GameState = { state, viewer ->
-                            determinizer.sampleForSearch(state, viewer, opponentModels)
+                            determinizer.sampleForSearch(state, viewer, opponentKnowledge.models)
                         }
                         sampler
                     } else {
                         null
                     },
                     insightSink = insightSink,
+                    opponentKnowledge = opponentKnowledge.takeIf { profile.holdRemovalForUnseenThreats },
                 ),
                 responder = responder,
                 useMeaningfulFilter = profile.useMeaningfulFilter,
+                opponentKnowledge = opponentKnowledge,
             )
         }
 

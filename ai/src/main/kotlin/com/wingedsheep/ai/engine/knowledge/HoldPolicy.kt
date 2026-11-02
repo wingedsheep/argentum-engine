@@ -174,8 +174,15 @@ class HoldPolicy(
      * declines.
      */
     private val legalActions: ((GameState, EntityId) -> List<LegalAction>)? = null,
+    /**
+     * [AiProfile.holdRemovalForUnseenThreats][com.wingedsheep.ai.engine.AiProfile.holdRemovalForUnseenThreats]
+     * — the opponents' decklists, so [RemovalPatience] can raise its bar for the creatures they
+     * have not drawn yet ([UnseenThreats]). Null reads the board alone.
+     */
+    private val opponentKnowledge: com.wingedsheep.ai.engine.hidden.OpponentKnowledge? = null,
 ) {
     private val synergy = SynergyPresence(intents)
+    private val unseenThreats = opponentKnowledge?.let { UnseenThreats(it, intents) }
 
     /** Whether this policy can say anything. False when the agent has no card knowledge. */
     val isEnabled: Boolean get() = intents.isEnabled
@@ -319,6 +326,7 @@ class HoldPolicy(
                 state, playerId, intent, card, cast.targets, boardPresenceWeight,
                 synergy = if (payoffsReadTheirFuel) synergy else null,
                 growth = if (removalWorthReadsGrowth) intents.growth else null,
+                unseenThreats = unseenThreats,
             )
         } else {
             0.0

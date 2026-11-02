@@ -2189,6 +2189,14 @@ class GameSession(
         deckLists[playerId]
             ?: replaySetup?.players?.firstOrNull { it.playerId == playerId.value }?.deck?.cards
 
+    /**
+     * [getStartingDeckList] as card name → copies, printing coordinates stripped — the decklist
+     * the engine AI is told about each opponent (by design it may know their full list). Stays
+     * server-side: it is AI search knowledge and never part of a client message.
+     */
+    fun getStartingDeckCardCounts(playerId: EntityId): Map<String, Int>? =
+        getStartingDeckList(playerId)?.groupingBy { cardEntryFromIdentifier(it).name }?.eachCount()
+
     // =========================================================================
     // Persistence Support (for Redis caching)
     // =========================================================================

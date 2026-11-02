@@ -82,6 +82,7 @@ class EngineAiPlayerController(
             logger.warn("Engine AI: no game state available, passing priority")
             return ActionResponse.SubmitAction(PassPriority(playerId))
         }
+        learnOpponentDecklists(gameState)
 
         // Handle pending decisions using the engine AI's responder
         if (pendingDecision != null && pendingDecision.playerId == playerId) {
@@ -209,6 +210,33 @@ class EngineAiPlayerController(
 
     override fun setDeckList(deckList: Map<String, Int>, archetype: String?) {
         // Engine AI evaluates board state directly — deck knowledge isn't needed
+    }
+
+    @Volatile
+    private var opponentDeckLists: ((EntityId) -> Map<String, Int>?)? = null
+
+    /**
+     * Read each opponent's registered decklist as the game goes — the engine AI may know them in
+     * full, by design ([com.wingedsheep.ai.engine.hidden.OpponentKnowledge]). Lists are pulled on
+     * the AI's own turn to act ([learnOpponentDecklists]) rather than pushed now, because a seat is
+     * wired before every opponent has registered a deck.
+     */
+    override fun setOpponentDeckListSource(source: (EntityId) -> Map<String, Int>?) {
+        opponentDeckLists = source
+    }
+
+    /** What this seat knows of its opponents' decks; tests read it. */
+    internal val opponentKnowledge get() = aiPlayer.opponentKnowledge
+
+    /** Teach the AI every opponent's decklist it does not know yet. Cheap once all are known. */
+    private fun learnOpponentDecklists(state: GameState) {
+        val source = opponentDeckLists ?: return
+        val knowledge = aiPlayer.opponentKnowledge ?: return
+        for (seat in state.turnOrder) {
+            if (!state.isOpponentTo(seat, playerId) || knowledge.knowsDecklistOf(seat)) continue
+            val list = source(seat)?.takeIf { it.isNotEmpty() } ?: continue
+            aiPlayer.learnOpponentDecklist(seat, list)
+        }
     }
 
     // =========================================================================
