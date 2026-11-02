@@ -357,6 +357,7 @@ Alien Invasion
 Alien Symbiosis
 Alirios, Enraptured
 Alisaie Leveilleur	polarity: ForEachEffect
+All Good Things...
 All Hallow's Eve	intent: MarkSpellExileWithCountersEffect; intent: Pipeline(graveyard→battlefield)
 All That Glitters
 All Will Be One
@@ -599,6 +600,7 @@ Anzrag, the Quake-Mole	combat: MustBeBlockedEffect; intent: AddCombatPhaseEffect
 Ao, the Dawn Sky
 Apex Devastator
 Apex Witchstalker
+Apex of Power
 Aphemia, the Cacophony
 Aphetto Alchemist	intent: TapUntapEffect
 Aphetto Dredging
@@ -2026,6 +2028,7 @@ Brave Brawler
 Brave the Sands
 Brave the Wilds
 Brave-Kin Duo
+Brawl-Bash Ogre
 Brawler's Plate
 Brazen Blademaster
 Brazen Borrower	polarity: MoveToZoneEffect
@@ -2699,6 +2702,7 @@ Chant of Vitu-Ghazi
 Chaos Channeler	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile); intent: RollDiceEffect
 Chaos Orb	intent: FlipOntoBattlefieldEffect; intent: Pipeline(?→graveyard)
 Chaos Spewer	intent: PayOrSufferEffect
+Chaos Wand	intent: CastFromCollectionWithoutPayingCostEffect; intent: GatherUntilMatchEffect; intent: Pipeline(?→exile|library); polarity: CastFromCollectionWithoutPayingCostEffect; polarity: GatherUntilMatchEffect; polarity: Pipeline(?→exile|library)
 Chaos Warp	polarity: MoveToZoneEffect
 Chaoslace	intent: ChangeColorEffect; polarity: ChangeColorEffect
 Chaotic Strike	polarity: FlipCoinEffect
@@ -3981,6 +3985,7 @@ Deluge Virtuoso
 Delver of Secrets	intent: Pipeline(TopOfLibrary→?)
 Delver's Torch	intent: VentureIntoTheDungeonEffect
 Demand Answers
+Demanding Dragon	intent: PayOrSufferEffect; polarity: PayOrSufferEffect
 Dematerialize	polarity: MoveToZoneEffect
 Demilich
 Demogorgon's Clutches
@@ -4364,6 +4369,7 @@ Dose of Dawnglow
 Double Down	intent: CopyTargetSpellEffect
 Double Major	intent: CopyTargetSpellEffect; polarity: CopyTargetSpellEffect
 Double Vision	intent: CopyTargetSpellEffect
+Doublecast	intent: CopyNextSpellCastEffect
 Doubling Season
 Doubtless One
 Dour Port-Mage	polarity: MoveToZoneEffect
@@ -8250,6 +8256,7 @@ Infernal Scarring
 Infernal Vessel
 Inferno
 Inferno Fist
+Inferno Hellion
 Inferno Titan	polarity: DividedDamageEffect
 Inferno of the Star Mounts
 Infest
@@ -8517,6 +8524,7 @@ Irreverent Revelers
 Irrigated Farmland
 Irrigation Ditch
 Isamaru, Hound of Konda
+Isareth the Awakener
 Ishai, Ojutai Dragonspeaker
 Ishgard, the Holy See
 Isildur's Fateful Strike
@@ -11861,6 +11869,7 @@ Pale Bears
 Paleoloth
 Palinchron	intent: Pipeline(BattlefieldMatching→?); intent: TapUntapCollectionEffect
 Palladia-Mors
+Palladia-Mors, the Ruiner
 Palladium Myr
 Panacea
 Pang Tong, "Young Phoenix"
@@ -12081,6 +12090,7 @@ Phoenix Down
 Phoenix Fleet Airship
 Phoenix of Ash
 Photon Blast Barrage	intent: CopyTargetSpellEffect
+Phylactery Lich
 Phylath, World Sculptor
 Phyresis Outbreak
 Phyrexian Altar
@@ -14021,11 +14031,15 @@ Sarinth Steelseeker
 Sarkhan Unbroken
 Sarkhan the Masterless	intent: ForEach>BecomeCreatureEffect
 Sarkhan's Catharsis
+Sarkhan's Dragonfire
 Sarkhan's Rage
 Sarkhan's Resolve
 Sarkhan's Triumph
+Sarkhan's Unsealing
 Sarkhan's Whelp
 Sarkhan, Dragon Ascendant	intent: BeholdEffect
+Sarkhan, Dragonsoul
+Sarkhan, Fireblood
 Sarkhan, Soul Aflame	intent: EachPermanentBecomesCopyOfTargetEffect
 Sarkhan, the Dragonspeaker
 Sarpadian Simulacrum
@@ -15188,6 +15202,7 @@ Smaug the Magnificent
 Smaug's Fury
 Smaug, Wicked Worm
 Smaug, the Great Calamity
+Smelt
 Smelt-Ward Ignus	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
 Smelt-Ward Minotaur	intent: CantBlockEffect
 Smelted Chargebug
@@ -15438,6 +15453,7 @@ Speakeasy Server
 Speaker of the Heavens
 Spear Spewer
 Spearbreaker Behemoth
+Species 8472
 Specimen Freighter	polarity: ForEachEffect
 Spectacle Mage
 Spectacle Summit
@@ -17195,6 +17211,7 @@ Thrummingbird
 Thrun, Breaker of Silence
 Thryx, the Sudden Storm
 Thrór's Map
+Thud
 Thunder Dragon
 Thunder Drake
 Thunder Lasso
@@ -18084,6 +18101,7 @@ Vadmir, New Blood
 Vadrik, Astral Archmage
 Vadrok, Apex of Thunder	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(ChosenTargets→?); polarity: CastFromCollectionWithoutPayingCostEffect; polarity: Pipeline(ChosenTargets→?)
 Vaevictis Asmadi
+Vaevictis Asmadi, the Dire	intent: CaptureControllersEffect; intent: ForEachCapturedControllerEffect; intent: Pipeline(ChosenTargets→graveyard); polarity: CaptureControllersEffect; polarity: ForEachCapturedControllerEffect; polarity: Pipeline(ChosenTargets→graveyard)
 Vagrant Plowbeasts
 Valakut Awakening
 Valakut Exploration	intent: Pipeline(FromLinkedExile→graveyard)
