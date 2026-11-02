@@ -516,6 +516,17 @@ class TargetValidator(
             )?.let { return it }
         }
 
+        // "Can't be the target of abilities from <card type> sources [your opponents control]"
+        // (Artifact Ward; Species 8472) — abilities only, keyed on the source's card type.
+        if (target is ChosenTarget.Permanent &&
+            SourceTypeTargeting.cantBeTargetedBySourceTypeAbility(
+                state, target.entityId, sourceId, casterId, targetingSourceType
+            )
+        ) {
+            val cardName = state.getEntity(target.entityId)?.get<CardComponent>()?.name ?: "That permanent"
+            return "$cardName can't be the target of abilities from this source"
+        }
+
         // CardsInZonesCantBeTargeted (Ground Seal; Tomik) — an object in a locked zone.
         val lockableId = when (target) {
             is ChosenTarget.Card -> target.cardId

@@ -4910,6 +4910,64 @@
     ]
 }
 
+// Species 8472
+{
+    "name": "Species 8472",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Creature — Insect Beast",
+    "oracleText": "Strange new worlds — When this creature enters, you gain life equal to the number of differently named lands you control.\nThis creature can't be blocked by artifact creatures.\nThis creature can't be the target of abilities from artifact sources your opponents control.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Species 8472:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land",
+                        "aggregation": "DISTINCT_NAMES"
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsArtifact",
+                        "IsCreature"
+                    ]
+                }
+            },
+            {
+                "type": "CantBeTargetedBySourceTypeAbilities",
+                "sourceType": "ARTIFACT",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "sourceController": "EachOpponent"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "214",
+        "rarity": "UNCOMMON",
+        "artist": "Néstor Ossandón Leal",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b3d74723-4c9e-4fe7-8276-05d5f1b7ba0c.jpg?1793273864"
+    }
+}
+
 // Syndicate Liquidators
 {
     "name": "Syndicate Liquidators",

@@ -414,11 +414,12 @@ internal class ResolutionTargetValidator(
         }
 
         // Artifact Ward family: can't be the target of abilities from sources of a
-        // given card type. Keys off the ability's source (CR 113.7) by card type, not
-        // controller — applies even to the warded creature's own controller's sources.
+        // given card type. Keys off the ability's source (CR 113.7) by card type; the default
+        // form applies even to the warded creature's own controller's sources, the
+        // opponents-only form (Species 8472) only to its controller's opponents'.
         // Spells bypass (abilities-only).
         if (SourceTypeTargeting.cantBeTargetedBySourceTypeAbility(
-                state, target.entityId, sourceId, targetingSourceType
+                state, target.entityId, sourceId, controllerId, targetingSourceType
             )
         ) {
             return false

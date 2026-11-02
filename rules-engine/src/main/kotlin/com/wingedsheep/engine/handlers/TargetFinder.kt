@@ -222,10 +222,11 @@ class TargetFinder(
         }
 
         // Source-card-type restriction (Artifact Ward) is checked first because, unlike the
-        // opponent-ability restriction, it is NOT controller-gated: a matching source can't target
-        // the warded creature even if the same player controls both. It still only blocks abilities
+        // opponent-ability restriction, its default form is NOT controller-gated: a matching source
+        // can't target the warded creature even if the same player controls both (the
+        // opponents-only form, Species 8472, is gated inside the helper). It still only blocks abilities
         // (not spells); the helper handles the spell/unknown-source short-circuit.
-        if (SourceTypeTargeting.cantBeTargetedBySourceTypeAbility(state, entityId, sourceId, targetingSourceType)) {
+        if (SourceTypeTargeting.cantBeTargetedBySourceTypeAbility(state, entityId, sourceId, controllerId, targetingSourceType)) {
             return true
         }
 

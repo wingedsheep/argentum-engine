@@ -10978,7 +10978,11 @@ staticAbility {
   idiom); the engine (`TargetFinder`/`StackResolver`, via `SourceTypeTargeting`) blocks an *ability* (not a
   spell) whose source has that card type, **regardless of who controls the source**. Deliberately not
   protection-from-[type] (which would also stop equipping/enchanting/blocking/damage). (Artifact Ward, with
-  `CardType.ARTIFACT`)
+  `CardType.ARTIFACT`) Optional `sourceController = Player.EachOpponent` narrows it to sources the affected
+  permanent's controller's *opponents* control ("can't be the target of abilities from artifact sources your
+  opponents control" — Species 8472, with `filter = GroupFilter.source()`); projected as
+  `CANT_BE_TARGETED_BY_OPPONENT_CARDTYPE_<TYPE>_SOURCE_ABILITIES`. Unlike hexproof from artifacts (CR 702.11d),
+  it doesn't stop artifact *spells*. Only `Player.Each` (default) and `Player.EachOpponent` are accepted.
 - `CantBeTargetedBy(quality: UntargetableBy, filter = source())` — "[filter] can't be the target of
   [quality]" for a *kind* of spell or ability that isn't a color, card type or controller. Qualities:
   - `UntargetableBy.SpellsWithSubtype(Subtype("Aura"))` — "can't be the target of Aura spells" (Tetsuo
