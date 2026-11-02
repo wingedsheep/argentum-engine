@@ -255,6 +255,95 @@
     ]
 }
 
+// Assure // Assemble
+{
+    "name": "Assure // Assemble",
+    "manaCost": "",
+    "typeLine": "Instant",
+    "oracleText": "Put a +1/+1 counter on target creature. That creature gains indestructible until end of turn.\n//\nCreate three 2/2 green and white Elf Knight creature tokens with vigilance.",
+    "metadata": {
+        "collectorNumber": "221",
+        "rarity": "RARE",
+        "artist": "Jason A. Engle",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/d/ad454e7a-06c9-4694-ae68-7b1431e00077.jpg?1783934113"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Assure",
+            "manaCost": "{G/W}{G/W}",
+            "typeLine": "Instant",
+            "oracleText": "Put a +1/+1 counter on target creature. That creature gains indestructible until end of turn.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "INDESTRUCTIBLE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Assemble",
+            "manaCost": "{4}{G}{W}",
+            "typeLine": "Instant",
+            "oracleText": "Create three 2/2 green and white Elf Knight creature tokens with vigilance.",
+            "script": {
+                "spellEffect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "GREEN",
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Elf",
+                        "Knight"
+                    ],
+                    "keywords": [
+                        "VIGILANCE"
+                    ]
+                }
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
 // Attendant of Vraska
 {
     "name": "Attendant of Vraska",
@@ -3229,6 +3318,105 @@
     ]
 }
 
+// Flower // Flourish
+{
+    "name": "Flower // Flourish",
+    "manaCost": "",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for a basic Forest or Plains card, reveal it, put it into your hand, then shuffle.\n//\nCreatures you control get +2/+2 until end of turn.",
+    "metadata": {
+        "collectorNumber": "226",
+        "rarity": "UNCOMMON",
+        "artist": "Dmitry Burmak",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/feb4b39f-d309-49ba-b427-240b7fdc1099.jpg?1783934111"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Flower",
+            "manaCost": "{G/W}",
+            "typeLine": "Sorcery",
+            "oracleText": "Search your library for a basic Forest or Plains card, reveal it, put it into your hand, then shuffle.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "basicland Forest|Plains"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a basic land Forest or Plains card to put into your hand",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Flourish",
+            "manaCost": "{4}{G}{W}",
+            "typeLine": "Sorcery",
+            "oracleText": "Creatures you control get +2/+2 until end of turn.",
+            "script": {
+                "spellEffect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
 // Fresh-Faced Recruit
 {
     "name": "Fresh-Faced Recruit",
@@ -4069,6 +4257,97 @@
     ]
 }
 
+// Integrity // Intervention
+{
+    "name": "Integrity // Intervention",
+    "manaCost": "",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +2/+2 until end of turn.\n//\nIntervention deals 3 damage to any target and you gain 3 life.",
+    "metadata": {
+        "collectorNumber": "227",
+        "rarity": "UNCOMMON",
+        "artist": "Ben Maier",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/a/4a82084e-b178-442b-8007-7b2a70f3fbba.jpg?1783934111"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Integrity",
+            "manaCost": "{R/W}",
+            "typeLine": "Instant",
+            "oracleText": "Target creature gets +2/+2 until end of turn.",
+            "script": {
+                "spellEffect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Intervention",
+            "manaCost": "{2}{R}{W}",
+            "typeLine": "Instant",
+            "oracleText": "Intervention deals 3 damage to any target and you gain 3 life.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t1"
+                    }
+                ]
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
 // Intrusive Packbeast
 {
     "name": "Intrusive Packbeast",
@@ -4664,6 +4943,118 @@
     ]
 }
 
+// Ledev Champion
+{
+    "name": "Ledev Champion",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Creature — Elf Knight",
+    "oracleText": "Whenever this creature attacks, you may tap any number of untapped creatures you control. This creature gets +1/+1 until end of turn for each creature tapped this way.\n{3}{G}{W}: Create a 1/1 white Soldier creature token with lifelink.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ledev Champion:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "ControlledPermanents",
+                                "filter": "creature untapped ctrl:you"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected1",
+                            "prompt": "You may tap any number of untapped creatures you control",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "TapUntapCollection",
+                            "collectionName": "selected1"
+                        },
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "VariableReference",
+                                "variableName": "selected1_count"
+                            },
+                            "toughnessModifier": {
+                                "type": "VariableReference",
+                                "variableName": "selected1_count"
+                            },
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature attacks, you may tap any number of untapped creatures you control. This creature gets +1/+1 until end of turn for each creature tapped this way."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Ledev Champion:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{G}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Soldier"
+                    ],
+                    "keywords": [
+                        "LIFELINK"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "186",
+        "rarity": "UNCOMMON",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bc4f508b-a48d-4462-9d89-ee2ead3a0847.jpg?1783934128",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "For Ledev Champion's first ability, the creatures to tap are chosen as the ability resolves. No player may take actions between the time you choose the creatures to tap and the time Ledev Champion's power and toughness are boosted."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Attacking creatures with vigilance may be tapped for Ledev Champion's first ability. If Ledev Champion itself has vigilance, it can be tapped this way, too. These creatures aren't removed from combat."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Creatures that have come under your control this turn can be tapped for Ledev Champion's first ability."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "You can tap creatures this way only as Ledev Champion's triggered ability is resolving. You can't tap more creatures later in combat to give it +1/+1 again."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Ledev Guardian
 {
     "name": "Ledev Guardian",
@@ -4885,6 +5276,89 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Light of the Legion
+{
+    "name": "Light of the Legion",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying\nMentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)\nWhen this creature dies, put a +1/+1 counter on each white creature you control.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING",
+        "MENTOR"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Light of the Legion:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "PowerLessThanEntity",
+                                    "reference": "Self"
+                                }
+                            ],
+                            "statePredicates": [
+                                "IsAttacking"
+                            ]
+                        }
+                    }
+                },
+                "descriptionOverride": "Mentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)"
+            },
+            {
+                "id": "Light of the Legion:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature white ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "rarity": "RARE",
+        "artist": "Alex Konstad",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a2f1b831-ca55-4575-9dfa-c3163e3d789d.jpg?1783934197"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -5625,6 +6099,66 @@
     ]
 }
 
+// Parhelion Patrol
+{
+    "name": "Parhelion Patrol",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Flying\nVigilance (Attacking doesn't cause this creature to tap.)\nMentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE",
+        "MENTOR"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Parhelion Patrol:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "PowerLessThanEntity",
+                                    "reference": "Self"
+                                }
+                            ],
+                            "statePredicates": [
+                                "IsAttacking"
+                            ]
+                        }
+                    }
+                },
+                "descriptionOverride": "Mentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "artist": "Even Amundsen",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/eef126f2-7e72-4338-8021-3ad95e4ab982.jpg?1783934195"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Passwall Adept
 {
     "name": "Passwall Adept",
@@ -6003,6 +6537,112 @@
         "flavorText": "\"Be advised: suspect is nine stories tall, marble hair, answers to Saint Gusztav.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5fbe445-a788-4624-8ecf-8bc06c3ca8f8.jpg?1783934106"
     }
+}
+
+// Response // Resurgence
+{
+    "name": "Response // Resurgence",
+    "manaCost": "",
+    "typeLine": "Instant",
+    "oracleText": "Response deals 5 damage to target attacking or blocking creature.\n//\nCreatures you control gain first strike and vigilance until end of turn. After this main phase, there is an additional combat phase followed by an additional main phase.",
+    "metadata": {
+        "collectorNumber": "229",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/2/92162888-35ea-4f4f-ab99-64dd3104e230.jpg?1783934110"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Response",
+            "manaCost": "{R/W}{R/W}",
+            "typeLine": "Instant",
+            "oracleText": "Response deals 5 damage to target attacking or blocking creature.",
+            "script": {
+                "spellEffect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "StateOr",
+                                        "predicates": [
+                                            "IsAttacking",
+                                            "IsBlocking"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Resurgence",
+            "manaCost": "{3}{R}{W}",
+            "typeLine": "Sorcery",
+            "oracleText": "Creatures you control gain first strike and vigilance until end of turn. After this main phase, there is an additional combat phase followed by an additional main phase.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:you"
+                                }
+                            },
+                            "body": {
+                                "type": "GrantKeyword",
+                                "keyword": "FIRST_STRIKE",
+                                "target": "IterationEntity"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:you"
+                                }
+                            },
+                            "body": {
+                                "type": "GrantKeyword",
+                                "keyword": "VIGILANCE",
+                                "target": "IterationEntity"
+                            }
+                        },
+                        "AddCombatPhase",
+                        "AddMainPhase"
+                    ]
+                }
+            }
+        }
+    ],
+    "hasNoManaCost": true
 }
 
 // Rhizome Lurcher
@@ -6644,6 +7284,66 @@
     ]
 }
 
+// Sunhome Stalwart
+{
+    "name": "Sunhome Stalwart",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "First strike (This creature deals combat damage before creatures without first strike.)\nMentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FIRST_STRIKE",
+        "MENTOR"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sunhome Stalwart:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "PowerLessThanEntity",
+                                    "reference": "Self"
+                                }
+                            ],
+                            "statePredicates": [
+                                "IsAttacking"
+                            ]
+                        }
+                    }
+                },
+                "descriptionOverride": "Mentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a431f183-17eb-4a6c-a137-d106bdc8c997.jpg?1783934194"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Swarm Guildmage
 {
     "name": "Swarm Guildmage",
@@ -6740,6 +7440,68 @@
     ]
 }
 
+// Swathcutter Giant
+{
+    "name": "Swathcutter Giant",
+    "manaCost": "{4}{R}{W}",
+    "typeLine": "Creature — Giant Soldier",
+    "oracleText": "Vigilance\nWhenever this creature attacks, it deals 1 damage to each creature defending player controls.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Swathcutter Giant:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "controllerPredicate": {
+                                    "type": "ControlledByReferencedPlayer",
+                                    "target": {
+                                        "type": "PlayerRef",
+                                        "player": "DefendingPlayer"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "202",
+        "rarity": "UNCOMMON",
+        "artist": "Aaron Miller",
+        "flavorText": "\"Now do you understand what we meant when we said *disperse*?\"\n—Eksari, Boros patrol leader",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/0/700b38c5-3fd2-4566-8d27-9a09d5ab02b2.jpg?1783934121"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Swiftblade Vindicator
 {
     "name": "Swiftblade Vindicator",
@@ -6801,6 +7563,108 @@
         "imageUri": "https://cards.scryfall.io/normal/front/2/c/2ccfa5c1-69f9-4351-aba3-883fe92c9b98.jpg?1783934194"
     },
     "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Tajic, Legion's Edge
+{
+    "name": "Tajic, Legion's Edge",
+    "manaCost": "{1}{R}{W}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "Haste\nMentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)\nPrevent all noncombat damage that would be dealt to other creatures you control.\n{R}{W}: Tajic gains first strike until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE",
+        "MENTOR"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tajic, Legion's Edge:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "PowerLessThanEntity",
+                                    "reference": "Self"
+                                }
+                            ],
+                            "statePredicates": [
+                                "IsAttacking"
+                            ]
+                        }
+                    }
+                },
+                "descriptionOverride": "Mentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Tajic, Legion's Edge:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{R}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "target": "Self"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "PreventDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                {
+                                    "type": "StateNot",
+                                    "predicate": "IsSource"
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByYou"
+                        }
+                    },
+                    "damageType": "DamageNonCombat"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "204",
+        "rarity": "RARE",
+        "artist": "Anthony Palumbo",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/e/5e669a01-84d3-4fcc-8396-9e987bd89b4f.jpg?1783934121"
+    },
+    "colorIdentityOverride": [
+        "RED",
         "WHITE"
     ]
 }
@@ -7053,6 +7917,188 @@
     ]
 }
 
+// Trostani Discordant
+{
+    "name": "Trostani Discordant",
+    "manaCost": "{3}{G}{W}",
+    "typeLine": "Legendary Creature — Dryad",
+    "oracleText": "Other creatures you control get +1/+1.\nWhen Trostani enters, create two 1/1 white Soldier creature tokens with lifelink.\nAt the beginning of your end step, each player gains control of all creatures they own.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Trostani Discordant:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Soldier"
+                    ],
+                    "keywords": [
+                        "LIFELINK"
+                    ]
+                }
+            },
+            {
+                "id": "Trostani Discordant:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature"
+                        }
+                    },
+                    "body": {
+                        "type": "GiveControlToTargetPlayer",
+                        "permanent": "IterationEntity",
+                        "newController": {
+                            "type": "PlayerRef",
+                            "player": "OwnerOfIterationEntity"
+                        }
+                    }
+                },
+                "descriptionOverride": "At the beginning of your end step, each player gains control of all creatures they own."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "208",
+        "rarity": "MYTHIC",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/a/fa1190a4-3d7e-4500-991f-e36ec3d1d9dc.jpg?1783934119",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "The owner of a token is the player who created it."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Because damage remains marked on a creature until it's removed as the turn ends, nonlethal damage dealt to other creatures you control may become lethal if Trostani leaves the battlefield during that turn."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If a creature has an ability that triggers at the beginning of each end step and Trostani's ability causes you to gain control of it, the ability of that creature is still controlled by the creature's former controller. If the creature has an ability that triggers at the beginning of your end step, that ability doesn't trigger when you gain control of it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
+// Truefire Captain
+{
+    "name": "Truefire Captain",
+    "manaCost": "{R}{R}{W}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Mentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)\nWhenever this creature is dealt damage, it deals that much damage to target player.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "MENTOR"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Truefire Captain:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "PowerLessThanEntity",
+                                    "reference": "Self"
+                                }
+                            ],
+                            "statePredicates": [
+                                "IsAttacking"
+                            ]
+                        }
+                    }
+                },
+                "descriptionOverride": "Mentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)"
+            },
+            {
+                "id": "Truefire Captain:2",
+                "trigger": "DamageReceivedEvent",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this creature is dealt damage, it deals that much damage to target player."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "209",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Rallis",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/0/6099a230-9298-4649-b257-243af40d0625.jpg?1783934118"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Underrealm Lich
 {
     "name": "Underrealm Lich",
@@ -7268,6 +8314,67 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Venerated Loxodon
+{
+    "name": "Venerated Loxodon",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Elephant Cleric",
+    "oracleText": "Convoke (Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature's color.)\nWhen this creature enters, put a +1/+1 counter on each creature that convoked it.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "CONVOKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Venerated Loxodon:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "ConvokedSource"
+                                ]
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "rarity": "RARE",
+        "artist": "Zack Stella",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/3/93599fba-7c53-4621-85b5-6434be077bf6.jpg?1783934195",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "You can't tap more creatures to convoke Venerated Loxodon than it takes to pay for its total cost. This means that normally no more than five creatures can convoke it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
