@@ -16,7 +16,7 @@ import io.kotest.matchers.shouldNotBe
 /**
  * Scenario test for Mnemonic Betrayal (GRN #189).
  *
- * Focus: an opponent's green creature card is cast with only Swamps (mana of any type), an exiled
+ * Focus: an opponent's green creature card is cast with Swamps (mana of any type), an exiled
  * land can't be played ("cast spells"), the uncast cards return to their owner's graveyard at the
  * next end step, and Mnemonic Betrayal itself is exiled.
  */
@@ -28,7 +28,8 @@ class MnemonicBetrayalScenarioTest : ScenarioTestBase() {
             fun board() = scenario()
                 .withPlayers("Player", "Opponent")
                 .withCardInHand(1, "Mnemonic Betrayal")
-                .withLandsOnBattlefield(1, "Swamp", 5)
+                .withLandsOnBattlefield(1, "Island", 1)
+                .withLandsOnBattlefield(1, "Swamp", 4)
                 .withCardInGraveyard(2, "Grizzly Bears")
                 .withCardInGraveyard(2, "Forest")
                 .withActivePlayer(1)

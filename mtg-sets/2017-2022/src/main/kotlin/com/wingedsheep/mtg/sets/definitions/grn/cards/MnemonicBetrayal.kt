@@ -11,7 +11,7 @@ import com.wingedsheep.sdk.scripting.references.Player
 
 /**
  * Mnemonic Betrayal
- * {1}{B}{B}
+ * {1}{U}{B}
  * Sorcery
  *
  * Exile all opponents' graveyards. You may cast spells from among those cards this turn, and mana
@@ -30,8 +30,8 @@ import com.wingedsheep.sdk.scripting.references.Player
  *  - "Exile Mnemonic Betrayal." is `selfExile()`.
  */
 val MnemonicBetrayal = card("Mnemonic Betrayal") {
-    manaCost = "{1}{B}{B}"
-    colorIdentity = "B"
+    manaCost = "{1}{U}{B}"
+    colorIdentity = "UB"
     typeLine = "Sorcery"
     oracleText = "Exile all opponents' graveyards. You may cast spells from among those cards this turn, " +
         "and mana of any type can be spent to cast them. At the beginning of the next end step, if any " +

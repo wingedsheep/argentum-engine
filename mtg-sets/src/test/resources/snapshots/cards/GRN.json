@@ -6772,7 +6772,7 @@
 // Mnemonic Betrayal
 {
     "name": "Mnemonic Betrayal",
-    "manaCost": "{1}{B}{B}",
+    "manaCost": "{1}{U}{B}",
     "typeLine": "Sorcery",
     "oracleText": "Exile all opponents' graveyards. You may cast spells from among those cards this turn, and mana of any type can be spent to cast them. At the beginning of the next end step, if any of those cards remain exiled, return them to their owners' graveyards.\nExile Mnemonic Betrayal.",
     "script": {
@@ -6833,6 +6833,7 @@
         "imageUri": "https://cards.scryfall.io/normal/front/a/5/a5cf45aa-ed34-4add-a2ec-fc11f8c15ffa.jpg?1783934127"
     },
     "colorIdentityOverride": [
+        "BLUE",
         "BLACK"
     ]
 }
