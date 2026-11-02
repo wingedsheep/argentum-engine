@@ -3661,6 +3661,7 @@ Dancing Sword	intent: GrantStaticAbilityEffect
 Dancing from Dark to Dawn
 Dandân
 Dangerous Wager
+Daniels, Temporal Agent
 Danitha Capashen, Paragon
 Danitha, Benalia's Hope	intent: Pipeline(FromMultipleZones→battlefield)
 Danitha, New Benalia's Light
@@ -9070,6 +9071,7 @@ Kiora's Follower	intent: TapUntapEffect
 Kiora, Behemoth Beckoner	intent: TapUntapEffect
 Kiora, Sovereign of the Deep	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→library)
 Kiora, the Rising Tide
+Kira Nerys, Firebrand
 Kird Ape
 Kird Chieftain
 Kirk, Enterprising Captain	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
@@ -11347,6 +11349,7 @@ Nobody	polarity: MoveToZoneEffect
 Noctis, Prince of Lucis
 Nocturnal Hunger
 Nocturnal Raid
+Nog, Ambitious Cadet	combat: SetBaseStatsEffect; intent: GrantStaticAbilityEffect; intent: GrantTriggeredAbilityEffect; intent: SetCreatureSubtypesEffect
 Noggle Robber
 Noggle the Mind
 Nogi, Draco-Zealot

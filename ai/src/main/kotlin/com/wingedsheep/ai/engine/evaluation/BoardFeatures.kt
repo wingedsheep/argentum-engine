@@ -1130,9 +1130,9 @@ object CardAdvantage : BoardFeature {
      * main phase / empty stack / your turn. Land drops reset for every player at cleanup, so
      * `remaining` reads 1 for whoever is not the active player too — the earmark is symmetric and
      * survives a turn boundary instead of flickering on and off within one. It also misses the
-     * `GrantAdditionalLandDrop` statics that `LandDropUtils` adds on top, which needs a
-     * `CardRegistry` this feature does not have: under an Exploration the second drop is still
-     * charged as card loss, which is the old behaviour rather than a new error.
+     * `GrantAdditionalLandDrop` statics that `LandDropUtils.getAdditionalLandDrops` adds on top —
+     * readable from projection alone, but deliberately not wired in here: under an Exploration the
+     * second drop is still charged as card loss, which is the old behaviour rather than a new error.
      *
      * ## Known limitation: the earmarked land is priced at zero, and it is not worth zero
      *

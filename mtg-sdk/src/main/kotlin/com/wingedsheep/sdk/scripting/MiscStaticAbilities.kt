@@ -1018,10 +1018,15 @@ data object MayPlayPermanentsFromGraveyard : StaticAbility {
  * Unlike [MayPlayPermanentsFromGraveyard] (Muldrotha), no per-turn usage tracking
  * is needed — the land-drop counter already limits how many lands can be played.
  * Multiple copies are redundant.
+ *
+ * A [ProjectedStaticAbility]: the engine reads it off the holder's projected statics, so a
+ * permanent that *gains* it — from a resolved `GrantStaticAbilityEffect` (Nog, Ambitious Cadet's
+ * "gains 'You may play lands from your graveyard'") or a [GrantStaticAbility] — grants it to its
+ * controller exactly as a printed one does, and loses it with its other abilities.
  */
 @SerialName("MayPlayLandsFromGraveyard")
 @Serializable
-data object MayPlayLandsFromGraveyard : StaticAbility {
+data object MayPlayLandsFromGraveyard : ProjectedStaticAbility {
     override val description: String = "You may play lands from your graveyard"
 }
 
@@ -2290,13 +2295,17 @@ data class AdditionalDeathTriggers(
  *   "any number of lands"
  * @property affected Who gets the extra drops, relative to the source's controller: [Player.You]
  *   (default), [Player.Each], or [Player.EachOpponent].
+ *
+ * A [ProjectedStaticAbility], read off the holder's projected statics — so one gained from a
+ * resolved effect (Nog, Ambitious Cadet) or a [GrantStaticAbility] counts like a printed one, and
+ * "you" is the holder's controller.
  */
 @SerialName("GrantAdditionalLandDrop")
 @Serializable
 data class GrantAdditionalLandDrop(
     val count: Int? = 1,
     val affected: Player = Player.You
-) : StaticAbility {
+) : ProjectedStaticAbility {
     init {
         require(count == null || count > 0) { "GrantAdditionalLandDrop.count must be positive or null, was $count" }
         require(affected == Player.You || affected == Player.Each || affected == Player.EachOpponent) {

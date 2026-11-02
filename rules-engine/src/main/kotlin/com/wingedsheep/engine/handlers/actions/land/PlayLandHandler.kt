@@ -38,9 +38,6 @@ import com.wingedsheep.sdk.scripting.EntersTapped
 import com.wingedsheep.sdk.scripting.ChoiceType
 import com.wingedsheep.sdk.scripting.EntersWithChoice
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
-import com.wingedsheep.sdk.scripting.MayPlayLandsFromGraveyard
-import com.wingedsheep.engine.state.components.identity.emblemStaticAbilitiesOf
-import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
 import com.wingedsheep.sdk.scripting.MayPlayPermanentsFromGraveyard
 import com.wingedsheep.engine.legalactions.utils.LandDropUtils
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
@@ -93,7 +90,7 @@ class PlayLandHandler(
         }
 
         // Check land drop availability (accounts for static ability bonuses)
-        if (!LandDropUtils.hasLandPlayLeft(state, action.playerId, cardRegistry, conditionEvaluator)) {
+        if (!LandDropUtils.hasLandPlayLeft(state, action.playerId)) {
             return "You have already played a land this turn"
         }
 
@@ -848,7 +845,7 @@ class PlayLandHandler(
 
     /**
      * Check if a land card is in the player's graveyard and there's permission to play it.
-     * Handles both Crucible-style (MayPlayLandsFromGraveyard, no usage tracking) and
+     * Handles both Crucible-style ([com.wingedsheep.sdk.scripting.MayPlayLandsFromGraveyard], no usage tracking) and
      * Muldrotha-style (MayPlayPermanentsFromGraveyard, per-type usage tracked).
      */
     private fun isInGraveyardWithPlayPermission(
@@ -966,7 +963,7 @@ class PlayLandHandler(
         playerId: EntityId,
         cardId: EntityId
     ): Boolean {
-        if (hasLandGraveyardPlayPermission(state, playerId)) return true
+        if (LandDropUtils.hasGraveyardLandPlayPermission(state, playerId)) return true
         if (findGraveyardPlayPermissionSource(state, playerId, CardType.LAND.name) != null) return true
         // Mayhem (CR 702.187c): a Mayhem land discarded this turn may be played from the graveyard.
         val discardedThisTurn = state.getEntity(playerId)
@@ -983,35 +980,9 @@ class PlayLandHandler(
     }
 
     /**
-     * Returns true if the player controls a permanent — or has an emblem — with
-     * [MayPlayLandsFromGraveyard] (Crucible of Worlds style — no per-turn usage tracking needed).
-     */
-    private fun hasLandGraveyardPlayPermission(state: GameState, playerId: EntityId): Boolean {
-        for (entityId in state.getBattlefield(playerId)) {
-            val cardDef = state.getEntity(entityId)?.faceUpCardDefinition(cardRegistry) ?: continue
-            val classLevel = state.getEntity(entityId)?.get<ClassLevelComponent>()?.currentLevel
-            for (ability in cardDef.script.effectiveStaticAbilities(classLevel)) {
-                // Unwrap mode/condition-gated abilities (e.g. Glacierwood Siege's Sultai mode)
-                // and honor the gate against this source permanent.
-                if (ability is ConditionalStaticAbility) {
-                    if (ability.ability is MayPlayLandsFromGraveyard &&
-                        evaluateStaticGate(state, ability.condition, entityId, playerId)
-                    ) {
-                        return true
-                    }
-                } else if (ability is MayPlayLandsFromGraveyard) {
-                    return true
-                }
-            }
-        }
-        // An emblem the player has (Wrenn and Realmbreaker's −7) grants it from outside every zone.
-        return state.emblemStaticAbilitiesOf(playerId).any { (_, ability) -> ability is MayPlayLandsFromGraveyard }
-    }
-
-    /**
      * Evaluate a [ConditionalStaticAbility] gating condition against a specific source
-     * permanent. Used so a mode/condition-gated graveyard-play permission only applies
-     * while its gate holds (e.g. Glacierwood Siege only when "Sultai" is the chosen mode).
+     * permanent. Used so a condition-gated play-from-the-top-of-your-library permission only
+     * applies while its gate holds.
      */
     private fun evaluateStaticGate(
         state: GameState,
