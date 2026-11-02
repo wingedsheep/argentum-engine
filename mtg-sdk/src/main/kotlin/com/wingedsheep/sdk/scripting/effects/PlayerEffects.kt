@@ -1619,6 +1619,52 @@ data class LockLifeLossEffect(
 }
 
 /**
+ * Lock [target] player's counters — "that player can't get counters" for [duration] (CR 122.1:
+ * players can have counters too). While the lock holds, no counter of any kind can be put on that
+ * player: placements by effects, damage (infect and toxic poison), proliferate and replacement
+ * effects all put none, and a cost that would give that player counters ("Ward—Get five poison
+ * counters") can't be paid.
+ *
+ * The player-scoped sibling of granting a permanent [com.wingedsheep.sdk.core.AbilityFlag.CANT_RECEIVE_COUNTERS]
+ * (`Effects.GrantKeyword(AbilityFlag.CANT_RECEIVE_COUNTERS, …)`): players aren't projected, so a
+ * floating grant can't reach them — the lock tags the player directly, as [LockLifeGainEffect] /
+ * [LockLifeLossEffect] do for life. Neither of those takes the axis (they lock a life total, this
+ * locks counters), and the Melira-style cap (`CapCounterPlacementThisTurn`) is a replacement's
+ * turn-scoped, kind-scoped result rather than an effect a card can name.
+ *
+ * Durations: [Duration.WhileSourceOnBattlefield] (Suncleanser — "for as long as this creature
+ * remains on the battlefield"; the lock ends for good once that source object leaves, and a new
+ * object with the same card does not revive it, CR 611.2b), [Duration.EndOfTurn] and
+ * [Duration.Permanent]. Non-player targets are a no-op.
+ *
+ * @param target The player who can't get counters.
+ * @param duration How long the lock lasts.
+ */
+@SerialName("LockPlayerCounters")
+@Serializable
+data class LockPlayerCountersEffect(
+    val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetPlayer),
+    val duration: Duration = Duration.Permanent
+) : Effect {
+    init {
+        require(
+            duration is Duration.WhileSourceOnBattlefield ||
+                duration == Duration.EndOfTurn || duration == Duration.Permanent
+        ) { "LockPlayerCountersEffect supports WhileSourceOnBattlefield, EndOfTurn and Permanent, not $duration" }
+    }
+
+    override val description: String = buildString {
+        append(target.description.replaceFirstChar { it.uppercase() })
+        append(" can't get counters")
+        when (duration) {
+            Duration.Permanent -> append(" for the rest of the game")
+            Duration.EndOfTurn -> append(" this turn")
+            else -> append(" ").append(duration.description)
+        }
+    }
+}
+
+/**
  * "The Ring tempts you" (CR 701.54). The target player gets an emblem named The Ring (if they
  * don't have one) and chooses a creature they control to become their Ring-bearer. The emblem's
  * four cumulative abilities are gated by how many times that player has been tempted.

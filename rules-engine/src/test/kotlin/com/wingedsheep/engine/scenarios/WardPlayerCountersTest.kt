@@ -32,8 +32,8 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  *
  * The distinguishing rules, each pinned below:
  * - the counters land on the payer, not on the warded permanent or its controller;
- * - it is the one ward cost that is **always payable** — no board or hand state can make it
- *   unpayable, so it always prompts rather than countering silently;
+ * - it is payable unless the payer can't get counters (a `LockPlayerCountersEffect` lock — pinned in
+ *   `LockPlayerCountersTest`), so it otherwise always prompts rather than countering silently;
  * - declining still counters, and no counters are placed;
  * - ten or more poison counters lose the game as a state-based action (CR 122.1f), which follows
  *   from the counters going through the ordinary counter-placement path;

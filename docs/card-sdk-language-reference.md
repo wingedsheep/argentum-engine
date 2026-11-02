@@ -1857,6 +1857,19 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   (`GameState.canPayLife`). In a shared-life team game a lock on either head covers the team (CR 810.9h).
   "Your life total can't change" (CR 119.7–8) is both locks: `LockLifeGain(...) then LockLifeLoss(...)`
   (Flare of Fortitude).
+- `LockPlayerCounters(target?, duration?)` — "that player can't get counters" for `duration`
+  (`LockPlayerCountersEffect`; CR 122.1 — players have counters too). Tags the player with a lock on
+  `CantGetCountersComponent`, which `ProjectedState.canReceiveCounters` reads, so every counter path
+  honors it: effect placement, infect/toxic poison from damage, proliferate, replacement additions, and
+  a cost that gives the payer counters ("Ward—Get five poison counters" can't be paid, so the spell is
+  countered). Durations: `Duration.WhileSourceOnBattlefield` (Suncleanser — the lock holds while that
+  same source *object* is on the battlefield and never revives when the card returns as a new object,
+  CR 611.2b; if the source has already left as the effect resolves, no lock is added), `EndOfTurn`, and
+  `Permanent` (default). Locks stack per source. Non-player targets are a no-op. For a *permanent*,
+  compose instead: `GrantKeyword(AbilityFlag.CANT_RECEIVE_COUNTERS, target, duration)`. Suncleanser's
+  two modes: `RemoveAllCounters(creature) then GrantKeyword(CANT_RECEIVE_COUNTERS, creature,
+  Duration.WhileSourceOnBattlefield(...))`, and `RemoveAllCounters(opponent) then
+  LockPlayerCounters(opponent, Duration.WhileSourceOnBattlefield(...))`.
 - `LoseGame(target, message?)` — target loses the game.
 - `RemoveMaximumHandSize(target?, duration?)` — "target has no maximum hand size for the rest of the game"
   (default target: controller). `duration = Duration.UntilYourNextTurn` reads "… until your next turn"
@@ -2654,7 +2667,8 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   back) **composes** from a pipeline — `gather(CardSource.BattlefieldMatching(filter = ….createdBySource(),
   player = You))` → `chooseAnyNumber` → `exile` → `run(AddDynamicCounters(CounterType.PLUS_ONE_PLUS_ONE,
   VariableReference("<slot>_count"), Self))` — so no dedicated token→counters effect exists.
-- `RemoveAllCounters(target)` — wipe every counter.
+- `RemoveAllCounters(target)` — wipe every counter from a permanent, or from a player ("target opponent
+  loses all counters" — poison, energy, experience; Suncleanser).
 - `RemoveAllCountersOfType(type, target)` — wipe one kind.
 - `MoveAllLastKnownCounters(target)` — Hooded Hydra / Essence Channeler — move every counter kind from source's
   last-known state. Reads the dies/leaves trigger map (`triggerLastKnownCounters`) first, falling back to the

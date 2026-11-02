@@ -1311,6 +1311,42 @@ data class CantLoseLifeComponent(
 ) : Component
 
 /**
+ * The locks keeping a player from getting counters (CR 122.1 — players can have counters), each
+ * conferred by a [com.wingedsheep.sdk.scripting.effects.LockPlayerCountersEffect]. The player-side
+ * sibling of the projected `CANT_RECEIVE_COUNTERS` flag a permanent carries: players aren't
+ * projected, so the lock lives on the player. Read through [GameState.cantGetCounters], which
+ * `ProjectedState.canReceiveCounters` consults — the one question every counter-placing path
+ * (effects, damage, proliferate, costs) already asks.
+ *
+ * A list because locks stack independently: two Suncleansers aimed at one player keep them locked
+ * until both have left.
+ */
+@Serializable
+data class CantGetCountersComponent(
+    val locks: List<PlayerCounterLock> = emptyList()
+) : Component
+
+/**
+ * One counter lock on a player.
+ *
+ * @param removeOn [PlayerEffectRemoval.EndOfTurn] (dropped at cleanup) or
+ *   [PlayerEffectRemoval.Permanent] (never dropped by the clock).
+ * @param whileSource For a "for as long as [source] remains on the battlefield" lock: the source
+ *   *object* as it was when the lock was created. The lock holds only while that same object is on
+ *   the battlefield; once it leaves, a later object of the same card has a new identity, so the
+ *   lock can't come back (CR 611.2b).
+ */
+@Serializable
+data class PlayerCounterLock(
+    val removeOn: PlayerEffectRemoval = PlayerEffectRemoval.Permanent,
+    val whileSource: com.wingedsheep.engine.state.ObjectRef? = null
+) {
+    /** Whether this lock is in force in [state]. */
+    fun holds(state: GameState): Boolean = whileSource == null ||
+        (state.isCurrentObject(whileSource) && state.logicalZone(whileSource.entityId)?.zoneType == Zone.BATTLEFIELD)
+}
+
+/**
  * Component indicating that a player cannot activate planeswalkers' loyalty abilities for the
  * rest of this turn. Applied by effects like Revel in Silence. Sibling of [CantCastSpellsComponent].
  *

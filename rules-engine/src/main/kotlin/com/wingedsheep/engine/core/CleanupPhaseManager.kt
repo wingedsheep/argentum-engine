@@ -63,6 +63,7 @@ import com.wingedsheep.engine.state.components.player.CantCastSpellsComponent
 import com.wingedsheep.engine.state.components.player.CantSearchLibrariesComponent
 import com.wingedsheep.engine.state.components.player.CantCastFromNonHandZonesComponent
 import com.wingedsheep.engine.state.components.player.CantGainLifeComponent
+import com.wingedsheep.engine.state.components.player.CantGetCountersComponent
 import com.wingedsheep.engine.state.components.player.CantLoseLifeComponent
 import com.wingedsheep.engine.state.components.player.DamageBonusComponent
 import com.wingedsheep.engine.state.components.player.DamageReceivedFromArtifactsThisTurnComponent
@@ -931,6 +932,12 @@ class CleanupPhaseManager(
                 val cantLoseLife = result.get<CantLoseLifeComponent>()
                 if (cantLoseLife?.removeOn == PlayerEffectRemoval.EndOfTurn) {
                     result = result.without<CantLoseLifeComponent>()
+                }
+                val cantGetCounters = result.get<CantGetCountersComponent>()
+                if (cantGetCounters != null && cantGetCounters.locks.any { it.removeOn == PlayerEffectRemoval.EndOfTurn }) {
+                    val lasting = cantGetCounters.locks.filter { it.removeOn != PlayerEffectRemoval.EndOfTurn }
+                    result = if (lasting.isEmpty()) result.without<CantGetCountersComponent>()
+                    else result.with(cantGetCounters.copy(locks = lasting))
                 }
                 val cantLoyalty = result.get<CantActivateLoyaltyAbilitiesComponent>()
                 if (cantLoyalty?.removeOn == PlayerEffectRemoval.EndOfTurn) {

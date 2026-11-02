@@ -7,13 +7,15 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.PlayerComponent
 import com.wingedsheep.sdk.scripting.effects.RemoveAllCountersEffect
 import kotlin.reflect.KClass
 
 /**
  * Executor for [RemoveAllCountersEffect].
  *
- * Mandatory removal of every counter kind currently on the target. Emits one
+ * Mandatory removal of every counter kind currently on the target — a permanent, or a player
+ * (poison, energy, experience counters live on the player's own [CountersComponent]). Emits one
  * [CountersRemovedEvent] per counter kind cleared.
  */
 class RemoveAllCountersExecutor : EffectExecutor<RemoveAllCountersEffect> {
@@ -43,7 +45,9 @@ class RemoveAllCountersExecutor : EffectExecutor<RemoveAllCountersEffect> {
             container.with(CountersComponent())
         }
 
-        val entityName = targetEntity.get<CardComponent>()?.name ?: ""
+        // A player can lose all counters too ("Target opponent loses all counters" — Suncleanser).
+        val entityName = targetEntity.get<CardComponent>()?.name
+            ?: targetEntity.get<PlayerComponent>()?.name.orEmpty()
         val events = present.map { (type, amount) ->
             CountersRemovedEvent(targetId, type, amount, entityName, removedBy = context.controllerId)
         }

@@ -442,9 +442,10 @@ data class ConvertCountersToTokensEffect(
 }
 
 /**
- * Remove every counter (of any kind) from a target permanent.
+ * Remove every counter (of any kind) from a target permanent or player.
  *
- * "Remove all counters from target creature."
+ * "Remove all counters from target creature." / "Target opponent loses all counters." (Suncleanser
+ * — a player's poison, energy and experience counters).
  *
  * Mandatory and non-interactive — the executor clears every counter kind currently
  * on the target. No-op when the target has no counters.

@@ -958,6 +958,7 @@ Families:
 - `LockDoorEffect(target: EffectTarget)` — Resolution-time "lock a door" effect (CR 709.5g) — the twin of UnlockDoorEffect.
 - `LockLifeGainEffect(target: EffectTarget, duration: Duration)` — Lock target player's life gain — they can't gain life for duration.
 - `LockLifeLossEffect(target: EffectTarget, duration: Duration)` — Lock target player's life loss — they can't lose life for duration (CR 119.8): damage and "lose N life" leave their total unchanged, an exchange or redistribution can't lower it, and a cost that pa…
+- `LockPlayerCountersEffect(target: EffectTarget, duration: Duration)` — Lock target player's counters — "that player can't get counters" for duration (CR 122.1: players can have counters too).
 - `LookAtFaceDownEffect(target: EffectTarget, scope: FaceDownLookScope)` — Look at face-down creature(s).
 - `LookAtTargetHandEffect(target: EffectTarget)` — Look at target player's hand.
 - `LoseAllCreatureTypesEffect(target: EffectTarget, duration: Duration)` — Remove all creature types from a target creature.
@@ -1036,7 +1037,7 @@ Families:
 - `RegenerateEffect(target: EffectTarget)` — Regenerate target creature.
 - `RemoveAbilitiesFromSourceOfTargetedAbilityEffect(duration: Duration, sourceCardTypes: Set<CardType>)` — The ability-strip sibling of DestroySourceOfTargetedAbilityEffect.
 - `RemoveAllAbilitiesEffect(target: EffectTarget, duration: Duration)` — Remove all abilities from a target creature until the specified duration.
-- `RemoveAllCountersEffect(target: EffectTarget)` — Remove every counter (of any kind) from a target permanent.
+- `RemoveAllCountersEffect(target: EffectTarget)` — Remove every counter (of any kind) from a target permanent or player.
 - `RemoveAllCountersOfTypeEffect(counterType: CounterType, target: EffectTarget)` — Remove every counter of one specified kind from a target permanent.
 - `RemoveAnyNumberOfCountersEffect(target: EffectTarget, maxTotal: DynamicAmount?, minTotal: DynamicAmount)` — Remove counters from a target permanent.
 - `RemoveCountersEffect(counterType: CounterType, count: DynamicAmount, target: EffectTarget)` — Remove counters effect.
