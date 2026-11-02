@@ -1299,6 +1299,97 @@
     ]
 }
 
+// Chamber Sentry
+{
+    "name": "Chamber Sentry",
+    "manaCost": "{X}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "This creature enters with a +1/+1 counter on it for each color of mana spent to cast it.\n{X}, {T}, Remove X +1/+1 counters from this creature: It deals X damage to any target.\n{W}{U}{B}{R}{G}: Return this card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Chamber Sentry:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{X}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": "XValue",
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": "XValue",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ]
+            },
+            {
+                "id": "Chamber Sentry:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{W}{U}{B}{R}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand",
+                    "fromZone": "Graveyard"
+                },
+                "activateFromZone": "Graveyard"
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": "DistinctColorsManaSpent"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "232",
+        "rarity": "RARE",
+        "artist": "Adam Paquette",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/15dfd5f2-5298-4cf4-80fe-43db9be24f57.jpg?1783934109"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK",
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Chance for Glory
 {
     "name": "Chance for Glory",
@@ -1341,6 +1432,64 @@
     "colorIdentityOverride": [
         "RED",
         "WHITE"
+    ]
+}
+
+// Chemister's Insight
+{
+    "name": "Chemister's Insight",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Draw two cards.\nJump-start (You may cast this card from your graveyard by discarding a card in addition to paying its other costs. Then exile this card.)",
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "Fixed",
+                "amount": 2
+            }
+        },
+        "staticAbilities": [
+            {
+                "type": "MayCastSelfFromZones",
+                "zones": [
+                    "Graveyard"
+                ],
+                "additionalCost": {
+                    "type": "AdditionalAtom",
+                    "atom": "AtomDiscard"
+                },
+                "exileCastThisWay": "ON_ANY_STACK_EXIT"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "rarity": "UNCOMMON",
+        "artist": "Josh Hass",
+        "flavorText": "\"My specialty is theoretical universal limits and ways to circumvent them.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0e13a295-0d51-4b56-8c58-0896eb41c567.jpg?1783934192",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "If a card with jump-start is put into your graveyard during your turn, you'll be able to cast it right away if it's legal to do so, before an opponent can take any actions."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "You must still follow any timing restrictions and permissions when casting a spell with jump-start, including those based on the card's type. For instance, you can cast a sorcery using jump-start only when you could normally cast a sorcery."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "A spell cast using jump-start will always be exiled afterward, whether it resolves, it's countered, or it leaves the stack in some other way."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If an effect allows you to pay an alternative cost rather than a spell's mana cost, you may pay that alternative cost when you jump-start a spell. You'll still discard a card as an additional cost to cast it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -1799,6 +1948,118 @@
     ]
 }
 
+// Connive // Concoct
+{
+    "name": "Connive // Concoct",
+    "manaCost": "",
+    "typeLine": "Sorcery",
+    "oracleText": "Gain control of target creature with power 2 or less.\n//\nSurveil 3, then return a creature card from your graveyard to the battlefield.",
+    "metadata": {
+        "collectorNumber": "222",
+        "rarity": "RARE",
+        "artist": "Dan Murayama Scott",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/890ac54c-6fd7-4e46-8ce4-8926c6975f60.jpg?1783934112",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "No player may take actions between the time you surveil and the time you return a creature card to the battlefield."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "The creature card you return with Concoct may be one that you just surveilled into your graveyard."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Connive's effect lasts indefinitely. It doesn't wear off during the cleanup step, and it doesn't expire if the creature's power becomes greater after Connive has resolved."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Connive",
+            "manaCost": "{2}{U/B}{U/B}",
+            "typeLine": "Sorcery",
+            "oracleText": "Gain control of target creature with power 2 or less.",
+            "script": {
+                "spellEffect": {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature pow<=2"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Concoct",
+            "manaCost": "{3}{U}{B}",
+            "typeLine": "Sorcery",
+            "oracleText": "Surveil 3, then return a creature card from your graveyard to the battlefield.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Surveil",
+                            "count": 3
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Graveyard",
+                                        "filter": "creature"
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "selected1",
+                                    "prompt": "Choose a creature card to return to the battlefield"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "selected1",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Battlefield"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
 // Crush Contraband
 {
     "name": "Crush Contraband",
@@ -2025,6 +2286,57 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Dazzling Lights
+{
+    "name": "Dazzling Lights",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets -3/-0 until end of turn.\nSurveil 2. (Look at the top two cards of your library, then put any number of them into your graveyard and the rest on top of your library in any order.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -3
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Surveil",
+                    "count": 2
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "artist": "Robbie Trevino",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a9d4639a-b634-469e-a848-35e3a3dfd47e.jpg?1783934191"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -2389,6 +2701,304 @@
     ]
 }
 
+// Dimir Spybug
+{
+    "name": "Dimir Spybug",
+    "manaCost": "{U}{B}",
+    "typeLine": "Creature — Insect",
+    "oracleText": "Flying\nMenace (This creature can't be blocked except by two or more creatures.)\nWhenever you surveil, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING",
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dimir Spybug:1",
+                "trigger": "SurveiledEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "166",
+        "rarity": "UNCOMMON",
+        "artist": "James Paick",
+        "flavorText": "Just assume every conversation is on record.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c18c450-0bfb-4ba6-9212-b5833fce63a2.jpg?1783934137"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
+// Discovery // Dispersal
+{
+    "name": "Discovery // Dispersal",
+    "manaCost": "",
+    "typeLine": "Sorcery",
+    "oracleText": "Surveil 2, then draw a card. (To surveil 2, look at the top two cards of your library, then put any number of them into your graveyard and the rest on top of your library in any order.)\n//\nEach opponent returns a nonland permanent they control with the greatest mana value among permanents they control to its owner's hand, then discards a card.",
+    "metadata": {
+        "collectorNumber": "223",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Behm",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/ace631d1-897a-417e-8628-0170713f03d3.jpg?1783934113",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "If an opponent controls only lands as Dispersal resolves, that player won't return any permanent to their hand. They'll still discard a card."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If a permanent has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "As Dispersal resolves, first the next opponent in turn order (or, if it's an opponent's turn, that opponent) chooses a nonland permanent they control with the highest mana cost among their permanents, then each other opponent in turn order does the same, knowing the choices made before them. Then all the chosen permanents are returned at the same time. Next, each opponent in the same order chooses a card in hand without revealing it, then the chosen cards are discarded at the same time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Discovery",
+            "manaCost": "{1}{U/B}",
+            "typeLine": "Sorcery",
+            "oracleText": "Surveil 2, then draw a card. (To surveil 2, look at the top two cards of your library, then put any number of them into your graveyard and the rest on top of your library in any order.)",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Surveil",
+                            "count": 2
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Dispersal",
+            "manaCost": "{3}{U}{B}",
+            "typeLine": "Instant",
+            "oracleText": "Each opponent returns a nonland permanent they control with the greatest mana value among permanents they control to its owner's hand, then discards a card.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "EachOpponent"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "BattlefieldMatching",
+                                            "filter": "nonland permanent",
+                                            "player": "You"
+                                        },
+                                        "storeAs": "gathered0"
+                                    },
+                                    {
+                                        "type": "FilterCollection",
+                                        "from": "gathered0",
+                                        "collectionFilter": "GreatestManaValue",
+                                        "storeMatching": "matching1"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "matching1",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "selected2",
+                                        "prompt": "Return a nonland permanent you control with the greatest mana value to its owner's hand",
+                                        "useTargetingUI": true
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "selected2",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "EachOpponent"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
+// Disinformation Campaign
+{
+    "name": "Disinformation Campaign",
+    "manaCost": "{1}{U}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, you draw a card and each opponent discards a card.\nWhenever you surveil, return this enchantment to its owner's hand.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Disinformation Campaign:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "EachOpponent"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Disinformation Campaign:2",
+                "trigger": "SurveiledEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "167",
+        "rarity": "UNCOMMON",
+        "artist": "Anthony Palumbo",
+        "flavorText": "\"People would sooner savor sweet lies than chew plain truths.\"\n—Lazav",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/69a79ff3-58ed-4cc2-9ebc-0edbb86cd6fb.jpg?1783934137"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Divine Visitation
 {
     "name": "Divine Visitation",
@@ -2514,6 +3124,81 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Dream Eater
+{
+    "name": "Dream Eater",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Creature — Nightmare Sphinx",
+    "oracleText": "Flash\nFlying\nWhen this creature enters, surveil 4. When you do, you may return target nonland permanent an opponent controls to its owner's hand. (To surveil 4, look at the top four cards of your library, then put any number of them into your graveyard and the rest on top of your library in any order.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dream Eater:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "Surveil",
+                        "count": 4
+                    },
+                    "optional": false,
+                    "reflexiveEffect": {
+                        "type": "Gated",
+                        "gate": "Gate.MayDecide",
+                        "then": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Hand"
+                        }
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "nonland permanent ctrl:opponent"
+                            },
+                            "id": "t0"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "rarity": "MYTHIC",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9f3a4677-7683-4f63-af31-b76491ec9f9c.jpg?1783934188",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "Dream Eater's triggered ability goes on the stack without a target. While that ability is resolving, after you've surveilled, the reflexive triggered ability triggers and you pick a target nonland permanent to be returned to its owner's hand. This is different from effects that say \"If you do . . .\" in that you choose the target after having surveilled."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Dream Eater's reflexive triggered ability triggers even if you have fewer than four cards in your library to surveil."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3494,6 +4179,40 @@
     }
 }
 
+// Gatekeeper Gargoyle
+{
+    "name": "Gatekeeper Gargoyle",
+    "manaCost": "{6}",
+    "typeLine": "Artifact Creature — Gargoyle",
+    "oracleText": "Flying\nThis creature enters with a +1/+1 counter on it for each Gate you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "land Gate"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "235",
+        "rarity": "UNCOMMON",
+        "artist": "Adam Paquette",
+        "flavorText": "Each night it visits a different guildgate around the city, digging its talons into fresh stone.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4bbdd54e-5d7e-4e4b-8d59-4e3f46877d39.jpg?1783934109"
+    }
+}
+
 // Gateway Plaza
 {
     "name": "Gateway Plaza",
@@ -3620,6 +4339,80 @@
         "flavorText": "\"You won't need the sword drills, your shields, or my blessing. You'll fight for Sunhome with the truth in your heart.\"\n—Aurelia",
         "imageUri": "https://cards.scryfall.io/normal/front/f/9/f9f731df-eb40-44c8-a72d-f377c824584d.jpg?1783934202"
     }
+}
+
+// Glaive of the Guildpact
+{
+    "name": "Glaive of the Guildpact",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+0 for each Gate you control and has vigilance and menace. (A creature with menace can't be blocked except by two or more creatures.)\nEquip {3} ({3}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Glaive of the Guildpact:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                },
+                "powerBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "land Gate"
+                },
+                "toughnessBonus": {
+                    "type": "Fixed",
+                    "amount": 0
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE"
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "MENACE"
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "236",
+        "rarity": "UNCOMMON",
+        "artist": "Volkan Baǵa",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/1/e19723ad-7bd2-49ee-a57a-ece99018f4e8.jpg?1783934107"
+    },
+    "colorIdentityOverride": []
 }
 
 // Golgari Findbroker
@@ -3780,6 +4573,84 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Guild Summit
+{
+    "name": "Guild Summit",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, you may tap any number of untapped Gates you control. Draw a card for each Gate tapped this way.\nWhenever a Gate you control enters, draw a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Guild Summit:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "ControlledPermanents",
+                                "filter": "land Gate untapped ctrl:you"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected1",
+                            "prompt": "You may tap any number of untapped Gates you control (draw a card for each)",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "TapUntapCollection",
+                            "collectionName": "selected1"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "VariableReference",
+                                "variableName": "selected1_count"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this enchantment enters, you may tap any number of untapped Gates you control. Draw a card for each Gate tapped this way."
+            },
+            {
+                "id": "Guild Summit:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land Gate ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "rarity": "UNCOMMON",
+        "artist": "Sidharth Chaturvedi",
+        "flavorText": "In a climate of suspicion, Isperia gathered the guilds to propose a radical idea: cooperation.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d952259f-9e0a-49af-9dfb-3cad1a1bb3a8.jpg?1783934187"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4943,6 +5814,47 @@
     ]
 }
 
+// Leapfrog
+{
+    "name": "Leapfrog",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Frog",
+    "oracleText": "This creature has flying as long as you've cast an instant or sorcery spell this turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "PlayerCastSpellsThisTurn",
+                    "filter": "instant|sorcery",
+                    "atLeast": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "artist": "Aaron Miller",
+        "flavorText": "\"Most compete for insects at street level. Some dwell near Izzet laboratories and ride the thermal updrafts.\"\n—Yolov, Simic bioengineer",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2e415a03-f7f8-4fca-954a-ef21b4a2c60f.jpg?1783934187"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Ledev Champion
 {
     "name": "Ledev Champion",
@@ -5442,6 +6354,84 @@
     ]
 }
 
+// Maximize Altitude
+{
+    "name": "Maximize Altitude",
+    "manaCost": "{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature gets +1/+1 and gains flying until end of turn.\nJump-start (You may cast this card from your graveyard by discarding a card in addition to paying its other costs. Then exile this card.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "MayCastSelfFromZones",
+                "zones": [
+                    "Graveyard"
+                ],
+                "additionalCost": {
+                    "type": "AdditionalAtom",
+                    "atom": "AtomDiscard"
+                },
+                "exileCastThisWay": "ON_ANY_STACK_EXIT"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "artist": "Mike Bierek",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3b5a08a0-b002-4bfe-9cac-d2bf96175f8e.jpg?1783934187",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "You must still follow any timing restrictions and permissions when casting a spell with jump-start, including those based on the card's type. For instance, you can cast a sorcery using jump-start only when you could normally cast a sorcery."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "A spell cast using jump-start will always be exiled afterward, whether it resolves, it's countered, or it leaves the stack in some other way."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Midnight Reaper
 {
     "name": "Midnight Reaper",
@@ -5496,6 +6486,84 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Mission Briefing
+{
+    "name": "Mission Briefing",
+    "manaCost": "{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Surveil 2, then choose an instant or sorcery card in your graveyard. You may cast it this turn. If that spell would be put into your graveyard, exile it instead. (To surveil 2, look at the top two cards of your library, then put any number of them into your graveyard and the rest on top of your library in any order.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Surveil",
+                    "count": 2
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": "instant|sorcery"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Choose an instant or sorcery card you may cast this turn"
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "selected1",
+                            "insteadOfGraveyard": "EXILE"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "rarity": "RARE",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/02bed34d-67d9-4ae9-b351-dc9a89daeabf.jpg?1783934187",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "The instant or sorcery card you choose may be one that you just surveilled into your graveyard."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Mission Briefing doesn't change when you can cast the chosen card. For example, if you choose a sorcery card, you can cast it only during your main phase when the stack is empty."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Mission Briefing is still on the stack while you choose an instant or sorcery card in your graveyard. Your Mission Briefing can't be to give yourself that same Mission Briefing."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If you cast a spell this way and that card is exiled, it's considered a new object in the zone it's put into. It won't be exiled if it's put into your graveyard later in the turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
