@@ -4950,6 +4950,10 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
     205.2a; false for fewer than two cards). The latter models "if two cards that share a card type
     were milled this way" (The Tale of Tamiyo I–III), typically inside both a `Effects.If` and
     a `RepeatCondition.WhileCondition` over the mill's `"milled"` collection.
+    `Conditions.AllInCollectionShareCardType(name)` (`CollectionSharesCardType(name, all = true)`)
+    — true if one card type is common to **every** card in `name` (a single card qualifies; empty is
+    false). Pair with `gather(CardSource.FromLinkedExile())` for "if all cards exiled with this Saga
+    share a card type" (All Good Things... IV).
 
 ### Modal & choice
 

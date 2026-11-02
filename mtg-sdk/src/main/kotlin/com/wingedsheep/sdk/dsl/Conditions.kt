@@ -2933,6 +2933,17 @@ object Conditions {
     fun CollectionSharesCardType(collection: CollectionSlot): ConditionInterface =
         CollectionSharesCardType(collection.key)
 
+    /**
+     * Condition: "if all cards in the named collection share a card type" — one card type is
+     * common to every card (All Good Things...). False for an empty collection.
+     */
+    fun AllInCollectionShareCardType(collection: String): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.CollectionSharesCardType(collection, all = true)
+
+    /** [AllInCollectionShareCardType] over a pipeline handle. */
+    fun AllInCollectionShareCardType(collection: CollectionSlot): ConditionInterface =
+        AllInCollectionShareCardType(collection.key)
+
     // =========================================================================
     // Composite Conditions
     // =========================================================================

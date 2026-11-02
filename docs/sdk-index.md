@@ -362,7 +362,7 @@ Families:
 - `CastChoiceIs(slot: ChoiceSlot, value: String)` — Condition: the value locked in for slot equals value (compared as text).
 - `CastChoiceMade(slot: ChoiceSlot)` — Condition: a value was locked in for slot when the source was cast / as it entered.
 - `CollectionContainsMatch(collection: String, filter: GameObjectFilter)` — Condition: "if a card in the named collection matches filter" Checks whether any entity in a stored pipeline collection matches the given filter.
-- `CollectionSharesCardType(collection: String)` — Condition: "if two cards in the named collection share a card type".
+- `CollectionSharesCardType(collection: String, all: Boolean)` — Condition: "if two cards in the named collection share a card type".
 - `ColorIsMostCommon(color: Color)` — Condition: "As long as color is the most common color among all permanents, or is tied for most common".
 - `Compare(left: DynamicAmount, operator: ComparisonOperator, right: DynamicAmount)` — Generic numeric comparison condition.
 - `ControlledCreatureDiedThisTurnCondition` — Intervening-if condition (Rule 603.4): "if a creature died under your control this turn".
