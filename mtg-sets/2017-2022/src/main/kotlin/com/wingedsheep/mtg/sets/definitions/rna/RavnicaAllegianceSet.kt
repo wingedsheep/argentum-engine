@@ -18,7 +18,6 @@ object RavnicaAllegianceSet : MtgSet {
     override val code = "RNA"
     override val displayName = "Ravnica Allegiance"
     override val releaseDate = "2019-01-25"
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)

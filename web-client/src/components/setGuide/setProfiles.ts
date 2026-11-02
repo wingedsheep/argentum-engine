@@ -510,6 +510,26 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
       { name: 'Heroic', inPlay: 'Targeting your own creature with Auras and tricks grows it, rewarding aggression but leaving you exposed to removal in response.' },
     ],
   },
+  RNA: {
+    tagline: 'Five two-colour guilds on Ravnica, each with its own mechanic: Gruul and Rakdos race with riot and spectacle, Azorius and Orzhov grind with addendum and afterlife, Simic grows creatures with adapt.',
+    setting: 'The city-plane of Ravnica, where the Azorius, Gruul, Orzhov, Rakdos and Simic guilds jostle for power.',
+    gameplay: 'Most decks pick one guild and lean on its mechanic. Gruul (red-green) and Rakdos (black-red) are fast: riot creatures can attack the turn they land, and spectacle spells get cheaper once an opponent has taken damage. Orzhov (white-black) leaves 1/1 flying Spirits behind with afterlife, Azorius (white-blue) plays fliers and holds instants to cast in its own main phase for addendum, and Simic (green-blue) adapts creatures with +1/+1 counters that its other cards reward. Guildgates and lockets make a third colour easy to splash.',
+    tips: [
+      'Commit to a guild early: each mechanic only pays off when most of your deck shares it.',
+      'Spectacle rewards getting damage in; a cheap evasive attacker turns every spectacle card into a bargain.',
+      'Afterlife creatures trade happily, so attacking into Orzhov is costly unless you can deal with the Spirits too.',
+    ],
+    tryIf: 'guild-based two-colour decks and aggressive Limited',
+    power: 3, speed: 4, complexity: 3,
+    themes: ['multicolor', 'aggro', 'counters'],
+    mechanics: [
+      { name: 'Riot', inPlay: 'Each riot creature enters with your choice of haste or a +1/+1 counter, so you decide between hitting now and a bigger body.' },
+      { name: 'Spectacle', inPlay: 'An alternative cost for spells cast after an opponent lost life this turn, which rewards attacking first and casting after combat.' },
+      { name: 'Afterlife', inPlay: 'When the creature dies you get 1/1 flying Spirits, so trades leave you ahead and sacrifice effects come almost free.' },
+      { name: 'Addendum', inPlay: 'Instants with a bonus if cast in your main phase, so you choose between the bonus and keeping your mana up.' },
+      { name: 'Adapt', inPlay: 'Pay to put +1/+1 counters on a creature that has none, a mana sink that also triggers Simic\'s counter payoffs.' },
+    ],
+  },
   WAR: {
     tagline: 'A planeswalker in every pack: boards fill with walkers to attack and defend, Zombie Armies grow with amass, and proliferate pushes counters and loyalty higher every turn.',
     setting: 'Ravnica under invasion, as Nicol Bolas and his Dreadhorde of Eternals turn the guild city into a battlefield for the Gatewatch and their allies.',
