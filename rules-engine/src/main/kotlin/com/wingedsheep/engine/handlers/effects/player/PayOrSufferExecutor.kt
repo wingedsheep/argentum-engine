@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.player
 
 import com.wingedsheep.engine.handlers.costs.CostAtomAmounts
+import com.wingedsheep.engine.mechanics.cost.SacrificeCostLegality
 import com.wingedsheep.engine.mechanics.cost.SharedCreatureTypeTapCost
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.DecisionHandler
@@ -377,7 +378,7 @@ class PayOrSufferExecutor(
         // Find all valid permanents on the battlefield that the player controls
         val validPermanents = findValidPermanentsOnBattlefield(
             state, controllerId, cost.filter, selfExclusion(cost.excludeSelf, sourceId), sourceId
-        )
+        ).filter { SacrificeCostLegality.canBeSacrificed(state, it) }
 
         // If the player doesn't have enough permanents, automatically execute suffer effect
         if (validPermanents.size < cost.count) {
@@ -1104,7 +1105,7 @@ class PayOrSufferExecutor(
                 is CostAtom.DiscardHand -> true
                 is CostAtom.Sacrifice -> findValidPermanentsOnBattlefield(
                     state, playerId, atom.filter, selfExclusion(atom.excludeSelf, sourceId), sourceId
-                ).size >= atom.count
+                ).count { SacrificeCostLegality.canBeSacrificed(state, it) } >= atom.count
                 is CostAtom.PayLife -> {
                     val life = state.lifeTotal(playerId) // CR 810.9a — team's shared total
                     val price = CostAtomAmounts.life(state, atom, playerId, predicateEvaluator, sourceId)
@@ -1320,8 +1321,8 @@ class PayOrSufferExecutor(
     ): EffectResult {
         val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
 
-        // Check if the permanent is still on the battlefield
-        if (permanentId !in state.getZone(battlefieldZone)) {
+        // Check if the permanent is still on the battlefield, and that it can be sacrificed at all
+        if (permanentId !in state.getZone(battlefieldZone) || !SacrificeCostLegality.canBeSacrificed(state, permanentId)) {
             return EffectResult.success(state)
         }
 

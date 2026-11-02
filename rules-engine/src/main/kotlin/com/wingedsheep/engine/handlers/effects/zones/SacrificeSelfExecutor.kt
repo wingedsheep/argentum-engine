@@ -32,8 +32,11 @@ class SacrificeSelfExecutor(private val zones: ZoneTransitionService) : EffectEx
         val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
         val graveyardZone = ZoneKey(controllerId, Zone.GRAVEYARD)
 
-        // Check if the source is still on the battlefield
-        if (sourceId !in state.getZone(battlefieldZone)) {
+        // Check if the source is still on the battlefield, and that it can be sacrificed at all
+        // (a Warrior token copy of it under Zurgo, Thunder's Decree during your end step stays).
+        if (sourceId !in state.getZone(battlefieldZone) ||
+            !com.wingedsheep.engine.mechanics.cost.SacrificeCostLegality.canBeSacrificed(state, sourceId)
+        ) {
             return EffectResult.success(state)
         }
 

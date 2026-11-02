@@ -30,11 +30,9 @@ object SacrificeCostLegality {
     fun canBeSacrificed(state: GameState, permanentId: EntityId): Boolean =
         !state.projectedState.hasKeyword(permanentId, AbilityFlag.CANT_BE_SACRIFICED)
 
-    fun canSacrificeForCost(state: GameState, permanentId: EntityId): Boolean {
-        val projected = state.projectedState
-        return !projected.hasKeyword(permanentId, AbilityFlag.CANT_BE_SACRIFICED) &&
-            !projected.hasKeyword(permanentId, AbilityFlag.CANT_BE_SACRIFICED_FOR_COSTS)
-    }
+    fun canSacrificeForCost(state: GameState, permanentId: EntityId): Boolean =
+        canBeSacrificed(state, permanentId) &&
+            !state.projectedState.hasKeyword(permanentId, AbilityFlag.CANT_BE_SACRIFICED_FOR_COSTS)
 
     /** [candidates] narrowed to the permanents a cost may sacrifice. */
     fun sacrificeableForCost(state: GameState, candidates: List<EntityId>): List<EntityId> =

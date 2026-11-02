@@ -4,12 +4,15 @@ import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CantBeSacrificed
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -29,7 +32,9 @@ import io.kotest.matchers.shouldBe
  *    that one without being asked;
  *  - "sacrifice a creature" by the resolving player likewise skips it;
  *  - "sacrifice all creatures" (a pipeline's sacrifice move) leaves it on the battlefield while
- *    everything else goes.
+ *    everything else goes;
+ *  - "sacrifice it" on the permanent itself (an enters trigger) leaves it in play;
+ *  - "sacrifice a creature or [penalty]" can't be paid with it, so the penalty happens.
  */
 class CantBeSacrificedByEffectsTest : FunSpec({
 
@@ -68,9 +73,32 @@ class CantBeSacrificedByEffectsTest : FunSpec({
         spell { effect = Effects.SacrificeAll(GameObjectFilter.Creature) }
     }
 
+    val fleeting = card("Self Sacrificing Bear") {
+        manaCost = "{B}"
+        typeLine = "Creature — Bear"
+        power = 2
+        toughness = 2
+        oracleText = "When this creature enters, sacrifice it."
+        triggeredAbility {
+            trigger = Triggers.self.enters()
+            effect = SacrificeSelfEffect
+        }
+    }
+    val punisher = card("Sacrifice Or Lose Life Sorcery") {
+        manaCost = "{B}"
+        typeLine = "Sorcery"
+        oracleText = "Sacrifice a creature or lose 3 life."
+        spell {
+            effect = Effects.PayOrSuffer(
+                cost = Costs.pay.Sacrifice(GameObjectFilter.Creature),
+                suffer = Effects.LoseLife(3, EffectTarget.Controller),
+            )
+        }
+    }
+
     fun newDriver(): Pair<GameTestDriver, EntityId> {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(lock, bear, trinket, eachEdict, ownEdict, wipe))
+        driver.registerCards(TestCards.all + listOf(lock, bear, trinket, eachEdict, ownEdict, wipe, fleeting, punisher))
         driver.initMirrorMatch(deck = Deck.of("Swamp" to 40), skipMulligans = true, startingPlayer = 0)
         val me = driver.activePlayer!!
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
@@ -137,5 +165,31 @@ class CantBeSacrificedByEffectsTest : FunSpec({
         driver.cast(me, "Sacrifice All Creatures Sorcery")
 
         driver.getGraveyard(me) shouldContain mine
+    }
+
+    test("'sacrifice it' doesn't sacrifice a permanent that can't be sacrificed") {
+        val (driver, me) = newDriver()
+        driver.putPermanentOnBattlefield(me, "Unsacrificeable Lock")
+
+        driver.cast(me, "Self Sacrificing Bear")
+        driver.bothPass()
+
+        withClue("the enters trigger resolved, and the creature is still in play") {
+            driver.state.stack shouldBe emptyList()
+            (driver.findPermanent(me, "Self Sacrificing Bear") != null) shouldBe true
+        }
+    }
+
+    test("'sacrifice a creature or lose 3 life' can't be paid with a creature that can't be sacrificed") {
+        val (driver, me) = newDriver()
+        driver.putPermanentOnBattlefield(me, "Unsacrificeable Lock")
+        val creature = driver.putCreatureOnBattlefield(me, "Unsac Test Bear")
+        val life = driver.getLifeTotal(me)
+
+        driver.cast(me, "Sacrifice Or Lose Life Sorcery")
+
+        withClue("no sacrifice is offered; the penalty happens") { driver.state.pendingDecision shouldBe null }
+        driver.findPermanent(me, "Unsac Test Bear") shouldBe creature
+        driver.getLifeTotal(me) shouldBe life - 3
     }
 })
