@@ -221,6 +221,19 @@ data class CreatureValuation(
      * [com.wingedsheep.ai.engine.AiProfile.LIVE] ships it.
      */
     val growthPotential: Boolean = false,
+    /**
+     * Price a noncreature permanent by what it does from here on: its own "when this enters"
+     * triggers have already resolved and are left out of its prior
+     * ([com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer.analyzeInPlay]).
+     *
+     * The 2026-11-02 user report: Ajani's Anguish ("When this enchantment enters, it deals X damage
+     * to any target. Creatures you control have trample.") cast for X=1 the first turn it could. On
+     * the battlefield it kept a removal spell's prior, so the leaf scored the cast as a permanent
+     * worth a removal spell plus one damage — counting the trigger twice, once in the simulation
+     * and once in the board value. [com.wingedsheep.ai.engine.AiProfile.LIVE] ships it; pinned by
+     * `XSpellPatienceTest`.
+     */
+    val entryTriggersAreSpent: Boolean = false,
 ) {
     companion object {
         /** Neither correction: what every number published before 2026-08-10 was measured on. */
@@ -474,7 +487,7 @@ object BoardPresence : BoardFeature {
         // max keeps both, and guarantees no permanent is ever valued lower than it was before
         // Phase 6 — so a position the AI played correctly on the old numbers still scores at least
         // as well.
-        val prior = priorValue(projected, entityId, container, card, intents)
+        val prior = priorValue(projected, entityId, container, card, intents, creatureValuation.entryTriggersAreSpent)
 
         // Planeswalkers: the flat 4.0 priced a fresh Jace and a Jace at 1 loyalty identically.
         // Loyalty is both the walker's life total and its remaining activations, so it is the one
@@ -534,8 +547,9 @@ object BoardPresence : BoardFeature {
         container: ComponentContainer,
         card: CardComponent,
         intents: IntentCatalog,
+        entrySpent: Boolean,
     ): Double {
-        val inForce = intents.forPermanent(container, card.name)
+        val inForce = intents.forPermanent(container, card.name, entrySpent)
         if (inForce.isEmpty()) return 0.0
         val unreadable = CardIntent.UNKNOWN.staticPriorValue
         return unreadable + inForce.sumOf {

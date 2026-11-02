@@ -128,10 +128,10 @@ class RefuseUnspendableShrinkTest : ScenarioTestBase() {
             game.castsIcyReception(game.choice()) shouldBe false
         }
 
-        test("before our attack, a power cut on an untapped blocker stays the leaf's call") {
+        test("before our attack, an instant power cut on an untapped blocker waits for it to block") {
             val game = aa98Turn17()
 
-            game.icyVerdict("Kiora of Fire and Ashes") shouldNotBe TimingVerdict.NoWindow
+            game.icyVerdict("Kiora of Fire and Ashes") shouldBe TimingVerdict.NoWindow
         }
 
         test("with no creature of ours that can attack, an untapped blocker has nothing to block") {
@@ -148,7 +148,7 @@ class RefuseUnspendableShrinkTest : ScenarioTestBase() {
             game.icyVerdict("Kiora of Fire and Ashes") shouldBe TimingVerdict.NoWindow
         }
 
-        test("on the opponent's turn, a power cut on a creature that can still attack is the leaf's call") {
+        test("on the opponent's turn, an instant power cut waits for the creature to attack") {
             val game = scenario()
                 .withPlayers()
                 .withTurnNumber(18)
@@ -159,7 +159,7 @@ class RefuseUnspendableShrinkTest : ScenarioTestBase() {
                 .build()
                 .advanceToPriority(1, Step.PRECOMBAT_MAIN)
 
-            game.icyVerdict("Shivan Dragon") shouldNotBe TimingVerdict.NoWindow
+            game.icyVerdict("Shivan Dragon") shouldBe TimingVerdict.NoWindow
         }
 
         test("T8: after our combat, a shrink that kills nothing has no fight to change") {

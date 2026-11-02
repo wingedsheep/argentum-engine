@@ -376,6 +376,7 @@ class AIPlayer(
                     lifelinkWaitsForBlocks = profile.lifelinkWaitsForBlocks,
                     tapToGrowAtTheirEndStep = profile.tapToGrowAtTheirEndStep,
                     borrowedCreaturesGoHome = profile.borrowedCreaturesGoHome,
+                    holdXSpellsForBiggerX = profile.holdXSpellsForBiggerX,
                     convokeLandsFirst = profile.convokeLandsFirst,
                     // Same seam as `CombatAdvisor`'s `lifeWeight`: a raw Phase 9 profile resolves
                     // to the compiled fallback here, which is the right answer for a policy that

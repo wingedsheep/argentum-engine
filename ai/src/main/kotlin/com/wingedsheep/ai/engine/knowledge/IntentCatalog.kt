@@ -135,10 +135,18 @@ class IntentCatalog private constructor(private val registry: CardRegistry?) {
      * [com.wingedsheep.engine.state.components.identity.RoomFaceStatics] tests it — by [RoomFaceId]
      * against the card definition's faces — so the two cannot drift on which door is open.
      */
-    fun forPermanent(container: ComponentContainer, cardName: String): List<CardIntent> {
+    fun forPermanent(
+        container: ComponentContainer,
+        cardName: String,
+        /** Leave out its "when this enters" triggers — see [CardIntentAnalyzer.analyzeInPlay]. */
+        entrySpent: Boolean = false,
+    ): List<CardIntent> {
         val definition = registry?.getCard(cardName) ?: return emptyList()
         val room = container.get<RoomComponent>()
-            ?: return listOf(CardIntentAnalyzer.analyzeSelf(definition))
+            ?: return listOf(
+                if (entrySpent) CardIntentAnalyzer.analyzeInPlay(definition)
+                else CardIntentAnalyzer.analyzeSelf(definition),
+            )
         return definition.cardFaces
             .filter { RoomFaceId(it.name) in room.unlocked }
             .map { CardIntentAnalyzer.analyzeFace(definition, it) }

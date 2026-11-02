@@ -13,6 +13,7 @@ import com.wingedsheep.ai.engine.evaluation.ThreatAssessment
 import com.wingedsheep.ai.engine.knowledge.EffectWalker
 import com.wingedsheep.ai.engine.knowledge.ExpiringGrantWindow
 import com.wingedsheep.ai.engine.knowledge.IntentTag
+import com.wingedsheep.ai.engine.knowledge.XPatience
 import com.wingedsheep.ai.engine.knowledge.HoldPolicy
 import com.wingedsheep.ai.engine.knowledge.IntentCatalog
 import com.wingedsheep.ai.engine.knowledge.TargetPolarity
@@ -263,6 +264,8 @@ class Strategist(
      * it to [com.wingedsheep.ai.engine.knowledge.ExpiringGrantWindow].
      */
     private val borrowedCreaturesGoHome: Boolean = false,
+    /** [AiProfile.holdXSpellsForBiggerX] — see [com.wingedsheep.ai.engine.knowledge.XPatience]. */
+    private val holdXSpellsForBiggerX: Boolean = false,
     /**
      * [AiProfile.convokeLandsFirst] — a convoke spell taps creatures only for what mana cannot
      * pay, cheapest creatures first. See [withAutomaticConvoke].
@@ -1040,12 +1043,20 @@ class Strategist(
             // them without it.
             return AdjustedScore(passScore - 1.0, "attack plan does not need the pump — floored below passing", floored = true)
         }
-        val timingDelta = (timing as? TimingVerdict.Adjust)?.delta ?: 0.0
-        val idleBonus = if ((timing as? TimingVerdict.Adjust)?.onlyWhenIdle == true) timingDelta else 0.0
+        val holdDelta = (timing as? TimingVerdict.Adjust)?.delta ?: 0.0
+        val idleBonus = if ((timing as? TimingVerdict.Adjust)?.onlyWhenIdle == true) holdDelta else 0.0
         val timingReason = (timing as? TimingVerdict.Adjust)?.reason ?: "timing"
+        // An X spell cast smaller than our mana is about to make it — see [XPatience].
+        val xPatience = if (holdXSpellsForBiggerX) {
+            XPatience.discount(state, playerId, action, boardPresenceWeight)
+        } else {
+            0.0
+        }
+        val timingDelta = holdDelta - xPatience
         val timingNote = listOfNotNull(
             creditNote,
-            if (timingDelta != 0.0) "hold policy $timingReason %+.2f".format(timingDelta) else null,
+            if (holdDelta != 0.0) "hold policy $timingReason %+.2f".format(holdDelta) else null,
+            if (xPatience != 0.0) "X patience: a bigger X is coming %+.2f".format(-xPatience) else null,
         ).joinToString("; ").ifEmpty { null }
 
         // Check for card-specific advisor override. Timing is applied outside it, so a per-card
@@ -2487,9 +2498,15 @@ class Strategist(
         if (isMomirAvatarActivation(state, action)) {
             return momirActivations(state, action, playerId, landDropAvailable)
         }
-        if (!action.hasXCost || maxX == null || maxX < 1 || !payableCost) {
-            return listOf(action)
-        }
+        if (!action.hasXCost || !payableCost) return listOf(action)
+        // A spell whose mana reaches no X worth casting is dropped, not passed through bare: the
+        // bare action is cast at X=0, and a free X of 0 buys nothing — Finale of Revelation cast
+        // off its two blue for "draw zero cards, exile this" (2026-11-02 user report), with the
+        // last-main-phase idle-draw nudge outvoting a card thrown away. [XCostSelection] still
+        // proposes 0 where a target makes it meaningful (a mana-value-0 permanent under a "mana
+        // value X or less" spell).
+        if (base is CastSpell && (maxX == null || maxX < 1)) return XCostSelection.expandToX(state, action)
+        if (maxX == null || maxX < 1) return listOf(action)
         if (!bindsXWithoutTheEnginesHelp(action)) return listOf(action)
         return when (base) {
             is ActivateAbility -> {

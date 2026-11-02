@@ -1407,6 +1407,18 @@ data class AiProfile(
      */
     val borrowedCreaturesGoHome: Boolean = false,
     /**
+     * Hold a free-`{X}` spell while our mana is still growing into a bigger X, instead of casting it
+     * the first turn it is affordable.
+     *
+     * The 2026-11-02 user report: Ajani's Anguish "cast as soon as it can". A one-ply leaf weighs an
+     * X=1 cast against passing, never against the same card two land drops later for X=3, and an X
+     * spell's mana value in hand counts X as zero, so [holdRemovalForBetterTargets]' bar never rises
+     * either. With this on, [com.wingedsheep.ai.engine.knowledge.XPatience] charges the cast for the
+     * X it gives up, on [com.wingedsheep.ai.engine.knowledge.Patience]'s releases. Pinned by
+     * `XSpellPatienceTest`.
+     */
+    val holdXSpellsForBiggerX: Boolean = false,
+    /**
      * Keep a seven-card opening hand of 2–5 lands only when it can cast something in its colours —
      * and, with exactly two lands, only when it has early plays off those two lands (see
      * [OpeningHandReader]). Without it the engine AI kept any 2–5-lander, whatever its curve.
@@ -2398,6 +2410,7 @@ data class AiProfile(
                 expiringStatsNeedAFight = true,
                 statsReadTheBoard = true,
                 growthPotential = true,
+                entryTriggersAreSpent = true,
             ),
             activatedPumpsNeedAPlannedAttack = true,
             attackPlaneswalkers = true,
@@ -2426,6 +2439,7 @@ data class AiProfile(
             stressCrackBack = true,
             threatAwareDefender = true,
             borrowedCreaturesGoHome = true,
+            holdXSpellsForBiggerX = true,
             curveAwareMulligan = true,
             surplusLandsReadTheHand = true,
             lookDigsForLand = true,
