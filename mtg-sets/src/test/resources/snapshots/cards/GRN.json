@@ -8697,6 +8697,40 @@
     ]
 }
 
+// Ochran Assassin
+{
+    "name": "Ochran Assassin",
+    "manaCost": "{1}{B}{G}",
+    "typeLine": "Creature — Elf Assassin",
+    "oracleText": "Deathtouch\nAll creatures able to block this creature do so.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "MustBeBlockedStatic",
+                "allCreatures": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "194",
+        "rarity": "UNCOMMON",
+        "artist": "Anna Steinbauer",
+        "flavorText": "\"The dagger is just the distraction. I carry the real killer in a vial at my side.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/541ef933-64f8-4075-9bd3-97149ac84b2b.jpg?1783934126"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Omnispell Adept
 {
     "name": "Omnispell Adept",
@@ -9014,6 +9048,238 @@
     ]
 }
 
+// Pelt Collector
+{
+    "name": "Pelt Collector",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Elf Warrior",
+    "oracleText": "Whenever another creature you control enters or dies, if that creature's power is greater than this creature's, put a +1/+1 counter on this creature.\nAs long as this creature has three or more +1/+1 counters on it, it has trample.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pelt Collector:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "TriggeringEntity",
+                        "numericProperty": "Power"
+                    },
+                    "operator": "GT",
+                    "right": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    }
+                }
+            },
+            {
+                "id": "Pelt Collector:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "TriggeringEntity",
+                        "numericProperty": "Power"
+                    },
+                    "operator": "GT",
+                    "right": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "PLUS_ONE_PLUS_ONE"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "rarity": "RARE",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/e/bee125cb-12b9-4f78-8e1d-6018d9c52275.jpg?1783934147",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "To determine if Pelt Collector's first ability triggers when a creature dies, use its power as it last existed on the battlefield."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If a creature with power less than or equal to Pelt Collector's power enters the battlefield or dies, Pelt Collector's first ability doesn't trigger at all. You can't try to raise that creature's power or lower Pelt Collector's to get a counter."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "As Pelt Collector's first ability resolves, if the entering creature's power is no longer greater than Pelt Collector's power, or if Pelt Collector's power has been raised to greater than or equal to the power of the creature that died, Pelt Collector doesn't get a +1/+1 counter. Notably, this means that if Pelt Collector is still a 1/1 creature and two 2/2 creatures die, it only gets one +1/+1 counter as the first triggered ability resolves, and it will be too big to get a counter as the second triggered ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Pilfering Imp
+{
+    "name": "Pilfering Imp",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Imp",
+    "oracleText": "Flying\n{1}{B}, {T}, Sacrifice this creature: Target opponent reveals their hand. You choose a nonland card from it. That player discards that card. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Pilfering Imp:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RevealHand",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered1",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "nonland",
+                            "storeSelected": "selected2",
+                            "prompt": "Choose a nonland card to discard",
+                            "showAllCards": true,
+                            "alwaysPrompt": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/646dedff-150c-4ed2-8f2e-3b2e6ba5521a.jpg?1783934171"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Pitiless Gorgon
 {
     "name": "Pitiless Gorgon",
@@ -9263,6 +9529,85 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Price of Fame
+{
+    "name": "Price of Fame",
+    "manaCost": "{3}{B}",
+    "typeLine": "Instant",
+    "oracleText": "This spell costs {2} less to cast if it targets a legendary creature.\nDestroy target creature.\nSurveil 2. (Look at the top two cards of your library, then put any number of them into your graveyard and the rest on top of your library in any order.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "Surveil",
+                    "count": 2
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "FixedIfAnyTargetMatches",
+                        "amount": 2,
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                "IsLegendary"
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "83",
+        "rarity": "UNCOMMON",
+        "artist": "Winona Nelson",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/61b52152-0f7c-4466-9e49-033477028f67.jpg?1783934170",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "Price of Fame's mana value is 4, even if it costs {2} less to cast."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "You'll surveil before resolving any abilities that trigger on the target creature dying."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Price of Fame can target a creature that's indestructible. It won't be destroyed, but you'll surveil."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -10106,6 +10451,83 @@
     ]
 }
 
+// Severed Strands
+{
+    "name": "Severed Strands",
+    "manaCost": "{1}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "As an additional cost to cast this spell, sacrifice a creature.\nYou gain life equal to the sacrificed creature's toughness. Destroy target creature an opponent controls.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "SacrificedAsCost",
+                        "numericProperty": "Toughness"
+                    }
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "t0"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "artist": "Zack Stella",
+        "flavorText": "\"I've seen Ravnica's fate. Believe me, I'm doing you a favor.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bce654d6-fcf1-40a8-8bdb-5c37e561f7dc.jpg?1783934171",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "You must sacrifice exactly one creature to cast this spell; you can't cast it without sacrificing a creature, and you can't sacrifice additional creatures."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "The amount of life gained is equal to the sacrificed creature's toughness as it last existed on the battlefield."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If the target creature is an illegal target by the time Severed Strands tries to resolve, the spell doesn't resolve. You don't gain life."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If the target creature is a legal target but can't be destroyed, most likely because it has indestructible, you still gain life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Silent Dart
 {
     "name": "Silent Dart",
@@ -10417,6 +10839,99 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Status // Statue
+{
+    "name": "Status // Statue",
+    "manaCost": "",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +1/+1 and gains deathtouch until end of turn.\n//\nDestroy target artifact, creature, or enchantment.",
+    "metadata": {
+        "collectorNumber": "230",
+        "rarity": "UNCOMMON",
+        "artist": "Ben Wootten",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/44614c6d-5508-4077-b825-66d5d684086c.jpg?1783934111"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Status",
+            "manaCost": "{B/G}",
+            "typeLine": "Instant",
+            "oracleText": "Target creature gets +1/+1 and gains deathtouch until end of turn.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DEATHTOUCH",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Statue",
+            "manaCost": "{2}{B}{G}",
+            "typeLine": "Instant",
+            "oracleText": "Destroy target artifact, creature, or enchantment.",
+            "script": {
+                "spellEffect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact|creature|enchantment"
+                        },
+                        "id": "t1"
+                    }
+                ]
+            }
+        }
+    ],
+    "hasNoManaCost": true
 }
 
 // Sumala Woodshaper
@@ -11588,6 +12103,138 @@
     ]
 }
 
+// Undercity Necrolisk
+{
+    "name": "Undercity Necrolisk",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Zombie Lizard",
+    "oracleText": "{1}, Sacrifice another creature: Put a +1/+1 counter on this creature. It gains menace until end of turn. Activate only as a sorcery. (It can't be blocked except by two or more creatures.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Undercity Necrolisk:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "MENACE",
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "rarity": "UNCOMMON",
+        "artist": "Tomasz Jedruszek",
+        "flavorText": "In its territory, living is an affront.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/5/2571d168-38d4-46d7-afae-ffbd12bd2313.jpg?1783934169"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Undercity Uprising
+{
+    "name": "Undercity Uprising",
+    "manaCost": "{2}{B}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Creatures you control gain deathtouch until end of turn. Then target creature you control fights target creature you don't control. (Each deals damage equal to its power to the other.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "DEATHTOUCH",
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "Fight",
+                    "target1": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "210",
+        "artist": "Magali Villeneuve",
+        "flavorText": "\"Now it's your turn to hide.\"\n—Vraska",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7e1e08bf-a5d6-48bb-9f7f-4711f9ec88d7.jpg?1783934117"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Underrealm Lich
 {
     "name": "Underrealm Lich",
@@ -11870,6 +12517,59 @@
     ]
 }
 
+// Urban Utopia
+{
+    "name": "Urban Utopia",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant land\nWhen this Aura enters, draw a card.\nEnchanted land has \"{T}: Add one mana of any color.\"",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Urban Utopia:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Urban Utopia:2",
+                    "cost": "CostTap",
+                    "effect": "AddManaOfChoice",
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "146",
+        "artist": "Jedd Chevrier",
+        "flavorText": "Ravnica's diversity produces blossoms of opinion in a rich soil of perspectives.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/45d7ab0e-db37-4051-86dd-3ab09c047a2b.jpg?1783934146"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Vedalken Mesmerist
 {
     "name": "Vedalken Mesmerist",
@@ -12051,6 +12751,731 @@
     "colorIdentityOverride": [
         "GREEN",
         "WHITE"
+    ]
+}
+
+// Vicious Rumors
+{
+    "name": "Vicious Rumors",
+    "manaCost": "{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Vicious Rumors deals 1 damage to each opponent. Each opponent discards a card, then mills a card. You gain 1 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "discarded"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "player": "EachOpponent",
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "EachOpponent"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "89",
+        "artist": "David Palumbo",
+        "flavorText": "\"The alliances were already frayed. All we do is find the loose threads and pluck.\"\n—Lazav",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/1/b1939952-608e-4786-beeb-a6ff0fa36624.jpg?1783934168"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Vigorspore Wurm
+{
+    "name": "Vigorspore Wurm",
+    "manaCost": "{5}{G}",
+    "typeLine": "Creature — Wurm",
+    "oracleText": "Undergrowth — When this creature enters, target creature gains vigilance and gets +X/+X until end of turn, where X is the number of creature cards in your graveyard.\nThis creature can't be blocked by more than one creature.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vigorspore Wurm:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "VIGILANCE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Graveyard",
+                                "filter": "creature"
+                            },
+                            "toughnessModifier": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Graveyard",
+                                "filter": "creature"
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedByMoreThan",
+                "maxBlockers": 1
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "147",
+        "artist": "Jason Felix",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/6/b62625de-3a2f-43d6-8cf7-ea38f038f3b6.jpg",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "The value of X is determined only as the undergrowth ability resolves. If the number of creature cards in your graveyard changes later in the turn, the target creature is unaffected."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If there are no creature cards in your graveyard, the target creature just gains vigilance until end of turn."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If Vigorspore Wurm gains menace, it can't be blocked at all."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Because tokens aren't cards, they never count for undergrowth abilities."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Creature cards with other types, such as artifact creature cards, count for undergrowth abilities."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Vivid Revival
+{
+    "name": "Vivid Revival",
+    "manaCost": "{4}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return up to three target multicolored cards from your graveyard to your hand. Exile Vivid Revival.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                },
+                "destination": "Hand"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 3,
+                "minCount": 0,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsMulticolored"
+                        ],
+                        "controllerPredicate": "OwnedByYou"
+                    },
+                    "zone": "Graveyard"
+                }
+            }
+        ],
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "rarity": "RARE",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "Golgari crops bloom in strange soils, touched only by long-traveled light.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9e67fcfd-0e9e-4b88-8c65-2125fac10a3d.jpg?1783934144"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Vraska's Stoneglare
+{
+    "name": "Vraska's Stoneglare",
+    "manaCost": "{4}{B}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target creature. You gain life equal to its toughness. You may search your library and/or graveyard for a card named Vraska, Regal Gorgon, reveal it, and put it into your hand. If you search your library this way, shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "Toughness"
+                    }
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "Search your library",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Library"
+                                            ],
+                                            "filter": "name:Vraska, Regal Gorgon"
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library for a card named Vraska, Regal Gorgon to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Search your graveyard",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Graveyard"
+                                            ],
+                                            "filter": "name:Vraska, Regal Gorgon"
+                                        },
+                                        "storeAs": "searchable"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your graveyard for a card named Vraska, Regal Gorgon to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Search your library and graveyard",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Library",
+                                                "Graveyard"
+                                            ],
+                                            "filter": "name:Vraska, Regal Gorgon"
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library and/or graveyard for a card named Vraska, Regal Gorgon to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Don't search",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": []
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "272",
+        "rarity": "RARE",
+        "artist": "Yongjae Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/27fc4db6-a5f5-4254-ae64-c8eaf2c98030.jpg?1783934093",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "If the target creature becomes an illegal target for Vraska’s Stoneglare, the spell doesn’t resolve. You don’t gain life or search for Vraska, Regal Gorgon."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "The amount of life gained is equal to the destroyed creature’s toughness as it last existed on the battlefield. If it wasn’t destroyed (most likely because it has indestructible), you gain life equal to its toughness as it currently exists on the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
+// Vraska, Golgari Queen
+{
+    "name": "Vraska, Golgari Queen",
+    "manaCost": "{2}{B}{G}",
+    "typeLine": "Legendary Planeswalker — Vraska",
+    "oracleText": "+2: You may sacrifice another permanent. If you do, you gain 1 life and draw a card.\n−3: Destroy target nonland permanent with mana value 3 or less.\n−9: You get an emblem with \"Whenever a creature you control deals combat damage to a player, that player loses the game.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Vraska, Golgari Queen:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "Sacrifice",
+                            "filter": "permanent",
+                            "excludeSource": true
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "You may sacrifice another permanent. If you do, you gain 1 life and draw a card."
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Vraska, Golgari Queen:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "nonland permanent mv<=3"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Vraska, Golgari Queen:4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -9
+                },
+                "effect": {
+                    "type": "CreateGlobalTriggeredAbility",
+                    "ability": {
+                        "id": "Vraska, Golgari Queen:3",
+                        "trigger": {
+                            "type": "DealsDamageEvent",
+                            "damageType": "DamageCombat",
+                            "recipient": {
+                                "type": "RecipientPlayer",
+                                "player": "Any"
+                            },
+                            "sourceFilter": "creature ctrl:you"
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "LoseGame",
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "TriggeringPlayer"
+                            },
+                            "message": "Vraska, Golgari Queen's emblem: dealt combat damage"
+                        },
+                        "descriptionOverride": "Whenever a creature you control deals combat damage to a player, that player loses the game."
+                    },
+                    "descriptionOverride": "Whenever a creature you control deals combat damage to a player, that player loses the game."
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "213",
+        "rarity": "MYTHIC",
+        "artist": "Magali Villeneuve",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a36d3ea7-0f18-4865-b47b-755673db065e.jpg?1783934118",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "You choose whether to sacrifice a permanent (and which one to sacrifice) while Vraska's first ability is resolving. No player may take actions between the time you choose which permanent to sacrifice and the time you do so."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Tokens that aren't a copy of something else don't have a mana cost. Anything without a mana cost normally has a mana value of 0."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If a permanent has {X} in its mana cost, X is considered to be 0."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
+// Vraska, Regal Gorgon
+{
+    "name": "Vraska, Regal Gorgon",
+    "manaCost": "{5}{B}{G}",
+    "typeLine": "Legendary Planeswalker — Vraska",
+    "oracleText": "+2: Put a +1/+1 counter on up to one target creature. That creature gains menace until end of turn.\n−3: Destroy target creature.\n−10: For each creature card in your graveyard, put a +1/+1 counter on each creature you control.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Vraska, Regal Gorgon:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "MENACE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Vraska, Regal Gorgon:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Vraska, Regal Gorgon:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -10
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddDynamicCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "amount": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Graveyard",
+                            "filter": "creature"
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "269",
+        "rarity": "MYTHIC",
+        "artist": "Magali Villeneuve",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/4299dbe6-c94d-4ecc-8bfd-741d2649cba1.jpg?1783934095"
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
     ]
 }
 
