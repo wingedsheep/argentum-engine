@@ -82,7 +82,8 @@ internal fun AbilityCost.hasTapAttachedCreatureCost(): Boolean =
  * resolving effect can read the pre-cost count (DynamicAmount.LastKnownSourceCounters).
  */
 internal fun AbilityCost.exilesOrSacrificesSelf(): Boolean = when (this) {
-    is AbilityCost.ExileSelf, is AbilityCost.SacrificeSelf, is AbilityCost.ReturnSelfToHand -> true
+    is AbilityCost.ExileSelf, is AbilityCost.SacrificeSelf, is AbilityCost.ReturnSelfToHand,
+    is AbilityCost.PutSelfIntoLibrary -> true
     is AbilityCost.Composite -> costs.any { it.exilesOrSacrificesSelf() }
     else -> false
 }

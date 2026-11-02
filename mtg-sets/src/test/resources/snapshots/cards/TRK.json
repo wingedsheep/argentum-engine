@@ -2065,6 +2065,80 @@
     ]
 }
 
+// Daniels, Temporal Agent
+{
+    "name": "Daniels, Temporal Agent",
+    "manaCost": "{2}{B/G}{B/G}",
+    "typeLine": "Legendary Creature — Human Advisor",
+    "oracleText": "When Daniels enters, return target creature card from your graveyard to your hand.\n{2}, Put this card from your graveyard on the bottom of your library: You gain 2 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Daniels, Temporal Agent:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Return target creature card from your graveyard to your hand."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Daniels, Temporal Agent:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostPutSelfIntoLibrary"
+                    ]
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "{2}, Put this card from your graveyard on the bottom of your library: You gain 2 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "232",
+        "rarity": "UNCOMMON",
+        "artist": "Kaitlyn McCulley",
+        "flavorText": "\"You're thinking of time travel like we're in some H.G. Wells novel. We're not. It's far more complicated.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/6/b64dd792-7dc7-4d22-9776-9b9e25e1173d.jpg?1792508309"
+    }
+}
+
 // Data, New Life
 {
     "name": "Data, New Life",
