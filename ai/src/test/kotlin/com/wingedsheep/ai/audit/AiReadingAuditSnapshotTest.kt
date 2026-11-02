@@ -52,10 +52,9 @@ class AiReadingAuditSnapshotTest : FunSpec({
             "combat: CantBlockEffect", "intent: CantAttackEffect", "intent: CantBlockEffect",
             "timing: CantAttackEffect", "timing: CantBlockEffect",
         ),
-        "Amnesia" to listOf(
-            "intent: Pipeline(hand→graveyard)", "intent: RevealHandEffect",
-            "polarity: Pipeline(hand→graveyard)", "polarity: RevealHandEffect",
-        ),
+        // "Target player reveals their hand and discards all nonland cards": read as discard, aimed at
+        // the other side's hand.
+        "Amnesia" to emptyList(),
     )
 
     test("the AI's readers flag exactly the pinned effect types on each snapshot card") {
