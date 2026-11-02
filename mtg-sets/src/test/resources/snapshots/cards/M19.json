@@ -104,6 +104,46 @@
     ]
 }
 
+// Aether Tunnel
+{
+    "name": "Aether Tunnel",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +1/+0 and can't be blocked.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0
+            },
+            {
+                "type": "CantBeBlocked",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "rarity": "UNCOMMON",
+        "artist": "Lucas Graciano",
+        "flavorText": "If you can't find a doorway, make one.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5d6178ed-6353-4733-81e1-7b3dc592c3bd.jpg?1783934592"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Aethershield Artificer
 {
     "name": "Aethershield Artificer",
@@ -210,6 +250,201 @@
     ]
 }
 
+// Ajani's Influence
+{
+    "name": "Ajani's Influence",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Put two +1/+1 counters on target creature.\nLook at the top five cards of your library. You may reveal a white card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 2,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "white",
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "prompt": "You may reveal a white card from among them and put it into your hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "282",
+        "rarity": "RARE",
+        "artist": "Sidharth Chaturvedi",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/3/d38ad178-35a5-44ad-b80a-d746f3e6a45c.jpg?1783934491"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Ajani's Last Stand
+{
+    "name": "Ajani's Last Stand",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a creature or planeswalker you control dies, you may sacrifice this enchantment. If you do, create a 4/4 white Avatar creature token with flying.\nWhen a spell or ability an opponent controls causes you to discard this card, if you control a Plains, create a 4/4 white Avatar creature token with flying.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ajani's Last Stand:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature|planeswalker ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "SacrificeTarget",
+                                "target": "Self"
+                            },
+                            "successCriterion": "SuccessCriterion.PermanentsSacrificed"
+                        },
+                        "then": {
+                            "type": "CreateToken",
+                            "power": 4,
+                            "toughness": 4,
+                            "colors": [
+                                "WHITE"
+                            ],
+                            "creatureTypes": [
+                                "Avatar"
+                            ],
+                            "keywords": [
+                                "FLYING"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f3f8f97-0c27-49d6-ae9a-a0fe2a7ce38b.jpg?1783934471"
+                        }
+                    },
+                    "descriptionOverride": "Whenever a creature or planeswalker you control dies, you may sacrifice this enchantment. If you do, create a 4/4 white Avatar creature token with flying."
+                },
+                "descriptionOverride": "Whenever a creature or planeswalker you control dies, you may sacrifice this enchantment. If you do, create a 4/4 white Avatar creature token with flying."
+            },
+            {
+                "id": "Ajani's Last Stand:2",
+                "trigger": {
+                    "type": "DiscardEvent",
+                    "cause": "DiscardedByOpponentEffect"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Avatar"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f3f8f97-0c27-49d6-ae9a-a0fe2a7ce38b.jpg?1783934471"
+                },
+                "interveningIf": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "land Plains"
+                },
+                "descriptionOverride": "When a spell or ability an opponent controls causes you to discard this card, if you control a Plains, create a 4/4 white Avatar creature token with flying."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/a/1aebbb57-31b3-4289-815e-4f529e29f3ea.jpg?1783934610",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "If multiple creatures and/or planeswalkers you control die at the same time, the first ability of Ajani's Last Stand triggers that many times. However, you can sacrifice it only once, so you'll get only one token."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If a spell or ability an opponent controls causes you to make a choice and you choose to discard Ajani's Last Stand, its last ability will trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Ajani's Welcome
 {
     "name": "Ajani's Welcome",
@@ -243,6 +478,243 @@
         "flavorText": "\"You cannot defend others if your own well-being is neglected.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/c/9/c9045fcb-b633-4c35-8058-6234311551ae.jpg"
     },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Ajani, Adversary of Tyrants
+{
+    "name": "Ajani, Adversary of Tyrants",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Legendary Planeswalker — Ajani",
+    "oracleText": "+1: Put a +1/+1 counter on each of up to two target creatures.\n−2: Return target creature card with mana value 2 or less from your graveyard to the battlefield.\n−7: You get an emblem with \"At the beginning of your end step, create three 1/1 white Cat creature tokens with lifelink.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ajani, Adversary of Tyrants:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 2,
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Ajani, Adversary of Tyrants:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature mv<=2 own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Ajani, Adversary of Tyrants:4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "CreateGlobalTriggeredAbility",
+                    "ability": {
+                        "id": "Ajani, Adversary of Tyrants:3",
+                        "trigger": {
+                            "type": "StepEvent",
+                            "step": "END"
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "CreateToken",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "WHITE"
+                            ],
+                            "creatureTypes": [
+                                "Cat"
+                            ],
+                            "keywords": [
+                                "LIFELINK"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/b/3/b31f1580-5bba-4cef-b0c8-f2837a597b7d.jpg?1783934470"
+                        },
+                        "descriptionOverride": "At the beginning of your end step, create three 1/1 white Cat creature tokens with lifelink."
+                    },
+                    "descriptionOverride": "At the beginning of your end step, create three 1/1 white Cat creature tokens with lifelink.",
+                    "emblem": true
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "rarity": "MYTHIC",
+        "artist": "Victor Adame Minguez",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/c/4c565076-5db2-47ea-8ee0-4a4fd7bb353d.jpg?1783934611",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "If a card in your graveyard has {X} in its mana cost, X is considered to be 0."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Ajani, Wise Counselor
+{
+    "name": "Ajani, Wise Counselor",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Legendary Planeswalker — Ajani",
+    "oracleText": "+2: You gain 1 life for each creature you control.\n−3: Creatures you control get +2/+2 until end of turn.\n−9: Put X +1/+1 counters on target creature, where X is your life total.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ajani, Wise Counselor:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature"
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Ajani, Wise Counselor:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Ajani, Wise Counselor:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -9
+                },
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": "YourLifeTotal",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "281",
+        "rarity": "MYTHIC",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b4a22ecc-3a5c-44a1-bb52-bbeffa2dbf17.jpg?1783934494",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "Ajani's second ability affects only creatures you control at the time it resolves. Creatures you begin to control later in the turn won't get +2/+2."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "The value of X is determined only as Ajani's third ability resolves. If your life total changes later, the creature won't gain or lose +1/+1 counters."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
     "colorIdentityOverride": [
         "WHITE"
     ]
@@ -1164,6 +1636,95 @@
     ]
 }
 
+// Departed Deckhand
+{
+    "name": "Departed Deckhand",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Spirit Pirate",
+    "oracleText": "When this creature becomes the target of a spell, sacrifice it.\nThis creature can't be blocked except by Spirits.\n{3}{U}: Another target creature you control can't be blocked this turn except by Spirits.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Departed Deckhand:1",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "spellsOnly": true
+                },
+                "effect": {
+                    "type": "SacrificeTarget",
+                    "target": "Self"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Departed Deckhand:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantCantBeBlockedExceptBy",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "blockerFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Spirit"
+                            }
+                        ]
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Another target creature you control can't be blocked this turn except by Spirits."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedExceptBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "HasSubtype",
+                            "subtype": "Spirit"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "rarity": "UNCOMMON",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/0/1081df25-1137-4c4d-909b-40e78723652c.jpg?1783934589"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Desecrated Tomb
 {
     "name": "Desecrated Tomb",
@@ -1590,6 +2151,52 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Dwindle
+{
+    "name": "Dwindle",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets -6/-0.\nWhen enchanted creature blocks, destroy it. (The attacking creature remains blocked.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dwindle:1",
+                "trigger": "BlockEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "EnchantedCreature",
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "descriptionOverride": "When enchanted creature blocks, destroy it."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": -6,
+                "toughnessBonus": 0
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "artist": "Ryan Pancoast",
+        "flavorText": "The collection didn't have room to expand, so the wizard improvised a solution.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/b/cb38f190-30f0-49ca-99c3-d3cdf21075e8.jpg?1783934589"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -2919,6 +3526,102 @@
     ]
 }
 
+// Lena, Selfless Champion
+{
+    "name": "Lena, Selfless Champion",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Legendary Creature — Human Knight",
+    "oracleText": "When Lena enters, create a 1/1 white Soldier creature token for each nontoken creature you control.\nSacrifice Lena: Creatures you control with power less than Lena's power gain indestructible until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lena, Selfless Champion:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Battlefield",
+                        "filter": "creature nontoken"
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Soldier"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/0/7/07929ced-5c81-4b05-82e1-522fec1cf5c0.jpg?1783934469"
+                },
+                "descriptionOverride": "When Lena enters, create a 1/1 white Soldier creature token for each nontoken creature you control."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Lena, Selfless Champion:2",
+                "cost": "CostSacrificeSelf",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "PowerLessThanEntity",
+                                        "reference": "Self"
+                                    }
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "INDESTRUCTIBLE",
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Sacrifice Lena: Creatures you control with power less than Lena's power gain indestructible until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "RARE",
+        "artist": "Lucas Graciano",
+        "flavorText": "\"Those who do evil and those who do nothing are equally worthy of contempt.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/f/2ffcbcda-2ba3-45e7-80c0-85ea3b7eea0c.jpg?1783934603",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "The number of nontoken creatures you control is counted only as Lena's first ability resolves. If Lena is still on the battlefield (and not somehow a token), it will count itself."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "To determine which creatures gain indestructible while resolving Lena's last ability, use Lena's power as it last existed on the battlefield."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Lena's last ability affects only creatures you control with the appropriate power at the time it resolves. Creatures you begin to control later in the turn won't gain indestructible, and a creature you control whose power increases later in the turn won't lose indestructible."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Leonin Vanguard
 {
     "name": "Leonin Vanguard",
@@ -3469,6 +4172,60 @@
     ]
 }
 
+// Mistcaller
+{
+    "name": "Mistcaller",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Merfolk Wizard",
+    "oracleText": "Sacrifice this creature: Until end of turn, if a nontoken creature would enter and it wasn't cast, exile it instead.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Mistcaller:1",
+                "cost": "CostSacrificeSelf",
+                "effect": {
+                    "type": "GrantReplacementEffect",
+                    "replacement": {
+                        "type": "RedirectZoneChange",
+                        "newDestination": "Exile",
+                        "appliesTo": {
+                            "type": "ZoneChangeEvent",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "IsNontoken"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "StateNot",
+                                        "predicate": "WasCast"
+                                    }
+                                ]
+                            },
+                            "to": "Battlefield"
+                        }
+                    }
+                },
+                "descriptionOverride": "Sacrifice this creature: Until end of turn, if a nontoken creature would enter and it wasn't cast, exile it instead."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "RARE",
+        "artist": "Ryan Yee",
+        "flavorText": "Hospitality is of little concern to those who do not wish to be disturbed.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a35c1bd0-3d1a-4e46-b74d-11db6867e0d7.jpg?1783934583"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Mystic Archaeologist
 {
     "name": "Mystic Archaeologist",
@@ -3509,6 +4266,59 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Novice Knight
+{
+    "name": "Novice Knight",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Defender (This creature can't attack.)\nAs long as this creature is enchanted or equipped, it can attack as though it didn't have defender.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CanAttackDespiteDefender",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "StateOr",
+                                "predicates": [
+                                    "IsEnchanted",
+                                    "IsEquipped"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "rarity": "UNCOMMON",
+        "artist": "Yongjae Choi",
+        "flavorText": "Even the greatest hero begins with nothing.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/00101358-0e89-4bd1-b1f2-e889645b616e.jpg?1783934599",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "Once Novice Knight has attacked, it will remain in combat even if it's no longer enchanted or equipped."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -3614,6 +4424,100 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Patient Rebuilding
+{
+    "name": "Patient Rebuilding",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your upkeep, target opponent mills three cards, then you draw a card for each land card put into their graveyard this way.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Patient Rebuilding:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "player": "TargetOpponent",
+                                "isMill": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "TargetOpponent"
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsLand"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "InZone",
+                                        "zone": "Graveyard"
+                                    }
+                                ]
+                            },
+                            "storeMatching": "matching2"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "VariableReference",
+                                "variableName": "matching2_count"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "rarity": "RARE",
+        "artist": "Magali Villeneuve",
+        "flavorText": "Nicol Bolas would not rest until he was restored to his former glory.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/2/2256e07f-a35a-4393-9744-045564d5770b.jpg?1783934584",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "Each time Patient Rebuilding's triggered ability resolves, it counts only the land cards put into that graveyard during that ability's resolution. For example, if your opponent puts two land cards into their graveyard during one upkeep and three land cards the next, you'll draw two and three cards, respectively, not two and five."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If your opponent moves cards from their library but they aren't put into their graveyard (perhaps because you control Rest in Peace), you won't draw any cards."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4042,6 +4946,74 @@
     },
     "colorIdentityOverride": [
         "BLACK",
+        "WHITE"
+    ]
+}
+
+// Remorseful Cleric
+{
+    "name": "Remorseful Cleric",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Spirit Cleric",
+    "oracleText": "Flying\nSacrifice this creature: Exile target player's graveyard.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Remorseful Cleric:1",
+                "cost": "CostSacrificeSelf",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "rarity": "RARE",
+        "artist": "Grzegorz Rutkowski",
+        "flavorText": "A lifetime of keeping up appearances is not enough to earn an eternity of rest.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/6/9620716d-9be8-4ebd-80d2-679373f4f897.jpg?1783934598"
+    },
+    "colorIdentityOverride": [
         "WHITE"
     ]
 }
@@ -4747,6 +5719,69 @@
     ]
 }
 
+// Shield Mare
+{
+    "name": "Shield Mare",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Creature — Horse",
+    "oracleText": "This creature can't be blocked by red creatures.\nWhen this creature enters or becomes the target of a spell or ability an opponent controls, you gain 3 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shield Mare:1",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "ZoneChangeEvent",
+                            "to": "Battlefield"
+                        },
+                        {
+                            "type": "BecomesTargetEvent",
+                            "byOpponent": true
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "HasColor",
+                            "color": "RED"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "rarity": "UNCOMMON",
+        "artist": "Lucas Graciano",
+        "flavorText": "When it passes, order defeats chaos.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d21e0516-4430-4292-850b-f5c524d7f8f8.jpg?1783934596"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Siegebreaker Giant
 {
     "name": "Siegebreaker Giant",
@@ -5180,6 +6215,54 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Star-Crowned Stag
+{
+    "name": "Star-Crowned Stag",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Elk",
+    "oracleText": "Whenever this creature attacks, tap target creature defending player controls.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Star-Crowned Stag:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "controllerPredicate": "ControlledByDefendingPlayer"
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "artist": "Jonathan Kuo",
+        "flavorText": "White as starlight on snow, it appears only on the eve of the winter solstice.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c57417c7-867b-4b64-bfe3-1744dfe9b44d.jpg?1783934597"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
