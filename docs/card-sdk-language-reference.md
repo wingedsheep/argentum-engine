@@ -17472,6 +17472,14 @@ both spellings, and the ability its bare-noun line grants says "Regenerate this 
   may cast it without paying its mana cost"): `selfAlternativeCost = SelfAlternativeCost(ManaCost.ZERO,
   condition = Conditions.CompareAmounts(DynamicAmounts.spellsCastThisGame(), EQ, Fixed(0)))`. Backed by
   the never-cleared per-player `SpellsCastThisGameComponent`.
+- `ExtraTurnsBegunThisGame(player = Player.You)` (facade `DynamicAmounts.extraTurnsBegunThisGame(player)`)
+  — how many extra turns `player` has **begun** this game. Counted as the inserted turn starts, so an
+  extra turn that was created but never began (prevented by a `PreventExtraTurns` permanent, or skipped
+  through a turn-start replacement) doesn't count, and ordinary turns never do. H.M.S. Bounty, Unlikely
+  Timeship ("If you control a Whale and haven't begun an extra turn this game, take an extra turn after
+  this one"): `Effects.If(Conditions.All(Conditions.YouControl(Permanent.withSubtype("Whale")),
+  Conditions.CompareAmounts(DynamicAmounts.extraTurnsBegunThisGame(), EQ, 0)), Effects.TakeExtraTurn())`.
+  Backed by `ExtraTurnsComponent` (`pending` set as the extra turn is created, spent as the taker's next turn begins or is skipped; `begun` never cleared).
 - `CraftedMaterialsTotalPower` — total printed power of the cards exiled to craft the source
   permanent (CR 702.167c). Reads the source's `CraftedFromExiledComponent`. Used for the
   `*`-power CDA on Mastercraft Raptor (Saheeli's Lattice back face). Evaluates to 0 when the

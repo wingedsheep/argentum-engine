@@ -1123,6 +1123,10 @@ object DynamicAmounts {
     fun spellsCastThisGame(player: Player = Player.You): DynamicAmount =
         DynamicAmount.SpellsCastThisGame(player)
 
+    /** How many extra turns [player] has begun this game ("if you haven't begun an extra turn this game"). */
+    fun extraTurnsBegunThisGame(player: Player = Player.You): DynamicAmount =
+        DynamicAmount.ExtraTurnsBegunThisGame(player)
+
     /** Spells [player] cast during their own last turn (Arboria). */
     fun spellsCastDuringTheirLastTurn(player: Player): DynamicAmount =
         DynamicAmount.TurnTracking(player, TurnTracker.SPELLS_CAST_DURING_THEIR_LAST_TURN)

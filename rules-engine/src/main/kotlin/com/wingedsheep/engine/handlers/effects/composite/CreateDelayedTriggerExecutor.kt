@@ -444,6 +444,7 @@ class CreateDelayedTriggerExecutor(
         is DynamicAmount.PlayerCounterCount,
         is DynamicAmount.CardsCycledThisGame,
         is DynamicAmount.SpellsCastThisGame,
+        is DynamicAmount.ExtraTurnsBegunThisGame,
         is DynamicAmount.Speed,
         is DynamicAmount.DungeonsCompleted,
         DynamicAmount.SpellsCastLastTurn,

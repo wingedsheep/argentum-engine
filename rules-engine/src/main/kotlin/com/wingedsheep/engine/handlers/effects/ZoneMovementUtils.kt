@@ -61,7 +61,6 @@ import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.identity.RevealedToComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
-import com.wingedsheep.engine.state.components.player.SkipNextTurnComponent
 import com.wingedsheep.engine.mechanics.MadnessGrants
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.sdk.core.CounterType
@@ -1268,14 +1267,7 @@ object ZoneMovementUtils {
             if (ReplacementEffectUtils.isExtraTurnPrevented(state)) return state to emptyList()
 
             val cid = controllerId ?: return state to emptyList()
-            val newState = state.getOpponents(cid).fold(state) { acc, opponentId ->
-                acc.updateEntity(opponentId) { container ->
-                    val existing = container.get<SkipNextTurnComponent>() ?: SkipNextTurnComponent(0)
-                    container.with(existing.copy(turns = existing.turns + 1,
-                        extraTurnBypasses = existing.extraTurnBypasses + 1))
-                }
-            }
-            return newState to emptyList()
+            return com.wingedsheep.engine.handlers.effects.player.TakeExtraTurnExecutor.insertExtraTurn(state, cid) to emptyList()
         }
         if (effect is com.wingedsheep.sdk.scripting.effects.AddCountersEffect && entityId != null) {
             // "Exile it with a void counter on it" (Dauthi Voidwalker) names the redirected card as
