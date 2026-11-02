@@ -36,6 +36,7 @@ Aberrant Researcher
 Abhorrent Oculus	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard)
 Abigale, Eloquent First-Year
 Abigale, Poet Laureate
+Abnormal Endurance	polarity: GrantTriggeredAbilityEffect
 Abomination
 Abomination of Gudul
 Abomination of Llanowar
@@ -179,6 +180,7 @@ Aether Spellbomb	polarity: MoveToZoneEffect
 Aether Spike
 Aether Sting
 Aether Syphon
+Aether Tunnel
 Aetherblade Agent
 Aetherflux Reservoir
 Aetherize	intent: Pipeline(BattlefieldMatching→hand)
@@ -266,16 +268,20 @@ Ajani Goldmane
 Ajani Resolute	intent: CreatePermanentEmblemEffect
 Ajani Unrelenting
 Ajani's Anguish
+Ajani's Influence
+Ajani's Last Stand
 Ajani's Mantra
 Ajani's Pridemate
 Ajani's Response
 Ajani's Welcome
+Ajani, Adversary of Tyrants	intent: CreateGlobalTriggeredAbilityEffect
 Ajani, Caller of the Pride
 Ajani, Inspiring Leader
 Ajani, Nacatl Pariah	intent: ExileAndReturnTransformedEffect
 Ajani, Outland Chaperone	intent: Pipeline(TopOfLibrary→battlefield|library)
 Ajani, Sleeper Agent	intent: CreateGlobalTriggeredAbilityEffect; intent: DistributeCountersAmongTargetsEffect; intent: ForEach>GrantKeywordEffect
 Ajani, Strength of the Pride	intent: Pipeline(BattlefieldMatching→exile)
+Ajani, Wise Counselor
 Ajani, the Greathearted
 Akal Pakal, First Among Equals
 Akawalli, the Seething Tower
@@ -1866,6 +1872,7 @@ Bond of Revival
 Bonded Herdbeast
 Bonders' Enclave
 Bonds of Faith	polarity: Aura>ConditionalStaticAbility
+Bone Dragon
 Bone Flute	intent: ForEach>ModifyStatsEffect
 Bone Miser
 Bone Picker
@@ -1976,6 +1983,7 @@ Bounty of Might
 Bovine Intervention
 Brackish Blunder	polarity: MoveToZoneEffect
 Brackish Trudge
+Brad Boimler, Eager Ensign	intent: GrantCounterPlacementModifierEffect
 Braided Net	intent: ReturnSelfFromExileTransformedEffect
 Braids's Frightful Return
 Braids, Arisen Nightmare
@@ -4012,6 +4020,7 @@ Dennick, Pious Apprentice
 Deny the Divine
 Denzilore Fatehold
 Depart the Realm	polarity: MoveToZoneEffect
+Departed Deckhand	combat: GrantCantBeBlockedExceptByEffect; intent: GrantCantBeBlockedExceptByEffect; polarity: GrantCantBeBlockedExceptByEffect; timing: GrantCantBeBlockedExceptByEffect
 Dependable Quinjet
 Depopulate
 Depose // Deploy
@@ -4312,6 +4321,7 @@ Dolmen Gate
 Domesticated Hydra	intent: BecomeMonstrousEffect
 Dominating Vampire	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
 Domineer
+Dominion Saboteur
 Domri's Ambush
 Domri's Nodorog	intent: Pipeline(FromMultipleZones→hand)
 Domri, Anarch of Bolas	polarity: FightEffect
@@ -4695,6 +4705,7 @@ Dwarven Strike Force	intent: GrantKeywordEffect
 Dwarven Trader
 Dwarven Warriors
 Dwarven Weaponsmith
+Dwindle
 Dwynen's Elite
 Dwynen, Gilt-Leaf Daen
 Dyadrine, Synthesis Amalgam
@@ -5635,6 +5646,7 @@ Feline Sovereign
 Fell
 Fell Gravship	intent: Pipeline(TopOfLibrary|graveyard→graveyard|hand)
 Fell Horseman
+Fell Specter	intent: Pipeline(hand→graveyard); polarity: Pipeline(hand→graveyard)
 Fell Stinger
 Fell the Mighty	polarity: Pipeline(BattlefieldMatching→graveyard)
 Fell the Pheasant
@@ -6151,6 +6163,7 @@ Frantic Inventory
 Frantic Scapegoat	intent: ForEach>SuspectEffect; intent: Pipeline(?→?); intent: RemoveSuspectedEffect; intent: SuspectEffect
 Frantic Search
 Frantic Strength
+Fraying Omnipotence
 Fraying Sanity	polarity: Aura>GatherCardsEffect; polarity: Aura>MoveCollectionEffect
 Frazzle
 Free Borg Revolutionaries
@@ -7061,6 +7074,7 @@ Grasp of Phantoms	polarity: MoveToZoneEffect
 Grasping Dunes
 Grasping Giant
 Grasping Longneck
+Grasping Scoundrel
 Grasping Shadows	intent: GrantKeywordEffect
 Grasping Thrull
 Grassland Crusader
@@ -8229,6 +8243,7 @@ Infernal Medusa
 Infernal Pet
 Infernal Phantom
 Infernal Plunge
+Infernal Reckoning
 Infernal Scarring
 Infernal Vessel
 Inferno
@@ -9446,6 +9461,7 @@ Legions to Ashes	intent: Pipeline(BattlefieldMatching|ChosenTargets→exile); in
 Legolas, Counter of Kills
 Legolas, Master Archer
 Lembas
+Lena, Selfless Champion
 Lens Flare
 Lens of Clarity
 Leonardo's Technique
@@ -9589,19 +9605,23 @@ Liliana of the Veil	intent: ForEach>Pipeline(hand→graveyard); polarity: ForceS
 Liliana the Faultless
 Liliana the Repentant
 Liliana's Caress
+Liliana's Contract	intent: WinGameEffect
 Liliana's Devotee
 Liliana's Elite
 Liliana's Mastery
 Liliana's Scorn
 Liliana's Scrounger	intent: AddCountersToCollectionEffect; intent: SelectTargetEffect
 Liliana's Specter	intent: ForEach>Pipeline(hand→graveyard)
+Liliana's Spoils	polarity: Pipeline(TopOfLibrary|hand→graveyard|hand|library)
 Liliana's Standard Bearer
 Liliana's Steward	intent: Pipeline(hand→graveyard); polarity: Pipeline(hand→graveyard)
 Liliana's Triumph
 Liliana, Death Mage
 Liliana, Death's Majesty
 Liliana, Dreadhorde General
+Liliana, Untouched by Death	intent: GrantStaticAbilityEffect
 Liliana, Waker of the Dead	intent: CreateGlobalTriggeredAbilityEffect; intent: ForEach>Pipeline(hand→?); intent: ForEach>StorePlayerEffect; intent: Pipeline(?→graveyard)
+Liliana, the Necromancer
 Lily Bowen, Raging Grandma
 Lilypad Village
 Lilysplash Mentor	polarity: MoveToZoneEffect
@@ -9876,6 +9896,7 @@ Luxknight Breacher
 Luxurious Libation
 Luxurious Locomotive
 Luxury Suite
+Lwaxana Troi, Charming Guest	intent: GrantStaticAbilityEffect
 Lynx
 Lyra Dawnbringer
 Lyra, Archangel of Dawn
@@ -10385,6 +10406,7 @@ Metalhead	polarity: MoveToZoneEffect
 Metallic Mimic
 Metallic Sliver
 Metallurgeon
+Metamorphic Alteration	polarity: Aura>(nothing on the host)
 Metamorphic Blast	polarity: BecomeCreatureEffect
 Metamorphose	polarity: MoveToZoneEffect
 Metamorphosis
@@ -10456,6 +10478,7 @@ Mikey & Leo, Chaos & Order
 Mila, Crafty Companion	intent: CreateGlobalTriggeredAbilityEffect; intent: ForEach>AddCountersEffect; intent: GrantKeywordEffect; intent: Pipeline(ChosenTargets→battlefield|exile); polarity: CreateDelayedTriggerEffect; polarity: GrantKeywordEffect; polarity: Pipeline(ChosenTargets→battlefield)
 Mild-Mannered Librarian
 Miles Morales	combat: GrantEvasionKeywordEffect; intent: ForEach>DoubleCountersEffect; timing: ChangeColorEffect
+Miles O'Brien, Transporter Ops	polarity: MoveToZoneEffect
 Militant Monk
 Military Discipline	intent: GrantKeywordEffect
 Military Intelligence
@@ -10615,6 +10638,7 @@ Mist-Syndicate Naga
 Mistbind Clique	intent: EmitChampionedEventEffect; polarity: Pipeline(BattlefieldMatching→?)
 Mistblade Shinobi	polarity: MoveToZoneEffect
 Mistbreath Elder
+Mistcaller	intent: GrantReplacementEffectEffect; timing: GrantReplacementEffectEffect
 Mistcutter Hydra
 Mister Fantastic, Reed Richards
 Mister Gutsy
@@ -11230,6 +11254,7 @@ Nightmare Lash
 Nightmare Shepherd
 Nightmare Sower
 Nightmare Void	intent: Pipeline(hand→graveyard); polarity: Pipeline(hand→graveyard)
+Nightmare's Thirst	timing: ModifyStatsEffect
 Nightpack Ambusher
 Nightscape Apprentice	intent: GrantKeywordEffect; polarity: MoveToZoneEffect
 Nightscape Familiar
@@ -11353,6 +11378,7 @@ Nova Pentacle	intent: RedirectDamageFromChosenSourceEffect; polarity: RedirectDa
 Novel Nunchaku
 Novice Dissector
 Novice Inspector
+Novice Knight
 Novice Occultist
 Now for Wrath, Now for Ruin!
 Nowhere to Run
@@ -11904,6 +11930,7 @@ Pathmaker Initiate
 Pathrazer of Ulamog
 Patient Instructor
 Patient Naturalist
+Patient Rebuilding	polarity: DrawCardsEffect; polarity: Pipeline(TopOfLibrary→graveyard)
 Patriar's Seal	intent: TapUntapEffect
 Patriarch's Bidding	intent: EachPlayerChoosesCreatureTypeEffect; intent: ForEach>Pipeline(graveyard→battlefield)
 Patrician Geist
@@ -13191,6 +13218,7 @@ Rem Karolus, Stalwart Slayer
 Remand
 Reminisce	intent: Pipeline(graveyard→library); polarity: Pipeline(graveyard→library)
 Remnant Elemental
+Remorseful Cleric	intent: Pipeline(graveyard→exile); polarity: Pipeline(graveyard→exile)
 Remote Isle
 Remove	polarity: MoveToZoneEffect
 Remove Enchantments
@@ -13464,6 +13492,7 @@ Riptide Survivor
 Riptide Turtle
 Risa
 Rise Again
+Rise from the Grave
 Rise from the Tides
 Rise from the Wreck
 Rise of Extus
@@ -14643,6 +14672,7 @@ Sheriff of Safe Passage
 Shessra, Death's Whisper	intent: MarkMustBlockThisTurnEffect; polarity: MarkMustBlockThisTurnEffect
 Shield Bearer
 Shield Broker	polarity: mixed(AddCountersEffect+GainControlEffect)
+Shield Mare
 Shield Wall
 Shield of Duty and Reason
 Shield of Kaldra
@@ -15095,6 +15125,7 @@ Slayers' Stronghold
 Slaying Fire
 Sledge-Class Seedship	intent: Pipeline(hand→battlefield)
 Sleek Schooner
+Sleep
 Sleep Magic
 Sleep Paralysis
 Sleep of the Dead
@@ -15707,6 +15738,7 @@ Standing Troops
 Stangg
 Star Charter
 Star Pupil	intent: MoveAllLastKnownCountersEffect; polarity: MoveAllLastKnownCountersEffect
+Star-Crowned Stag
 Starbreach Whale
 Starfall Invocation
 Starfield Mystic
@@ -16287,6 +16319,7 @@ Swiftwing Assailant
 Swimmer in Nightmares
 Swirl the Mists
 Swirling Torrent	polarity: MoveToZoneEffect
+Switcheroo	intent: ExchangeControlEffect; polarity: ExchangeControlEffect
 Swooping Lookout
 Swooping Protector
 Swooping Talon	combat: RemoveKeywordEffect; intent: ProvokeEffect; intent: RemoveKeywordEffect; polarity: ProvokeEffect; timing: RemoveKeywordEffect
@@ -16743,6 +16776,7 @@ Tezzeret's Strider
 Tezzeret, Artifice Master	intent: CreateGlobalTriggeredAbilityEffect
 Tezzeret, Betrayer of Flesh	intent: AddCardTypeEffect; intent: BecomeCreatureEffect; intent: CreateGlobalTriggeredAbilityEffect; polarity: AddCardTypeEffect; polarity: BecomeCreatureEffect
 Tezzeret, Cruel Captain	intent: CreateGlobalTriggeredAbilityEffect
+Tezzeret, Cruel Machinist	intent: BecomeCreatureEffect; intent: Pipeline(hand→battlefield); polarity: BecomeCreatureEffect
 Tezzeret, Master of the Bridge	intent: Pipeline(TopOfLibrary→battlefield|exile)
 Thalakos Seer
 Thalakos Sentry
@@ -17819,6 +17853,7 @@ Uncharted Voyage	intent: PutOnLibraryPositionOfChoiceEffect; polarity: PutOnLibr
 Unclaimed Territory
 Uncle Iroh
 Uncle Istvan
+Uncomfortable Chill
 Uncontrollable Anger
 Uncontrolled Infestation
 Uncover the Moon-Letters
@@ -19044,6 +19079,7 @@ Windfall
 Windgrace Acolyte
 Windgrace's Judgment
 Winding Constrictor
+Windreader Sphinx
 Windreaper Falcon
 Windrider Eel
 Windrider Patrol

@@ -1611,6 +1611,48 @@
     ]
 }
 
+// Grasping Scoundrel
+{
+    "name": "Grasping Scoundrel",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Human Pirate",
+    "oracleText": "This creature gets +1/+0 as long as it's attacking.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 0,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": "attacking"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "artist": "Steve Prescott",
+        "flavorText": "\"I can hear the plunder calling. It asks for me by name.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8f6da2e7-4cf0-49ae-b0ba-3b994ff21587.jpg?1783935310"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Impale
 {
     "name": "Impale",
