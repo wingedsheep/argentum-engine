@@ -2405,6 +2405,53 @@
     ]
 }
 
+// Gul Dukat, Colonial Prefect
+{
+    "name": "Gul Dukat, Colonial Prefect",
+    "manaCost": "{4}{B}{B}{B}",
+    "typeLine": "Legendary Creature — Cardassian Rogue",
+    "oracleText": "Menace\nAt the beginning of each end step, each opponent loses life equal to the life that player lost this turn. You gain life equal to the life lost this way. (Damage causes loss of life.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gul Dukat, Colonial Prefect:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrainLife",
+                    "amount": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "LIFE_LOST_AMOUNT"
+                    },
+                    "amountPerLoser": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "rarity": "MYTHIC",
+        "artist": "Joel Chaim Holtzman",
+        "flavorText": "\"I'm well aware that there is a . . . perception among you . . . that we are cruel.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/a/7adc6373-1196-448f-8aee-cee7a890c724.jpg?1793359426"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // He's Dead, Jim
 {
     "name": "He's Dead, Jim",

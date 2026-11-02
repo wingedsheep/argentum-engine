@@ -835,7 +835,7 @@ Families:
 - `DividedDamageEffect(totalDamage: Int, minTargets: Int, maxTargets: Int, dynamicTotal: DynamicAmount?, among: String?)` — Deal damage to multiple targets, dividing the total as you choose.
 - `DoubleCountersEffect(counterType: CounterType?, target: EffectTarget)` — Double the number of counters already on a target (one-shot).
 - `DoubleDamageToPlayerEffect(target: EffectTarget, duration: Duration)` — Install a duration-bounded replacement effect that doubles *all* damage — from any source, combat or noncombat — that would be dealt to a chosen player and to any permanent that player controls (CR…
-- `DrainLifeEffect(amount: DynamicAmount, from: EffectTarget, to: EffectTarget)` — Life drain composite: each player in from loses amount life, then to gains life equal to the total life actually lost this way ("Each opponent loses X life.
+- `DrainLifeEffect(amount: DynamicAmount, from: EffectTarget, to: EffectTarget, amountPerLoser: Boolean)` — Life drain composite: each player in from loses amount life, then to gains life equal to the total life actually lost this way ("Each opponent loses X life.
 - `DrawCardsEffect(count: DynamicAmount, target: EffectTarget)` — Draw cards effect.
 - `DrawUpToEffect(maxCards: Int, target: EffectTarget, storeNotDrawnAs: String?)` — Draw up to N cards effect.
 - `EachPermanentBecomesCopyOfTargetEffect(target: EffectTarget, filter: GroupFilter, duration: Duration, excludeTarget: Boolean, affected: EffectTarget?, sourceFromAnyZone: Boolean, exceptions: CopyExceptions, retainActivatingAbility: Boolean)` — Each permanent matching filter becomes a copy of the targeted permanent.

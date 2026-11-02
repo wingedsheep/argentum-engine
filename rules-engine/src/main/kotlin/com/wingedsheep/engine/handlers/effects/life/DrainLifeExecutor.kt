@@ -14,6 +14,7 @@ import kotlin.reflect.KClass
 /**
  * Executor for DrainLifeEffect.
  * "Each opponent loses X life. You gain life equal to the life lost this way."
+ * With [DrainLifeEffect.amountPerLoser], X is measured separately for each losing player.
  *
  * Each loss goes through [DamageUtils.loseLife] with life-loss modification applied, and the
  * gain is the sum of the amounts *actually* lost (read back from the emitted events), so a
@@ -36,14 +37,30 @@ class DrainLifeExecutor(
             return EffectResult.error(state, "No valid players for life drain")
         }
 
-        val amount = amountEvaluator.evaluate(state, effect.amount, context)
-        if (amount <= 0) return EffectResult.success(state)
+        // Every amount is measured before anyone loses life. A per-loser amount reads `You` as
+        // the losing player — the same rebinding ForEachPlayer gives its body.
+        val amounts: List<Int> = if (effect.amountPerLoser) {
+            fromPlayers.map { playerId ->
+                amountEvaluator.evaluate(
+                    state, effect.amount,
+                    context.copy(
+                        controllerId = playerId,
+                        effectControllerId = context.effectControllerId ?: context.controllerId
+                    )
+                )
+            }
+        } else {
+            val amount = amountEvaluator.evaluate(state, effect.amount, context)
+            fromPlayers.map { amount }
+        }
+        if (amounts.all { it <= 0 }) return EffectResult.success(state)
 
         var newState = state
         val events = mutableListOf<EngineGameEvent>()
         var totalLost = 0
 
-        for (playerId in fromPlayers) {
+        for ((playerId, amount) in fromPlayers.zip(amounts)) {
+            if (amount <= 0) continue
             val (updatedState, event) = DamageUtils.loseLife(
                 newState, playerId, amount,
                 reason = LifeChangeReason.LIFE_LOSS,
