@@ -48,8 +48,10 @@ class RemoveMaximumHandSizeExecutor : EffectExecutor<RemoveMaximumHandSizeEffect
         val existing = playerContainer.get<PlayerNoMaximumHandSizeComponent>()
         val component = when (effect.duration) {
             Duration.UntilYourNextTurn ->
+                // Keep the rest-of-game grant's own timestamp: it must not overtake a
+                // "maximum hand size is N" static that entered after it once this one lapses.
                 if (existing?.removeOn == PlayerEffectRemoval.Permanent) {
-                    existing.copy(timestamp = state.timestamp)
+                    existing
                 } else {
                     PlayerNoMaximumHandSizeComponent(
                         timestamp = state.timestamp,
