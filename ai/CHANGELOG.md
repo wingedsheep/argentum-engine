@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- #4289 Reads "becomes prepared" as card advantage, so it spends idle mana at the opponent's end step readying a prepare creature (Hexhaven Dueling Arena) instead of passing, and reads a granted "can't be blocked" as evasion like a granted flying (Eardrum Rattler, Kiora of Salt and Sand)
 - #4287 Chooses modes for budget modal spells (the Bloomburrow Seasons) by simulating every spend of the pawprint budget, instead of repeating the cheapest mode — Season of Loss takes a lethal drain instead of five sacrifice rounds
 - #4280 Builds decks only with cards whose activated abilities it can pay for — a card's activation mana must fit the deck's colours or colours at least three of its pool lands make — so The Wandering Minstrel ({G}{U}, five-colour pump) stays out of a G/U deck without fixing
 - #4254 Proliferates only the recipients that help it — its own counters and an opponent's -1/-1, stun or poison — instead of every permanent and player with a counter, opponents' +1/+1 and loyalty counters included
