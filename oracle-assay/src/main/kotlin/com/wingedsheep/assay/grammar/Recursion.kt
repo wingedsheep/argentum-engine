@@ -318,6 +318,7 @@ object Recursion {
     private fun costPutsSourceInto(cost: AbilityCost): Zone? = when (cost) {
         is AbilityCost.SacrificeSelf -> Zone.GRAVEYARD
         is AbilityCost.ExileSelf -> Zone.EXILE
+        is AbilityCost.PutSelfIntoLibrary -> Zone.LIBRARY
         is AbilityCost.Composite -> cost.costs.firstNotNullOfOrNull(::costPutsSourceInto)
         else -> null
     }

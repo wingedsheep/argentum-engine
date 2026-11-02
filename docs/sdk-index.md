@@ -99,6 +99,7 @@ Families:
 - `AbilityCost.LoyaltyX` — A variable negative loyalty cost (−X), chosen when the ability is activated.
 - `AbilityCost.OwnManaCost` — Pay this object's own mana cost — the cost of a scavenge ability granted by Young Deathclaws or Varolz, the Scar-Striped: "Each creature card in your graveyard has scavenge.
 - `AbilityCost.PayXLife` — Pay X life, where X is the value chosen for the ability's `{X}` mana cost.
+- `AbilityCost.PutSelfIntoLibrary(placement: ZonePlacement)` — Put self into its owner's library, on top or on the bottom — "Put this card from your graveyard on the bottom of your library: You gain 2 life." (Daniels, Temporal Agent), with `activateFromZone =…
 - `AbilityCost.RemoveAllCounters(counterType: CounterType, fromGrantingPermanent: Boolean)` — Remove every counterType counter from a permanent as part of the activation cost — "Remove all +1/+1 counters from Molten Hydra" on the ability's own source, or, with fromGrantingPermanent, "Remove…
 - `AbilityCost.ReturnSelfToHand` — Return self to its owner's hand — "Return this land to its owner's hand" as part of an activation cost (Maze's End).
 - `AbilityCost.SacrificeChosenCreatureType` — Sacrifice a creature of the type chosen when this permanent entered the battlefield.

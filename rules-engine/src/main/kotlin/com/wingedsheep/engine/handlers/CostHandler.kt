@@ -1,5 +1,8 @@
 package com.wingedsheep.engine.handlers
 
+import com.wingedsheep.engine.handlers.effects.LibraryPlacement
+import com.wingedsheep.engine.handlers.effects.ZoneEntryOptions
+import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.engine.state.LifePaymentPurpose
 
 import com.wingedsheep.engine.mechanics.cost.SharedCreatureTypeTapCost
@@ -177,6 +180,11 @@ class CostHandler(private val zones: ZoneTransitionService) {
             is AbilityCost.ReturnSelfToHand -> {
                 // Source must be on the battlefield to be bounced from it (Maze's End).
                 state.getZone(ZoneKey(controllerId, Zone.BATTLEFIELD)).contains(sourceId)
+            }
+            is AbilityCost.PutSelfIntoLibrary -> {
+                // The source pays with itself from whatever zone the ability is activated in
+                // (Daniels, Temporal Agent: from the graveyard); it only has to still exist there.
+                state.getEntity(sourceId) != null
             }
             is AbilityCost.ExileGrantingPermanent -> {
                 // Granter is resolved from the static-grant lookup at activation time.
@@ -475,6 +483,19 @@ class CostHandler(private val zones: ZoneTransitionService) {
 
                 val transitionResult = zones.moveToZone(
                     state, sourceId, Zone.HAND
+                )
+
+                CostPaymentResult.success(transitionResult.state, manaPool, transitionResult.events)
+            }
+            is AbilityCost.PutSelfIntoLibrary -> {
+                // Put the source into its owner's library at the printed position (Daniels,
+                // Temporal Agent: "on the bottom"). Paid before the ability is on the stack.
+                state.getEntity(sourceId)
+                    ?: return CostPaymentResult.failure("Source card not found")
+
+                val placement = if (cost.placement == ZonePlacement.Top) LibraryPlacement.Top else LibraryPlacement.Bottom
+                val transitionResult = zones.moveToZone(
+                    state, sourceId, Zone.LIBRARY, ZoneEntryOptions(libraryPlacement = placement)
                 )
 
                 CostPaymentResult.success(transitionResult.state, manaPool, transitionResult.events)

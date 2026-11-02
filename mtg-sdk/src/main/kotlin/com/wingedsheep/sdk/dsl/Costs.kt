@@ -20,6 +20,7 @@ import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.costs.PermanentCostAction
 import com.wingedsheep.sdk.scripting.costs.TapCostDirection
+import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.costs.VariableCostMeasure
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
@@ -239,6 +240,15 @@ object Costs {
      * [ReturnToHand], the choose-a-permanent-you-control bounce cost, which excludes the source.
      */
     val ReturnSelfToHand: AbilityCost = AbilityCost.ReturnSelfToHand
+
+    /**
+     * Put this card on the bottom of its owner's library (Daniels, Temporal Agent's "Put this card
+     * from your graveyard on the bottom of your library", with `activateFromZone = Zone.GRAVEYARD`).
+     */
+    val PutSelfOnBottomOfLibrary: AbilityCost = AbilityCost.PutSelfIntoLibrary(ZonePlacement.Bottom)
+
+    /** Put this card on top of its owner's library — the [PutSelfOnBottomOfLibrary] mirror. */
+    val PutSelfOnTopOfLibrary: AbilityCost = AbilityCost.PutSelfIntoLibrary(ZonePlacement.Top)
 
     /**
      * Exile the permanent that granted this activated ability (e.g., the equipment
