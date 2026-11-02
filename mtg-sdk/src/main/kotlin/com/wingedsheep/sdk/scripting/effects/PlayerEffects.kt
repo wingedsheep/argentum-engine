@@ -41,16 +41,28 @@ data class SkipCombatPhasesEffect(
  * what they controlled when this resolved (Icebreaker Kraken ruling, 2021-02-05): a creature they
  * gain control of in between doesn't untap either. The controller gate lives in [target]; the
  * filter names only the kind of permanent.
+ *
+ * With [lockedAtResolution] the set is fixed instead: only the [permanents] that player controls as
+ * this resolves are held, and only if that player still controls them at the step — Sleep's "Tap all
+ * creatures target player controls. Those creatures don't untap during that player's next untap
+ * step." (2018-07-13 ruling: every creature they controlled as it resolved, not just the ones it
+ * tapped). A creature that changes control untaps normally in its new controller's untap step.
  */
 @SerialName("SkipUntap")
 @Serializable
 data class SkipUntapEffect(
     val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent),
-    val permanents: GameObjectFilter = GameObjectFilter.Creature or GameObjectFilter.Land
+    val permanents: GameObjectFilter = GameObjectFilter.Creature or GameObjectFilter.Land,
+    val lockedAtResolution: Boolean = false
 ) : Effect {
     override val description: String =
-        "${describeSkippedPermanents(permanents).replaceFirstChar { it.uppercase() }} ${target.description} " +
-            "controls don't untap during their next untap step"
+        if (lockedAtResolution) {
+            "${describeSkippedPermanents(permanents).replaceFirstChar { it.uppercase() }} ${target.description} " +
+                "controls now don't untap during that player's next untap step"
+        } else {
+            "${describeSkippedPermanents(permanents).replaceFirstChar { it.uppercase() }} ${target.description} " +
+                "controls don't untap during their next untap step"
+        }
 }
 
 /**

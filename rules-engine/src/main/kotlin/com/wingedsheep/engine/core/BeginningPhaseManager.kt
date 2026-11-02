@@ -170,9 +170,10 @@ class BeginningPhaseManager(
             val skipUntap = skipUntapByPlayer[controller]
             // Current characteristics, not the card's: a face-down permanent is a creature whatever
             // it is (CR 708.2), and type-changing effects count too.
-            skipUntap == null || controller == null || skipUntap.permanents.none { filter ->
-                predicateEvaluator.matches(newState, projected, entityId, filter, PredicateContext(controllerId = controller))
-            }
+            skipUntap == null || controller == null || (skipUntap.objects.none { it.entityId == entityId && newState.isCurrentObject(it) } &&
+                skipUntap.permanents.none { filter ->
+                    predicateEvaluator.matches(newState, projected, entityId, filter, PredicateContext(controllerId = controller))
+                })
         }
 
         // Remove the SkipUntapComponents after processing (they've been consumed)

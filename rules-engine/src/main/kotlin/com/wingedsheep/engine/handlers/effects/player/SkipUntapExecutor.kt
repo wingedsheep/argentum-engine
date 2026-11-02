@@ -2,6 +2,8 @@ package com.wingedsheep.engine.handlers.effects.player
 
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.state.GameState
@@ -24,8 +26,14 @@ import kotlin.reflect.KClass
  * in `context.targets` to find them in. The resolver still routes the default
  * `PlayerRef(TargetPlayer)` back to the first chosen target, so the targeted cards (Exhaustion,
  * Mana Vapors, Blinding Beam) are unchanged.
+ *
+ * A [SkipUntapEffect.lockedAtResolution] effect (Sleep) adds no filter: it snapshots the matching
+ * permanents the player controls now (projected) into the component's object set instead, as
+ * [com.wingedsheep.engine.state.ObjectRef]s so a flickered permanent is a new object it doesn't hold.
  */
-class SkipUntapExecutor : EffectExecutor<SkipUntapEffect> {
+class SkipUntapExecutor(
+    private val predicateEvaluator: PredicateEvaluator
+) : EffectExecutor<SkipUntapEffect> {
 
     override val effectType: KClass<SkipUntapEffect> = SkipUntapEffect::class
 
@@ -38,8 +46,20 @@ class SkipUntapExecutor : EffectExecutor<SkipUntapEffect> {
             ?: return EffectResult.error(state, "No valid player target for SkipUntapEffect")
 
         val newState = state.updateEntity(targetPlayerId) { container ->
-            val pending = container.get<SkipUntapComponent>()?.permanents.orEmpty()
-            container.with(SkipUntapComponent(pending + effect.permanents))
+            val pending = container.get<SkipUntapComponent>() ?: SkipUntapComponent()
+            container.with(
+                if (!effect.lockedAtResolution) pending.copy(permanents = pending.permanents + effect.permanents)
+                else {
+                    val projected = state.projectedState
+                    val locked = projected.getBattlefieldControlledBy(targetPlayerId).filter { id ->
+                        predicateEvaluator.matches(
+                            state, projected, id, effect.permanents,
+                            PredicateContext(controllerId = targetPlayerId)
+                        )
+                    }.mapNotNull(state::objectRef)
+                    pending.copy(objects = pending.objects + locked)
+                }
+            )
         }
 
         return EffectResult.success(newState)
