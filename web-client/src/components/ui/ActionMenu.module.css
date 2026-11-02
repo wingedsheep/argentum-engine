@@ -35,6 +35,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  /* Never taller than the room above the container's bottom anchor: the action list scrolls inside
+     instead of the panel running off the top of the screen. */
+  max-height: calc(100dvh - 140px - var(--space-4));
+  min-height: 0;
 }
 
 @media (max-width: 639px) {
@@ -42,6 +46,53 @@
     padding: var(--space-3);
     min-width: 180px;
     max-width: 280px;
+    max-height: calc(100dvh - 100px - var(--space-3));
+  }
+}
+
+/* The list and its Cancel button. The list takes whatever height the card image leaves. */
+.actionsColumn {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+/* Long menus on wide screens: the card sits beside the list rather than above it, so the list gets
+   the panel's full height and a wider column — fewer wrapped lines per ability, more rows in view. */
+@media (min-width: 640px) {
+  .panelMany {
+    flex-direction: row;
+    align-items: stretch;
+    gap: var(--space-4);
+    max-width: min(660px, calc(100vw - 2 * var(--space-4)));
+  }
+
+  .panelMany .cardImageColumn,
+  .panelMany > .cardImageContainer {
+    align-self: flex-start;
+    flex-shrink: 0;
+    margin-bottom: 0;
+  }
+
+  .panelMany .actionsColumn {
+    width: 380px;
+    flex: 1 1 380px;
+  }
+}
+
+/* Long menus on phones: the whole screen width for the list, and a smaller card above it — the
+   "View card" row is where a touch player reads the card anyway. */
+@media (max-width: 639px) {
+  .panelMany {
+    width: calc(100vw - 2 * var(--space-4));
+    max-width: 420px;
+  }
+
+  .panelMany .cardImageContainer {
+    width: 96px;
+    height: 134px;
   }
 }
 
@@ -56,6 +107,23 @@
   overflow: hidden;
   background-color: var(--bg-surface-3);
   position: relative;
+  flex-shrink: 0;
+}
+
+/* Short windows: a smaller card above the list leaves the list room for a few rows. */
+@media (min-width: 640px) and (max-height: 700px) {
+  .panel:not(.panelMany) .cardImageContainer {
+    width: 140px;
+    height: 195px;
+  }
+}
+
+/* Very short windows (a phone held sideways): the card shrinks to a thumbnail everywhere. */
+@media (max-height: 520px) {
+  .cardImageContainer {
+    width: 100px;
+    height: 140px;
+  }
 }
 
 @media (max-width: 639px) {
@@ -72,6 +140,7 @@
   flex-direction: column;
   align-items: center;
   margin-bottom: var(--space-3);
+  flex-shrink: 0;
 }
 
 .cardImageColumn .cardImageContainer {
@@ -175,6 +244,31 @@
   flex-direction: column;
   gap: var(--space-2);
   width: 100%;
+  /* Scrolls once the panel hits its max height. */
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+/* Rows stay their natural height inside the scroller instead of being squeezed to fit. */
+.actionsContainer > * {
+  flex-shrink: 0;
+}
+
+/* Fade the edge that hides more rows (set by ScrollableActions). */
+.actionsContainer[data-more-below] {
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 36px), transparent);
+}
+
+.actionsContainer[data-more-above] {
+  mask-image: linear-gradient(to top, #000 calc(100% - 36px), transparent);
+}
+
+.actionsContainer[data-more-above][data-more-below] {
+  mask-image: linear-gradient(to bottom, transparent, #000 36px, #000 calc(100% - 36px), transparent);
 }
 
 /* =========================================================================
