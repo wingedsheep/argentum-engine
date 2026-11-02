@@ -28,7 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
-- #PRNUM Aims "each creature target player controls" effects at the right player — Ashling's Command's 2 damage at the opponent's team, Trystan's and Grub's Command pumps and Sygg's Command's lifelink at its own — and ranks player targets by side, so a two-sided "target player" slot no longer falls to list order
+- #4290 Aims "each creature target player controls" effects at the right player — Ashling's Command's 2 damage at the opponent's team, Trystan's and Grub's Command pumps and Sygg's Command's lifelink at its own — and ranks player targets by side, so a two-sided "target player" slot no longer falls to list order
 - #4280 Builds decks only with cards whose activated abilities it can pay for — a card's activation mana must fit the deck's colours or colours at least three of its pool lands make — so The Wandering Minstrel ({G}{U}, five-colour pump) stays out of a G/U deck without fixing
 - #4254 Proliferates only the recipients that help it — its own counters and an opponent's -1/-1, stun or poison — instead of every permanent and player with a counter, opponents' +1/+1 and loyalty counters included
 - #4253 Reads "creatures your opponents control can't block this turn" and "creatures you control can't be blocked this turn" group effects as team evasion (Rumbling Ruin, Barrage of Boulders, Aragorn), so it values and times them like other evasion grants instead of as a vanilla body
