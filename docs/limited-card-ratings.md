@@ -186,9 +186,15 @@ each seeded pool with synergy against the same pool's build without, played live
 The Draftsim deckbuild builds several candidate decks per pool and offers the best by
 `playableScore`. Which colours a pool is built in is decided there:
 
-- **Candidates.** Each top-ranked pair, with its bomb splash and without one; the single
-  "good stuff" shell; and, in sealed, the three best three-colour shells whatever the pool's fixing,
-  plus each three-colour bomb's own colours.
+- **Candidates.** Each top-ranked pair, with its bomb splash and without one. A set's named
+  archetypes rank beside the pairs, built in the archetype's two most-tagged colours: some sets'
+  archetypes are colourless themes (FRA's "Jace Empowerment" tags cards of all five), and taking
+  every colour they touch built three- and four-colour piles with no fixing bar.
+- **Three colours** — the "good stuff" shell, the three best-ranked three-colour shells and each
+  three-colour bomb's own colours — are offered only when the pool holds three lands' worth of
+  fixing for them and their castable power beats every pair's by the splash margin. A third colour
+  off basics alone otherwise won on a slim modelled edge: against human players (2026-11, 291 games)
+  the AI won 37% with two colours, 33% with three and 24% with four.
 - **Four and five colours** are rare by design. The best-ranked four- or five-colour hypothesis and
   each four- or five-colour bomb's colours are built only when the pool fixes them (four lands'
   worth of fixing for four colours, six for five), and offered only when their castable power beats
@@ -212,6 +218,10 @@ The Draftsim deckbuild builds several candidate decks per pool and offers the be
   a three-drop, not a two-drop.
 - **Splashes** need two lands' worth of fixing for the colour in the pool, and the splashed build must gain a tenth of
   a point of castable power over the same pair unsplashed. Smaller modelled gains lost in play.
+  A pair too thin to fill 23 spells splashes for depth instead of padding with lands — single-pip
+  cards of mana value four or more, or removal, at most four of them: a splashed two- or three-drop
+  sits in hand on the turn it was drafted for. The splash's sources come off the colour with the
+  most sources for its pip demand, never simply the biggest basic count.
 - **Colour-count payoffs** — Vivid, domain, converge (`ManaFixing.rewardsColors`) — gain 0.35
   rating points per colour the deck's spells span past two.
 
