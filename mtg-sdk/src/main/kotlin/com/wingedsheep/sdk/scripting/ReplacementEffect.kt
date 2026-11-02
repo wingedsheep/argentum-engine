@@ -853,6 +853,15 @@ data class EntersUntapped(
  *   non-null the tap applies only while the condition holds, which is how a source whose effect
  *   depends on a choice it made as it entered spells the clause (Ashling's Prerogative:
  *   `SourceChosenModeIs("odd")` on the even-mana-value half and vice versa). `null` = always.
+ * @property attackDefender `null` = the permanent just enters tapped. Non-null = "instead it enters
+ *   **tapped and attacking**" (Kira Nerys, Firebrand: "If a creature you control would enter while you
+ *   control an attacking creature, instead it enters tapped and attacking"). Only
+ *   [com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender.CONTROLLER_CHOOSES] is meaningful —
+ *   CR 508.4 as printed for a bare "tapped and attacking": the entering creature's controller chooses
+ *   which defending player, planeswalker or battle it attacks (asked only when there is more than one).
+ *   A noncreature permanent (CR 506.3a) or a creature whose controller isn't an attacking player
+ *   (CR 506.3b, e.g. outside combat) still enters tapped but never attacking. The tap is not undone by
+ *   an "enters untapped" replacement, like every other tapped-and-attacking entry.
  */
 @SerialName("PermanentsEnterTapped")
 @Serializable
@@ -861,10 +870,20 @@ data class PermanentsEnterTapped(
         filter = GameObjectFilter.Any,
         to = Zone.BATTLEFIELD
     ),
-    val condition: Condition? = null
+    val condition: Condition? = null,
+    val attackDefender: com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender? = null,
 ) : ReplacementEffect {
+    init {
+        require(attackDefender == null ||
+            attackDefender == com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender.CONTROLLER_CHOOSES) {
+            "PermanentsEnterTapped.attackDefender supports only CONTROLLER_CHOOSES: a replacement has no " +
+                "source attack to join and no returned attacker"
+        }
+    }
+
     override val description: String = buildString {
-        append("If ${appliesTo.description}, it enters tapped")
+        append("If ${appliesTo.description}, ")
+        append(if (attackDefender != null) "instead it enters tapped and attacking" else "it enters tapped")
         condition?.let { append(" (${it.description})") }
     }
 

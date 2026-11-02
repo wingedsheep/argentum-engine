@@ -33,3 +33,15 @@ data class EnteringAttackDefenderContinuation(
     val effect: Effect,
     val context: EffectContext,
 ) : AnswerContinuation
+
+/**
+ * Resume after the controller chose what a creature that entered **tapped and attacking** through a
+ * global replacement (`PermanentsEnterTapped.attackDefender` — Kira Nerys, Firebrand) is attacking
+ * (CR 508.4). Raised by [com.wingedsheep.engine.handlers.effects.EnteringAttackChoice] from the
+ * replacement-rider drain, right after the creature arrived and before trigger detection or priority.
+ */
+@Serializable
+data class EnteringAttackChoiceContinuation(
+    val entrantId: EntityId,
+    val controllerId: EntityId,
+) : AnswerContinuation

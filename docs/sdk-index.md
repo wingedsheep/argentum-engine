@@ -1616,7 +1616,7 @@ Families:
 - `OnEnterRun(effect: Effect, appliesTo: EventPattern)` — Generic "as ~ enters the battlefield, run effect" replacement.
 - `OptionalEffectDiscardDestination(destination: CardDestination.ToZone, appliesTo: EventPattern.DiscardEvent)` — Optional destination replacement for a discard caused by a resolving effect, never a cost.
 - `OptionalSkipTurnWith(effect: Effect, appliesTo: EventPattern.TurnBeginEvent, restrictions: List<Condition>)` — Replace a turn with nothing, then perform effect first in the next turn that actually occurs.
-- `PermanentsEnterTapped(appliesTo: EventPattern, condition: Condition?)` — "Permanents matching appliesTo enter the battlefield tapped" — the global/group counterpart of the self-only EntersTapped.
+- `PermanentsEnterTapped(appliesTo: EventPattern, condition: Condition?, attackDefender: EnteringAttackDefender?)` — "Permanents matching appliesTo enter the battlefield tapped" — the global/group counterpart of the self-only EntersTapped.
 - `PreventDamage(amount: Int?, restrictions: List<Condition>, appliesTo: EventPattern, onPrevented: Effect?, half: Boolean, roundUp: Boolean)` — Prevent damage.
 - `PreventDamageByRemovingCounter(counterType: CounterType, removalAmount: CounterRemovalAmount, requiresCounter: Boolean, appliesTo: EventPattern, onRemoved: Effect?)` — Prevent damage that would be dealt to this permanent and remove one counter of counterType from it — the printed twin of the shield counter's prevention half (CR 122.1c).
 - `PreventDamagePerCounter(counterType: CounterType, appliesTo: EventPattern.DamageEvent)` — Remove a counter from the damaged permanent for each point of matching damage and prevent that point.

@@ -45,6 +45,7 @@ class ModalAndCloneContinuationResumer(
         resumer(KeywordActionOrderContinuation::class, ::resumeKeywordActionOrder),
         resumer(EffectCopyAuraEntryContinuation::class, ::resumeEffectCopyAuraEntry),
         resumer(EnteringAttackDefenderContinuation::class, ::resumeEnteringAttackDefender),
+        resumer(com.wingedsheep.engine.core.EnteringAttackChoiceContinuation::class, ::resumeEnteringAttackChoice),
         resumer(CloneAuraEntryContinuation::class, ::resumeCloneAuraEntry),
         resumer(CloneEntersContinuation::class, ::resumeCloneEnters),
         resumer(MutateMergeContinuation::class, ::resumeMutateMerge),
@@ -93,6 +94,24 @@ class ModalAndCloneContinuationResumer(
         val result = services.effectExecutorRegistry.execute(state, continuation.effect, context)
         if (result.outcome !is Outcome.Done) return result.toExecutionResult()
         return checkForMore(result.stateWithOutputsHandedOn(), result.events)
+    }
+
+    /**
+     * Record what a creature that entered tapped and attacking through a global replacement is
+     * attacking (CR 508.4) — [com.wingedsheep.engine.handlers.effects.EnteringAttackChoice].
+     */
+    private fun resumeEnteringAttackChoice(
+        state: GameState, continuation: com.wingedsheep.engine.core.EnteringAttackChoiceContinuation,
+        response: DecisionResponse, checkForMore: CheckForMore,
+    ): ExecutionResult {
+        if (response !is TargetsResponse) return ExecutionResult.error(state, "Expected a defender choice")
+        val defender = response.selectedTargets[0]?.singleOrNull()
+            ?: return ExecutionResult.error(state, "Choose exactly one player, planeswalker or battle to attack")
+        return checkForMore(
+            com.wingedsheep.engine.handlers.effects.EnteringAttackChoice.answer(
+                state, continuation.entrantId, continuation.controllerId, defender),
+            emptyList(),
+        )
     }
 
     private fun resumeCloneAuraEntry(
