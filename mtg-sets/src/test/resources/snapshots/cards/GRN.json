@@ -7116,6 +7116,104 @@
     ]
 }
 
+// Hypothesizzle
+{
+    "name": "Hypothesizzle",
+    "manaCost": "{3}{U}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Draw two cards. Then you may discard a nonland card. When you do, Hypothesizzle deals 4 damage to target creature.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "filter": "nonland"
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "discarded",
+                                "prompt": "Choose 1 card to discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    },
+                    "reflexiveEffect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 4
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "You may discard a nonland card. When you do, Hypothesizzle deals 4 damage to target creature."
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "178",
+        "artist": "Chris Seaman",
+        "flavorText": "\"It's like blowing up an arcane library in a thermobaric explosion. But in a good way.\"\n—Bori Andon, Izzet blastseeker",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d5690329-feb8-49c0-8f59-ee13782e8d3b.jpg?1783934131",
+        "rulings": [
+            {
+                "date": "2024-04-12",
+                "text": "You don't choose a target creature at the time you cast Hypothesizzle. Rather, a second \"reflexive\" ability triggers when you discard a nonland card. You choose a target for that ability as it goes on the stack. Each player may respond to this triggered ability as normal. Notably, the triggered ability isn't a crime, but the reflexive triggered ability potentially is."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Impervious Greatwurm
 {
     "name": "Impervious Greatwurm",
@@ -7375,6 +7473,203 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Invert // Invent
+{
+    "name": "Invert // Invent",
+    "manaCost": "",
+    "typeLine": "Instant",
+    "oracleText": "Switch the power and toughness of each of up to two target creatures until end of turn.\n//\nSearch your library for an instant card and/or a sorcery card, reveal them, put them into your hand, then shuffle.",
+    "metadata": {
+        "collectorNumber": "228",
+        "rarity": "UNCOMMON",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/5/054a4e4f-8baa-41cf-b24c-d068e8b9a070.jpg?1783934111",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "While resolving Invent, you could put no cards, an instant card, a sorcery card, or an instant card and a sorcery card into your hand."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If you chose two targets, Invert switches the power and toughness of one creature and it switches the power and toughness of another creature. It doesn't switch one creature's power with another creature's power."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "Effects that switch a creature's power and toughness apply after all other effects, regardless of when those effects began to apply. For instance, if you target a 1/2 creature then give it +2/+0 later in the turn, it's a 2/3 creature, not a 4/1 creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Invert",
+            "manaCost": "{U/R}",
+            "typeLine": "Instant",
+            "oracleText": "Switch the power and toughness of each of up to two target creatures until end of turn.",
+            "script": {
+                "spellEffect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "SwitchPowerToughness",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 2,
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Invent",
+            "manaCost": "{4}{U}{R}",
+            "typeLine": "Instant",
+            "oracleText": "Search your library for an instant card and/or a sorcery card, reveal them, put them into your hand, then shuffle.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "instant"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for an instant card to put into your hand",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "EmitLibrarySearchedEvent",
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Library",
+                                        "filter": "sorcery"
+                                    },
+                                    "storeAs": "searchable",
+                                    "search": true
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "searchable",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "found",
+                                    "prompt": "Search your library for a sorcery card to put into your hand",
+                                    "selectedLabel": "Put into your hand"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "found",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Hand"
+                                    },
+                                    "revealed": true
+                                },
+                                "ShuffleLibrary",
+                                "EmitLibrarySearchedEvent"
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
+// Ionize
+{
+    "name": "Ionize",
+    "manaCost": "{1}{U}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell. Ionize deals 2 damage to that spell's controller.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "TargetController"
+                },
+                "Counter"
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "179",
+        "rarity": "RARE",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f161f7d2-eaa1-4931-93f9-befa8b5df821.jpg?1783934131"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
     ]
 }
 
@@ -8134,6 +8429,105 @@
     "colorIdentityOverride": [
         "BLUE",
         "BLACK"
+    ]
+}
+
+// League Guildmage
+{
+    "name": "League Guildmage",
+    "manaCost": "{U}{R}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "{3}{U}, {T}: Draw a card.\n{X}{R}, {T}: Copy target instant or sorcery spell you control with mana value X. You may choose new targets for the copy.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "League Guildmage:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{U}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            },
+            {
+                "id": "League Guildmage:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{X}{R}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "CopyTargetSpell",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    },
+                                    {
+                                        "type": "CompareNumericProperty",
+                                        "property": "MANA_VALUE",
+                                        "operator": "EQ",
+                                        "amount": "XValue"
+                                    }
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            },
+                            "zone": "Stack"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "185",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/7439118d-4869-486e-8930-6e00db2634b2.jpg?1783934129"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
     ]
 }
 
@@ -8905,6 +9299,92 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Maximize Velocity
+{
+    "name": "Maximize Velocity",
+    "manaCost": "{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature gets +1/+1 and gains haste until end of turn.\nJump-start (You may cast this card from your graveyard by discarding a card in addition to paying its other costs. Then exile this card.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "MayCastSelfFromZones",
+                "zones": [
+                    "Graveyard"
+                ],
+                "additionalCost": {
+                    "type": "AdditionalAtom",
+                    "atom": "AtomDiscard"
+                },
+                "exileCastThisWay": "ON_ANY_STACK_EXIT"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/ebb7a2aa-f002-4f05-b9ec-8adee4c65e46.jpg?1783934159",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "You must still follow any timing restrictions and permissions when casting a spell with jump-start, including those based on the card's type. For instance, you can cast a sorcery using jump-start only when you could normally cast a sorcery."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "A spell cast using jump-start will always be exiled afterward, whether it resolves, it's countered, or it leaves the stack in some other way."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If an effect allows you to pay an alternative cost rather than a spell's mana cost, you may pay that alternative cost when you jump-start a spell. You'll still discard a card as an additional cost to cast it."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If a card with jump-start is put into your graveyard during your turn, you'll be able to cast it right away if it's legal to do so, before an opponent can take any actions."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -10411,6 +10891,43 @@
     ]
 }
 
+// Piston-Fist Cyclops
+{
+    "name": "Piston-Fist Cyclops",
+    "manaCost": "{1}{U/R}{U/R}",
+    "typeLine": "Creature — Cyclops",
+    "oracleText": "Defender\nAs long as you've cast an instant or sorcery spell this turn, this creature can attack as though it didn't have defender.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CanAttackDespiteDefender",
+                "condition": {
+                    "type": "PlayerCastSpellsThisTurn",
+                    "filter": "instant|sorcery",
+                    "atLeast": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "217",
+        "artist": "Wayne Reynolds",
+        "flavorText": "Its hyperpneumatics can punch through a wall and the spy on the other side.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2ec7523a-a9c4-4b76-8f9e-b591a88e2e37.jpg?1783934116"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Pitiless Gorgon
 {
     "name": "Pitiless Gorgon",
@@ -11099,6 +11616,399 @@
     ]
 }
 
+// Ral's Staticaster
+{
+    "name": "Ral's Staticaster",
+    "manaCost": "{2}{U}{R}",
+    "typeLine": "Creature — Lizard Wizard",
+    "oracleText": "Trample (This creature can deal excess combat damage to the player or planeswalker it's attacking.)\nWhenever this creature attacks, if you control a Ral planeswalker, this creature gets +1/+0 for each card in your hand until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ral's Staticaster:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Hand"
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                },
+                "interveningIf": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "planeswalker Ral"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "268",
+        "rarity": "UNCOMMON",
+        "artist": "Even Amundsen",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/d/adfa16dc-03b3-4533-884c-a23b992b8d86.jpg?1783934095",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "The number of cards in your hand is checked only as the triggered ability of Ral’s Staticaster resolves. If that number changes later in the turn, its power is unaffected."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Whether you control a Ral planeswalker is checked as the ability triggers and as it resolves. After it has resolved while you controlled a Ral planeswalker, Ral’s Staticaster keeps the bonus for the rest of the turn even if you lose your planeswalker."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
+// Ral, Caller of Storms
+{
+    "name": "Ral, Caller of Storms",
+    "manaCost": "{4}{U}{R}",
+    "typeLine": "Legendary Planeswalker — Ral",
+    "oracleText": "+1: Draw a card.\n−2: Ral deals 3 damage divided as you choose among one, two, or three targets.\n−7: Draw seven cards. Ral deals 7 damage to each creature your opponents control.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ral, Caller of Storms:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Ral, Caller of Storms:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "DividedDamage",
+                    "totalDamage": 3
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "count": 3,
+                        "minCount": 1
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Ral, Caller of Storms:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 7
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:opponent"
+                                }
+                            },
+                            "body": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 7
+                                },
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "265",
+        "rarity": "MYTHIC",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c44f0c60-5732-4c25-9ba9-4829f1891762.jpg?1783934096",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "If some of the targets become illegal for Ral's second ability, the original division of damage still applies, and the damage that would have been dealt to illegal targets isn't dealt at all."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
+// Ral, Izzet Viceroy
+{
+    "name": "Ral, Izzet Viceroy",
+    "manaCost": "{3}{U}{R}",
+    "typeLine": "Legendary Planeswalker — Ral",
+    "oracleText": "+1: Look at the top two cards of your library. Put one of them into your hand and the other into your graveyard.\n−3: Ral deals damage to target creature equal to the total number of instant and sorcery cards you own in exile and in your graveyard.\n−8: You get an emblem with \"Whenever you cast an instant or sorcery spell, this emblem deals 4 damage to any target and you draw two cards.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ral, Izzet Viceroy:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "selectedLabel": "Put in hand",
+                            "remainderLabel": "Put in graveyard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Ral, Izzet Viceroy:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Add",
+                        "left": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Exile",
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ],
+                                "statePredicates": [
+                                    "IsFaceUp"
+                                ]
+                            }
+                        },
+                        "right": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Graveyard",
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ],
+                                "statePredicates": [
+                                    "IsFaceUp"
+                                ]
+                            }
+                        }
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Ral, Izzet Viceroy:4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -8
+                },
+                "effect": {
+                    "type": "CreateGlobalTriggeredAbility",
+                    "ability": {
+                        "id": "Ral, Izzet Viceroy:3",
+                        "trigger": {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "DealDamage",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 4
+                                    },
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t1"
+                                    }
+                                },
+                                {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                }
+                            ]
+                        },
+                        "targetRequirement": {
+                            "type": "AnyTarget",
+                            "id": "t1"
+                        },
+                        "descriptionOverride": "Whenever you cast an instant or sorcery spell, this emblem deals 4 damage to any target and you draw two cards."
+                    },
+                    "descriptionOverride": "Whenever you cast an instant or sorcery spell, this emblem deals 4 damage to any target and you draw two cards.",
+                    "emblem": true
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You get an emblem with \"Whenever you cast an instant or sorcery spell, this emblem deals 4 damage to any target and you draw two cards.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "195",
+        "rarity": "MYTHIC",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c52066b3-84dc-4198-8090-3336e7df8b5d.jpg?1783934125",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "If you have only one card in your library, Ral's first ability puts it into your hand. Nothing is put into your graveyard."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If any exiled cards you own are face down, they have no characteristics. If they're normally instants or sorceries, they won't be counted for Ral's second ability."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "The emblem created by Ral's last ability is colorless. The damage it deals is from a colorless source."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "The triggered ability of Ral's emblem resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If the target permanent or player becomes an illegal target for the triggered ability of Ral's emblem, the ability doesn't resolve. You don't draw two cards."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Rampaging Monument
 {
     "name": "Rampaging Monument",
@@ -11291,6 +12201,94 @@
     ]
 }
 
+// Risk Factor
+{
+    "name": "Risk Factor",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Target opponent may have Risk Factor deal 4 damage to them. If that player doesn't, you draw three cards.\nJump-start (You may cast this card from your graveyard by discarding a card in addition to paying its other costs. Then exile this card.)",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": "Gate.MayDecide",
+            "then": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 4
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "damageSource": "Self"
+            },
+            "otherwise": {
+                "type": "DrawCards",
+                "count": {
+                    "type": "Fixed",
+                    "amount": 3
+                }
+            },
+            "decisionMaker": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "descriptionOverride": "Have Risk Factor deal 4 damage to you? If you don't, its controller draws three cards."
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "MayCastSelfFromZones",
+                "zones": [
+                    "Graveyard"
+                ],
+                "additionalCost": {
+                    "type": "AdditionalAtom",
+                    "atom": "AtomDiscard"
+                },
+                "exileCastThisWay": "ON_ANY_STACK_EXIT"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "rarity": "RARE",
+        "artist": "Chris Seaman",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4eda89d9-9bd1-4a55-ac02-f9a0625d8e5b.jpg?1783934160",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "If the target player is an illegal target by the time Risk Factor tries to resolve, the spell doesn't resolve. You don't draw three cards."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "You must still follow any timing restrictions and permissions when casting a spell with jump-start, including those based on the card's type. For instance, you can cast a sorcery using jump-start only when you could normally cast a sorcery."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "A spell cast using jump-start will always be exiled afterward, whether it resolves, it's countered, or it leaves the stack in some other way."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If an effect allows you to pay an alternative cost rather than a spell's mana cost, you may pay that alternative cost when you jump-start a spell. You'll still discard a card as an additional cost to cast it."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If a card with jump-start is put into your graveyard during your turn, you'll be able to cast it right away if it's legal to do so, before an opponent can take any actions."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Ritual of Soot
 {
     "name": "Ritual of Soot",
@@ -11466,6 +12464,109 @@
         "artist": "Tomasz Jedruszek",
         "flavorText": "Some Gruul druids believe that boars are spawn of the great Ilharg, the mighty Raze-Boar who will one day rise and level the city.",
         "imageUri": "https://cards.scryfall.io/normal/front/1/9/196bf114-e135-43f3-83d5-cb08ca766881.jpg?1783934159"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Runaway Steam-Kin
+{
+    "name": "Runaway Steam-Kin",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Whenever you cast a red spell, if this creature has fewer than three +1/+1 counters on it, put a +1/+1 counter on this creature.\nRemove three +1/+1 counters from this creature: Add {R}{R}{R}.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Runaway Steam-Kin:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "HasColor",
+                                "color": "RED"
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "PLUS_ONE_PLUS_ONE"
+                        }
+                    },
+                    "operator": "LT",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Runaway Steam-Kin:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomRemoveCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "self": true
+                    }
+                },
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "115",
+        "rarity": "RARE",
+        "artist": "Jason Felix",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d8c9c111-fbc7-44e1-94bd-1ca164370623.jpg?1783934158",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "Runaway Steam-Kin has to be on the battlefield for its ability to trigger. Casting it won't trigger its own ability."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Runaway Steam-Kin's triggered ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If Runaway Steam-Kin has three or more +1/+1 counters on it after you're done paying for a red spell, its ability doesn't trigger at all. If it has three or more +1/+1 counters on it as its triggered ability resolves, it doesn't get a +1/+1 counter."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "RED"
@@ -11856,6 +12957,94 @@
     ]
 }
 
+// Sonic Assault
+{
+    "name": "Sonic Assault",
+    "manaCost": "{1}{U}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Tap target creature. Sonic Assault deals 2 damage to that creature's controller.\nJump-start (You may cast this card from your graveyard by discarding a card in addition to paying its other costs. Then exile this card.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "TargetController"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "MayCastSelfFromZones",
+                "zones": [
+                    "Graveyard"
+                ],
+                "additionalCost": {
+                    "type": "AdditionalAtom",
+                    "atom": "AtomDiscard"
+                },
+                "exileCastThisWay": "ON_ANY_STACK_EXIT"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "199",
+        "artist": "Tyler Walpole",
+        "flavorText": "He heard stars and saw thunder.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc61a398-cf16-415b-b3cf-897217dc7cc9.jpg?1783934124",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "Sonic Assault can target a tapped creature. The creature can't be tapped again, but Sonic Assault still deals 2 damage to that creature's controller."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If the target creature becomes an illegal target for Sonic Assault, the spell doesn't resolve. No player is dealt damage."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "You must still follow any timing restrictions and permissions when casting a spell with jump-start, including those based on the card's type. For instance, you can cast a sorcery using jump-start only when you could normally cast a sorcery."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "A spell cast using jump-start will always be exiled afterward, whether it resolves, it's countered, or it leaves the stack in some other way."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If an effect allows you to pay an alternative cost rather than a spell's mana cost, you may pay that alternative cost when you jump-start a spell. You'll still discard a card as an additional cost to cast it."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If a card with jump-start is put into your graveyard during your turn, you'll be able to cast it right away if it's legal to do so, before an opponent can take any actions."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Spinal Centipede
 {
     "name": "Spinal Centipede",
@@ -12063,6 +13252,51 @@
         }
     ],
     "hasNoManaCost": true
+}
+
+// Street Riot
+{
+    "name": "Street Riot",
+    "manaCost": "{4}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "During your turn, creatures you control get +1/+0 and have trample.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 0,
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    }
+                },
+                "condition": "IsYourTurn"
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    }
+                },
+                "condition": "IsYourTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "rarity": "UNCOMMON",
+        "artist": "Tomasz Jedruszek",
+        "flavorText": "\"They said obey and you'll be happy. They said you'll be safe. But we're not safe. We're not happy. And we will not obey.\"\n—Domri Rade",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/80b352d5-4a57-41bc-b4c4-8b81255a9db8.jpg?1783934157"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Sumala Woodshaper
@@ -14901,6 +16135,83 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Wojek Bodyguard
+{
+    "name": "Wojek Bodyguard",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Mentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)\nThis creature can't attack or block alone.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "MENTOR"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wojek Bodyguard:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "PowerLessThanEntity",
+                                    "reference": "Self"
+                                }
+                            ],
+                            "statePredicates": [
+                                "IsAttacking"
+                            ]
+                        }
+                    }
+                },
+                "descriptionOverride": "Mentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnlessCoAttacker",
+                "coAttackerFilter": {
+                    "cardPredicates": [
+                        "IsCreature"
+                    ]
+                }
+            },
+            {
+                "type": "CantBlockUnlessCoBlocker",
+                "coBlockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "120",
+        "artist": "Tyler Walpole",
+        "flavorText": "\"By all means, take another step toward the captain.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/ebff5313-e325-47c3-814b-38fdb4c6c8d2.jpg?1783934155"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
