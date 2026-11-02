@@ -40,6 +40,7 @@ val DovinsDismissal = card("Dovin's Dismissal") {
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "267"
+        inBooster = false
         artist = "Kieran Yanner"
         flavorText = "\"We're finished here.\""
         imageUri = "https://cards.scryfall.io/normal/front/6/3/6328e6b5-9dfb-4fd4-99ee-a1ffc2c707da.jpg?1783933609"

@@ -25,6 +25,7 @@ val Ragefire = card("Ragefire") {
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "270"
+        inBooster = false
         artist = "Randy Vargas"
         flavorText = "\"Your precious laws can't save you now!\""
         imageUri = "https://cards.scryfall.io/normal/front/c/b/cb13420d-d295-4000-9c38-fa5d10e06ece.jpg"

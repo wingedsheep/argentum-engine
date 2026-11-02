@@ -29,6 +29,7 @@ val EliteArrester = card("Elite Arrester") {
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "266"
+        inBooster = false
         artist = "Randy Vargas"
         flavorText = "\"Hold it! I need to see your papers.\""
         imageUri = "https://cards.scryfall.io/normal/front/0/7/070f0a21-8e06-46ec-9d84-c65067b23893.jpg"

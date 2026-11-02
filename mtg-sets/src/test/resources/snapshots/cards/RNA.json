@@ -2220,7 +2220,8 @@
         "collectorNumber": "271",
         "rarity": "UNCOMMON",
         "artist": "Izzy",
-        "imageUri": "https://cards.scryfall.io/normal/front/0/2/02cef5a4-e8fd-4ebd-b121-67059308c772.jpg"
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/02cef5a4-e8fd-4ebd-b121-67059308c772.jpg",
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "GREEN",
@@ -4165,7 +4166,8 @@
         "rarity": "RARE",
         "artist": "Svetlin Velinov",
         "flavorText": "\"Good girl.\"",
-        "imageUri": "https://cards.scryfall.io/normal/front/1/a/1abe58d8-67d1-4719-8e84-27747dea3506.jpg?1783933607"
+        "imageUri": "https://cards.scryfall.io/normal/front/1/a/1abe58d8-67d1-4719-8e84-27747dea3506.jpg?1783933607",
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "RED",
@@ -4467,7 +4469,8 @@
                 "date": "2019-01-25",
                 "text": "Domri's first and third abilities affect only creatures you control at the time they resolve. Creatures you begin to control later in the turn won't get +1/+1 or gain haste if his first ability has resolved, and won't gain trample or get three +1/+1 counters if his third ability has resolved."
             }
-        ]
+        ],
+        "inBooster": false
     },
     "startingLoyalty": 4,
     "colorIdentityOverride": [
@@ -4607,7 +4610,8 @@
         "rarity": "UNCOMMON",
         "artist": "Adam Paquette",
         "flavorText": "It was made for battle, but that doesn't mean it's unsophisticated.",
-        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0a962509-2e77-4655-b397-9625b2f3407a.jpg"
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0a962509-2e77-4655-b397-9625b2f3407a.jpg",
+        "inBooster": false
     },
     "colorIdentityOverride": []
 }
@@ -4815,7 +4819,8 @@
         "rarity": "RARE",
         "artist": "Kieran Yanner",
         "flavorText": "\"We're finished here.\"",
-        "imageUri": "https://cards.scryfall.io/normal/front/6/3/6328e6b5-9dfb-4fd4-99ee-a1ffc2c707da.jpg?1783933609"
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/6328e6b5-9dfb-4fd4-99ee-a1ffc2c707da.jpg?1783933609",
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "WHITE",
@@ -4956,7 +4961,8 @@
                 "date": "2019-01-25",
                 "text": "In a Two-Headed Giant game, if a player is instructed to skip their next untap step, the entire team skips that step."
             }
-        ]
+        ],
+        "inBooster": false
     },
     "startingLoyalty": 5,
     "colorIdentityOverride": [
@@ -5375,7 +5381,8 @@
         "collectorNumber": "266",
         "artist": "Randy Vargas",
         "flavorText": "\"Hold it! I need to see your papers.\"",
-        "imageUri": "https://cards.scryfall.io/normal/front/0/7/070f0a21-8e06-46ec-9d84-c65067b23893.jpg"
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/070f0a21-8e06-46ec-9d84-c65067b23893.jpg",
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "BLUE",
@@ -6125,6 +6132,7 @@
     },
     "metadata": {
         "collectorNumber": "172",
+        "rarity": "UNCOMMON",
         "artist": "Steve Argyle",
         "flavorText": "\"Let's find out what kind of audience you are. Festive? Fearless?\"",
         "imageUri": "https://cards.scryfall.io/normal/front/2/1/21e1161f-bd2c-45a7-a86b-3b2e5210f148.jpg?1783933650",
@@ -11428,7 +11436,8 @@
         "collectorNumber": "270",
         "artist": "Randy Vargas",
         "flavorText": "\"Your precious laws can't save you now!\"",
-        "imageUri": "https://cards.scryfall.io/normal/front/c/b/cb13420d-d295-4000-9c38-fa5d10e06ece.jpg"
+        "imageUri": "https://cards.scryfall.io/normal/front/c/b/cb13420d-d295-4000-9c38-fa5d10e06ece.jpg",
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "RED"
@@ -15954,7 +15963,8 @@
                 "date": "2019-01-25",
                 "text": "The Haunt of Hightower's last ability won't trigger when a token is put into an opponent's graveyard."
             }
-        ]
+        ],
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "BLACK"

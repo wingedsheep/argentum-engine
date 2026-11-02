@@ -58,6 +58,7 @@ val DovinArchitectOfLaw = card("Dovin, Architect of Law") {
     metadata {
         rarity = Rarity.MYTHIC
         collectorNumber = "265"
+        inBooster = false
         artist = "Kieran Yanner"
         imageUri = "https://cards.scryfall.io/normal/front/b/0/b0c7cffe-8751-4da7-8c1c-59f472ef3735.jpg?1783933609"
         ruling("2019-01-25", "Dovin's second ability can target a creature that's already tapped. That creature won't untap during its controller's next untap step.")

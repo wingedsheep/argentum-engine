@@ -42,6 +42,7 @@ val DovinsAutomaton = card("Dovin's Automaton") {
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "268"
+        inBooster = false
         artist = "Adam Paquette"
         flavorText = "It was made for battle, but that doesn't mean it's unsophisticated."
         imageUri = "https://cards.scryfall.io/normal/front/0/a/0a962509-2e77-4655-b397-9625b2f3407a.jpg"

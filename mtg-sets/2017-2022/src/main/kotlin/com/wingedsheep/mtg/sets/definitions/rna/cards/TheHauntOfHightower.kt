@@ -55,6 +55,7 @@ val TheHauntOfHightower = card("The Haunt of Hightower") {
     metadata {
         rarity = Rarity.MYTHIC
         collectorNumber = "273"
+        inBooster = false
         artist = "Lius Lasahido"
         flavorText = "It drains vitality from those it touches."
         imageUri = "https://cards.scryfall.io/normal/front/6/1/61a908e8-6952-46c0-94ec-3962b7a4caef.jpg?1783933608"
