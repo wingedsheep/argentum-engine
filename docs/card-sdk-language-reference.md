@@ -16756,14 +16756,19 @@ default to "you" so card authors don't need to pass it explicitly.
   `PermanentsEnteredUnderControlThisTurnComponent` entry log, cleared by `CleanupPhaseManager`
   at end of turn. Every battlefield entry must go through `BattlefieldEntry.place` for this
   tracker to stay in sync. Shortcut: `Conditions.ArtifactEnteredBattlefieldThisTurn`.
-- `PermanentTypePutIntoGraveyardFromBattlefieldThisTurn(cardType, player = Player.You)` — true if
-  a permanent of `cardType` was put into `player`'s graveyard from the battlefield this turn
-  (Kami of Transience: "if an enchantment was put into your graveyard from the battlefield this
-  turn"). Keyed on the card's **owner** ("your graveyard" is the owner's, so your enchantment an
-  opponent controlled counts, theirs under your control doesn't), read off the last-known
-  projected type line (an enchantment creature counts as an enchantment), and tokens count.
-  Turn history: the card need not still be in the graveyard. Backed by the per-player
-  `CardTypesPutIntoGraveyardFromBattlefieldThisTurnComponent`, cleared at end of turn.
+- `PermanentPutIntoZoneFromBattlefieldThisTurn(toZone = Zone.GRAVEYARD, cardType = null, player = Player.You)`
+  (facade `Conditions.PermanentPutIntoZoneFromBattlefieldThisTurn(toZone, cardType?, player)`) — true
+  if a permanent (of `cardType`, or any permanent when `null`) was put into `player`'s `toZone` from
+  the battlefield this turn. `toZone` is `GRAVEYARD` or `HAND` (anything else is rejected at
+  construction). Kami of Transience: "if an enchantment was put into your graveyard from the
+  battlefield this turn" → `(Zone.GRAVEYARD, CardType.ENCHANTMENT)`; Miles O'Brien, Transporter Ops:
+  "if a permanent was returned to your hand from the battlefield this turn" → `(Zone.HAND)`. Keyed on
+  the card's **owner** ("your graveyard" / "your hand" is the owner's, so your permanent an opponent
+  controlled counts, theirs under your control doesn't), read off the last-known projected type
+  line (an enchantment creature counts as an enchantment), and tokens count. Turn history: the card
+  need not still be in that zone. Backed by the per-player
+  `CardTypesPutIntoGraveyardFromBattlefieldThisTurnComponent` /
+  `CardTypesReturnedToHandFromBattlefieldThisTurnComponent`, cleared at end of turn.
 - `Celebration` / `NonlandPermanentsEnteredThisTurn(atLeast = 1, player = Player.You)` — the
   **Celebration** ability word (Wilds of Eldraine; CR 207.2c — italic flavor with no rules
   meaning, so there is no keyword, only this condition): "if two or more nonland permanents
@@ -19752,7 +19757,7 @@ not update an existing copy.
   (Echoing Deeps; Vesuva / Thespian's Stage copying a land on the battlefield); declining the copy
   enters it untapped as its printed self. `entersWithCounters: List<CopyEntryCounters>` is the sibling
   rider "except it enters with …", one entry per clause, each checked and placed on its own:
-  `CopyEntryCounters(count, counterType = PLUS_ONE_PLUS_ONE,
+  `CopyEntryCounters(count, counterType: CounterType? = PLUS_ONE_PLUS_ONE,
   ifCopiedMatches = null, ifEntrantMatches = null)`. `listOf(CopyEntryCounters(DynamicAmounts.xValue()))` is Altered Ego's "X
   additional +1/+1 counters"; `CopyEntryCounters(Fixed(1), CounterType.SHIELD,
   ifCopiedMatches = GameObjectFilter.Any.youControl())` is Undercover Operative's "a shield counter
@@ -19765,7 +19770,13 @@ not update an existing copy.
   copy, so no counters (ruling). Two entries are Spark Double's "an additional +1/+1 counter on it if
   it's a creature, … an additional loyalty counter on it if it's a planeswalker" (`ifEntrantMatches =
   Creature` / `Planeswalker`, `CounterType.LOYALTY` on top of the copy's starting loyalty); a creature
-  planeswalker copy gets both. It lives on the copy effect rather than on a separate
+  planeswalker copy gets both. A **null `counterType`** mirrors the copied object instead: for every
+  kind of counter it has as the copy enters, the entrant gets `count` counters of that kind per
+  counter — `CopyEntryCounters.sameAsCopied()` (`count = Fixed(1)`, `counterType = null`) is Dominion
+  Saboteur's "it enters with additional counters on it equal to the same number and kinds of counters
+  the copied permanent has on it". Counters aren't copiable values, so this rider is the only way they
+  come over; each kind is placed as its own entry counter, so counter-placement modifiers apply per
+  kind. It lives on the copy effect rather than on a separate
   `EntersWithCounters`, because copying replaces the permanent's own copiable text: a self-targeted
   enters-with-counters replacement would be gone by the time the copy applies. It follows the same
   "only if a copy was actually made" rule as `tappedIfCopied`, which is the printed ruling

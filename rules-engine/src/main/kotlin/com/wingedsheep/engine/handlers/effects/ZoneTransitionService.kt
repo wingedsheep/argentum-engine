@@ -54,6 +54,7 @@ import com.wingedsheep.engine.state.components.player.ArtifactsDiedThisTurnCompo
 import com.wingedsheep.engine.state.components.player.PermanentsPutIntoGraveyardFromBattlefieldThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PermanentsWithCountersPutIntoGraveyardThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CardTypesPutIntoGraveyardFromBattlefieldThisTurnComponent
+import com.wingedsheep.engine.state.components.player.CardTypesReturnedToHandFromBattlefieldThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CreaturesDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.NonTokenCreaturesDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.OpponentCreaturesExiledThisTurnComponent
@@ -1129,19 +1130,20 @@ class ZoneTransitionService(
                 }
                 val entryCopy = entryCopyChoice?.takeIf { it.copiedCard != null && !options.faceDown }
                 for (rider in entryCopy?.replacement?.entersWithCounters.orEmpty()) {
-                    val count = EntersWithReplacements.copyEntryCounterCount(
+                    val kinds = EntersWithReplacements.copyEntryCounters(
                         newState, rider, entityId, entryCopy?.copiedEntity, destControllerId, xValue = null,
                         predicateEvaluator = predicateEvaluator)
-                    if (entryCounterTotals != null) {
-                        val kind = rider.counterType
-                        entryCounterTotals[kind] = (entryCounterTotals[kind] ?: 0) + count
-                    } else {
-                        val (afterCounters, counterEvents) = EntersWithReplacements.placeEntryCounters(
-                            newState, entityId, rider.counterType,
-                            count, destControllerId, newState.getEntity(entityId)?.get<CardComponent>()?.name ?: "",
-                            predicateEvaluator = predicateEvaluator)
-                        newState = afterCounters
-                        events.addAll(counterEvents)
+                    for ((kind, count) in kinds) {
+                        if (entryCounterTotals != null) {
+                            entryCounterTotals[kind] = (entryCounterTotals[kind] ?: 0) + count
+                        } else {
+                            val (afterCounters, counterEvents) = EntersWithReplacements.placeEntryCounters(
+                                newState, entityId, kind,
+                                count, destControllerId, newState.getEntity(entityId)?.get<CardComponent>()?.name ?: "",
+                                predicateEvaluator = predicateEvaluator)
+                            newState = afterCounters
+                            events.addAll(counterEvents)
+                        }
                     }
                 }
                 if (entryCounterTotals != null) {
@@ -1458,16 +1460,23 @@ class ZoneTransitionService(
             }
         }
 
-        // 8b1c. Track the card types of permanents put into their *owner's* graveyard from the
-        // battlefield ("if an enchantment was put into your graveyard from the battlefield this
-        // turn" — Kami of Transience). Last-known projected type line, like 8b1; tokens count.
-        if (leavingBattlefield && actualDestZone == Zone.GRAVEYARD) {
+        // 8b1c. Track the card types of permanents put into their *owner's* graveyard or hand from
+        // the battlefield ("if an enchantment was put into your graveyard from the battlefield this
+        // turn" — Kami of Transience; "if a permanent was returned to your hand from the battlefield
+        // this turn" — Miles O'Brien). Last-known projected type line, like 8b1; tokens count.
+        if (leavingBattlefield && (actualDestZone == Zone.GRAVEYARD || actualDestZone == Zone.HAND)) {
             val leftTypes = (lastKnownTypeLine ?: cardComponent.typeLine).cardTypes
             if (leftTypes.isNotEmpty()) {
                 newState = newState.updateEntity(ownerId) { playerContainer ->
-                    val existing = playerContainer.get<CardTypesPutIntoGraveyardFromBattlefieldThisTurnComponent>()
-                        ?: CardTypesPutIntoGraveyardFromBattlefieldThisTurnComponent()
-                    playerContainer.with(existing.with(leftTypes))
+                    if (actualDestZone == Zone.GRAVEYARD) {
+                        val existing = playerContainer.get<CardTypesPutIntoGraveyardFromBattlefieldThisTurnComponent>()
+                            ?: CardTypesPutIntoGraveyardFromBattlefieldThisTurnComponent()
+                        playerContainer.with(existing.with(leftTypes))
+                    } else {
+                        val existing = playerContainer.get<CardTypesReturnedToHandFromBattlefieldThisTurnComponent>()
+                            ?: CardTypesReturnedToHandFromBattlefieldThisTurnComponent()
+                        playerContainer.with(existing.with(leftTypes))
+                    }
                 }
             }
         }

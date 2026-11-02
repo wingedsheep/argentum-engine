@@ -47,7 +47,7 @@ val KamiOfTransience = card("Kami of Transience") {
     triggeredAbility {
         trigger = Triggers.anyPlayer.beginningOf(Step.END)
         triggerZone = Zone.GRAVEYARD
-        interveningIf = Conditions.PermanentTypePutIntoGraveyardFromBattlefieldThisTurn(CardType.ENCHANTMENT)
+        interveningIf = Conditions.PermanentPutIntoZoneFromBattlefieldThisTurn(Zone.GRAVEYARD, CardType.ENCHANTMENT)
         effect = Effects.May(Effects.Move(target = EffectTarget.Self, destination = Zone.HAND))
     }
 

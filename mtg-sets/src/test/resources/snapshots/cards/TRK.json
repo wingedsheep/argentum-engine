@@ -2007,6 +2007,59 @@
     ]
 }
 
+// Dominion Saboteur
+{
+    "name": "Dominion Saboteur",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Shapeshifter",
+    "oracleText": "You may have this creature enter as a copy of any artifact or creature on the battlefield, except it isn't legendary. If you do, it enters with additional counters on it equal to the same number and kinds of counters the copied permanent has on it.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersAsCopy",
+                "copyFilter": {
+                    "cardPredicates": [
+                        {
+                            "type": "Or",
+                            "predicates": [
+                                "IsCreature",
+                                "IsArtifact"
+                            ]
+                        }
+                    ]
+                },
+                "entersWithCounters": [
+                    {
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "counterType": null
+                    }
+                ],
+                "exceptions": {
+                    "removedSupertypes": [
+                        "LEGENDARY"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "UNCOMMON",
+        "artist": "Alex Negrea",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/207c4369-220a-4eff-81dc-65872d6fc264.jpg?1785981397"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Dr. Beverly Crusher
 {
     "name": "Dr. Beverly Crusher",
@@ -3342,6 +3395,76 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Miles O'Brien, Transporter Ops
+{
+    "name": "Miles O'Brien, Transporter Ops",
+    "manaCost": "{2}{W}",
+    "typeLine": "Legendary Creature — Human Artificer",
+    "oracleText": "When Miles O'Brien enters, return up to one other target creature or artifact you control to its owner's hand.\nAt the beginning of each end step, if a permanent was returned to your hand from the battlefield this turn, draw a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Miles O'Brien, Transporter Ops:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature|artifact ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Miles O'Brien, Transporter Ops:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "interveningIf": {
+                    "type": "PermanentPutIntoZoneFromBattlefieldThisTurn",
+                    "toZone": "Hand"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "rarity": "RARE",
+        "artist": "John Tyler Christopher",
+        "flavorText": "\"The confinement beam subsystems check out, so do the phase transition coils.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/4/e4f041b3-e785-45ba-9a7e-33878614d3b0.jpg?1793361164"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 

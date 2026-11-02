@@ -155,7 +155,7 @@ import com.wingedsheep.sdk.scripting.conditions.YouControlSource
 import com.wingedsheep.sdk.scripting.conditions.PlayerAttackedWithCreaturesThisTurn
 import com.wingedsheep.sdk.scripting.conditions.PermanentLeftBattlefieldThisTurn
 import com.wingedsheep.sdk.scripting.conditions.PermanentTypeEnteredBattlefieldThisTurn
-import com.wingedsheep.sdk.scripting.conditions.PermanentTypePutIntoGraveyardFromBattlefieldThisTurn
+import com.wingedsheep.sdk.scripting.conditions.PermanentPutIntoZoneFromBattlefieldThisTurn
 import com.wingedsheep.sdk.scripting.conditions.PlayerCastSpellsThisTurn
 import com.wingedsheep.sdk.scripting.conditions.PlayerCommittedCrimeThisTurn
 import com.wingedsheep.sdk.scripting.conditions.PlayerHasCitysBlessing
@@ -333,7 +333,7 @@ class ConditionEvaluator(
             is PermanentEnteredFaceDownThisTurn,
             is PermanentLeftBattlefieldThisTurn,
             is PermanentTypeEnteredBattlefieldThisTurn,
-            is PermanentTypePutIntoGraveyardFromBattlefieldThisTurn,
+            is PermanentPutIntoZoneFromBattlefieldThisTurn,
             is PlayerActivatedExhaustAbilitiesThisTurn,
             is PlayerAttackedPlayerThisTurn,
             is PlayerCommittedCrimeThisTurn,
@@ -790,11 +790,18 @@ class ConditionEvaluator(
             }
             is PermanentTypeEnteredBattlefieldThisTurn ->
                 evaluatePermanentTypeEnteredBattlefieldThisTurnCtx(state, condition, ctx)
-            is PermanentTypePutIntoGraveyardFromBattlefieldThisTurn -> {
-                val playerId = resolvePlayer(state, condition.player, ctx)
-                playerId != null && state.getEntity(playerId)
-                    ?.get<com.wingedsheep.engine.state.components.player.CardTypesPutIntoGraveyardFromBattlefieldThisTurnComponent>()
-                    ?.types?.contains(condition.cardType) == true
+            is PermanentPutIntoZoneFromBattlefieldThisTurn -> {
+                val player = resolvePlayer(state, condition.player, ctx)?.let { state.getEntity(it) }
+                val types = when (condition.toZone) {
+                    Zone.HAND -> player
+                        ?.get<com.wingedsheep.engine.state.components.player.CardTypesReturnedToHandFromBattlefieldThisTurnComponent>()
+                        ?.types
+                    Zone.GRAVEYARD -> player
+                        ?.get<com.wingedsheep.engine.state.components.player.CardTypesPutIntoGraveyardFromBattlefieldThisTurnComponent>()
+                        ?.types
+                    else -> null
+                }.orEmpty()
+                condition.cardType?.let { it in types } ?: types.isNotEmpty()
             }
             is PermanentLeftBattlefieldThisTurn ->
                 evaluatePermanentLeftBattlefieldThisTurnCtx(state, condition, ctx)

@@ -269,8 +269,8 @@ NumberMatches — Condition
 OpponentSpellOnStack — Condition
 PermanentEnteredFaceDownThisTurn — Condition
 PermanentLeftBattlefieldThisTurn — Condition
+PermanentPutIntoZoneFromBattlefieldThisTurn — Condition
 PermanentTypeEnteredBattlefieldThisTurn — Condition
-PermanentTypePutIntoGraveyardFromBattlefieldThisTurn — Condition
 PermanentWithCounterPutIntoGraveyardThisTurn — Condition
 PlayerActivatedExhaustAbilitiesThisTurn — Condition
 PlayerAttackedPlayerThisTurn — Condition
