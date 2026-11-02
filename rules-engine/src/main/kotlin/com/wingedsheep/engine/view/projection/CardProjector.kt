@@ -393,8 +393,12 @@ internal class CardProjector(
         // put it onto the battlefield face down specified (CR 708.2a — Tezzeret's 5/5 artifacts).
         // Continuous effects on it are public too (a granted color or type), so the projection
         // wins where there is one; it is built from those face-down values, never the hidden card's.
-        val faceDownCard = container.copiableCardComponent()
-        val projected = frame.projectedValues
+        // Only a face-down permanent has face-down copiable values and a projection built from them;
+        // a face-down spell on the stack would read the hidden card's colors and types, so it stays
+        // the plain 2/2 creature.
+        val onBattlefield = frame.zoneKey.zoneType == Zone.BATTLEFIELD
+        val faceDownCard = if (onBattlefield) container.copiableCardComponent() else null
+        val projected = frame.projectedValues.takeIf { onBattlefield }
         val faceDownTypeLine = if (projected != null) {
             val subtypes = projected.subtypes.takeUnless { hasEveryCreatureType(it.toList()) }
                 ?.mapTo(linkedSetOf()) { Subtype(it) }
