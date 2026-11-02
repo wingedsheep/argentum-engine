@@ -510,6 +510,26 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
       { name: 'Heroic', inPlay: 'Targeting your own creature with Auras and tricks grows it, rewarding aggression but leaving you exposed to removal in response.' },
     ],
   },
+  GRN: {
+    tagline: 'Five two-colour guilds on Ravnica, each with its own mechanic: Boros mentors, Dimir surveils, Izzet jump-starts spells, Golgari digs through undergrowth, Selesnya convokes.',
+    setting: 'The city-plane of Ravnica, where the Boros, Dimir, Golgari, Izzet and Selesnya guilds jostle for power.',
+    gameplay: 'Most decks pick one guild and lean on its mechanic. Boros (red-white) attacks wide, with mentor creatures growing smaller attackers each combat. Selesnya (green-white) floods the board with tokens and convokes big spells with them. Dimir (blue-black) surveils to sculpt its draws and fill the graveyard for its payoffs, Golgari (black-green) turns creature cards in the graveyard into bigger undergrowth effects, and Izzet (blue-red) casts cheap instants and sorceries, then jump-starts them again from the graveyard. Guildgates and lockets make a third colour easy to splash.',
+    tips: [
+      'Commit to a guild early: each mechanic only pays off when most of your deck shares it.',
+      'Attack with a mentor creature alongside a smaller one, so the counter lands on something that grows into a threat.',
+      'Surveil and jump-start both stock the graveyard, so Dimir and Golgari payoffs get stronger as the game goes long.',
+    ],
+    tryIf: 'guild-based two-colour decks and graveyard value',
+    power: 3, speed: 3, complexity: 3,
+    themes: ['multicolor', 'graveyard', 'tokens'],
+    mechanics: [
+      { name: 'Mentor', inPlay: 'When a mentor creature attacks, it puts a +1/+1 counter on an attacking creature with lesser power, so you attack with a mix of sizes.' },
+      { name: 'Surveil', inPlay: 'Look at the top cards of your library and keep or bin each, which smooths your draws and fills the graveyard.' },
+      { name: 'Jump-start', inPlay: 'Cast the spell again from your graveyard by discarding a card, so every instant and sorcery is two cards of value.' },
+      { name: 'Undergrowth', inPlay: 'Effects that scale with the creature cards in your graveyard, which reward trading creatures and milling yourself.' },
+      { name: 'Convoke', inPlay: 'Tap your creatures to help pay for the spell, so a wide board of tokens casts big spells early.' },
+    ],
+  },
   RNA: {
     tagline: 'Five two-colour guilds on Ravnica, each with its own mechanic: Gruul and Rakdos race with riot and spectacle, Azorius and Orzhov grind with addendum and afterlife, Simic grows creatures with adapt.',
     setting: 'The city-plane of Ravnica, where the Azorius, Gruul, Orzhov, Rakdos and Simic guilds jostle for power.',
