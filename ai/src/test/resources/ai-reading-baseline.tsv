@@ -36,6 +36,7 @@ Aberrant Researcher
 Abhorrent Oculus	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard)
 Abigale, Eloquent First-Year
 Abigale, Poet Laureate
+Abnormal Endurance	polarity: GrantTriggeredAbilityEffect
 Abomination
 Abomination of Gudul
 Abomination of Llanowar
@@ -1871,6 +1872,7 @@ Bond of Revival
 Bonded Herdbeast
 Bonders' Enclave
 Bonds of Faith	polarity: Aura>ConditionalStaticAbility
+Bone Dragon
 Bone Flute	intent: ForEach>ModifyStatsEffect
 Bone Miser
 Bone Picker
@@ -5644,6 +5646,7 @@ Feline Sovereign
 Fell
 Fell Gravship
 Fell Horseman
+Fell Specter
 Fell Stinger
 Fell the Mighty	polarity: Pipeline(BattlefieldMatching→graveyard)
 Fell the Pheasant
@@ -5850,6 +5853,7 @@ Firion, Wild Rose Warrior
 Firja's Retribution
 Firja, Judge of Valor
 Firmament Sage
+First Contact
 First Day of Class
 First-Time Flyer
 Fisher's Talent
@@ -6160,6 +6164,7 @@ Frantic Inventory
 Frantic Scapegoat	intent: ForEach>SuspectEffect; intent: Pipeline(?→?); intent: RemoveSuspectedEffect; intent: SuspectEffect
 Frantic Search
 Frantic Strength
+Fraying Omnipotence
 Fraying Sanity	polarity: Aura>GatherCardsEffect; polarity: Aura>MoveCollectionEffect
 Frazzle
 Free Borg Revolutionaries
@@ -7070,6 +7075,7 @@ Grasp of Phantoms	polarity: MoveToZoneEffect
 Grasping Dunes
 Grasping Giant
 Grasping Longneck
+Grasping Scoundrel
 Grasping Shadows	intent: GrantKeywordEffect
 Grasping Thrull
 Grassland Crusader
@@ -8239,6 +8245,7 @@ Infernal Medusa
 Infernal Pet
 Infernal Phantom
 Infernal Plunge
+Infernal Reckoning
 Infernal Scarring
 Infernal Vessel
 Inferno
@@ -9600,19 +9607,23 @@ Liliana of the Veil	intent: ForEach>Pipeline(hand→graveyard); polarity: ForceS
 Liliana the Faultless
 Liliana the Repentant
 Liliana's Caress
+Liliana's Contract	intent: WinGameEffect
 Liliana's Devotee
 Liliana's Elite
 Liliana's Mastery
 Liliana's Scorn
 Liliana's Scrounger	intent: AddCountersToCollectionEffect; intent: SelectTargetEffect
 Liliana's Specter
+Liliana's Spoils
 Liliana's Standard Bearer
 Liliana's Steward
 Liliana's Triumph
 Liliana, Death Mage
 Liliana, Death's Majesty
 Liliana, Dreadhorde General
+Liliana, Untouched by Death	intent: GrantStaticAbilityEffect
 Liliana, Waker of the Dead	intent: ForEach>Pipeline(hand→?); intent: ForEach>StorePlayerEffect; intent: Pipeline(?→graveyard)
+Liliana, the Necromancer
 Lily Bowen, Raging Grandma
 Lilypad Village
 Lilysplash Mentor	polarity: MoveToZoneEffect
@@ -11245,6 +11256,7 @@ Nightmare Lash
 Nightmare Shepherd
 Nightmare Sower
 Nightmare Void
+Nightmare's Thirst	timing: ModifyStatsEffect
 Nightpack Ambusher
 Nightscape Apprentice	intent: GrantKeywordEffect; polarity: MoveToZoneEffect
 Nightscape Familiar
@@ -13482,6 +13494,7 @@ Riptide Survivor
 Riptide Turtle
 Risa
 Rise Again
+Rise from the Grave
 Rise from the Tides
 Rise from the Wreck
 Rise of Extus
@@ -16308,6 +16321,7 @@ Swiftwing Assailant
 Swimmer in Nightmares
 Swirl the Mists
 Swirling Torrent	polarity: MoveToZoneEffect
+Switcheroo	intent: ExchangeControlEffect; polarity: ExchangeControlEffect
 Swooping Lookout
 Swooping Protector
 Swooping Talon	combat: RemoveKeywordEffect; intent: ProvokeEffect; intent: RemoveKeywordEffect; polarity: ProvokeEffect; timing: RemoveKeywordEffect
@@ -17841,6 +17855,7 @@ Uncharted Voyage	intent: PutOnLibraryPositionOfChoiceEffect; polarity: PutOnLibr
 Unclaimed Territory
 Uncle Iroh
 Uncle Istvan
+Uncomfortable Chill
 Uncontrollable Anger
 Uncontrolled Infestation
 Uncover the Moon-Letters
@@ -19066,6 +19081,7 @@ Windfall
 Windgrace Acolyte
 Windgrace's Judgment
 Winding Constrictor
+Windreader Sphinx
 Windreaper Falcon
 Windrider Eel
 Windrider Patrol

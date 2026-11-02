@@ -2499,6 +2499,111 @@
     ]
 }
 
+// First Contact
+{
+    "name": "First Contact",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Mill four cards. You may put a permanent card from among them into your hand. If this spell is the first spell you've cast this game, you gain 2 life. (To mill four cards, put the top four cards of your library into your graveyard.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 4
+                        },
+                        "isMill": true
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "permanent",
+                    "storeSelected": "selected2",
+                    "prompt": "You may put a permanent card into your hand",
+                    "selectedLabel": "Put in hand",
+                    "remainderLabel": "Leave in graveyard",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "All",
+                            "conditions": [
+                                "WasCast",
+                                {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "CapturedAtCast",
+                                        "captureName": "gameCasts"
+                                    },
+                                    "operator": "EQ",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                }
+            ]
+        },
+        "castTimeCaptures": [
+            {
+                "captureName": "gameCasts",
+                "value": "SpellsCastThisGame"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "199",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/5407e8f4-0c8e-4e66-9d2f-f22277aa38f4.jpg?1785981580"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Free Borg Revolutionaries
 {
     "name": "Free Borg Revolutionaries",

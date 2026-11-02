@@ -1835,6 +1835,82 @@
     ]
 }
 
+// Rise from the Grave
+{
+    "name": "Rise from the Grave",
+    "manaCost": "{4}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Put target creature card from a graveyard onto the battlefield under your control. That creature is a black Zombie in addition to its other colors and types.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield",
+                    "controllerOverride": "Controller"
+                },
+                {
+                    "type": "AddColor",
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "AddCreatureType",
+                    "subtype": "Zombie",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "rarity": "UNCOMMON",
+        "artist": "Vance Kovacs",
+        "flavorText": "\"Death is no excuse for disobedience.\"\n—Liliana Vess",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/b/cb9dd0d9-8e35-4a8c-af6f-83c7d2a3ea7d.jpg?1783942379",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "Rise from the Grave doesn’t overwrite any previous colors or types. Rather, it adds another color and another subtype."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If the creature is normally colorless, it will simply become black. It can’t be both black and colorless."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "A later effect that changes the affected creature’s colors will overwrite that part of Rise from the Grave’s effect; the creature will be only the new color. The same is true about an effect that changes the affected creature’s types or subtypes."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Rootbound Crag
 {
     "name": "Rootbound Crag",

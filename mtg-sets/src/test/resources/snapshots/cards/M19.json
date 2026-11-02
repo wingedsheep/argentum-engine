@@ -1,3 +1,80 @@
+// Abnormal Endurance
+{
+    "name": "Abnormal Endurance",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Until end of turn, target creature gets +2/+0 and gains \"When this creature dies, return it to the battlefield tapped under its owner's control.\"",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantTriggeredAbility",
+                    "ability": {
+                        "id": "Abnormal Endurance:1",
+                        "trigger": {
+                            "type": "ZoneChangeEvent",
+                            "from": "Battlefield",
+                            "to": "Graveyard"
+                        },
+                        "effect": {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Battlefield",
+                            "placement": "Tapped",
+                            "fromZone": "Graveyard"
+                        },
+                        "descriptionOverride": "When this creature dies, return it to the battlefield tapped under its owner's control."
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "artist": "Tomasz Jedruszek",
+        "flavorText": "Tenacity prevails when hopes die.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/de2de2bd-9ba7-4b6f-94c2-dafb2011a48e.jpg?1783934576",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "Abnormal Endurance's effect works only once. If the targeted creature dies and is then returned to the battlefield, it's considered to be a new creature. If that new creature dies, it won't come back."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Aegis of the Heavens
 {
     "name": "Aegis of the Heavens",
@@ -1102,6 +1179,67 @@
         "artist": "Jason Felix",
         "flavorText": "\"They are gentle herbivores, despite their size. Approach cautiously, and hum a tune to let them know you mean no harm.\"\n—Vivien Reid",
         "imageUri": "https://cards.scryfall.io/normal/front/0/5/05145a8d-0bfb-4f07-87cf-65875310bdb4.jpg?1783934576"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Bone Dragon
+{
+    "name": "Bone Dragon",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Dragon Skeleton",
+    "oracleText": "Flying\n{3}{B}{B}, Exile seven other cards from your graveyard: Return this card from your graveyard to the battlefield tapped.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Bone Dragon:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{B}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomExileFrom",
+                                "zone": "Graveyard",
+                                "count": 7,
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Battlefield",
+                    "placement": "Tapped",
+                    "fromZone": "Graveyard"
+                },
+                "activateFromZone": "Graveyard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "rarity": "MYTHIC",
+        "artist": "Jason A. Engle",
+        "flavorText": "Its roar is the clatter of a thousand bones.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/08a0de62-6e9f-4ee9-9d8d-ee6f6a115307.jpg?1783934576"
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -2371,6 +2509,109 @@
     ]
 }
 
+// Fell Specter
+{
+    "name": "Fell Specter",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Specter",
+    "oracleText": "Flying\nWhen this creature enters, target opponent discards a card.\nWhenever an opponent discards a card, that player loses 2 life.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fell Specter:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "TargetPlayer",
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Fell Specter:2",
+                "trigger": {
+                    "type": "DiscardEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "descriptionOverride": "Whenever an opponent discards a card, that player loses 2 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "rarity": "UNCOMMON",
+        "artist": "Dimitar Marinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e8cb52a4-5fec-41a0-8030-503a61e3d33e.jpg?1783934570"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Fiery Finish
 {
     "name": "Fiery Finish",
@@ -2471,6 +2712,145 @@
         "imageUri": "https://cards.scryfall.io/normal/front/2/6/26894980-8961-4479-85dd-5f01c899718b.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Fraying Omnipotence
+{
+    "name": "Fraying Omnipotence",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each player loses half their life, then discards half the cards in their hand, then sacrifices half the creatures they control of their choice. Round up each time.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "ActivePlayerFirst"
+                    },
+                    "body": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Divide",
+                            "numerator": {
+                                "type": "LifeTotal",
+                                "player": "You"
+                            },
+                            "denominator": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        "target": "Controller"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "ActivePlayerFirst"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Divide",
+                                        "numerator": {
+                                            "type": "AggregateZone",
+                                            "player": "You",
+                                            "zone": "Hand"
+                                        },
+                                        "denominator": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    }
+                                },
+                                "storeSelected": "discarded",
+                                "prompt": "Choose cards to discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "ActivePlayerFirst"
+                    },
+                    "body": {
+                        "type": "ForceSacrifice",
+                        "filter": "creature",
+                        "target": "Controller",
+                        "dynamicCount": {
+                            "type": "Divide",
+                            "numerator": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "creature"
+                            },
+                            "denominator": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "97",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "flavorText": "The Great Mending that healed the Multiverse also unraveled the threads of Nicol Bolas's power.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f0fa0ad8-854a-4b4e-9f87-e1dfaa11253c.jpg?1783934570",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "The amounts that are lost are rounded up, not the amounts kept. For example, a player with 5 life, five cards in hand, and five creatures would lose 3 life, discard three cards, and sacrifice three creatures."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Because the instructions are followed in order, abilities of the creatures a player will sacrifice may modify or trigger on losing life, discarding cards, and/or sacrificing creatures. Abilities that trigger this way will resolve after Fraying Omnipotence is done resolving."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "When Fraying Omnipotence resolves, first each player loses the appropriate amount of life at once. Next, the player whose turn it is chooses an appropriate number of cards in hand without revealing them, then each other player in turn order does the same, and then those cards are all discarded simultaneously. Then, the player whose turn it is chooses an appropriate number of creatures they control. Each other player in turn order does the same, knowing choices made by previous players. Finally, all of the chosen creatures are sacrificed simultaneously."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "In a Two-Headed Giant game, Fraying Omnipotence causes each player to lose half of their team's life, rounded up. This means that teams at an even life total will have 0 life, and teams at an odd life total will have -1 life. The game then ends in a draw."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Frilled Sea Serpent
@@ -3307,6 +3687,74 @@
     ]
 }
 
+// Infernal Reckoning
+{
+    "name": "Infernal Reckoning",
+    "manaCost": "{B}",
+    "typeLine": "Instant",
+    "oracleText": "Exile target colorless creature. You gain life equal to its power.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "Power"
+                    }
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsColorless"
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "102",
+        "rarity": "RARE",
+        "artist": "Bram Sels",
+        "flavorText": "\"When these intruders are gone, Zendikar will be my throne, my palace, my playground.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4e291f27-d74f-48e7-bcb4-ddcc558c2211.jpg?1783934570",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "The amount of life gained is equal to the power of the creature as it last existed on the battlefield."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If the creature's power is negative, you don't lose or gain life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Isolate
 {
     "name": "Isolate",
@@ -3866,6 +4314,546 @@
     ]
 }
 
+// Liliana's Contract
+{
+    "name": "Liliana's Contract",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, you draw four cards and you lose 4 life.\nAt the beginning of your upkeep, if you control four or more Demons with different names, you win the game.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Liliana's Contract:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 4
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 4
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Liliana's Contract:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": "WinGame",
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "permanent Demon",
+                        "aggregation": "DISTINCT_NAMES"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, if you control four or more Demons with different names, you win the game."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "107",
+        "rarity": "RARE",
+        "artist": "Bastien L. Deharme",
+        "flavorText": "Immortality is worth any price.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/5/750e6246-c28d-46ed-9966-26706f6d3172.jpg?1783934567",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "If you don't control four Demons with different names as your upkeep begins, the second ability of Liliana's Contract won't trigger. You can't take any actions during your turn before your upkeep begins."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If the second ability does trigger, but you no longer control four Demons with different names as the ability resolves, you won't win the game."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Liliana's Spoils
+{
+    "name": "Liliana's Spoils",
+    "manaCost": "{3}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent discards a card.\nLook at the top five cards of your library. You may reveal a black card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "hand"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "hand",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "chooser": "TargetPlayer",
+                    "storeSelected": "discarded",
+                    "prompt": "Choose 1 card to discard"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "discarded",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "moveType": "Discard"
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "black",
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "prompt": "You may reveal a black card from among them and put it into your hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "294",
+        "rarity": "RARE",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/9/e960fb5a-70cc-490d-99cf-99bc65485cfb.jpg?1783934485",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "You may cast Liliana's Spoils targeting any opponent, even one who has no cards in hand. You'll perform the actions of its second ability even if the target opponent can't discard a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Liliana, Untouched by Death
+{
+    "name": "Liliana, Untouched by Death",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Legendary Planeswalker — Liliana",
+    "oracleText": "+1: Mill three cards. If at least one Zombie card is milled this way, each opponent loses 2 life and you gain 2 life.\n−2: Target creature gets -X/-X until end of turn, where X is the number of Zombies you control.\n−3: You may cast Zombie spells from your graveyard this turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Liliana, Untouched by Death:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "milled",
+                                    "filter": "Zombie"
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "LoseLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        },
+                                        "target": {
+                                            "type": "PlayerRef",
+                                            "player": "EachOpponent"
+                                        }
+                                    },
+                                    {
+                                        "type": "GainLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Liliana, Untouched by Death:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "permanent Zombie"
+                        },
+                        "multiplier": -1
+                    },
+                    "toughnessModifier": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "permanent Zombie"
+                        },
+                        "multiplier": -1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Liliana, Untouched by Death:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "GrantStaticAbility",
+                    "ability": {
+                        "type": "MayCastFromGraveyard",
+                        "filter": "Zombie"
+                    },
+                    "target": "Controller"
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "rarity": "MYTHIC",
+        "artist": "Bastien L. Deharme",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a7939170-f84e-44c6-b8bc-a180cf7f85d9.jpg?1783934566",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "Once Liliana's third ability has resolved, any Zombie cards in your graveyard may be cast this turn, including Zombie cards that enter your graveyard later in the turn."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "In a Two-Headed Giant game, Liliana's first ability causes the opposing team to lose 4 life and you gain 2 life."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "The value of X is determined only as Liliana's second ability resolves. If the number of Zombies you control changes later, the target creature's power and toughness won't change."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Casting a Zombie card from your graveyard once Liliana's third ability has resolved follows the normal rules for casting that card. You must pay its costs, and you must follow all applicable timing rules."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Liliana, the Necromancer
+{
+    "name": "Liliana, the Necromancer",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Legendary Planeswalker — Liliana",
+    "oracleText": "+1: Target player loses 2 life.\n−1: Return target creature card from your graveyard to your hand.\n−7: Destroy up to two target creatures. Put up to two creature cards from graveyards onto the battlefield under your control.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Liliana, the Necromancer:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Liliana, the Necromancer:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -1
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Liliana, the Necromancer:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": "IterationSpace.Targets",
+                            "body": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "destination": "Graveyard",
+                                "byDestruction": true
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Graveyard",
+                                        "player": "Each",
+                                        "filter": "creature"
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    },
+                                    "storeSelected": "selected1",
+                                    "prompt": "Choose up to two creature cards to put onto the battlefield under your control"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "selected1",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Battlefield"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 2,
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t2"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "291",
+        "rarity": "MYTHIC",
+        "artist": "Livia Prima",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4d2cbc2c-dbe3-4ecb-8fbe-785cb80b9e76.jpg?1783934485",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "For Liliana's last ability, the creatures you'll return to the battlefield are chosen after the target creatures are destroyed. No player may take actions between the time you choose two creature cards to return and the time they're returned. The destroyed cards can be among those returned to the battlefield."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If any abilities trigger on the target creatures being destroyed, those abilities won't be put onto the stack until after you've put creature cards onto the battlefield from graveyards."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "You may activate Liliana's last ability without choosing any target creatures. You'll just put up to two creature cards onto the battlefield from graveyards. However, if you choose any targets and all of those targets become illegal before the ability tries to resolve, the ability won't resolve and you won't put any cards onto the battlefield."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Loxodon Line Breaker
 {
     "name": "Loxodon Line Breaker",
@@ -4266,6 +5254,82 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Nightmare's Thirst
+{
+    "name": "Nightmare's Thirst",
+    "manaCost": "{B}",
+    "typeLine": "Instant",
+    "oracleText": "You gain 1 life. Target creature gets -X/-X until end of turn, where X is the amount of life you gained this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "TurnTracking",
+                            "player": "You",
+                            "tracker": "LIFE_GAINED"
+                        },
+                        "multiplier": -1
+                    },
+                    "toughnessModifier": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "TurnTracking",
+                            "player": "You",
+                            "tracker": "LIFE_GAINED"
+                        },
+                        "multiplier": -1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Kieryluk",
+        "flavorText": "That feeling of something on your chest is usually sleep paralysis. Occasionally, it's something else.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f12efbc0-ce88-4622-ad07-2808e651ac5a.jpg?1783934564",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "Nightmare's Thirst counts how much life you've gained this turn, not how much your life total changed. For example, if you've gained 5 life and lost 8 before Nightmare's Thirst resolves, Nightmare's Thirst has you gain 1 more life, then it gives the target creature -6/-6."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If the target creature is an illegal target when Nightmare's Thirst tries to resolve, the spell doesn't resolve. You won't gain 1 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -7199,6 +8263,58 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Uncomfortable Chill
+{
+    "name": "Uncomfortable Chill",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Creatures your opponents control get -2/-0 until end of turn.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "artist": "Izzy",
+        "flavorText": "The cold slowed their movements until only their panicked eyeballs swiveled beneath the ice.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8f12d70b-fff7-4d0c-982e-2fea70018a78.jpg?1783934576"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
