@@ -24,14 +24,14 @@ import io.kotest.matchers.shouldBe
  *
  * Not a triggered ability: nothing goes on the stack above the spell, and the counter is owed to the
  * spell at payment time, then placed as the permanent enters. The filter is matched against the cast
- * spell, so mana spent on a monocolored creature or a multicolored instant does nothing, and each
+ * spell, so mana spent on a monocolored creature or a multicolored noncreature permanent does nothing, and each
  * rider-carrying mana spent owes its own counter. Riders reach the spell whether the mana floated in
  * the pool or the auto-payer tapped the source.
  */
 class ManaRiderEntryCountersScenarioTest : ScenarioTestBase() {
 
     init {
-        cardRegistry.register(listOf(RiderGrove, RiderMeadow, GoldBear, GreenBear, GoldGrowth))
+        cardRegistry.register(listOf(RiderGrove, RiderMeadow, GoldBear, GreenBear, GoldShrine))
 
         fun board(vararg hand: String, plainWhite: Boolean = false) = scenario()
             .withPlayers("Player", "Opponent")
@@ -87,14 +87,13 @@ class ManaRiderEntryCountersScenarioTest : ScenarioTestBase() {
             game.plusOnes(game.findPermanent("Green Bear")!!) shouldBe 0
         }
 
-        test("mana spent on a multicolored instant does nothing") {
-            val game = board("Gold Growth")
+        test("mana spent on a multicolored noncreature permanent spell does nothing") {
+            val game = board("Gold Shrine")
             game.tap("Rider Grove", RiderGrove)
             game.tap("Rider Meadow", RiderMeadow)
-            game.castSpell(1, "Gold Growth").error shouldBe null
+            game.castSpell(1, "Gold Shrine").error shouldBe null
             game.resolveStack()
-            game.getLifeTotal(1) shouldBe 23
-            game.isInGraveyard(1, "Gold Growth") shouldBe true
+            game.plusOnes(game.findPermanent("Gold Shrine")!!) shouldBe 0
         }
     }
 
@@ -133,12 +132,9 @@ class ManaRiderEntryCountersScenarioTest : ScenarioTestBase() {
             toughness = 2,
         )
 
-        private val GoldGrowth = card("Gold Growth") {
+        private val GoldShrine = card("Gold Shrine") {
             manaCost = "{G}{W}"
-            typeLine = "Instant"
-            spell {
-                effect = Effects.GainLife(3)
-            }
+            typeLine = "Enchantment"
         }
     }
 }
