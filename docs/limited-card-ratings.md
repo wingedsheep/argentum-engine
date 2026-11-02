@@ -181,6 +181,45 @@ asks and whether it stands alone.
 `just arena-synergy-decks GAMES SET` measures whether it makes stronger decks: the AI's build of
 each seeded pool with synergy against the same pool's build without, played live AI vs live AI.
 
+## Choosing colours
+
+The Draftsim deckbuild builds several candidate decks per pool and offers the best by
+`playableScore`. Which colours a pool is built in is decided there:
+
+- **Candidates.** Each top-ranked pair, with its bomb splash and without one; the single
+  "good stuff" shell; and, in sealed, the three best three-colour shells whatever the pool's fixing,
+  plus each three-colour bomb's own colours.
+- **Four and five colours** are rare by design. The best-ranked four- or five-colour hypothesis and
+  each four- or five-colour bomb's colours are built only when the pool fixes them (four lands'
+  worth of fixing for four colours, six for five), and offered only when their castable power beats
+  every narrower build's by the splash margin. A four-colour mythic beside a pile of tri-lands, or an
+  Invasion domain deck on nine sac-lands, clears it; on the 400 measured pools, two decks did.
+- **Castable power.** `DraftsimCastability` puts each spell's chance of being cast on curve —
+  hypergeometric, from the finished deck's coloured sources — against the same spell's on a main
+  colour's nine sources. The ported score's quality term saturates on any real deck, so the build
+  is also weighed by `castablePower`: the spells' ratings times those chances, averaged over 23. A
+  third colour wins only when its cards beat what its thinner mana costs every other spell.
+- **Fixing** is read from the cards (`ManaFixing`): a dual's two colours, every colour for a land or
+  spell that searches for any basic land, the named basics for one that searches for those, an
+  any-colour rock or dork, our own Treasure from a spell, an activated ability or an enters trigger.
+  A "chosen colour" land is a basic of your choice, not a five-colour land, and restricted mana
+  doesn't count. A set's archetype-table `fixing` list wins where it exists. Lands that fetch a
+  basic count toward a colour only up to the basics of it the deck runs, and fill at most half the
+  lands. Everywhere fixing is counted — the castability sources, the three-colour ranking, the
+  splash and four/five-colour bars — a nonland fixer counts half a land, since it has to be drawn,
+  cast and kept and Treasure fixes once; a free one (mana value 0, like Lotus Petal) counts a whole
+  land. In the castability sources it counts only for spells cast after it: a two-mana Prism fixes
+  a three-drop, not a two-drop.
+- **Splashes** need two lands' worth of fixing for the colour in the pool, and the splashed build must gain a tenth of
+  a point of castable power over the same pair unsplashed. Smaller modelled gains lost in play.
+- **Colour-count payoffs** — Vivid, domain, converge (`ManaFixing.rewardsColors`) — gain 0.35
+  rating points per colour the deck's spells span past two.
+
+Measured 2026-11 against the previous builder, 400 server-shaped six-booster pools over ten sets
+(KTK, TDM, SNC, DMU, INV, ECL, KHM, MOM, WAR, BLB), each pool's two builds played live AI vs live
+AI with seats swapped, two seed sets: the new builds won 53.9% ± 2.9 of 1,099 games, and 57.6% ±
+5.6 where they went to three colours.
+
 ## Seeing a card's rating
 
 The Assay explorer's card page (Set Completion → Assay Explorer tab) has a **How the AI rates it**

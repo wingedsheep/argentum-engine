@@ -18,8 +18,12 @@ data class DraftsimArchetypeRank(
     val manaScore: Double,
 )
 
-/** Final deck score (`Mm` output): the 0–10 value `dW` sorts on, plus the manabase playability. */
-data class DraftsimDeckScore(val score: Double, val manaBaseScore: Double)
+/**
+ * Final deck score (`Mm` output): the 0–10 value `dW` sorts on, plus the manabase playability, plus
+ * [castablePower] — the deck's spells' ratings, each scaled by how reliably its manabase casts it,
+ * summed and spread over a full deck's spell count.
+ */
+data class DraftsimDeckScore(val score: Double, val manaBaseScore: Double, val castablePower: Double = 0.0)
 
 /**
  * Layer-1 archetype ranking (`kf`) and the 0–10 final deck score (`Mm`/`Wm`/`G4`), ported from
@@ -34,12 +38,28 @@ class DraftsimDeckScorer(private val tables: DraftsimSetTables) {
 
     private val ops = DraftsimCardOps(tables)
     private val synergy = DraftsimSynergy(ops)
+    private val castability = DraftsimCastability(ops)
 
     private companion object {
         const val BOMB = 3.9
         const val SET_BASELINE = 2.0   // sW: sX is empty in the bundle ⇒ B = 2 always.
 
         val TWO_COLOR_PAIRS = listOf("WU", "UB", "BR", "RG", "GW", "WB", "UR", "BG", "RW", "GU")
+        val WIDE_COLOR_SETS = listOf("WUBR", "WUBG", "WURG", "WBRG", "UBRG", "WUBRG")
+
+        /**
+         * Rating points a colour-count payoff (Vivid, domain, converge) gains per deck colour past
+         * two. Its rating prices it in a typical two-colour deck; each colour more is another counter,
+         * another point of cost reduction, another +1/+1.
+         */
+        const val COLOR_PAYOFF_PER_COLOR = 0.35
+
+        /** A limited deck's spell count, the divisor of [DraftsimDeckScore.castablePower]. */
+        const val FULL_DECK_SPELLS = 23
+
+        /** Fixers ([DraftsimCardOps.fixerWeight]) by which a 3-, 4- and 5-colour hypothesis is fully fixed. */
+        val FIXERS_NEEDED = mapOf(3 to 3.0, 4 to 6.0, 5 to 7.0)
+        val UNFIXED_PENALTY = mapOf(3 to 5.0, 4 to 10.0, 5 to 15.0)
         // The ten three-color "good stuff" shells (cW guild labels), shared with the builder.
         val THREE_COLOR get() = DraftsimDeckScorerGuilds.THREE_COLOR
 
@@ -89,15 +109,18 @@ class DraftsimDeckScorer(private val tables: DraftsimSetTables) {
      * payoffs the set's *untagged* cards keep fed ([DraftsimSynergy.fedPayoffs]) — zero when the
      * tables carry no synergy axes, which is the bundle's own number.
      */
-    private fun subScores(cards: List<ScorerCard>, enablers: Int, payoffs: Int): SubScores {
+    private fun subScores(
+        cards: List<ScorerCard>, enablers: Int, payoffs: Int, weight: (ScorerCard) -> Double = { 1.0 },
+    ): SubScores {
         val b = SET_BASELINE
         var quality = 0.0
-        var bombs = 0
+        var bombs = 0.0
         var removalN = 0
         val buckets = HashMap<Int, Int>()
         for (card in cards) {
-            quality += max(0.0, (ops.rating(card.name) ?: b) - b)
-            if ((ops.rating(card.name) ?: b) >= BOMB) bombs++          // Wt ?? B, NOT ratingOrDefault
+            val w = weight(card)
+            quality += max(0.0, (ops.rating(card.name) ?: b) - b) * w
+            if ((ops.rating(card.name) ?: b) >= BOMB) bombs += w          // Wt ?? B, NOT ratingOrDefault
             if (card.name.lowercase() in tables.removal) removalN++
             val bucket = ops.cmcBucket(card.cmc)
             if (bucket >= 1) buckets[bucket] = (buckets[bucket] ?: 0) + 1
@@ -115,21 +138,18 @@ class DraftsimDeckScorer(private val tables: DraftsimSetTables) {
         return SubScores(quality, count, curveScore(buckets, fill), bombs * 1.5, min(enablers, payoffs) + synergy.fedPayoffs(cards), removalScore)
     }
 
-    /** Mana penalty for 3+ color hypotheses (kf only). */
-    private fun manaPenalty(colors: List<String>, poolLands: List<ScorerCard>): Double {
+    /**
+     * Mana penalty for 3+ color hypotheses (kf only): the bundle's full penalty for a pool with no
+     * fixing in those colours, shrinking with each fixer ([DraftsimCardOps.fixerWeight] — lands and,
+     * at half weight, nonland fixers) to nothing at [FIXERS_NEEDED]. The bundle's was a cliff: two
+     * dual lands read the same as none.
+     */
+    private fun manaPenalty(colors: List<String>, pool: List<ScorerCard>): Double {
         if (colors.size < 3) return 0.0
-        val colorSet = colors.toSet()
-        val fixers = poolLands.count { land ->
-            val fix = ops.archRecord(land.name)?.fixing?.takeIf { it.isNotEmpty() }
-                ?: ops.colorsOf(land).ifEmpty { land.colorIdentity }
-            fix.size >= 4 || fix.count { it in colorSet } >= 2
-        }
-        return when {
-            colors.size == 3 && fixers < 3 -> -5.0
-            colors.size == 4 && fixers < 6 -> -10.0
-            colors.size >= 5 && fixers < 7 -> -15.0
-            else -> 0.0
-        }
+        val size = min(colors.size, 5)
+        val fixers = fixers(pool, colors)
+        val needed = FIXERS_NEEDED.getValue(size)
+        return -UNFIXED_PENALTY.getValue(size) * max(0.0, (needed - fixers) / needed)
     }
 
     // =========================================================================
@@ -147,7 +167,7 @@ class DraftsimDeckScorer(private val tables: DraftsimSetTables) {
             }
         }
         val sub = subScores(s, enablers, payoffs)
-        val mana = manaPenalty(colors, pool.filter { ops.isLand(it) && !ops.isBasic(it) })
+        val mana = manaPenalty(colors, pool)
         val qualityScore = sub.quality / 3.0
         val score = round1((qualityScore + sub.curveScore + sub.bombScore + sub.synergyScore + sub.removalScore + mana))
         return DraftsimArchetypeRank(
@@ -186,6 +206,14 @@ class DraftsimDeckScorer(private val tables: DraftsimSetTables) {
         .map { (combo, guild) -> scoreHypothesis(pool, combo.map { it.toString() }, null).copy(name = guild) }
         .sortedByDescending { it.score }
 
+    /** The five four-colour hypotheses and the five-colour one, best first. */
+    fun rankWide(pool: List<ScorerCard>): List<DraftsimArchetypeRank> = WIDE_COLOR_SETS
+        .map { combo -> scoreHypothesis(pool, combo.map { it.toString() }, null).copy(name = "${combo.length}-colour $combo") }
+        .sortedByDescending { it.score }
+
+    /** The fixing [pool] brings a deck in [colors] — lands and nonland fixers ([DraftsimCardOps.fixerWeight] summed). */
+    fun fixers(pool: List<ScorerCard>, colors: List<String>): Double = pool.sumOf { ops.fixerWeight(it, colors) }
+
     /** `C2`: colors appearing on ≥2 of an archetype's tagged cards. */
     private fun colorsOnAtLeastTwo(nonland: List<ScorerCard>, archName: String): List<String> {
         val perColor = HashMap<String, Int>()
@@ -198,20 +226,41 @@ class DraftsimDeckScorer(private val tables: DraftsimSetTables) {
     // §4–§5 final deck score Mm → Wm
     // =========================================================================
 
-    /** `Im` over the chosen deck's nonland cards (archetype-agnostic enabler/payoff counts). */
-    private fun realDeckSubScores(deckCards: List<ScorerCard>): SubScores =
-        subScoresAgnostic(deckCards.filter { !ops.isLand(it) })
-
-    /** `Mm(deckCards)` → final 0–10 score + manabase playability. */
+    /**
+     * `Mm(deckCards)` → final 0–10 score + manabase playability.
+     *
+     * Two terms the bundle's score lacks, both read off the finished deck's manabase:
+     *  - each spell's quality, bomb and removal count are scaled by how reliably the manabase casts it
+     *    on time ([DraftsimCastability.weight]). The bundle scored a deck's cards as if every one were
+     *    always castable, so a third colour only ever cost the opening-hand check's sixth of the score;
+     *    now every spell in a thin colour pays for it, and a third colour has to earn its place;
+     *  - a colour-count payoff ([ScorerCard.rewardsColors]) gains [COLOR_PAYOFF_PER_COLOR] rating
+     *    points per colour the deck's spells span past two.
+     */
     fun scoreDeck(deckCards: List<ScorerCard>): DraftsimDeckScore {
-        val o = realDeckSubScores(deckCards)
-        val removalInDeck = deckCards.filter { !ops.isLand(it) && it.name.lowercase() in tables.removal }
+        val nonland = deckCards.filter { !ops.isLand(it) }
+        val landCount = deckCards.size - nonland.size
+        val sources = castability.sources(deckCards)
+        val weights = nonland.associateWith { castability.weight(it, sources, deckCards.size, landCount) }
+        val colorsSpanned = nonland.flatMap { ops.colorsOf(it) }.toSet().size
+        val colorBonus = COLOR_PAYOFF_PER_COLOR * max(0, colorsSpanned - 2)
+        val o = subScoresAgnostic(nonland) { weights[it] ?: 1.0 }.let { sub ->
+            if (colorBonus == 0.0) sub
+            else sub.copy(quality = sub.quality + nonland.filter { it.rewardsColors }.sumOf { colorBonus * (weights[it] ?: 1.0) })
+        }
+        val removalInDeck = nonland.filter { it.name.lowercase() in tables.removal }
         val avgRating = if (removalInDeck.isEmpty()) 0.0
             else removalInDeck.sumOf { ops.rating(it.name) ?: 2.0 } / removalInDeck.size
-        val removalScore = gm(removalInDeck.size, avgRating)
+        val removalScore = gm(Math.round(removalInDeck.sumOf { weights[it] ?: 1.0 }).toInt(), avgRating)
         val manaBaseScore = manabasePlayability(deckCards)
         val score = wm(o.quality, o.curveScore, o.bombScore, o.synergyScore, removalScore, manaBaseScore, o.count)
-        return DraftsimDeckScore(score, manaBaseScore)
+        // Over the spells a full deck runs, not the ones this one holds: a short deck's missing
+        // spells are power it doesn't have.
+        val power = nonland.sumOf { card ->
+            val rating = (ops.rating(card.name) ?: SET_BASELINE) + if (card.rewardsColors) colorBonus else 0.0
+            rating * (weights[card] ?: 1.0)
+        } / max(nonland.size, FULL_DECK_SPELLS)
+        return DraftsimDeckScore(score, manaBaseScore, power)
     }
 
     /**
@@ -227,13 +276,13 @@ class DraftsimDeckScorer(private val tables: DraftsimSetTables) {
         return wm(o.quality, o.curveScore, o.bombScore, o.synergyScore, removalScore, BA_MANABASE.mean, o.count)
     }
 
-    private fun subScoresAgnostic(nonland: List<ScorerCard>): SubScores {
+    private fun subScoresAgnostic(nonland: List<ScorerCard>, weight: (ScorerCard) -> Double = { 1.0 }): SubScores {
         var enablers = 0
         var payoffs = 0
         for (card in nonland) for (tag in ops.archRecord(card.name)?.archetypes.orEmpty()) {
             when (tag.role) { "enabler" -> enablers++; "payoff" -> payoffs++ }
         }
-        return subScores(nonland, enablers, payoffs)
+        return subScores(nonland, enablers, payoffs, weight)
     }
 
     /** `Wm` — normalize each sub-score to 0–10 and average. */
@@ -280,7 +329,7 @@ class DraftsimDeckScorer(private val tables: DraftsimSetTables) {
 
         val fixMap: Map<String, List<String>> = cards
             .filter { !ops.isLand(it) }
-            .mapNotNull { c -> ops.archRecord(c.name)?.fixing?.takeIf { it.isNotEmpty() }?.let { c.name to it } }
+            .mapNotNull { c -> ops.fixingOf(c).takeIf { it.size >= 2 }?.let { c.name to it } }
             .toMap()
 
         var valid = 0
@@ -298,7 +347,7 @@ class DraftsimDeckScorer(private val tables: DraftsimSetTables) {
             valid++
 
             val available = HashMap<String, Int>()
-            for (land in lands) for (c in land.colorIdentity) available[c] = (available[c] ?: 0) + 1
+            for (land in lands) for (c in ops.fixingOf(land).toSet()) available[c] = (available[c] ?: 0) + 1
             for (c in hand) fixMap[c.name]?.let { for (col in it) available[col] = (available[col] ?: 0) + 1 }
 
             if (hand.filter { !ops.isLand(it) }.all { payable(it, available) }) castable++

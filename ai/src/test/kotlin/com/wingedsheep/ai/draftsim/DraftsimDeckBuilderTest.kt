@@ -16,6 +16,7 @@ private data class BCard(
     override val cmc: Double = DraftsimMana.cmc(manaCost),
     override val rarity: String? = "common",
     override val activationCosts: List<String> = emptyList(),
+    override val fixing: List<String> = emptyList(),
 ) : ScorerCard
 
 /**
@@ -235,6 +236,107 @@ class DraftsimDeckBuilderTest : FunSpec({
         val best = DraftsimDeckBuilder(DraftsimSetTables(ratings, HashSet(), emptyMap())).buildDecks(cards, mode = "sealed").first()
 
         best.colors.toSet() shouldBe setOf("W", "B", "G")
+    }
+
+    // Every three-colour shell is now built, whatever the pool's fixing, and the castability weight
+    // decides: a third colour of cards a little better than the pair's, off basics alone, costs
+    // every spell more than it adds.
+    test("without fixing, a slightly deeper third colour doesn't earn a three-colour deck") {
+        val ratings = HashMap<String, Double>()
+        val cards = mutableListOf<DraftsimPoolCard>()
+        var n = 0
+        fun add(card: ScorerCard, rating: Double) {
+            ratings[DraftsimData.nameKey(card.name)] = rating
+            cards += DraftsimPoolCard(card, "id-${n++}")
+        }
+        val curve = listOf("{1}", "{2}", "{3}", "{1}", "{2}")
+        for (c in listOf("W", "G")) for (i in 1..14) add(BCard("Mono$c$i", "${curve[i % 5]}{$c}", "Creature — Soldier", listOf(c)), 3.0)
+        for (i in 1..8) add(BCard("MonoU$i", "${curve[i % 5]}{U}", "Creature — Drake", listOf("U")), 3.3)
+
+        val best = DraftsimDeckBuilder(DraftsimSetTables(ratings, HashSet(), emptyMap())).buildDecks(cards, mode = "sealed").first()
+
+        best.colors.size shouldBe 2
+    }
+
+    // The splash pass used to need the set's archetype table to flag a card `splashable`; outside the
+    // handful of sets that ship one, no deck ever splashed its bombs. A pool with the duals to carry
+    // them now does — when the bombs gain the deck clearly more than the splash costs.
+    test("off-colour bombs splash on a set with no archetype table when duals carry them") {
+        val ratings = HashMap<String, Double>()
+        val cards = mutableListOf<DraftsimPoolCard>()
+        var n = 0
+        fun add(card: ScorerCard, rating: Double) {
+            ratings[DraftsimData.nameKey(card.name)] = rating
+            cards += DraftsimPoolCard(card, "id-${n++}")
+        }
+        val costs = listOf("{R}", "{1}{R}", "{2}{R}", "{3}{R}", "{1}{G}", "{2}{G}", "{3}{G}", "{4}{G}")
+        for (i in 1..14) add(BCard("RedCreature$i", costs[i % 4], "Creature — Goblin", listOf("R")), 2.8)
+        for (i in 1..14) add(BCard("GreenCreature$i", costs[4 + i % 4], "Creature — Beast", listOf("G")), 2.8)
+        add(BCard("Sphinx of Storms", "{4}{U}", "Creature — Sphinx", listOf("U")), 4.8)
+        add(BCard("Tidal Wraith", "{3}{U}", "Creature — Spirit", listOf("U")), 4.6)
+        for (i in 1..3) add(BCard("UR dual $i", "", "Land", colorIdentity = listOf("U", "R")), 2.0)
+        for (i in 1..2) add(BCard("UG dual $i", "", "Land", colorIdentity = listOf("U", "G")), 2.0)
+        val byId = cards.associateBy { it.instanceId }
+
+        val best = DraftsimDeckBuilder(DraftsimSetTables(ratings, HashSet(), emptyMap())).buildDecks(cards, mode = "sealed").first()
+
+        best.splashColor shouldBe "U"
+        best.deckInstanceIds.mapNotNull { byId[it]?.card?.name } shouldContainAll listOf("Sphinx of Storms", "Tidal Wraith")
+    }
+
+    test("a lone bomb with no lands of its colour in the pool stays out") {
+        val ratings = HashMap<String, Double>()
+        val cards = mutableListOf<DraftsimPoolCard>()
+        var n = 0
+        fun add(card: ScorerCard, rating: Double) {
+            ratings[DraftsimData.nameKey(card.name)] = rating
+            cards += DraftsimPoolCard(card, "id-${n++}")
+        }
+        val costs = listOf("{R}", "{1}{R}", "{2}{R}", "{3}{R}", "{1}{G}", "{2}{G}", "{3}{G}", "{4}{G}")
+        for (i in 1..14) add(BCard("RedCreature$i", costs[i % 4], "Creature — Goblin", listOf("R")), 2.8)
+        for (i in 1..14) add(BCard("GreenCreature$i", costs[4 + i % 4], "Creature — Beast", listOf("G")), 2.8)
+        add(BCard("Sphinx of Storms", "{4}{U}", "Creature — Sphinx", listOf("U")), 4.8)
+
+        val best = DraftsimDeckBuilder(DraftsimSetTables(ratings, HashSet(), emptyMap())).buildDecks(cards, mode = "sealed").first()
+
+        best.colors.toSet() shouldBe setOf("R", "G")
+    }
+
+    // Four and five colours are rare, but not forbidden: a four-colour mythic beside a pool full of
+    // tri-lands is the better deck in its own colours, and the build is offered when its castable
+    // power clears every narrower build's by a splash's margin.
+    fun fourColourPool(withLands: Boolean): Pair<List<DraftsimPoolCard>, DraftsimSetTables> {
+        val ratings = HashMap<String, Double>()
+        val cards = mutableListOf<DraftsimPoolCard>()
+        var n = 0
+        fun add(card: ScorerCard, rating: Double) {
+            ratings[DraftsimData.nameKey(card.name)] = rating
+            cards += DraftsimPoolCard(card, "id-${n++}")
+        }
+        val curve = listOf("{1}", "{2}", "{3}", "{1}", "{2}", "{4}")
+        for (c in listOf("W", "U", "B", "G")) for (i in 1..7) add(BCard("Mono$c$i", "${curve[i % 6]}{$c}", "Creature — Soldier", listOf(c)), 2.7)
+        add(BCard("Atraxa, Grand Unifier", "{3}{G}{W}{U}{B}", "Legendary Creature — Phyrexian Angel", listOf("W", "U", "B", "G")), 5.0)
+        add(BCard("Esper Sentinel", "{1}{W}{U}{B}", "Creature — Sphinx", listOf("W", "U", "B")), 4.2)
+        add(BCard("Abzan Charm", "{W}{B}{G}", "Instant", listOf("W", "B", "G")), 4.0)
+        add(BCard("Sultai Charm", "{B}{G}{U}", "Instant", listOf("U", "B", "G")), 4.0)
+        if (withLands) {
+            for (tri in listOf(listOf("W", "U", "B"), listOf("W", "B", "G"), listOf("U", "B", "G"), listOf("W", "U", "G"))) {
+                for (i in 1..2) add(BCard("Tri ${tri.joinToString("")} $i", "", "Land", colorIdentity = tri), 2.0)
+            }
+        }
+        return cards to DraftsimSetTables(ratings, HashSet(), emptyMap())
+    }
+
+    test("a four-colour mythic and the tri-lands to carry it build four colours") {
+        val (pool, tables) = fourColourPool(withLands = true)
+        val best = DraftsimDeckBuilder(tables).buildDecks(pool, mode = "sealed").first()
+        best.colors.toSet() shouldBe setOf("W", "U", "B", "G")
+    }
+
+    test("the same four-colour mythic off basics alone stays at three colours or fewer") {
+        val (pool, tables) = fourColourPool(withLands = false)
+        val best = DraftsimDeckBuilder(tables).buildDecks(pool, mode = "sealed").first()
+        (best.colors.size <= 3) shouldBe true
     }
 
     // A drafted pool with only 19 castable spells in its pair used to make up the four-card gap in
