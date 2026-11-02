@@ -330,6 +330,265 @@
     ]
 }
 
+// Borg Cube
+{
+    "name": "Borg Cube",
+    "manaCost": "{5}{W}{B}",
+    "typeLine": "Artifact — Spacecraft",
+    "oracleText": "Affinity for artifact creatures\nWhenever this Spacecraft enters or attacks, assimilate a creature card exiled with it. If you can't, exile up to one target creature. (To assimilate a card, put it onto the battlefield under your control with a +1/+1 counter. It's a Borg artifact creature and loses all other creature types.)\nStation\n12+ | Artifact creatures you control have flying.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Borg Cube:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "gathered0",
+                            "ifNotEmpty": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered0",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "filter": "creature",
+                                        "storeSelected": "selected2",
+                                        "prompt": "Choose a creature card exiled with Borg Cube to assimilate"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "selected2",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Battlefield"
+                                        },
+                                        "addCounterType": "PLUS_ONE_PLUS_ONE",
+                                        "entersWith": {
+                                            "addedCardTypes": [
+                                                "ARTIFACT",
+                                                "CREATURE"
+                                            ],
+                                            "creatureSubtypes": [
+                                                "Borg"
+                                            ]
+                                        }
+                                    }
+                                ]
+                            },
+                            "ifEmpty": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Exile",
+                                "linkToSource": true
+                            },
+                            "filter": "creature"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this Spacecraft enters, assimilate a creature card exiled with it. If you can't, exile up to one target creature."
+            },
+            {
+                "id": "Borg Cube:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "gathered0",
+                            "ifNotEmpty": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered0",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "filter": "creature",
+                                        "storeSelected": "selected2",
+                                        "prompt": "Choose a creature card exiled with Borg Cube to assimilate"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "selected2",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Battlefield"
+                                        },
+                                        "addCounterType": "PLUS_ONE_PLUS_ONE",
+                                        "entersWith": {
+                                            "addedCardTypes": [
+                                                "ARTIFACT",
+                                                "CREATURE"
+                                            ],
+                                            "creatureSubtypes": [
+                                                "Borg"
+                                            ]
+                                        }
+                                    }
+                                ]
+                            },
+                            "ifEmpty": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                },
+                                "destination": "Exile",
+                                "linkToSource": true
+                            },
+                            "filter": "creature"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t1"
+                },
+                "descriptionOverride": "Whenever this Spacecraft attacks, assimilate a creature card exiled with it. If you can't, exile up to one target creature."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Borg Cube:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomTapPermanents",
+                        "filter": "creature",
+                        "excludeSelf": true
+                    }
+                },
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "CHARGE",
+                    "amount": "StationCharge",
+                    "target": "Self"
+                },
+                "timing": "SorcerySpeed"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "PermanentsYouControlMatching",
+                        "filter": "artifact creature"
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantCardType",
+                    "cardType": "CREATURE"
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "CHARGE"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 12
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "filter": {
+                        "baseFilter": "artifact creature ctrl:you"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "CHARGE"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 12
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "227",
+        "rarity": "MYTHIC",
+        "artist": "Alexander Forssberg",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/5/e58f7310-3fd5-48d5-b6b7-a5d3e1808bbc.jpg?1792508285"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Captain Benjamin Sisko
 {
     "name": "Captain Benjamin Sisko",
@@ -1595,6 +1854,75 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Death Is Irrelevant
+{
+    "name": "Death Is Irrelevant",
+    "manaCost": "{6}{B}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Artifact creatures you control have indestructible.\nAt the beginning of your end step, assimilate target creature card from a graveyard. (Put it onto the battlefield under your control with a +1/+1 counter. It's a Borg artifact creature and loses all other creature types.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Death Is Irrelevant:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield",
+                    "controllerOverride": "Controller",
+                    "entryCounters": [
+                        {
+                            "counterType": "PLUS_ONE_PLUS_ONE"
+                        }
+                    ],
+                    "entersWith": {
+                        "addedCardTypes": [
+                            "ARTIFACT",
+                            "CREATURE"
+                        ],
+                        "creatureSubtypes": [
+                            "Borg"
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "INDESTRUCTIBLE",
+                "filter": {
+                    "baseFilter": "artifact creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "102",
+        "rarity": "MYTHIC",
+        "artist": "Narendra Bintara Adi",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/408cb5dd-1a79-47a9-98ea-41f3f4502c5e.jpg?1792668404"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

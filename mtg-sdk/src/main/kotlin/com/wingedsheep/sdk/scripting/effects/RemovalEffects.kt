@@ -387,6 +387,9 @@ data class EntryCounter(
  * counters gated on being a creature, and "whenever a creature enters" triggers all see it as a
  * creature. The change lasts for as long as the permanent stays on the battlefield.
  *
+ * [creatureSubtypes] is the one axis that *replaces* rather than adds: the card's creature types
+ * become exactly that set (assimilate's "loses all other creature types").
+ *
  * Carried by [MoveToZoneEffect.entersWith] and [MoveCollectionEffect.entersWith]; ignored for a
  * face-down entry, for any destination but the battlefield, and for an Aura entering through the
  * attach/enchant prompt (an Aura that is also a creature can't stay attached anyway). Replacements
@@ -401,12 +404,30 @@ data class EntersWithCharacteristics(
     val addedColors: Set<Color> = emptySet(),
     val power: Int? = null,
     val toughness: Int? = null,
+    /**
+     * When set, the card's creature types are *replaced* by these as it enters — "it's a Borg
+     * artifact creature and loses all other creature types" (assimilate). Non-creature subtypes
+     * stay (CR 205.1a). `null` (the default) leaves its creature types alone; [addedSubtypes] still
+     * add on top.
+     */
+    val creatureSubtypes: Set<Subtype>? = null,
 ) {
     init {
         require((power == null) == (toughness == null)) { "power and toughness are set together" }
     }
 
     companion object {
+        /**
+         * Assimilate's rider (Star Trek): "It's a Borg artifact creature and loses all other creature
+         * types." Pair it with a +1/+1 entry counter and your control — `Effects.Assimilate(target)`
+         * for a targeted card, or a pipeline `move(…, addCounterType = PLUS_ONE_PLUS_ONE, entersWith =
+         * assimilated())` for one chosen at resolution (Borg Cube).
+         */
+        fun assimilated() = EntersWithCharacteristics(
+            addedCardTypes = setOf(CardType.ARTIFACT, CardType.CREATURE),
+            creatureSubtypes = setOf(Subtype("Borg")),
+        )
+
         /** "enters as a [power]/[toughness] [subtypes] creature in addition to its other types". */
         fun creature(power: Int, toughness: Int, vararg subtypes: String) = EntersWithCharacteristics(
             addedCardTypes = setOf(CardType.CREATURE),

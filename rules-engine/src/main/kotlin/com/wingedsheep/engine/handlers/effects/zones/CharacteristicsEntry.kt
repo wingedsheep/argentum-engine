@@ -20,7 +20,7 @@ import com.wingedsheep.sdk.scripting.effects.EntersWithCharacteristics
  *
  * Every change is a [Duration.Permanent] floating effect on the new object: it lasts while the
  * permanent stays on the battlefield and is stripped with the object when it leaves (CR 400.7).
- * Types and subtypes are added in layer 4, colors in layer 5, and the base P/T is set in layer 7b,
+ * Types and subtypes are added (or creature types replaced) in layer 4, colors in layer 5, and the base P/T is set in layer 7b,
  * so a later effect that sets P/T (or counters) still applies on top of it.
  */
 object CharacteristicsEntry {
@@ -36,6 +36,11 @@ object CharacteristicsEntry {
         val modifications = buildList {
             characteristics.addedCardTypes.forEach {
                 add(Triple(Layer.TYPE, null, SerializableModification.AddType(it.name)))
+            }
+            // Replace the creature types first, so any addedSubtypes still land on top.
+            characteristics.creatureSubtypes?.let { types ->
+                add(Triple(Layer.TYPE, null, SerializableModification.SetCreatureSubtypes(
+                    types.mapTo(linkedSetOf()) { it.value })))
             }
             characteristics.addedSubtypes.forEach {
                 add(Triple(Layer.TYPE, null, SerializableModification.AddSubtype(it.value)))
