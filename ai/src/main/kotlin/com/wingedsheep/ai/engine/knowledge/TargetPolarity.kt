@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.AdditionalManaOnTap
+import com.wingedsheep.sdk.scripting.AdditionalSourceTriggers
 import com.wingedsheep.sdk.scripting.CantBeBlocked
 import com.wingedsheep.sdk.scripting.CompositeStaticAbility
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
@@ -65,6 +66,7 @@ import com.wingedsheep.sdk.scripting.effects.GrantHexproofFromChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.LockPlayerCountersEffect
 import com.wingedsheep.sdk.scripting.effects.GrantProtectionFromChosenColorEffect
+import com.wingedsheep.sdk.scripting.effects.GrantStaticAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.GrantTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.MarkExileOnDeathEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
@@ -566,6 +568,11 @@ object TargetPolarityAnalyzer {
             // the same trigger granted by an Aura.
             is GrantTriggeredAbilityEffect -> leaf.target to grantedTriggerPolarity(leaf.ability)
                 .takeIf { it != TargetPolarity.UNKNOWN }
+            // "If a triggered ability of that creature triggers, it triggers an additional time"
+            // (Lwaxana Troi, Charming Guest): a doubler only ever repeats its holder's controller's
+            // own triggers, so it is aimed at a creature of yours.
+            is GrantStaticAbilityEffect -> if (leaf.ability is AdditionalSourceTriggers) leaf.target to TargetPolarity.BENEFICIAL
+                else return emptyList()
             // Only a creature with a prepare spell can become prepared, and its controller is the
             // one who may cast that spell (Hexhaven Dueling Arena); unpreparing takes it away.
             is BecomePreparedEffect -> leaf.target to TargetPolarity.BENEFICIAL

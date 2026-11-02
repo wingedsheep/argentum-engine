@@ -5,6 +5,7 @@ import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.LandTappedForManaEvent
 import com.wingedsheep.engine.core.landTappedForManaEvent
 import com.wingedsheep.engine.core.ManaAddedEvent
+import com.wingedsheep.engine.event.SourceTriggerDoublers
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
@@ -14,18 +15,15 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
-import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.battlefield.chosenColor
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
-import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AdditionalManaOnSourceTap
 import com.wingedsheep.sdk.scripting.AdditionalManaOnTap
-import com.wingedsheep.sdk.scripting.AdditionalSourceTriggers
 import com.wingedsheep.sdk.scripting.DampLandManaProduction
 import com.wingedsheep.sdk.scripting.TappedForManaType
 import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
@@ -54,6 +52,8 @@ class ManaAbilityResolutionPipeline(
 
     private val tappedForManaBonusResolver =
         TappedForManaBonusResolver(cardRegistry, dynamicAmountEvaluator)
+    private val sourceTriggerDoublers =
+        SourceTriggerDoublers(cardRegistry, predicateEvaluator, conditionEvaluator)
 
     /** The state after [applyLandManaDampening], and whether the replacement actually applied. */
     data class Dampening(val state: GameState, val dampened: Boolean)
@@ -372,7 +372,7 @@ class ManaAbilityResolutionPipeline(
     }
 
     /**
-     * Count how many [AdditionalSourceTriggers] doublers on the battlefield apply to a
+     * Count how many [com.wingedsheep.sdk.scripting.AdditionalSourceTriggers] doublers (printed or granted) on the battlefield apply to a
      * triggered ability with source [triggerSourceId] controlled by [triggerControllerId].
      *
      * Triggered mana abilities ([AdditionalManaOnTap], [AdditionalManaOnSourceTap]) bypass
@@ -386,40 +386,8 @@ class ManaAbilityResolutionPipeline(
         state: GameState,
         triggerSourceId: EntityId,
         triggerControllerId: EntityId
-    ): Int {
-        val projected = state.projectedState
-        var count = 0
-        for (permanentId in state.getBattlefield()) {
-            val container = state.getEntity(permanentId) ?: continue
-            val card = container.get<CardComponent>() ?: continue
-            if (container.has<FaceDownComponent>()) continue
-            val controllerId = projected.getController(permanentId) ?: continue
-            if (controllerId != triggerControllerId) continue
-            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
-            val classLevel = container.get<ClassLevelComponent>()?.currentLevel
-            for (ability in cardDef.script.effectiveStaticAbilities(classLevel)) {
-                if (ability !is AdditionalSourceTriggers) continue
-                // Optional gate ("as long as ~ is equipped") — evaluated against the doubler source.
-                val gate = ability.condition
-                if (gate != null && !conditionEvaluator.evaluate(
-                        state, gate, EffectContext(sourceId = permanentId, controllerId = controllerId)
-                    )
-                ) continue
-                // `alsoSource` doubles the doubler's own triggers regardless of the filter.
-                if (ability.alsoSource && permanentId == triggerSourceId) {
-                    count++
-                    continue
-                }
-                if (ability.excludeSelf && permanentId == triggerSourceId) continue
-                if (!predicateEvaluator.matches(
-                        state, projected, triggerSourceId, ability.sourceFilter,
-                        PredicateContext(controllerId = controllerId, sourceId = permanentId)
-                    )
-                ) continue
-                count++
-            }
-        }
-        return count
+    ): Int = sourceTriggerDoublers.collect(state).count {
+        sourceTriggerDoublers.doubles(state, it, triggerSourceId, triggerControllerId)
     }
 
     /**

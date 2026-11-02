@@ -13,6 +13,7 @@ import com.wingedsheep.mtg.sets.definitions.ecl.cards.SyggWanderwineWisdom
 import com.wingedsheep.mtg.sets.definitions.fra.cards.EmergencyPhytomedic
 import com.wingedsheep.mtg.sets.definitions.fra.cards.HexhavenDuelingArena
 import com.wingedsheep.mtg.sets.definitions.m10.cards.SignInBlood
+import com.wingedsheep.mtg.sets.definitions.trk.cards.LwaxanaTroiCharmingGuest
 import com.wingedsheep.mtg.sets.definitions.vis.cards.Inspiration
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
@@ -51,6 +52,11 @@ class UnreadTargetPolarityTest : FunSpec({
             val prepare = HexhavenDuelingArena.script.activatedAbilities.drop(1)
             prepare.map { TargetPolarityAnalyzer.forAbility(HexhavenDuelingArena, it) } shouldBe
                 listOf(listOf(TargetPolarity.BENEFICIAL), listOf(TargetPolarity.BENEFICIAL))
+        }
+        test("a granted trigger doubler is a gift to the creature's controller") {
+            val ability = LwaxanaTroiCharmingGuest.script.activatedAbilities.single()
+            TargetPolarityAnalyzer.forAbility(LwaxanaTroiCharmingGuest, ability) shouldBe
+                listOf(TargetPolarity.BENEFICIAL)
         }
         test("target player draws is a gift; draws and loses life is either way") {
             TargetPolarityAnalyzer.forSpell(Inspiration) shouldBe listOf(TargetPolarity.BENEFICIAL)

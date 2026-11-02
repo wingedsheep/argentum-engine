@@ -12015,7 +12015,14 @@ in the declare-blockers step, even before the turn-based block action has comple
   type this permanent chose as it entered (read from the doubler's `sourceId` via
   `CardPredicate.HasChosenSubtype`). Roaming Throne pairs it with `EntersWithChoice(CREATURE_TYPE)` +
   `GrantChosenSubtype()` for "another creature you control of the chosen type" (`excludeSelf = true`).
-  `TriggerDetector.duplicateSourceTriggers` (and `ActivateAbilityHandler` for triggered mana abilities).
+  **Grantable**: a resolving `Effects.GrantStaticAbility(AdditionalSourceTriggers(...), target, duration)`
+  gives the target the doubler as its own ability (filter read relative to the holder) for the
+  duration — Lwaxana Troi, Charming Guest grants `AdditionalSourceTriggers(GameObjectFilter.Any.sourceItself(),
+  excludeSelf = false)` to "another target creature you control" for `Duration.WhileSourceTapped`, so
+  only that creature's triggers double, until she untaps or leaves. A token's own doubler (stored as a
+  granted static) is read the same way.
+  `SourceTriggerDoublers` collects printed and granted doublers for `TriggerDetector.duplicateSourceTriggers`
+  and the triggered-mana-ability path (`ManaAbilityResolutionPipeline`).
 - `AdditionalDungeonRoomTriggers` — Hama Pashar, Ruin Seeker: "Room abilities of dungeons you own
   trigger an additional time." The room-ability analogue of `AdditionalSourceTriggers`: room abilities
   (CR 309.4c) trigger from a dungeon card in the command zone, which no permanent filter reaches, so the
