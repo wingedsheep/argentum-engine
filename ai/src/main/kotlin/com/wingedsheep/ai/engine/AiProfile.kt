@@ -1471,8 +1471,9 @@ data class AiProfile(
      */
     val stressCrackBack: Boolean = false,
     /**
-     * Score an attack plan's aftermath with this combat's **marked damage already gone**, as it is
-     * after cleanup (CR 514.2) — which is the board the crack-back actually meets.
+     * Score an attack plan's aftermath as **cleanup leaves it** (CR 514.2): this combat's marked
+     * damage gone and every "until end of turn" effect ended — the board the crack-back actually
+     * meets.
      *
      * Found by `CombatTradePropertyTest`: at 12 life, with Pensive Minotaur, Savannah Lions and
      * Trained Armodon facing Spined Wurm and two Hill Giants, `LIVE` attacked with the Lions alone.
@@ -1481,6 +1482,11 @@ data class AiProfile(
      * back read three points smaller than the one facing a board that still had the Lions. Losing a
      * creature for nothing outscored not attacking by four points. In 450 random boards the
      * defender could eat every attacker for free in 12 of the attacks `LIVE` declared.
+     *
+     * The until-end-of-turn half is from a logged game (`80bb6b97`, turn 18): at 4 life, Tragic
+     * Banshee's entry gave Lightshell Duo −1/−1 until end of turn, and the crack-back read the
+     * Duo as a 2/3. Against its real 3/4 the swing back was lethal; `LIVE` attacked with two of its
+     * three creatures for five non-lethal damage and died on the next turn.
      */
     val crackBackAfterCleanup: Boolean = false,
     /**

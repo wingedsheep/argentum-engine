@@ -14,6 +14,7 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldNotContain
+import io.kotest.matchers.shouldBe
 
 /**
  * The positions `CombatTradePropertyTest` found, one per fix: each pins what [AiProfile.LIVE] does
@@ -80,6 +81,38 @@ class CombatTradeFixesTest : ScenarioTestBase() {
             test("reading the damage as permanent sends it") {
                 board().attackersChosenBy(AiProfile.LIVE.copy(id = "t", crackBackAfterCleanup = false))
                     .shouldContain("Savannah Lions")
+            }
+        }
+
+        context("an until-end-of-turn shrink is gone by the crack-back") {
+            // The shape of logged game `80bb6b97` (turn 18): at 3 life, their Hill Giant shrunk to a
+            // 1/1 for the turn read as a one-power attacker on their swing back. Attacking with
+            // the Lions and the Bears leaves one blocker for two attackers, and the real 3/3 is lethal.
+            fun board(): TestGame {
+                var b = scenario().withRngSeed(20261102L).withPlayers()
+                    .withLifeTotal(1, 3).withLifeTotal(2, 20)
+                    .on(1, listOf("Savannah Lions", "Grizzly Bears", "Hill Giant"))
+                    .withCardOnBattlefield(1, "Swamp")
+                    .withCardInHand(1, "Disfigure")
+                    .withCardOnBattlefield(2, "Hill Giant", tapped = true)
+                    .withCardOnBattlefield(2, "Spined Wurm", tapped = true)
+                    .stocked()
+                val game = b.build()
+                val theirGiant = game.state.projectedState.getBattlefieldControlledBy(game.seatId(2))
+                    .first { game.nameOf(it) == "Hill Giant" }
+                game.castSpell(1, "Disfigure", theirGiant)
+                game.resolveStack()
+                return game.advanceToDeclaration(1, Step.DECLARE_ATTACKERS)
+            }
+
+            test("keeps two blockers home against a Giant that is a 3/3 again on their turn") {
+                val attackers = board().attackersChosenBy(AiProfile.LIVE)
+                withClue("attacked with $attackers") { (attackers.size <= 1) shouldBe true }
+            }
+
+            test("reading the shrink as lasting sends both small creatures") {
+                val attackers = board().attackersChosenBy(AiProfile.LIVE.copy(id = "t", crackBackAfterCleanup = false))
+                withClue("attacked with $attackers") { (attackers.size >= 2) shouldBe true }
             }
         }
 

@@ -171,9 +171,10 @@ class CombatAdvisor(
      */
     stressCrackBack: Boolean = false,
     /**
-     * Score an attack plan's aftermath as it stands once cleanup has run: damage marked in this
-     * combat is gone by the crack-back (CR 514.2), so a blocker that took two from our attacker
-     * is not a creature our 2/3 can kill on their turn ([scoreAttackOutcome]).
+     * Score an attack plan's aftermath as it stands once cleanup has run (CR 514.2): damage marked
+     * in this combat is gone and every "until end of turn" effect has ended by the crack-back. A
+     * blocker that took two from our attacker is not a creature our 2/3 can kill on their turn, and
+     * a creature shrunk until end of turn swings back at full size ([scoreAttackOutcome]).
      * [AiProfile.crackBackAfterCleanup] carries the argument.
      */
     private val crackBackAfterCleanup: Boolean = false,
@@ -1899,19 +1900,25 @@ class CombatAdvisor(
         attackerMap: Map<EntityId, EntityId>,
         settleExpiring: Boolean,
     ): Double {
-        val postCombat = when {
-            settleExpiring ->
-                simulated.copy(floatingEffects = simulated.floatingEffects.filter { it.duration != Duration.EndOfTurn })
-            // A creature stolen until end of turn goes home at cleanup, before anything this score
-            // prices happens: it cannot block the crack-back for us, and if it died attacking, the
-            // opponent lost it. Read as ours, it was a blocker to keep home and an asset to protect,
-            // and the AI cast Threaten and then declared no attack.
-            borrowedCreaturesGoHome -> simulated.copy(
-                floatingEffects = simulated.floatingEffects.filterNot {
-                    it.duration == Duration.EndOfTurn && it.effect.layer == Layer.CONTROL
+        val postCombat = if (settleExpiring) {
+            simulated.copy(floatingEffects = simulated.floatingEffects.filter { it.duration != Duration.EndOfTurn })
+        } else {
+            simulated.copy(
+                floatingEffects = simulated.floatingEffects.filterNot { effect ->
+                    effect.duration == Duration.EndOfTurn && if (effect.effect.layer == Layer.CONTROL) {
+                        // A creature stolen until end of turn goes home at cleanup, before anything
+                        // this score prices happens: it cannot block the crack-back for us, and if it
+                        // died attacking, the opponent lost it. Read as ours, it was a blocker to keep
+                        // home and an asset to protect, and the AI cast Threaten and then declared no
+                        // attack.
+                        borrowedCreaturesGoHome
+                    } else {
+                        // Every other "until end of turn" effect ends at cleanup too (CR 514.2): a
+                        // creature shrunk for the turn swings back at full size.
+                        crackBackAfterCleanup
+                    }
                 },
             )
-            else -> simulated
         }.let { if (crackBackAfterCleanup) withoutMarkedDamage(it) else it }
         val postProjected = postCombat.projectedState
         // Under [attacksReadTheRace] the board is read as it stands at our next untap: the
