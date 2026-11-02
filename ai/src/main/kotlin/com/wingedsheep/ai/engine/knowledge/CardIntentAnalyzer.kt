@@ -641,8 +641,24 @@ object CardIntentAnalyzer {
             it is MoveCollectionEffect && it.from in fromOurTop &&
                 (it.destination as? CardDestination.ToZone)?.let { to -> to.zone == Zone.HAND && to.player == Player.You } == true
         }
-        return if (movesThemToOurHand) setOf(IntentTag.DRAW) else emptySet()
+        val grantsThemToUs = leaves.any { it is GrantMayPlayFromExileEffect && it.from in fromOurTop && isLastingImpulse(it) }
+        return if (movesThemToOurHand || grantsThemToUs) setOf(IntentTag.DRAW) else emptySet()
     }
+
+    /**
+     * An impulse draw whose cards we can still play after this turn — "until the end of your next
+     * turn", "for as long as it remains exiled" — is a draw, the cards only waiting in exile instead
+     * of in hand. One that closes this turn ("until end of turn", "until your next end step") is not
+     * read as one: a DRAW reading earns the idle-mana and end-step windows, and cards that must be
+     * spent before cleanup are worth nothing cast into them.
+     */
+    private fun isLastingImpulse(grant: GrantMayPlayFromExileEffect): Boolean =
+        grant.recipient == EffectTarget.Controller && !grant.ownerControls && grant.condition == null &&
+            when (val expiry = grant.expiry) {
+                MayPlayExpiry.EndOfTurn -> false
+                is MayPlayExpiry.UntilControllerStep -> !expiry.includeCurrentTurn
+                else -> true
+            }
 
     /** The collections [leaf] stores from one of [sources] — the pipeline steps that split or narrow a collection. */
     private fun derivedCollections(leaf: Effect, sources: Set<String>): List<String> = when (leaf) {

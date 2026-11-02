@@ -51,6 +51,7 @@ import com.wingedsheep.sdk.scripting.effects.SurveilEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.effects.TransformEffect
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
@@ -344,8 +345,12 @@ object AiReadingAudit {
             // "When this leaves the battlefield, return the exiled card" (O-Ring, Fiend Hunter, champion)
             // needs no intent: it never stands alone — it is the price of the entry's exile, with no
             // target to aim and no window to choose, and the entry trigger already carries the reading.
-            // One that puts the cards into a hand stays flagged: that can be a payoff (Hoarding Dragon).
-            if (TargetlessEntry.handsBackTheEntry(trigger) && !movesToHand(trigger.effect)) {
+            // One that puts the cards into a hand stays flagged: that can be a payoff (Hoarding Dragon) —
+            // unless what it hands back is what casting this card exiled as a cost (behold-and-exile,
+            // "exile a creature you control"): that is a refund of the card's own price, not a payoff.
+            if (TargetlessEntry.handsBackTheEntry(trigger) &&
+                (!movesToHand(trigger.effect) || script.additionalCosts.any(::exilesAsCost))
+            ) {
                 sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only hands back what this permanent exiled, when it leaves")
             } else {
                 intent(trigger.effect, sink, reqs)
@@ -712,6 +717,14 @@ object AiReadingAudit {
             else -> return false
         }
         return (target as? EffectTarget.BoundVariable)?.name in playerSlots
+    }
+
+    /** An additional cost that exiles cards as it is paid — what a leaves trigger can later hand back. */
+    private fun exilesAsCost(cost: AdditionalCost): Boolean = when (cost) {
+        is AdditionalCost.Composite -> cost.steps.any(::exilesAsCost)
+        is AdditionalCost.ExileFromStorage -> cost.linkToSource
+        is AdditionalCost.Atom -> cost.atom is CostAtom.ExileFrom
+        else -> false
     }
 
     private fun movesToHand(effect: Effect): Boolean = EffectWalker.leaves(effect).any { leaf ->
