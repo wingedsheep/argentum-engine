@@ -443,7 +443,7 @@ object AiReadingAudit {
         // "Target opponent gets a poison counter": the bound slot is a player, so the counter is a clock too.
         val playerSlots = reqs.filter { it is TargetPlayer || it is TargetOpponent }.mapNotNullTo(HashSet()) { it.id }
         val noIntent = { leaf: Effect -> needsNoIntent(leaf) || countsOnAPlayerSlot(leaf, playerSlots) }
-        val tags = CardIntentAnalyzer.analyzeEffect(root).tags
+        val tags = CardIntentAnalyzer.analyzeEffect(root, reqs).tags
         // Card selection alone doesn't read an ability: scry is a rider on half the cards that
         // carry it, so a scry beside an unread payoff must not hide that payoff from the audit.
         if ((tags - IntentTag.CARD_SELECTION).isNotEmpty()) {
