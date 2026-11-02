@@ -5814,6 +5814,115 @@
     ]
 }
 
+// Lazav, the Multifarious
+{
+    "name": "Lazav, the Multifarious",
+    "manaCost": "{U}{B}",
+    "typeLine": "Legendary Creature — Shapeshifter",
+    "oracleText": "When Lazav enters, surveil 1. (Look at the top card of your library. You may put it into your graveyard.)\n{X}: Lazav becomes a copy of target creature card in your graveyard with mana value X, except its name is Lazav, the Multifarious, it's legendary in addition to its other types, and it has this ability.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lazav, the Multifarious:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Surveil",
+                    "count": 1
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Lazav, the Multifarious:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{X}"
+                    }
+                },
+                "effect": {
+                    "type": "EachPermanentBecomesCopyOfTarget",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "affected": "Self",
+                    "sourceFromAnyZone": true,
+                    "exceptions": {
+                        "nameOverride": "Lazav, the Multifarious",
+                        "addedSupertypes": [
+                            "LEGENDARY"
+                        ]
+                    },
+                    "retainActivatingAbility": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "CompareNumericProperty",
+                                        "property": "MANA_VALUE",
+                                        "operator": "EQ",
+                                        "amount": "XValue"
+                                    }
+                                ],
+                                "controllerPredicate": "OwnedByYou"
+                            },
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{X}: Lazav becomes a copy of target creature card in your graveyard with mana value X, except its name is Lazav, the Multifarious, it's legendary in addition to its other types, and it has this ability."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "184",
+        "rarity": "MYTHIC",
+        "artist": "Yongjae Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/24c1e710-f61c-4dd6-b620-6d2e1ecab689.jpg?1783934131",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "Lazav copies exactly what was printed on the original card and nothing else, except the characteristics it specifically modifies. It doesn't copy any information about the object the card was before it was put into your graveyard."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Any effects that applied to Lazav before it becomes a copy of another card will continue to apply once it's become a copy. The same is true of any counters that are on Lazav."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If a card in your graveyard has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Because Lazav isn't entering the battlefield when it becomes a copy of a card, any \"When this enters the battlefield\" or \"This enters the battlefield with\" abilities of the copied card won't apply."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If the copied card has an ability that can be activated only once each turn, copying that card a second time will allow you to activate the new instance of that ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Leapfrog
 {
     "name": "Leapfrog",
@@ -6354,6 +6463,99 @@
     ]
 }
 
+// Mausoleum Secrets
+{
+    "name": "Mausoleum Secrets",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Undergrowth — Search your library for a black card with mana value less than or equal to the number of creature cards in your graveyard, reveal it, put it into your hand, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "HasColor",
+                                    "color": "BLACK"
+                                },
+                                {
+                                    "type": "ManaValueAtMostDynamic",
+                                    "amount": {
+                                        "type": "Count",
+                                        "player": "You",
+                                        "zone": "Graveyard",
+                                        "filter": "creature"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "storeAs": "searchable",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "found",
+                    "prompt": "Search your library for a black card with mana value the number of creatures in your graveyard or less to put into your hand",
+                    "selectedLabel": "Put into your hand"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "revealed": true
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "rarity": "RARE",
+        "artist": "Adam Paquette",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/6/26f7cf38-78cc-4139-9f2a-4dd0be7d9da8.jpg?1783934174",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "A land card that produces black mana, even a Swamp, normally has no color."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If a card in your library has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Creature cards with other types, such as artifact creature cards, count for undergrowth abilities."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Because tokens aren't cards, they never count for undergrowth abilities."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Maximize Altitude
 {
     "name": "Maximize Altitude",
@@ -6564,6 +6766,75 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Mnemonic Betrayal
+{
+    "name": "Mnemonic Betrayal",
+    "manaCost": "{1}{U}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exile all opponents' graveyards. You may cast spells from among those cards this turn, and mana of any type can be spent to cast them. At the beginning of the next end step, if any of those cards remain exiled, return them to their owners' graveyards.\nExile Mnemonic Betrayal.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard",
+                        "player": "EachOpponent"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    }
+                },
+                {
+                    "type": "GrantMayPlayFromExile",
+                    "from": "gathered0",
+                    "withAnyManaType": true,
+                    "nonLandOnly": true
+                },
+                {
+                    "type": "CreateDelayedTrigger",
+                    "step": "END",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                }
+                            }
+                        ]
+                    },
+                    "carryCollections": [
+                        "gathered0"
+                    ]
+                }
+            ]
+        },
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "189",
+        "rarity": "MYTHIC",
+        "artist": "Clint Cearley",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/5/a5cf45aa-ed34-4add-a2ec-fc11f8c15ffa.jpg?1783934127"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 
@@ -7071,6 +7342,90 @@
     ]
 }
 
+// Omnispell Adept
+{
+    "name": "Omnispell Adept",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "{2}{U}, {T}: You may cast an instant or sorcery spell from your hand without paying its mana cost.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Omnispell Adept:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{U}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseSpell",
+                            "filter": "instant|sorcery",
+                            "storeSelected": "selected1",
+                            "prompt": "You may cast an instant or sorcery spell from your hand without paying its mana cost",
+                            "selectedLabel": "Cast for free",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "CastFromCollectionWithoutPayingCost",
+                            "from": "selected1"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{2}{U}, {T}: Cast an instant or sorcery spell from your hand for free"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "rarity": "RARE",
+        "artist": "Jason Rainville",
+        "flavorText": "She memorized every arcane text in the Ismeri Library by the time she was sixteen. Now she quizzes sphinxes in her spare time.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/1/e17664df-e8ba-464d-b338-3e671d2d7f0e.jpg?1783934185",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "You may cast a sorcery this way even if it's not your turn."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If you cast a spell \"without paying its mana cost,\" you can't choose to cast it for any alternative costs. You can, however, pay additional costs, such as kicker costs. If the card has any mandatory additional costs, such as that of Severed Strands, those must be paid to cast the card."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If a spell has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Ornery Goblin
 {
     "name": "Ornery Goblin",
@@ -7556,6 +7911,363 @@
     ]
 }
 
+// Quasiduplicate
+{
+    "name": "Quasiduplicate",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create a token that's a copy of target creature you control.\nJump-start (You may cast this card from your graveyard by discarding a card in addition to paying its other costs. Then exile this card.)",
+    "script": {
+        "spellEffect": {
+            "type": "CreateTokenCopyOfTarget",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "MayCastSelfFromZones",
+                "zones": [
+                    "Graveyard"
+                ],
+                "additionalCost": {
+                    "type": "AdditionalAtom",
+                    "atom": "AtomDiscard"
+                },
+                "exileCastThisWay": "ON_ANY_STACK_EXIT"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "rarity": "RARE",
+        "artist": "Dmitry Burmak",
+        "flavorText": "\"My greatest creation—me!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f069646c-fae2-40bd-92bc-35459a84d847.jpg?1783934184",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "The token copies exactly what is printed on the creature and nothing else (unless that creature is copying something else or is a token; see below). It doesn't copy whether that creature is tapped or untapped, whether it has any counters on it or Auras and/or Equipment attached to it, or any non-copy effects that changed its power, toughness, types, color, and so on."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If the copied creature has {X} in its mana cost, X is 0."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If the copied creature is copying something else, the token enters the battlefield as whatever that creature is copying."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If the copied creature is itself a token, the token created by Quasiduplicate copies the original characteristics of that token as stated by the effect that created it."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Any enters-the-battlefield abilities of the copied creature will trigger when the token enters the battlefield. Any \"As [this creature] enters the battlefield\" or \"[This creature] enters the battlefield with\" abilities of the copied creature will also work."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "You must still follow any timing restrictions and permissions when casting a spell with jump-start, including those based on the card's type. For instance, you can cast a sorcery using jump-start only when you could normally cast a sorcery."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "A spell cast using jump-start will always be exiled afterward, whether it resolves, it's countered, or it leaves the stack in some other way."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If an effect allows you to pay an alternative cost rather than a spell's mana cost, you may pay that alternative cost when you jump-start a spell. You'll still discard a card as an additional cost to cast it."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If a card with jump-start is put into your graveyard during your turn, you'll be able to cast it right away if it's legal to do so, before an opponent can take any actions."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Radical Idea
+{
+    "name": "Radical Idea",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Draw a card.\nJump-start (You may cast this card from your graveyard by discarding a card in addition to paying its other costs. Then exile this card.)",
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "Fixed",
+                "amount": 1
+            }
+        },
+        "staticAbilities": [
+            {
+                "type": "MayCastSelfFromZones",
+                "zones": [
+                    "Graveyard"
+                ],
+                "additionalCost": {
+                    "type": "AdditionalAtom",
+                    "atom": "AtomDiscard"
+                },
+                "exileCastThisWay": "ON_ANY_STACK_EXIT"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "artist": "Izzy",
+        "flavorText": "Genius is finding the edge of what's possible, then jumping over it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c9570734-5e9b-46ff-b606-9759b5195756.jpg?1783934183",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "You must still follow any timing restrictions and permissions when casting a spell with jump-start, including those based on the card's type. For instance, you can cast a sorcery using jump-start only when you could normally cast a sorcery."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "A spell cast using jump-start will always be exiled afterward, whether it resolves, it's countered, or it leaves the stack in some other way."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If an effect allows you to pay an alternative cost rather than a spell's mana cost, you may pay that alternative cost when you jump-start a spell. You'll still discard a card as an additional cost to cast it."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If a card with jump-start is put into your graveyard during your turn, you'll be able to cast it right away if it's legal to do so, before an opponent can take any actions."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Ral's Dispersal
+{
+    "name": "Ral's Dispersal",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Return target creature to its owner's hand. You may search your library and/or graveyard for a card named Ral, Caller of Storms, reveal it, and put it into your hand. If you search your library this way, shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "Search your library",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Library"
+                                            ],
+                                            "filter": {
+                                                "cardPredicates": [
+                                                    {
+                                                        "type": "NameEquals",
+                                                        "name": "Ral, Caller of Storms"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library for a card named Ral, Caller of Storms to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Search your graveyard",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Graveyard"
+                                            ],
+                                            "filter": {
+                                                "cardPredicates": [
+                                                    {
+                                                        "type": "NameEquals",
+                                                        "name": "Ral, Caller of Storms"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "storeAs": "searchable"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your graveyard for a card named Ral, Caller of Storms to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Search your library and graveyard",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Library",
+                                                "Graveyard"
+                                            ],
+                                            "filter": {
+                                                "cardPredicates": [
+                                                    {
+                                                        "type": "NameEquals",
+                                                        "name": "Ral, Caller of Storms"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library and/or graveyard for a card named Ral, Caller of Storms to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Don't search",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": []
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "266",
+        "rarity": "RARE",
+        "artist": "Lake Hurwitz",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a2660fae-6459-446d-85dc-3c9126c81cb3.jpg?1783934094",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "If the target creature becomes an illegal target for Ral’s Dispersal, the spell doesn’t resolve. You don’t search for Ral, Caller of Storms."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Rampaging Monument
 {
     "name": "Rampaging Monument",
@@ -7929,6 +8641,50 @@
     ]
 }
 
+// Selective Snare
+{
+    "name": "Selective Snare",
+    "manaCost": "{X}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return X target creatures of the creature type of your choice to their owner's hand.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                },
+                "destination": "Hand"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0",
+                "dynamicMaxCount": "XValue",
+                "dynamicMinCount": "XValue",
+                "sameCreatureType": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "rarity": "UNCOMMON",
+        "artist": "Alex Konstad",
+        "flavorText": "\"How thoughtful of the Legion to train its soldiers to fit our spell's specifications.\"\n—Nefara, Dimir agent",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/a/2adfc0ac-08a9-487a-b01c-5de52fae0312.jpg?1783934183"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Selesnya Locket
 {
     "name": "Selesnya Locket",
@@ -8049,6 +8805,45 @@
         "flavorText": "\"These terms are acceptable to House Dimir. Shall we shake on it?\"",
         "imageUri": "https://cards.scryfall.io/normal/front/3/a/3af00fdd-6869-4080-8a75-66c8fceeb7de.jpg?1783934106"
     }
+}
+
+// Sinister Sabotage
+{
+    "name": "Sinister Sabotage",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell.\nSurveil 1. (Look at the top card of your library. You may put it into your graveyard.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                "Counter",
+                {
+                    "type": "Surveil",
+                    "count": 1
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "UNCOMMON",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/c/6cbef36d-7170-424f-8fb1-8e7e112b7f0b.jpg?1783934181"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Skyline Scout
@@ -8847,6 +9642,277 @@
     ]
 }
 
+// Thief of Sanity
+{
+    "name": "Thief of Sanity",
+    "manaCost": "{1}{U}{B}",
+    "typeLine": "Creature — Specter",
+    "oracleText": "Flying\nWhenever this creature deals combat damage to a player, look at the top three cards of that player's library, exile one of them face down, then put the rest into their graveyard. You may cast that card for as long as it remains exiled, and mana of any type can be spent to cast that spell.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thief of Sanity:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "player": "TriggeringPlayer"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "Exile one of those cards face down.",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile",
+                                "player": "TriggeringPlayer"
+                            },
+                            "faceDown": "HIDDEN"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "TriggeringPlayer"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "selected1",
+                            "expiry": "Permanent",
+                            "withAnyManaType": true,
+                            "nonLandOnly": true
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature deals combat damage to a player, look at the top three cards of that player's library, exile one of them face down, then put the rest into their graveyard. You may cast that card for as long as it remains exiled, and mana of any type can be spent to cast that spell."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "rarity": "RARE",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/0/307543ca-8e17-433f-9758-4c77da6c0870.jpg?1783934119",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "Thief of Sanity's effect doesn't change when you can cast the exiled card. For example, if you exile a sorcery card, you can cast it only during your main phase when the stack is empty."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "An effect that instructs you to \"cast\" a card doesn't allow you to play lands."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "You can still cast the exiled card if Thief of Sanity leaves the battlefield or leaves your control. If another player gains control of Thief of Sanity, that player can't cast the exiled card."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Casting an exiled card causes it to leave exile. You can't cast it multiple times."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
+// Thought Erasure
+{
+    "name": "Thought Erasure",
+    "manaCost": "{U}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent reveals their hand. You choose a nonland card from it. That player discards that card.\nSurveil 1. (Look at the top card of your library. You may put it into your graveyard.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "RevealHand",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "nonland",
+                    "storeSelected": "selected2",
+                    "prompt": "Choose a nonland card to discard",
+                    "showAllCards": true,
+                    "alwaysPrompt": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "moveType": "Discard"
+                },
+                {
+                    "type": "Surveil",
+                    "count": 1
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "206",
+        "rarity": "UNCOMMON",
+        "artist": "Anna Steinbauer",
+        "flavorText": "\"It's truly the highest honor, isn't it? To be remembered? Pity for you.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7ce226ad-cb1d-47f5-90fc-27704e181884.jpg?1783934119",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "You surveil 1 even if the opponent doesn't discard a card, perhaps because they had no cards in hand at all."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "Some spells that instruct you to surveil require targets. You can't cast a spell without choosing legal targets. If all of those targets become illegal, the spell doesn't resolve and you won't surveil."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
+// Thoughtbound Phantasm
+{
+    "name": "Thoughtbound Phantasm",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Defender\nWhenever you surveil, put a +1/+1 counter on this creature.\nAs long as this creature has three or more +1/+1 counters on it, it can attack as though it didn't have defender.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thoughtbound Phantasm:1",
+                "trigger": "SurveiledEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CanAttackDespiteDefender",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "PLUS_ONE_PLUS_ONE"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "rarity": "UNCOMMON",
+        "artist": "Johann Bodin",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/36478e73-162a-412c-bf5b-9ca0d92f51e2.jpg?1783934182"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Thousand-Year Storm
 {
     "name": "Thousand-Year Storm",
@@ -9287,6 +10353,168 @@
     ]
 }
 
+// Unexplained Disappearance
+{
+    "name": "Unexplained Disappearance",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Return target creature to its owner's hand.\nSurveil 1. (Look at the top card of your library. You may put that card into your graveyard.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "Surveil",
+                    "count": 1
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "artist": "Izzy",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9c99b239-50d2-4393-80ec-94dbfaa6ae70.jpg?1783934181"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Unmoored Ego
+{
+    "name": "Unmoored Ego",
+    "manaCost": "{1}{U}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose a card name. Search target opponent's graveyard, hand, and library for up to four cards with that name and exile them. That player shuffles, then draws a card for each card exiled from their hand this way.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ChooseOption",
+                    "optionType": "CARD_NAME",
+                    "storeAs": "chosen0",
+                    "prompt": "Choose a card name"
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromMultipleZones",
+                        "zones": [
+                            "Graveyard",
+                            "Hand",
+                            "Library"
+                        ],
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "filter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "NameEqualsChosen",
+                                    "variableName": "chosen0"
+                                }
+                            ]
+                        }
+                    },
+                    "storeAs": "gathered1",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    },
+                    "storeSelected": "selected2",
+                    "prompt": "Exile up to four cards with the chosen name"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "selected2",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "InZone",
+                                "zone": "Hand"
+                            }
+                        ]
+                    },
+                    "storeMatching": "matching3"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                {
+                    "type": "ShuffleLibrary",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "VariableReference",
+                        "variableName": "matching3_count"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "212",
+        "rarity": "RARE",
+        "artist": "Volkan Baǵa",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/95aecc12-3363-41f7-9b58-277c81859670.jpg?1783934122"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Vedalken Mesmerist
 {
     "name": "Vedalken Mesmerist",
@@ -9469,6 +10697,101 @@
         "GREEN",
         "WHITE"
     ]
+}
+
+// Wand of Vertebrae
+{
+    "name": "Wand of Vertebrae",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Mill a card.\n{2}, {T}, Exile this artifact: Shuffle up to five target cards from your graveyard into your library.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Wand of Vertebrae:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Wand of Vertebrae:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap",
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": "IterationSpace.Targets",
+                            "body": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "destination": "Library"
+                            }
+                        },
+                        "ShuffleLibrary"
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 5,
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "242",
+        "rarity": "UNCOMMON",
+        "artist": "Volkan Baǵa",
+        "flavorText": "Made by the mad for the work of the wicked.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/87f208bc-e4dc-4d3a-8906-dccde3cc251b.jpg?1783934105"
+    }
 }
 
 // Wary Okapi
