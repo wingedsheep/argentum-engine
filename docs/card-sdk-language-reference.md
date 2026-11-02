@@ -16756,14 +16756,19 @@ default to "you" so card authors don't need to pass it explicitly.
   `PermanentsEnteredUnderControlThisTurnComponent` entry log, cleared by `CleanupPhaseManager`
   at end of turn. Every battlefield entry must go through `BattlefieldEntry.place` for this
   tracker to stay in sync. Shortcut: `Conditions.ArtifactEnteredBattlefieldThisTurn`.
-- `PermanentTypePutIntoGraveyardFromBattlefieldThisTurn(cardType, player = Player.You)` — true if
-  a permanent of `cardType` was put into `player`'s graveyard from the battlefield this turn
-  (Kami of Transience: "if an enchantment was put into your graveyard from the battlefield this
-  turn"). Keyed on the card's **owner** ("your graveyard" is the owner's, so your enchantment an
-  opponent controlled counts, theirs under your control doesn't), read off the last-known
-  projected type line (an enchantment creature counts as an enchantment), and tokens count.
-  Turn history: the card need not still be in the graveyard. Backed by the per-player
-  `CardTypesPutIntoGraveyardFromBattlefieldThisTurnComponent`, cleared at end of turn.
+- `PermanentPutIntoZoneFromBattlefieldThisTurn(toZone = Zone.GRAVEYARD, cardType = null, player = Player.You)`
+  (facade `Conditions.PermanentPutIntoZoneFromBattlefieldThisTurn(toZone, cardType?, player)`) — true
+  if a permanent (of `cardType`, or any permanent when `null`) was put into `player`'s `toZone` from
+  the battlefield this turn. `toZone` is `GRAVEYARD` or `HAND` (anything else is rejected at
+  construction). Kami of Transience: "if an enchantment was put into your graveyard from the
+  battlefield this turn" → `(Zone.GRAVEYARD, CardType.ENCHANTMENT)`; Miles O'Brien, Transporter Ops:
+  "if a permanent was returned to your hand from the battlefield this turn" → `(Zone.HAND)`. Keyed on
+  the card's **owner** ("your graveyard" / "your hand" is the owner's, so your permanent an opponent
+  controlled counts, theirs under your control doesn't), read off the last-known projected type
+  line (an enchantment creature counts as an enchantment), and tokens count. Turn history: the card
+  need not still be in that zone. Backed by the per-player
+  `CardTypesPutIntoGraveyardFromBattlefieldThisTurnComponent` /
+  `CardTypesReturnedToHandFromBattlefieldThisTurnComponent`, cleared at end of turn.
 - `Celebration` / `NonlandPermanentsEnteredThisTurn(atLeast = 1, player = Player.You)` — the
   **Celebration** ability word (Wilds of Eldraine; CR 207.2c — italic flavor with no rules
   meaning, so there is no keyword, only this condition): "if two or more nonland permanents

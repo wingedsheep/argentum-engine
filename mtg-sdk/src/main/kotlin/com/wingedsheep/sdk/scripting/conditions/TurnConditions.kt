@@ -596,24 +596,41 @@ data class PermanentTypeEnteredBattlefieldThisTurn(
 }
 
 /**
- * Condition: "If a permanent of [cardType] was put into [player]'s graveyard from the battlefield this turn."
+ * Condition: "If a permanent [of cardType] was put into [player]'s [toZone] from the battlefield this
+ * turn" — "if an enchantment was put into your graveyard from the battlefield this turn", "if a
+ * permanent was returned to your hand from the battlefield this turn".
  *
- * Turn history keyed on the card's owner — "your graveyard" is the owner's (CR 404.1) — and read
- * off the permanent's last-known type line as it left (last-known information), so an enchantment creature
- * counts as an enchantment and a token counts too: it is put into the graveyard before it ceases
- * to exist (CR 111.7). The card need not still be in the graveyard when the condition is checked.
+ * Turn history keyed on the card's owner — "your graveyard" and "your hand" are the owner's (a card only
+ * ever goes to its owner's graveyard or hand, CR 400.3) — and read off the permanent's last-known type line as it left (last-known information),
+ * so an enchantment creature counts as an enchantment and a token counts too: it reaches the zone
+ * before it ceases to exist (CR 111.7). The card need not still be in that zone when the condition is
+ * checked. [cardType] `null` means any permanent.
  *
- * Used for Kami of Transience (NEO): "At the beginning of each end step, if an enchantment was
- * put into your graveyard from the battlefield this turn, you may return this card ..."
+ * [toZone] is one of the owned destination zones the engine records — [Zone.GRAVEYARD] or [Zone.HAND].
+ * Closest neighbours: [PermanentLeftBattlefieldThisTurn] is keyed on the *controller* and ignores the
+ * destination; `CreatureDiedThisTurnMatching` is creature-only and graveyard-only.
+ *
+ * Used for Kami of Transience (NEO) and Miles O'Brien, Transporter Ops (TRK).
  */
-@SerialName("PermanentTypePutIntoGraveyardFromBattlefieldThisTurn")
+@SerialName("PermanentPutIntoZoneFromBattlefieldThisTurn")
 @Serializable
-data class PermanentTypePutIntoGraveyardFromBattlefieldThisTurn(
-    val cardType: CardType,
+data class PermanentPutIntoZoneFromBattlefieldThisTurn(
+    val toZone: Zone = Zone.GRAVEYARD,
+    val cardType: CardType? = null,
     val player: Player = Player.You
 ) : Condition {
-    override val description: String =
-        "if ${anA(cardType.displayName)} was put into ${player.possessive} graveyard from the battlefield this turn"
+    init {
+        require(toZone == Zone.GRAVEYARD || toZone == Zone.HAND) {
+            "PermanentPutIntoZoneFromBattlefieldThisTurn tracks GRAVEYARD and HAND only, not $toZone"
+        }
+    }
+
+    override val description: String
+        get() {
+            val what = cardType?.let { anA(it.displayName) } ?: "a permanent"
+            val verb = if (toZone == Zone.HAND) "returned to" else "put into"
+            return "if $what was $verb ${player.possessive} ${toZone.noun} from the battlefield this turn"
+        }
 
     private fun anA(word: String): String =
         if (word.firstOrNull()?.lowercaseChar() in setOf('a', 'e', 'i', 'o', 'u')) "an $word" else "a $word"
