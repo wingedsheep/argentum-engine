@@ -66,7 +66,8 @@ import kotlin.reflect.KClass
  *    - WardCost.CollectEvidence → SelectCardsDecision over the controller's graveyard with a
  *      `minTotalManaValue` floor (CR 701.59's sum gate); an empty selection declines.
  *    - WardCost.PlayerCounters → YesNoDecision ("Get five poison counters?"); on Yes, places the
- *      counters on the paying player (CR 122.1). Always payable.
+ *      counters on the paying player (CR 122.1). Countered without a prompt when the payer
+ *      can't get counters (a `LockPlayerCountersEffect` lock).
  *    - WardCost.Composite → pay each component cost in order (CR 702.21a; "Ward—{2}, Pay 2
  *      life"). Each component reuses the per-component flow above and carries the remaining
  *      components so the resumer charges the next one after a successful payment. Declining or

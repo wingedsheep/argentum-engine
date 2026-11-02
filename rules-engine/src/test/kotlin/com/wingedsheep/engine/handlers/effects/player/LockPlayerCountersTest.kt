@@ -38,8 +38,9 @@ import io.kotest.matchers.shouldNotBe
 /**
  * [LockPlayerCountersEffect] — "that player can't get counters" (CR 122.1: players have counters
  * too). Pins, per the Suncleanser rulings:
- * - no counter of any kind goes on a locked player — effect placement of poison and energy, and
- *   proliferate;
+ * - no counter of any kind goes on a locked player — effect placement of poison and energy,
+ *   proliferate, and combat damage from infect and toxic (infect damage then has no effect on the
+ *   player at all: no poison, no life loss);
  * - a cost that would give the locked player counters ("Ward—Get five poison counters") can't be
  *   paid, so the spell is countered without a prompt;
  * - a source-keyed lock ("for as long as this creature remains on the battlefield") ends when the
@@ -83,10 +84,29 @@ class LockPlayerCountersTest : FunSpec({
         keywordAbility(KeywordAbility.Ward(WardCost.PlayerCounters(CounterType.POISON, 5)))
     }
 
+    val infectBear = card("Infect Bear") {
+        manaCost = "{1}{B}"
+        typeLine = "Creature — Bear"
+        power = 2
+        toughness = 2
+        keywords(Keyword.INFECT)
+    }
+
+    val toxicBear = card("Toxic Bear") {
+        manaCost = "{1}{B}"
+        typeLine = "Creature — Bear"
+        power = 3
+        toughness = 3
+        keywordAbility(KeywordAbility.toxic(2))
+    }
+
     fun newDriver(): GameTestDriver {
         val driver = GameTestDriver()
         driver.registerCards(
-            TestCards.all + listOf(warden, poisonMe, energyMe, lockThisTurn, lockWhileSpellHere, cleanseMe, poisonWardedBear)
+            TestCards.all + listOf(
+                warden, poisonMe, energyMe, lockThisTurn, lockWhileSpellHere, cleanseMe, poisonWardedBear,
+                infectBear, toxicBear,
+            )
         )
         driver.initMirrorMatch(deck = Deck.of("Plains" to 40), skipMulligans = true, startingPlayer = 0)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
@@ -136,6 +156,31 @@ class LockPlayerCountersTest : FunSpec({
             driver.state, listOf(me), driver.player2, PredicateEvaluator(cardRegistry = null)
         )
         after.getEntity(me)?.get<CountersComponent>()?.getCount(CounterType.POISON) shouldBe 1
+    }
+
+    test("combat damage from infect and toxic attackers gives a locked defender no poison") {
+        val driver = newDriver()
+        val me = driver.player1
+        val defender = driver.player2
+        driver.addComponent(defender, CantGetCountersComponent(listOf(PlayerCounterLock(PlayerEffectRemoval.Permanent))))
+        val infect = driver.putCreatureOnBattlefield(me, "Infect Bear")
+        val toxic = driver.putCreatureOnBattlefield(me, "Toxic Bear")
+        driver.removeSummoningSickness(infect)
+        driver.removeSummoningSickness(toxic)
+
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.declareAttackers(me, listOf(infect, toxic), defender)
+        driver.bothPass()
+        driver.declareNoBlockers(defender)
+        driver.bothPass()
+        driver.bothPass()
+
+        withClue("no poison from either the infect damage or toxic 2") {
+            counters(driver, defender, CounterType.POISON) shouldBe 0
+        }
+        withClue("infect damage to the player is only poison, so no life is lost; the toxic bear's damage is ordinary") {
+            driver.getLifeTotal(defender) shouldBe 20 - 3
+        }
     }
 
     test("a ward cost that gives the locked payer counters can't be paid — the spell is countered") {

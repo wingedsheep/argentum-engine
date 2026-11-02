@@ -269,8 +269,8 @@ class ProliferateExecutor(
          * [com.wingedsheep.engine.handlers.effects.permanent.counters.AddCountersExecutor] and
          * every other counter-placing path honors (Blossombind; CR 614.17 "can't" effects). It applies to
          * proliferate exactly as it does to "put a +1/+1 counter on target creature", so both
-         * shapes of this effect check it here. Players are never affected: the flag is a keyword
-         * grant, and a player id never carries one.
+         * shapes of this effect check it here. A player under a `LockPlayerCountersEffect` lock
+         * (Suncleanser) is skipped through the same check.
          *
          * Placement goes through [ReplacementEffectUtils.applyCounterPlacementModifiers] (Hardened
          * Scales and friends), is recorded via [DamageUtils.recordCounterPlacement] with the kind
