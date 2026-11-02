@@ -235,6 +235,7 @@ class HoldPolicy(
             if (resolves != null && ExpiringGrantWindow.castBuysNothing(
                     state, playerId, resolves, cast.targets + cast.modeTargetsOrdered.flatten(), intents,
                     readKeywordGrants = refuseUnspendableGrants && IntentTag.COMBAT_TRICK !in intent.tags,
+                    fightMustBeOn = intent.speed == Speed.INSTANT && state.stack.isEmpty(),
                 )
             ) {
                 return TimingVerdict.NoWindow

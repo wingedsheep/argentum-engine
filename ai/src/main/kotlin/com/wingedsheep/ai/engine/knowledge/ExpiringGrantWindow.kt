@@ -37,6 +37,7 @@ import com.wingedsheep.sdk.scripting.effects.IterationSpace
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
 import com.wingedsheep.sdk.scripting.effects.PreventionDirection
+import com.wingedsheep.sdk.scripting.effects.SetBaseStatsEffect
 import com.wingedsheep.sdk.scripting.effects.SetLandTypeEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -266,12 +267,14 @@ internal object ExpiringGrantWindow {
         readGrants: Boolean = true,
         readShrinks: Boolean = false,
         readBorrows: Boolean = false,
+        /** A stat change counts only on a creature already in the fight — see [castBuysNothing]. */
+        fightMustBeOn: Boolean = false,
     ): Boolean {
         val payoffs = expiringPayoffs(effect, readShrinks, readBorrows) ?: return false
         // Without [readGrants] only the shrink half is asked about; a grant is left to the leaf —
         // unless it rides on a borrow, where it lands on the creature the borrow is judged by.
         val borrows = payoffs.any { it.kind == PayoffKind.BORROW }
-        if (!readGrants && !borrows && payoffs.any { it.kind != PayoffKind.SHRINK }) return false
+        if (!readGrants && !borrows && payoffs.any { it.kind !in SHRINK_KINDS }) return false
         if (somethingOnTheStackThreatensUs(state, playerId, intents)) return false
         if (shieldFacesTheStack(state, payoffs)) return false
 
@@ -303,9 +306,14 @@ internal object ExpiringGrantWindow {
                 PayoffKind.BORROW -> affected.any { projected.isCreature(it) } &&
                     (state.step in UNTIL_ATTACKERS_DECLARED || state.step in FIGHT_STILL_AHEAD ||
                         controlsASacrificeOutlet(state, playerId, intents))
-                PayoffKind.SHRINK -> affected.any { id ->
-                    killedBy(state, projected, id, payoff.toughnessLoss) ||
-                        if (projected.getController(id) == playerId) {
+                PayoffKind.SHRINK, PayoffKind.SET_BASE -> affected.any { id ->
+                    val toughnessLoss = payoff.setToughness
+                        ?.let { set -> (projected.getToughness(id) ?: return@any true) - set }
+                        ?: payoff.toughnessLoss
+                    killedBy(state, projected, id, toughnessLoss) ||
+                        if (fightMustBeOn) {
+                            inFightNow(state, id)
+                        } else if (projected.getController(id) == playerId) {
                             canStillFight(state, projected, playerId, id, sourceId, sourceTaps)
                         } else {
                             opposingCanStillFight(state, projected, playerId, id)
@@ -375,6 +383,14 @@ internal object ExpiringGrantWindow {
         readShrinks: Boolean = true,
         /** Read a spell whose payoff is an end-of-turn keyword grant — see [readsSpellKeywordGrant]. */
         readKeywordGrants: Boolean = false,
+        /**
+         * The spell is an instant cast onto an empty stack: a stat change on a creature buys
+         * something only once that creature is attacking or blocking. Before then, the same instant
+         * is still castable when the fight is set, with strictly more information — Perfected
+         * Theory's 1/1 is a combat trick, and a combat trick waits for blocks. A kill still counts
+         * whenever it is cast.
+         */
+        fightMustBeOn: Boolean = false,
     ): Boolean = effects.isNotEmpty() && effects.all { effect ->
         nothingCanSpend(
             state, playerId, effect,
@@ -386,7 +402,15 @@ internal object ExpiringGrantWindow {
             readGrants = readKeywordGrants && readsSpellKeywordGrant(effect),
             readShrinks = readShrinks,
             readBorrows = readBorrows,
+            fightMustBeOn = fightMustBeOn,
         )
+    }
+
+    /** Whether [creature] is attacking or blocking in a combat whose damage is still to come. */
+    private fun inFightNow(state: GameState, creature: EntityId): Boolean {
+        if (state.step !in FIGHT_STILL_AHEAD) return false
+        val entity = state.getEntity(creature) ?: return false
+        return entity.has<AttackingComponent>() || entity.has<BlockingComponent>()
     }
 
     /**
@@ -796,6 +820,21 @@ internal object ExpiringGrantWindow {
         SHRINK,
 
         /**
+         * A base power/toughness **set** until end of turn on a creature that is not the source —
+         * "target creature has base power and toughness 1/1 until end of turn" (Perfected Theory).
+         * Read exactly like [SHRINK]: it outlives the turn only if it kills, and otherwise buys
+         * something only in a fight its creature can still be in — on either side of the table, so
+         * the same reading covers the mode that turns our own creature into a 4/5. Without a fight
+         * left, the set wears off in cleanup having changed nothing (2026-11-02 user report: the AI
+         * made an opposing creature 1/1 "whenever it feels like it, achieving nothing").
+         *
+         * The kill test reads the new base toughness against marked damage and ignores the layer-7c
+         * modifiers that still apply on top. A pump on the creature makes that over-report a kill,
+         * which hands the cast back to the leaf — the fail-safe direction.
+         */
+        SET_BASE,
+
+        /**
          * Control of a creature until end of turn — "gain control of target creature until end of
          * turn" (Threaten, Involuntary Employment, Sibling Rivalry). It goes home at cleanup, so it
          * buys only what the creature does before then: an attack or a block on our side, or a fight
@@ -830,6 +869,9 @@ internal object ExpiringGrantWindow {
     private fun shieldFacesTheStack(state: GameState, payoffs: List<Payoff>): Boolean =
         state.stack.isNotEmpty() && payoffs.any { it.kind == PayoffKind.SHIELD }
 
+    /** The stat-change payoffs [nothingCanSpend] reads under `readShrinks` alone, without the grants. */
+    private val SHRINK_KINDS = setOf(PayoffKind.SHRINK, PayoffKind.SET_BASE)
+
     /** The payoffs [holds]' deferral holds for a later window this turn. */
     private val DEFERRABLE = setOf(PayoffKind.CREATURE, PayoffKind.SHIELD)
 
@@ -840,6 +882,8 @@ internal object ExpiringGrantWindow {
         val keyword: String? = null,
         /** For a [PayoffKind.SHRINK]: the toughness it takes away. */
         val toughnessLoss: Int = 0,
+        /** For a [PayoffKind.SET_BASE]: the base toughness it sets, or null when it sets power only. */
+        val setToughness: Int? = null,
         /** For a [PayoffKind.CREATURE]: the payoff is the body itself — see [canStillFight]'s `animates`. */
         val animates: Boolean = false,
     )
@@ -904,6 +948,13 @@ internal object ExpiringGrantWindow {
                     // left to the leaf, which is the fail-safe direction.
                     val toughness = leaf.toughnessModifier as? DynamicAmount.Fixed ?: return null
                     payoffs += Payoff(PayoffKind.SHRINK, leaf.target, toughnessLoss = -toughness.amount)
+                }
+                readShrinks && leaf is SetBaseStatsEffect && leaf.duration == Duration.EndOfTurn &&
+                    !leaf.reevaluateContinuously && leaf.target != EffectTarget.Self -> {
+                    // A number, or the leaf decides — the same fail-safe as the shrink above.
+                    val toughness = leaf.toughness?.let { it as? DynamicAmount.Fixed ?: return null }
+                    if (leaf.power != null && leaf.power !is DynamicAmount.Fixed) return null
+                    payoffs += Payoff(PayoffKind.SET_BASE, leaf.target, setToughness = toughness?.amount)
                 }
                 else -> return null
             }

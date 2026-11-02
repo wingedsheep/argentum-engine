@@ -98,6 +98,7 @@ object CardIntentAnalyzer {
 
     private val cardCache = ConcurrentHashMap<String, CardIntent>()
     private val selfCache = ConcurrentHashMap<String, CardIntent>()
+    private val inPlayCache = ConcurrentHashMap<String, CardIntent>()
     private val ownSweepCache = ConcurrentHashMap<String, Boolean>()
     private val faceCache = ConcurrentHashMap<FaceKey, CardIntent>()
 
@@ -117,6 +118,34 @@ object CardIntentAnalyzer {
     fun analyzeSelf(card: CardDefinition): CardIntent =
         if (card.cardFaces.isEmpty()) analyze(card)
         else selfCache.getOrPut(card.name) { compute(card, listOf(card.script)) }
+
+    /**
+     * [analyzeSelf] for a permanent already on the battlefield: its "when this enters" triggers
+     * left out, because they have already happened.
+     *
+     * The board value a noncreature permanent earns from its prior is a claim about what it *does
+     * from here on*. Ajani's Anguish's prior is a removal spell's, and read whole it kept that
+     * value after its enter trigger had dealt its damage — so casting it for X=1 at an empty board
+     * scored a permanent worth a removal spell plus the one damage, and the AI fired it the first
+     * turn it could (2026-11-02 user report). The cast's leaf already counts what the trigger did:
+     * the simulation resolves it.
+     *
+     * An O-Ring keeps its value through `BoardPresence`'s own linked-exile floor, which reads the
+     * card it is holding rather than the trigger that took it. For a Room it is no different from
+     * [analyzeSelf] (empty); use [analyzeFace] per unlocked door.
+     */
+    fun analyzeInPlay(card: CardDefinition): CardIntent = inPlayCache.getOrPut(card.name) {
+        val entries = card.script.triggeredAbilities.filter(::isOwnEntry)
+        if (entries.isEmpty()) return@getOrPut analyzeSelf(card)
+        compute(card, listOf(card.script.copy(triggeredAbilities = card.script.triggeredAbilities - entries.toSet())))
+    }
+
+    /** "When this enters" — bound to the permanent itself, on its way onto the battlefield. */
+    private fun isOwnEntry(trigger: TriggeredAbility): Boolean {
+        if (trigger.binding != TriggerBinding.SELF) return false
+        val pattern = trigger.trigger as? EventPattern.ZoneChangeEvent ?: return false
+        return pattern.to == Zone.BATTLEFIELD
+    }
 
     /**
      * The [CardIntent] of one face of [card], read as what that face contributes on its own.
