@@ -19,6 +19,7 @@ import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.ProliferateEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -145,7 +146,8 @@ class ProliferateExecutor(
                     options = eligible,
                     minSelections = 0,
                     maxSelections = eligible.size,
-                    useTargetingUI = true
+                    useTargetingUI = true,
+                    recommendedSelection = recommendedRecipients(state, controllerId, eligible),
                 ) }
 
                 val continuation = ProliferateContinuation(
@@ -181,6 +183,65 @@ class ProliferateExecutor(
                 .filter { it !in state.turnOrder }
                 .distinct()
                 .toList()
+
+        /**
+         * The recipients among [eligible] that [controllerId] usually wants another counter on — the
+         * proliferate decision's "Recommended" pick. A rule of thumb read off the counters' polarity,
+         * not a simulation:
+         *
+         * - **Yourself and your permanents** (and a teammate's, CR 810) — unless something on it is a counter that hurts its
+         *   holder ([HARMFUL_TO_HOLDER]: a -1/-1 counter on your creature, poison on you).
+         * - **Opponents and their permanents** — only when they carry a counter that hurts them and
+         *   none that helps them ([HELPFUL_TO_HOLDER]): a -1/-1 counter on their creature, poison on
+         *   them; never their planeswalker's loyalty or their creature's +1/+1 counters.
+         *
+         * A kind it doesn't classify (charge, lore, experience) counts as fine to grow on your own
+         * stuff and as no reason to grow on an opponent's.
+         */
+        fun recommendedRecipients(
+            state: GameState,
+            controllerId: EntityId,
+            eligible: List<EntityId>,
+        ): List<EntityId> {
+            val projected = state.projectedState
+            val team = state.teamOf(controllerId)
+            return eligible.filter { id ->
+                val kinds = state.getEntity(id)?.get<CountersComponent>()?.counters
+                    ?.filterValues { it > 0 }?.keys.orEmpty()
+                if (kinds.isEmpty()) return@filter false
+                val holder = if (id in state.turnOrder) id else projected.getController(id)
+                when {
+                    holder in team -> kinds.none(::isHarmfulToHolder)
+                    holder != null && state.isOpponentOf(holder, controllerId) ->
+                        kinds.any(::isHarmfulToHolder) && kinds.none(::isHelpfulToHolder)
+                    else -> false
+                }
+            }
+        }
+
+        /** A counter whose growth hurts the object or player it's on. */
+        private fun isHarmfulToHolder(kind: CounterType): Boolean =
+            kind.ptDelta?.let { (power, toughness) -> power <= 0 && toughness <= 0 }
+                ?: (kind in HARMFUL_TO_HOLDER)
+
+        /** A counter whose growth clearly helps the object or player it's on. */
+        private fun isHelpfulToHolder(kind: CounterType): Boolean =
+            kind.ptDelta?.let { (power, toughness) -> power >= 0 && toughness >= 0 }
+                ?: (kind in HELPFUL_TO_HOLDER)
+
+        private val HARMFUL_TO_HOLDER = setOf(
+            CounterType.POISON, CounterType.RAD, CounterType.STUN, CounterType.FINALITY,
+            // Cumulative upkeep grows with each age counter; a battle's controller is the one
+            // trying to remove its defense counters (its protector wants them).
+            CounterType.AGE, CounterType.DEFENSE,
+        )
+
+        private val HELPFUL_TO_HOLDER = setOf(
+            CounterType.LOYALTY, CounterType.SHIELD,
+            CounterType.FLYING, CounterType.FIRST_STRIKE, CounterType.DOUBLE_STRIKE, CounterType.VIGILANCE,
+            CounterType.LIFELINK, CounterType.INDESTRUCTIBLE, CounterType.DEATHTOUCH, CounterType.TRAMPLE,
+            CounterType.HEXPROOF, CounterType.REACH, CounterType.HASTE, CounterType.MENACE, CounterType.SHADOW,
+        )
 
         /**
          * All battlefield permanents + all players that currently have at least one

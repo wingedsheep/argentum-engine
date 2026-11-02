@@ -378,7 +378,14 @@ data class SelectCardsDecision(
     val librarySearch: Boolean = false,
     /** Per-option repeat capacity for allocating units (such as counters) on permanents.
      * Null means ordinary distinct-card selection. Counts include every repeated occurrence. */
-    val selectionLimits: Map<EntityId, Int>? = null
+    val selectionLimits: Map<EntityId, Int>? = null,
+    /**
+     * The subset of [options] the engine suggests for the deciding player, offered by the client as
+     * a one-click "Recommended" pick the player can then adjust. Advice only — it never constrains
+     * what may be submitted, and must itself be a legal selection. null means no suggestion
+     * (proliferate fills it: see `ProliferateExecutor.recommendedRecipients`).
+     */
+    val recommendedSelection: List<EntityId>? = null
 ) : PendingDecision
 
 @Serializable

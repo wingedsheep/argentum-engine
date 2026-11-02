@@ -74,3 +74,15 @@ payments use this to distribute a fixed cost across permanents. The engine valid
 capacity and requires the full `maxSelections` total or an empty response to decline.
 The client renders allocation controls on the battlefield, using only these supplied limits.
 Absent `selectionLimits`, ordinary selection behavior is unchanged.
+
+### Suggested selections
+
+A `SelectCardsDecision` may carry `recommendedSelection` — a legal subset of `options` the engine
+suggests for the deciding player. It is advice only: validation ignores it and the player may submit
+any legal subset. The battlefield selection banner offers it as a one-click **Recommended** pick next
+to **All** (shown when every option fits under `maxSelections` and no per-type, colour, name, power
+or mana-value constraint couples the picks) and **Clear**; the player adjusts on the board before
+confirming. Proliferate fills it (`ProliferateExecutor.recommendedRecipients`): you, your permanents
+and a teammate's unless they carry a counter that hurts their holder (-1/-1, stun, poison, rad, age,
+defense), and opponents and their permanents only when they carry such a counter and none that helps
+them (+1/+1, loyalty, shield, keyword counters).

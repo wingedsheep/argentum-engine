@@ -1268,6 +1268,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
         'Choose mode — pick the required number of modes; escalate and similar costs are shown as you go.',
         'Choose X — a slider with − and + buttons, capped at the most you can pay.',
         'Targets — click a highlighted card or a player’s life total, then Confirm. Optional targets can be declined.',
+        'Any number on the battlefield — click the permanents and life totals you want, then Confirm. All picks every option at once and Clear starts over. Proliferate also offers ★ Recommended: your permanents and you unless a counter hurts them (−1/−1, stun, poison), plus opponents’ permanents and opponents carrying only counters that hurt them. It is a starting point; click to adjust before confirming.',
         'Remove counters as a cost — use the − and + controls on highlighted battlefield permanents. You may remove several counters from one permanent or spread the payment across them; Confirm becomes available when the required total is allocated. Open Adjust allocations in the prompt for a named list when the board is crowded or an attachment is hard to reach.',
         'Divide damage — assign amounts to each target; “Lethal” marks the point where a creature dies.',
         'Combat damage — with trample, deathtouch or several blockers, you assign attacking damage yourself, split among the blockers however you like (only trample needs every blocker at lethal before damage reaches the player).',

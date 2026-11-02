@@ -403,6 +403,96 @@
   font-size: var(--font-xs);
 }
 
+/* Quick-select chips in a board-selection banner ("Recommended", "All", "Clear"): pill toggles in
+ * the targeting colour, quieter than Confirm so they read as shortcuts, not answers. */
+.quickSelectRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+  width: 100%;
+}
+
+.quickSelectChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  padding: 4px 10px;
+  font-size: var(--font-sm);
+  color: var(--chrome-text);
+  background: var(--chrome-bg);
+  border: 1px solid var(--chrome-border);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.quickSelectChip:hover:not(:disabled) {
+  border-color: var(--color-target);
+}
+
+.quickSelectChip:focus-visible,
+.quickSelectChipActive:focus-visible,
+.quickSelectClear:focus-visible {
+  outline: 2px solid var(--color-target-bright);
+  outline-offset: 2px;
+}
+
+.quickSelectChip:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.quickSelectChipActive {
+  composes: quickSelectChip;
+  color: var(--bg-surface-3);
+  background: var(--color-target);
+  border-color: var(--color-target);
+  font-weight: var(--font-weight-semibold);
+}
+
+.quickSelectStar {
+  color: var(--color-highlight, #fbbf24);
+  font-size: 0.95em;
+  line-height: 1;
+}
+
+.quickSelectChipActive .quickSelectStar {
+  color: inherit;
+}
+
+.quickSelectCount {
+  min-width: 1.4em;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 0.85em;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.quickSelectChipActive .quickSelectCount {
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.quickSelectClear {
+  padding: 0 2px;
+  font-size: inherit;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.quickSelectClear:hover {
+  color: var(--text-primary);
+}
+
 .buttonContainerSmall {
   display: flex;
   flex-wrap: wrap;

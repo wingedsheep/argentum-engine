@@ -109,6 +109,8 @@ export interface SelectionSliceActions {
   startDecisionSelection: (state: DecisionSelectionState) => void
   toggleDecisionSelection: (cardId: EntityId) => void
   decrementDecisionSelection: (cardId: EntityId) => void
+  /** Replace the whole pick at once (quick-select "All" / "Recommended" / "Clear"). Ids outside the pool are dropped. */
+  setDecisionSelection: (cardIds: readonly EntityId[]) => void
   cancelDecisionSelection: (decisionId: string) => void
   confirmDecisionSelection: (decisionId: string) => void
   startManaSelection: (actionInfo: LegalActionInfo) => void
@@ -543,6 +545,23 @@ export const createSelectionSlice: SliceCreator<SelectionSlice> = (set, get) => 
   startDecisionSelection: (state) => {
     set({ decisionSelectionState: { ...state, selectionPool: state.validOptions,
       validOptions: compatibleSelectionPool(state.validOptions, state.selectionGroups, state.selectedOptions, state.exclusiveGroups, state.distinctCategories) } })
+  },
+
+  setDecisionSelection: (cardIds) => {
+    set((state) => {
+      const current = state.decisionSelectionState
+      if (!current || current.selectionLimits != null) return state
+      const pool = current.selectionPool ?? current.validOptions
+      const selectedOptions = [...new Set(cardIds)].filter((id) => pool.includes(id)).slice(0, current.maxSelections)
+      return {
+        decisionSelectionState: {
+          ...current,
+          selectedOptions,
+          validOptions: compatibleSelectionPool(pool, current.selectionGroups, selectedOptions, current.exclusiveGroups, current.distinctCategories),
+          warning: null,
+        },
+      }
+    })
   },
 
   toggleDecisionSelection: (cardId) => {
