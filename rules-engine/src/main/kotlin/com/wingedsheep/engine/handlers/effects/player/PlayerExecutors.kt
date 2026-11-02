@@ -89,6 +89,7 @@ class PlayerExecutors(
         ControlCombatDeclarationsExecutor(),
         LockLifeGainExecutor(),
         LockLifeLossExecutor(),
+        LockPlayerCountersExecutor(),
         openLifeBidExecutor,
         LoseGameExecutor(predicateEvaluator = zones.predicateEvaluator),
         WinGameExecutor(predicateEvaluator = zones.predicateEvaluator),

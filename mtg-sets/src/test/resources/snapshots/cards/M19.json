@@ -5264,6 +5264,134 @@
     ]
 }
 
+// Suncleanser
+{
+    "name": "Suncleanser",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "When this creature enters, choose one —\n• Remove all counters from target creature. It can't have counters put on it for as long as this creature remains on the battlefield.\n• Target opponent loses all counters. That player can't get counters for as long as this creature remains on the battlefield.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Suncleanser:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "RemoveAllCounters",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    },
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "CANT_RECEIVE_COUNTERS",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        },
+                                        "duration": {
+                                            "type": "WhileSourceOnBattlefield",
+                                            "sourceDescription": "Suncleanser"
+                                        }
+                                    }
+                                ]
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Remove all counters from target creature. It can't have counters put on it for as long as Suncleanser remains on the battlefield"
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "RemoveAllCounters",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t1"
+                                        }
+                                    },
+                                    {
+                                        "type": "LockPlayerCounters",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t1"
+                                        },
+                                        "duration": {
+                                            "type": "WhileSourceOnBattlefield",
+                                            "sourceDescription": "Suncleanser"
+                                        }
+                                    }
+                                ]
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetOpponent",
+                                    "id": "t1"
+                                }
+                            ],
+                            "description": "Target opponent loses all counters. That player can't get counters for as long as Suncleanser remains on the battlefield"
+                        }
+                    ],
+                    "countsAsModalSpell": false
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "rarity": "RARE",
+        "artist": "Mark Zug",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/3644df41-b690-4581-ac7d-c85cec75411f.jpg?1783934596",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "If the cost of an ability or an additional cost of a spell requires putting counters on a creature or player affected by Suncleanser, that cost can't be paid. If a resolving spell or ability says that a player may give counters to that creature or player, that player can't choose to do so."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If a replacement effect allows a player to modify or replace an event by putting counters on a creature or player affected by Suncleanser, that player may apply that replacement effect, but they won't get counters. If the original event is entirely replaced (such as by applying Soul-Scar Mage's replacement effect), the original event won't happen."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Damage from a source with wither has no effect on an affected creature. No -1/-1 counters are put on them, and no damage is marked on them. The damage is still dealt for purposes of effects that care about damage, such as lifelink."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Damage from a source with infect has no effect on an affected creature or player. No -1/-1 counters are put on creatures, and no damage is marked on them. Players don't get poison counters and they don't lose life. The damage is still dealt for purposes of effects that care about damage, such as lifelink."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "While resolving a cumulative upkeep trigger of an affected creature, you'll fail to put a counter on that permanent, then you may pay for the age counters already on it. If it has no age counters on it, you may pay {0}."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Supreme Phantom
 {
     "name": "Supreme Phantom",

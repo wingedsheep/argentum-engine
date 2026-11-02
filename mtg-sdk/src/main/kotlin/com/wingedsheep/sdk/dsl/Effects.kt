@@ -1588,6 +1588,17 @@ object Effects {
     ): Effect = com.wingedsheep.sdk.scripting.effects.LockLifeLossEffect(target, duration)
 
     /**
+     * "[target] can't get counters for [duration]" — no counter of any kind can be put on that
+     * player (Suncleanser: "That player can't get counters for as long as this creature remains on
+     * the battlefield", with [com.wingedsheep.sdk.scripting.Duration.WhileSourceOnBattlefield]).
+     * For a permanent, grant `AbilityFlag.CANT_RECEIVE_COUNTERS` with [GrantKeyword] instead.
+     */
+    fun LockPlayerCounters(
+        target: EffectTarget = EffectTarget.PlayerRef(com.wingedsheep.sdk.scripting.references.Player.TargetPlayer),
+        duration: com.wingedsheep.sdk.scripting.Duration = com.wingedsheep.sdk.scripting.Duration.Permanent
+    ): Effect = com.wingedsheep.sdk.scripting.effects.LockPlayerCountersEffect(target, duration)
+
+    /**
      * "The Ring tempts you" (CR 701.54). The target player gets the Ring emblem (if they don't have
      * one), then chooses a creature they control to become their Ring-bearer. Defaults to the
      * controller. Tempting still happens even if the player controls no creatures.

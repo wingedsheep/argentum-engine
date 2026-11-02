@@ -402,7 +402,8 @@ data class CounterUnlessCollectEvidenceContinuation(
  * No  → counter the spell.
  *
  * There is no can-pay re-check on resume, unlike the life / discard / sacrifice continuations: a
- * player can always get counters, so this cost never becomes unpayable between prompt and response.
+ * payer who can't get counters is countered before the prompt, and nothing between prompt and
+ * response can lock them, so this cost never becomes unpayable in between.
  *
  * Ward is the only producer of this frame, and a ward never counters to exile, so unlike its
  * siblings it carries no `exileOnCounter`.

@@ -329,9 +329,13 @@ class ProjectedState(
      * effects (AddCounters, DoubleCounters, ...) and costs (Blight) alike — agrees. CR 614.17b:
      * because the event can't happen, a player can't even choose to pay a cost that includes it,
      * so blight target pools must exclude such creatures rather than silently dropping the counter.
+     *
+     * Players answer here too: a player can't get counters while a `LockPlayerCountersEffect` lock
+     * on them holds (Suncleanser) — players aren't projected, so that lock is read off the player.
      */
     fun canReceiveCounters(entityId: EntityId): Boolean =
-        !hasKeyword(entityId, com.wingedsheep.sdk.core.AbilityFlag.CANT_RECEIVE_COUNTERS)
+        !hasKeyword(entityId, com.wingedsheep.sdk.core.AbilityFlag.CANT_RECEIVE_COUNTERS) &&
+            !baseState.cantGetCounters(entityId)
 
     /**
      * Whether counters of [counterType] can be put on this object: neither the all-kinds

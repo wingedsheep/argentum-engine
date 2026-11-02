@@ -63,6 +63,7 @@ import com.wingedsheep.sdk.scripting.effects.GainControlEffect
 import com.wingedsheep.sdk.scripting.effects.GrantEvasionKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.GrantHexproofFromChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
+import com.wingedsheep.sdk.scripting.effects.LockPlayerCountersEffect
 import com.wingedsheep.sdk.scripting.effects.GrantProtectionFromChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.GrantTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.MarkExileOnDeathEffect
@@ -514,6 +515,10 @@ object TargetPolarityAnalyzer {
             is GainControlEffect -> leaf.target to TargetPolarity.HARMFUL
             is CantBlockEffect -> leaf.target to TargetPolarity.HARMFUL
             is CantBeRegeneratedEffect -> leaf.target to TargetPolarity.HARMFUL
+            // "That player can't get counters" (Suncleanser): a prohibition on the player — the
+            // energy, experience and other counters they build toward stop coming. Locking out
+            // poison would help them, but the cards aim it at an opponent to shut off their engine.
+            is LockPlayerCountersEffect -> leaf.target to TargetPolarity.HARMFUL
             is MarkExileOnDeathEffect -> leaf.target to TargetPolarity.HARMFUL
             is TapUntapEffect -> leaf.target to
                 if (leaf.tap) TargetPolarity.HARMFUL else TargetPolarity.BENEFICIAL

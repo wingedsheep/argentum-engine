@@ -1310,6 +1310,16 @@ data class GameState(
     }
 
     /**
+     * Whether [playerId] can't get counters right now — a
+     * [com.wingedsheep.engine.state.components.player.CantGetCountersComponent] lock on them is in
+     * force (Suncleanser). False for any entity that isn't a locked player, so it is safe to ask of
+     * a permanent; `ProjectedState.canReceiveCounters` asks it of every counter recipient.
+     */
+    fun cantGetCounters(playerId: EntityId): Boolean =
+        getEntity(playerId)?.get<com.wingedsheep.engine.state.components.player.CantGetCountersComponent>()
+            ?.locks?.any { it.holds(this) } == true
+
+    /**
      * Whether [playerId] can pay [amount] life: paying 0 always can (CR 119.4 / 118.3); otherwise
      * the (team's, CR 810.9a) life total must be at least the amount and the player must be able to
      * lose life (CR 119.8 — "a cost that involves having that player pay life can't be paid"), and no

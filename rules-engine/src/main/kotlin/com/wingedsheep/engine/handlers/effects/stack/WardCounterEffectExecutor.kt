@@ -210,7 +210,7 @@ class WardCounterEffectExecutor(
                     cost.amount, remainingParts, wardSourceId, controllerId
                 )
                 is WardCost.PlayerCounters -> handlePlayerCountersCost(
-                    state, spellEntityId, payingPlayerId,
+                    state, counterer, spellEntityId, payingPlayerId,
                     cost.counterType, cost.amount, remainingParts, wardSourceId, controllerId
                 )
                 is WardCost.Choice -> handleChoiceCost(
@@ -242,7 +242,7 @@ class WardCounterEffectExecutor(
          * [WardCost.Choice] uses it to offer only the options the payer can actually take, so a
          * disjunction can never advertise a leg the payer would then fail to pay.
          *
-         * [WardCost.PlayerCounters] is always payable — a player can always get counters — and a
+         * [WardCost.PlayerCounters] is payable unless the payer can't get counters, and a
          * [WardCost.Composite] is payable only if *every* part is, mirroring its AND semantics.
          * The composite check is a snapshot: paying an earlier part can in principle make a later
          * one unpayable, and the per-part handler still counters at that point.
@@ -272,7 +272,10 @@ class WardCounterEffectExecutor(
             // applies, so the two can't drift.
             is WardCost.CollectEvidence ->
                 CollectEvidenceResolver.candidates(state, payingPlayerId, predicateEvaluator = zones.predicateEvaluator).canReach(cost.amount)
-            is WardCost.PlayerCounters -> true
+            // A player who can't get counters can't pay a cost that gives them some (Suncleanser's
+            // 2018-07-13 ruling: "that cost can't be paid").
+            is WardCost.PlayerCounters ->
+                state.projectedState.canReceiveCounters(payingPlayerId, cost.counterType)
             is WardCost.Composite ->
                 cost.parts.all { canPayWardCost(state, zones, it, payingPlayerId, controllerId) }
             is WardCost.Choice ->
@@ -283,13 +286,15 @@ class WardCounterEffectExecutor(
          * Ward—Get N [counterType] counters (e.g. The Serpent Society's "Ward—Get five poison
          * counters", CR 122.1 — a counter is a marker placed on an object *or player*).
          *
-         * Always payable, so this is a plain yes/no with no can-pay gate. On Yes the counters are
+         * Countered without a prompt when the payer can't get counters ([canPayWardCost]);
+         * otherwise a plain yes/no. On Yes the counters are
          * placed through the ordinary `AddCountersEffect` executor targeting the payer, so counter
          * replacement effects and `CountersAddedEvent` behave exactly as for any other source of
          * player counters (and the poison state-based action, CR 122.1f, follows from that).
          */
         private fun handlePlayerCountersCost(
             state: GameState,
+            counterer: SpellCounterer,
             spellEntityId: EntityId,
             payingPlayerId: EntityId,
             counterType: CounterType,
@@ -298,6 +303,9 @@ class WardCounterEffectExecutor(
             wardSourceId: EntityId?,
             controllerId: EntityId?
         ): EffectResult {
+            if (!state.projectedState.canReceiveCounters(payingPlayerId, counterType)) {
+                return counterSpellOrAbility(state, counterer, spellEntityId, controllerId)
+            }
             val label = WardCost.PlayerCounters(counterType, amount).clause
                 .replaceFirstChar { it.uppercase() }
 
