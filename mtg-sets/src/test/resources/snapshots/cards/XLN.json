@@ -4715,6 +4715,69 @@
     ]
 }
 
+// Skymarch Bloodletter
+{
+    "name": "Skymarch Bloodletter",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Vampire Soldier",
+    "oracleText": "Flying\nWhen this creature enters, target opponent loses 1 life and you gain 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Skymarch Bloodletter:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, target opponent loses 1 life and you gain 1 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "artist": "Tomasz Jedruszek",
+        "flavorText": "From the perpetual shadowsmoke that hung above the ship, a silent form emerged, lips curled with malice and anticipation.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/f/1f4b41d7-30fa-43ab-8f8d-c1de68a19add.jpg?1783935753"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Slash of Talons
 {
     "name": "Slash of Talons",
