@@ -37,7 +37,9 @@ object CharacteristicsEntry {
             characteristics.addedCardTypes.forEach {
                 add(Triple(Layer.TYPE, null, SerializableModification.AddType(it.name)))
             }
-            // Replace the creature types first, so any addedSubtypes still land on top.
+            // Replace the creature types before any addedSubtypes, so those still land on top. The
+            // layer-4 effects here share one timestamp and depend on each other, so EffectSorter's
+            // stable timestamp fallback keeps this creation order.
             characteristics.creatureSubtypes?.let { types ->
                 add(Triple(Layer.TYPE, null, SerializableModification.SetCreatureSubtypes(
                     types.mapTo(linkedSetOf()) { it.value })))

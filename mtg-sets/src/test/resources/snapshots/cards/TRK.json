@@ -1880,6 +1880,7 @@
                     },
                     "destination": "Battlefield",
                     "controllerOverride": "Controller",
+                    "fromZone": "Graveyard",
                     "entryCounters": [
                         {
                             "counterType": "PLUS_ONE_PLUS_ONE"
