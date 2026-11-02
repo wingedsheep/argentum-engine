@@ -59,8 +59,8 @@ import org.springframework.stereotype.Component
  * random set — 40 singletons against a tuned 60, which the AI lost nine times in ten. It now meets
  * a deck for the format the list was built for: the one its saved deck or example declares, else
  * the lobby's, else the narrowest of the nested constructed formats it is legal in
- * ([PremadeOpponentPicker.matchFormat]) — a built-in starter legal there when one qualifies, else a
- * deck generated from the format's card base. A human on Random keeps the unmatched answer.
+ * ([PremadeOpponentPicker.matchFormat]) — a deck generated from the format's whole card base, fresh
+ * each game. A human on Random keeps the unmatched answer.
  */
 @Component
 class RandomDeckResolver(
@@ -159,17 +159,20 @@ class RandomDeckResolver(
         if (commanderRules || opponentDeck.values.sum() < CONSTRUCTED_DECK_SIZE) return null
         val target = premadePicker.matchFormat(opponentDeck, opponentDeckFormat, format) ?: return null
         logger.info("AI's set-matched deck failed; building a {} deck from the whole format instead", target.displayName)
-        return starterOrBuildFor(opponentDeck, target)
+        return buildForFormat(target)
     }
 
     /**
      * A deck for the format [opponentDeck] — a constructed list with no set identity — is played in
-     * ([matchedFormat]): a built-in starter legal in that format when one qualifies
-     * ([PremadeOpponentPicker.pickForFormat]), else one generated from the format's whole card base.
-     * The starters come first because a curated list is a tuned deck with a plan, which no build
-     * from ratings matches (2026-10-31: generated Standard decks went 0/4 against tuned lists); the
-     * pick among them is random, so the AI's list still turns over from game to game. Null — the
-     * caller's unmatched answer — when no format applies.
+     * ([matchedFormat]), generated from the format's whole card base. Null — the caller's unmatched
+     * answer — when no format applies.
+     *
+     * Always generated, never a built-in starter: a starter is merely *legal* in the format, and the
+     * Bloomburrow tribal intro decks are Standard-legal, so a tuned many-set Standard list could meet
+     * a one-set intro deck. Measured 2026-11-02 (AI vs AI, seat-swapped pairs, a tuned Standard
+     * lifegain list as the human's deck): it won 70% of 40 against the built-for-Standard starters,
+     * 75% of 40 against the Bloomburrow intro decks and 72.5% of 40 against generated Standard decks —
+     * the generated build is as strong an opponent as a curated list, and a different one each game.
      */
     private fun formatMatchedDeck(
         opponentDeck: Map<String, Int>,
@@ -179,14 +182,6 @@ class RandomDeckResolver(
     ): GeneratedDeck? {
         val target = matchedFormat(opponentDeck, opponentDeckFormat, format, commanderRules) ?: return null
         logger.info("AI builds a {} deck to match the human's", target.displayName)
-        return starterOrBuildFor(opponentDeck, target)
-    }
-
-    private fun starterOrBuildFor(opponentDeck: Map<String, Int>, target: DeckFormat): GeneratedDeck? {
-        premadePicker.pickForFormat(opponentDeck, target)?.let { starter ->
-            logger.info("AI plays a {}-legal starter against the human's deck", target.displayName)
-            return starter
-        }
         return buildForFormat(target)
     }
 
