@@ -14,15 +14,21 @@ import com.wingedsheep.sdk.model.EntityId
  * [TargetFinder] (legal-target enumeration) and `StackResolver` (resolution-time fizzle check);
  * keeping the keyword name and source-type resolution here avoids the two drifting apart.
  *
- * Unlike the opponent-ability restriction this is NOT controller-gated — it keys off the ability's
- * source (CR 113.7) by card type, not its controller: a matching source can't target the warded
- * creature even if the same player controls both. It only blocks abilities, never spells.
+ * The base form is NOT controller-gated — it keys off the ability's source (CR 113.7) by card type,
+ * not its controller: a matching source can't target the warded creature even if the same player
+ * controls both. The opponents-only form (Species 8472, its own keyword from [opponentKeyword])
+ * additionally requires the ability's controller to be an opponent of the target's controller, read
+ * the way hexproof is. Both only block abilities, never spells.
  */
 object SourceTypeTargeting {
 
     /** The projected keyword granted to creatures warded against [cardTypeName] sources' abilities. */
     fun keyword(cardTypeName: String): String =
         "CANT_BE_TARGETED_BY_CARDTYPE_${cardTypeName.uppercase()}_SOURCE_ABILITIES"
+
+    /** The projected keyword for the opponents-only form: sources the target's controller's opponents control. */
+    fun opponentKeyword(cardTypeName: String): String =
+        "CANT_BE_TARGETED_BY_OPPONENT_CARDTYPE_${cardTypeName.uppercase()}_SOURCE_ABILITIES"
 
     /**
      * The source's card types — projected types for permanents on the battlefield, falling back to
@@ -38,19 +44,22 @@ object SourceTypeTargeting {
 
     /**
      * True if [targetId] is warded against the ability of an artifact/enchantment/… source
-     * [sourceId]. Returns false for spell sources, an unknown source, or when the source's card
+     * [sourceId] controlled by [controllerId]. Returns false for spell sources, an unknown source, or when the source's card
      * type doesn't match any restriction the target carries.
      */
     fun cantBeTargetedBySourceTypeAbility(
         state: GameState,
         targetId: EntityId,
         sourceId: EntityId?,
+        controllerId: EntityId,
         targetingSourceType: TargetingSourceType
     ): Boolean {
         if (targetingSourceType == TargetingSourceType.SPELL || sourceId == null) return false
         val projected = state.projectedState
+        val byOpponent = projected.getController(targetId)?.let { it != controllerId } ?: false
         return sourceCardTypes(state, sourceId).any { type ->
-            projected.hasKeyword(targetId, keyword(type))
+            projected.hasKeyword(targetId, keyword(type)) ||
+                (byOpponent && projected.hasKeyword(targetId, opponentKeyword(type)))
         }
     }
 }

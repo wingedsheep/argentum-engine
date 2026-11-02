@@ -494,8 +494,8 @@ data object CantBeTargetedByOpponentAbilities : StaticAbility {
 /**
  * Creatures matching [filter] can't be the target of *abilities from sources of a given card type*
  * ([sourceType]) — hexproof keyed to a source *category* (the source's card type) rather than a
- * controller or color. This blocks only abilities (activated/triggered), not spells, and applies
- * regardless of who controls the source (the ability's source per CR 113.7).
+ * controller or color. This blocks only abilities (activated/triggered), not spells, and by default
+ * applies regardless of who controls the source (the ability's source per CR 113.7).
  *
  * Projected as the keyword `CANT_BE_TARGETED_BY_CARDTYPE_<TYPE>_SOURCE_ABILITIES`; enforced at
  * targeting by the engine (`TargetFinder`/`StackResolver`), which checks the targeting source's
@@ -505,17 +505,31 @@ data object CantBeTargetedByOpponentAbilities : StaticAbility {
  * Deliberately *not* protection-from-[type]: protection would also stop the creature from being
  * enchanted/equipped/blocked/damaged by such sources, which this clause does not.
  *
+ * [sourceController] narrows it to sources the affected permanent's controller's opponents control
+ * ("can't be the target of abilities from artifact sources your opponents control" — Species 8472),
+ * read relative to the affected permanent's controller the way hexproof is (CR 702.11b).
+ *
  * @property sourceType The card type the restricted source must have (e.g. [CardType.ARTIFACT]).
  * @property filter What this applies to — defaults to the attached/enchanted creature for Auras.
+ * @property sourceController Whose sources are restricted: [Player.Each] (anyone's, the default —
+ *   Artifact Ward) or [Player.EachOpponent] (only the affected permanent's controller's opponents').
  */
 @SerialName("CantBeTargetedBySourceTypeAbilities")
 @Serializable
 data class CantBeTargetedBySourceTypeAbilities(
     val sourceType: CardType,
-    val filter: GroupFilter = GroupFilter.attachedCreature()
+    val filter: GroupFilter = GroupFilter.attachedCreature(),
+    val sourceController: Player = Player.Each
 ) : StaticAbility {
+    init {
+        require(sourceController == Player.Each || sourceController == Player.EachOpponent) {
+            "CantBeTargetedBySourceTypeAbilities.sourceController must be Player.Each or Player.EachOpponent"
+        }
+    }
+
     override val description: String =
-        "${filter.description} can't be the target of abilities from ${sourceType.displayName.lowercase()} sources"
+        "${filter.description} can't be the target of abilities from ${sourceType.displayName.lowercase()} sources" +
+            if (sourceController == Player.EachOpponent) " your opponents control" else ""
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
         return if (newFilter !== filter) copy(filter = newFilter) else this

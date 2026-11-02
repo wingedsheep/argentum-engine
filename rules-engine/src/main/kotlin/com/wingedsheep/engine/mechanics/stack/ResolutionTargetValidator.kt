@@ -418,7 +418,7 @@ internal class ResolutionTargetValidator(
         // controller — applies even to the warded creature's own controller's sources.
         // Spells bypass (abilities-only).
         if (SourceTypeTargeting.cantBeTargetedBySourceTypeAbility(
-                state, target.entityId, sourceId, targetingSourceType
+                state, target.entityId, sourceId, controllerId, targetingSourceType
             )
         ) {
             return false
