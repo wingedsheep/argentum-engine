@@ -16,6 +16,7 @@ import com.wingedsheep.engine.state.components.identity.CantBeCounteredComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.CommanderRegistryComponent
 import com.wingedsheep.engine.state.components.player.GrantedSpellKeywordsComponent
+import com.wingedsheep.engine.state.components.stack.AdditionalEntryCounters
 import com.wingedsheep.engine.state.components.stack.EntryKeywordGrant
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
@@ -210,6 +211,8 @@ internal class CastTriggers(
                 state to triggerWhenSpent(state, spell, rider.spellFilter, rider.effect)
             is ManaSpellRider.GrantsKeywordWhenSpent ->
                 grantKeywordWhenSpent(state, spell, rider.keyword, rider.spellFilter, rider.duration) to emptyList()
+            is ManaSpellRider.EntersWithCountersWhenSpent ->
+                oweEntryCountersWhenSpent(state, spell, rider) to emptyList()
         }
 
     private fun spellMatches(state: GameState, action: CastSpell, filter: GameObjectFilter): Boolean =
@@ -254,6 +257,31 @@ internal class CastTriggers(
         return state.updateEntity(action.cardId) { c ->
             val onStack = c.get<SpellOnStackComponent>() ?: return@updateEntity c
             c.with(onStack.copy(entryKeywordGrants = onStack.entryKeywordGrants + EntryKeywordGrant(keyword, duration)))
+        }
+    }
+
+    /**
+     * Guildmages' Forum's rider: if the cast spell matches the rider's filter, owe it the rider's
+     * counters on [SpellOnStackComponent.additionalEntryCounters]; `PermanentEntry` places them as
+     * the permanent enters, so counter-placement replacements apply then. Queues nothing — "that
+     * creature enters with an additional +1/+1 counter" isn't a triggered ability. Matched at
+     * payment time, like the other filtered riders.
+     */
+    private fun oweEntryCountersWhenSpent(
+        state: GameState,
+        spell: CastSpellOnStack,
+        rider: ManaSpellRider.EntersWithCountersWhenSpent,
+    ): GameState {
+        val action = spell.action
+        if (!spellMatches(state, action, rider.spellFilter)) return state
+        return state.updateEntity(action.cardId) { c ->
+            val onStack = c.get<SpellOnStackComponent>() ?: return@updateEntity c
+            c.with(
+                onStack.copy(
+                    additionalEntryCounters = onStack.additionalEntryCounters +
+                        AdditionalEntryCounters(rider.counterType, rider.count)
+                )
+            )
         }
     }
 

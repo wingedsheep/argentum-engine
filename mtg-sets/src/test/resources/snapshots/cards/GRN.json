@@ -2763,6 +2763,70 @@
     ]
 }
 
+// Guildmages' Forum
+{
+    "name": "Guildmages' Forum",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{1}, {T}: Add one mana of any color. If that mana is spent on a multicolored creature spell, that creature enters with an additional +1/+1 counter on it.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Guildmages' Forum:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Guildmages' Forum:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "riders": [
+                        {
+                            "type": "EntersWithCountersWhenSpent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "IsMulticolored"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "250",
+        "rarity": "RARE",
+        "artist": "Adam Paquette",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/b/cba12bda-d460-4206-8469-4357c967b9b8.jpg?1783934102"
+    },
+    "colorIdentityOverride": []
+}
+
 // Healer's Hawk
 {
     "name": "Healer's Hawk",

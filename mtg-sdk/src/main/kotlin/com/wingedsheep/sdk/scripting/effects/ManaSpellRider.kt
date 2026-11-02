@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting.effects
 
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -145,6 +146,44 @@ sealed interface ManaSpellRider {
             "If that mana is spent on ${article(spellFilter.description)} spell, it gains " +
                 keyword.lowercase().replace('_', ' ') +
                 (if (duration == Duration.Permanent) "" else " until end of turn")
+    }
+
+    /**
+     * "If that mana is spent on a [spellFilter] spell, that creature enters with [count] additional
+     * [counterType] counter(s) on it." (Guildmages' Forum, with
+     * `spellFilter = GameObjectFilter.Creature and GameObjectFilter.Multicolored`.)
+     *
+     * Like [GrantsKeywordWhenSpent] this is not a triggered ability — the printed card puts nothing on
+     * the stack, so it can't be responded to. On consumption the cast pipeline matches the spell against
+     * [spellFilter] (at payment time, against its cast characteristics) and, on a match, owes the
+     * counters to the spell (`SpellOnStackComponent.additionalEntryCounters`); they're placed as the
+     * permanent enters, so counter-placement replacements (Hardened Scales) apply then. A countered
+     * spell carries none into its next zone, and a copy of the spell owes none.
+     *
+     * Neither neighbour takes this axis: [GrantsKeywordWhenSpent] hands over a keyword, not counters, and
+     * [TriggersWhenSpent] with an `AddCounters` effect is the *triggered* reading — right for Jade Orb of
+     * Dragonkind's "When you spend this mana …", wrong for an "If that mana is spent …" rider, whose
+     * counters must not wait on (or be stoppable as) a trigger above the spell.
+     *
+     * @property spellFilter Which cast spells the rider adds counters to.
+     * @property counterType The kind of counter the permanent enters with.
+     * @property count How many additional counters each rider-carrying mana owes.
+     */
+    @SerialName("EntersWithCountersWhenSpent")
+    @Serializable
+    data class EntersWithCountersWhenSpent(
+        val spellFilter: GameObjectFilter,
+        val counterType: CounterType = CounterType.PLUS_ONE_PLUS_ONE,
+        val count: Int = 1,
+    ) : ManaSpellRider {
+        init {
+            require(count > 0) { "EntersWithCountersWhenSpent needs a positive count, got $count" }
+        }
+
+        override val description: String =
+            "If that mana is spent on ${article(spellFilter.description)} spell, that creature enters with " +
+                (if (count == 1) "an additional ${counterType.printed} counter" else "$count additional ${counterType.printed} counters") +
+                " on it"
     }
 }
 
