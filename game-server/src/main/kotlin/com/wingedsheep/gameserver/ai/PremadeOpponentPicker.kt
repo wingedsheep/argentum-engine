@@ -24,7 +24,7 @@ import kotlin.random.Random
  * plays (a commander exactly when the game uses commanders), and passes the lobby's format.
  *
  * A constructed deck spread over many sets has no set identity to match, so the resolver matches
- * it by format instead ([matchFormat]).
+ * it by format instead ([matchFormat]) and generates the opponent — no starter is offered there.
  */
 @Component
 class PremadeOpponentPicker(
@@ -56,27 +56,6 @@ class PremadeOpponentPicker(
                 val commanders = listOfNotNull(starter.commander)
                 GeneratedDeck(DeckRequestConverter.stripCommanders(starter.cards, commanders), starter.commander)
             }
-    }
-
-    /**
-     * A built-in 60-card starter legal in [format] for an AI seat facing [opponentDeck] — a
-     * constructed list matched by format rather than by set — or null when none qualifies.
-     *
-     * The curated lists beat any generated deck: they are tuned four-of lists with a plan, where a
-     * build from the whole format is at best the format's highest-rated cards in two colours. The
-     * same [MAX_OVERLAP] rule keeps the AI off the human's own starter. Only constructed-sized,
-     * commander-less starters count, and only when the validator passes them in [format] — so a
-     * rotated card or a Pauper lobby simply leaves nothing to pick and the caller generates instead.
-     */
-    fun pickForFormat(opponentDeck: Map<String, Int>, format: DeckFormat, random: Random = Random.Default): GeneratedDeck? {
-        if (format.isCommanderShape) return null
-        val opponentNames = setInference.nonBasicNames(opponentDeck)
-        return DecksController.EXAMPLE_DECKS
-            .filter { it.commander == null && it.cards.values.sum() >= CONSTRUCTED_DECK_SIZE }
-            .filter { overlap(setInference.nonBasicNames(it.cards), opponentNames) <= MAX_OVERLAP }
-            .filter { isLegal(it, format) }
-            .randomOrNull(random)
-            ?.let { GeneratedDeck(it.cards) }
     }
 
     /**
@@ -130,7 +109,6 @@ class PremadeOpponentPicker(
 
     private companion object {
         const val MIN_COVERAGE = 0.9
-        const val CONSTRUCTED_DECK_SIZE = 60
         /** Past this, the "sibling" is the human's own starter (or a light edit of it). */
         const val MAX_OVERLAP = 0.5
 
