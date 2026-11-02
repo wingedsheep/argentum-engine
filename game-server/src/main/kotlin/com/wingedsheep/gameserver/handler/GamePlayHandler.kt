@@ -829,10 +829,8 @@ class GamePlayHandler(
                         // seat whose live entry went missing still lands in history with its deck.
                         val deckList = gameSession.getStartingDeckList(player.playerId)
                         val profile = deckList?.let { deckProfiler.profile(it, gameSession.quickGameSetCode) }
-                        // Count copies by canonical card name (strip any "#collector" pin).
-                        val deckCards = deckList
-                            ?.groupingBy { it.substringBefore('#') }?.eachCount()
-                            ?: emptyMap()
+                        // Copies by canonical card name, plus the printing each was pinned to.
+                        val recordedDeck = deckList?.let(com.wingedsheep.gameserver.stats.RecordedDeck::of)
                         com.wingedsheep.gameserver.stats.RecordedParticipant(
                             userId = identity?.userId,
                             playerName = player.playerName,
@@ -841,7 +839,8 @@ class GamePlayHandler(
                             setCodes = profile?.setCodes,
                             isAi = isAi,
                             clientIp = if (isAi) null else identity?.clientIp,
-                            deckCards = deckCards,
+                            deckCards = recordedDeck?.cards.orEmpty(),
+                            deckPrintings = recordedDeck?.printings.orEmpty(),
                         )
                     },
                 )

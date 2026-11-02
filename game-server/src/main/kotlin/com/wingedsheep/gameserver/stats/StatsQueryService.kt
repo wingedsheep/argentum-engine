@@ -56,8 +56,11 @@ data class GameHistoryEntry(
     val hasReplay: Boolean,
 )
 
-/** One card line in a stored deck (for the recent-games deck viewer). */
-data class DeckCardEntry(val cardName: String, val copies: Int)
+/**
+ * One card line in a stored deck (for the recent-games deck viewer). [printing] is the
+ * `"SET-CN"` printing the copies were played as; null = the card's default printing.
+ */
+data class DeckCardEntry(val cardName: String, val copies: Int, val printing: String? = null)
 
 /**
  * One card line enriched with the registry metadata the client needs to render a deck the polished
@@ -75,7 +78,8 @@ data class GameDeckCard(
     /** The card's own colours as enum names (e.g. ["WHITE","BLUE"]); empty = colourless/unresolved. */
     val colors: List<String>,
     /**
-     * Direct CDN art URL for the card's default printing, resolved the same way as the deckbuilder
+     * Direct CDN art URL for the printing the deck used (its default printing when none was pinned),
+     * resolved the same way as the deckbuilder
      * catalog ([CardsController]). `null` when the card can't be resolved, in which case the client
      * falls back to a Scryfall name lookup — slower and rate-limited, so we send this up front.
      */
@@ -691,14 +695,14 @@ class StatsQueryService(
         val out = LinkedHashMap<Long, MutableList<DeckCardEntry>>()
         jdbc.query(
             """
-            SELECT c.participant_id AS pid, c.card_name AS card_name, c.copies AS copies
+            SELECT c.participant_id AS pid, c.card_name AS card_name, c.copies AS copies, c.printing AS printing
             FROM match_participant_cards c
             JOIN match_participants p ON p.id = c.participant_id
             WHERE p.user_id = ?
             """.trimIndent(),
             { rs ->
                 out.getOrPut(rs.getLong("pid")) { mutableListOf() }
-                    .add(DeckCardEntry(rs.getString("card_name"), rs.getInt("copies")))
+                    .add(DeckCardEntry(rs.getString("card_name"), rs.getInt("copies"), rs.getString("printing")))
             },
             userId,
         )
@@ -711,11 +715,11 @@ class StatsQueryService(
         val placeholders = pids.joinToString(",") { "?" }
         val out = LinkedHashMap<Long, MutableList<DeckCardEntry>>()
         jdbc.query(
-            "SELECT participant_id AS pid, card_name, copies FROM match_participant_cards " +
+            "SELECT participant_id AS pid, card_name, copies, printing FROM match_participant_cards " +
                 "WHERE participant_id IN ($placeholders)",
             { rs ->
                 out.getOrPut(rs.getLong("pid")) { mutableListOf() }
-                    .add(DeckCardEntry(rs.getString("card_name"), rs.getInt("copies")))
+                    .add(DeckCardEntry(rs.getString("card_name"), rs.getInt("copies"), rs.getString("printing")))
             },
             *pids.toTypedArray(),
         )
@@ -742,17 +746,31 @@ class StatsQueryService(
                     cmc = card?.cmc ?: 0,
                     cardTypes = card?.typeLine?.cardTypes?.map { it.name } ?: emptyList(),
                     colors = card?.colors?.map { it.name } ?: emptyList(),
-                    // Prefer the default printing's art (mirrors CardsController), falling back to the
-                    // canonical metadata image — so the deck viewer loads from the CDN directly.
+                    // The printing the deck played, else the default printing's art (mirrors
+                    // CardsController), else the canonical metadata image — so the deck viewer shows
+                    // the art the player actually had and loads it from the CDN directly.
                     imageUri = card?.let {
-                        printingRegistry.defaultPrinting(it.name)?.imageUri ?: it.metadata.imageUri
+                        printingImageUri(e.printing)
+                            ?: printingRegistry.defaultPrinting(it.name)?.imageUri
+                            ?: it.metadata.imageUri
                     },
                 )
             }
 
-    /** Enrich a name→copies map (a stored [SharedDeck]'s card list) for the saved-deck viewer. */
-    fun enrichDeck(cardCounts: Map<String, Int>): List<GameDeckCard> =
-        enrichDeckCards(cardCounts.map { (name, copies) -> DeckCardEntry(name, copies) })
+    /** Art for a `"SET-CN"` printing identifier, or null when it is absent, malformed or unknown. */
+    private fun printingImageUri(identifier: String?): String? {
+        if (identifier == null) return null
+        val dash = identifier.indexOf('-')
+        if (dash <= 0 || dash == identifier.lastIndex) return null
+        return printingRegistry.getPrinting(identifier.substring(0, dash), identifier.substring(dash + 1))?.imageUri
+    }
+
+    /**
+     * Enrich a name→copies map (a stored [SharedDeck]'s card list) for the saved-deck viewer.
+     * [printings] maps a card name to the `"SET-CN"` printing the deck pins it to.
+     */
+    fun enrichDeck(cardCounts: Map<String, Int>, printings: Map<String, String> = emptyMap()): List<GameDeckCard> =
+        enrichDeckCards(cardCounts.map { (name, copies) -> DeckCardEntry(name, copies, printings[name]) })
 
     /** The single dominant card type used to bucket a card in [cardTypeBreakdown]. */
     private fun primaryTypeLabel(types: Set<CardType>): String {

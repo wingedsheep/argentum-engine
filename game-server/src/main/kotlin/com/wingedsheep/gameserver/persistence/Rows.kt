@@ -127,6 +127,8 @@ data class MatchCardRow(
     @Id val id: Long? = null,
     val cardName: String,
     val copies: Int,
+    /** The printing these copies were played as (`"SET-CN"`); null = the card's default printing. */
+    val printing: String? = null,
 )
 
 /**

@@ -13,6 +13,8 @@ import com.wingedsheep.gameserver.stats.StatBucket
 import com.wingedsheep.gameserver.stats.StatsQueryService
 import com.wingedsheep.gameserver.stats.UserTournamentEntry
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -193,23 +195,40 @@ class AdminUsersController(
                 name = row.name,
                 format = row.format,
                 updatedAt = row.updatedAt.toString(),
-                cards = statsQuery.enrichDeck(deckCardCounts(row.data)),
+                cards = storedDeck(row.data).let { statsQuery.enrichDeck(it.cards, it.printings) },
             )
         }
         ResponseEntity.ok(dtos)
     }
 
-    /** Extract the `name -> copies` card map from a stored SharedDeck JSON body (commander included). */
-    private fun deckCardCounts(body: String): Map<String, Int> = runCatching {
+    /** A stored SharedDeck JSON body's cards (commanders included) and the printings it pins them to. */
+    private data class StoredDeck(val cards: Map<String, Int>, val printings: Map<String, String>)
+
+    /**
+     * Extract the `name -> copies` card map from a stored SharedDeck JSON body, with the commanders
+     * (which live in the command zone, CR 903.6a, and aren't in `cards`) added so the deck the admin
+     * sees matches what the player built — and each card's pinned printing (`printings`, plus the
+     * commanders' own pins) as `"SET-CN"`, so the viewer shows the art the player chose.
+     */
+    private fun storedDeck(body: String): StoredDeck = runCatching {
         val root = json.parseToJsonElement(body).jsonObject
         val cards = LinkedHashMap<String, Int>()
         root["cards"]?.jsonObject?.forEach { (name, count) ->
             count.jsonPrimitive.intOrNull?.let { if (it > 0) cards[name] = it }
         }
-        // The commander lives in the command zone (CR 903.6a) and isn't in `cards` — include it so the
-        // deck the admin sees matches what the player built.
-        root["commander"]?.jsonPrimitive?.contentOrNull?.takeIf { it.isNotBlank() }
-            ?.let { cards.putIfAbsent(it, 1) }
-        cards
-    }.getOrDefault(emptyMap())
+        val printings = LinkedHashMap<String, String>()
+        fun printingOf(ref: JsonElement?): String? {
+            val obj = ref as? JsonObject ?: return null
+            val set = obj["setCode"]?.jsonPrimitive?.contentOrNull?.takeIf { it.isNotBlank() } ?: return null
+            val cn = obj["collectorNumber"]?.jsonPrimitive?.contentOrNull?.takeIf { it.isNotBlank() } ?: return null
+            return "$set-$cn"
+        }
+        (root["printings"] as? JsonObject)?.forEach { (name, ref) -> printingOf(ref)?.let { printings[name] = it } }
+        for ((nameKey, printingKey) in listOf("commander" to "commanderPrinting", "secondCommander" to "secondCommanderPrinting")) {
+            val name = root[nameKey]?.jsonPrimitive?.contentOrNull?.takeIf { it.isNotBlank() } ?: continue
+            cards.putIfAbsent(name, 1)
+            printingOf(root[printingKey])?.let { printings[name] = it }
+        }
+        StoredDeck(cards, printings)
+    }.getOrDefault(StoredDeck(emptyMap(), emptyMap()))
 }

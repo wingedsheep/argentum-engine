@@ -537,8 +537,8 @@ export interface GameDeckCard {
   /** The card's own colours as enum names, e.g. `["WHITE","BLUE"]`; empty = colourless. */
   readonly colors: string[]
   /**
-   * Direct CDN art URL for the card's default printing, resolved server-side (like the deckbuilder
-   * catalog). `null` when unresolved, in which case the preview falls back to a Scryfall name lookup.
+   * Direct CDN art URL for the printing the deck used (its default printing when none was pinned),
+   * resolved server-side (like the deckbuilder catalog). `null` when unresolved, in which case the preview falls back to a Scryfall name lookup.
    */
   readonly imageUri: string | null
 }
