@@ -36,10 +36,11 @@ class AiReadingByAbilityTest : FunSpec({
     }
 
     test("a polarity gap names the target slot and the step that left it unread") {
-        val reading = AiReadingAudit.read(card("Amnesia"))
+        // A bounce is either side's play (saving our own creature, or tempo on theirs), so it stays unread.
+        val reading = AiReadingAudit.read(card("Unsummon"))
         val gaps = reading.abilities.single { it.ability.kind == AbilityKind.SPELL }
             .findings.filter { it.check == Check.POLARITY && !it.read }
-        gaps.map { it.effectType } shouldContainExactly listOf("RevealHandEffect", "Pipeline(hand→graveyard)")
+        gaps.map { it.effectType } shouldContainExactly listOf("MoveToZoneEffect")
         gaps.forEach {
             it.target shouldBe 1
             it.reason shouldBe "target 1: can't tell if this helps or hurts"

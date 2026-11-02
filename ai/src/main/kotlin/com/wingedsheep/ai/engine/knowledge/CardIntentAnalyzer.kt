@@ -24,6 +24,7 @@ import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.effects.*
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
+import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -458,7 +459,81 @@ object CardIntentAnalyzer {
      * Internal so [com.wingedsheep.ai.engine.LimitedCardRater] can price the same reading: its leaf
      * fold sees a gather and a move, each worth nothing alone.
      */
-    internal fun pipelineTags(root: Effect): Set<IntentTag> = digTags(root) + destroyAllTags(root)
+    internal fun pipelineTags(root: Effect): Set<IntentTag> =
+        digTags(root) + destroyAllTags(root) + handDisruptionTags(root, eachPlayer = null) + regrowthTags(root)
+
+    /**
+     * "Return all nonland permanent cards from your graveyard to the battlefield" (Return to the
+     * Light Realms), "return up to two creature cards from your graveyard to your hand" — a gather
+     * from **our own graveyard** whose cards, or the ones picked from among them, are moved onto the
+     * battlefield or into our hand — reads as [IntentTag.RECURSION], as the single-card
+     * `MoveToZoneEffect` spelling of the same return does in [tagsOf].
+     *
+     * Only our graveyard and only to our side: reanimating an opponent's creature is a steal, and
+     * a graveyard exiled is graveyard hate, both read (or not) elsewhere.
+     */
+    private fun regrowthTags(root: Effect): Set<IntentTag> {
+        val leaves = readingLeaves(root)
+        val ourGraveyard = leaves.mapNotNullTo(HashSet()) { leaf ->
+            val source = (leaf as? GatherCardsEffect)?.source as? CardSource.FromZone ?: return@mapNotNullTo null
+            leaf.storeAs.takeIf { source.zone == Zone.GRAVEYARD && source.player == Player.You }
+        }
+        if (ourGraveyard.isEmpty()) return emptySet()
+        do {
+            val before = ourGraveyard.size
+            for (leaf in leaves) ourGraveyard += derivedCollections(leaf, ourGraveyard)
+        } while (ourGraveyard.size != before)
+        val returnsThem = leaves.any { leaf ->
+            val move = (leaf as? MoveCollectionEffect)?.takeIf { it.from in ourGraveyard && it.faceDown == null }
+            val to = move?.destination as? CardDestination.ToZone
+            to != null && to.player == Player.You && (to.zone == Zone.HAND || to.zone == Zone.BATTLEFIELD)
+        }
+        return if (returnsThem) setOf(IntentTag.RECURSION) else emptySet()
+    }
+
+    /**
+     * "Target player discards two cards" (Mind Rot), "each opponent discards a card" (Rank Rat),
+     * "target opponent reveals their hand; you choose a nonland card from it; exile that card"
+     * (Null Summoner) — a gather from **another player's hand** whose cards (or the ones picked
+     * from among them) are moved to a graveyard, exile or a library — reads as [IntentTag.DISCARD].
+     * `Patterns.Hand` lowers every one of these to the same gather → select → move pipeline, so no
+     * single leaf says it.
+     *
+     * Whose hand it is decides it. An opponent's ([OPPONENT_PLAYERS]) always; `Player.You` only
+     * inside an iteration over opponents ([eachPlayer]), where it is the player iterated. A target
+     * player slot is aimed at an opponent too — unless the same effect also draws: "target player
+     * draws three cards, then discards a card" is a loot its caster points at themselves. Our own
+     * hand is a cost or a loot, never an answer, and a symmetric "each player discards" is a wheel's
+     * price as often as an attack on a hand, so both stay unread.
+     */
+    private fun handDisruptionTags(root: Effect, eachPlayer: Player?): Set<IntentTag> {
+        val leaves = readingLeaves(root)
+        val draws = leaves.any { it is DrawCardsEffect || it is DrawUpToEffect }
+        val theirHand = leaves.mapNotNullTo(HashSet()) { leaf ->
+            val source = (leaf as? GatherCardsEffect)?.source as? CardSource.FromZone ?: return@mapNotNullTo null
+            leaf.storeAs.takeIf { source.zone == Zone.HAND && isAnotherPlayersHand(source.player, eachPlayer, draws) }
+        }
+        if (theirHand.isEmpty()) return emptySet()
+        do {
+            val before = theirHand.size
+            for (leaf in leaves) theirHand += derivedCollections(leaf, theirHand)
+        } while (theirHand.size != before)
+        val takesThem = leaves.any {
+            it is MoveCollectionEffect && it.from in theirHand &&
+                (it.destination as? CardDestination.ToZone)?.zone in HAND_DISRUPTION_DESTINATIONS
+        }
+        return if (takesThem) setOf(IntentTag.DISCARD) else emptySet()
+    }
+
+    /** Whether a gather from [player]'s hand reaches someone other than the ability's controller — see [handDisruptionTags]. */
+    private fun isAnotherPlayersHand(player: Player, eachPlayer: Player?, draws: Boolean): Boolean = when (player) {
+        in OPPONENT_PLAYERS -> true
+        Player.You -> eachPlayer != null && !includesYou(eachPlayer)
+        Player.TargetPlayer, Player.EachTargetedPlayer, is Player.ContextPlayer, is Player.BoundVariable -> !draws
+        else -> false
+    }
+
+    private val HAND_DISRUPTION_DESTINATIONS = setOf(Zone.GRAVEYARD, Zone.EXILE, Zone.LIBRARY)
 
     /**
      * "Destroy all creatures" — a gather of the battlefield moved to the graveyard by destruction or
@@ -661,7 +736,7 @@ object CardIntentAnalyzer {
             }
 
     /** The collections [leaf] stores from one of [sources] — the pipeline steps that split or narrow a collection. */
-    private fun derivedCollections(leaf: Effect, sources: Set<String>): List<String> = when (leaf) {
+    internal fun derivedCollections(leaf: Effect, sources: Set<String>): List<String> = when (leaf) {
         is SelectFromCollectionEffect -> if (leaf.from in sources) listOfNotNull(leaf.storeSelected, leaf.storeRemainder) else emptyList()
         is FilterCollectionEffect -> if (leaf.from in sources) listOfNotNull(leaf.storeMatching, leaf.storeNonMatching) else emptyList()
         is ChoosePileEffect -> if (leaf.pileA in sources || leaf.pileB in sources) listOf(leaf.storeChosenAs, leaf.storeOtherAs) else emptyList()
@@ -801,9 +876,40 @@ object CardIntentAnalyzer {
                 // "For each player, destroy the creatures they control (but one)": the pipeline
                 // gathers `You` — the iterated player — so it only reads as a wrath in the
                 // iteration's frame. See [destroyAll].
-                space is IterationSpace.Players -> inner + destroyAll(effect.body, eachPlayer = space.players).tags
+                space is IterationSpace.Players -> inner + destroyAll(effect.body, eachPlayer = space.players).tags +
+                    handDisruptionTags(effect.body, eachPlayer = space.players)
+                // "Untap all lands you control" (Emrakul, the Exigent Doom's cast trigger): every
+                // land of ours taps for mana again, the same payoff as the mana it makes.
+                space is IterationSpace.Group && untapsOurLands(space.filter, effect.body) -> inner + IntentTag.RAMP
                 else -> inner
             }
+        }
+
+        // An emblem, or a "for the rest of the game / this turn, whenever …" trigger, is the
+        // ability it grants: "whenever you cast a spell, draw a card" (Chandra, Chill of Compliance)
+        // is card draw and "… deals 5 damage to any target" (Chandra, Torch of Defiance) removal,
+        // each paid out later, as a delayed trigger is read as the effect it fires.
+        // Only a lasting one: "this turn, whenever a creature dies, draw a card" on an instant is
+        // a draw only if something dies, and a DRAW reading would cash it into an empty end step.
+        is CreateGlobalTriggeredAbilityEffect ->
+            if (effect.duration == Duration.Permanent) effectTags(effect.ability.effect) else emptySet()
+
+        // "Target instant or sorcery card in your graveyard gains flashback" (Stingcaster Mage,
+        // Snapcaster Mage): the card can be cast again from the graveyard — a recursion, paid for
+        // with its own mana cost.
+        is GrantFlashbackEffect -> setOf(IntentTag.RECURSION)
+
+        // "Target land gains '{T}: Add {C}{C}'" (Emrakul, the Exigent Doom): a mana ability handed
+        // to a permanent is a mana source, as a mana rock is.
+        is GrantActivatedAbilityEffect -> if (effect.ability.isManaAbility) setOf(IntentTag.RAMP) else emptySet()
+
+        // "You get an emblem with 'Creatures you control get +2/+2'" (Ajani Resolute) is an anthem
+        // nothing can remove; its keywords and statics read as the same grants printed on a lord.
+        is CreatePermanentEmblemEffect -> buildSet {
+            val bonus = effect.powerBonus >= 0 && effect.toughnessBonus >= 0 && effect.powerBonus + effect.toughnessBonus > 0
+            if (bonus) add(IntentTag.ANTHEM)
+            effect.grantedKeywords.forEach { addAll(keywordTags(it)) }
+            effect.ownedStaticAbilities.forEach { addAll(tagsOf(it)) }
         }
 
         // "Target creature gains 'When this creature dies, return it to the battlefield'" (Feign
@@ -833,6 +939,18 @@ object CardIntentAnalyzer {
         }
 
         else -> emptySet()
+    }
+
+    /**
+     * Whether [body], run over each permanent of [group], untaps lands of ours and nothing else's —
+     * "untap all lands you control". Untapping a group that can hold creatures or an opponent's
+     * lands is a combat or tempo play, not mana, and stays unread.
+     */
+    private fun untapsOurLands(group: GroupFilter, body: Effect): Boolean {
+        val filter = group.baseFilter
+        if (filter.anyOf.isNotEmpty() || CardPredicate.IsLand !in filter.cardPredicates) return false
+        if (filter.controllerPredicate != ControllerPredicate.ControlledByYou) return false
+        return EffectWalker.payoffLeaves(body).any { it is TapUntapEffect && !it.tap && it.target == EffectTarget.IterationEntity }
     }
 
     /**

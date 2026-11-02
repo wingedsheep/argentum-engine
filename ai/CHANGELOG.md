@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- #4314 Reads hand disruption ("target player / each opponent discards", reveal-and-exile) as discard aimed at the other side's hand, graveyard-to-battlefield/hand pipelines and granted flashback as recursion, emblems as the ability they grant, and a granted mana ability as ramp — so it hands Emrakul, the Exigent Doom's "{T}: Add {C}{C}" to its own land instead of the opponent's
 - #4315 Builds its draft and sealed lobby decks with the Draftsim autobuilder its quick-game decks already used — archetype ratings, synergy, three-colour and splash builds with fixing — instead of the plain two-colour colour-and-curve heuristic
 - #4312 Builds whole-format constructed decks in every colour pair rather than nearly always white: leads with a colour drawn evenly and pairs it with a partner that keeps the deck within 85% of the best pair
 - #4310 Against a many-set constructed deck on Auto, builds a fresh deck for the format every game instead of picking a built-in starter (which could be a one-set Bloomburrow intro deck)

@@ -67,6 +67,8 @@ import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.LockPlayerCountersEffect
 import com.wingedsheep.sdk.scripting.effects.GrantProtectionFromChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.GrantStaticAbilityEffect
+import com.wingedsheep.sdk.scripting.effects.GrantFlashbackEffect
+import com.wingedsheep.sdk.scripting.effects.GrantActivatedAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.GrantTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.MarkExileOnDeathEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
@@ -84,11 +86,15 @@ import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
+import com.wingedsheep.sdk.scripting.effects.CardDestination
+import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.RevealHandEffect
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.targets.TargetOther
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
+import com.wingedsheep.sdk.scripting.targets.TargetOpponent
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import java.util.concurrent.ConcurrentHashMap
@@ -337,6 +343,9 @@ object TargetPolarityAnalyzer {
         // the damage back to it and Burn Together sacrifices it — a price, not a free lend. An
         // unread leaf counts too: it leaves no reading in the slot, but it still names it.
         val leaves = EffectWalker.payoffLeaves(effect)
+        for (slot in handDisruptionSlots(leaves, requirements)) {
+            if (TargetPolarity.BENEFICIAL !in perSlot[slot]) perSlot[slot] += TargetPolarity.HARMFUL
+        }
         for (slot in biteSources) {
             val untouched = perSlot[slot].isEmpty() &&
                 leaves.none { touchesOtherwise(it, requirements[slot], slot, definitions, source) }
@@ -411,6 +420,47 @@ object TargetPolarityAnalyzer {
         if (leaf !is DealDamageEffect) return null
         val damageSource = leaf.damageSource?.takeIf { it.isSlot() } ?: return null
         return ownSideSlot(damageSource, requirements)
+    }
+
+    /**
+     * The player slots whose **hand** a pipeline among [leaves] takes cards out of — "target player
+     * discards two cards" (Mind Rot), "target opponent reveals their hand; you choose a nonland
+     * card from it; exile that card" (Null Summoner): a gather from the slot's hand whose cards, or
+     * the ones picked from among them, go to a graveyard, exile or a library. Losing cards from hand
+     * is bad for the player who held them, so the slot reads harmful.
+     *
+     * A slot that also draws keeps its draw's reading ([forRequirements] adds this only when it has
+     * none): "target player draws three cards, then discards a card" is a loot aimed at ourselves,
+     * and calling it two-sided would undo what the draw already reads right.
+     */
+    private fun handDisruptionSlots(leaves: List<Effect>, requirements: List<TargetRequirement>): Set<Int> {
+        val slotOfHand = HashMap<String, Int>()
+        for (leaf in leaves) {
+            val source = (leaf as? GatherCardsEffect)?.source as? CardSource.FromZone ?: continue
+            if (source.zone != Zone.HAND) continue
+            val slot = when (val player = source.player) {
+                is Player.ContextPlayer -> player.index.takeIf { it in requirements.indices }
+                is Player.BoundVariable -> requirements.indexOfFirst { it.id == player.name }.takeIf { it >= 0 }
+                Player.TargetPlayer, Player.TargetOpponent ->
+                    requirements.indices.filter { requirements[it] is TargetPlayer || requirements[it] is TargetOpponent }.singleOrNull()
+                else -> null
+            } ?: continue
+            slotOfHand[leaf.storeAs] = slot
+        }
+        if (slotOfHand.isEmpty()) return emptySet()
+        do {
+            val before = slotOfHand.size
+            for (leaf in leaves) {
+                for ((name, slot) in slotOfHand.toList()) {
+                    CardIntentAnalyzer.derivedCollections(leaf, setOf(name)).forEach { slotOfHand.putIfAbsent(it, slot) }
+                }
+            }
+        } while (slotOfHand.size != before)
+        return leaves.mapNotNullTo(HashSet()) { leaf ->
+            val move = leaf as? MoveCollectionEffect ?: return@mapNotNullTo null
+            val zone = (move.destination as? CardDestination.ToZone)?.zone
+            slotOfHand[move.from]?.takeIf { zone == Zone.GRAVEYARD || zone == Zone.EXILE || zone == Zone.LIBRARY }
+        }
     }
 
     /**
@@ -577,6 +627,13 @@ object TargetPolarityAnalyzer {
             // one who may cast that spell (Hexhaven Dueling Arena); unpreparing takes it away.
             is BecomePreparedEffect -> leaf.target to TargetPolarity.BENEFICIAL
             is UnprepareEffect -> leaf.target to TargetPolarity.HARMFUL
+            // "Target instant or sorcery card in your graveyard gains flashback": its owner may cast
+            // it again, so the best card is the one to give it to — a recursion slot.
+            is GrantFlashbackEffect -> leaf.target to TargetPolarity.BENEFICIAL
+            // "Target land gains '{T}: Add {C}{C}'": the mana is its controller's to spend. Other
+            // granted abilities do whatever their effect does and stay unread here.
+            is GrantActivatedAbilityEffect -> if (leaf.ability.isManaAbility) leaf.target to TargetPolarity.BENEFICIAL
+                else return emptyList()
             // "Target player draws / gains / loses …" (Inspiration, Sign in Blood). Only a slot is
             // read here: a draw for "you" is not a target, and [grantedTriggerPolarity] reads it
             // through [controllerPolarity] instead. Sign in Blood's draw and life loss disagree
@@ -588,6 +645,9 @@ object TargetPolarityAnalyzer {
             // about someone else. Beside a "that player draws" (Vendilion Clique, Oildeep Gearhulk)
             // the two disagree and the slot stays two-sided, as Sign in Blood's does.
             is LookAtTargetHandEffect -> if (leaf.target.isSlot()) leaf.target to TargetPolarity.HARMFUL else return emptyList()
+            // "Target opponent reveals their hand" (Null Summoner, Solve for Disappointment): the
+            // same information, shown to everyone — worth having only about someone else.
+            is RevealHandEffect -> if (leaf.target.isSlot()) leaf.target to TargetPolarity.HARMFUL else return emptyList()
             // "Target player creates two Treasure tokens" (Ashling's Command): a Treasure, Food,
             // Clue or Gold is the controller's to use, and the board evaluator does not price one —
             // so without this the slot is a coin toss between giving it to us or to them.
