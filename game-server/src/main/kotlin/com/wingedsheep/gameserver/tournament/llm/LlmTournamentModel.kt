@@ -25,7 +25,7 @@ enum class LlmTournamentStatus {
 /** Per-participant deckbuild progress (surfaced in the UI during [LlmTournamentStatus.BUILDING]). */
 enum class ParticipantBuildStatus { PENDING, BUILDING_POOL, BUILDING_DECK, READY, FAILED }
 
-enum class DeckbuildMode { HEURISTIC, LLM }
+enum class DeckbuildMode { DRAFTSIM, LLM }
 
 /**
  * A tournament entrant: one OpenRouter model with its own sealed pool + built deck.

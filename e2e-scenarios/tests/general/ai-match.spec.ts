@@ -16,8 +16,8 @@ import * as path from 'node:path'
  * Run headed to actually watch:
  *   cd e2e-scenarios && npm run test:headed -- tests/general/ai-match
  *
- * Use heuristic deck building (fast — skips LLM deck build):
- *   AI_HEURISTIC_DECK=true ...
+ * Build decks with the Draftsim autobuilder (fast — skips LLM deck build):
+ *   AI_SKIP_LLM_DECK=true ...
  *
  * Use fixed pre-built decks (skip sealed pool + deckbuilding entirely):
  *   AI_DECK_P1=path/to/deck1.json AI_DECK_P2=path/to/deck2.json ...
@@ -45,7 +45,7 @@ test('AI vs AI Bloomburrow match', async ({ page, request }) => {
 
   const model1 = process.env.AI_MODEL_P1 ?? null
   const model2 = process.env.AI_MODEL_P2 ?? null
-  const heuristicDeckbuilding = process.env.AI_HEURISTIC_DECK !== 'false'
+  const skipLlmDeckbuilding = process.env.AI_SKIP_LLM_DECK !== 'false'
   // Comma-separated list of set codes (e.g., "BLB" or "ONS,LGN,SCG"). Defaults to BLB.
   const setCodes = (process.env.AI_SET_CODES ?? 'BLB')
     .split(',')
@@ -80,7 +80,7 @@ test('AI vs AI Bloomburrow match', async ({ page, request }) => {
     console.log(`Player 2 deck: ${deckPathP2} (${Object.values(deck2).reduce((a, b) => a + b, 0)} cards)`)
   } else {
     body.setCodes = setCodes
-    body.heuristicDeckbuilding = heuristicDeckbuilding
+    body.skipLlmDeckbuilding = skipLlmDeckbuilding
   }
   if (model1 || model2) {
     body.models = [model1 ?? null, model2 ?? null]
@@ -95,7 +95,7 @@ test('AI vs AI Bloomburrow match', async ({ page, request }) => {
   console.log(message)
   if (!fixedDecksMode) {
     console.log(`Sets: ${setCodes.join(', ')}`)
-    console.log(`Deck building: ${heuristicDeckbuilding ? 'heuristic (fast)' : 'LLM'}`)
+    console.log(`Deck building: ${skipLlmDeckbuilding ? 'Draftsim (fast)' : 'LLM'}`)
   }
   if (model1) console.log(`Player 1 model: ${model1}`)
   if (model2) console.log(`Player 2 model: ${model2}`)

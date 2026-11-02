@@ -30,8 +30,8 @@ class LlmTournamentController(
     data class CreateRequest(
         val modelIds: List<String> = emptyList(),
         val setCode: String = "",
-        /** "heuristic" or "llm" */
-        val deckbuildMode: String = "heuristic",
+        /** "draftsim" or "llm" */
+        val deckbuildMode: String = "draftsim",
         val bestOf: Int = 3
     )
 
@@ -120,7 +120,7 @@ class LlmTournamentController(
         return try {
             val mode = when (request.deckbuildMode.lowercase()) {
                 "llm" -> DeckbuildMode.LLM
-                else -> DeckbuildMode.HEURISTIC
+                else -> DeckbuildMode.DRAFTSIM
             }
             val tournament = service.create(request.modelIds, request.setCode, mode, request.bestOf.coerceIn(1, 9))
             ResponseEntity.ok(toView(tournament))

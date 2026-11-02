@@ -14,8 +14,8 @@ game:
     api-key: ${GAME_AI_API_KEY:${OPENROUTER_API_KEY:ollama}}
     model: ${GAME_AI_MODEL:qwen/qwen3.6-plus:free}
     timeout-ms: ${GAME_AI_TIMEOUT_MS:120000}
-    # Always build AI sealed decks with the deterministic heuristic builder (skips the LLM).
-    heuristic-deckbuilding: ${GAME_AI_HEURISTIC_DECKBUILDING:true}
+    # Never ask the LLM for AI limited decks; the Draftsim autobuilder always builds them.
+    skip-llm-deckbuilding: ${GAME_AI_SKIP_LLM_DECKBUILDING:true}
     # Browse what the AI considered, and export a position + its ratings, while playing against it.
     insight-enabled: ${GAME_AI_INSIGHT_ENABLED:true}
     # Jev uses the shared OpenRouter key with its own Decisions API endpoint.

@@ -229,7 +229,7 @@ function SetupForm({
   const [sets, setSets] = useState<AvailableSet[]>([])
   const [setCode, setSetCode] = useState('')
   const [modelsText, setModelsText] = useState(PRESET_MODELS.slice(0, 4).join('\n'))
-  const [mode, setMode] = useState<'heuristic' | 'llm'>('heuristic')
+  const [mode, setMode] = useState<'draftsim' | 'llm'>('draftsim')
   const [bestOf, setBestOf] = useState(3)
   const [busy, setBusy] = useState(false)
 
@@ -320,7 +320,7 @@ function SetupForm({
           <label style={styles.label}>Deck building</label>
           <div style={styles.radioRow}>
             <label style={styles.radioLabel}>
-              <input type="radio" checked={mode === 'heuristic'} onChange={() => setMode('heuristic')} /> Heuristic
+              <input type="radio" checked={mode === 'draftsim'} onChange={() => setMode('draftsim')} /> Draftsim
             </label>
             <label style={styles.radioLabel}>
               <input type="radio" checked={mode === 'llm'} onChange={() => setMode('llm')} /> Each LLM builds

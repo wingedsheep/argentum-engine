@@ -41,7 +41,7 @@ import kotlin.time.Duration.Companion.seconds
  */
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = ["game.ai.heuristic-deckbuilding=true"],
+    properties = ["game.ai.skip-llm-deckbuilding=true"],
 )
 class FreeForAllLobbyTest : FunSpec() {
 

@@ -132,8 +132,8 @@ game:
     model: ${GAME_AI_MODEL:qwen/qwen3.6-plus:free}
     deckbuilding-model: ${GAME_AI_DECKBUILDING_MODEL:}
     open-router-api-key: ${OPENROUTER_API_KEY:}
-    # When true, AI sealed decks always use the deterministic heuristic builder (skips the LLM).
-    heuristic-deckbuilding: ${GAME_AI_HEURISTIC_DECKBUILDING:false}
+    # When true, AI limited decks never ask the LLM; the Draftsim autobuilder always builds them.
+    skip-llm-deckbuilding: ${GAME_AI_SKIP_LLM_DECKBUILDING:false}
     # Local testing mode: record the engine AI's candidate actions + scores and serve them from
     # /api/dev/ai-insight. Off in production — recording retains a GameState per decision.
     insight-enabled: ${GAME_AI_INSIGHT_ENABLED:false}

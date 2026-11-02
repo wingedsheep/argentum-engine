@@ -15,9 +15,14 @@ object AdvisorCatalog {
         DraftsimDraftAdvisor,
     )
 
+    /**
+     * Draftsim first: it is the default Auto-build engine because it is the builder every AI seat
+     * plays its limited deck with ([com.wingedsheep.ai.engine.buildLimitedDeck]), so a player's
+     * one-click build matches what the bots across the table built.
+     */
     val deckBuildAdvisors: List<DeckBuildAdvisor> = listOf(
-        HeuristicDeckBuildAdvisor,
         DraftsimDeckBuildAdvisor,
+        HeuristicDeckBuildAdvisor,
     )
 
     /** The default engine id (first registered) when the client doesn't specify one. */
