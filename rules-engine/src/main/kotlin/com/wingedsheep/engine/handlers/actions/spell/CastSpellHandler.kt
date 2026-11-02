@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.handlers.actions.spell
 
+import com.wingedsheep.engine.state.components.player.SpellsCastThisGameComponent
+import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.manaAbilitySourceAllowed
 import com.wingedsheep.engine.mechanics.targeting.withTargetConstraints
 import com.wingedsheep.engine.handlers.TargetFinder
@@ -502,6 +504,15 @@ class CastSpellHandler(
             return castResult
         }
         currentState = castResult.newState
+        // Freeze every player's game cast count from before this cast onto the spell, so "if this
+        // spell is the first spell you've cast this game" (First Contact) reads the cast moment,
+        // not resolution — a spell cast in response must not change the answer.
+        val castsBefore = state.turnOrder.associateWith { playerId ->
+            state.getEntity(playerId)?.get<SpellsCastThisGameComponent>()?.count ?: 0
+        }
+        currentState = currentState.updateEntity(action.cardId) { spell ->
+            spell.get<SpellOnStackComponent>()?.let { spell.with(it.copy(spellsCastThisGameBefore = castsBefore)) } ?: spell
+        }
 
         // --- 5. What the cast sets off -----------------------------------------------------------
 

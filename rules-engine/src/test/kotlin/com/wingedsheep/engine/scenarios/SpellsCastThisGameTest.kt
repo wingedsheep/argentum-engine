@@ -22,7 +22,9 @@ import io.kotest.matchers.shouldBe
  *
  * Rules pinned: a spell counts once cast whether or not it resolves (a countered spell was still
  * cast); the count is per player and never resets at a turn boundary, unlike the per-turn spell
- * counts; and a multi-player scope sums its players.
+ * counts; and a multi-player scope sums its players. `beforeThisSpell` reads the counts frozen onto a
+ * spell as it became cast (First Contact's "if this spell is the first spell you've cast this game"),
+ * so spells cast in response — by anyone — don't move it, and an object with no cast record reads live.
  */
 class SpellsCastThisGameTest : FunSpec({
 
@@ -92,5 +94,55 @@ class SpellsCastThisGameTest : FunSpec({
             amounts.evaluate(driver.state, DynamicAmounts.spellsCastThisTurn(), EffectContext(sourceId = null, controllerId = you)) shouldBe 0
         }
         driver.castThisGame(you) shouldBe 1
+    }
+
+    fun GameTestDriver.castBefore(spell: EntityId, viewer: EntityId, player: Player = Player.You): Int =
+        amounts.evaluate(
+            state,
+            DynamicAmounts.spellsCastThisGame(player, beforeThisSpell = true),
+            EffectContext(sourceId = spell, controllerId = viewer),
+        )
+
+    test("beforeThisSpell freezes the count at cast time, so a spell cast in response doesn't move it") {
+        val (driver, you, opponent) = setup()
+        driver.bolt(you, opponent)
+        val first = driver.state.stack.last()
+        // Holding priority, a second spell goes on top of the first.
+        driver.bolt(you, opponent)
+        val second = driver.state.stack.last()
+
+        driver.castThisGame(you) shouldBe 2
+        withClue("the first spell was cast with nothing before it") { driver.castBefore(first, you) shouldBe 0 }
+        withClue("the second was cast after one") { driver.castBefore(second, you) shouldBe 1 }
+    }
+
+    test("beforeThisSpell freezes every player's count, so the opponent's response isn't seen") {
+        val (driver, you, opponent) = setup()
+        val counter = driver.putCardInHand(opponent, "Counterspell")
+        driver.giveMana(opponent, Color.BLUE, 2)
+        driver.bolt(you, opponent)
+        val boltOnStack = driver.state.stack.last()
+        driver.passPriority(you)
+        driver.submit(
+            CastSpell(
+                opponent, counter,
+                targets = listOf(ChosenTarget.Spell(boltOnStack)),
+                paymentStrategy = PaymentStrategy.FromPool,
+            )
+        ).error shouldBe null
+
+        driver.castThisGame(opponent) shouldBe 1
+        withClue("the Bolt's frozen count for its opponent predates the Counterspell") {
+            driver.castBefore(boltOnStack, you, Player.EachOpponent) shouldBe 0
+        }
+        withClue("Player.Each sums the frozen counts") { driver.castBefore(boltOnStack, you, Player.Each) shouldBe 0 }
+    }
+
+    test("a source with no cast record reads the live count") {
+        val (driver, you, opponent) = setup()
+        driver.bolt(you, opponent)
+        driver.bothPass()
+        val bear = driver.putCardInHand(you, "Savannah Lions")
+        withClue("a card in hand was never cast") { driver.castBefore(bear, you) shouldBe 1 }
     }
 })

@@ -168,6 +168,7 @@ internal object StackPlacement {
         val copiedSpellComp = sourceSpell.copy(
             casterId = copyController,
             castFromZone = null,
+            spellsCastThisGameBefore = null,
             // A granted offspring (Zinnia) came from an effect on spells *cast*, not from the
             // copiable values (CR 707.2), so the uncast copy has no offspring to have paid.
             declaredCostSlot = sourceSpell.declaredCostSlot.takeUnless { it == ChoiceSlot.OFFSPRING },

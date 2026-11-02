@@ -17465,13 +17465,20 @@ both spellings, and the ability its bare-noun line grants says "Regenerate this 
   narrows to cards with that exact name — every physical copy counts, not just the source object. Yidaro,
   Wandering Monster: `Conditions.CompareAmounts(DynamicAmounts.cardsCycledThisGame("Yidaro, Wandering
   Monster"), GTE, Fixed(4))`. Backed by the never-cleared per-player `CardsCycledThisGameComponent`.
-- `SpellsCastThisGame(player = Player.You)` (facade `DynamicAmounts.spellsCastThisGame(player)`) — how
+- `SpellsCastThisGame(player = Player.You, beforeThisSpell = false)` (facade
+  `DynamicAmounts.spellsCastThisGame(player, beforeThisSpell)`) — how
   many spells `player` has cast **this game**: any zone, resolved or countered; uncast copies don't count
   (CR 707.10). A spell counts once it has become cast, so a gate judged while it's being cast reads the
   count from before it. Once Upon a Time ("If this spell is the first spell you've cast this game, you
   may cast it without paying its mana cost"): `selfAlternativeCost = SelfAlternativeCost(ManaCost.ZERO,
   condition = Conditions.CompareAmounts(DynamicAmounts.spellsCastThisGame(), EQ, Fixed(0)))`. Backed by
-  the never-cleared per-player `SpellsCastThisGameComponent`.
+  the never-cleared per-player `SpellsCastThisGameComponent`. `beforeThisSpell = true` reads every
+  player's count as it stood when *this* spell became cast — frozen onto the stack spell, so a spell cast
+  in response doesn't move it. That is how a *resolving* spell asks "if this spell is the first spell
+  you've cast this game" (First Contact): `Conditions.All(Conditions.WasCast,
+  Conditions.CompareAmounts(DynamicAmounts.spellsCastThisGame(beforeThisSpell = true), EQ, Fixed(0)))`
+  — the `WasCast` gate keeps an uncast copy (CR 707.10), which has no frozen count and reads the live one,
+  from claiming to be first.
 - `ExtraTurnsBegunThisGame(player = Player.You)` (facade `DynamicAmounts.extraTurnsBegunThisGame(player)`)
   — how many extra turns `player` has **begun** this game. Counted as the inserted turn starts, so an
   extra turn that was created but never began (prevented by a `PreventExtraTurns` permanent, or skipped

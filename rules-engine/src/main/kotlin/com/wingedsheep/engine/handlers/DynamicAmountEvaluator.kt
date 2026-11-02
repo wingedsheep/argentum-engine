@@ -465,12 +465,20 @@ class DynamicAmountEvaluator(
                         ?.count(amount.cardName) ?: 0
                 }
 
-            is DynamicAmount.SpellsCastThisGame ->
+            is DynamicAmount.SpellsCastThisGame -> {
+                // beforeThisSpell reads the counts frozen onto the spell as it was cast; an object
+                // that wasn't cast (a copy, an ability) has none and falls back to the live count.
+                val frozen = if (amount.beforeThisSpell) {
+                    context.sourceId?.let { state.spellOrLastKnown(it) }
+                        ?.get<com.wingedsheep.engine.state.components.stack.SpellOnStackComponent>()
+                        ?.spellsCastThisGameBefore
+                } else null
                 resolveUnifiedPlayerIds(state, amount.player, context, projectedState).sumOf { playerId ->
-                    state.getEntity(playerId)
+                    frozen?.get(playerId) ?: state.getEntity(playerId)
                         ?.get<com.wingedsheep.engine.state.components.player.SpellsCastThisGameComponent>()
                         ?.count ?: 0
                 }
+            }
 
             is DynamicAmount.ExtraTurnsBegunThisGame ->
                 resolveUnifiedPlayerIds(state, amount.player, context, projectedState).sumOf { playerId ->

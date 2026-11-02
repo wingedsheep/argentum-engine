@@ -132,6 +132,10 @@
                 "additionalCostBlightAmount": 0,
                 "additionalCostPayXLifeAmount": null,
                 "castFromZone": "Hand",
+                "spellsCastThisGameBefore": {
+                    "player-1": 0,
+                    "player-2": 0
+                },
                 "alternativeCost": null,
                 "wasWarped": false,
                 "wasDashed": false,
