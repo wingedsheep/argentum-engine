@@ -317,6 +317,14 @@ data class SetColors(
         })
     }
 
+    /**
+     * True for the self-colour CDA shape — the source itself, battlefield-only reach. Printed at the
+     * top of a card's script it is folded into `CardDefinition.colors` (`selfDefinedColors`) and not
+     * projected again; the one test both sides read.
+     */
+    val isSelfColorShape: Boolean
+        get() = offBattlefield == null && filter == GroupFilter.source()
+
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
         val newColors = colors.mapTo(linkedSetOf()) { replacer.replaceColor(it) }

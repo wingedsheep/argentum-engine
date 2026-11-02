@@ -313,7 +313,7 @@ class StaticAbilityHandler(
         val foldsColorCda = cardDefinition.selfDefinedColors != null
         val allStaticAbilities = RoomFaceStatics.activeStaticAbilities(container, cardDefinition)
             .filterNot { it is GrantSubtype && it.filter == GroupFilter.source() && com.wingedsheep.sdk.core.Subtype(it.subtype) in foldedCdas }
-            .filterNot { foldsColorCda && it is com.wingedsheep.sdk.scripting.SetColors && it.offBattlefield == null && it.filter == GroupFilter.source() } +
+            .filterNot { foldsColorCda && it is com.wingedsheep.sdk.scripting.SetColors && it.isSelfColorShape } +
             container.get<CardComponent>()?.copyStaticAbilities.orEmpty() +
             printedBandsWithOther(cardDefinition)
 

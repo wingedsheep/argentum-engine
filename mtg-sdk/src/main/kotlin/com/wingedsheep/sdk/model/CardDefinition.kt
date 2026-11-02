@@ -332,8 +332,7 @@ data class CardDefinition(
      */
     val selfDefinedColors: Set<Color>?
         get() = script.staticAbilities.lastOrNull { ability ->
-            ability is com.wingedsheep.sdk.scripting.SetColors && ability.offBattlefield == null &&
-                ability.filter == com.wingedsheep.sdk.scripting.filters.unified.GroupFilter.source()
+            ability is com.wingedsheep.sdk.scripting.SetColors && ability.isSelfColorShape
         }?.let { (it as com.wingedsheep.sdk.scripting.SetColors).colors }
 
     /**
