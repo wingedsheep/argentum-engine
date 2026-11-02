@@ -522,6 +522,7 @@ val engineSerializersModule = SerializersModule {
         subclass(CopyAbilityTargetContinuation::class)
         subclass(StormCopyTargetContinuation::class)
         subclass(CopyEachSpellContinuation::class)
+        subclass(CopyForChosenPossibleTargetContinuation::class)
         subclass(StormCopyModalTargetContinuation::class)
         subclass(ChangeSpellTargetContinuation::class)
         subclass(LegendRuleContinuation::class)

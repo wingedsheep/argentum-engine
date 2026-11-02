@@ -58,6 +58,7 @@ class TriggerMatcher(
     private val predicateEvaluator: PredicateEvaluator,
     private val conditionEvaluator: ConditionEvaluator
 ) {
+    private val targetFinder = com.wingedsheep.engine.handlers.TargetFinder(predicateEvaluator)
 
     /**
      * The activation-kind axes of [EventPattern.AbilityActivatedEvent] shared by the main loop and
@@ -2626,6 +2627,13 @@ class TriggerMatcher(
                     it.entityId == sourceId
             }
         }
+        // The trigger-time half of an intervening "if" (CR 603.4) over the copy effect's CR 707.10d
+        // candidate set (Beamsplitter Mage) — the same computation the effect repeats on resolution.
+        is SpellCastPredicate.CouldTargetOther ->
+            com.wingedsheep.engine.handlers.effects.stack.CopyForOtherPossibleTargetsExecutor.otherPossibleTargets(
+                state, targetFinder, predicateEvaluator, event.spellEntityId, predicate.filter,
+                copierId = controllerId, filterSourceId = sourceId
+            ).isNotEmpty()
         is SpellCastPredicate.TargetsMatching ->
             (!predicate.only || targetsSingleObject(event, state)) &&
                 matchingCastTargets(predicate.filter, event, state, sourceId, controllerId).isNotEmpty()

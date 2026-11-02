@@ -48,6 +48,7 @@ class MiscContinuationResumer(
         resumer(StormCopyTargetContinuation::class, ::resumeStormCopyTarget),
         resumer(StormCopyModalTargetContinuation::class, ::resumeStormCopyModalTarget),
         resumer(CopyEachSpellContinuation::class, ::resumeCopyEachSpell),
+        resumer(CopyForChosenPossibleTargetContinuation::class, ::resumeCopyForChosenPossibleTarget),
         resumer(CopyTriggeredAbilityTargetContinuation::class, ::resumeCopyTriggeredAbilityTarget),
         resumer(CopyActivatedAbilityTargetContinuation::class, ::resumeCopyActivatedAbilityTarget),
         resumer(CopyAbilityTargetContinuation::class, ::resumeCopyAbilityTarget),
@@ -697,6 +698,27 @@ class MiscContinuationResumer(
             )
         }
         return checkForMore(result.stateWithOutputsHandedOn(), flipEvents + result.events)
+    }
+
+    /** The copier picked which candidate Beamsplitter Mage's single copy targets; make that copy. */
+    private fun resumeCopyForChosenPossibleTarget(
+        state: GameState,
+        continuation: CopyForChosenPossibleTargetContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        val chosen = (response as? CardsSelectedResponse)?.selectedCards?.singleOrNull()
+            ?.takeIf { it in continuation.candidates }
+            ?: return ExecutionResult.error(state, "Choose exactly one of the offered creatures for the copy")
+        val result = com.wingedsheep.engine.handlers.effects.stack.CopyForOtherPossibleTargetsExecutor(
+            services.targetFinder, services.predicateEvaluator
+        ).copyOnto(
+            state, continuation.effect, continuation.effectContext,
+            continuation.originalId, continuation.copierId, listOf(chosen)
+        )
+        // A copy-count replacement's extra copy may itself pause for new targets.
+        if (result.outcome !is Outcome.Done) return result.toExecutionResult()
+        return checkForMore(result.state, result.events)
     }
 
     private fun resumeCopyEachSpell(

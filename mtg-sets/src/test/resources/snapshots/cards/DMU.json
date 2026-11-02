@@ -6664,7 +6664,7 @@
                     "type": "Gated",
                     "gate": "Gate.MayDecide",
                     "then": {
-                        "type": "CopyForEachOtherPossibleTarget",
+                        "type": "CopyForOtherPossibleTargets",
                         "candidates": {
                             "cardPredicates": [
                                 "IsCreature"

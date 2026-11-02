@@ -4028,7 +4028,7 @@
                 },
                 "binding": "ANY",
                 "effect": {
-                    "type": "CopyForEachOtherPossibleTarget",
+                    "type": "CopyForOtherPossibleTargets",
                     "candidates": {
                         "cardPredicates": [
                             "IsCreature"

@@ -10,7 +10,7 @@ import io.kotest.matchers.shouldBe
  * other than Ivy, you may copy that spell. The copy targets Ivy."
  *
  * Exercises `SpellCastPredicate.TargetsMatching(…, only = true)` and
- * `CopyForEachOtherPossibleTargetEffect` with a candidate filter read relative to Ivy.
+ * `CopyForOtherPossibleTargetsEffect` with a candidate filter read relative to Ivy.
  */
 class IvyGleefulSpellthiefScenarioTest : ScenarioTestBase() {
 
