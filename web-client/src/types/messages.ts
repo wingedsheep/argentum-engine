@@ -396,6 +396,11 @@ export interface SelectCardsDecision extends PendingDecisionBase {
   readonly type: 'SelectCardsDecision'
   /** Server-approved unit capacity per option; repeated IDs allocate multiple units. */
   readonly selectionLimits?: Readonly<Record<EntityId, number>> | null
+  /**
+   * The subset of `options` the server suggests (proliferate: grow your side, shrink theirs). The
+   * board selection offers it as a one-click "Recommended" pick; it never limits what may be sent.
+   */
+  readonly recommendedSelection?: readonly EntityId[] | null
   readonly options: readonly EntityId[]
   readonly minSelections: number
   readonly maxSelections: number

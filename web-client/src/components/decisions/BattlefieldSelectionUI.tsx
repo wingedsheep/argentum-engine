@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
 import type { DecisionSelectionState } from '@/store/slices'
-import type { SelectCardsDecision } from '@/types'
+import type { EntityId, SelectCardsDecision } from '@/types'
 import { DraggableBanner } from './DraggableBanner'
 import { AbilityText } from '../ui/ManaSymbols'
 import { CounterAllocationControls } from '../game/card/CounterAllocationControls'
@@ -19,6 +19,7 @@ export function BattlefieldSelectionUI({
   const startDecisionSelection = useGameStore((s) => s.startDecisionSelection)
   const decisionSelectionState = useGameStore((s) => s.decisionSelectionState)
   const cancelDecisionSelection = useGameStore((s) => s.cancelDecisionSelection)
+  const setDecisionSelection = useGameStore((s) => s.setDecisionSelection)
   const submitDecision = useGameStore((s) => s.submitDecision)
   const cards = useGameStore((s) => s.gameState?.cards)
 
@@ -59,6 +60,20 @@ export function BattlefieldSelectionUI({
     (selectedCount >= requiredMinimum || satisfiesConditionalMinimum)
   const canSkip = minSelections === 0
 
+  // Quick picks for "any number of" board selections (proliferate's "permanents and/or players"):
+  // "All" when every option fits and nothing couples the picks, "Recommended" when the server
+  // sent a suggestion. Each is a starting point the player can still adjust on the board.
+  const unconstrained = decision.selectionLimits == null && conditionalMinimums.length === 0 &&
+    !decision.onePerCardType && !decision.onePerColor && !decision.onePerCardName &&
+    !decision.onePerBasicLandType && !decision.onePerPower &&
+    decision.maxTotalManaValue == null && decision.minTotalManaValue == null && decision.maxTotalPower == null
+  const recommended = decision.recommendedSelection ?? null
+  const showSelectAll = unconstrained && minSelections === 0 &&
+    maxSelections >= decision.options.length && decision.options.length > 1
+  const showRecommended = unconstrained && recommended != null
+  const isExactly = (ids: readonly EntityId[]) =>
+    ids.length === selectedOptions.length && ids.every((id) => selectedOptions.includes(id))
+
   const handleConfirm = () => {
     if (canConfirm && decisionSelectionState) {
       submitDecision(decision.id, decisionSelectionState.selectedOptions)
@@ -83,12 +98,52 @@ export function BattlefieldSelectionUI({
           ? `${selectedCount} / ${maxSelections} selected`
           : decision.selectionLimits != null ? 'Use + and − on permanents to allocate counters' : 'Click cards to select'}
         {conditionalMinimums.length > 0 ? ` (normally ${requiredMinimum})` : minSelections > 0 && ` (min ${minSelections})`}
+        {(showSelectAll || showRecommended) && selectedCount > 0 && (
+          <>
+            {' · '}
+            <button type="button" onClick={() => setDecisionSelection([])} className={styles.quickSelectClear}>
+              Clear
+            </button>
+          </>
+        )}
       </div>
       {conditionalMinimums.map((minimum) => (
         <div key={`${minimum.requiredSelections}-${minimum.minimumSelections}-${minimum.requiredMatches}`} className={styles.hint}>
           {minimum.description ?? `You may select ${minimum.minimumSelections} if it matches the requirement.`}
         </div>
       ))}
+
+      {(showSelectAll || showRecommended) && (
+        <div className={styles.quickSelectRow} role="group" aria-label="Quick select">
+          {showRecommended && (
+            <button
+              type="button"
+              onClick={() => setDecisionSelection(recommended)}
+              disabled={recommended.length === 0}
+              aria-pressed={recommended.length > 0 && isExactly(recommended)}
+              className={recommended.length > 0 && isExactly(recommended) ? styles.quickSelectChipActive : styles.quickSelectChip}
+              title={recommended.length === 0
+                ? 'Nothing here is worth another counter for you'
+                : 'Select the picks that usually help you most — adjust on the board before confirming'}
+            >
+              <span aria-hidden="true" className={styles.quickSelectStar}>★</span>
+              Recommended
+              <span className={styles.quickSelectCount}>{recommended.length}</span>
+            </button>
+          )}
+          {showSelectAll && (
+            <button
+              type="button"
+              onClick={() => setDecisionSelection(decision.options)}
+              aria-pressed={isExactly(decision.options)}
+              className={isExactly(decision.options) ? styles.quickSelectChipActive : styles.quickSelectChip}
+            >
+              All
+              <span className={styles.quickSelectCount}>{decision.options.length}</span>
+            </button>
+          )}
+        </div>
+      )}
 
       {decision.selectionLimits != null && (
         <details style={{ marginTop: 8 }}>
