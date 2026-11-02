@@ -5,6 +5,7 @@ import com.wingedsheep.ai.engine.knowledge.IntentCatalog
 import com.wingedsheep.ai.engine.knowledge.TimingVerdict
 import com.wingedsheep.ai.puzzles.advanceToDeclaration
 import com.wingedsheep.ai.puzzles.advanceToPriority
+import com.wingedsheep.ai.puzzles.advanceToStackResponse
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.GameAction
 import com.wingedsheep.engine.core.PlayLand
@@ -179,6 +180,25 @@ class XSpellPatienceTest : ScenarioTestBase() {
                 .also { it.declareAttackers(mapOf("Serra Angel" to 1)) }
                 .advanceToPriority(1, Step.DECLARE_ATTACKERS)
             theirAttack.theoryVerdict("Serra Angel") shouldNotBe TimingVerdict.NoWindow
+        }
+
+        test("Perfected Theory's 4/5 saves our creature from burn on the stack") {
+            val game = scenario()
+                .withPlayers()
+                .withTurnNumber(8)
+                .withActivePlayer(2)
+                .withLandsOnBattlefield(2, "Mountain", 1)
+                .withCardInHand(2, "Shock")
+                .withLandsOnBattlefield(1, "Island", 1)
+                .withCardInHand(1, "Perfected Theory")
+                .withCardOnBattlefield(1, "Grizzly Bears")
+                .build()
+            game.castSpell(2, "Shock", game.findPermanent("Grizzly Bears"))
+            game.advanceToStackResponse(1)
+
+            val action = game.choice() as? CastSpell
+            action?.cardId shouldBe game.inHand("Perfected Theory")
+            action?.chosenModes shouldBe listOf(1)
         }
     }
 }
