@@ -1,6 +1,8 @@
 package com.wingedsheep.ai.engine
 
+import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
 import com.wingedsheep.ai.engine.knowledge.ExpiringGrantWindow
+import com.wingedsheep.ai.engine.knowledge.IntentTag
 import com.wingedsheep.ai.engine.knowledge.IntentCatalog
 import com.wingedsheep.ai.puzzles.AiPuzzle
 import com.wingedsheep.ai.puzzles.PuzzleCategory
@@ -12,6 +14,7 @@ import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
+import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
 
 /**
@@ -47,6 +50,14 @@ class EvasionGrantReadingAiTest : ScenarioTestBase() {
         .build()
 
     init {
+        test("a granted \"can't be blocked\" reads as an evasion grant, like a granted flying") {
+            for (card in listOf("Eardrum Rattler", "Kiora of Salt and Sand", "Infiltrate")) {
+                withClue("$card grants the CANT_BE_BLOCKED ability flag") {
+                    CardIntentAnalyzer.analyze(cardRegistry.requireCard(card)).tags shouldContain IntentTag.EVASION_GRANT
+                }
+            }
+        }
+
         test("only a spell whose whole payoff is an end-of-turn keyword grant is read") {
             val reads = { card: String ->
                 ExpiringGrantWindow.readsSpellKeywordGrant(cardRegistry.requireCard(card).script.spellEffect!!)
