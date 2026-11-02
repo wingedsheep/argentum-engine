@@ -765,6 +765,13 @@ value class CounterType(val name: String) {
         val BOUNTY = CounterType("BOUNTY")
 
         /**
+         * Hit counter (GRN — Etrata, the Silencer). A passive mark on **cards in exile** with no
+         * inherent rule: Etrata exiles a creature with one on it, then reads how many exiled cards
+         * the damaged player owns that carry one ("loses the game if they own three or more").
+         */
+        val HIT = CounterType("HIT")
+
+        /**
          * Corpse counter (LEA — Scavenging Ghoul). A passive spendable store with no inherent rule:
          * the card's end-step trigger adds one per creature that died this turn, and its regeneration
          * ability removes one as its cost.
@@ -1064,6 +1071,7 @@ value class CounterType(val name: String) {
             COLLECTION,
             REPRIEVE,
             BOUNTY,
+            HIT,
             CORPSE,
             BRICK,
             VITALITY,

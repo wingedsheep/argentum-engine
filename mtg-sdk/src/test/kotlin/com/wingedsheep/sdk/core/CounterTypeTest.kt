@@ -35,6 +35,7 @@ class CounterTypeTest : DescribeSpec({
             CounterType.MIRE.printed shouldBe "mire"
             CounterType.COLLECTION.printed shouldBe "collection"
             CounterType.BOUNTY.printed shouldBe "bounty"
+            CounterType.HIT.printed shouldBe "hit"
             CounterType.REPRIEVE.printed shouldBe "reprieve"
             CounterType.CORPSE.printed shouldBe "corpse"
             CounterType.BRICK.printed shouldBe "brick"
@@ -122,7 +123,7 @@ class CounterTypeTest : DescribeSpec({
         /** Kinds named after `object Counters` was retired, so they have no legacy constant. */
         val NEW_KINDS = setOf(CounterType.INCARNATION, CounterType.FORESHADOW, CounterType.BLOODLINE, CounterType.INVITATION, CounterType.IMPOSTOR, CounterType.DEVOTION,
             CounterType.THEFT, CounterType.TRAINING, CounterType.MIRE, CounterType.COLLECTION,
-            CounterType.REPRIEVE, CounterType.BOUNTY, CounterType.CORPSE, CounterType.BRICK,
+            CounterType.REPRIEVE, CounterType.BOUNTY, CounterType.HIT, CounterType.CORPSE, CounterType.BRICK,
             CounterType.VITALITY, CounterType.VOID, CounterType.HARMONY, CounterType.ENLIGHTENED, CounterType.AGE, CounterType.EXPERIENCE, CounterType.VOW,
             CounterType.ACORN, CounterType.INGREDIENT, CounterType.RAD, CounterType.PHYRESIS,
             CounterType.MUSTER, CounterType.GLYPH, CounterType.MATRIX, CounterType.HATCHLING,

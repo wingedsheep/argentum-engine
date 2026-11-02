@@ -2544,6 +2544,7 @@ const passiveCounterPalette: Record<string, CounterBadgePalette> = {
   FLAME: { bg: 'rgba(60, 24, 12, 0.95)', border: 'rgba(240, 130, 70, 0.75)', color: '#f8c4a0', glow: 'rgba(240, 130, 70, 0.5)' },
   EMBER: { bg: 'rgba(52, 28, 14, 0.95)', border: 'rgba(220, 150, 80, 0.7)', color: '#f0cfa4' },
   BOOK: { bg: 'rgba(40, 30, 20, 0.95)', border: 'rgba(196, 160, 110, 0.7)', color: '#e8d4b0' },
+  HIT: { bg: 'rgba(48, 14, 18, 0.95)', border: 'rgba(210, 80, 90, 0.75)', color: '#f2b8bc' },
   STUDY: { bg: 'rgba(20, 36, 44, 0.95)', border: 'rgba(110, 180, 200, 0.7)', color: '#bfe2ec' },
   REFINE: { bg: 'rgba(18, 30, 52, 0.95)', border: 'rgba(120, 160, 230, 0.7)', color: '#c6d8f6' },
   VOYAGE: { bg: 'rgba(14, 36, 48, 0.95)', border: 'rgba(90, 180, 210, 0.7)', color: '#b8e4f2' },
