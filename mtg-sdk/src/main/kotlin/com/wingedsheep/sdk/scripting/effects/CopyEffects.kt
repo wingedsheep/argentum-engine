@@ -85,9 +85,11 @@ data class EachPermanentBecomesCopyOfTargetEffect(
             Duration.UntilYourNextTurn -> " until your next turn"
             else -> ""
         }
-        val durationPrefix = if (duration == Duration.WhileSourceAttachedToAffected) {
-            "for as long as this remains attached to it, "
-        } else ""
+        val durationPrefix = when (duration) {
+            Duration.WhileSourceAttachedToAffected -> "for as long as this remains attached to it, "
+            Duration.WhileSourceAttached -> "for as long as this is attached, "
+            else -> ""
+        }
         val clauses = exceptions.clauses() +
             (if (retainActivatingAbility) listOf("it has this ability") else emptyList())
         val exceptSuffix =

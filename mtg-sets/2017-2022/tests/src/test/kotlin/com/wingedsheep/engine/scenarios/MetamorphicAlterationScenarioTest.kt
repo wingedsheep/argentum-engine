@@ -111,11 +111,12 @@ class MetamorphicAlterationScenarioTest : ScenarioTestBase() {
             game.cast("Doom Blade", angel)
 
             game.cast("Enchantment Alteration", alteration)
-            game.getPendingDecision()?.let {
-                it.shouldBeInstanceOf<ChooseTargetsDecision>()
-                game.selectTargets(listOf(giant)).error shouldBe null
-                game.resolveStack()
+            val move = game.getPendingDecision().shouldBeInstanceOf<ChooseTargetsDecision>()
+            withClue("the Aura can move to another creature, not the one it's on") {
+                move.legalTargets[0]!!.shouldContainExactlyInAnyOrder(giant)
             }
+            game.selectTargets(listOf(giant)).error shouldBe null
+            game.resolveStack()
 
             game.state.getEntity(alteration)!!.get<AttachedToComponent>()!!.targetId shouldBe giant
             withClue("the old host reverts") {
