@@ -7343,6 +7343,7 @@ Gyre Sage	intent: EmitKeywordCounterEventEffect
 Gyruda, Doom of Depths	intent: Pipeline(TopOfLibrary→battlefield|graveyard)
 Gysahl Greens
 H.E.R.B.I.E. Scout Unit
+H.M.S. Bounty, Unlikely Timeship
 HELIOS One
 HULK SMASH!
 HYDRA Assault Robot
@@ -15113,6 +15114,7 @@ Slayers' Stronghold
 Slaying Fire
 Sledge-Class Seedship	intent: Pipeline(hand→battlefield)
 Sleek Schooner
+Sleep
 Sleep Magic
 Sleep Paralysis
 Sleep of the Dead
