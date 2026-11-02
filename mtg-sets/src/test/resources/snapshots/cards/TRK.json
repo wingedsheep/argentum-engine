@@ -1965,6 +1965,93 @@
     ]
 }
 
+// Dr. McCoy, Surly Surgeon
+{
+    "name": "Dr. McCoy, Surly Surgeon",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Legendary Creature — Human Doctor",
+    "oracleText": "When Dr. McCoy enters, put a +1/+1 counter on another target creature you control.\nIf another creature you control with a +1/+1 counter on it would be destroyed, instead remove all +1/+1 counters from it and all damage already dealt to it is healed.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dr. McCoy, Surly Surgeon:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "ReplaceDestructionWith",
+                "replacementEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RemoveAllCountersOfType",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "target": "TriggeringEntity"
+                        },
+                        {
+                            "type": "HealDamage",
+                            "target": "TriggeringEntity"
+                        }
+                    ]
+                },
+                "appliesTo": {
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            },
+                            {
+                                "type": "StateNot",
+                                "predicate": "IsSource"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "rarity": "UNCOMMON",
+        "artist": "David Robert Hovey",
+        "flavorText": "\"What is this, the Dark Ages?!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b300d814-cf74-44ba-b253-ec179ec54a20.jpg?1792668584"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Earth, Sector 001
 {
     "name": "Earth, Sector 001",

@@ -16,6 +16,7 @@ import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.MassAnimateEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
+import com.wingedsheep.sdk.scripting.effects.HealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.RegenerateEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveFromCombatEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -78,7 +79,7 @@ internal enum class CombatReach {
                 // control, +1/+1", so its body is what this reading needs.
                 is ForEachEffect -> EffectWalker.leaves(leaf.body).forEach { visit(it, reach) }
                 is ModifyStatsEffect, is GrantKeywordEffect, is DividedDamageEffect, is FightEffect,
-                is RegenerateEffect, is PreventDamageEffect, is RemoveFromCombatEffect -> reach += FIGHT
+                is RegenerateEffect, is HealDamageEffect, is PreventDamageEffect, is RemoveFromCombatEffect -> reach += FIGHT
                 // "Tap two artifacts: put two +1/+1 counters on this creature" grows a blocker the
                 // same as a pump does, and keeps it grown; a -1/-1 counter shrinks one.
                 is AddCountersEffect -> if (changesStats(leaf.counterType)) reach += FIGHT

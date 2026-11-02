@@ -75,6 +75,7 @@ import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.MoveUntilSourceLeavesEffect
 import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
 import com.wingedsheep.sdk.scripting.effects.PreventionDirection
+import com.wingedsheep.sdk.scripting.effects.HealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.RegenerateEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.effects.CardSource
@@ -528,6 +529,7 @@ object TargetPolarityAnalyzer {
             // question, not a side of the table.
             is FightEffect -> leaf.target2 to TargetPolarity.HARMFUL
             is RegenerateEffect -> leaf.target to TargetPolarity.BENEFICIAL
+            is HealDamageEffect -> leaf.target to TargetPolarity.BENEFICIAL
             is PreventDamageEffect -> leaf.target to when {
                 !leaf.preventDamage -> null
                 leaf.direction == PreventionDirection.ToTarget -> TargetPolarity.BENEFICIAL

@@ -1577,6 +1577,7 @@ serialized shape; the facade for each is:
 | `RemoveAllAbilitiesEffect` | `Effects.RemoveAllAbilities` |
 | `RemoveCountersEffect` | `Effects.RemoveCounters` |
 | `RemoveDamageShieldEffect` | `Effects.RemoveDamageShield` |
+| `HealDamageEffect` | `Effects.HealDamage` |
 | `RemoveFromCombatEffect` | `Effects.RemoveFromCombat` |
 | `RepeatDynamicTimesEffect` | `Effects.Repeat` |
 | `RevealCardInHandEffect` | `Effects.RevealCardInHand(target, duration)` |
@@ -1986,6 +1987,14 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   only the marked damage is cleared. The shield isn't a regeneration ability, so a "can't be regenerated"
   marker on the target doesn't disable it. Consumed by the first destruction it intercepts; expires at end
   of turn.
+- `Effects.HealDamage(target)` (`HealDamageEffect`) — remove all damage marked on the target **now**: "all damage
+  already dealt to it is healed" / "remove all damage from it". The immediate sibling of the two deferred heals
+  above — no shield, no tap, no removal from combat, no event (healing isn't something triggers watch). A no-op on
+  an object with no marked damage. Its main home is the body of a `ReplaceDestructionWith` — Dr. McCoy, Surly
+  Surgeon: `Effects.RemoveAllCountersOfType(PLUS_ONE_PLUS_ONE, TriggeringEntity) then
+  Effects.HealDamage(TriggeringEntity)` with `appliesTo = DestroyEvent(Creature.youControl()
+  .withCounter(PLUS_ONE_PLUS_ONE).notSourceItself())`; the rider runs inside the same state-based-action pass, so a
+  creature saved from lethal damage isn't seen as lethally damaged again.
 - `DestroyAll(filter, noRegenerate?, storeDestroyedAs?, excludeTriggering?)` — destroy all matching; optionally
   save the ID list for follow-up. `excludeTriggering = true` spares the triggering entity, for "destroy all
   *other* … with it" triggers (Spreading Plague).

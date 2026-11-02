@@ -948,6 +948,7 @@ Families:
 - `GrantSuspendEffect(target: EffectTarget)` — Mark target as suspended (CR 702.62) — the engine attaches the suspended marker component so the card gains the countdown and last-counter cast triggered abilities while in exile (see com.wingedshe…
 - `GrantToEnchantedCreatureTypeGroupEffect(powerModifier: Int, toughnessModifier: Int, keyword: Keyword?, protectionColors: Set<Color>, duration: Duration)` — Grant stats and/or a keyword to the enchanted creature and all other creatures that share a creature type with it.
 - `GrantTriggeredAbilityEffect(ability: TriggeredAbility, target: EffectTarget, duration: Duration)` — Grant a triggered ability to a target until end of turn.
+- `HealDamageEffect(target: EffectTarget)` — Remove all damage marked on target permanent, right now — "all damage already dealt to it is healed" / "remove all damage from it".
 - `HijackNextTurnEffect(target: EffectTarget, scope: HijackScope)` — The ability's controller controls the target player during a scoped future window — either that player's next **turn** (HijackScope.NextTurn) or their next **combat phase** (HijackScope.NextCombatP…
 - `IncrementAbilityResolutionCountEffect` — Increments the ability resolution count on the source permanent.
 - `InvestigateEffect(count: DynamicAmount, controller: EffectTarget?)` — Investigate (keyword action, CR 701.16a): "create a Clue token", performed count times.
