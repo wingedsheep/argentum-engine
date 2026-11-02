@@ -1830,6 +1830,7 @@ Families:
 - `AdditionalDeathTriggers(attachedCreature: Boolean, permanentsYouControl: GameObjectFilter?, includeEmblems: Boolean, description: String)` — If a creature dying causes a triggered ability within the doubler's *scope* to trigger, that ability triggers an additional time.
 - `AdditionalDungeonRoomTriggers` — Room abilities of dungeons you own trigger an additional time (CR 603.2d, 309.4c) — Hama Pashar, Ruin Seeker.
 - `AdditionalETBOrLTBTriggers(filter: GameObjectFilter, mustBeYouControl: Boolean, directions: Set<BattlefieldDirection>, description: String)` — When a permanent matching filter crosses the battlefield boundary in one of directions, triggered abilities of permanents controlled by this ability's controller that fired from that event trigger…
+- `AdditionalLifeGainTriggers` — If you gaining life causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time (CR 603.2d) — Dr.
 - `AdditionalManaForEntryCounters(spellFilter: GameObjectFilter, counterType: CounterType)` — "As an additional cost to cast spellFilter spells, you may pay any amount of mana.
 - `AdditionalManaOnSourceTap(sourceFilter: GameObjectFilter, color: Color?, amount: DynamicAmount, rider: Effect?, whenProducing: TappedForManaType)` — Whenever a permanent matching sourceFilter is tapped for mana, the tapping player adds amount additional mana to their pool.
 - `AdditionalManaOnTap(color: Color?, amount: DynamicAmount, anyColor: Boolean)` — Whenever enchanted land is tapped for mana, its controller adds additional mana.

@@ -12033,6 +12033,13 @@ in the declare-blockers step, even before the turn-based block action has comple
   a permanent you control to trigger, that ability triggers an additional time. A spell's own "when
   you cast this spell" ability isn't a permanent's and isn't doubled. `TriggerDetector.duplicateCastOrCopyTriggers`;
   additive across copies.
+- `AdditionalLifeGainTriggers` — Dr. Beverly Crusher: the **life-gain-cause** analogue. If *you*
+  gaining life causes a life-gain triggered ability (`EventPattern.LifeGainEvent`, or an `AnyOf`
+  holding one — "whenever you gain life", "whenever a player gains life", "… for the first time each
+  turn") of a permanent you control to trigger, that ability triggers an additional time — the
+  doubler's own life-gain trigger included. An opponent gaining life never doubles, even for your
+  "whenever a player gains life". Parameterless (`data object`), like `AdditionalDungeonRoomTriggers`.
+  `TriggerDetector.duplicateLifeGainTriggers`; additive across copies.
 - `AdditionalDeathTriggers(attachedCreature = false, permanentsYouControl = null, includeEmblems = false)`
   — the **death-cause** analogue: if a creature dying (put into a graveyard from the battlefield,
   continuous effects included) causes a **death/leave-the-battlefield** triggered ability within

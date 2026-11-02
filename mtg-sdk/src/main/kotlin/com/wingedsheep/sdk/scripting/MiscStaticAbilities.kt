@@ -2181,6 +2181,26 @@ data class AdditionalCastOrCopyTriggers(
 }
 
 /**
+ * If you gaining life causes a triggered ability of a permanent you control to trigger, that ability
+ * triggers an additional time (CR 603.2d) — Dr. Beverly Crusher. The **life-gain-cause** analogue of
+ * [AdditionalCastOrCopyTriggers] and [AdditionalAttackTriggers]: neither takes this axis — their
+ * cause is a spell or an attacking creature (an object filter), while the cause here is a player
+ * event with nothing to filter, so it carries no parameters, like [AdditionalDungeonRoomTriggers].
+ *
+ * Only life-gain triggered abilities ("whenever you gain life", "whenever a player gains life",
+ * "… for the first time each turn") are doubled, and only for a life-gain event of the doubler's
+ * controller — an opponent gaining life never doubles. The triggered ability must belong to a
+ * permanent the doubler's controller controls. Multiple copies are additive: N copies add N extra
+ * firings of each affected trigger.
+ */
+@SerialName("AdditionalLifeGainTriggers")
+@Serializable
+data object AdditionalLifeGainTriggers : StaticAbility {
+    override val description: String =
+        "If you gaining life causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time"
+}
+
+/**
  * Room abilities of dungeons you own trigger an additional time (CR 603.2d, 309.4c) — Hama Pashar,
  * Ruin Seeker. The **room-ability** analogue of [AdditionalSourceTriggers]: a dungeon's room abilities
  * trigger from the command zone, where no permanent filter can reach their source, so the scope is

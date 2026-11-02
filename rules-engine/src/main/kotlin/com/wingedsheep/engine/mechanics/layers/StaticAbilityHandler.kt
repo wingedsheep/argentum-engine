@@ -96,6 +96,7 @@ import com.wingedsheep.sdk.scripting.OpponentsCantCauseYouTo
 import com.wingedsheep.sdk.scripting.StationUsingToughness
 import com.wingedsheep.sdk.scripting.AdditionalAttackTriggers
 import com.wingedsheep.sdk.scripting.AdditionalCastOrCopyTriggers
+import com.wingedsheep.sdk.scripting.AdditionalLifeGainTriggers
 import com.wingedsheep.sdk.scripting.AdditionalDungeonRoomTriggers
 import com.wingedsheep.sdk.scripting.AdditionalDeathTriggers
 import com.wingedsheep.sdk.scripting.AdditionalETBOrLTBTriggers
@@ -1273,6 +1274,7 @@ class StaticAbilityHandler(
             is AdditionalDeathTriggers,
             is AdditionalDungeonRoomTriggers,
             is AdditionalETBOrLTBTriggers,
+            is AdditionalLifeGainTriggers,
             is AdditionalSourceTriggers,
             is GrantTriggeredAbility,
 
