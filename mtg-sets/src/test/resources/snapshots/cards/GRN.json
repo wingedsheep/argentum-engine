@@ -304,6 +304,162 @@
     ]
 }
 
+// Aurelia, Exemplar of Justice
+{
+    "name": "Aurelia, Exemplar of Justice",
+    "manaCost": "{2}{R}{W}",
+    "typeLine": "Legendary Creature — Angel",
+    "oracleText": "Flying\nMentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)\nAt the beginning of combat on your turn, choose up to one target creature you control. Until end of turn, that creature gets +2/+0, gains trample if it's red, and gains vigilance if it's white.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING",
+        "MENTOR"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aurelia, Exemplar of Justice:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "PowerLessThanEntity",
+                                    "reference": "Self"
+                                }
+                            ],
+                            "statePredicates": [
+                                "IsAttacking"
+                            ]
+                        }
+                    }
+                },
+                "descriptionOverride": "Mentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)"
+            },
+            {
+                "id": "Aurelia, Exemplar of Justice:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "EntityMatches",
+                                    "entity": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "filter": "red"
+                                }
+                            },
+                            "then": {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "EntityMatches",
+                                    "entity": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "filter": "white"
+                                }
+                            },
+                            "then": {
+                                "type": "GrantKeyword",
+                                "keyword": "VIGILANCE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "At the beginning of combat on your turn, choose up to one target creature you control. Until end of turn, that creature gets +2/+0, gains trample if it's red, and gains vigilance if it's white."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/8/a8e9f4d2-bba5-4061-8ae7-a68b912f2c11.jpg?1783934144",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "Aurelia's last ability resolves before attackers are chosen."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "The target creature gains trample and vigilance if it's both red and white. It gets +2/+0 only once, even if it's both red and white, and even if it's neither red nor white."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Once Aurelia's last ability has resolved, the creature keeps whatever bonuses it got from that ability even if its colors change."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Barrier of Bones
 {
     "name": "Barrier of Bones",
@@ -505,6 +661,151 @@
     ]
 }
 
+// Blade Instructor
+{
+    "name": "Blade Instructor",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Mentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "MENTOR"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Blade Instructor:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "PowerLessThanEntity",
+                                    "reference": "Self"
+                                }
+                            ],
+                            "statePredicates": [
+                                "IsAttacking"
+                            ]
+                        }
+                    }
+                },
+                "descriptionOverride": "Mentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "artist": "Zoltan Boros",
+        "flavorText": "\"Watch carefully. The gap between death and victory is thinner than your blade.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/b/9b1c7f07-8d39-425b-8ae9-b3ab317cc0fe.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Boros Challenger
+{
+    "name": "Boros Challenger",
+    "manaCost": "{R}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Mentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)\n{2}{R}{W}: This creature gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "MENTOR"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Boros Challenger:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "PowerLessThanEntity",
+                                    "reference": "Self"
+                                }
+                            ],
+                            "statePredicates": [
+                                "IsAttacking"
+                            ]
+                        }
+                    }
+                },
+                "descriptionOverride": "Mentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Boros Challenger:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{R}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "{2}{R}{W}: This creature gets +1/+1 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "156",
+        "rarity": "UNCOMMON",
+        "artist": "Gabor Szikszai",
+        "flavorText": "\"Send your champion. I could use a light workout.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/545f3a30-7984-4046-8a14-51bc9cbc3fe0.jpg?1783934141"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Boros Locket
 {
     "name": "Boros Locket",
@@ -567,6 +868,75 @@
     },
     "colorIdentityOverride": [
         "RED",
+        "WHITE"
+    ]
+}
+
+// Bounty Agent
+{
+    "name": "Bounty Agent",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Vigilance\n{T}, Sacrifice this creature: Destroy target legendary permanent that's an artifact, creature, or enchantment.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Bounty Agent:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsArtifact",
+                                            "IsCreature",
+                                            "IsEnchantment"
+                                        ]
+                                    },
+                                    "IsLegendary"
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "RARE",
+        "artist": "Randy Vargas",
+        "flavorText": "\"Lately I've seen the biggest bounties of my career—and for the biggest names.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6e938121-5917-4b67-9014-74fca106a471.jpg?1783934205"
+    },
+    "colorIdentityOverride": [
         "WHITE"
     ]
 }
@@ -641,6 +1011,75 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Camaraderie
+{
+    "name": "Camaraderie",
+    "manaCost": "{4}{G}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "You gain X life and draw X cards, where X is the number of creatures you control. Creatures you control get +1/+1 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "157",
+        "rarity": "RARE",
+        "artist": "Sidharth Chaturvedi",
+        "flavorText": "\"Within the song of Mat'Selesnya, one becomes all.\"\n—Heruj, Selesnya hierophant",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/890a2fa9-1141-4a4c-85af-05723aba5e39.jpg?1783934140",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "The second part of Camaraderie's effect affects only creatures you control at the time it resolves. Creatures you begin to control later in the turn won't get +1/+1."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
     ]
 }
 
@@ -724,6 +1163,95 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Centaur Peacemaker
+{
+    "name": "Centaur Peacemaker",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Creature — Centaur Cleric",
+    "oracleText": "When this creature enters, each player gains 4 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Centaur Peacemaker:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "Each"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "158",
+        "artist": "Raoul Vitale",
+        "flavorText": "\"Please accept this offering. I sincerely hope to leave my mace at my side.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0e630e9b-7817-4255-9de1-795b2a788d80.jpg?1783934141"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
+// Chance for Glory
+{
+    "name": "Chance for Glory",
+    "manaCost": "{1}{R}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Creatures you control gain indestructible. Take an extra turn after this one. At the beginning of that turn's end step, you lose the game.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "INDESTRUCTIBLE",
+                        "target": "IterationEntity",
+                        "duration": "Permanent"
+                    }
+                },
+                {
+                    "type": "TakeExtraTurn",
+                    "loseAtEndStep": true
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "rarity": "MYTHIC",
+        "artist": "Bram Sels",
+        "flavorText": "\"It is not your time. The Legion still needs your blade.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/5/85edf6f9-b863-41e2-bb51-857ea2798090.jpg?1783934140"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
     ]
 }
 
@@ -1472,6 +2000,58 @@
     },
     "colorIdentityOverride": [
         "RED",
+        "WHITE"
+    ]
+}
+
+// Demotion
+{
+    "name": "Demotion",
+    "manaCost": "{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature can't block, and its activated abilities can't be activated.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBlock",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "PreventActivatedAbilities",
+                "filter": {
+                    "cardPredicates": [
+                        "IsPermanent"
+                    ],
+                    "statePredicates": [
+                        "IsAttachedToBySource"
+                    ]
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "9",
+        "rarity": "UNCOMMON",
+        "artist": "Joe Slucher",
+        "flavorText": "There's no greater honor than joining your chosen guild, and no greater shame than failing it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/69202217-ef36-4d6c-bbd0-ebbb2ade51f7.jpg?1783934206",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "Activated abilities contain a colon. They're generally written \"[Cost]: [Effect].\" Some keyword abilities are activated abilities and will have colons in their reminder text. Triggered abilities (starting with \"when,\" \"whenever,\" or \"at\") are unaffected by Demotion."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
         "WHITE"
     ]
 }
@@ -2649,6 +3229,83 @@
     ]
 }
 
+// Fresh-Faced Recruit
+{
+    "name": "Fresh-Faced Recruit",
+    "manaCost": "{1}{R/W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "During your turn, this creature has first strike.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "IsYourTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "216",
+        "artist": "Anthony Palumbo",
+        "flavorText": "\"Hold on to your ideals. They'll be tested more than your armor or the edge of your blade.\"\n—Tajic",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/8/a8b19518-7752-4673-a7d8-ae2e0070129c.jpg?1783934118"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
+// Garrison Sergeant
+{
+    "name": "Garrison Sergeant",
+    "manaCost": "{3}{R}{W}",
+    "typeLine": "Creature — Lizard Soldier",
+    "oracleText": "This creature has double strike as long as you control a Gate.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "DOUBLE_STRIKE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent Gate"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "172",
+        "artist": "Gabor Szikszai",
+        "flavorText": "In the Legion, no flagpole is merely decorative, and every ceremonial sword bears an edge.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2bd957a1-a354-48e9-80ad-66e49aa845fc.jpg?1783934134"
+    }
+}
+
 // Gateway Plaza
 {
     "name": "Gateway Plaza",
@@ -2734,6 +3391,47 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Gird for Battle
+{
+    "name": "Gird for Battle",
+    "manaCost": "{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Put a +1/+1 counter on each of up to two target creatures.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "UNCOMMON",
+        "artist": "Jakub Kasper",
+        "flavorText": "\"You won't need the sword drills, your shields, or my blessing. You'll fight for Sunhome with the truth in your heart.\"\n—Aurelia",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f9f731df-eb40-44c8-a72d-f377c824584d.jpg?1783934202"
+    }
 }
 
 // Golgari Findbroker
@@ -2959,6 +3657,124 @@
         "imageUri": "https://cards.scryfall.io/normal/front/c/b/cba12bda-d460-4206-8469-4357c967b9b8.jpg?1783934102"
     },
     "colorIdentityOverride": []
+}
+
+// Haazda Marshal
+{
+    "name": "Haazda Marshal",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Whenever this creature and at least two other creatures attack, create a 1/1 white Soldier creature token with lifelink.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Haazda Marshal:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        {
+                            "type": "AttackerCountAtLeast",
+                            "n": 3
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Soldier"
+                    ],
+                    "keywords": [
+                        "LIFELINK"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "rarity": "UNCOMMON",
+        "artist": "Josh Hass",
+        "flavorText": "Ravnica's convoluted power structure often boils down to who can muster the most swords on a given block.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5c561d89-b02d-4f1a-b49a-cdf2def3404d.jpg?1783934201",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "Once Haazda Marshal's ability has triggered, it doesn't matter how many creatures are still attacking when that ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Hammer Dropper
+{
+    "name": "Hammer Dropper",
+    "manaCost": "{2}{R}{W}",
+    "typeLine": "Creature — Giant Soldier",
+    "oracleText": "Mentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 2
+    },
+    "keywords": [
+        "MENTOR"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hammer Dropper:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "PowerLessThanEntity",
+                                    "reference": "Self"
+                                }
+                            ],
+                            "statePredicates": [
+                                "IsAttacking"
+                            ]
+                        }
+                    }
+                },
+                "descriptionOverride": "Mentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "176",
+        "artist": "Lake Hurwitz",
+        "flavorText": "Giants know a solid hit is one part strength, four parts leverage.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9efac789-587b-45c1-b16e-616e9486b59b.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
 }
 
 // Healer's Hawk
@@ -3371,6 +4187,111 @@
     "colorIdentityOverride": [
         "RED",
         "BLUE"
+    ]
+}
+
+// Join Shields
+{
+    "name": "Join Shields",
+    "manaCost": "{3}{G}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Untap all creatures you control. They gain hexproof and indestructible until end of turn. (They can't be the targets of spells or abilities your opponents control. Damage and effects that say \"destroy\" don't destroy them.)",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "TapUntap",
+                        "target": "IterationEntity",
+                        "tap": false
+                    },
+                    {
+                        "type": "GrantKeyword",
+                        "keyword": "HEXPROOF",
+                        "target": "IterationEntity"
+                    },
+                    {
+                        "type": "GrantKeyword",
+                        "keyword": "INDESTRUCTIBLE",
+                        "target": "IterationEntity"
+                    }
+                ]
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "rarity": "UNCOMMON",
+        "artist": "Winona Nelson",
+        "flavorText": "\"We are the shield that never breaks, the bough that never burns, the song that can never be silenced.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/1/91898d8a-589d-43db-8dc4-0ec6a3bd6d49.jpg?1783934136",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "Untapped creatures you control can't be untapped again, but those creatures still gain hexproof and indestructible."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
+// Justice Strike
+{
+    "name": "Justice Strike",
+    "manaCost": "{R}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature deals damage to itself equal to its power.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "EntityProperty",
+                "entity": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "numericProperty": "Power"
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "damageSource": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "182",
+        "rarity": "UNCOMMON",
+        "artist": "Clint Cearley",
+        "flavorText": "\"Those who show no mercy to the weak deserve no mercy from the strong.\"\n—Firemane Kavrova",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/27619ce9-59df-4f0e-a5db-2d32a530e547.jpg?1783934132"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
     ]
 }
 
