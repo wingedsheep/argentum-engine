@@ -17,7 +17,8 @@ import io.kotest.matchers.shouldBe
  * 2 damage to any target."
  *
  * Pins the two scopes the snapshot can't see: the bonus reaches every recipient (a permanent, an
- * opponent, and you yourself), and "another" keeps Jaya's own −2 at 2.
+ * opponent, and you yourself), and "another" keeps Jaya's own −2 at 2. Also pins combat damage
+ * reflected back by Harsh Justice: a damage event of its own, so it gets the bonus too.
  */
 class JayaVeneratedFiremageScenarioTest : ScenarioTestBase() {
 
@@ -55,6 +56,31 @@ class JayaVeneratedFiremageScenarioTest : ScenarioTestBase() {
             game.resolveStack()
             withClue("Shock deals 3 to the 3/3 Hill Giant") {
                 game.isInGraveyard(2, "Hill Giant") shouldBe true
+            }
+        }
+
+        test("combat damage reflected back at you by Harsh Justice is boosted too") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardOnBattlefield(1, "Jaya, Venerated Firemage")
+                .withCardOnBattlefield(1, "Raging Goblin", summoningSickness = false)
+                .withCardInHand(2, "Harsh Justice")
+                .withLandsOnBattlefield(2, "Plains", 3)
+                .withCardInLibrary(1, "Mountain")
+                .withCardInLibrary(2, "Plains")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+            game.declareAttackers(mapOf("Raging Goblin" to 2)).error shouldBe null
+            game.passPriority()
+            game.castSpell(2, "Harsh Justice").error shouldBe null
+            game.resolveStack()
+            game.passUntilPhase(Phase.COMBAT, Step.END_COMBAT)
+
+            withClue("Raging Goblin deals 1 + 1 to the opponent") { game.getLifeTotal(2) shouldBe 18 }
+            withClue("Harsh Justice reflects those 2, and Jaya adds 1 to that damage as well") {
+                game.getLifeTotal(1) shouldBe 17
             }
         }
 
