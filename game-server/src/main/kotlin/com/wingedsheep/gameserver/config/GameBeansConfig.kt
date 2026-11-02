@@ -190,6 +190,13 @@ private fun List<CardDefinition>.withLegalities(): List<CardDefinition> =
     map { LegalityData.stamp(it) }
 
 /**
+ * Whether a set's Scryfall booster-name list admits [cardName]. The list names a split card by its
+ * first half ("Carnival"), where the engine names it by both halves ("Carnival // Carnage").
+ */
+private fun Set<String>.admits(cardName: String): Boolean =
+    cardName in this || cardName.substringBefore(" // ") in this
+
+/**
  * The card pool a set contributes to booster / sealed / draft generation.
  *
  * A set contributes both its own [MtgSet.cards] and every distinct reprinted card in
@@ -205,13 +212,6 @@ private fun List<CardDefinition>.withLegalities(): List<CardDefinition> =
  * Foundations). Returning early when [MtgSet.cards] was non-empty silently omitted every reprint
  * from mixed-set boosters.
  */
-/**
- * Whether a set's Scryfall booster-name list admits [cardName]. The list names a split card by its
- * first half ("Carnival"), where the engine names it by both halves ("Carnival // Carnage").
- */
-private fun Set<String>.admits(cardName: String): Boolean =
-    cardName in this || cardName.substringBefore(" // ") in this
-
 private fun MtgSet.boosterCardPool(
     registry: CardRegistry,
     limitedCardNames: Set<String>?,
