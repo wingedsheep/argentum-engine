@@ -17,3 +17,15 @@ val VraskaGolgariQueenReprint = Printing(
     releaseDate = "2020-06-03",
     rarity = Rarity.MYTHIC,
 )
+
+val VraskaGolgariQueenReprint1702 = Printing(
+    oracleId = "131096a3-2d53-4ec2-96d3-fcb58e698a13",
+    name = "Vraska, Golgari Queen",
+    setCode = "SLD",
+    collectorNumber = "1702",
+    scryfallId = "e35d8d96-5d5c-4549-87df-458fc43e4444",
+    artist = "Dmitry Burmak",
+    imageUri = "https://cards.scryfall.io/normal/front/e/3/e35d8d96-5d5c-4549-87df-458fc43e4444.jpg",
+    releaseDate = "2024-07-29",
+    rarity = Rarity.MYTHIC,
+)
