@@ -2547,6 +2547,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Izzet Spells',
         colors: ['U', 'R'],
         keyCard: 'Wee Dragonauts',
+        keyCardSet: 'grn',
         description: 'Load up on instants and sorceries, then jump-start them from the graveyard for a second use while spell payoffs grow and fire off. A spells-matter tempo deck that turns every cheap spell into damage or card advantage.',
       },
       {

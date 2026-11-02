@@ -242,7 +242,7 @@ class SetArchetypesTest : StringSpec({
             listOf("Sacrifice Knights", "Knights", "Knights Aggro")
     }
 
-    "Guilds of Ravnica exposes one archetype per guild signpost uncommon" {
+    "Guilds of Ravnica exposes one archetype per guild" {
         val synergies = SetArchetypes.getForSet("GRN")!!
 
         synergies.setName shouldBe "Guilds of Ravnica"
