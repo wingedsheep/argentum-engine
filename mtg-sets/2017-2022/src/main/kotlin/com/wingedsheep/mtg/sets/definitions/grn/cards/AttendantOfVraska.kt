@@ -34,6 +34,7 @@ val AttendantOfVraska = card("Attendant of Vraska") {
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "271"
+        inBooster = false
         artist = "Magali Villeneuve"
         flavorText = "When the Erstwhile were unearthed from their tombs, they became a ready-made army for Vraska."
         imageUri = "https://cards.scryfall.io/normal/front/7/f/7f4840f1-3db3-4ba6-b75b-bbd87251a3af.jpg?1783934093"

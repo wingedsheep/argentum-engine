@@ -1097,6 +1097,22 @@ object SetArchetypes {
                     "Let cheap permanents trade or die, then bring them back with recursion while gaining life. A grindy midrange deck that wins the long game by refusing to run out of threats."),
             )
         ),
+        "GRN" to SetSynergies(
+            setCode = "GRN",
+            setName = "Guilds of Ravnica",
+            archetypes = listOf(
+                Archetype("Boros Mentor", listOf(Color.WHITE, Color.RED),
+                    "Attack every turn with mentor creatures, putting +1/+1 counters on smaller attackers as they swing alongside, and back the assault with tokens and combat tricks. A fast aggro deck that grows its own army in combat."),
+                Archetype("Dimir Surveil", listOf(Color.BLUE, Color.BLACK),
+                    "Surveil to sculpt your draws and stock your graveyard, triggering payoffs that grow or reward you each time you do. A controlling tempo deck of evasive threats, removal and card selection."),
+                Archetype("Golgari Undergrowth", listOf(Color.BLACK, Color.GREEN),
+                    "Fill your graveyard with creature cards, then cash them in on undergrowth spells that scale with every creature there and on recursion that brings the best ones back. A grindy midrange deck that wins the long game."),
+                Archetype("Izzet Spells", listOf(Color.BLUE, Color.RED),
+                    "Load up on instants and sorceries, then jump-start them from the graveyard for a second use while spell payoffs grow and fire off. A spells-matter tempo deck that turns every cheap spell into damage or card advantage."),
+                Archetype("Selesnya Convoke", listOf(Color.GREEN, Color.WHITE),
+                    "Go wide with tokens and small creatures, then tap them to convoke out big spells ahead of schedule and pump the team. A token swarm deck that overwhelms the board."),
+            )
+        ),
         "RNA" to SetSynergies(
             setCode = "RNA",
             setName = "Ravnica Allegiance",

@@ -2521,6 +2521,43 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  GRN: {
+    setCode: 'GRN',
+    setName: 'Guilds of Ravnica',
+    archetypes: [
+      {
+        name: 'Boros Mentor',
+        colors: ['W', 'R'],
+        keyCard: 'Boros Challenger',
+        description: 'Attack every turn with mentor creatures, putting +1/+1 counters on smaller attackers as they swing alongside, and back the assault with tokens and combat tricks. A fast aggro deck that grows its own army in combat.',
+      },
+      {
+        name: 'Dimir Surveil',
+        colors: ['U', 'B'],
+        keyCard: 'Dimir Spybug',
+        description: 'Surveil to sculpt your draws and stock your graveyard, triggering payoffs that grow or reward you each time you do. A controlling tempo deck of evasive threats, removal and card selection.',
+      },
+      {
+        name: 'Golgari Undergrowth',
+        colors: ['B', 'G'],
+        keyCard: 'Molderhulk',
+        description: 'Fill your graveyard with creature cards, then cash them in on undergrowth spells that scale with every creature there and on recursion that brings the best ones back. A grindy midrange deck that wins the long game.',
+      },
+      {
+        name: 'Izzet Spells',
+        colors: ['U', 'R'],
+        keyCard: 'Wee Dragonauts',
+        keyCardSet: 'grn',
+        description: 'Load up on instants and sorceries, then jump-start them from the graveyard for a second use while spell payoffs grow and fire off. A spells-matter tempo deck that turns every cheap spell into damage or card advantage.',
+      },
+      {
+        name: 'Selesnya Convoke',
+        colors: ['G', 'W'],
+        keyCard: 'Ledev Champion',
+        description: 'Go wide with tokens and small creatures, then tap them to convoke out big spells ahead of schedule and pump the team. A token swarm deck that overwhelms the board.',
+      },
+    ],
+  },
   RNA: {
     setCode: 'RNA',
     setName: 'Ravnica Allegiance',

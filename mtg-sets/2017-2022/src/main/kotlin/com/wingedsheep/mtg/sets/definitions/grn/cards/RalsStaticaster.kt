@@ -46,6 +46,7 @@ val RalsStaticaster = card("Ral's Staticaster") {
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "268"
+        inBooster = false
         artist = "Even Amundsen"
         imageUri = "https://cards.scryfall.io/normal/front/a/d/adfa16dc-03b3-4533-884c-a23b992b8d86.jpg?1783934095"
         ruling("2018-10-05", "The number of cards in your hand is checked only as the triggered ability of Ral’s Staticaster resolves. If that number changes later in the turn, its power is unaffected.")
