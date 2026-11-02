@@ -306,9 +306,14 @@ class StaticAbilityHandler(
         // A printed "[this] is also a [subtype]" is a CDA already folded into the entity's own type
         // line ([CardDefinition.selfDefinedSubtypes], CR 604.3), so it isn't projected again as a
         // timestamped layer-4 effect — CDAs apply before every other effect in their layer.
+        // A printed "[this] is all colors" is folded into the card's own colors the same way
+        // ([CardDefinition.selfDefinedColors]); projecting it again with the permanent's timestamp
+        // would wrongly override an older "all creatures are black" (CR 613.3: CDAs apply first).
         val foldedCdas = cardDefinition.selfDefinedSubtypes
+        val foldsColorCda = cardDefinition.selfDefinedColors != null
         val allStaticAbilities = RoomFaceStatics.activeStaticAbilities(container, cardDefinition)
-            .filterNot { it is GrantSubtype && it.filter == GroupFilter.source() && com.wingedsheep.sdk.core.Subtype(it.subtype) in foldedCdas } +
+            .filterNot { it is GrantSubtype && it.filter == GroupFilter.source() && com.wingedsheep.sdk.core.Subtype(it.subtype) in foldedCdas }
+            .filterNot { foldsColorCda && it is com.wingedsheep.sdk.scripting.SetColors && it.offBattlefield == null && it.filter == GroupFilter.source() } +
             container.get<CardComponent>()?.copyStaticAbilities.orEmpty() +
             printedBandsWithOther(cardDefinition)
 

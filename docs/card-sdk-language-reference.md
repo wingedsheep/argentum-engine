@@ -10951,6 +10951,13 @@ staticAbility {
   — so a Medallion stops discounting a spell Lattice made colorless.
   **Mycosynth Lattice** — "All cards that aren't on the battlefield, spells, and permanents are colorless" →
   `SetColors(emptySet(), GroupFilter(GameObjectFilter.Any), offBattlefield = Player.Each)`.
+  **Self-color CDA** — a printed, unconditional `SetColors(colors, GroupFilter.source())` (no `offBattlefield`) is the
+  card's own characteristic-defining ability (CR 604.3a): `CardDefinition.selfDefinedColors` folds it into
+  `CardDefinition.colors` and color identity, so the card has those colors in hand, library, graveyard, on the stack and
+  on the battlefield, and the engine doesn't project it again as a timestamped layer-5 effect (CDAs apply first, CR
+  613.3 — an older "all creatures are black" still wins on the battlefield). Wrapped in a `ConditionalStaticAbility`
+  it is not a CDA and stays an ordinary effect. **Sphinx of the Guildpact** — "Sphinx of the Guildpact is all colors"
+  → `staticAbility { ability = SetColors(Color.entries.toSet(), GroupFilter.source()) }`.
 - `GrantCardType(cardType, filter)` / `RemoveCardType(cardType, filter)` — Layer 4 type-changing statics that add or
   remove a card type (e.g. `"CREATURE"`). `RemoveCardType` backs Impending's "isn't a creature while it has a time
   counter" (wrapped in a `ConditionalStaticAbility`); reuse it for any "it's no longer a [type]" effect — the Theros

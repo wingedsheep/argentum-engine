@@ -287,6 +287,11 @@ data class GrantColor(
  * [filter] (e.g. nonland) also qualify which off-battlefield objects are reached, matched against
  * their printed characteristics. Off the battlefield the effect is an overlay the color read-sites
  * consult (`ProjectedState.colorsOf`), since layer projection iterates only permanents.
+ *
+ * Printed with `filter = GroupFilter.source()` and no [offBattlefield] reach, it is the card's own
+ * characteristic-defining ability — "Sphinx of the Guildpact is all colors" (CR 604.3a). Such an
+ * ability is folded into `CardDefinition.colors` (`selfDefinedColors`), so the card has those colors
+ * in every zone, and is not projected again as a timestamped layer-5 effect (CR 613.3).
  */
 @SerialName("SetColors")
 @Serializable
@@ -303,7 +308,13 @@ data class SetColors(
 
     override val description: String = buildString {
         append(filter.description)
-        append(if (colors.isEmpty()) " are colorless" else " are ${colors.joinToString(" and ") { it.name.lowercase() }}")
+        // "[This] is all colors" (Sphinx of the Guildpact) reads singular; a group reads plural.
+        append(if (filter.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self) " is" else " are")
+        append(when {
+            colors.isEmpty() -> " colorless"
+            colors.size == com.wingedsheep.sdk.core.Color.entries.size -> " all colors"
+            else -> " ${colors.joinToString(" and ") { it.name.lowercase() }}"
+        })
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
