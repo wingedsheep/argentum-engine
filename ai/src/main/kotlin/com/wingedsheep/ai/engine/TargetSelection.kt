@@ -59,11 +59,13 @@ object TargetSelection {
         intents: IntentCatalog = IntentCatalog.NONE,
     ): Double {
         val projected = state.projectedState
-        val controller = projected.getController(entityId)
+        val isPlayer = state.getEntity(entityId)?.get<PlayerComponent>() != null
+        // A player is its own side: it has no controller, so reading one off the projection
+        // scored every player as ours and left "target player" to list order.
+        val controller = if (isPlayer) entityId else projected.getController(entityId)
         // CR 810 — a teammate's permanent is not an opponent's, so removal must not rank it as
         // one. In a game without teams this is exactly the old `controller != playerId`.
         val isOpponent = controller != null && state.isOpponentTo(controller, playerId)
-        val isPlayer = state.getEntity(entityId)?.get<PlayerComponent>() != null
 
         val card = state.getEntity(entityId)?.get<CardComponent>()
 
