@@ -2645,8 +2645,15 @@ data class EntersAsCopy(
  * a copy ("except it enters with …").
  *
  * @property count How many counters: `Fixed(1)`, or `DynamicAmount.XValue` for Altered Ego's X.
+ *   With a null [counterType] it is the number placed *per counter* the copied object has of each
+ *   kind — `Fixed(1)` is "the same number".
  * @property counterType Which counter. Defaults to +1/+1, the "additional +1/+1 counters" rider;
- *   [CounterType.SHIELD] is Undercover Operative's.
+ *   [CounterType.SHIELD] is Undercover Operative's. `null` mirrors the copied object: for every kind
+ *   of counter it has as the copy enters, the entrant gets [count] counters of that kind per counter
+ *   ("it enters with additional counters on it equal to the same number and kinds of counters the
+ *   copied permanent has on it" — Dominion Saboteur; see [sameAsCopied]). Counters aren't copiable
+ *   values (CR 707.2), so only this rider carries them over; a copied object that has left the
+ *   battlefield has none.
  * @property ifCopiedMatches When non-null, the counters are placed only if the copied object matches
  *   this filter as the permanent enters, read against the entrant's controller — "if you control that
  *   creature" is `GameObjectFilter.Any.youControl()`. A copied object that has left the battlefield
@@ -2660,12 +2667,32 @@ data class EntersAsCopy(
 @Serializable
 data class CopyEntryCounters(
     val count: DynamicAmount,
-    val counterType: CounterType = CounterType.PLUS_ONE_PLUS_ONE,
+    val counterType: CounterType? = CounterType.PLUS_ONE_PLUS_ONE,
     val ifCopiedMatches: GameObjectFilter? = null,
     val ifEntrantMatches: GameObjectFilter? = null,
 ) {
+    companion object {
+        /** "… enters with additional counters on it equal to the same number and kinds of counters
+         *  the copied permanent has on it" — one counter of each kind per counter the copied object has. */
+        fun sameAsCopied(): CopyEntryCounters =
+            CopyEntryCounters(count = DynamicAmount.Fixed(1), counterType = null)
+    }
+
     val description: String
         get() = buildString {
+            if (counterType == null) {
+                val countText = count.description
+                if (countText == "1") {
+                    append("it enters with additional counters on it equal to the same number and kinds of " +
+                        "counters the copied permanent has on it")
+                } else {
+                    append("it enters with $countText additional counters of each kind for each counter of " +
+                        "that kind the copied permanent has on it")
+                }
+                ifCopiedMatches?.let { append(" if the copied object matches: ${it.description}") }
+                ifEntrantMatches?.let { append(" if it's ${it.description}") }
+                return@buildString
+            }
             val plusOne = counterType == CounterType.PLUS_ONE_PLUS_ONE
             val countText = count.description
             // A planeswalker always enters with its starting loyalty too, so a loyalty rider is

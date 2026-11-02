@@ -387,13 +387,34 @@ object EntersWithReplacements {
     }
 
     /**
-     * How many counters an `EntersAsCopy.entersWithCounters` rider puts on [entityId], which entered
-     * as a copy of [copiedId]: zero when the rider's `ifCopiedMatches` filter doesn't match the
+     * The counters, by kind, an `EntersAsCopy.entersWithCounters` rider puts on [entityId], which
+     * entered as a copy of [copiedId]: none when the rider's `ifCopiedMatches` filter doesn't match the
      * copied object (read against [controllerId] — "if you control that creature") or its
-     * `ifEntrantMatches` filter doesn't match the entrant itself, as the copy has made it, else its count.
+     * `ifEntrantMatches` filter doesn't match the entrant itself, as the copy has made it. A rider
+     * with a counter type gives its count of that kind; one without mirrors the copied object —
+     * its count per counter, for every kind the copied object has right now (Dominion Saboteur).
      * Shared by the cast, direct-entry and effect-entry copy paths.
      */
-    fun copyEntryCounterCount(
+    fun copyEntryCounters(
+        state: GameState,
+        rider: com.wingedsheep.sdk.scripting.CopyEntryCounters,
+        entityId: EntityId,
+        copiedId: EntityId?,
+        controllerId: EntityId,
+        xValue: Int?,
+        predicateEvaluator: PredicateEvaluator,
+    ): Map<CounterType, Int> {
+        val perUnit = copyEntryCounterCount(state, rider, entityId, copiedId, controllerId, xValue, predicateEvaluator)
+        if (perUnit <= 0) return emptyMap()
+        val kind = rider.counterType ?: run {
+            val copied = copiedId?.let { state.getEntity(it)?.get<CountersComponent>() } ?: return emptyMap()
+            return copied.counters.filterValues { it > 0 }
+                .mapValues { (_, n) -> (n.toLong() * perUnit).coerceAtMost(com.wingedsheep.engine.core.GameLimits.MAX_QUANTITY.toLong()).toInt() }
+        }
+        return mapOf(kind to perUnit)
+    }
+
+    private fun copyEntryCounterCount(
         state: GameState,
         rider: com.wingedsheep.sdk.scripting.CopyEntryCounters,
         entityId: EntityId,

@@ -555,14 +555,21 @@ class ModalAndCloneContinuationResumer(
         copiedId: EntityId,
         xValue: Int?,
     ): Pair<GameState, List<GameEvent>> {
-        val count = EntersWithReplacements.copyEntryCounterCount(
+        val kinds = EntersWithReplacements.copyEntryCounters(
             state, rider, entityId, copiedId, controllerId, xValue, services.predicateEvaluator
         )
         val entityName = state.getEntity(entityId)?.get<CardComponent>()?.name ?: ""
-        return EntersWithReplacements.placeEntryCounters(
-            state, entityId, rider.counterType, count, controllerId, entityName,
-            predicateEvaluator = services.predicateEvaluator
-        )
+        var newState = state
+        val events = mutableListOf<GameEvent>()
+        for ((kind, count) in kinds) {
+            val (afterKind, kindEvents) = EntersWithReplacements.placeEntryCounters(
+                newState, entityId, kind, count, controllerId, entityName,
+                predicateEvaluator = services.predicateEvaluator
+            )
+            newState = afterKind
+            events.addAll(kindEvents)
+        }
+        return newState to events
     }
 
     /**
