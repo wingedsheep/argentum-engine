@@ -10,6 +10,7 @@ class RegenerationExecutors : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
         RegenerateExecutor(),
         RemoveDamageShieldExecutor(),
+        HealDamageExecutor(),
         CantBeRegeneratedExecutor()
     )
 }

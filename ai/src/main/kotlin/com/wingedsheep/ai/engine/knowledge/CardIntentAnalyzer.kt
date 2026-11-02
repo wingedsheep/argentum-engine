@@ -758,7 +758,7 @@ object CardIntentAnalyzer {
         is AddManaEffect, is AddColorlessManaEffect, is AddDynamicManaEffect,
         is AddManaOfChoiceEffect, is PlayAdditionalLandsEffect -> setOf(IntentTag.RAMP)
 
-        is RegenerateEffect, is PreventDamageEffect -> setOf(IntentTag.PROTECTION)
+        is RegenerateEffect, is HealDamageEffect, is PreventDamageEffect -> setOf(IntentTag.PROTECTION)
 
         is GrantKeywordEffect -> keywordTags(effect.keyword)
         is GrantEvasionKeywordEffect -> setOf(IntentTag.EVASION_GRANT)

@@ -58,6 +58,25 @@ data class RemoveDamageShieldEffect(
 }
 
 /**
+ * Remove all damage marked on target permanent, right now — "all damage already dealt to it is
+ * healed" / "remove all damage from it".
+ *
+ * The immediate counterpart of the two deferred heals: [RemoveDamageShieldEffect] waits for the next
+ * destruction this turn, and [RegenerateEffect] also taps the permanent and removes it from combat.
+ * Neither takes an "immediately" axis without changing what its name promises, hence a sibling. It is
+ * the natural "instead …" body of a [com.wingedsheep.sdk.scripting.ReplaceDestructionWith]
+ * (Dr. McCoy, Surly Surgeon), and works as a one-shot spell effect too. A no-op on an object with no
+ * marked damage (players, planeswalkers and battles never have any).
+ */
+@SerialName("HealDamage")
+@Serializable
+data class HealDamageEffect(
+    val target: EffectTarget
+) : Effect {
+    override val description: String = "remove all damage from ${target.description}"
+}
+
+/**
  * Mark target as unable to regenerate.
  * "It can't be regenerated."
  *

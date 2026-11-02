@@ -7154,6 +7154,12 @@ object Effects {
     fun ReflectCombatDamage(target: EffectTarget = EffectTarget.Controller): Effect =
         com.wingedsheep.sdk.scripting.effects.ReflectCombatDamageEffect(target)
 
+    /**
+     * Remove all damage marked on [target] immediately — "all damage already dealt to it is healed".
+     * The body of a destruction replacement (Dr. McCoy, Surly Surgeon) or a one-shot heal.
+     */
+    fun HealDamage(target: EffectTarget): Effect = com.wingedsheep.sdk.scripting.effects.HealDamageEffect(target)
+
     /** Remove a prevention shield previously placed on [target] (Pyramids). */
     fun RemoveDamageShield(target: EffectTarget): Effect = com.wingedsheep.sdk.scripting.effects.RemoveDamageShieldEffect(target)
 
