@@ -1,0 +1,3462 @@
+{
+  "brad boimler, eager ensign": {
+    "archetypes": [
+      {
+        "archetype": "Counter Growth",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "dr. beverly crusher": {
+    "archetypes": [
+      {
+        "archetype": "Counter Growth",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "set phasers to . . .": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "consider the prime directive": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "highly illogical": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "in the pale moonlight": {
+    "archetypes": [
+      {
+        "archetype": "Death Triggers",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "captain james t. kirk": {
+    "archetypes": [
+      {
+        "archetype": "Power Matters",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "amok time": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Value",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "captain kathryn janeway": {
+    "archetypes": [
+      {
+        "archetype": "Landfall Value",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "seven of nine": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "crystalline entity": {
+    "archetypes": [
+      {
+        "archetype": "Artifact Creatures",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Artifact Creatures",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "u.s.s. enterprise-d, galaxy-class": {
+    "archetypes": [
+      {
+        "archetype": "Spacecraft Synergy",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "blood crypt": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "B",
+      "R"
+    ],
+    "splashable": true
+  },
+  "breeding pool": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "U",
+      "G"
+    ],
+    "splashable": false
+  },
+  "godless shrine": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "B"
+    ],
+    "splashable": true
+  },
+  "hallowed fountain": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U"
+    ],
+    "splashable": true
+  },
+  "overgrown tomb": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "B",
+      "G"
+    ],
+    "splashable": true
+  },
+  "sacred foundry": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "R"
+    ],
+    "splashable": true
+  },
+  "steam vents": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "U",
+      "R"
+    ],
+    "splashable": true
+  },
+  "stomping ground": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "R",
+      "G"
+    ],
+    "splashable": true
+  },
+  "temple garden": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "G"
+    ],
+    "splashable": true
+  },
+  "watery grave": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "U",
+      "B"
+    ],
+    "splashable": true
+  },
+  "antagonist incorporator": {
+    "archetypes": [
+      {
+        "archetype": "Artifact Creatures",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Artifact Creatures",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "assembly specialist": {
+    "archetypes": [
+      {
+        "archetype": "Artifact Creatures",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Artifact Creatures",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "captain benjamin sisko": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "captain jean-luc picard": {
+    "archetypes": [
+      {
+        "archetype": "Spacecraft Synergy",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Power Matters",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "command decision": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "command subadjunct": {
+    "archetypes": [
+      {
+        "archetype": "Artifact Creatures",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Artifact Creatures",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "conquest mission": {
+    "archetypes": [
+      {
+        "archetype": "Artifact Creatures",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "dot-7 repair squad": {
+    "archetypes": [
+      {
+        "archetype": "Artifact Creatures",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "dr. mccoy, surly surgeon": {
+    "archetypes": [
+      {
+        "archetype": "Counter Growth",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Counter Growth",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "emergency medical hologram": {
+    "archetypes": [
+      {
+        "archetype": "Counter Growth",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "excalbian gamemaster": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Counter Growth",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Power Matters",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "federation field medic": {
+    "archetypes": [
+      {
+        "archetype": "Power Matters",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Counter Growth",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "free borg revolutionaries": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Counter Growth",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Artifact Creatures",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Landfall Value",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": true
+  },
+  "picard, leading by example": {
+    "archetypes": [
+      {
+        "archetype": "Power Matters",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "primary unimatrix adjunct": {
+    "archetypes": [
+      {
+        "archetype": "Artifact Creatures",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "pure energy": {
+    "archetypes": [
+      {
+        "archetype": "Power Matters",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "rutherford, upgraded ensign": {
+    "archetypes": [
+      {
+        "archetype": "Spacecraft Synergy",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Artifact Creatures",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "shields up!": {
+    "archetypes": [
+      {
+        "archetype": "Counter Growth",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "tactical officer": {
+    "archetypes": [
+      {
+        "archetype": "Counter Growth",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "test of conviction": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Counter Growth",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "una chin-riley, number one": {
+    "archetypes": [
+      {
+        "archetype": "Power Matters",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "u.s.s. enterprise-a, free spirit": {
+    "archetypes": [
+      {
+        "archetype": "Spacecraft Synergy",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "vexing drone": {
+    "archetypes": [
+      {
+        "archetype": "Artifact Creatures",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "anthropological mission": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "the caretaker": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "cetacean ops": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "deep space scan": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "energize": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "ensign pavel chekov": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "federation probe": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Graveyard Value",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "guidance failure": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "h.m.s. bounty, unlikely timeship": {
+    "archetypes": [
+      {
+        "archetype": "Spacecraft Synergy",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "humpback whales": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Landfall Value",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": true
+  },
+  "jett reno, problem solver": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Graveyard Value",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "kobayashi maru scenario": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "lieutenant commander data": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "lt. cmdr. geordi la forge": {
+    "archetypes": [
+      {
+        "archetype": "Spacecraft Synergy",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "make it so": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "marooned": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "open communications": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "romulan bird-of-prey": {
+    "archetypes": [
+      {
+        "archetype": "Spacecraft Synergy",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "rules of acquisition": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "seven of nine, unassimilated": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "subcommander t'pol": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "suurok-class science vessel": {
+    "archetypes": [
+      {
+        "archetype": "Spacecraft Synergy",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "test of priorities": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Graveyard Value",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "those old scientists": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "v'ger, the intruder": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "zefram cochrane, warp pioneer": {
+    "archetypes": [
+      {
+        "archetype": "Spacecraft Synergy",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Spacecraft Synergy",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "armus, skin of evil": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Value",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "assault drone": {
+    "archetypes": [
+      {
+        "archetype": "Artifact Creatures",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Artifact Creatures",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "automated warfare system": {
+    "archetypes": [
+      {
+        "archetype": "Artifact Creatures",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "bat'leth": {
+    "archetypes": [
+      {
+        "archetype": "Artifact Creatures",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "battle-scarred survivalist": {
+    "archetypes": [
+      {
+        "archetype": "Death Triggers",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "blastoneuron": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Value",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "collective drone": {
+    "archetypes": [
+      {
+        "archetype": "Artifact Creatures",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Artifact Creatures",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "commander raffi musiker": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "d'ghor bloodletter": {
+    "archetypes": [
+      {
+        "archetype": "Death Triggers",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "death is irrelevant": {
+    "archetypes": [
+      {
+        "archetype": "Artifact Creatures",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "eject the warp core": {
+    "archetypes": [
+      {
+        "archetype": "Death Triggers",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Artifact Creatures",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Graveyard Value",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "elim garak, simple tailor": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "general chang, cold warrior": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Value",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Death Triggers",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "a good day to die": {
+    "archetypes": [
+      {
+        "archetype": "Death Triggers",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "grand nagus zek": {
+    "archetypes": [
+      {
+        "archetype": "Death Triggers",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "he's dead, jim": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Value",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Death Triggers",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "hive mind coprocessor": {
+    "archetypes": [
+      {
+        "archetype": "Artifact Creatures",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Artifact Creatures",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "impossible choice": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Death Triggers",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "khan, vengeful heart": {
+    "archetypes": [
+      {
+        "archetype": "Artifact Creatures",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "obsidian order operative": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "organic avulsion unit": {
+    "archetypes": [
+      {
+        "archetype": "Artifact Creatures",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Artifact Creatures",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "overflow submatrix": {
+    "archetypes": [
+      {
+        "archetype": "Artifact Creatures",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Artifact Creatures",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "relentless drednok": {
+    "archetypes": [
+      {
+        "archetype": "Artifact Creatures",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Graveyard Value",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "resistance is futile": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Artifact Creatures",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "rogue artificial intelligence": {
+    "archetypes": [
+      {
+        "archetype": "Artifact Creatures",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Landfall Value",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Graveyard Value",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": true
+  },
+  "storied veteran": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Value",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "tell me what you see": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Graveyard Value",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "test of loyalty": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Graveyard Value",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "u.s.s. reliant, from hell's heart": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Value",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "cantankerous captain": {
+    "archetypes": [
+      {
+        "archetype": "Power Matters",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Power Matters",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "captain michael burnham": {
+    "archetypes": [
+      {
+        "archetype": "Landfall Value",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Land Diversity",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "captain's tutelage": {
+    "archetypes": [
+      {
+        "archetype": "Power Matters",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "d-7 battle cruiser": {
+    "archetypes": [
+      {
+        "archetype": "Spacecraft Synergy",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "dahar master": {
+    "archetypes": [
+      {
+        "archetype": "Death Triggers",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "erica ortegas, plucky pilot": {
+    "archetypes": [
+      {
+        "archetype": "Landfall Value",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "exploratory mission": {
+    "archetypes": [
+      {
+        "archetype": "Landfall Value",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Land Diversity",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "R"
+    ],
+    "splashable": true
+  },
+  "horta": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Landfall Value",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": true
+  },
+  "infinite diversity": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "khaaaaaaaaaaaannn!": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "khan, despot by design": {
+    "archetypes": [
+      {
+        "archetype": "Death Triggers",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "la'an noonien-singh, security": {
+    "archetypes": [
+      {
+        "archetype": "Power Matters",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "pah-wraith": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "perils of the past": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Power Matters",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "planetary bombardment": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "planetary patrol": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Landfall Value",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "plasma cascade": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "quark, humble proprietor": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "ravenous cosmozoan": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "reckless impulse": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "will riker, first in the field": {
+    "archetypes": [
+      {
+        "archetype": "Landfall Value",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "the wrath of khan": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "adversary by algorithm": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Value",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "branching timeline": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Land Diversity",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "captain pike, fullness of time": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Landfall Value",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "cold-blooded crew": {
+    "archetypes": [
+      {
+        "archetype": "Counter Growth",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Landfall Value",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "dathon and picard at el-adrel": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "dominion supervisor": {
+    "archetypes": [
+      {
+        "archetype": "Counter Growth",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Counter Growth",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "dr. joseph m'benga": {
+    "archetypes": [
+      {
+        "archetype": "Counter Growth",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "final frontier": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Landfall Value",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "first contact": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Value",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "hologram stalker": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Value",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "i'm a doctor, not a . . .": {
+    "archetypes": [
+      {
+        "archetype": "Counter Growth",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "jadzia dax, living legacy": {
+    "archetypes": [
+      {
+        "archetype": "Counter Growth",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "jake sisko, war correspondent": {
+    "archetypes": [
+      {
+        "archetype": "Landfall Value",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Land Diversity",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "saurian explorer": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Landfall Value",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "support mission": {
+    "archetypes": [
+      {
+        "archetype": "Counter Growth",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "sylvia tilly, joy of discovery": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Value",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Counter Growth",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "syndicate liquidators": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Landfall Value",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Counter Growth",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "temporal conqueror": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Value",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Graveyard Value",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Landfall Value",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "test of courage": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "xenobotanist": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "xindi surveyors": {
+    "archetypes": [
+      {
+        "archetype": "Counter Growth",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Landfall Value",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Land Diversity",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "all good things...": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "borg cube": {
+    "archetypes": [
+      {
+        "archetype": "Artifact Creatures",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "cleveland booker, empath": {
+    "archetypes": [
+      {
+        "archetype": "Landfall Value",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Power Matters",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Land Diversity",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "constable odo": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "dal r'el, augment orphan": {
+    "archetypes": [
+      {
+        "archetype": "Landfall Value",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Land Diversity",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [
+      "R",
+      "G"
+    ],
+    "splashable": true
+  },
+  "daniels, temporal agent": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Value",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "the doctor, emh": {
+    "archetypes": [
+      {
+        "archetype": "Counter Growth",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Counter Growth",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "the duras sisters": {
+    "archetypes": [
+      {
+        "archetype": "Death Triggers",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "d'vana tendi, optimistic ensign": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Value",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "gowron, eager for battle": {
+    "archetypes": [
+      {
+        "archetype": "Death Triggers",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Death Triggers",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "gray and adira, forever joined": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "hemmer, fixing what is broken": {
+    "archetypes": [
+      {
+        "archetype": "Spacecraft Synergy",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "hit it!": {
+    "archetypes": [
+      {
+        "archetype": "Landfall Value",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "kira nerys, firebrand": {
+    "archetypes": [
+      {
+        "archetype": "Power Matters",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "kirk, commanding officer": {
+    "archetypes": [
+      {
+        "archetype": "Power Matters",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "live long and prosper": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "locutus, the one who speaks": {
+    "archetypes": [
+      {
+        "archetype": "Artifact Creatures",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "lore, positronic provocateur": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Graveyard Value",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "l'rell, fierce visionary": {
+    "archetypes": [
+      {
+        "archetype": "Death Triggers",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Graveyard Value",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "mirror universe intrusion": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "phlox, unorthodox doctor": {
+    "archetypes": [
+      {
+        "archetype": "Counter Growth",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "spock, always your friend": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "deanna troi, psychic counsel": {
+    "archetypes": [
+      {
+        "archetype": "Counter Growth",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "federation resupply": {
+    "archetypes": [
+      {
+        "archetype": "Spacecraft Synergy",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "hologram janeway": {
+    "archetypes": [
+      {
+        "archetype": "Artifact Creatures",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Power Matters",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Counter Growth",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "oberth-class starship": {
+    "archetypes": [
+      {
+        "archetype": "Spacecraft Synergy",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "sulu, space swashbuckler": {
+    "archetypes": [
+      {
+        "archetype": "Spacecraft Synergy",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "u.s.s. excelsior, cutting edge": {
+    "archetypes": [
+      {
+        "archetype": "Spacecraft Synergy",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "cloak and phaser": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "enterprise nx-01": {
+    "archetypes": [
+      {
+        "archetype": "Spacecraft Synergy",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "starfleet spanner jockey": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "suus mahna practitioner": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "the destruction of praxis": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "de-evolve": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Value",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "gabriel lorca, mirror menace": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "pattern buffer preservation": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Value",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "sela, tal shiar paradox": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Value",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "vengeance mission": {
+    "archetypes": [
+      {
+        "archetype": "Death Triggers",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "academy instructor": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Power Matters",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "boarding action": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "genesis effect": {
+    "archetypes": [
+      {
+        "archetype": "Landfall Value",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": true
+  },
+  "sarcophagus, ship of the dead": {
+    "archetypes": [
+      {
+        "archetype": "Spacecraft Synergy",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Power Matters",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Death Triggers",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "tal shiar analyst": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "targ wrangler": {
+    "archetypes": [
+      {
+        "archetype": "Death Triggers",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "tasha yar, out of time": {
+    "archetypes": [
+      {
+        "archetype": "Death Triggers",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "astute terraformer": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "culber and stamets, star-crossed": {
+    "archetypes": [
+      {
+        "archetype": "Counter Growth",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": true
+  },
+  "david and carol marcus, creators": {
+    "archetypes": [
+      {
+        "archetype": "Landfall Value",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "dr. leonard \"bones\" mccoy": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Value",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Counter Growth",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "genesis device": {
+    "archetypes": [
+      {
+        "archetype": "Landfall Value",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "photosynthetic physician": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Value",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "warp speed": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Landfall Value",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": true
+  },
+  "nog, ambitious cadet": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Value",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Graveyard Value",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "the traveler": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "vash, freelance archaeologist": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Value",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Graveyard Value",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "worf, honor-bound warrior": {
+    "archetypes": [
+      {
+        "archetype": "Counter Growth",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Power Matters",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Power Matters",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Artifact Creatures",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "year of hell": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "zero, incorporeal sensate": {
+    "archetypes": [
+      {
+        "archetype": "Artifact Creatures",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "class-f shuttlecraft": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Spacecraft Synergy",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "cybernetic specialist": {
+    "archetypes": [
+      {
+        "archetype": "Artifact Creatures",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Graveyard Value",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "deep space 9": {
+    "archetypes": [
+      {
+        "archetype": "Spacecraft Synergy",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "engineered explosives": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "tea, earl grey, hot": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "tricorder": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard Value",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "warp core": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Landfall Value",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Spacecraft Synergy",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "andoria": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "U",
+      "R"
+    ],
+    "splashable": true
+  },
+  "bajor": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "R"
+    ],
+    "splashable": true
+  },
+  "cardassia prime": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "B"
+    ],
+    "splashable": true
+  },
+  "earth, sector 001": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "U",
+      "G"
+    ],
+    "splashable": false
+  },
+  "federation outpost": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Graveyard Value",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W"
+    ],
+    "splashable": true
+  },
+  "ferenginar": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "B",
+      "G"
+    ],
+    "splashable": true
+  },
+  "orion": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "R",
+      "G"
+    ],
+    "splashable": true
+  },
+  "qo'nos": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "B",
+      "R"
+    ],
+    "splashable": true
+  },
+  "quark's bar": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Graveyard Value",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "R"
+    ],
+    "splashable": true
+  },
+  "risa": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "G"
+    ],
+    "splashable": true
+  },
+  "romulus": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "U",
+      "B"
+    ],
+    "splashable": true
+  },
+  "spatial anomaly": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": true
+  },
+  "starfleet academy": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "subspace anomaly": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": true
+  },
+  "unexplored territory": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "the unicomplex": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Graveyard Value",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "B"
+    ],
+    "splashable": true
+  },
+  "vulcan": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U"
+    ],
+    "splashable": true
+  },
+  "plains": {
+    "archetypes": [],
+    "fixing": [
+      "W"
+    ],
+    "splashable": false
+  },
+  "island": {
+    "archetypes": [],
+    "fixing": [
+      "U"
+    ],
+    "splashable": false
+  },
+  "swamp": {
+    "archetypes": [],
+    "fixing": [
+      "B"
+    ],
+    "splashable": false
+  },
+  "mountain": {
+    "archetypes": [],
+    "fixing": [
+      "R"
+    ],
+    "splashable": false
+  },
+  "forest": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "rok-tahk, budding scientist": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "species 8472": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "artificial anomaly": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": true
+  },
+  "ni'var science academy": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Graveyard Value",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "U"
+    ],
+    "splashable": true
+  },
+  "vulcan mind-meld": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "wesley crusher, starfleet cadet": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "brazen bluff": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "dominion infiltration": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "encounter the unknown": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "red alert!": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "transporter malfunction": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "stable wormhole": {
+    "archetypes": [
+      {
+        "archetype": "Landfall Value",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "u.s.s. voyager, lone wanderer": {
+    "archetypes": [
+      {
+        "archetype": "Spacecraft Synergy",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "u.s.s. cerritos, following up": {
+    "archetypes": [
+      {
+        "archetype": "Spacecraft Synergy",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "gaseous anomaly": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "temporal anomaly": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "emergency holographic crew": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Graveyard Value",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Spacecraft Synergy",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "melkotian adjudicator": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "collation trimatrix": {
+    "archetypes": [
+      {
+        "archetype": "Artifact Creatures",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Artifact Creatures",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "stray from history": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "tal shiar operative": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Graveyard Value",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "tenacious drone": {
+    "archetypes": [
+      {
+        "archetype": "Artifact Creatures",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Death Triggers",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "the naked time": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Landfall Value",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "R"
+    ],
+    "splashable": true
+  },
+  "savvy profiteer": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "starfleet security": {
+    "archetypes": [
+      {
+        "archetype": "Death Triggers",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "arcum dagsson": {
+    "archetypes": [
+      {
+        "archetype": "Spacecraft Synergy",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "drivnod, carnage dominus": {
+    "archetypes": [
+      {
+        "archetype": "Death Triggers",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "loot, exuberant explorer": {
+    "archetypes": [
+      {
+        "archetype": "Landfall Value",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "rishkar, peema renegade": {
+    "archetypes": [
+      {
+        "archetype": "Counter Growth",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Counter Growth",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "bristly bill, spine sower": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Landfall Value",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "tatyova, benthic druid": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Landfall Value",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "hull breach": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "jhoira, weatherlight captain": {
+    "archetypes": [
+      {
+        "archetype": "Spacecraft Synergy",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "riku of many paths": {
+    "archetypes": [
+      {
+        "archetype": "Face a Dilemma",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "stella lee, wild card": {
+    "archetypes": [
+      {
+        "archetype": "Noncreature Payoffs",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "minamo, school at water's edge": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "U"
+    ],
+    "splashable": false
+  },
+  "talon gates of madara": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "phyrexian tower": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Death Triggers",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "B"
+    ],
+    "splashable": true
+  },
+  "shizo, death's storehouse": {
+    "archetypes": [
+      {
+        "archetype": "Land Diversity",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "B"
+    ],
+    "splashable": true
+  }
+}
