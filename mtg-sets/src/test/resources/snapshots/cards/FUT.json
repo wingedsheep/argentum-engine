@@ -537,6 +537,70 @@
     ]
 }
 
+// Narcomoeba
+{
+    "name": "Narcomoeba",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Illusion",
+    "oracleText": "Flying\nWhen this card is put into your graveyard from your library, you may put it onto the battlefield.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Narcomoeba:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Library",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Put Narcomoeba onto the battlefield?",
+                        "sourceRequiredZone": "Graveyard"
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Battlefield",
+                        "fromZone": "Graveyard"
+                    }
+                },
+                "activeZones": [
+                    "Graveyard"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Stewart",
+        "flavorText": "It was created by the Iquati as a living memory—one that objects to being forgotten.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f76b3746-2e2c-4560-a2d2-e7b5b92833b2.jpg?1783943117",
+        "rulings": [
+            {
+                "date": "2024-01-12",
+                "text": "If Narcomoeba is revealed or looked at while moving from your library to your graveyard (such as with Mind Funeral), its ability will trigger when it's put into your graveyard. It was still in your library while it was revealed or being looked at."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "If Narcomoeba is removed from your graveyard before its ability resolves, you can't put it onto the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Nessian Courser
 {
     "name": "Nessian Courser",
