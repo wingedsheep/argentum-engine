@@ -1134,7 +1134,7 @@ internal class CombatDamageManager(
 
         return when {
             isPlayer -> applyDamageToPlayer(
-                state, assignment.sourceId, assignment.targetId, amplifiedAmount, assignment.amount,
+                state, assignment.sourceId, assignment.targetId, amplifiedAmount,
                 events, healProcessedTargets, preventionLifeGains
             )
             isPlaneswalker -> applyDamageByRemovingCounters(
@@ -1287,7 +1287,6 @@ internal class CombatDamageManager(
         sourceId: EntityId,
         targetId: EntityId,
         amplifiedAmount: Int,
-        originalAmount: Int,
         events: MutableList<GameEvent>,
         healProcessedTargets: MutableSet<EntityId>,
         preventionLifeGains: MutableMap<EntityId, Int>
@@ -1426,8 +1425,9 @@ internal class CombatDamageManager(
         newState = DamageUtils.givePoisonCounters(newState, targetId, poisonAmount,
             newState.projectedState.getController(sourceId), events, predicateEvaluator)
 
-        // Reflection (Harsh Justice)
-        newState = applyDamageReflection(newState, sourceId, targetId, originalAmount, events)
+        // Reflection (Harsh Justice) — "that much damage" is what was actually dealt to the
+        // player, after amplification and prevention.
+        newState = applyDamageReflection(newState, sourceId, targetId, effectiveAmount, events)
 
         return newState
     }
@@ -1878,7 +1878,7 @@ internal class CombatDamageManager(
         state: GameState,
         sourceId: EntityId,
         targetPlayerId: EntityId,
-        originalAmount: Int,
+        dealtAmount: Int,
         events: MutableList<GameEvent>
     ): GameState {
         if (!hasReflectCombatDamage(state, targetPlayerId)) return state
@@ -1886,6 +1886,15 @@ internal class CombatDamageManager(
         val projected = state.projectedState
         val attackerController = projected.getController(sourceId) ?: return state
         if (attackerController == targetPlayerId) return state
+
+        // The reflected damage is a damage event of its own, so static amplification applies to it
+        // too: Jaya, Venerated Firemage adds 1 when her controller's red attacker is reflected back
+        // at them, and a Furnace of Rath doubles it again.
+        val reflectedAmount = DamageUtils.applyStaticDamageAmplification(
+            zones.cardRegistry, state, attackerController, dealtAmount, sourceId, isCombatDamage = true,
+            predicateEvaluator = predicateEvaluator
+        )
+        if (reflectedAmount <= 0) return state
 
         if (state.getEntity(attackerController)?.get<LifeTotalComponent>() == null) return state
         // CR 810.9 — applies to the attacking player's team's shared total.
@@ -1896,29 +1905,29 @@ internal class CombatDamageManager(
         val hasInfect = DamageUtils.sourceHasInfect(state, projected, sourceId)
         // CR 119.8 — a player who can't lose life takes the reflected damage without losing life.
         val (written, newLife) = if (hasInfect || state.isLifeLossLocked(attackerController)) state to attackerControllerLife
-            else DamageUtils.writeLifeReduction(state, attackerController, attackerControllerLife, attackerControllerLife - originalAmount, predicateEvaluator)
+            else DamageUtils.writeLifeReduction(state, attackerController, attackerControllerLife, attackerControllerLife - reflectedAmount, predicateEvaluator)
         var newState = written
         newState = DamageUtils.trackDamageReceivedByPlayer(
-            newState, attackerController, originalAmount, sourceId, causedLifeLoss = !hasInfect && newLife < attackerControllerLife
+            newState, attackerController, reflectedAmount, sourceId, causedLifeLoss = !hasInfect && newLife < attackerControllerLife
         )
         // Reflection is an additional damage event from the attacking creature, so it adds
         // its full amount to the same source's damage history.
-        newState = DamageUtils.trackDamageDealt(newState, sourceId, originalAmount, isCombatDamage = true)
+        newState = DamageUtils.trackDamageDealt(newState, sourceId, reflectedAmount, isCombatDamage = true)
         val sourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Creature"
-        events.add(DamageDealtEvent(sourceId, attackerController, originalAmount, true,
+        events.add(DamageDealtEvent(sourceId, attackerController, reflectedAmount, true,
             sourceName = sourceName, targetName = "Player", targetIsPlayer = true,
             sourceAttachmentIds = attachmentIdsOf(state, sourceId),
             sourceLastKnown = captureLastKnown(state, sourceId)))
         if (hasInfect) {
             newState = DamageUtils.givePoisonCounters(
-                newState, attackerController, originalAmount, attackerController, events, predicateEvaluator
+                newState, attackerController, reflectedAmount, attackerController, events, predicateEvaluator
             )
         } else {
             events.add(LifeChangedEvent(attackerController, attackerControllerLife, newLife, LifeChangeReason.DAMAGE, firstLoss))
         }
 
         // Commander damage (CR 903.10a) — reflection still counts as combat damage from the commander
-        newState = accumulateCommanderDamage(newState, sourceId, attackerController, originalAmount)
+        newState = accumulateCommanderDamage(newState, sourceId, attackerController, reflectedAmount)
 
         return newState
     }
