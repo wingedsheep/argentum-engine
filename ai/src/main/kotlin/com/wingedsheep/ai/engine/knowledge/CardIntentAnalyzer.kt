@@ -145,10 +145,10 @@ object CardIntentAnalyzer {
      * (its effect can be rewritten by text-changing effects and X), so there is no sound key. The
      * fold is one pass over an effect tree and the only caller walks a stack of at most a few.
      */
-    fun analyzeEffect(effect: Effect): CardIntent {
+    fun analyzeEffect(effect: Effect, requirements: List<TargetRequirement> = emptyList()): CardIntent {
         val tags = pipelineTags(effect).toMutableSet()
         var removalReach: Int? = null
-        for (leaf in readingLeaves(effect)) {
+        for (leaf in readingLeaves(effect, requirements)) {
             tags += tagsOf(leaf)
             reachOf(leaf)?.let { removalReach = maxOf(removalReach ?: 0, it) }
         }
@@ -192,7 +192,10 @@ object CardIntentAnalyzer {
             EffectWalker.slots(script).map { it.effect } +
                 script.stateTriggeredAbilities.map { it.effect }
         }
-        val leaves = roots.flatMap { readingLeaves(it) }
+        val leaves = scripts.flatMap { script ->
+            EffectWalker.slots(script).flatMap { readingLeaves(it.effect, it.targets) } +
+                script.stateTriggeredAbilities.flatMap { readingLeaves(it.effect) }
+        }
 
         val tags = mutableSetOf<IntentTag>()
         var removalReach: Int? = null
@@ -366,15 +369,36 @@ object CardIntentAnalyzer {
      * of combat" is removal, only later. Its price — "sacrifice it at the beginning of the next end
      * step" — is left out, as a gate's cost is.
      */
-    private fun readingLeaves(effect: Effect): List<Effect> {
+    private fun readingLeaves(effect: Effect, requirements: List<TargetRequirement> = emptyList()): List<Effect> {
         val payoff = EffectWalker.payoffLeaves(effect)
         return payoff.flatMap { leaf ->
             when (leaf) {
-                is ReflexiveTriggerEffect -> readingLeaves(leaf.reflexiveEffect)
-                is CreateDelayedTriggerEffect -> EffectWalker.firedLeaves(leaf, payoff).flatMap(::readingLeaves)
+                is ReflexiveTriggerEffect -> readingLeaves(leaf.reflexiveEffect, leaf.reflexiveTargetRequirements)
+                is CreateDelayedTriggerEffect -> EffectWalker.firedLeaves(leaf, payoff).flatMap { readingLeaves(it) }
+                is MoveToZoneEffect -> listOf(withSourceZone(leaf, requirements))
                 else -> listOf(leaf)
             }
         }
+    }
+
+    /**
+     * [move] with the zone its target comes from filled in from that target's requirement, when the
+     * move leaves it unsaid: `Effects.Move(target, Zone.BATTLEFIELD)` over "target creature card in
+     * your graveyard" (Reaping Willow, a reflexive "when you do, return target creature card")
+     * names no `fromZone`, and only the requirement puts the card in a graveyard. Read so, it is the
+     * recursion it is; unread, it was no move [tagsOf] could call.
+     */
+    private fun withSourceZone(move: MoveToZoneEffect, requirements: List<TargetRequirement>): MoveToZoneEffect {
+        // Only a move out to a hand or the battlefield: exiling a graveyard card is graveyard hate,
+        // which [tagsOf] must not read as getting the card back.
+        if (move.fromZone != null || (move.destination != Zone.HAND && move.destination != Zone.BATTLEFIELD)) return move
+        val slot = when (val target = move.target) {
+            is EffectTarget.BoundVariable -> requirements.firstOrNull { it.id == target.name }
+            is EffectTarget.ContextTarget -> requirements.getOrNull(target.index)
+            else -> null
+        } ?: return move
+        val zone = (slot as? TargetObject)?.filter?.zone ?: return move
+        return if (zone == Zone.GRAVEYARD) move.copy(fromZone = zone) else move
     }
 
     /**

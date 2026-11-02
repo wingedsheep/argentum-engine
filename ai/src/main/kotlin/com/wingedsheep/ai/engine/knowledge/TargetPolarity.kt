@@ -84,6 +84,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.targets.TargetOther
+import com.wingedsheep.sdk.scripting.targets.TargetPlayer
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import java.util.concurrent.ConcurrentHashMap
@@ -297,6 +298,20 @@ object TargetPolarityAnalyzer {
                 }
                 continue
             }
+            // "Creatures target player controls get +3/+3" / "… deals 2 damage to each creature
+            // target player controls" (the Lorwyn Eclipsed Commands): the group is that player's
+            // creatures, so whatever the body does to each of them it does to the player's side.
+            // The pump wants us, the sweep wants them. The body's other references keep their slots.
+            val groupOwner = (space as? IterationSpace.Group)?.let { groupOwnerSlot(it, requirements) }
+            if (groupOwner != null) {
+                for (inner in EffectWalker.payoffLeaves(leaf.body)) {
+                    for ((target, polarity) in classify(inner, definitions, source)) {
+                        val slot = if (target == EffectTarget.IterationEntity) groupOwner else slotOf(target, requirements)
+                        slot?.let { perSlot[it] += polarity }
+                    }
+                }
+                continue
+            }
             val recursion = recursionSlot(leaf, requirements)
             val copy = ownCopySlot(leaf, requirements)
             if (recursion != null) {
@@ -415,6 +430,23 @@ object TargetPolarityAnalyzer {
     private fun namesSlot(text: String, requirement: TargetRequirement, index: Int): Boolean =
         (requirement.id != null && "BoundVariable(name=${requirement.id})" in text) ||
             "ContextTarget(index=$index)" in text
+
+    /**
+     * The target-player slot whose permanents [space] iterates — "each creature target player
+     * controls" — or null. An explicit reference names its slot; the implicit "target player"
+     * predicate is the spell's player target, read only when there is exactly one.
+     */
+    private fun groupOwnerSlot(space: IterationSpace.Group, requirements: List<TargetRequirement>): Int? {
+        val filter = space.filter.baseFilter
+        if (filter.anyOf.isNotEmpty()) return null
+        return when (val controller = filter.controllerPredicate) {
+            is ControllerPredicate.ControlledByReferencedPlayer -> slotOf(controller.target, requirements)
+                ?.takeIf { requirements[it] is TargetPlayer }
+            ControllerPredicate.ControlledByTargetPlayer ->
+                requirements.indices.filter { requirements[it] is TargetPlayer }.singleOrNull()
+            else -> null
+        }
+    }
 
     /** The slot [target] names when its requirement's filter keeps it on our side of the table. */
     private fun ownSideSlot(target: EffectTarget, requirements: List<TargetRequirement>): Int? {
