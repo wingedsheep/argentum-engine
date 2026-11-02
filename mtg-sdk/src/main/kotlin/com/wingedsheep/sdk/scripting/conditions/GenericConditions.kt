@@ -58,7 +58,7 @@ data class CollectionContainsMatch(
 }
 
 /**
- * Condition: "if two cards in the named collection share a card type".
+ * Condition: "if two cards in the named collection share a card type" (or, with [all], every card).
  *
  * True when at least two distinct cards in the stored pipeline [collection] have a card type
  * (artifact, battle, creature, enchantment, instant, kindred, land, planeswalker, sorcery — CR
