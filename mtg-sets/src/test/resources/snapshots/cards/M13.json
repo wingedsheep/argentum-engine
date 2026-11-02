@@ -1077,6 +1077,71 @@
     ]
 }
 
+// Switcheroo
+{
+    "name": "Switcheroo",
+    "manaCost": "{4}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exchange control of two target creatures.",
+    "script": {
+        "spellEffect": {
+            "type": "ExchangeControl",
+            "target1": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "target2": {
+                "type": "BoundVariable",
+                "name": "t1"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "UNCOMMON",
+        "artist": "Kev Walker",
+        "flavorText": "Say hello to your new friend.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/d/7d62aaf3-0fd4-44ba-8eeb-18ac759dfe84.jpg?1783940501",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "If one of the target creatures is an illegal target when Switcheroo resolves, the exchange won't happen."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "You don't have to control either target."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If the same player controls both creatures when Switcheroo resolves, nothing happens."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Gaining control of a creature doesn't cause you to gain control of any Auras or Equipment attached to it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Talrand's Invocation
 {
     "name": "Talrand's Invocation",
