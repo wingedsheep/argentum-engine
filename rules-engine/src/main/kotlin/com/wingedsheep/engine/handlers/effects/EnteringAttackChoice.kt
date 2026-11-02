@@ -23,7 +23,7 @@ import com.wingedsheep.sdk.model.EntityId
  *
  * The entry seams (permanent-spell resolution, [ZoneTransitionService], token minting) tap the
  * entrant themselves and call [enter] once it is on the battlefield:
- * - a noncreature or battle entrant (CR 506.3a / 506.3e), or one whose controller isn't an attacking
+ * - a noncreature or battle entrant (CR 506.3a / 506.3f), or one whose controller isn't an attacking
  *   player (CR 506.3b — outside combat, or another player's turn), never attacks;
  * - with exactly one legal choice the creature attacks it straight away;
  * - with several, its controller chooses — and an entry seam has nowhere to pause, so the question

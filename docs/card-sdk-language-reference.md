@@ -19392,7 +19392,7 @@ The priority groups are (CR 616.1a–f):
   replacement has no source attack to join). The resolving-spell, effect-move and token seams ask
   `EnterTappedReplacements.entersAttacking` and hand the entrant to `EnteringAttackChoice`: it is tapped
   regardless of any "enters untapped" replacement (like every tapped-and-attacking entry), and attacks only if it
-  is a creature and not a battle (CR 506.3a / 506.3e) whose controller is an attacking player in combat (CR
+  is a creature and not a battle (CR 506.3a / 506.3f) whose controller is an attacking player in combat (CR
   506.3b). With one legal defender it attacks it at once; with several, its controller chooses (CR 508.4) — the
   question is queued as a replacement rider drained when the putting effect ends (or at the settle boundary),
   before SBAs and trigger detection, so "enters attacking" triggers see it. It is attacking but never

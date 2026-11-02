@@ -23,8 +23,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  *
  * Rules pinned: CR 508.4 (the entering creature's controller chooses which defending player,
  * planeswalker or battle it attacks — asked only when there is a choice; such a creature is attacking
- * but never "attacked"), CR 506.3a (a noncreature permanent never attacks), CR 506.3b (a creature
- * entering under a non-attacking player's control never attacks), and that every entry seam —
+ * but never "attacked"), and that every entry seam —
  * a resolving permanent spell, created tokens, and a card an effect puts onto the battlefield —
  * consults the same replacement.
  */
