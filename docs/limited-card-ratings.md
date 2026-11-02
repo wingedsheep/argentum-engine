@@ -210,10 +210,6 @@ The Draftsim deckbuild builds several candidate decks per pool and offers the be
   cast and kept and Treasure fixes once; a free one (mana value 0, like Lotus Petal) counts a whole
   land. In the castability sources it counts only for spells cast after it: a two-mana Prism fixes
   a three-drop, not a two-drop.
-- **Fixers in wide decks.** A deck of three or more colours (a splash included) tries each of the
-  pool's fixers in place of its weakest card and keeps the swap when castable power rises. A
-  fixer's rating prices it for two colours, so this is what puts a Prism in the deck that needs it —
-  and what stops the fourth one, which fixes what is already fixed and costs a real card's slot.
 - **Splashes** need two lands' worth of fixing for the colour in the pool, and the splashed build must gain a tenth of
   a point of castable power over the same pair unsplashed. Smaller modelled gains lost in play.
 - **Colour-count payoffs** — Vivid, domain, converge (`ManaFixing.rewardsColors`) — gain 0.35

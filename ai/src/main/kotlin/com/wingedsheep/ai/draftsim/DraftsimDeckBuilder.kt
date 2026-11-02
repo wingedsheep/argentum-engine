@@ -438,7 +438,6 @@ class DraftsimDeckBuilder(
         val splashColor = if (forced.isEmpty()) shortfallSplash(st, scored, archColors, bombSplash, fixed) else bombSplash
 
         val deckColors = if (splashColor != null) archColors + splashColor else archColors
-        if (forced.isEmpty()) fixerPass(st, scored, poolLands, deckColors, splashColor, fixed)
         val chosenCards = st.deck.map { it.pc }
         val mana = buildManabase(chosenCards, poolLands, deckColors, splashColor)
         val includedIds = (chosenCards.map { it.instanceId } + mana.usefulPoolLands.map { it.instanceId }).toSet()
@@ -537,44 +536,6 @@ class DraftsimDeckBuilder(
             }
         }
         return splashColor
-    }
-
-    /**
-     * A deck in three or more colours — a splash included — weighs each of the pool's fixers
-     * ([isFixerFor]) against its weakest card (noncreatures first, never removal): the swap stays when
-     * the finished deck's [DraftsimBuild.castablePower] rises. Ratings price a Prophetic Prism for a
-     * two-colour deck, where it does little; here it's priced by what it does — the later spells it
-     * makes castable — against the card whose slot it takes, so the first rock in a thin colour earns
-     * its place and the fourth, fixing what's already fixed, doesn't.
-     */
-    private fun fixerPass(
-        st: BuildState, scored: List<Scored>, poolLands: List<DraftsimPoolCard>, colors: List<String>, splashColor: String?, fixed: Set<String>,
-    ) {
-        if (colors.size < 3) return
-        fun power(): Double {
-            val cards = st.deck.map { it.pc }
-            val mana = buildManabase(cards, poolLands, colors, splashColor)
-            return deckScorer.scoreDeck(cards.map { it.card } + mana.usefulPoolLands.map { it.card } + basics(mana.basicsNeeded).map { it.card }).castablePower
-        }
-        val fixers = scored.filter {
-            it.pc.instanceId !in st.chosen && castable(it.pc.card, colors, fixed) && isFixerFor(it.pc.card, colors, splashColor)
-        }
-        var best = power()
-        for (fixer in fixers) {
-            val victims = st.deck.filter { !isRemoval(it.pc.card) && it.pc.instanceId !in st.forced && !isFixerFor(it.pc.card, colors, splashColor) }
-            val victim = victims.filter { !ops.isCreature(it.pc.card) }.minByOrNull { it.total }
-                ?: victims.minByOrNull { it.total } ?: break
-            st.remove(victim); st.add(fixer)
-            val trial = power()
-            if (trial > best) best = trial else { st.remove(fixer); st.add(victim) }
-        }
-    }
-
-    /** A nonland card that fixes a deck in [colors]: two or more of them, or the [splashColor] among its colours. */
-    private fun isFixerFor(card: ScorerCard, colors: List<String>, splashColor: String?): Boolean {
-        if (ops.isLand(card)) return false
-        val fix = ops.fixingOf(card)
-        return fix.size >= 2 && (ops.fixerWeight(card, colors) > 0.0 || (splashColor != null && splashColor in fix))
     }
 
     // =========================================================================
@@ -736,11 +697,6 @@ class DraftsimDeckBuilder(
         val poolLands = pool.filter { ops.isLand(it.card) && !ops.isBasic(it.card) }
         val fixed = activationFixing(poolLands)
         val mainColors = build.colors.filter { it != build.splashColor }
-        // A wide deck keeps the fixers [fixerPass] put in it: their ratings are what they're worth in
-        // two colours, so the rating-led swaps below would cut them first.
-        val keep = if (build.colors.size >= 3) {
-            forced + deckNonland.filter { isFixerFor(it.card, build.colors, build.splashColor) }.map { it.instanceId }
-        } else forced
 
         repeat(iterations) {
             // A splash keeps the cards it was taken for: refining adds only main-colour cards, or the
@@ -749,7 +705,7 @@ class DraftsimDeckBuilder(
                 it.instanceId !in chosen && !ops.isLand(it.card) && castable(it.card, mainColors, fixed)
             }
             if (candidates.isEmpty()) return@repeat
-            val worstFirst = deckNonland.filter { it.instanceId !in keep }.sortedBy { ops.ratingOrDefault(it.card) }
+            val worstFirst = deckNonland.filter { it.instanceId !in forced }.sortedBy { ops.ratingOrDefault(it.card) }
             val bestFirst = candidates.sortedByDescending { ops.ratingOrDefault(it.card) }
             var improved = false
             outer@ for (out in worstFirst) {
@@ -837,7 +793,6 @@ class DraftsimDeckBuilder(
         for (item in scored) { if (st.deck.size >= nonlandTarget) break; if (item.pc.instanceId !in st.chosen && castable(item.pc.card, colors, fixed) && (st.copies[item.pc.card.name] ?: 0) < copyCap(item.pc.card)) st.add(item) }
 
         creatureFloor(st, scored, colors, fixed)
-        fixerPass(st, scored, poolLands, colors, null, fixed)
 
         val chosenCards = st.deck.map { it.pc }
         val mana = buildManabase(chosenCards, poolLands, colors)

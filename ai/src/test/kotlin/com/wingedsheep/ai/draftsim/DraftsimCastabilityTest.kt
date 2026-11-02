@@ -82,4 +82,18 @@ class DraftsimCastabilityTest : FunSpec({
         weight(CCard("Drake", "{3}{U}", "Creature"), deck) shouldBeGreaterThan
             weight(CCard("Drake", "{3}{U}", "Creature"), basics("G" to 9, "R" to 8) + petal)
     }
+
+    // The splash and four/five-colour bars count fixing in lands' worth: a rock or dork half a land,
+    // a free fixer (mana value 0) a whole one, a land that makes the colour one.
+    test("fixing toward a colour counts a rock half a land and a free fixer a whole one") {
+        val ops = DraftsimCardOps(DraftsimSetTables(emptyMap(), emptySet(), emptyMap()))
+        val all = listOf("W", "U", "B", "R", "G")
+        val dual = CCard("UR dual", "", "Land", fixing = listOf("U", "R"))
+        val prism = CCard("Prism", "{2}", "Artifact", fixing = all)
+        val petal = CCard("Petal", "{0}", "Artifact", fixing = all)
+        val elf = CCard("Elf", "{G}", "Creature", fixing = listOf("G"))
+        ops.fixingFor("U", listOf(dual, prism, prism)) shouldBe 2.0
+        ops.fixingFor("U", listOf(dual, petal)) shouldBe 2.0
+        ops.fixingFor("U", listOf(elf, basic("U"))) shouldBe 0.0
+    }
 })

@@ -284,38 +284,6 @@ class DraftsimDeckBuilderTest : FunSpec({
         best.deckInstanceIds.mapNotNull { byId[it]?.card?.name } shouldContainAll listOf("Sphinx of Storms", "Tidal Wraith")
     }
 
-    // Fixing isn't only lands. Beside a single blue dual, two blue bombs stay out of the R/G deck; a
-    // Prophetic Prism — or a free Lotus Petal — is the fixing that brings them in.
-    test("a mana rock is the fixing that brings an off-colour pair of bombs into the deck") {
-        fun pool(rocks: List<ScorerCard>): Pair<List<DraftsimPoolCard>, Map<String, DraftsimPoolCard>> {
-            val cards = mutableListOf<DraftsimPoolCard>()
-            var n = 0
-            val costs = listOf("{R}", "{1}{R}", "{2}{R}", "{3}{R}", "{1}{G}", "{2}{G}", "{3}{G}", "{4}{G}")
-            for (i in 1..14) cards += DraftsimPoolCard(BCard("RedCreature$i", costs[i % 4], "Creature — Goblin", listOf("R")), "id-${n++}")
-            for (i in 1..14) cards += DraftsimPoolCard(BCard("GreenCreature$i", costs[4 + i % 4], "Creature — Beast", listOf("G")), "id-${n++}")
-            cards += DraftsimPoolCard(BCard("Sphinx of Storms", "{4}{U}", "Creature — Sphinx", listOf("U")), "id-${n++}")
-            cards += DraftsimPoolCard(BCard("Tidal Wraith", "{3}{U}", "Creature — Spirit", listOf("U")), "id-${n++}")
-            cards += DraftsimPoolCard(BCard("UR dual", "", "Land", colorIdentity = listOf("U", "R")), "id-${n++}")
-            rocks.forEach { cards += DraftsimPoolCard(it, "id-${n++}") }
-            return cards to cards.associateBy { it.instanceId }
-        }
-        val ratings = (1..14).flatMap { listOf("redcreature$it" to 2.6, "greencreature$it" to 2.6) }.toMap() +
-            mapOf("sphinx of storms" to 5.0, "tidal wraith" to 5.0, "prophetic prism" to 2.3, "lotus petal" to 1.5)
-        val builder = DraftsimDeckBuilder(DraftsimSetTables(ratings, HashSet(), emptyMap()))
-        val all = listOf("W", "U", "B", "R", "G")
-        val prism = BCard("Prophetic Prism", "{2}", "Artifact", fixing = all)
-        val petal = BCard("Lotus Petal", "{0}", "Artifact", fixing = all)
-        fun playsBlue(rocks: List<ScorerCard>): Boolean {
-            val (cards, byId) = pool(rocks)
-            val best = builder.buildDecks(cards, mode = "sealed").first()
-            return "U" in best.colors && best.deckInstanceIds.mapNotNull { byId[it]?.card?.name }.containsAll(listOf("Sphinx of Storms", "Tidal Wraith"))
-        }
-
-        playsBlue(emptyList()) shouldBe false
-        playsBlue(listOf(prism)) shouldBe true
-        playsBlue(listOf(petal)) shouldBe true
-    }
-
     test("a lone bomb with no lands of its colour in the pool stays out") {
         val ratings = HashMap<String, Double>()
         val cards = mutableListOf<DraftsimPoolCard>()
