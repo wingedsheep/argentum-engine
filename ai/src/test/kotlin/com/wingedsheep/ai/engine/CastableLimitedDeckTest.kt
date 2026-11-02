@@ -148,9 +148,11 @@ class CastableLimitedDeckTest : FunSpec({
     }
 
     test("a mana rock that makes none of the deck's colours doesn't fit it") {
-        // Mardu Banner taps for R, W or B: filler in a U/G deck, fixing in an R/W one.
+        // Mardu Banner taps for R, W or B: filler in a U/G deck, fixing in a Mardu one. (An R/W deck
+        // can't pay its {R}{W}{B} sacrifice-and-draw, so it's out there too — see ActivationMana.)
         fitsDeckColors(real("Mardu Banner"), setOf(Color.BLUE, Color.GREEN)) shouldBe false
-        fitsDeckColors(real("Mardu Banner"), setOf(Color.RED, Color.WHITE)) shouldBe true
+        fitsDeckColors(real("Mardu Banner"), setOf(Color.RED, Color.WHITE, Color.BLACK)) shouldBe true
+        fitsDeckColors(real("Mardu Banner"), setOf(Color.RED, Color.WHITE)) shouldBe false
         // A plain colourless artifact still fits anywhere.
         fitsDeckColors(creature("Golem", "{3}"), setOf(Color.BLUE, Color.GREEN)) shouldBe true
     }

@@ -1,5 +1,6 @@
 package com.wingedsheep.ai.draftsim
 
+import com.wingedsheep.ai.engine.ActivationMana
 import com.wingedsheep.ai.llm.CardSummary
 import com.wingedsheep.sdk.model.CardDefinition
 
@@ -35,6 +36,13 @@ interface ScorerCard {
 
     /** Declared color identity (WUBRG letters); fallback color source for lands/fixing. */
     val colorIdentity: List<String>
+
+    /**
+     * The mana parts of the card's activated abilities, as brace cost strings (`"{3}{W}{U}{B}{R}{G}"`).
+     * The deck builder holds a card to the colours these need too ([DraftsimMana.activationPayable]).
+     * Empty when the adapter doesn't know them (the draft path's [CardSummary]).
+     */
+    val activationCosts: List<String> get() = emptyList()
 }
 
 /** Adapt a resolved [CardDefinition] (deckbuild path — full metadata available). */
@@ -54,6 +62,7 @@ private class CardDefinitionScorerCard(private val def: CardDefinition) : Scorer
     override val rarity: String = def.metadata.rarity.name.lowercase()
     override val colors: List<String> = def.colors.map { it.symbol.toString() }
     override val colorIdentity: List<String> = def.colorIdentity.map { it.symbol.toString() }
+    override val activationCosts: List<String> = ActivationMana.costs(def).map { it.toString() }
 }
 
 private class CardSummaryScorerCard(private val summary: CardSummary) : ScorerCard {

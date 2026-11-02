@@ -15,6 +15,7 @@ private data class BCard(
     override val colorIdentity: List<String> = emptyList(),
     override val cmc: Double = DraftsimMana.cmc(manaCost),
     override val rarity: String? = "common",
+    override val activationCosts: List<String> = emptyList(),
 ) : ScorerCard
 
 /**
@@ -289,5 +290,39 @@ class DraftsimDeckBuilderTest : FunSpec({
         val lands = build.deckInstanceIds.mapNotNull { byId[it]?.card }.filter { it.typeLine.contains("Land") }.map { it.name }
         build.colors.toSet() shouldBe setOf("B", "G")
         lands shouldBe listOf("Formidable Commons")
+    }
+
+    test("a card whose activation needs colours the deck can't make stays out, unless rainbow lands fix them") {
+        fun pool(rainbowLands: Int): Pair<List<DraftsimPoolCard>, DraftsimSetTables> {
+            val ratings = HashMap<String, Double>()
+            val cards = mutableListOf<DraftsimPoolCard>()
+            var n = 0
+            fun add(card: ScorerCard, rating: Double) {
+                ratings[DraftsimData.nameKey(card.name)] = rating
+                cards += DraftsimPoolCard(card, "id-${n++}")
+            }
+            // 22 G/U spells: a builder reading only cast costs would take the Minstrel as the 23rd.
+            for (i in 1..12) add(BCard("GreenBeast$i", if (i % 2 == 0) "{1}{G}" else "{2}{G}", "Creature — Beast", listOf("G")), 3.0)
+            for (i in 1..10) add(BCard("BlueDrake$i", if (i % 2 == 0) "{1}{U}" else "{2}{U}", "Creature — Drake", listOf("U")), 3.0)
+            add(
+                BCard(
+                    "The Wandering Minstrel", "{G}{U}", "Legendary Creature — Human Bard", listOf("G", "U"),
+                    activationCosts = listOf("{3}{W}{U}{B}{R}{G}"),
+                ),
+                3.5,
+            )
+            repeat(rainbowLands) { add(BCard("Rainbow Land", "", "Land", colorIdentity = listOf("W", "U", "B", "R", "G")), 2.0) }
+            return cards to DraftsimSetTables(ratings, HashSet(), emptyMap())
+        }
+        fun minstrelPlayed(rainbowLands: Int): Boolean {
+            val (cards, tables) = pool(rainbowLands)
+            val byId = cards.associateBy { it.instanceId }
+            val build = DraftsimDeckBuilder(tables).buildDecks(cards, mode = "draft").first()
+            build.colors.toSet() shouldBe setOf("G", "U")
+            return build.deckInstanceIds.any { byId[it]?.card?.name == "The Wandering Minstrel" }
+        }
+
+        minstrelPlayed(rainbowLands = 0) shouldBe false
+        minstrelPlayed(rainbowLands = 3) shouldBe true
     }
 })

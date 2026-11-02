@@ -73,6 +73,18 @@ internal object DraftsimMana {
         return true
     }
 
+    /**
+     * Whether a deck making [allowed] can pay the colored pips of an activated ability's [cost]: a
+     * plain pip needs its colour, a hybrid either half; a Phyrexian pip (2 life) and a `{2/C}` pip
+     * (two generic) always can. Mirrors [com.wingedsheep.ai.engine.ActivationMana.payable].
+     */
+    fun activationPayable(cost: String, allowed: Collection<String>): Boolean =
+        SYMBOL.findAll(cost).all { m ->
+            val sym = m.groupValues[1].uppercase()
+            val colors = COLORS.filter { sym.contains(it) }
+            colors.isEmpty() || sym.contains('P') || sym.any { it.isDigit() } || colors.any { it in allowed }
+        }
+
     /** `offPipsInString(cost, A)` (`Uf`): hybrids with no allowed side + plain colored pips off A. */
     private fun offPipsInString(cost: String, allowed: Set<String>): Int {
         var n = 0
