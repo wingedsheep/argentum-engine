@@ -352,6 +352,7 @@ class AIPlayer(
                     combatTricksWaitForBlocks = profile.combatTricksWaitForBlocks,
                     holdRemovalForBetterTargets = profile.holdRemovalForBetterTargets,
                     payoffsReadTheirFuel = profile.payoffsReadTheirFuel,
+                    removalWorthReadsGrowth = profile.creatureValuation.growthPotential,
                     holdCountersForBetterSpells = profile.holdCountersForBetterSpells,
                     cashCantripsInTheEndStep = profile.cashCantripsInTheEndStep,
                     holdFlashPermanentsForAmbush = profile.holdFlashPermanentsForAmbush,

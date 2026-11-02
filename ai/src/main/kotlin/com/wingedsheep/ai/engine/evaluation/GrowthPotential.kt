@@ -12,7 +12,10 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.EventPattern
+import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -23,8 +26,10 @@ import java.util.WeakHashMap
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * What a permanent's **recurring +1/+1-counter trigger** is still going to add to its controller's
- * board — the part of an Ouroboroid that its current 1/3 body does not show.
+ * What a permanent's **recurring +1/+1-counter or token triggers, and repeatable mana- or tap-only
+ * activations that do the same**, are still going to add to its controller's board — the part of
+ * an Ouroboroid that its current 1/3 body does not show, and the stream of 5/5 Dragons behind
+ * Kiora of Fire and Ashes' 2/2.
  *
  * `creatureValue` reads a creature as it stands: its projected stats, its keywords, the counters
  * already on it. That prices a fresh Ouroboroid exactly like a vanilla 1/3, though every one of its
@@ -56,6 +61,12 @@ import java.util.concurrent.ConcurrentHashMap
  * Counters landing on an opponent's creature count against the estimate, so a symmetric "put a
  * +1/+1 counter on each creature" is worth what it nets.
  *
+ * A permanent a resolution **makes** — a token, an amassed Army — is priced at the plain board value
+ * [BoardPresence.permanentValue] gives it on the simulated board (no card knowledge, so the
+ * simulation never recurses), against the estimate when it lands on the other side. Counters that
+ * land on it in the same resolution are already in that value and are not counted again. The two
+ * halves are capped apart: [GROWTH_VALUE_CAP] for counters, [PRODUCTION_VALUE_CAP] for permanents.
+ *
  * ## Which triggers
  *
  * Only triggers that will fire again without anyone choosing to set them off, and that need no
@@ -68,11 +79,23 @@ import java.util.concurrent.ConcurrentHashMap
  *    controller attacks, so they are weighted by [ATTACK_LIKELIHOOD].
  *
  * Those are read off the card definition once per card name and cached; an ability is a candidate
- * only if its effect *mentions* the +1/+1 counter type anywhere in its data (the serialized SDK
- * form is the one traversal that reaches into pipelines, programs and `ForEach` bodies alike), so a
- * draw-a-card upkeep trigger is never simulated. Landfall, "whenever another creature enters" and
- * activated `{T}: put a counter` abilities are left out on purpose: each fires only when its
- * controller does something, which a static estimate cannot schedule.
+ * only if its effect *mentions* the +1/+1 counter type or a token-making effect anywhere in its data
+ * (the serialized SDK form is the one traversal that reaches into pipelines, programs and `ForEach`
+ * bodies alike), so a draw-a-card upkeep trigger is never simulated. Landfall and "whenever another
+ * creature enters" are left out on purpose: each fires only when its controller does something,
+ * which a static estimate cannot schedule.
+ *
+ * ## Which activations
+ *
+ * An activated ability is the one "does something" a static estimate *can* schedule, when nothing
+ * but mana and a tap pays for it: its controller's lands say how often. A [Producer] is an untargeted
+ * battlefield ability whose cost is mana (no X) and/or `{T}` and whose effect mentions the same
+ * counters or tokens. Its [Producer.schedule] is the activations its controller can afford on each
+ * of the next three turns — lands ÷ mana value, the lands growing by [LAND_GROWTH_PER_TURN] a turn,
+ * at most [MAX_ACTIVATIONS_PER_TURN], and once for a tap ability or a restricted one. Kiora's {8} on
+ * nine lands is a Dragon a turn; on four it is nothing (the third turn reaches five), so the 2/2 is
+ * priced as a 2/2. An until-end-of-turn pump (firebreathing) leaves nothing on the board and is not
+ * a producer; that is a combat question.
  *
  * A permanent whose abilities are gone (Humility, Turn to Frog — [ProjectedState.hasLostAllAbilities])
  * has no growth. A simulation that throws counts as none: an estimate must never take the evaluator
@@ -85,25 +108,41 @@ class GrowthPotential private constructor(private val registry: CardRegistry) {
     /** Recurring growth triggers of each card name, read once. */
     private val triggersByName = ConcurrentHashMap<String, List<GrowthTrigger>>()
 
+    /** Repeatable producing activated abilities of each card name, read once. */
+    private val producersByName = ConcurrentHashMap<String, List<Producer>>()
+
     /**
-     * Board value of the growth still to come from the permanent [entityId], whose card is called
-     * [cardName]. Zero when it has no recurring +1/+1-counter trigger.
+     * Board value of the growth and production still to come from the permanent [entityId], whose
+     * card is called [cardName]. Zero when it has no recurring trigger or producing activation.
      */
     fun value(state: GameState, projected: ProjectedState, entityId: EntityId, cardName: String): Double {
         val triggers = triggersOf(cardName)
-        if (triggers.isEmpty()) return 0.0
+        val producers = producersOf(cardName)
+        if (triggers.isEmpty() && producers.isEmpty()) return 0.0
         if (projected.hasLostAllAbilities(entityId)) return 0.0
         val controller = projected.getController(entityId) ?: return 0.0
         val fingerprint = boardFingerprint(state, projected)
-        val counters = triggers.withIndex().sumOf { (index, trigger) ->
+        var counters = 0.0
+        var made = 0.0
+        fun add(index: Int, effect: Effect, schedule: List<Int>, likelihood: Double) {
+            if (schedule.all { it == 0 }) return
             val key = SimulationKey(entityId, index, cardName, fingerprint)
-            val simulated = simulations[key] ?: expectedCounters(state, entityId, controller, trigger.effect).also {
+            val simulated = simulations[key] ?: expectedYield(state, entityId, controller, effect, schedule).also {
                 if (simulations.size >= MAX_CACHED_SIMULATIONS) simulations.clear()
                 simulations[key] = it
             }
-            trigger.likelihood * simulated
+            counters += likelihood * simulated.counters
+            made += likelihood * simulated.permanents
         }
-        return (counters * COUNTER_VALUE).coerceIn(-GROWTH_VALUE_CAP, GROWTH_VALUE_CAP)
+        triggers.forEachIndexed { index, trigger -> add(index, trigger.effect, ONCE_A_TURN, trigger.likelihood) }
+        if (producers.isNotEmpty()) {
+            val mana = projected.getBattlefieldControlledBy(controller).count { projected.hasType(it, "LAND") }
+            producers.forEachIndexed { index, producer ->
+                add(triggers.size + index, producer.effect, producer.schedule(mana), 1.0)
+            }
+        }
+        return (counters * COUNTER_VALUE).coerceIn(-GROWTH_VALUE_CAP, GROWTH_VALUE_CAP) +
+            made.coerceIn(-PRODUCTION_VALUE_CAP, PRODUCTION_VALUE_CAP)
     }
 
     /**
@@ -114,7 +153,14 @@ class GrowthPotential private constructor(private val registry: CardRegistry) {
      * millisecond on a dozen creatures) would make every leaf with a grower on it thirty times as
      * expensive as one without.
      */
-    private val simulations = ConcurrentHashMap<SimulationKey, Double>()
+    private val simulations = ConcurrentHashMap<SimulationKey, Yield>()
+
+    /**
+     * What one source's resolutions net its controller, weighted over the horizon: the +1/+1
+     * counters they put on creatures that were already there, and the board value of the
+     * permanents they made (a token's counters are part of the token, not counted twice).
+     */
+    internal data class Yield(val counters: Double, val permanents: Double)
 
     private data class SimulationKey(val sourceId: EntityId, val trigger: Int, val cardName: String, val board: Long)
 
@@ -153,30 +199,72 @@ class GrowthPotential private constructor(private val registry: CardRegistry) {
      * to the module so a test can pin the simulation without the value scaling around it.
      */
     internal fun expectedCounters(state: GameState, sourceId: EntityId, controller: EntityId, effect: Effect): Double =
+        expectedYield(state, sourceId, controller, effect, ONCE_A_TURN).counters
+
+    /**
+     * Resolve [effect] [schedule]`[i]` times on the i-th of the next three turns, each resolution on
+     * the state the last produced, and weigh turn i's yield by [TRIGGER_WEIGHTS]`[i]`.
+     */
+    internal fun expectedYield(
+        state: GameState,
+        sourceId: EntityId,
+        controller: EntityId,
+        effect: Effect,
+        schedule: List<Int>,
+    ): Yield =
         try {
             var current = state
-            var expected = 0.0
-            for (weight in TRIGGER_WEIGHTS) {
-                val result = services.effectExecutorRegistry.execute(
-                    current,
-                    effect,
-                    EffectContext(sourceId = sourceId, controllerId = controller),
-                )
-                expected += weight * netCounters(current.projectedState, result.events, controller)
-                // A resolution that stopped for a decision or was refused has not finished; its
-                // state is not a board the next trigger would see.
-                if (result.outcome !is Outcome.Done) break
-                if (result.state.getEntity(sourceId) == null) break
-                current = result.state
+            var counters = 0.0
+            var permanents = 0.0
+            run horizon@{
+                schedule.forEachIndexed { turn, times ->
+                    val weight = TRIGGER_WEIGHTS[turn]
+                    repeat(times) {
+                        val before = current.getBattlefield().toSet()
+                        val result = services.effectExecutorRegistry.execute(
+                            current,
+                            effect,
+                            EffectContext(sourceId = sourceId, controllerId = controller),
+                        )
+                        val made = result.state.getBattlefield().filter { it !in before }.toSet()
+                        counters += weight * netCounters(current.projectedState, result.events, controller, made)
+                        permanents += weight * netPermanents(result.state, made, controller)
+                        // A resolution that stopped for a decision or was refused has not finished; its
+                        // state is not a board the next resolution would see.
+                        if (result.outcome !is Outcome.Done) return@horizon
+                        if (result.state.getEntity(sourceId) == null) return@horizon
+                        current = result.state
+                    }
+                }
             }
-            expected
+            Yield(counters, permanents)
         } catch (_: RuntimeException) {
-            0.0
+            Yield(0.0, 0.0)
         }
 
-    private fun netCounters(projected: ProjectedState, events: List<com.wingedsheep.engine.core.GameEvent>, controller: EntityId): Int =
+    /** Board value of the permanents a resolution made: theirs against [controller], ours for. */
+    private fun netPermanents(state: GameState, made: Set<EntityId>, controller: EntityId): Double {
+        if (made.isEmpty()) return 0.0
+        val projected = state.projectedState
+        return made.sumOf { id ->
+            val card = state.getEntity(id)?.get<CardComponent>() ?: return@sumOf 0.0
+            // The plain body reading: no card knowledge, so a token that itself grows is not
+            // simulated again from inside this simulation.
+            val value = BoardPresence.permanentValue(state, projected, id, card)
+            if (projected.getController(id) == controller) value else -value
+        }
+    }
+
+    private fun netCounters(
+        projected: ProjectedState,
+        events: List<com.wingedsheep.engine.core.GameEvent>,
+        controller: EntityId,
+        made: Set<EntityId>,
+    ): Int =
         events.sumOf { event ->
             if (event !is CountersAddedEvent || event.counterType != CounterType.PLUS_ONE_PLUS_ONE) return@sumOf 0
+            // Counters on a permanent this resolution made (amass's Army) are in its value already.
+            if (event.entityId in made) return@sumOf 0
             if (!projected.isCreature(event.entityId)) return@sumOf 0
             if (projected.getController(event.entityId) == controller) event.amount else -event.amount
         }
@@ -186,8 +274,32 @@ class GrowthPotential private constructor(private val registry: CardRegistry) {
             registry.getCard(cardName)?.let(::growthTriggers).orEmpty()
         }
 
+    internal fun producersOf(cardName: String): List<Producer> =
+        producersByName.getOrPut(cardName) {
+            registry.getCard(cardName)?.let(::producers).orEmpty()
+        }
+
     /** One recurring trigger worth simulating, and how likely it is to fire on a given turn. */
     internal data class GrowthTrigger(val effect: Effect, val likelihood: Double)
+
+    /**
+     * A repeatable activated ability that adds to its controller's board, paid for with nothing
+     * but mana ([manaValue], 0 for none) and/or tapping its source ([taps]).
+     */
+    internal data class Producer(val effect: Effect, val manaValue: Int, val taps: Boolean, val oncePerTurn: Boolean) {
+        /**
+         * How many times its controller can activate it on each of the next three turns with
+         * [lands] lands, growing by [LAND_GROWTH_PER_TURN] a turn. A tap ability, or one limited
+         * by an activation restriction, goes at most once; a mana-only one as often as the mana
+         * pays for, up to [MAX_ACTIVATIONS_PER_TURN] — its controller has other spells to cast.
+         */
+        fun schedule(lands: Int): List<Int> = TRIGGER_WEIGHTS.indices.map { turn ->
+            val mana = lands + LAND_GROWTH_PER_TURN * turn
+            val affordable = if (manaValue == 0) MAX_ACTIVATIONS_PER_TURN else (mana / manaValue).toInt()
+            val cap = if (taps || oncePerTurn) 1 else MAX_ACTIVATIONS_PER_TURN
+            affordable.coerceIn(0, cap)
+        }
+    }
 
     companion object {
         /**
@@ -207,6 +319,24 @@ class GrowthPotential private constructor(private val registry: CardRegistry) {
         internal const val THIRD_TRIGGER_WEIGHT = 0.25
 
         private val TRIGGER_WEIGHTS = doubleArrayOf(NEXT_TRIGGER_WEIGHT, SECOND_TRIGGER_WEIGHT, THIRD_TRIGGER_WEIGHT)
+
+        /** A recurring trigger resolves once on each of the next three turns. */
+        private val ONCE_A_TURN = listOf(1, 1, 1)
+
+        /**
+         * The most times a mana-only producer is credited with per turn. Its controller has a hand
+         * to cast too; and every extra resolution is another executor run per evaluated board.
+         */
+        internal const val MAX_ACTIVATIONS_PER_TURN = 2
+
+        /** Lands a late-game player adds a turn, on average — the {8} that is one land away. */
+        internal const val LAND_GROWTH_PER_TURN = 0.5
+
+        /**
+         * The most the permanents one producer will make are credited with: about a 5/5 flier
+         * made on each of the next two turns. Past that the board is decided by other terms.
+         */
+        internal const val PRODUCTION_VALUE_CAP = 16.0
 
         /** An attack trigger fires only on a turn its controller attacks. */
         internal const val ATTACK_LIKELIHOOD = 0.5
@@ -239,7 +369,9 @@ class GrowthPotential private constructor(private val registry: CardRegistry) {
                 if (ability.targetRequirement != null || ability.additionalTargetRequirements.isNotEmpty()) {
                     return@mapNotNull null
                 }
-                if (!mentionsPlusOneCounters(ability.effect)) return@mapNotNull null
+                if (!mentionsPlusOneCounters(ability.effect) && !mentionsNewPermanents(ability.effect)) {
+                    return@mapNotNull null
+                }
                 GrowthTrigger(ability.effect, likelihood)
             }
 
@@ -270,6 +402,52 @@ class GrowthPotential private constructor(private val registry: CardRegistry) {
                 else -> null
             }
         }
+
+        /**
+         * The activated abilities of [definition] that its controller can use again and again for
+         * mana and/or a tap alone, that choose no target, and whose effect adds to the board — a
+         * +1/+1 counter or a new permanent. An ability whose cost asks for anything else (a
+         * sacrifice, a discard, counters, life, an X) is left out: its rate is not the mana's.
+         */
+        internal fun producers(definition: CardDefinition): List<Producer> =
+            definition.script.activatedAbilities.mapNotNull { ability ->
+                if (ability.isManaAbility || ability.isPlaneswalkerAbility || ability.isEquipAbility) return@mapNotNull null
+                if (ability.activateFromZone != Zone.BATTLEFIELD) return@mapNotNull null
+                if (ability.targetRequirements.isNotEmpty()) return@mapNotNull null
+                val cost = repeatableCost(ability.cost) ?: return@mapNotNull null
+                // Neither mana nor a tap: nothing bounds how often it goes, and no such free
+                // engine is something a per-turn estimate can price.
+                if (cost.manaValue == 0 && !cost.taps && ability.restrictions.isEmpty()) return@mapNotNull null
+                if (!mentionsPlusOneCounters(ability.effect) && !mentionsNewPermanents(ability.effect)) {
+                    return@mapNotNull null
+                }
+                Producer(ability.effect, cost.manaValue, cost.taps, oncePerTurn = ability.restrictions.isNotEmpty())
+            }
+
+        private data class RepeatableCost(val manaValue: Int, val taps: Boolean)
+
+        /** [cost] as mana plus an optional tap, or null when it asks for anything else. */
+        private fun repeatableCost(cost: AbilityCost): RepeatableCost? = when (cost) {
+            is AbilityCost.Tap -> RepeatableCost(0, taps = true)
+            is AbilityCost.Free -> RepeatableCost(0, taps = false)
+            is AbilityCost.Atom -> (cost.atom as? CostAtom.Mana)?.cost
+                ?.takeUnless { it.hasX }
+                ?.let { RepeatableCost(it.cmc, taps = false) }
+            is AbilityCost.Composite -> cost.costs.fold(RepeatableCost(0, false) as RepeatableCost?) { acc, part ->
+                val next = repeatableCost(part) ?: return@fold null
+                acc?.let { RepeatableCost(it.manaValue + next.manaValue, it.taps || next.taps) }
+            }
+            else -> null
+        }
+
+        private val NEW_PERMANENT_MENTION = Regex("\"(Create[A-Za-z]*Token[A-Za-z]*|Amass|ConvertCountersToTokens)\"")
+
+        private fun mentionsNewPermanents(effect: Effect): Boolean =
+            try {
+                NEW_PERMANENT_MENTION.containsMatchIn(CardSerialization.compactJson.encodeToString(Effect.serializer(), effect))
+            } catch (_: kotlinx.serialization.SerializationException) {
+                false
+            }
 
         private fun mentionsPlusOneCounters(effect: Effect): Boolean =
             try {
