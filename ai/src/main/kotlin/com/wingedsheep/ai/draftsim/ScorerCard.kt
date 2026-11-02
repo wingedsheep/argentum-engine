@@ -1,6 +1,7 @@
 package com.wingedsheep.ai.draftsim
 
 import com.wingedsheep.ai.engine.ActivationMana
+import com.wingedsheep.ai.engine.deck.ManaFixing
 import com.wingedsheep.ai.llm.CardSummary
 import com.wingedsheep.sdk.model.CardDefinition
 
@@ -43,6 +44,20 @@ interface ScorerCard {
      * Empty when the adapter doesn't know them (the draft path's [CardSummary]).
      */
     val activationCosts: List<String> get() = emptyList()
+
+    /**
+     * The colours (WUBRG letters) this card can turn toward a coloured cost beyond the basics — a
+     * dual land's two, Evolving Wilds' or a Treasure maker's five ([ManaFixing.colors]). The
+     * fallback for sets whose archetype table carries no curated `fixing` list. Empty when the
+     * adapter doesn't know ([CardSummary]).
+     */
+    val fixing: List<String> get() = emptyList()
+
+    /** A land that fixes by fetching a basic ([ManaFixing.fetchesBasic]): it finds only the basics the deck runs. */
+    val fetchesBasic: Boolean get() = false
+
+    /** The card scales with how many colours its deck plays — Vivid, domain, converge ([ManaFixing.rewardsColors]). */
+    val rewardsColors: Boolean get() = false
 }
 
 /** Adapt a resolved [CardDefinition] (deckbuild path — full metadata available). */
@@ -63,6 +78,9 @@ private class CardDefinitionScorerCard(private val def: CardDefinition) : Scorer
     override val colors: List<String> = def.colors.map { it.symbol.toString() }
     override val colorIdentity: List<String> = def.colorIdentity.map { it.symbol.toString() }
     override val activationCosts: List<String> = ActivationMana.costs(def).map { it.toString() }
+    override val fixing: List<String> by lazy { ManaFixing.colors(def).map { it.symbol.toString() } }
+    override val rewardsColors: Boolean by lazy { ManaFixing.rewardsColors(def) }
+    override val fetchesBasic: Boolean by lazy { ManaFixing.fetchesBasic(def) }
 }
 
 private class CardSummaryScorerCard(private val summary: CardSummary) : ScorerCard {

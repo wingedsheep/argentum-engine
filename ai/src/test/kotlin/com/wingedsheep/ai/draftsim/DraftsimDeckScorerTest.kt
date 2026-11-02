@@ -16,6 +16,7 @@ private data class TestCard(
     override val colorIdentity: List<String> = emptyList(),
     override val cmc: Double = DraftsimMana.cmc(manaCost),
     override val rarity: String? = "common",
+    override val rewardsColors: Boolean = false,
 ) : ScorerCard
 
 /**
@@ -79,5 +80,30 @@ class DraftsimDeckScorerTest : FunSpec({
         val pool = (1..6).map { TestCard("x$it", "{1}{R}", "Creature", colors = listOf("R"), rarity = "mythic") }
         val ranked = scorer.rankArchetypes(pool, emptyMap())
         ranked.all { it.bombScore == 0.0 } shouldBe true
+    }
+
+    // The final score's quality term saturates on any real deck, so colour choices are weighed by
+    // castable power: the spells' ratings, each scaled by how reliably the manabase casts it on time.
+    fun deck(perColor: Map<String, Int>, basics: Map<String, Int>, rewards: Int = 0): List<TestCard> {
+        var n = 0
+        val spells = perColor.flatMap { (c, k) -> (1..k).map { TestCard("s${n++}", "{1}{$c}", "Creature", colors = listOf(c)) } }
+            .mapIndexed { i, card -> if (i < rewards) card.copy(rewardsColors = true) else card }
+        return spells + basics.flatMap { (c, k) -> (1..k).map { land("basic$c$it", c) } }
+    }
+    val flat = DraftsimSetTables((0 until 23).associate { "s$it" to 3.0 }, emptySet(), emptyMap())
+
+    test("castable power charges a third colour on basics for every spell it makes less reliable") {
+        val scorer = DraftsimDeckScorer(flat)
+        val twoColour = scorer.scoreDeck(deck(mapOf("W" to 12, "G" to 11), mapOf("W" to 9, "G" to 8)))
+        val threeColour = scorer.scoreDeck(deck(mapOf("W" to 8, "G" to 8, "U" to 7), mapOf("W" to 6, "G" to 6, "U" to 5)))
+        twoColour.castablePower shouldBeGreaterThan threeColour.castablePower
+    }
+
+    test("a colour-count payoff is worth more in a three-colour deck") {
+        val scorer = DraftsimDeckScorer(flat)
+        val colours = mapOf("W" to 8, "G" to 8, "U" to 7)
+        val basics = mapOf("W" to 6, "G" to 6, "U" to 5)
+        scorer.scoreDeck(deck(colours, basics, rewards = 6)).castablePower shouldBeGreaterThan
+            scorer.scoreDeck(deck(colours, basics)).castablePower
     }
 })

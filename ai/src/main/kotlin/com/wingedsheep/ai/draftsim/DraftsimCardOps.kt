@@ -52,6 +52,32 @@ internal class DraftsimCardOps(val tables: DraftsimSetTables) {
     fun idx(color: String) = DraftsimMana.COLORS.indexOf(color)
     fun archRecord(name: String): DraftsimArchetypeRecord? = tables.archetypes[DraftsimData.nameKey(name)]
 
+    /**
+     * The colours [card] fixes: the archetype table's curated list where it has one, else the card's
+     * own structural reading ([ScorerCard.fixing]); a land neither reads falls back to its colours or
+     * identity. Empty for a nonland that fixes nothing.
+     */
+    fun fixingOf(card: ScorerCard): List<String> =
+        archRecord(card.name)?.fixing?.takeIf { it.isNotEmpty() }
+            ?: card.fixing.takeIf { it.isNotEmpty() }
+            ?: if (isLand(card)) colorsOf(card).ifEmpty { card.colorIdentity } else emptyList()
+
+    /**
+     * How much [card] fixes a deck in [colors]: 1 for a land that makes two of them (or four or more
+     * colours — a fetch for any basic), half that for a nonland fixer, which costs a card and usually
+     * mana; 0 otherwise. Basics never count.
+     */
+    fun fixerWeight(card: ScorerCard, colors: Collection<String>): Double {
+        if (isBasic(card)) return 0.0
+        val fix = fixingOf(card)
+        val covers = fix.size >= 4 || fix.count { it in colors } >= 2
+        return when {
+            !covers -> 0.0
+            isLand(card) -> 1.0
+            else -> NONLAND_FIXER_WEIGHT
+        }
+    }
+
     /** Per-card weight used by `wa`/`s_`: `rating ?? 2.5`, or 1 when the set ships no ratings. */
     fun deckCardWeight(card: ScorerCard): Double = if (noRatings) 1.0 else (rating(card.name) ?: 2.5)
 
@@ -60,5 +86,8 @@ internal class DraftsimCardOps(val tables: DraftsimSetTables) {
 
     companion object {
         const val BOMB = 3.9
+
+        /** A nonland fixer (Prophetic Prism, Rampant Growth, a Treasure maker) counts for half a fixing land. */
+        const val NONLAND_FIXER_WEIGHT = 0.5
     }
 }

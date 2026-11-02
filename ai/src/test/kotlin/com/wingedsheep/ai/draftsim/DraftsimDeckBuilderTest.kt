@@ -237,6 +237,70 @@ class DraftsimDeckBuilderTest : FunSpec({
         best.colors.toSet() shouldBe setOf("W", "B", "G")
     }
 
+    // Every three-colour shell is now built, whatever the pool's fixing, and the castability weight
+    // decides: a third colour of cards a little better than the pair's, off basics alone, costs
+    // every spell more than it adds.
+    test("without fixing, a slightly deeper third colour doesn't earn a three-colour deck") {
+        val ratings = HashMap<String, Double>()
+        val cards = mutableListOf<DraftsimPoolCard>()
+        var n = 0
+        fun add(card: ScorerCard, rating: Double) {
+            ratings[DraftsimData.nameKey(card.name)] = rating
+            cards += DraftsimPoolCard(card, "id-${n++}")
+        }
+        val curve = listOf("{1}", "{2}", "{3}", "{1}", "{2}")
+        for (c in listOf("W", "G")) for (i in 1..14) add(BCard("Mono$c$i", "${curve[i % 5]}{$c}", "Creature — Soldier", listOf(c)), 3.0)
+        for (i in 1..8) add(BCard("MonoU$i", "${curve[i % 5]}{U}", "Creature — Drake", listOf("U")), 3.3)
+
+        val best = DraftsimDeckBuilder(DraftsimSetTables(ratings, HashSet(), emptyMap())).buildDecks(cards, mode = "sealed").first()
+
+        best.colors.size shouldBe 2
+    }
+
+    // The splash pass used to need the set's archetype table to flag a card `splashable`; outside the
+    // handful of sets that ship one, no deck ever splashed its bombs. A pool with the duals to carry
+    // them now does — when the bombs gain the deck clearly more than the splash costs.
+    test("off-colour bombs splash on a set with no archetype table when duals carry them") {
+        val ratings = HashMap<String, Double>()
+        val cards = mutableListOf<DraftsimPoolCard>()
+        var n = 0
+        fun add(card: ScorerCard, rating: Double) {
+            ratings[DraftsimData.nameKey(card.name)] = rating
+            cards += DraftsimPoolCard(card, "id-${n++}")
+        }
+        val costs = listOf("{R}", "{1}{R}", "{2}{R}", "{3}{R}", "{1}{G}", "{2}{G}", "{3}{G}", "{4}{G}")
+        for (i in 1..14) add(BCard("RedCreature$i", costs[i % 4], "Creature — Goblin", listOf("R")), 2.8)
+        for (i in 1..14) add(BCard("GreenCreature$i", costs[4 + i % 4], "Creature — Beast", listOf("G")), 2.8)
+        add(BCard("Sphinx of Storms", "{4}{U}", "Creature — Sphinx", listOf("U")), 4.8)
+        add(BCard("Tidal Wraith", "{3}{U}", "Creature — Spirit", listOf("U")), 4.6)
+        for (i in 1..3) add(BCard("UR dual $i", "", "Land", colorIdentity = listOf("U", "R")), 2.0)
+        for (i in 1..2) add(BCard("UG dual $i", "", "Land", colorIdentity = listOf("U", "G")), 2.0)
+        val byId = cards.associateBy { it.instanceId }
+
+        val best = DraftsimDeckBuilder(DraftsimSetTables(ratings, HashSet(), emptyMap())).buildDecks(cards, mode = "sealed").first()
+
+        best.splashColor shouldBe "U"
+        best.deckInstanceIds.mapNotNull { byId[it]?.card?.name } shouldContainAll listOf("Sphinx of Storms", "Tidal Wraith")
+    }
+
+    test("a lone bomb with no lands of its colour in the pool stays out") {
+        val ratings = HashMap<String, Double>()
+        val cards = mutableListOf<DraftsimPoolCard>()
+        var n = 0
+        fun add(card: ScorerCard, rating: Double) {
+            ratings[DraftsimData.nameKey(card.name)] = rating
+            cards += DraftsimPoolCard(card, "id-${n++}")
+        }
+        val costs = listOf("{R}", "{1}{R}", "{2}{R}", "{3}{R}", "{1}{G}", "{2}{G}", "{3}{G}", "{4}{G}")
+        for (i in 1..14) add(BCard("RedCreature$i", costs[i % 4], "Creature — Goblin", listOf("R")), 2.8)
+        for (i in 1..14) add(BCard("GreenCreature$i", costs[4 + i % 4], "Creature — Beast", listOf("G")), 2.8)
+        add(BCard("Sphinx of Storms", "{4}{U}", "Creature — Sphinx", listOf("U")), 4.8)
+
+        val best = DraftsimDeckBuilder(DraftsimSetTables(ratings, HashSet(), emptyMap())).buildDecks(cards, mode = "sealed").first()
+
+        best.colors.toSet() shouldBe setOf("R", "G")
+    }
+
     // A drafted pool with only 19 castable spells in its pair used to make up the four-card gap in
     // basics: 21 lands beside 19 spells (2026-10-31 games 2d31a409, 8d182668, ee882769 ran 22/18).
     // A light black splash fills it instead, and the deck runs at most one land over 17.

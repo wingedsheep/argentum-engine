@@ -139,6 +139,23 @@ internal object DraftsimMana {
     }
 
     /**
+     * Each face's coloured requirement, for the castability weight ([DraftsimCastability]): what
+     * [castRequirement] reads, per face, less the symbols that never strand a spell — a Phyrexian pip
+     * (payable with life) and a `{2/G}` (payable with generic mana).
+     */
+    fun faceRequirements(cost: String): List<CastRequirement> = faces(cost).map { face ->
+        val plain = HashMap<String, Int>()
+        val groups = mutableListOf<List<String>>()
+        for (m in SYMBOL.findAll(face)) {
+            val raw = m.groupValues[1].uppercase()
+            val s = symbols("{$raw}").single()
+            if (s.phyrexian || s.colors.isEmpty() || raw.any { it.isDigit() }) continue
+            if (s.hybrid) groups += s.colors else for (c in s.colors) plain[c] = (plain[c] ?: 0) + 1
+        }
+        CastRequirement(plain, groups)
+    }
+
+    /**
      * `CX(cost, allowed?)` pip counting (`SPEC_deckbuild.md` §2). Hybrid: one allowed side → +1 to it,
      * both → +0.5 each, neither → nothing; no `allowed` → +0.5 to each color side. Phyrexian → +0.5 to
      * its color. Plain colored → +1.
