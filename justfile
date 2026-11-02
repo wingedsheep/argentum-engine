@@ -142,6 +142,14 @@ arena-synergy-decks GAMES="200" SET="BLB" SEED="20260727":
         -DarenaGames={{GAMES}} -DarenaSet={{SET}} -DarenaSeed={{SEED}} \
         -DarenaGameTimeoutSec=${ARENA_GAME_TIMEOUT_SEC:-600}
 
+# How many colours the AI's limited builds run: PODS eight-seat AI drafts and PODS*8 sealed pools of
+# SET, built by the AI's deckbuilder, read for identity / main / splash colour counts. No games played.
+# e.g. just deck-colours 10 FRA
+[group: 'ai']
+deck-colours PODS="10" SET="FRA" SEED="20261102":
+    scripts/gradle-locked :ai:test --tests "*.DeckColourBenchmark" -Dbenchmark=true -DdeckColours=true \
+        -DdeckColourPods={{PODS}} -DdeckColourSet={{SET}} -DdeckColourSeed={{SEED}}
+
 # Rebuild the summary of an arena or arena-pod run from its results directory (or results.csv) —
 # the way to read a run that was killed or never finished. A partial report says PARTIAL up top.
 [group: 'ai']
