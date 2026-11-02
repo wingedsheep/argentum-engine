@@ -768,6 +768,14 @@ class CleanupPhaseManager(
                     val sourceId = floatingEffect.sourceId
                     sourceId != null && newState.getBattlefield().contains(sourceId)
                 }
+                Duration.WhileSourceAttached -> {
+                    // Keep while the source is on the battlefield and attached to something. Only
+                    // copy effects use this duration today; they live in CopyHistoryComponent and
+                    // are moved/ended by AttachedCopyExpiryCheck, not as floating effects.
+                    val sourceId = floatingEffect.sourceId
+                    sourceId != null && newState.getBattlefield().contains(sourceId) &&
+                        newState.getEntity(sourceId)?.has<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>() == true
+                }
                 Duration.WhileAffectedAttachedToSource -> {
                     // Keep while the host (the source) is on the battlefield; the per-affected
                     // "still attached to it" half is gated per-frame by StateProjector and latched

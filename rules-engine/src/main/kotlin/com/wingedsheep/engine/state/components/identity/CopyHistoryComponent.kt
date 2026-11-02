@@ -31,7 +31,7 @@ fun ComponentContainer.recordCopyLayer(
 ): ComponentContainer {
     // A later permanent layer can never expose any earlier identity; discard its shadowed history.
     if (duration !in setOf(Duration.EndOfTurn, Duration.UntilNextEndStep,
-            Duration.UntilYourNextTurn, Duration.WhileSourceAttachedToAffected)) {
+            Duration.UntilYourNextTurn, Duration.WhileSourceAttachedToAffected, Duration.WhileSourceAttached)) {
         return without<CopyHistoryComponent>().without<RevertCopyAtEndOfTurnComponent>()
             .without<RevertCopyAtNextEndStepComponent>().without<RevertCopyAtYourNextTurnComponent>()
             .without<CopyWhileAttachedComponent>()

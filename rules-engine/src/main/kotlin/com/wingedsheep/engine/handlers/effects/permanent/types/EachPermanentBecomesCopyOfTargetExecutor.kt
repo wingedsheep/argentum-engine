@@ -119,7 +119,7 @@ class EachPermanentBecomesCopyOfTargetExecutor(
         // "For as long as this Equipment remains attached to it" (Blade of Shared Souls): the copy
         // is keyed to the source's attachment. A permanent the source is no longer attached to by
         // resolution gets nothing — the duration has already ended (CR 611.2b).
-        val attachedSourceId = if (effect.duration == Duration.WhileSourceAttachedToAffected) {
+        val attachedSourceId = if (effect.duration.isAttachmentKeyed()) {
             context.sourceId?.takeIf { it in state.getBattlefield() }
                 ?: return EffectResult.success(state)
         } else null
@@ -137,7 +137,9 @@ class EachPermanentBecomesCopyOfTargetExecutor(
         // coincident with a paired "return it at the beginning of the next end step" trigger —
         // Niko, Light of Hope), and `UntilYourNextTurn` (reverted after the controller's next
         // untap step — Absorbing Man, Taskmaster), and `WhileSourceAttachedToAffected` (reverted by
-        // `AttachedCopyExpiryCheck` once the source stops being attached — Blade of Shared Souls).
+        // `AttachedCopyExpiryCheck` once the source stops being attached — Blade of Shared Souls), and
+        // `WhileSourceAttached` (the same, except the check moves the copy to the source's new host —
+        // Metamorphic Alteration).
         // Anything else degrades to permanent.
         var newState = state
         val events = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
@@ -226,7 +228,7 @@ internal fun becomeCopyInPlace(
             Duration.UntilYourNextTurn -> updated = updated.with(
                 RevertCopyAtYourNextTurnComponent(controllerId)
             )
-            Duration.WhileSourceAttachedToAffected -> if (attachedSourceId != null) {
+            Duration.WhileSourceAttachedToAffected, Duration.WhileSourceAttached -> if (attachedSourceId != null) {
                 updated = updated.with(CopyWhileAttachedComponent(attachedSourceId))
             }
             else -> {}
@@ -234,3 +236,7 @@ internal fun becomeCopyInPlace(
         updated
     }
 }
+
+/** The copy durations keyed to the effect's source staying attached — `AttachedCopyExpiryCheck`'s. */
+internal fun Duration.isAttachmentKeyed(): Boolean =
+    this == Duration.WhileSourceAttachedToAffected || this == Duration.WhileSourceAttached

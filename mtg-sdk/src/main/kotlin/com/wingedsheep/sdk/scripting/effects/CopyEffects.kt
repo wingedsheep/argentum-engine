@@ -29,7 +29,9 @@ import kotlinx.serialization.Serializable
  *   permanent, reverting via the attached-copy state-based check (Blade of Shared Souls — "for as
  *   long as this Equipment remains attached to it, you may have that creature become a copy of
  *   another target creature you control"); a permanent the source isn't attached to at resolution
- *   is left alone. Any other duration falls back to permanent.
+ *   is left alone. [Duration.WhileSourceAttached] is the same, except the copy follows the source
+ *   to a new host with the same locked-in values (Metamorphic Alteration — "enchanted creature is a
+ *   copy of the chosen creature"). Any other duration falls back to permanent.
  * @property excludeTarget When true, the copy source [target] itself is excluded from the set of
  *   permanents that become copies — for "each **other** creature you control becomes a copy of
  *   that creature" wordings, where the target keeps its own identity (and any counter just placed
@@ -83,9 +85,11 @@ data class EachPermanentBecomesCopyOfTargetEffect(
             Duration.UntilYourNextTurn -> " until your next turn"
             else -> ""
         }
-        val durationPrefix = if (duration == Duration.WhileSourceAttachedToAffected) {
-            "for as long as this remains attached to it, "
-        } else ""
+        val durationPrefix = when (duration) {
+            Duration.WhileSourceAttachedToAffected -> "for as long as this remains attached to it, "
+            Duration.WhileSourceAttached -> "for as long as this is attached, "
+            else -> ""
+        }
         val clauses = exceptions.clauses() +
             (if (retainActivatingAbility) listOf("it has this ability") else emptyList())
         val exceptSuffix =

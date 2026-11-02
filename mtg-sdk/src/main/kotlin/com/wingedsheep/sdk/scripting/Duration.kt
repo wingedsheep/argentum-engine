@@ -196,6 +196,26 @@ sealed interface Duration {
     }
 
     /**
+     * Effect lasts for as long as the effect's source (an Aura/Equipment) is attached to *a*
+     * permanent, and applies to whichever permanent that is — the duration of an Aura's own
+     * "enchanted creature is …" static (CR 611.3a: a static ability's effect applies to what it
+     * currently describes). Moving the source to another permanent takes the effect off the old
+     * host and puts it on the new one; the source leaving or becoming unattached ends it.
+     *
+     * Used by Metamorphic Alteration ("enchanted creature is a copy of the chosen creature"): the
+     * copy is locked in as the creature is chosen and follows the Aura. Closest existing durations:
+     * [WhileSourceAttachedToAffected] latches off per affected entity and never moves (Assimilation
+     * Aegis' "for as long as this Equipment remains attached to it"), and [WhileSourceOnBattlefield]
+     * doesn't end when the source becomes unattached. Supported by
+     * `EachPermanentBecomesCopyOfTargetEffect`.
+     */
+    @SerialName("WhileSourceAttached")
+    @Serializable
+    data object WhileSourceAttached : Duration {
+        override val description = "for as long as it's attached"
+    }
+
+    /**
      * Effect lasts for as long as each affected permanent remains attached to the effect's source —
      * the mirror of [WhileSourceAttachedToAffected], with the attachment and the host swapped: here
      * the *affected* object is the Aura/Equipment and the *source* is the permanent it is attached to.

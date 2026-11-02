@@ -3238,6 +3238,59 @@
     "colorIdentityOverride": []
 }
 
+// Metamorphic Alteration
+{
+    "name": "Metamorphic Alteration",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nAs this Aura enters, choose a creature.\nEnchanted creature is a copy of the chosen creature.",
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CREATURE_ON_BATTLEFIELD",
+                "permanentFilter": {
+                    "cardPredicates": [
+                        "IsCreature"
+                    ]
+                },
+                "then": {
+                    "type": "EachPermanentBecomesCopyOfTarget",
+                    "target": "ChosenCreature",
+                    "duration": "WhileSourceAttached",
+                    "affected": "EnchantedCreature"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "rarity": "RARE",
+        "artist": "Livia Prima",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/f/eff03d37-d90a-4dcc-bacd-64fd71301354.jpg?1783934585",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "Metamorphic Alteration copies exactly what is printed on the chosen creature (unless that creature is copying something else or is a token). It doesn't copy whether that creature is tapped or untapped, whether it has any counters on it or any Auras and Equipment attached to it, or any non-copy effects that have changed its power, toughness, types, color, or so on."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "The characteristics that will be copied are determined as Metamorphic Alteration's effect first begins to apply. If the copiable values of the chosen creature change later, or if that creature leaves the battlefield, the enchanted creature's characteristics are unaffected."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If Metamorphic Alteration somehow enters the battlefield at the same time as another creature, it can't have the enchanted creature become a copy of that creature. You may choose only a creature that's already on the battlefield."
+            }
+        ]
+    }
+}
+
 // Meteor Golem
 {
     "name": "Meteor Golem",
