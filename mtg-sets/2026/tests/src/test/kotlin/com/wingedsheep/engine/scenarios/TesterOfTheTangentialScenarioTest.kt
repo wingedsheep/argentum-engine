@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseNumberDecision
+import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.NumberChosenResponse
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
@@ -64,6 +65,7 @@ class TesterOfTheTangentialScenarioTest : FunSpec({
 
         // BeginCombat trigger goes on the stack; resolving it presents the MayPayX number chooser.
         driver.bothPass()
+        driver.submitYesNo(driver.player1, true)
         val payDecision = driver.pendingDecision
         payDecision.shouldBeInstanceOf<ChooseNumberDecision>()
         driver.submitDecision(driver.player1, NumberChosenResponse(payDecision.id, 2))
@@ -92,6 +94,7 @@ class TesterOfTheTangentialScenarioTest : FunSpec({
         driver.giveMana(driver.player1, Color.BLUE, 5)
 
         driver.bothPass()
+        driver.submitYesNo(driver.player1, true)
         val payDecision = driver.pendingDecision
         payDecision.shouldBeInstanceOf<ChooseNumberDecision>()
         driver.submitDecision(driver.player1, NumberChosenResponse(payDecision.id, 2))
@@ -101,7 +104,7 @@ class TesterOfTheTangentialScenarioTest : FunSpec({
         plusCounters(driver, other) shouldBe 2
     }
 
-    test("declining the payment (X=0) moves no counters and asks for no target") {
+    test("declining the payment moves no counters and asks for no target") {
         val driver = createDriver()
         driver.initMirrorMatch(deck = Deck.of("Island" to 40))
 
@@ -115,11 +118,10 @@ class TesterOfTheTangentialScenarioTest : FunSpec({
         driver.giveMana(driver.player1, Color.BLUE, 5)
 
         driver.bothPass()
-        val payDecision = driver.pendingDecision
-        payDecision.shouldBeInstanceOf<ChooseNumberDecision>()
-        driver.submitDecision(driver.player1, NumberChosenResponse(payDecision.id, 0))
+        driver.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
+        driver.submitYesNo(driver.player1, false)
 
-        // X=0 → nothing happens; no target selection.
+        // Declined → nothing happens; no target selection.
         (driver.pendingDecision is ChooseTargetsDecision) shouldBe false
         plusCounters(driver, tester) shouldBe 3
         plusCounters(driver, other) shouldBe 0

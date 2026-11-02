@@ -21,15 +21,13 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * card with mana value X from a graveyard without paying its mana cost. If that spell would be put
  * into a graveyard, exile it instead.
  *
- * The ETB trigger has no target; [Effects.MayPayX] asks for X as it resolves and pays it. Paying
+ * The ETB trigger has no target; [Effects.MayPayX] asks whether to pay, then for X, as it resolves. Paying
  * fires a reflexive trigger (CR 603.12) whose target — an instant or sorcery card in *any*
  * graveyard with mana value X — is chosen as it goes on the stack: the paid X rides on the
  * reflexive trigger's context, which is what `manaValueEqualsX()` reads at targeting and at the
  * resolution re-check. On resolution the controller may cast it right then (Wishing Well's shape),
- * with the exile rider stamped on the spell as it's cast.
- *
- * Fidelity note: the engine's X chooser treats X = 0 as declining the payment, so the legal
- * "pay {0}, cast a mana value 0 instant or sorcery" line is not offered.
+ * with the exile rider stamped on the spell as it's cast. Paying {0} is a real payment, distinct
+ * from declining, so a mana value 0 instant or sorcery can be cast this way.
  */
 val HaloForager = card("Halo Forager") {
     manaCost = "{1}{U}{B}"

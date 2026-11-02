@@ -1338,8 +1338,9 @@ class ManaPaymentContinuationResumer(
     }
 
     /**
-     * Resume after the controller chooses an X value for "you may pay {X}" effects.
-     * If X > 0, auto-tap X mana and execute the inner effect with the chosen X.
+     * Resume a "you may pay {X}" gate. The yes/no answer declines (running `otherwise`) or asks for
+     * X; the number answer pays X — X = 0 included, which is a payment rather than a decline — and
+     * runs the inner effect with X bound.
      */
     fun resumeMayPayX(
         state: GameState,
@@ -1347,15 +1348,41 @@ class ManaPaymentContinuationResumer(
         response: DecisionResponse,
         checkForMore: CheckForMore
     ): ExecutionResult {
-        if (response !is NumberChosenResponse) {
-            return ExecutionResult.error(state, "Expected number chosen response for may pay X")
+        if (response is YesNoResponse && continuation.maxX == null) {
+            if (!response.choice) {
+                val otherwise = continuation.otherwise ?: return checkForMore(state, emptyList())
+                val result = services.effectExecutorRegistry
+                    .execute(state, otherwise, continuation.effectContext).toExecutionResult()
+                if (result.error != null || result.outcome is Outcome.Paused) return result
+                return checkForMore(result.state, result.events.toList())
+            }
+            val maxX = services.manaSolver.getAvailableManaCount(state, continuation.playerId)
+            if (maxX <= 0) return runMayPayXEffect(state, continuation, 0, emptyList(), checkForMore)
+            val question = { decisionId: String -> ChooseNumberDecision(
+                id = decisionId,
+                playerId = continuation.playerId,
+                prompt = "Choose X",
+                context = continuation.decisionContext ?: DecisionContext(
+                    sourceId = continuation.effectContext.sourceId,
+                    sourceName = continuation.sourceName,
+                    phase = DecisionPhase.RESOLUTION
+                ),
+                minValue = 0,
+                maxValue = maxX
+            ) }
+            return state.suspendForDecision(
+                question = question,
+                answer = continuation.copy(maxX = maxX),
+                events = emptyList(),
+            )
+        }
+        if (response !is NumberChosenResponse || continuation.maxX == null) {
+            return ExecutionResult.error(state, "Expected a yes/no and then a number for may pay X")
         }
 
         val chosenX = response.number
-        if (chosenX <= 0) {
-            // Player declined to pay — nothing happens
-            return checkForMore(state, emptyList())
-        }
+        if (chosenX < 0) return ExecutionResult.error(state, "X can't be negative")
+        if (chosenX == 0) return runMayPayXEffect(state, continuation, 0, emptyList(), checkForMore)
 
         // Player chose to pay X mana — auto-tap sources
         val playerId = continuation.playerId
@@ -1427,17 +1454,29 @@ class ManaPaymentContinuationResumer(
             )
         }
 
-        // Execute the inner effect with the chosen X value
-        val context = continuation.effectContext.copy(xValue = chosenX)
-        val effectResult = services.effectExecutorRegistry.execute(currentState, continuation.effect, context).toExecutionResult()
+        return runMayPayXEffect(currentState, continuation, chosenX, events, checkForMore)
+    }
+
+    /** Run a paid "you may pay {X}" gate's inner effect with the paid X bound into its context. */
+    private fun runMayPayXEffect(
+        state: GameState,
+        continuation: MayPayXContinuation,
+        paidX: Int,
+        paymentEvents: List<GameEvent>,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        val context = continuation.effectContext.copy(xValue = paidX)
+        val effectResult = services.effectExecutorRegistry.execute(state, continuation.effect, context).toExecutionResult()
 
         if (effectResult.error != null) {
             return effectResult
         }
-        if (effectResult.outcome is Outcome.Paused) return effectResult
+        // A pause (the reflexive "when you do" picking its target) still carries the payment's taps.
+        if (effectResult.outcome is Outcome.Paused) {
+            return ExecutionResult.propagatePause(effectResult.state, paymentEvents + effectResult.events)
+        }
 
-        val allEvents = events + effectResult.events
-        return checkForMore(effectResult.state, allEvents)
+        return checkForMore(effectResult.state, paymentEvents + effectResult.events)
     }
 
     /**

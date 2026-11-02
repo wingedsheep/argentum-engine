@@ -1,11 +1,13 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseNumberDecision
+import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.core.NumberChosenResponse
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.mrd.cards.TajNarSwordsmith
+import com.wingedsheep.mtg.sets.definitions.som.cards.AccordersShield
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
@@ -24,24 +26,24 @@ import com.wingedsheep.engine.core.Outcome
  * filter* — `manaValueAtMostX()` reads it off the resolution context — so the tests
  * pin both sides of the bound: an Equipment within X is offered, one above X is not.
  *
- * Bonesplitter is {1} (mana value 1); Fireshrieker is {3} (mana value 3).
+ * Accorder's Shield is {0}; Bonesplitter is {1} (mana value 1); Fireshrieker is {3} (mana value 3).
  */
 class TajNarSwordsmithScenarioTest : FunSpec({
 
     fun newDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(TajNarSwordsmith))
+        driver.registerCards(TestCards.all + listOf(TajNarSwordsmith, AccordersShield))
         driver.initMirrorMatch(deck = Deck.of("Plains" to 40), startingLife = 20)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return driver
     }
 
     /**
-     * Cast the Swordsmith, answer its "pay {X}" chooser with [x], and resolve everything —
+     * Cast the Swordsmith, answer its "Pay {X}?" with [pay] and its X chooser with [x], and resolve everything —
      * picking [pick] out of the library-search options when one matches. Returns the names the
      * search actually offered, so a test can assert on what was *not* findable.
      */
-    fun GameTestDriver.castSwordsmith(player: EntityId, x: Int, pick: String? = null): List<String> {
+    fun GameTestDriver.castSwordsmith(player: EntityId, x: Int, pick: String? = null, pay: Boolean = true): List<String> {
         val card = putCardInHand(player, "Taj-Nar Swordsmith")
         giveMana(player, Color.WHITE, 4 + x)
         castSpell(player, card).outcome shouldBe Outcome.Done
@@ -50,6 +52,7 @@ class TajNarSwordsmithScenarioTest : FunSpec({
         var guard = 0
         while ((stackSize > 0 || isPaused) && guard++ < 40) {
             when (val decision = pendingDecision) {
+                is YesNoDecision -> submitYesNo(player, pay)
                 is ChooseNumberDecision ->
                     submitDecision(player, NumberChosenResponse(decision.id, x))
                 is SelectCardsDecision -> {
@@ -98,13 +101,26 @@ class TajNarSwordsmithScenarioTest : FunSpec({
         (driver.findPermanent(me, "Bonesplitter") != null) shouldBe true
     }
 
-    test("declining the payment (X = 0) searches for nothing") {
+    test("paying X = 0 is a payment: it finds a mana value 0 Equipment, not a mana value 1 one") {
         val driver = newDriver()
         val me = driver.activePlayer!!
         driver.putCardOnTopOfLibrary(me, "Bonesplitter")
+        driver.putCardOnTopOfLibrary(me, "Accorder's Shield")
 
-        driver.castSwordsmith(me, x = 0, pick = "Bonesplitter")
+        val offered = driver.castSwordsmith(me, x = 0, pick = "Accorder's Shield")
 
-        driver.findPermanent(me, "Bonesplitter") shouldBe null
+        offered.contains("Bonesplitter") shouldBe false
+        (driver.findPermanent(me, "Accorder's Shield") != null) shouldBe true
+    }
+
+    test("declining the payment searches nothing") {
+        val driver = newDriver()
+        val me = driver.activePlayer!!
+        driver.putCardOnTopOfLibrary(me, "Accorder's Shield")
+
+        val offered = driver.castSwordsmith(me, x = 0, pick = "Accorder's Shield", pay = false)
+
+        offered shouldBe emptyList()
+        driver.findPermanent(me, "Accorder's Shield") shouldBe null
     }
 })

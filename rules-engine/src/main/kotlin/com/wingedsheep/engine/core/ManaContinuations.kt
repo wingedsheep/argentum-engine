@@ -138,27 +138,36 @@ data class MayPayManaSelectionContinuation(
 ) : AnswerContinuation
 
 /**
- * Resume after the controller chooses an X value for "you may pay {X}" effects.
- * The player selects a number (0 to max affordable), and if > 0, we pay that mana
- * and execute the inner effect with the chosen X value.
+ * Resume a "you may pay {X}" gate ([com.wingedsheep.sdk.scripting.effects.Gate.MayPayX]) — two
+ * answers on one continuation. The first is the yes/no "Pay {X}?": no runs [otherwise]; yes asks
+ * for X from 0 to the most generic mana the payer can produce (re-pushing this continuation with
+ * [maxX] set), or pays X = 0 outright when they can produce none. The second is that number: X is
+ * auto-tapped and [effect] runs with X bound. X = 0 is a payment, not a decline (Isareth the
+ * Awakener returns a mana value 0 creature card).
  *
  * Example: Decree of Justice cycling trigger - "you may pay {X}. If you do,
  * create X 1/1 white Soldier creature tokens."
+ *
+ * @property maxX Null while the yes/no is pending; the offered ceiling once the number is asked.
+ * @property decisionContext The context both prompts show (source, resolution phase); null only
+ *   on a continuation saved before it was recorded.
  */
 @Serializable
 data class MayPayXContinuation(
     val playerId: EntityId,
     val sourceName: String?,
     val effect: Effect,
-    val maxX: Int,
+    val otherwise: Effect? = null,
+    val maxX: Int? = null,
+    val decisionContext: DecisionContext? = null,
     val effectContext: EffectContext
 ) : AnswerContinuation
 
 /**
  * Resume after the payer names how much life to pay for a "you may pay any amount of life" gate
  * ([com.wingedsheep.sdk.scripting.effects.Gate.MayPayAnyAmountOfLife], Necrodominance). The life
- * twin of [MayPayXContinuation]: X > 0 is paid and [effect] runs with X bound; 0 declines and runs
- * [otherwise], as does a payment that can no longer be made.
+ * counterpart of [MayPayXContinuation], but a single number prompt: X > 0 is paid and [effect]
+ * runs with X bound; 0 declines and runs [otherwise], as does a payment that can no longer be made.
  *
  * @property maxX The payable ceiling that was offered, re-checked on resume.
  */

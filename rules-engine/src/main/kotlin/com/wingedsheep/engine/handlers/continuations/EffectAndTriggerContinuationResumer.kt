@@ -481,8 +481,8 @@ class EffectAndTriggerContinuationResumer(
                 // WhenCondition, DoAction, MayPayX, MayPayAnyAmountOfLife and OnceEachTurn never
                 // push this (yes/no) continuation — WhenCondition and OnceEachTurn resolve
                 // synchronously in the executor, DoAction via the action-drain
-                // GatedActionContinuation, the two pay-X gates via their number-chooser
-                // continuations — so these branches are unreachable, present only for exhaustiveness.
+                // GatedActionContinuation, the two pay-X gates via their own continuations
+                // (MayPayXContinuation answers its yes/no too) — so these branches are unreachable, present only for exhaustiveness.
                 is Gate.WhenCondition -> continuation.then
                 is Gate.DoAction -> continuation.then
                 is Gate.MayPayX -> continuation.then

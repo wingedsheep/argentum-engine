@@ -2,6 +2,7 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.CardsSelectedResponse
 import com.wingedsheep.engine.core.ChooseNumberDecision
+import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.NumberChosenResponse
@@ -261,6 +262,9 @@ private fun GameTestDriver.attackAndPayX(
     while (pendingDecision == null && state.step != Step.POSTCOMBAT_MAIN && g++ < 40) {
         bothPass()
     }
+    val consent = pendingDecision as? YesNoDecision
+        ?: error("Expected the pay-{X} yes/no, got ${pendingDecision}")
+    submitYesNo(me, true)
     val payDecision = pendingDecision as? ChooseNumberDecision
         ?: error("Expected pay-{X} ChooseNumberDecision, got ${pendingDecision}")
     submitDecision(me, NumberChosenResponse(payDecision.id, payX))
@@ -285,6 +289,7 @@ private fun GameTestDriver.resolveAllSozin(nameToChoose: String? = null, payX: I
                     ?.takeIf { it >= 0 } ?: 0
                 submitDecision(decision.playerId, OptionChosenResponse(decision.id, idx))
             }
+            decision is YesNoDecision -> submitYesNo(decision.playerId, true)
             decision is ChooseNumberDecision -> {
                 val n = (payX ?: decision.maxValue).coerceIn(0, decision.maxValue)
                 submitDecision(decision.playerId, NumberChosenResponse(decision.id, n))

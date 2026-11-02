@@ -91,6 +91,7 @@ class KarnLivingLegacyScenarioTest : ScenarioTestBase() {
                 .error shouldBe null
             game.resolveStack()
 
+            game.answerYesNo(true).error shouldBe null
             val payX = game.getPendingDecision()
             withClue("the -1 asks how much mana to pay") { (payX is ChooseNumberDecision) shouldBe true }
             game.chooseNumber(2).error shouldBe null

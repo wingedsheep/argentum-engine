@@ -4761,8 +4761,9 @@ object Effects {
         MayPay(PayManaCostEffect(cost), then, otherwise)
 
     /**
-     * "You may pay {X}. If you do, [then]." — prompts for X (0 to the most the player can afford),
-     * pays it, and binds it into [then]'s context as `DynamicAmount.XValue`.
+     * "You may pay {X}. If you do, [then]." — asks whether to pay, then for X (0 to the most the
+     * player can afford; 0 is a real payment), pays it, and binds it into [then]'s context as
+     * `DynamicAmount.XValue`.
      *
      * @param decisionMaker Who chooses X and pays it ("that player may pay any amount of mana" —
      *   Power Leak). Defaults to the controller.

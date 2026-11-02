@@ -24,13 +24,13 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * The trigger is an OTHER-bound enters trigger filtered to non-Human creatures you control
  * (`notSubtype(Human)`), so the Preserver's own arrival doesn't fire it.
  *
- * "You may pay {X}. **When you do**, …" is a reflexive triggered ability (CR 603.7): the payment
+ * "You may pay {X}. **When you do**, …" is a reflexive triggered ability (CR 603.12): the payment
  * happens while the first ability resolves, and the counters go on the stack as a *separate*
- * ability that players may respond to. So the payment gate is [Effects.MayPayX] (a 0..max
- * number chooser that auto-taps X generic mana) and its post-payment effect is a
+ * ability that players may respond to. So the payment gate is [Effects.MayPayX] (a "Pay {X}?"
+ * then a 0..max number chooser that auto-taps X generic mana) and its post-payment effect is a
  * [ReflexiveTriggerEffect] with an empty `action` — the "when you do" condition is already the
  * pay-{X} gate — whose reflexive half reads the X just paid via [DynamicAmount.XValue].
- * Declining, or paying X = 0, puts no ability on the stack in any observable way.
+ * Declining puts no ability on the stack; paying X = 0 does, and it puts no counters.
  */
 val WildbornPreserver = card("Wildborn Preserver") {
     manaCost = "{1}{G}"

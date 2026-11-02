@@ -37,6 +37,8 @@ class HaloForagerScenarioTest : ScenarioTestBase() {
                 game.castSpell(1, "Halo Forager").error shouldBe null
                 game.resolveStack()
 
+                (game.getPendingDecision() is YesNoDecision) shouldBe true
+                game.answerYesNo(true).error shouldBe null
                 (game.getPendingDecision() is ChooseNumberDecision) shouldBe true
                 game.chooseNumber(1).error shouldBe null
 
@@ -71,6 +73,7 @@ class HaloForagerScenarioTest : ScenarioTestBase() {
 
                 game.castSpell(1, "Halo Forager").error shouldBe null
                 game.resolveStack()
+                game.answerYesNo(true).error shouldBe null
                 game.chooseNumber(1).error shouldBe null
                 game.selectTargets(listOf(bolt)).error shouldBe null
                 game.resolveStack()
@@ -82,12 +85,12 @@ class HaloForagerScenarioTest : ScenarioTestBase() {
                 game.isInGraveyard(2, "Lightning Bolt") shouldBe true
             }
 
-            test("declining to pay (X = 0) does nothing") {
+            test("declining to pay does nothing") {
                 val game = board()
 
                 game.castSpell(1, "Halo Forager").error shouldBe null
                 game.resolveStack()
-                game.chooseNumber(0).error shouldBe null
+                game.answerYesNo(false).error shouldBe null
                 game.resolveStack()
 
                 game.hasPendingDecision() shouldBe false
