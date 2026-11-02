@@ -796,9 +796,10 @@ class ConditionEvaluator(
                     Zone.HAND -> player
                         ?.get<com.wingedsheep.engine.state.components.player.CardTypesReturnedToHandFromBattlefieldThisTurnComponent>()
                         ?.types
-                    else -> player
+                    Zone.GRAVEYARD -> player
                         ?.get<com.wingedsheep.engine.state.components.player.CardTypesPutIntoGraveyardFromBattlefieldThisTurnComponent>()
                         ?.types
+                    else -> null
                 }.orEmpty()
                 condition.cardType?.let { it in types } ?: types.isNotEmpty()
             }
