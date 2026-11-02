@@ -2329,7 +2329,7 @@ data class PermanentsWithCountersPutIntoGraveyardThisTurnComponent(
  * The card types of permanents put into this player's graveyard from the battlefield this turn,
  * read off each one's last-known type line. Keyed on the owner — "your graveyard" is the owner's —
  * and tokens count (they reach the graveyard before ceasing to exist). Cleared at end of turn by
- * CleanupPhaseManager. Backs `PermanentTypePutIntoGraveyardFromBattlefieldThisTurn` (Kami of
+ * CleanupPhaseManager. Backs `PermanentPutIntoZoneFromBattlefieldThisTurn(GRAVEYARD)` (Kami of
  * Transience).
  */
 @Serializable
@@ -2337,6 +2337,22 @@ data class CardTypesPutIntoGraveyardFromBattlefieldThisTurnComponent(
     val types: Set<CardType> = emptySet()
 ) : Component {
     fun with(added: Collection<CardType>): CardTypesPutIntoGraveyardFromBattlefieldThisTurnComponent =
+        if (types.containsAll(added)) this else copy(types = types + added)
+}
+
+/**
+ * The card types of permanents returned to this player's hand from the battlefield this turn, read
+ * off each one's last-known type line — the hand-destination sibling of
+ * [CardTypesPutIntoGraveyardFromBattlefieldThisTurnComponent], keyed on the owner the same way
+ * ("your hand" is the owner's), and tokens count (they reach the hand before ceasing to exist).
+ * Cleared at end of turn by CleanupPhaseManager. Backs
+ * `PermanentPutIntoZoneFromBattlefieldThisTurn(HAND)` (Miles O'Brien, Transporter Ops).
+ */
+@Serializable
+data class CardTypesReturnedToHandFromBattlefieldThisTurnComponent(
+    val types: Set<CardType> = emptySet()
+) : Component {
+    fun with(added: Collection<CardType>): CardTypesReturnedToHandFromBattlefieldThisTurnComponent =
         if (types.containsAll(added)) this else copy(types = types + added)
 }
 

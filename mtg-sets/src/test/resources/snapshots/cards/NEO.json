@@ -10939,7 +10939,7 @@
                     "Graveyard"
                 ],
                 "interveningIf": {
-                    "type": "PermanentTypePutIntoGraveyardFromBattlefieldThisTurn",
+                    "type": "PermanentPutIntoZoneFromBattlefieldThisTurn",
                     "cardType": "ENCHANTMENT"
                 }
             }
