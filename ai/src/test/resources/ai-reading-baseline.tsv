@@ -901,6 +901,7 @@ Assert Authority
 Assert Perfection
 Assimilate Essence
 Assimilation Aegis	intent: BecomeCopyOfLinkedExileEffect; polarity: AttachEquipmentEffect
+Assure // Assemble	timing: GrantKeywordEffect
 Astelli Reclaimer	intent: MoveToZoneEffect
 Astor, Bearer of Blades
 Astral Cornucopia
@@ -965,6 +966,7 @@ Auramancer
 Auratog
 Auratouched Mage
 Aurelia's Vindicator	intent: Pipeline(ChosenTargets→exile); intent: Pipeline(FromLinkedExile→hand); polarity: Pipeline(ChosenTargets→exile)
+Aurelia, Exemplar of Justice
 Aurelia, the Law Above
 Aurelia, the Warleader	intent: AddCombatPhaseEffect; intent: ForEach>TapUntapEffect
 Aurification	intent: AddCountersEffect; intent: ForEach>RemoveCountersEffect
@@ -1535,6 +1537,7 @@ Blacksmith's Talent
 Blacksnag Buzzard
 Blade Banish
 Blade Historian
+Blade Instructor
 Blade Juggler
 Blade Sliver
 Blade Splicer
@@ -1913,6 +1916,7 @@ Boris Devilboon
 Born to Drive
 Borne Upon a Wind	timing: GrantFlashToSpellsEffect
 Boromir, Warden of the Tower
+Boros Challenger
 Boros Charm
 Boros Fury-Shield
 Boros Garrison
@@ -1959,6 +1963,7 @@ Bounding Felidar
 Bounding Wolf
 Bountiful Landscape
 Bountiful Promenade
+Bounty Agent
 Bovine Intervention
 Brackish Blunder	polarity: MoveToZoneEffect
 Brackish Trudge
@@ -2321,6 +2326,7 @@ Callous Inspector
 Callous Oppressor
 Callous Sell-Sword	polarity: SacrificeTargetEffect
 Caltrops	intent: DealDamageEffect
+Camaraderie
 Camel
 Camellia, the Seedmiser
 Camera Launcher
@@ -2563,6 +2569,7 @@ Centaur Courser
 Centaur Glade
 Centaur Healer
 Centaur Nurturer
+Centaur Peacemaker
 Centaur Safeguard
 Centaur Veteran
 Centaur's Herald
@@ -2626,6 +2633,7 @@ Champion's Helm
 Champion's Victory	polarity: MoveToZoneEffect
 Champions of the Perfect	intent: Pipeline(FromLinkedExile→hand)
 Champions of the Shoal	intent: Pipeline(FromLinkedExile→hand)
+Chance for Glory
 Chance-Met Elves
 Chancellor of Tales	intent: CopyTargetSpellEffect
 Chandra Nalaar
@@ -3668,6 +3676,7 @@ Dark Sphere
 Dark Supplicant	intent: Pipeline(FromMultipleZones→battlefield)
 Dark Withering
 Dark-Dweller Oracle	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Darkblade Agent
 Darkblast
 Darkbore Pathway
 Darkheart Sliver
@@ -3972,6 +3981,7 @@ Demonic Tutor
 Demonic Vigor
 Demonlord Belzenlok	intent: ExileFromTopRepeatingEffect
 Demonmail Hauberk
+Demotion
 Demystify
 Den of the Bugbear	intent: GrantTriggeredAbilityEffect; timing: GrantTriggeredAbilityEffect
 Denethor, Ruling Steward
@@ -4275,8 +4285,10 @@ Domesticated Hydra	intent: BecomeMonstrousEffect
 Dominating Vampire	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
 Domineer
 Domri's Ambush
+Domri's Nodorog	intent: Pipeline(FromMultipleZones→hand)
 Domri, Anarch of Bolas	polarity: FightEffect
 Domri, Chaos Bringer	intent: CreateGlobalTriggeredAbilityEffect
+Domri, City Smasher
 Don & Leo, Problem Solvers	polarity: MoveToZoneEffect
 Don & Raph, Hard Science	intent: GrantNextSpellAffinityEffect
 Don't Make a Sound
@@ -4322,7 +4334,9 @@ Douse in Gloom
 Douser of Lights
 Dovin's Acuity
 Dovin's Automaton
+Dovin's Dismissal	polarity: MoveToZoneEffect
 Dovin's Veto
+Dovin, Architect of Law	polarity: SkipStepOrPhaseEffect
 Dovin, Grand Arbiter
 Dovin, Hand of Control	polarity: mixed(PreventDamageEffect)
 Down in the Valley
@@ -5204,6 +5218,7 @@ Etherium Sculptor
 Ethersworn Adjudicator
 Ethersworn Sphinx	intent: CascadeEffect
 Etrata, Deadly Fugitive	intent: Pipeline(TopOfLibrary→battlefield)
+Etrata, the Silencer
 Eumidian Hatchery
 Eumidian Terrabotanist
 Eunuchs' Intrigues	intent: ForEach>CantBlockEffect; intent: Pipeline(ControlledPermanents→?); polarity: Pipeline(ControlledPermanents→?)
@@ -5921,6 +5936,7 @@ Flourishing Hunter
 Flow State
 Flow of Ideas
 Flow of Knowledge
+Flower // Flourish
 Flowerfoot Swordmaster
 Flowering of the White Tree
 Flowstone Armor	polarity: ModifyStatsEffect
@@ -6121,6 +6137,7 @@ Frenzied Raptor
 Frenzied Tilling
 Fresh Start
 Fresh Volunteers
+Fresh-Faced Recruit
 Fretwork Colony
 Freya Crescent
 Friendly Ghost
@@ -6321,6 +6338,7 @@ Garnet, Princess of Alexandria	intent: ForEach>RemoveCountersEffect; intent: Pip
 Garrison Cat
 Garrison Excavator
 Garrison Griffin
+Garrison Sergeant
 Garruk Relentless
 Garruk Wildspeaker	intent: ForEach>TapUntapEffect
 Garruk's Companion
@@ -6581,6 +6599,7 @@ Gingerbread Cabin
 Gingerbread Hunter
 Gingerbrute	combat: GrantCantBeBlockedExceptByEffect; intent: GrantCantBeBlockedExceptByEffect; timing: GrantCantBeBlockedExceptByEffect
 Giott, King of the Dwarves
+Gird for Battle
 Girder Goons
 Gisa and Geralf
 Gisa's Bidding
@@ -7226,6 +7245,7 @@ Guiding Hydra
 Guiding Voice
 Guild Globe
 Guild Thief	intent: GrantKeywordEffect
+Guildmages' Forum
 Guildpact Informant
 Guile
 Guilty Conscience
@@ -7272,6 +7292,7 @@ HULK SMASH!
 HYDRA Assault Robot
 HYDRA Infiltration	intent: Pipeline(hand→graveyard); polarity: Pipeline(hand→graveyard)
 HYDRA Troopers
+Haazda Marshal
 Haazda Officer
 Haazda Vigilante
 Hackrobat	intent: GrantKeywordEffect
@@ -7321,6 +7342,7 @@ Hamlet Captain
 Hamlet Glutton
 Hamlet Vanguard
 Hamletback Goliath
+Hammer Dropper
 Hammer Mage
 Hammer of Ruin
 Hammerfist Giant
@@ -8257,6 +8279,7 @@ Instrument of the Bards
 Instruments of War
 Insurrection
 Intangible Virtue
+Integrity // Intervention
 Intellectual Offering
 Intelligence Bobblehead
 Interceptor Mechan
@@ -8604,6 +8627,7 @@ Johan	intent: AttacksWithoutTappingGroupEffect; intent: CantAttackEffect
 Johann's Stopgap	polarity: MoveToZoneEffect
 Johann, Apprentice Sorcerer
 Join Forces	timing: ForEach>ModifyStatsEffect
+Join Shields	timing: ForEach>GrantKeywordEffect
 Join the Dance
 Join the Dead
 Join the Maestros
@@ -8680,6 +8704,7 @@ Juri, Master of the Revue
 Jushi Apprentice
 Just Fate
 Just the Wind	polarity: MoveToZoneEffect
+Justice Strike
 Justice, Vance Astrovik	polarity: MoveToZoneEffect
 Justiciar's Portal	polarity: MoveToZoneEffect; timing: GrantKeywordEffect
 Juvenile Gloomwidow
@@ -9342,6 +9367,7 @@ Leave No Trace
 Leave in the Dust	polarity: MoveToZoneEffect
 Leaves from the Vine
 Lecturing Scornmage
+Ledev Champion
 Ledev Guardian
 Ledger Shredder
 Leech Collector	intent: BecomePreparedEffect
@@ -9460,6 +9486,7 @@ Light of Hope
 Light of Judgment
 Light of Promise
 Light of Sanction
+Light of the Legion
 Light the Way	polarity: MoveToZoneEffect
 Light-Paws, Emperor's Voice
 Lightbringer
@@ -11768,6 +11795,7 @@ Pardic Lancer
 Pardic Swordsmith
 Pardic Wanderer
 Parhelion II
+Parhelion Patrol
 Pariah's Shield	polarity: AttachEquipmentEffect
 Parish-Blade Trainee	intent: EmitKeywordCounterEventEffect; intent: MoveAllLastKnownCountersEffect; polarity: MoveAllLastKnownCountersEffect
 Park Heights Pegasus
@@ -13160,6 +13188,7 @@ Respite
 Resplendent Angel
 Resplendent Marshal
 Resplendent Mentor
+Response // Resurgence	intent: AddCombatPhaseEffect; intent: AddMainPhaseEffect; intent: ForEach>GrantKeywordEffect
 Rest in Peace	intent: Pipeline(graveyard→exile)
 Restless Anchorage
 Restless Bivouac
@@ -15341,9 +15370,11 @@ Sphinx of Forgotten Lore	intent: GrantFlashbackEffect; polarity: GrantFlashbackE
 Sphinx of Magosi
 Sphinx of New Prahv
 Sphinx of the Final Word
+Sphinx of the Guildpact
 Sphinx of the Second Sun	intent: AddBeginningPhaseEffect
 Sphinx of the Steel Wind
 Sphinx's Approach
+Sphinx's Insight
 Sphinx's Revelation
 Spicy Oatmeal Pizza
 Spider Food
@@ -15992,6 +16023,7 @@ Sunblade Angel
 Sunblade Elf
 Sunblade Samurai
 Sunblast Angel
+Sunder Shaman
 Sunder the Gateway
 Sunderflock	intent: Pipeline(BattlefieldMatching→hand)
 Sundering Archaic	polarity: MoveToZoneEffect
@@ -16011,6 +16043,7 @@ Sungrace Pegasus
 Sungrass Egg
 Sungrass Prairie
 Sunhome Enforcer
+Sunhome Stalwart
 Sunhome, Fortress of the Legion	intent: GrantKeywordEffect
 Sunken Citadel
 Sunken City
@@ -16137,6 +16170,7 @@ Swashbuckler's Whip
 Swashbuckling
 Swat
 Swat Away	intent: PutOnLibraryPositionOfChoiceEffect; polarity: PutOnLibraryPositionOfChoiceEffect
+Swathcutter Giant
 Sway of Illusion	polarity: ChooseColorThenEffect
 Sweet Oblivion	polarity: Pipeline(TopOfLibrary→graveyard)
 Sweettooth Witch
@@ -16261,6 +16295,7 @@ Tainted Treats
 Tainted Well	polarity: Aura>DrawCardsEffect; polarity: Aura>SetEnchantedLandType
 Tainted Wood
 Taj-Nar Swordsmith
+Tajic, Legion's Edge	intent: GrantKeywordEffect
 Tajuru Beastmaster
 Tajuru Blightblade
 Tajuru Paragon
@@ -16714,6 +16749,7 @@ The Goose Mother
 The Great Goblin	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 The Great Henge
 The Grey Havens
+The Haunt of Hightower	intent: Pipeline(hand→graveyard)
 The Hive
 The Horus Heresy
 The Hunger Tide Rises
@@ -16843,6 +16879,7 @@ The Wondrous Wasp
 The World Spell
 The World Tree
 The Wretched
+Theater of Horrors	intent: Pipeline(TopOfLibrary→exile)
 Theft of Dreams	polarity: DrawCardsEffect
 Thelon's Chant
 Thelon's Curse	intent: GatedEffect; intent: Pipeline(ControlledPermanents→?)
@@ -17471,12 +17508,14 @@ Troll Ascetic
 Troll Negotiations
 Troll of Khazad-dûm
 Troll-Horn Cameo
+Trollbred Guardian	intent: AdaptEffect
 Trollhide
 Trolls of Tel-Jilad
 Troop of Ponies
 Trophy Hunter
 Trophy Mage
 Tropical Island
+Trostani Discordant	intent: ForEach>GiveControlToTargetPlayerEffect
 Trostani, Three Whispers	intent: GrantKeywordEffect
 Troubled Healer
 Troublemaker Ouphe
@@ -17490,6 +17529,7 @@ True Ancestry
 True Believer
 True Love's Kiss
 True Polymorph	intent: EachPermanentBecomesCopyOfTargetEffect; polarity: EachPermanentBecomesCopyOfTargetEffect
+Truefire Captain
 Trufflesnout
 Trumpet Blast
 Trumpeting Carnosaur	intent: DiscoverEffect
@@ -18037,6 +18077,7 @@ Venerable Kumo
 Venerable Lammasu
 Venerable Monk
 Venerable Warsinger
+Venerated Loxodon
 Venerated Rotpriest	polarity: AddCountersEffect
 Venerated Stormsinger
 Vengeance
@@ -18765,6 +18806,7 @@ Whisper of the Dross
 Whisper, Blood Liturgist
 Whispering Madness
 Whispering Shade
+Whispering Snitch
 Whispering Wizard
 Whispersilk Cloak
 White Auracite
@@ -19257,6 +19299,7 @@ Zealous Guardian
 Zealous Inquisitor	intent: RedirectNextDamageEffect; polarity: RedirectNextDamageEffect; timing: RedirectNextDamageEffect
 Zealous Lorecaster
 Zealous Strike
+Zegana, Utopian Speaker	intent: AdaptEffect
 Zell Dincht
 Zelyon Sword
 Zendikar Farguide
