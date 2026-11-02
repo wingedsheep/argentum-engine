@@ -2142,6 +2142,25 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     }
 
     /**
+     * How many extra turns a player has *begun* this game — counted when such a turn actually
+     * starts, so an extra turn that was created but never began (prevented by Ugin's Nexus, or the
+     * game ended first) doesn't count. `Compare(ExtraTurnsBegunThisGame(), EQ, 0)` is "if you
+     * haven't begun an extra turn this game" (H.M.S. Bounty, Unlikely Timeship). A multi-player
+     * [player] scope sums across those players.
+     *
+     * Neighbours: [SpellsCastThisGame] and [CardsCycledThisGame] are the same game-long, per-player
+     * count over different actions; [TurnTracking] holds only per-turn trackers that are cleared at
+     * every turn boundary, so a game-long count can't be one of its values.
+     */
+    @SerialName("ExtraTurnsBegunThisGame")
+    @Serializable
+    data class ExtraTurnsBegunThisGame(val player: Player = Player.You) : DynamicAmount {
+        override val description: String =
+            if (player == Player.You) "the number of extra turns you've begun this game"
+            else "the number of extra turns ${player.description} has begun this game"
+    }
+
+    /**
      * Total printed power of the cards exiled to craft the source permanent (CR 702.167c).
      *
      * Reads the source's

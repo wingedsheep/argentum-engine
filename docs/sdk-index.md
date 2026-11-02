@@ -662,6 +662,7 @@ Families:
 - `DynamicAmount.Divide(numerator: DynamicAmount, denominator: DynamicAmount, roundUp: Boolean)` — Divide one dynamic amount by another, with configurable rounding.
 - `DynamicAmount.DungeonsCompleted(player: Player, dungeon: String?, distinctNames: Boolean)` — How many dungeons player has completed this game (CR 309.7 — a player completes a dungeon as it is removed from the game).
 - `DynamicAmount.EntityProperty(entity: EffectTarget.SingleEntity, numericProperty: EntityNumericProperty)` — Read a numeric property from a referenced entity.
+- `DynamicAmount.ExtraTurnsBegunThisGame(player: Player)` — How many extra turns a player has *begun* this game — counted when such a turn actually starts, so an extra turn that was created but never began (prevented by Ugin's Nexus, or the game ended first…
 - `DynamicAmount.Fixed(amount: Int)` — Fixed amount (for consistency in the type system).
 - `DynamicAmount.GraveyardRelativeCount(entity: EffectTarget.SingleEntity, above: Boolean, filter: GameObjectFilter)` — Count matching cards above or below a current object in its graveyard.
 - `DynamicAmount.GreatestAmongPlayers(players: Player, inner: DynamicAmount)` — The largest value inner takes when measured **once per player** in players — Oracle's "the greatest number of X a player controls / an opponent controls / has".

@@ -49,6 +49,7 @@ import com.wingedsheep.engine.state.components.player.PlayerTurnsTakenComponent
 import com.wingedsheep.engine.state.components.player.SkipCombatPhasesComponent
 import com.wingedsheep.engine.state.components.player.SkippedTurnPartsComponent
 import com.wingedsheep.engine.state.components.player.SkipNextTurnComponent
+import com.wingedsheep.engine.state.components.player.ExtraTurnsBegunThisGameComponent
 import com.wingedsheep.engine.state.components.player.SkipNextUntapStepComponent
 import com.wingedsheep.engine.state.components.player.EndTheTurnRequestedComponent
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
@@ -1110,6 +1111,8 @@ class TurnManager(
                 current = expireEffectsOfDepartedSeatsWhoseTurnWouldBeginNow(current, previous, candidate)
                 events += copyExpiryEvents(beforeCopyExpiry, current)
             }
+            // The turn the bypasses walked to is the inserted extra turn (CR 500.7).
+            val extraTurn = bypassedOrdinarySeats
             bypassedOrdinarySeats = false
             val choices = turnStartChoices(current, team)
             val skips = team.any { current.getEntity(it)?.has<SkipNextTurnComponent>() == true }
@@ -1132,12 +1135,12 @@ class TurnManager(
                         optionCardIds = alternatives.mapIndexedNotNull { index, option ->
                             option.context.sourceId?.takeIf { it in choiceState.getBattlefield() }?.let { index to listOf(it) }
                         }.toMap()) },
-                    answer = TurnStartReplacementContinuation(candidate, alternatives, followUps)
+                    answer = TurnStartReplacementContinuation(candidate, alternatives, followUps, extraTurn)
                 )
                 return result.copy(events = events + result.events)
             }
             if (!skips) {
-                val result = finishTurnSelection(current, candidate, followUps)
+                val result = finishTurnSelection(current, candidate, followUps, extraTurn)
                 return result.copy(events = events + result.events)
             }
             current = consumePendingTurnSkip(current, team)
@@ -1189,7 +1192,7 @@ class TurnManager(
         if (response !is OptionChosenResponse || response.optionIndex !in 0..frame.options.size)
             return ExecutionResult.error(state, "Expected a valid turn replacement choice")
         if (response.optionIndex == frame.options.size)
-            return finishTurnSelection(state, frame.nextPlayerId, frame.followUps)
+            return finishTurnSelection(state, frame.nextPlayerId, frame.followUps, frame.extraTurn)
         val chosen = frame.options[response.optionIndex]
         val result = selectNextTurn(state, state.getNextTeam(frame.nextPlayerId), frame.followUps + chosen,
             previousPlayerId = frame.nextPlayerId)
@@ -1197,7 +1200,7 @@ class TurnManager(
     }
 
     private fun finishTurnSelection(state: GameState, nextPlayer: EntityId,
-        followUps: List<TurnStartFollowUp>): ExecutionResult {
+        followUps: List<TurnStartFollowUp>, extraTurn: Boolean = false): ExecutionResult {
         val nextTeam = state.sharedTurnTeam(nextPlayer)
         if (nextTeam.any { state.getEntity(it)?.has<SkipNextTurnComponent>() == true }) {
             val skipped = consumePendingTurnSkip(state, nextTeam)
@@ -1205,11 +1208,24 @@ class TurnManager(
                 previousPlayerId = nextPlayer)
             return result.copy(events = listOf(TurnSkippedEvent(nextPlayer)) + result.events)
         }
-        val turnResult = startTurn(state, nextPlayer)
+        val turnResult = startTurn(if (extraTurn) recordExtraTurnBegun(state, nextTeam) else state, nextPlayer)
         if (turnResult.outcome !is Outcome.Done) return turnResult
         val result = finishTurnStart(turnResult.state, nextPlayer, followUps)
         return result.copy(events = turnResult.events + result.events)
     }
+
+    /**
+     * The team is beginning an extra turn: bump each member's game-long count, which backs
+     * `DynamicAmount.ExtraTurnsBegunThisGame` ("if you haven't begun an extra turn this game").
+     * Stamped as the turn begins, so an extra turn skipped or replaced before it starts never counts.
+     */
+    private fun recordExtraTurnBegun(state: GameState, team: List<EntityId>): GameState =
+        team.fold(state) { current, member ->
+            current.updateEntity(member) { container ->
+                container.with(ExtraTurnsBegunThisGameComponent(
+                    (container.get<ExtraTurnsBegunThisGameComponent>()?.count ?: 0) + 1))
+            }
+        }
 
     /** Skip-then actions are the first work in the next actual turn (CR 614.10b). */
     fun finishTurnStart(state: GameState, playerId: EntityId,

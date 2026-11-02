@@ -1804,6 +1804,15 @@ data class CardsCycledThisGameComponent(val countsByName: Map<String, Int> = emp
 data class SpellsCastThisGameComponent(val count: Int = 0) : Component
 
 /**
+ * How many extra turns this player has begun this game. Never cleared. Incremented by
+ * `TurnManager` when a turn starts that the extra-turn bypasses inserted (an extra turn, CR 500.7);
+ * backs [com.wingedsheep.sdk.scripting.values.DynamicAmount.ExtraTurnsBegunThisGame] — "if you
+ * haven't begun an extra turn this game" (H.M.S. Bounty, Unlikely Timeship).
+ */
+@Serializable
+data class ExtraTurnsBegunThisGameComponent(val count: Int = 0) : Component
+
+/**
  * Tracks the number of permanents (tokens included) put into this player's hand from the
  * battlefield this turn, keyed on the owner. Cleared at end of turn by CleanupPhaseManager.
  *
