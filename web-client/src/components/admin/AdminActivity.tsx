@@ -1,8 +1,9 @@
 /**
  * Admin Activity: global, cross-player lists of recent games and recent tournaments — the same
  * "recent games + tournaments you can click through" experience a player gets on their own profile,
- * but spanning every player. Games page through every recorded game (newest first) and link to their
- * replay; tournaments open the shared {@link TournamentDetailModal} (standings + every game played).
+ * but spanning every player. Games page through every recorded game (newest first), show each seat's
+ * deck colours, and open every seat's decklist (the shared {@link MatchDecksModal}, kept in `?game=`)
+ * or the replay; tournaments open the shared {@link TournamentDetailModal} (standings + every game played).
  *
  * Read-only and gated behind the dashboard's shared {@link AdminAuth}. The screen scrolls itself
  * (see AdminScreen).
@@ -22,7 +23,8 @@ import { TournamentDetailModal } from '@/components/profile/TournamentDetailModa
 import { formatDateTime } from '@/utils/datetime'
 import { gameModeLabel } from './statFormat'
 import { AdminScreen, Panel, Table, adminTheme, cellStyle } from './adminUi'
-import { useAdminPageParam, useAdminTournamentParam } from './adminNav'
+import { useAdminPageParam, useAdminParam, useAdminTournamentParam } from './adminNav'
+import { ColorPips, MatchDecksModal } from './AiVsHumanGames'
 
 /** Games per page in the recent-games pager. */
 const GAMES_PAGE_SIZE = 20
@@ -40,6 +42,8 @@ export function AdminActivity({ auth, onBack }: { auth: AdminAuth; onBack: () =>
   const [tournaments, setTournaments] = useState<TournamentSummary[]>([])
   const [tournamentsError, setTournamentsError] = useState<string | null>(null)
   const [openTournament, setOpenTournament, closeTournament] = useAdminTournamentParam()
+  const [gameParam, openGame, closeGame] = useAdminParam('game')
+  const openMatchId = gameParam != null && /^\d+$/.test(gameParam) ? Number(gameParam) : null
 
   const loadGames = useCallback(
     async (p: number) => {
@@ -103,11 +107,16 @@ export function AdminActivity({ auth, onBack }: { auth: AdminAuth; onBack: () =>
         ) : games.length === 0 ? (
           <p style={cellStyle.muted}>No games recorded yet.</p>
         ) : (
-          <Table head={['Date', 'Mode', 'Players', 'Winner', 'Replay']}>
+          <Table head={['Date', 'Mode', 'Players & decks', 'Winner', '']} leftColumns={4}>
             {games.map((g) => {
               const mode = gameModeLabel(g.gameMode, g.format)
               return (
-                <tr key={g.gameId}>
+                <tr
+                  key={g.gameId}
+                  style={g.hasDecks ? styles.clickableRow : undefined}
+                  title={g.hasDecks ? 'Open both decks' : undefined}
+                  onClick={g.hasDecks ? () => openGame(String(g.matchId)) : undefined}
+                >
                   <td style={cellStyle.td}>{formatDateTime(g.endedAt)}</td>
                   <td style={cellStyle.td}>
                     {mode.primary}
@@ -118,14 +127,27 @@ export function AdminActivity({ auth, onBack }: { auth: AdminAuth; onBack: () =>
                     <Players players={g.players} onProfile={(uid) => navigate(`/u/${uid}`)} />
                   </td>
                   <td style={cellStyle.td}>{g.winnerName ?? '—'}</td>
-                  <td style={cellStyle.tdNum}>
-                    {g.hasReplay ? (
-                      <button type="button" style={styles.link} onClick={() => navigate(`/replay/${g.gameId}`)}>
-                        Watch
-                      </button>
-                    ) : (
-                      <span style={styles.noReplay}>—</span>
-                    )}
+                  <td style={{ ...cellStyle.tdNum, whiteSpace: 'nowrap' }}>
+                    <span style={styles.actions} onClick={(e) => e.stopPropagation()}>
+                      {g.hasDecks ? (
+                        <button type="button" style={styles.actionPrimary} onClick={() => openGame(String(g.matchId))}>
+                          Decks
+                        </button>
+                      ) : (
+                        <span style={styles.actionNone} title="No decklist was recorded for this game">
+                          No decks
+                        </span>
+                      )}
+                      {g.hasReplay ? (
+                        <button type="button" style={styles.actionSecondary} onClick={() => navigate(`/replay/${g.gameId}`)}>
+                          Replay
+                        </button>
+                      ) : (
+                        <span style={styles.actionNone} title="No replay was stored for this game">
+                          No replay
+                        </span>
+                      )}
+                    </span>
                   </td>
                 </tr>
               )
@@ -160,6 +182,8 @@ export function AdminActivity({ auth, onBack }: { auth: AdminAuth; onBack: () =>
         )}
       </Panel>
 
+      {openMatchId != null && <MatchDecksModal auth={auth} matchId={openMatchId} onClose={closeGame} />}
+
       {openTournament != null && (
         <TournamentDetailModal tournamentId={openTournament} onClose={closeTournament} />
       )}
@@ -175,16 +199,31 @@ function Players({ players, onProfile }: { players: AdminGamePlayer[]; onProfile
       {players.map((p, i) => (
         <span key={`${p.name}-${i}`}>
           {i > 0 && <span style={styles.vs}> vs </span>}
-          {p.userId ? (
-            <button type="button" style={p.won ? styles.playerLinkWon : styles.playerLink} onClick={() => onProfile(p.userId as string)}>
-              {p.name}
-            </button>
-          ) : (
-            <span style={p.won ? styles.winner : undefined}>
-              {p.name}
-              {p.isAi ? <span style={styles.aiTag}> AI</span> : null}
-            </span>
-          )}
+          {/* Name and deck colours wrap as one unit, so the pips never land on a line of their own. */}
+          <span style={styles.seat}>
+            {p.userId ? (
+              <button
+                type="button"
+                style={p.won ? styles.playerLinkWon : styles.playerLink}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onProfile(p.userId as string)
+                }}
+              >
+                {p.name}
+              </button>
+            ) : (
+              <span style={p.won ? styles.winner : undefined}>
+                {p.name}
+                {p.isAi ? <span style={styles.aiTag}> AI</span> : null}
+              </span>
+            )}
+            {p.colors != null && (
+              <span style={styles.seatPips}>
+                <ColorPips colors={p.colors} />
+              </span>
+            )}
+          </span>
           <PlayerOrigin location={p.location} />
         </span>
       ))}
@@ -225,8 +264,29 @@ const styles: Record<string, React.CSSProperties> = {
   error: { color: adminTheme.bad, fontSize: 13, margin: 0 },
   variant: { color: adminTheme.textMuted },
   tournamentTag: { color: adminTheme.accent },
-  link: { background: 'none', border: 'none', color: adminTheme.accent, cursor: 'pointer', fontSize: 13, padding: 0 },
-  noReplay: { color: adminTheme.textMuted, fontSize: 13 },
+  actions: { display: 'inline-flex', alignItems: 'center', gap: 6, justifyContent: 'flex-end' },
+  actionPrimary: {
+    padding: '3px 10px',
+    borderRadius: 6,
+    border: '1px solid rgba(242, 201, 122, 0.4)',
+    background: 'rgba(242, 201, 122, 0.1)',
+    color: '#f2c97a',
+    fontSize: 12,
+    fontWeight: 600,
+    cursor: 'pointer',
+  },
+  actionSecondary: {
+    padding: '3px 10px',
+    borderRadius: 6,
+    border: `1px solid ${adminTheme.border}`,
+    background: 'none',
+    color: adminTheme.accent,
+    fontSize: 12,
+    cursor: 'pointer',
+  },
+  actionNone: { color: adminTheme.textMuted, fontSize: 11, padding: '0 6px' },
+  seat: { whiteSpace: 'nowrap' },
+  seatPips: { marginLeft: 4, verticalAlign: 'middle' },
   vs: { color: adminTheme.textMuted },
   winner: { color: adminTheme.text, fontWeight: 600 },
   playerLink: { background: 'none', border: 'none', color: adminTheme.accent, cursor: 'pointer', fontSize: 'inherit', padding: 0 },

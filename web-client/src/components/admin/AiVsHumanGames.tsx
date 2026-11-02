@@ -162,7 +162,7 @@ export function GameList({
   )
 }
 
-/** Every seat's deck for one game, AI first, with a link to its replay. */
+/** Every seat's deck for one game, AI first, with a link to its replay. Shared by the AI-vs-humans and Activity screens. */
 export function MatchDecksModal({ auth, matchId, onClose }: { auth: AdminAuth; matchId: number; onClose: () => void }) {
   const [decks, setDecks] = useState<GameDecks | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -181,9 +181,12 @@ export function MatchDecksModal({ auth, matchId, onClose }: { auth: AdminAuth; m
 
   const ai = decks?.participants.filter((p) => p.isAi) ?? []
   const humans = decks?.participants.filter((p) => !p.isAi) ?? []
-  const title = decks
-    ? `${ai.length > 1 ? `${ai.length} AI seats` : 'Engine AI'} vs ${humans.map((p) => p.playerName).join(', ') || 'humans'}`
-    : 'Game decks'
+  // An AI game reads "Engine AI vs <humans>"; a game between people names every seat.
+  const title = !decks
+    ? 'Game decks'
+    : ai.length === 0
+      ? humans.map((p) => p.playerName).join(' vs ') || 'Game decks'
+      : `${ai.length > 1 ? `${ai.length} AI seats` : 'Engine AI'} vs ${humans.map((p) => p.playerName).join(', ') || 'humans'}`
   const subtitle = decks
     ? `${modeText(decks.gameMode, decks.format ?? null)} · ${new Date(decks.endedAt).toLocaleString(undefined, {
         dateStyle: 'medium',

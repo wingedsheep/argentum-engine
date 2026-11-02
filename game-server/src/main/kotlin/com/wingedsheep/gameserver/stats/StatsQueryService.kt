@@ -257,8 +257,11 @@ data class TournamentSummary(
 data class AdminGamePlayer(
     val name: String,
     val userId: UUID?,
-    val isAi: Boolean,
+    // Pinned: Jackson would otherwise emit `ai`, which the client never reads (its AI tag went missing).
+    @get:JsonProperty("isAi") val isAi: Boolean,
     val won: Boolean,
+    /** The seat's deck colours, canonical WUBRG ("" colourless); null when no deck was recorded. */
+    val colors: String? = null,
     // Coarse connection origin, resolved from the seat's recorded IP via [GeoIpService]. Null for AI
     // seats and when the IP couldn't be resolved. Raw IPs never reach the client — only the location.
     val location: GeoLocation? = null,
@@ -266,6 +269,8 @@ data class AdminGamePlayer(
 
 /** A recorded game for the admin global game list, newest first, with every seat. */
 data class AdminRecentGame(
+    /** Opens every seat's deck through the admin `/matches/{matchId}/decks` endpoint. */
+    val matchId: Long,
     val gameId: String,
     val endedAt: String,
     val gameMode: String?,
@@ -273,6 +278,8 @@ data class AdminRecentGame(
     val players: List<AdminGamePlayer>,
     val winnerName: String?,
     val hasReplay: Boolean,
+    /** True when at least one seat's decklist was recorded, so the deck viewer has something to show. */
+    val hasDecks: Boolean,
     val tournamentName: String?,
 )
 
@@ -1304,11 +1311,17 @@ class StatsQueryService(
             val format: String?,
             val lobbyId: String?,
             val hasReplay: Boolean,
+            val hasDecks: Boolean,
         )
         val rows = jdbc.query(
             """
             SELECT r.id AS mid, r.game_id AS game_id, r.ended_at AS ended_at, r.game_mode AS game_mode,
-                   r.format AS format, r.lobby_id AS lobby_id, (gr.id IS NOT NULL) AS has_replay
+                   r.format AS format, r.lobby_id AS lobby_id, (gr.id IS NOT NULL) AS has_replay,
+                   EXISTS (
+                       SELECT 1 FROM match_participants p
+                       JOIN match_participant_cards c ON c.participant_id = p.id
+                       WHERE p.match_id = r.id
+                   ) AS has_decks
             FROM match_results r
             LEFT JOIN game_replays gr ON gr.game_id = r.game_id
             ORDER BY r.ended_at DESC
@@ -1323,6 +1336,7 @@ class StatsQueryService(
                     format = rs.getString("format"),
                     lobbyId = rs.getString("lobby_id"),
                     hasReplay = rs.getBoolean("has_replay"),
+                    hasDecks = rs.getBoolean("has_decks"),
                 )
             },
             limit, offset,
@@ -1333,6 +1347,7 @@ class StatsQueryService(
         return rows.map { row ->
             val players = playersByMid[row.mid].orEmpty()
             AdminRecentGame(
+                matchId = row.mid,
                 gameId = row.gameId,
                 endedAt = row.endedAt,
                 gameMode = row.gameMode,
@@ -1340,6 +1355,7 @@ class StatsQueryService(
                 players = players,
                 winnerName = players.firstOrNull { it.won }?.name,
                 hasReplay = row.hasReplay,
+                hasDecks = row.hasDecks,
                 tournamentName = row.lobbyId?.let { tournamentNames[it] },
             )
         }
@@ -1359,12 +1375,13 @@ class StatsQueryService(
             val userId: UUID?,
             val isAi: Boolean,
             val won: Boolean,
+            val colors: String?,
             val ip: String?,
         )
         val seats = jdbc.query(
             """
             SELECT p.match_id AS mid, COALESCE(u.display_name, p.player_name) AS name,
-                   p.user_id AS uid, p.is_ai AS is_ai, p.won AS won, p.client_ip AS client_ip
+                   p.user_id AS uid, p.is_ai AS is_ai, p.won AS won, p.colors AS colors, p.client_ip AS client_ip
             FROM match_participants p
             LEFT JOIN users u ON u.id = p.user_id
             WHERE p.match_id IN ($placeholders)
@@ -1377,6 +1394,7 @@ class StatsQueryService(
                     userId = rs.getObject("uid", UUID::class.java),
                     isAi = rs.getBoolean("is_ai"),
                     won = rs.getBoolean("won"),
+                    colors = rs.getString("colors"),
                     ip = rs.getString("client_ip")?.takeIf { it.isNotBlank() },
                 )
             },
@@ -1391,6 +1409,7 @@ class StatsQueryService(
                     userId = seat.userId,
                     isAi = seat.isAi,
                     won = seat.won,
+                    colors = seat.colors,
                     location = seat.ip?.let { locations[it] },
                 ),
             )
