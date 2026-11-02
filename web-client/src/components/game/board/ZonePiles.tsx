@@ -21,7 +21,7 @@ const EMPTY_DECK: readonly ClientDeckCard[] = []
 
 const CARD_RATIO = 1.4
 /** Counters that only mark a card in exile for some effect, badged in the exile browser. */
-const EXILE_MARKER_COUNTERS = [CounterType.BRAIN, CounterType.HATCHING, CounterType.STUDY, CounterType.REFINE, CounterType.VOYAGE] as const
+const EXILE_MARKER_COUNTERS = [CounterType.BRAIN, CounterType.HATCHING, CounterType.STUDY, CounterType.HIT, CounterType.REFINE, CounterType.VOYAGE] as const
 const LABEL_HEIGHT = 14
 // Deck + Graveyard + Exile are always present; extra "Plotted", "Paradigm", and "Suspended"
 // piles appear only when the player has those cards in exile (see `pileCount` below).
@@ -766,7 +766,7 @@ function ExileBrowser({ cards, ownerLabel, onClose }: { cards: readonly ClientCa
                 </div>
               )}
               {/* Exile-marker counters (brain: Rex, Cyber-Hound's ability donors; hatching: the
-                  cards Dragon-Kami's Egg can cast; study: the cards Kianne // Imbraham read) say which exiled cards count, so the exile browser
+                  cards Dragon-Kami's Egg can cast; study: the cards Kianne // Imbraham read; hit: Etrata's marks) say which exiled cards count, so the exile browser
                   is where a player checks them. Bottom-left, clear of the plotted and stash badges. */}
               {EXILE_MARKER_COUNTERS.filter((type) => getCounterCount(card, type) > 0).map((type) => (
                 <div

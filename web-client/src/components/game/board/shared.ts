@@ -897,6 +897,8 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.BOOK,
   // Kianne / Imbraham's mark on exiled cards.
   CounterType.STUDY,
+  // Etrata's mark on exiled cards: a player who owns three loses the game.
+  CounterType.HIT,
   // Uvilda's countdown on an exiled instant or sorcery.
   CounterType.REFINE,
   // Cosima's tally of lands entered while she voyages in exile.

@@ -2154,6 +2154,140 @@
     ]
 }
 
+// Etrata, the Silencer
+{
+    "name": "Etrata, the Silencer",
+    "manaCost": "{2}{U}{B}",
+    "typeLine": "Legendary Creature — Vampire Assassin",
+    "oracleText": "Etrata can't be blocked.\nWhenever Etrata deals combat damage to a player, exile target creature that player controls and put a hit counter on that card. That player loses the game if they own three or more exiled cards with hit counters on them. Etrata's owner shuffles Etrata into their library.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "flags": [
+        "CANT_BE_BLOCKED"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Etrata, the Silencer:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile",
+                            "entryCounters": [
+                                {
+                                    "counterType": "HIT"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "AggregateZone",
+                                        "player": "TriggeringPlayer",
+                                        "zone": "Exile",
+                                        "filter": {
+                                            "cardPredicates": [
+                                                "IsNontoken"
+                                            ],
+                                            "statePredicates": [
+                                                {
+                                                    "type": "HasCounter",
+                                                    "counterType": "HIT"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "LoseGame",
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "TriggeringPlayer"
+                                }
+                            }
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Library",
+                            "fromZone": "Battlefield"
+                        },
+                        {
+                            "type": "ShuffleLibrary",
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "OwnerOfSource"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:triggering-player"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever Etrata deals combat damage to a player, exile target creature that player controls and put a hit counter on that card. That player loses the game if they own three or more exiled cards with hit counters on them. Etrata's owner shuffles Etrata into their library."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "170",
+        "rarity": "RARE",
+        "artist": "Bastien L. Deharme",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/a/fa36b142-e67e-49da-9080-c5994e275266.jpg?1783934135",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "If the player controls no creatures, Etrata's ability doesn't resolve. Etrata remains on the battlefield and its owner doesn't shuffle their library. The same is true if the target creature is an illegal target when Etrata's ability tries to resolve."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If Etrata leaves the battlefield while its triggered ability is on the stack, it remains in its new zone and Etrata's owner shuffles their library."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If Etrata's ability exiles a token creature, it won't count to determine whether three cards are exiled with hit counters."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Etrata's owner shuffles it into their library as the triggered ability resolves, regardless of how many cards are in exile or whether the player loses the game."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Fearless Halberdier
 {
     "name": "Fearless Halberdier",
