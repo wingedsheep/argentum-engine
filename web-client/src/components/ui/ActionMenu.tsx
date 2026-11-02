@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useMemo, useState } from 'react'
+import { useEffect, useCallback, useMemo, useRef, useState } from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
 import { useCardActions } from '@/hooks/useLegalActions.ts'
 import { useInteraction } from '@/hooks/useInteraction.ts'
@@ -111,9 +111,17 @@ export function ActionMenu() {
       ? (cardInfo.backFaceIsLandscape ? 90 : 0)
       : (cardInfo.cardFaces?.length === 2 ? 90 : 0)
 
+    // A long menu — Nicol Bolas, Dragon-God borrowing every other planeswalker's loyalty abilities,
+    // a land with a handful of activations — no longer fits in a column under a 279px card image.
+    // From four rows up the panel lays the card beside the list instead of above it (wide screens
+    // only; see .panelMany), and the list itself scrolls inside a viewport-capped panel so Cancel
+    // and the top rows always stay on screen.
+    const rowCount = actionOptions.length + (showViewCard ? 1 : 0)
+    const isLongMenu = rowCount >= LONG_MENU_ROWS
+
     return (
       <div className={styles.container}>
-        <div className={styles.panel}>
+        <div className={`${styles.panel} ${isLongMenu ? styles.panelMany : ''}`}>
           {/* Large card image — rotated landscape for split-layout cards (CR 709):
               Rooms and classic split spells like Pain // Suffering are printed portrait
               with the two halves stacked. */}
@@ -144,8 +152,9 @@ export function ActionMenu() {
             </div>
           )}
 
+          <div className={styles.actionsColumn}>
           {/* Action buttons */}
-          <div className={styles.actionsContainer}>
+          <ScrollableActions resetKey={selectedCardId}>
             {actionOptions.map((option) => (
               <ActionOptionButton
                 key={option.key}
@@ -171,12 +180,13 @@ export function ActionMenu() {
                 View card
               </button>
             )}
-          </div>
+          </ScrollableActions>
 
-          {/* Cancel button */}
+          {/* Cancel button — outside the scrolling list, so it never scrolls away */}
           <button onClick={cancelAction} className={styles.cancelButton}>
             {hasHover ? 'Cancel (Esc)' : 'Cancel'}
           </button>
+          </div>
         </div>
       </div>
     )
@@ -200,6 +210,55 @@ export function ActionMenu() {
       <button onClick={cancelAction} className={styles.fallbackCancelButton}>
         Cancel
       </button>
+    </div>
+  )
+}
+
+/** Rows (actions plus "View card") from which the card image moves beside the list. */
+const LONG_MENU_ROWS = 4
+
+/**
+ * The action list, scrolling inside the panel once it outgrows the viewport. Edges that hide more
+ * rows fade out (`data-more-above` / `data-more-below`), so a clipped list reads as "there's more"
+ * rather than as the whole menu — the cue a hidden overlay scrollbar (macOS, touch) doesn't give.
+ */
+function ScrollableActions({ children, resetKey }: { children: React.ReactNode; resetKey: string }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [moreAbove, setMoreAbove] = useState(false)
+  const [moreBelow, setMoreBelow] = useState(false)
+
+  const measure = useCallback(() => {
+    const el = ref.current
+    if (!el) return
+    setMoreAbove(el.scrollTop > 1)
+    setMoreBelow(el.scrollTop + el.clientHeight < el.scrollHeight - 1)
+  }, [])
+
+  // A newly selected card opens its menu at the top, not where the last one was scrolled to.
+  useEffect(() => {
+    if (ref.current) ref.current.scrollTop = 0
+    measure()
+  }, [resetKey, measure])
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el || typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(measure)
+    observer.observe(el)
+    // Rows change height as their images and mana symbols load, without the list itself resizing.
+    for (const child of Array.from(el.children)) observer.observe(child)
+    return () => observer.disconnect()
+  }, [measure, children])
+
+  return (
+    <div
+      ref={ref}
+      className={styles.actionsContainer}
+      onScroll={measure}
+      data-more-above={moreAbove || undefined}
+      data-more-below={moreBelow || undefined}
+    >
+      {children}
     </div>
   )
 }

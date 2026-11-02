@@ -1,0 +1,39 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Island", "Swamp"],
+    "battlefield": [
+      {"name": "Nicol Bolas, Dragon-God", "counters": {"LOYALTY": 7}},
+      {"name": "Karn, the Great Creator", "counters": {"LOYALTY": 5}},
+      {"name": "Jace, Wielder of Mysteries", "counters": {"LOYALTY": 4}},
+      {"name": "Ajani, the Greathearted", "counters": {"LOYALTY": 5}},
+      {"name": "Island"},
+      {"name": "Swamp"},
+      {"name": "Mountain"}
+    ],
+    "graveyard": [],
+    "library": ["Island", "Swamp", "Mountain"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Chandra, Fire Artisan", "counters": {"LOYALTY": 4}},
+      {"name": "Kiora, Behemoth Beckoner", "counters": {"LOYALTY": 7}},
+      {"name": "Ashiok, Dream Render", "counters": {"LOYALTY": 5}},
+      {"name": "Gideon Blackblade", "counters": {"LOYALTY": 4}},
+      {"name": "Forest"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Forest", "Forest"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}
