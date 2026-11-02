@@ -27,6 +27,7 @@ class DraftsimCastabilityTest : FunSpec({
     fun basic(color: String) = CCard("Basic $color", "", "Basic Land", colorIdentity = listOf(color))
     fun basics(vararg split: Pair<String, Int>) = split.flatMap { (c, n) -> List(n) { basic(c) } }
     fun weight(card: ScorerCard, deck: List<ScorerCard>) = castability.weight(card, castability.sources(deck), 40, 17)
+    fun sourcesOn(deck: List<ScorerCard>, turn: Int) = castability.sources(deck).at(turn)
 
     val twoDrop = CCard("Bear", "{1}{G}", "Creature")
     val bomb = CCard("Dragon", "{4}{U}", "Creature")
@@ -62,12 +63,23 @@ class DraftsimCastabilityTest : FunSpec({
     test("a fetch land counts toward a colour only up to the basics of it the deck runs") {
         val fetcher = CCard("Overlook", "", "Land", fixing = listOf("B", "R", "G"), fetchesBasic = true)
         val deck = basics("B" to 8, "R" to 7, "G" to 1) + List(4) { fetcher }
-        castability.sources(deck)["G"] shouldBe 2.0
-        castability.sources(deck)["B"] shouldBe 12.0
+        sourcesOn(deck, 1)["G"] shouldBe 2.0
+        sourcesOn(deck, 1)["B"] shouldBe 12.0
     }
 
     test("a Phyrexian pip or a {2/G} never strands a spell") {
         weight(CCard("Mite", "{1}{G/P}", "Creature"), basics("W" to 9, "U" to 8)) shouldBe 1.0
         weight(CCard("Reaper", "{2/G}{2/G}", "Creature"), basics("W" to 9, "U" to 8)) shouldBe 1.0
+    }
+
+    test("a mana rock fixes the spells cast after it, not the ones it competes with for mana") {
+        val prism = CCard("Prism", "{2}", "Artifact", fixing = listOf("W", "U", "B", "R", "G"))
+        val petal = CCard("Petal", "{0}", "Artifact", fixing = listOf("W", "U", "B", "R", "G"))
+        val deck = basics("G" to 9, "R" to 8) + prism + petal
+        // The free Petal counts a whole land from turn 1; the Prism half a land, from turn 3.
+        sourcesOn(deck, 2)["U"] shouldBe 1.0
+        sourcesOn(deck, 3)["U"] shouldBe 1.5
+        weight(CCard("Drake", "{3}{U}", "Creature"), deck) shouldBeGreaterThan
+            weight(CCard("Drake", "{3}{U}", "Creature"), basics("G" to 9, "R" to 8) + petal)
     }
 })

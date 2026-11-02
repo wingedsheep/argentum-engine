@@ -63,18 +63,35 @@ internal class DraftsimCardOps(val tables: DraftsimSetTables) {
             ?: if (isLand(card)) colorsOf(card).ifEmpty { card.colorIdentity } else emptyList()
 
     /**
-     * How much [card] fixes a deck in [colors]: 1 for a land that makes two of them (or four or more
-     * colours — a fetch for any basic), half that for a nonland fixer, which costs a card and usually
-     * mana; 0 otherwise. Basics never count.
+     * What one fixing card is worth beside a fixing land: a land 1; a free nonland fixer (mana value
+     * 0 off a real cost — Lotus Petal, a Mox) as much, since it costs no mana and no land drop; any
+     * other nonland fixer [NONLAND_FIXER_WEIGHT], since it costs a card and mana and has to be cast
+     * before it helps.
+     */
+    fun fixingSourceWeight(card: ScorerCard): Double =
+        if (isLand(card) || (card.manaCost.isNotBlank() && card.cmc == 0.0)) 1.0 else NONLAND_FIXER_WEIGHT
+
+    /**
+     * How much [card] fixes a deck in [colors] — [fixingSourceWeight] when it makes two of them (or
+     * four or more colours: a fetch for any basic, an any-colour rock), 0 otherwise. Basics never count.
      */
     fun fixerWeight(card: ScorerCard, colors: Collection<String>): Double {
         if (isBasic(card)) return 0.0
         val fix = fixingOf(card)
         val covers = fix.size >= 4 || fix.count { it in colors } >= 2
-        return when {
-            !covers -> 0.0
-            isLand(card) -> 1.0
-            else -> NONLAND_FIXER_WEIGHT
+        return if (covers) fixingSourceWeight(card) else 0.0
+    }
+
+    /**
+     * How much fixing toward [color] [pool] holds: each non-basic land that makes it, and each nonland
+     * fixer (two or more colours) that does, by [fixingSourceWeight].
+     */
+    fun fixingFor(color: String, pool: Collection<ScorerCard>): Double = pool.sumOf { card ->
+        val fix = fixingOf(card)
+        when {
+            isBasic(card) || color !in fix -> 0.0
+            !isLand(card) && fix.size < 2 -> 0.0
+            else -> fixingSourceWeight(card)
         }
     }
 
@@ -87,7 +104,7 @@ internal class DraftsimCardOps(val tables: DraftsimSetTables) {
     companion object {
         const val BOMB = 3.9
 
-        /** A nonland fixer (Prophetic Prism, Rampant Growth, a Treasure maker) counts for half a fixing land. */
+        /** A nonland fixer with a cost (Prophetic Prism, Rampant Growth, a Treasure maker) counts for half a fixing land. */
         const val NONLAND_FIXER_WEIGHT = 0.5
     }
 }

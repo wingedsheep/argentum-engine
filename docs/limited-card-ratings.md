@@ -190,8 +190,8 @@ The Draftsim deckbuild builds several candidate decks per pool and offers the be
   "good stuff" shell; and, in sealed, the three best three-colour shells whatever the pool's fixing,
   plus each three-colour bomb's own colours.
 - **Four and five colours** are rare by design. The best-ranked four- or five-colour hypothesis and
-  each four- or five-colour bomb's colours are built only when the pool's *lands* fix them (four
-  fixing lands for four colours, six for five), and offered only when their castable power beats
+  each four- or five-colour bomb's colours are built only when the pool fixes them (four lands'
+  worth of fixing for four colours, six for five), and offered only when their castable power beats
   every narrower build's by the splash margin. A four-colour mythic beside a pile of tri-lands, or an
   Invasion domain deck on nine sac-lands, clears it; on the 400 measured pools, two decks did.
 - **Castable power.** `DraftsimCastability` puts each spell's chance of being cast on curve —
@@ -205,8 +205,16 @@ The Draftsim deckbuild builds several candidate decks per pool and offers the be
   A "chosen colour" land is a basic of your choice, not a five-colour land, and restricted mana
   doesn't count. A set's archetype-table `fixing` list wins where it exists. Lands that fetch a
   basic count toward a colour only up to the basics of it the deck runs, and fill at most half the
-  lands.
-- **Splashes** need two pool lands that make the colour, and the splashed build must gain a tenth of
+  lands. Everywhere fixing is counted — the castability sources, the three-colour ranking, the
+  splash and four/five-colour bars — a nonland fixer counts half a land, since it has to be drawn,
+  cast and kept and Treasure fixes once; a free one (mana value 0, like Lotus Petal) counts a whole
+  land. In the castability sources it counts only for spells cast after it: a two-mana Prism fixes
+  a three-drop, not a two-drop.
+- **Fixers in wide decks.** A deck of three or more colours (a splash included) tries each of the
+  pool's fixers in place of its weakest card and keeps the swap when castable power rises. A
+  fixer's rating prices it for two colours, so this is what puts a Prism in the deck that needs it —
+  and what stops the fourth one, which fixes what is already fixed and costs a real card's slot.
+- **Splashes** need two lands' worth of fixing for the colour in the pool, and the splashed build must gain a tenth of
   a point of castable power over the same pair unsplashed. Smaller modelled gains lost in play.
 - **Colour-count payoffs** — Vivid, domain, converge (`ManaFixing.rewardsColors`) — gain 0.35
   rating points per colour the deck's spells span past two.

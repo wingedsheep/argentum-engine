@@ -17,44 +17,71 @@ import kotlin.math.min
  * when the cards it adds, or the fixing that carries it, outweigh that.
  *
  * Sources: a land counts once for each colour it fixes ([DraftsimCardOps.fixingOf] — a dual for two,
- * Evolving Wilds for every colour), a nonland fixer half ([DraftsimCardOps.NONLAND_FIXER_WEIGHT]).
+ * Evolving Wilds for every colour), a nonland fixer for each colour it makes, only for the spells
+ * cast after it and at half a land unless it's free ([Sources.at]).
  */
 internal class DraftsimCastability(private val ops: DraftsimCardOps) {
 
     /**
-     * Coloured sources per colour (WUBRG letters) among [deck]'s lands and nonland fixers. A land that
-     * fetches a basic counts toward a colour only up to the deck's basics of it: three Riveteers
-     * Overlooks beside one Forest are one Forest's worth of green, not four.
+     * A finished deck's coloured sources: what its lands make from turn 1, and its nonland fixers,
+     * each a source only for spells cast after it ([at]).
      */
-    fun sources(deck: List<ScorerCard>): Map<String, Double> {
-        val out = HashMap<String, Double>()
+    class Sources(private val lands: Map<String, Double>, private val fixers: List<Fixer>) {
+        /**
+         * Sources per colour for a spell cast on [turn]: the lands, plus every nonland fixer whose mana
+         * value is below [turn] — a Prophetic Prism is cast on turn two at the earliest, so it fixes a
+         * three-drop but not a two-drop — at its [DraftsimCardOps.fixingSourceWeight]: half a land,
+         * since it has to be drawn, cast and kept (and Treasure fixes once), or a whole one when it's
+         * free (Lotus Petal fixes everything). The slot a fixer takes from a real card is charged
+         * where the deck's castable power counts that slot, so a fourth rock fixes more but is worth
+         * less than the card it replaced.
+         */
+        fun at(turn: Int): Map<String, Double> {
+            val out = HashMap(lands)
+            for (f in fixers) if (f.cost < turn) for (c in f.colors) out[c] = (out[c] ?: 0.0) + f.weight
+            return out
+        }
+    }
+
+    /** A nonland fixer: its mana value, the colours it makes, and what it counts for beside a land. */
+    class Fixer(val cost: Int, val colors: Set<String>, val weight: Double)
+
+    /**
+     * [deck]'s [Sources]. A land that fetches a basic counts toward a colour only up to the deck's
+     * basics of it: three Riveteers Overlooks beside one Forest are one Forest's worth of green, not
+     * four. A nonland card fixes when it makes two or more colours ([DraftsimCardOps.fixingOf]).
+     */
+    fun sources(deck: List<ScorerCard>): Sources {
+        val lands = HashMap<String, Double>()
         val fetched = HashMap<String, Int>()
         val basics = HashMap<String, Int>()
+        val fixers = mutableListOf<Fixer>()
         for (card in deck) {
-            val land = ops.isLand(card)
             val fix = ops.fixingOf(card).toSet()
             when {
                 ops.isBasic(card) -> fix.forEach { basics[it] = (basics[it] ?: 0) + 1 }
-                land && card.fetchesBasic -> { fix.forEach { fetched[it] = (fetched[it] ?: 0) + 1 }; continue }
-                !land && fix.size < 2 -> continue
+                !ops.isLand(card) -> if (fix.size >= 2) fixers += Fixer(ceil(card.cmc).toInt(), fix, ops.fixingSourceWeight(card))
+                card.fetchesBasic -> fix.forEach { fetched[it] = (fetched[it] ?: 0) + 1 }
+                else -> {}
             }
-            val w = if (land) 1.0 else DraftsimCardOps.NONLAND_FIXER_WEIGHT
-            for (c in fix) out[c] = (out[c] ?: 0.0) + w
+            if (ops.isLand(card) && !card.fetchesBasic) for (c in fix) lands[c] = (lands[c] ?: 0.0) + 1.0
         }
-        for ((c, n) in fetched) out[c] = (out[c] ?: 0.0) + min(n, basics[c] ?: 0)
-        return out
+        for ((c, n) in fetched) lands[c] = (lands[c] ?: 0.0) + min(n, basics[c] ?: 0)
+        return Sources(lands, fixers)
     }
 
     /**
      * [card]'s cast chance in a [deckSize]-card deck of [landCount] lands with [sources], against the
      * same card on main-colour sources; in 0–1. A face-down or split card takes its easiest face.
      */
-    fun weight(card: ScorerCard, sources: Map<String, Double>, deckSize: Int, landCount: Int): Double {
+    fun weight(card: ScorerCard, sources: Sources, deckSize: Int, landCount: Int): Double {
         val reference = MAIN_SOURCES_PER_17 * landCount / 17.0
-        val seen = min(deckSize, OPENING_HAND + turnFor(card.cmc) - 1)
+        val turn = turnFor(card.cmc)
+        val seen = min(deckSize, OPENING_HAND + turn - 1)
+        val available = sources.at(turn)
         return DraftsimMana.faceRequirements(card.manaCost).maxOfOrNull { req ->
-            val actual = chance(req, { sources[it] ?: 0.0 }, deckSize, seen)
-            val ideal = chance(req, { maxOf(reference, sources[it] ?: 0.0) }, deckSize, seen)
+            val actual = chance(req, { available[it] ?: 0.0 }, deckSize, seen)
+            val ideal = chance(req, { maxOf(reference, available[it] ?: 0.0) }, deckSize, seen)
             if (ideal <= 0.0) 1.0 else min(1.0, actual / ideal)
         } ?: 1.0
     }

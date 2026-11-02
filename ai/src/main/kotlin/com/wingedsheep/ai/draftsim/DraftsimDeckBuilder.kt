@@ -114,18 +114,20 @@ class DraftsimDeckBuilder(
         // deck off a pool of basics has no business in three colours.
         const val SHELL_CANDIDATES = 3
         // [splashPass]: most cards a splash brings, the rating removal needs to be splashed for, and the
-        // pool lands that must make the splash colour.
+        // fixing toward the splash colour the pool must hold — two lands' worth
+        // ([DraftsimCardOps.fixingFor]: a land or a free fixer counts 1, any other nonland fixer half).
         const val SPLASH_MAX_CARDS = 3
         const val SPLASH_REMOVAL = 3.5
-        const val SPLASH_MIN_LANDS = 2
+        const val SPLASH_MIN_FIXING = 2.0
         // [DraftsimBuild.castablePower] a splashed build must gain over the same pair unsplashed. Played
         // out (2026-11, 46 games), splashes whose modelled gain was a few hundredths lost 63% of the
         // time: a splash's cost in play — the colour-screwed draw, the main-colour basics it takes —
         // runs past what the castability weight charges, so only a clear gain pays for it.
         const val SPLASH_MIN_GAIN = 0.1
-        // [wideBuilds]: lands fixing its colours a four- or five-colour build needs before it's tried,
-        // and the castable power it must gain over every narrower build to be offered at all.
-        val WIDE_MIN_LAND_FIXERS = mapOf(4 to 4.0, 5 to 6.0)
+        // [wideBuilds]: fixing for its colours a four- or five-colour build needs before it's tried — in
+        // lands' worth, a nonland fixer counting half ([DraftsimCardOps.fixerWeight]) — and the castable
+        // power it must gain over every narrower build to be offered at all.
+        val WIDE_MIN_FIXING = mapOf(4 to 4.0, 5 to 6.0)
         const val WIDE_MIN_GAIN = 0.1
         // Final-score points (0–10 scale) per creature below the floor / per spell below the target.
         const val CREATURE_SHORTFALL_PENALTY = 0.2
@@ -241,11 +243,11 @@ class DraftsimDeckBuilder(
 
     /**
      * Four- and five-colour builds — the best-ranked one and each gold bomb's own colours — kept only
-     * when they are clearly the better deck: the pool's lands fix them ([WIDE_MIN_LAND_FIXERS]) and
+     * when they are clearly the better deck: the pool fixes them ([WIDE_MIN_FIXING]) and
      * they beat every narrower build's [DraftsimBuild.castablePower] by [WIDE_MIN_GAIN]. A four-colour
      * mythic beside a pile of tri-lands, or a deck of Vivid payoffs, can clear that; most pools can't.
      * Played out (2026-11), four-colour builds chosen on a slim modelled edge — with no gain bar —
-     * lost to the same pool's narrower build; the bar is a splash's, and the fixing must be lands.
+     * lost to the same pool's narrower build; the bar is a splash's.
      */
     private fun wideBuilds(
         pool: List<DraftsimPoolCard>, cards: List<ScorerCard>, bombColors: List<List<String>>, narrower: List<DraftsimBuild>,
@@ -253,7 +255,7 @@ class DraftsimDeckBuilder(
         val bar = (narrower.maxOfOrNull { it.castablePower } ?: return emptyList()) + WIDE_MIN_GAIN
         val candidates = (deckScorer.rankWide(cards).take(1).map { it.colors } + bombColors.filter { it.size >= 4 })
             .distinctBy { it.toSet() }
-            .filter { colors -> deckScorer.landFixers(cards, colors) >= WIDE_MIN_LAND_FIXERS.getValue(colors.size) }
+            .filter { colors -> deckScorer.fixers(cards, colors) >= WIDE_MIN_FIXING.getValue(colors.size) }
         return candidates
             .map { colors -> refine(greedyBuild(pool, "${colors.size}-colour ${colors.joinToString("")}", colors), pool) }
             .filter { it.castablePower >= bar }
@@ -436,6 +438,7 @@ class DraftsimDeckBuilder(
         val splashColor = if (forced.isEmpty()) shortfallSplash(st, scored, archColors, bombSplash, fixed) else bombSplash
 
         val deckColors = if (splashColor != null) archColors + splashColor else archColors
+        if (forced.isEmpty()) fixerPass(st, scored, poolLands, deckColors, splashColor, fixed)
         val chosenCards = st.deck.map { it.pc }
         val mana = buildManabase(chosenCards, poolLands, deckColors, splashColor)
         val includedIds = (chosenCards.map { it.instanceId } + mana.usefulPoolLands.map { it.instanceId }).toSet()
@@ -497,7 +500,7 @@ class DraftsimDeckBuilder(
     /**
      * §1.7 splash pass: add up to [SPLASH_MAX_CARDS] cards of one off colour — bombs, and removal
      * rated [SPLASH_REMOVAL] or better — each needing a single pip of it, or swap them for the weakest
-     * cards, when the pool holds [SPLASH_MIN_LANDS] lands that make the colour. The bundle also
+     * cards, when the pool holds [SPLASH_MIN_FIXING] worth of fixing for the colour. The bundle also
      * required the set's archetype table to flag the card `splashable`; few sets ship a table, so
      * outside them no deck ever splashed. Whether a splash pays is now weighed against the same pair
      * unsplashed ([buildDecks], [SPLASH_MIN_GAIN]).
@@ -510,7 +513,8 @@ class DraftsimDeckBuilder(
         val d = archColors.toSet()
         var splashColor: String? = null
         var taken = 0
-        fun poolFixes(color: String) = poolLands.count { color in landFixing(it) } >= SPLASH_MIN_LANDS
+        val poolCards = poolLands.map { it.card } + scored.map { it.pc.card }
+        fun poolFixes(color: String) = ops.fixingFor(color, poolCards) >= SPLASH_MIN_FIXING
         val eligible = scored.filter {
             val card = it.pc.card
             val rating = ops.ratingOrDefault(card)
@@ -533,6 +537,44 @@ class DraftsimDeckBuilder(
             }
         }
         return splashColor
+    }
+
+    /**
+     * A deck in three or more colours — a splash included — weighs each of the pool's fixers
+     * ([isFixerFor]) against its weakest card (noncreatures first, never removal): the swap stays when
+     * the finished deck's [DraftsimBuild.castablePower] rises. Ratings price a Prophetic Prism for a
+     * two-colour deck, where it does little; here it's priced by what it does — the later spells it
+     * makes castable — against the card whose slot it takes, so the first rock in a thin colour earns
+     * its place and the fourth, fixing what's already fixed, doesn't.
+     */
+    private fun fixerPass(
+        st: BuildState, scored: List<Scored>, poolLands: List<DraftsimPoolCard>, colors: List<String>, splashColor: String?, fixed: Set<String>,
+    ) {
+        if (colors.size < 3) return
+        fun power(): Double {
+            val cards = st.deck.map { it.pc }
+            val mana = buildManabase(cards, poolLands, colors, splashColor)
+            return deckScorer.scoreDeck(cards.map { it.card } + mana.usefulPoolLands.map { it.card } + basics(mana.basicsNeeded).map { it.card }).castablePower
+        }
+        val fixers = scored.filter {
+            it.pc.instanceId !in st.chosen && castable(it.pc.card, colors, fixed) && isFixerFor(it.pc.card, colors, splashColor)
+        }
+        var best = power()
+        for (fixer in fixers) {
+            val victims = st.deck.filter { !isRemoval(it.pc.card) && it.pc.instanceId !in st.forced && !isFixerFor(it.pc.card, colors, splashColor) }
+            val victim = victims.filter { !ops.isCreature(it.pc.card) }.minByOrNull { it.total }
+                ?: victims.minByOrNull { it.total } ?: break
+            st.remove(victim); st.add(fixer)
+            val trial = power()
+            if (trial > best) best = trial else { st.remove(fixer); st.add(victim) }
+        }
+    }
+
+    /** A nonland card that fixes a deck in [colors]: two or more of them, or the [splashColor] among its colours. */
+    private fun isFixerFor(card: ScorerCard, colors: List<String>, splashColor: String?): Boolean {
+        if (ops.isLand(card)) return false
+        val fix = ops.fixingOf(card)
+        return fix.size >= 2 && (ops.fixerWeight(card, colors) > 0.0 || (splashColor != null && splashColor in fix))
     }
 
     // =========================================================================
@@ -694,6 +736,11 @@ class DraftsimDeckBuilder(
         val poolLands = pool.filter { ops.isLand(it.card) && !ops.isBasic(it.card) }
         val fixed = activationFixing(poolLands)
         val mainColors = build.colors.filter { it != build.splashColor }
+        // A wide deck keeps the fixers [fixerPass] put in it: their ratings are what they're worth in
+        // two colours, so the rating-led swaps below would cut them first.
+        val keep = if (build.colors.size >= 3) {
+            forced + deckNonland.filter { isFixerFor(it.card, build.colors, build.splashColor) }.map { it.instanceId }
+        } else forced
 
         repeat(iterations) {
             // A splash keeps the cards it was taken for: refining adds only main-colour cards, or the
@@ -702,7 +749,7 @@ class DraftsimDeckBuilder(
                 it.instanceId !in chosen && !ops.isLand(it.card) && castable(it.card, mainColors, fixed)
             }
             if (candidates.isEmpty()) return@repeat
-            val worstFirst = deckNonland.filter { it.instanceId !in forced }.sortedBy { ops.ratingOrDefault(it.card) }
+            val worstFirst = deckNonland.filter { it.instanceId !in keep }.sortedBy { ops.ratingOrDefault(it.card) }
             val bestFirst = candidates.sortedByDescending { ops.ratingOrDefault(it.card) }
             var improved = false
             outer@ for (out in worstFirst) {
@@ -790,6 +837,7 @@ class DraftsimDeckBuilder(
         for (item in scored) { if (st.deck.size >= nonlandTarget) break; if (item.pc.instanceId !in st.chosen && castable(item.pc.card, colors, fixed) && (st.copies[item.pc.card.name] ?: 0) < copyCap(item.pc.card)) st.add(item) }
 
         creatureFloor(st, scored, colors, fixed)
+        fixerPass(st, scored, poolLands, colors, null, fixed)
 
         val chosenCards = st.deck.map { it.pc }
         val mana = buildManabase(chosenCards, poolLands, colors)

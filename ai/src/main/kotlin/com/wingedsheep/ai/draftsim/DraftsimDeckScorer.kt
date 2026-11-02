@@ -147,7 +147,7 @@ class DraftsimDeckScorer(private val tables: DraftsimSetTables) {
     private fun manaPenalty(colors: List<String>, pool: List<ScorerCard>): Double {
         if (colors.size < 3) return 0.0
         val size = min(colors.size, 5)
-        val fixers = pool.sumOf { ops.fixerWeight(it, colors) }
+        val fixers = fixers(pool, colors)
         val needed = FIXERS_NEEDED.getValue(size)
         return -UNFIXED_PENALTY.getValue(size) * max(0.0, (needed - fixers) / needed)
     }
@@ -211,9 +211,8 @@ class DraftsimDeckScorer(private val tables: DraftsimSetTables) {
         .map { combo -> scoreHypothesis(pool, combo.map { it.toString() }, null).copy(name = "${combo.length}-colour $combo") }
         .sortedByDescending { it.score }
 
-    /** The fixing [pool]'s lands bring a deck in [colors] ([DraftsimCardOps.fixerWeight] summed). */
-    fun landFixers(pool: List<ScorerCard>, colors: List<String>): Double =
-        pool.filter { ops.isLand(it) }.sumOf { ops.fixerWeight(it, colors) }
+    /** The fixing [pool] brings a deck in [colors] — lands and nonland fixers ([DraftsimCardOps.fixerWeight] summed). */
+    fun fixers(pool: List<ScorerCard>, colors: List<String>): Double = pool.sumOf { ops.fixerWeight(it, colors) }
 
     /** `C2`: colors appearing on ≥2 of an archetype's tagged cards. */
     private fun colorsOnAtLeastTwo(nonland: List<ScorerCard>, archName: String): List<String> {
