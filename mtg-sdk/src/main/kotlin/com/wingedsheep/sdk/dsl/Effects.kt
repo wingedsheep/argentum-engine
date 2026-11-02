@@ -2525,20 +2525,26 @@ object Effects {
      * Defaults reproduce the common case (+1/+1, creature you control, until end of turn), which is
      * Prairie Dog's "{4}{W}: Until end of turn, if you would put one or more +1/+1 counters on a
      * creature you control, put that many plus one +1/+1 counters on it instead."
+     * A null [counterType] covers every kind; [placer] widens "if you would put" to anyone's
+     * placements (Player.Any — Brad Boimler's "if one or more counters would be put on a permanent
+     * you control, that many plus one of each of those kinds … instead") or opponents' only.
      */
     fun GrantCounterPlacementModifier(
         modifier: Int = 1,
         duration: Duration = Duration.EndOfTurn,
-        counterType: CounterType =
+        counterType: CounterType? =
             CounterType.PLUS_ONE_PLUS_ONE,
         recipient: com.wingedsheep.sdk.scripting.events.Recipient =
-            com.wingedsheep.sdk.scripting.events.Recipient.CreatureYouControl
+            com.wingedsheep.sdk.scripting.events.Recipient.CreatureYouControl,
+        placer: com.wingedsheep.sdk.scripting.references.Player =
+            com.wingedsheep.sdk.scripting.references.Player.You
     ): Effect =
         com.wingedsheep.sdk.scripting.effects.GrantCounterPlacementModifierEffect(
             modifier = modifier,
             duration = duration,
             counterType = counterType,
-            recipient = recipient
+            recipient = recipient,
+            placer = placer
         )
 
     /**

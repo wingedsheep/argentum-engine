@@ -14,8 +14,8 @@ import kotlin.reflect.KClass
  * Installs a temporary, duration-scoped counter-placement modifier into
  * [GameState.activeCounterPlacementModifiers], stamped with the resolving ability's controller as
  * its `controllerId`. That controller becomes the "you" for both the recipient filter
- * ("a creature you control") and the placer gate (only the controller's own counter placements
- * receive the bonus) — exactly mirroring how the static `ModifyCounterPlacement` replacement is
+ * ("a creature you control") and the placer gate (by default only the controller's own counter
+ * placements receive the bonus) — exactly mirroring how the static `ModifyCounterPlacement` replacement is
  * controller-scoped to its source permanent's controller.
  *
  * The modifier is consulted from the single counter-placement chokepoint
@@ -25,6 +25,8 @@ import kotlin.reflect.KClass
  *
  * Used by Prairie Dog (OTJ): "{4}{W}: Until end of turn, if you would put one or more +1/+1
  * counters on a creature you control, put that many plus one +1/+1 counters on it instead."
+ * and Brad Boimler, Eager Ensign (TRK), whose any-kind, any-placer modifier covers every counter
+ * put on a permanent its controller controls.
  */
 class GrantCounterPlacementModifierExecutor : EffectExecutor<GrantCounterPlacementModifierEffect> {
 
@@ -43,7 +45,8 @@ class GrantCounterPlacementModifierExecutor : EffectExecutor<GrantCounterPlaceme
             controllerId = controllerId,
             counterType = effect.counterType,
             recipient = effect.recipient,
-            duration = effect.duration
+            duration = effect.duration,
+            placer = effect.placer
         )
 
         val newState = state.copy(

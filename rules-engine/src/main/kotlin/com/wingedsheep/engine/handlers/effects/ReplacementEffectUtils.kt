@@ -158,10 +158,10 @@ object ReplacementEffectUtils {
         //    (GrantCounterPlacementModifierEffect — e.g. Prairie Dog's {4}{W}).
         //    These have no battlefield source permanent: the effect's stored controllerId IS
         //    the "you" for both the recipient filter ("a creature you control") and the placer
-        //    gate (only the controller's own counter placements get the bonus).
+        //    gate ("if you would put" by default; Brad Boimler's "would be put" is Player.Any).
         for (modifier in sources.activeCounterPlacementModifiers) {
-            if (placerId != modifier.controllerId) continue
-            if (modifier.counterType != counterType) continue
+            if (!placerMatches(state, modifier.placer, placerId, modifier.controllerId)) continue
+            if (modifier.counterType != null && modifier.counterType != counterType) continue
             // No battlefield source entity — pass the controller as the "source entity" so
             // Recipient.Self can't spuriously match, and the controller as controllerId.
             val recipientMatches = matchesRecipient(
