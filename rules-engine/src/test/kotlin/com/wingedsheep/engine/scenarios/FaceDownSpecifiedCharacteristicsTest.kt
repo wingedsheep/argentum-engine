@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.TurnFaceUp
+import com.wingedsheep.engine.core.TurnFaceUpEvent
+import com.wingedsheep.engine.core.CardsRevealedEvent
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
@@ -19,6 +21,8 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EntersAsCopy
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.EntersWithCharacteristics
@@ -63,13 +67,26 @@ class FaceDownSpecifiedCharacteristicsTest : FunSpec({
         typeLine = "Creature — Bear"
         power = 2; toughness = 2
     }
+    val instant = card("Specified Instant") {
+        manaCost = "{R}"
+        typeLine = "Instant"
+        spell { effect = Effects.GainLife(1) }
+    }
+    val flipper = card("Specified Face Flipper") {
+        manaCost = "{U}"
+        typeLine = "Instant"
+        spell {
+            val t = target(TargetFilter(GameObjectFilter.Creature.faceDown()))
+            effect = Effects.TurnFaceUp(t)
+        }
+    }
     val copier = card("Specified Copier") {
         manaCost = "{U}"; typeLine = "Creature — Shapeshifter"; power = 0; toughness = 0
         replacementEffect(EntersAsCopy())
     }
 
     fun driver() = GameTestDriver().also {
-        it.registerCards(TestCards.all + listOf(putFaceDown, morphling, plain, copier))
+        it.registerCards(TestCards.all + listOf(putFaceDown, morphling, plain, copier, flipper, instant))
         it.initMirrorMatch(Deck.of("Forest" to 40), skipMulligans = true, startingPlayer = 0)
         it.passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -152,5 +169,21 @@ class FaceDownSpecifiedCharacteristicsTest : FunSpec({
         projected.hasType(elf, "ARTIFACT") shouldBe false
         projected.getSubtypes(elf) shouldBe setOf("Elf")
     }
-})
 
+    test("an effect that turns a face-down instant face up reveals it and it stays a face-down 5/5 artifact") {
+        val d = driver()
+        val (shock) = putDown(d, instant.name)
+        d.state.getBattlefield().contains(shock) shouldBe true
+        val spell = d.putCardInHand(d.player1, flipper.name)
+        d.giveMana(d.player1, Color.BLUE, 1)
+        val eventsBefore = d.events.size
+        d.castSpell(d.player1, spell, targets = listOf(shock)).error shouldBe null
+        d.bothPass().error shouldBe null
+        val events = d.events.drop(eventsBefore)
+        events.filterIsInstance<TurnFaceUpEvent>() shouldBe emptyList()
+        events.filterIsInstance<CardsRevealedEvent>().any { shock in it.cardIds } shouldBe true
+        d.state.getEntity(shock)!!.has<FaceDownComponent>() shouldBe true
+        d.state.projectedState.getPower(shock) shouldBe 5
+        d.state.projectedState.hasType(shock, "ARTIFACT") shouldBe true
+    }
+})

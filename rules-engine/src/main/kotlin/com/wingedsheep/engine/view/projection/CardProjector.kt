@@ -35,6 +35,7 @@ import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Supertype
 import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.sdk.core.Zone
@@ -390,8 +391,22 @@ internal class CardProjector(
             if (faceDownProtections.isNotEmpty()) faceDownKeywords + Keyword.PROTECTION else faceDownKeywords
         // The face-down characteristics are public: a plain 2/2 creature, or what the effect that
         // put it onto the battlefield face down specified (CR 708.2a — Tezzeret's 5/5 artifacts).
+        // Continuous effects on it are public too (a granted color or type), so the projection
+        // wins where there is one; it is built from those face-down values, never the hidden card's.
         val faceDownCard = container.copiableCardComponent()
-        val faceDownTypeLine = faceDownCard?.typeLine ?: TypeLine.creature()
+        val projected = frame.projectedValues
+        val faceDownTypeLine = if (projected != null) {
+            val subtypes = projected.subtypes.takeUnless { hasEveryCreatureType(it.toList()) }
+                ?.mapTo(linkedSetOf()) { Subtype(it) }
+                ?: faceDownCard?.typeLine?.subtypes.orEmpty()
+            TypeLine(
+                supertypes = Supertype.fromProjectedTypes(projected.types).toSet(),
+                cardTypes = projected.types.mapNotNullTo(linkedSetOf()) { t -> CardType.entries.firstOrNull { it.name == t } },
+                subtypes = subtypes,
+            )
+        } else faceDownCard?.typeLine ?: TypeLine.creature()
+        val faceDownColors = projected?.colors?.mapNotNullTo(linkedSetOf()) { c -> Color.entries.firstOrNull { it.name == c } }
+            ?: faceDownCard?.colors.orEmpty()
         return ClientCard(
             id = frame.entityId,
             name = FACE_DOWN_DISPLAY_NAME,
@@ -400,7 +415,7 @@ internal class CardProjector(
             typeLine = faceDownTypeLine.toString(),
             cardTypes = faceDownTypeLine.cardTypes.mapTo(linkedSetOf()) { it.name },
             subtypes = faceDownTypeLine.subtypes.mapTo(linkedSetOf()) { it.value },
-            colors = faceDownCard?.colors.orEmpty(),
+            colors = faceDownColors,
             oracleText = "",
             power = characteristics.power,
             toughness = characteristics.toughness,
@@ -634,7 +649,7 @@ internal class CardProjector(
                 && Supertype.LEGENDARY in typeLine.supertypes
                 && Supertype.LEGENDARY !in cardComponent.typeLine.supertypes,
             grantedSubtypes = if (onBattlefield && !typeLine.hasAllCreatureTypes) {
-                grantedSubtypes(frame, typeLine.subtypes)
+                grantedSubtypes(frame, typeLine.subtypes, faceBaseline)
             } else emptySet(),
             grantedCardTypes = if (onBattlefield) {
                 val printed = faceBaseline.typeLine.cardTypes.map { it.name }.toSet()
@@ -802,8 +817,8 @@ internal class CardProjector(
      * `legendaryByEffect`. Skipped by the caller for the all-creature-types case, which the type line
      * already collapses.
      */
-    private fun grantedSubtypes(frame: CardFrame, displaySubtypes: List<String>): Set<String> {
-        val printed = frame.cardComponent.typeLine.subtypes.map { it.value }.toSet()
+    private fun grantedSubtypes(frame: CardFrame, displaySubtypes: List<String>, baseline: CardComponent): Set<String> {
+        val printed = baseline.typeLine.subtypes.map { it.value }.toSet()
         // Subtypes a *floating* effect is responsible for already have their own badge —
         // "+Hero" for AddSubtype (`type_added`) and the full list for SetCreatureSubtypes
         // (`type_changed`), both built by CardActiveEffectsProjector from those effects directly.
