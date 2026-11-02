@@ -1548,6 +1548,7 @@ serialized shape; the facade for each is:
 | `GrantStaticAbilityEffect` | `Effects.GrantStaticAbility` |
 | `GrantToEnchantedCreatureTypeGroupEffect` | `Effects.GrantToEnchantedCreatureTypeGroup` |
 | `GrantTriggeredAbilityEffect` | `Effects.GrantTriggeredAbility` |
+| `HealDamageEffect` | `Effects.HealDamage` |
 | `LookAtFaceDownEffect` | `Effects.LookAtFaceDown` |
 | `LookAtTargetHandEffect` | `Effects.LookAtHand` |
 | `LoseLifeEffect` | `Effects.LoseLife` |
@@ -1577,7 +1578,6 @@ serialized shape; the facade for each is:
 | `RemoveAllAbilitiesEffect` | `Effects.RemoveAllAbilities` |
 | `RemoveCountersEffect` | `Effects.RemoveCounters` |
 | `RemoveDamageShieldEffect` | `Effects.RemoveDamageShield` |
-| `HealDamageEffect` | `Effects.HealDamage` |
 | `RemoveFromCombatEffect` | `Effects.RemoveFromCombat` |
 | `RepeatDynamicTimesEffect` | `Effects.Repeat` |
 | `RevealCardInHandEffect` | `Effects.RevealCardInHand(target, duration)` |

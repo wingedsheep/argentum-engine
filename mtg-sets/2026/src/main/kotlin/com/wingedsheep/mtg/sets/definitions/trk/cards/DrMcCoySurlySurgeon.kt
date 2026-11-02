@@ -21,7 +21,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * If another creature you control with a +1/+1 counter on it would be destroyed, instead remove all
  * +1/+1 counters from it and all damage already dealt to it is healed.
  *
- * The replacement covers destroy effects and the lethal-damage / deathtouch state-based actions alike;
+ * The replacement covers destroy effects, board wipes and the lethal-damage state-based action alike;
  * the creature isn't tapped or removed from combat (it isn't regeneration).
  */
 val DrMcCoySurlySurgeon = card("Dr. McCoy, Surly Surgeon") {
