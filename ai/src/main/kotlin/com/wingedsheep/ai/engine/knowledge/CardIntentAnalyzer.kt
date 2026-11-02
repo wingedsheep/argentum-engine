@@ -1234,7 +1234,8 @@ object CardIntentAnalyzer {
     }
 
     private fun consumesSource(cost: AbilityCost): Boolean = when (cost) {
-        AbilityCost.SacrificeSelf, AbilityCost.ExileSelf, AbilityCost.ReturnSelfToHand -> true
+        AbilityCost.SacrificeSelf, AbilityCost.ExileSelf, AbilityCost.ReturnSelfToHand,
+        is AbilityCost.PutSelfIntoLibrary -> true
         is AbilityCost.Composite -> cost.costs.any { consumesSource(it) }
         else -> false
     }

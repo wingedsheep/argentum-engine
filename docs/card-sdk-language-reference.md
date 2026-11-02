@@ -674,6 +674,14 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   turned off. Like the other self-removing costs it snapshots the source's
   counters first, so the resolving effect can still read them via
   `DynamicAmounts.lastKnownSourceCounters(...)`.
+- `Costs.PutSelfOnBottomOfLibrary` / `Costs.PutSelfOnTopOfLibrary` — `AbilityCost.PutSelfIntoLibrary(placement)`:
+  put this card into its owner's library at the printed position as part of the cost — Daniels,
+  Temporal Agent's "{2}, Put this card from your graveyard on the bottom of your library: You gain 2
+  life." (`Costs.Composite(Costs.Mana("{2}"), Costs.PutSelfOnBottomOfLibrary)` with
+  `activateFromZone = Zone.GRAVEYARD`). The library sibling of `Costs.ExileSelf` /
+  `Costs.ReturnSelfToHand`: no player selection, paid before the ability is on the stack, and the
+  source's counters are snapshotted like the other self-removing costs. `placement` is `Top` or
+  `Bottom` only (anything else fails at construction).
 - `Costs.ExileFromGraveyard(count, filter)` — exile N matching cards from your graveyard.
 - `Costs.ExileAnotherFromGraveyard(count = 1, filter)` — "exile **another** [filter] card from your
   graveyard": `CostAtom.ExileFrom(..., excludeSelf = true)`, the `Sacrifice.excludeSelf` twin. For an

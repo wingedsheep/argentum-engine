@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.scripting.costs.manaCostOrNull
 import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.UnattachEquipmentEffect
+import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
@@ -661,6 +662,31 @@ sealed interface AbilityCost : TextReplaceable<AbilityCost> {
     @Serializable
     data object ReturnSelfToHand : AbilityCost {
         override val description: String = "Return this permanent to its owner's hand"
+    }
+
+    /**
+     * Put self into its owner's library, on top or on the bottom — "Put this card from your
+     * graveyard on the bottom of your library: You gain 2 life." (Daniels, Temporal Agent), with
+     * `activateFromZone = Zone.GRAVEYARD`. The library sibling of [ExileSelf] and
+     * [ReturnSelfToHand]: neither takes it because both are fixed-destination objects, while a
+     * library move needs a position — that is this type's one axis, [placement] (only
+     * [ZonePlacement.Top] or [ZonePlacement.Bottom] are meaningful). Like its siblings, the source
+     * is the only thing that moves, so there is no player selection, and the cost is paid before
+     * the ability goes on the stack (CR 601.2h via 602.2b).
+     */
+    @SerialName("CostPutSelfIntoLibrary")
+    @Serializable
+    data class PutSelfIntoLibrary(
+        val placement: ZonePlacement = ZonePlacement.Bottom,
+    ) : AbilityCost {
+        init {
+            require(placement == ZonePlacement.Top || placement == ZonePlacement.Bottom) {
+                "PutSelfIntoLibrary placement must be Top or Bottom, was $placement"
+            }
+        }
+
+        override val description: String
+            get() = "Put this card on the ${if (placement == ZonePlacement.Top) "top" else "bottom"} of its owner's library"
     }
 
     /**
