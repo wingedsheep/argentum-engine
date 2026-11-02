@@ -1,5 +1,6 @@
 package com.wingedsheep.ai.engine.knowledge
 
+import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
@@ -712,6 +713,11 @@ object CardIntentAnalyzer {
         // "Copy that card and you may cast the copy" (God-Eternal Kefnet, Shiko): the copy is a
         // spell the controller gets on top of the cards they hold — card advantage, read as a draw.
         is CopyCardIntoCollectionEffect, is CopyCollectionIntoCollectionEffect -> setOf(IntentTag.DRAW)
+        // "This creature becomes prepared" hands its controller a copy of the creature's prepare
+        // spell to cast from exile — a spell on top of the cards in hand, the same card advantage
+        // as the copy above. A creature with no prepare spell can't become prepared, so the leaf
+        // only ever pays off; which creature it readies is the polarity check's question.
+        is BecomePreparedEffect -> setOf(IntentTag.DRAW)
         is CounterEffect, is CounterAllOnStackEffect -> setOf(IntentTag.COUNTERSPELL)
         is GainLifeEffect, is DrainLifeEffect -> setOf(IntentTag.LIFEGAIN)
         is CreateTokenEffect, is CreatePredefinedTokenEffect, is InvestigateEffect, is CreateTokenCopyOfTargetEffect,
@@ -768,6 +774,14 @@ object CardIntentAnalyzer {
         // spell when every mode counters, so [IntentTag.COUNTERSPELL] alone needs all of them.
         // A cast with its modes chosen is read off those modes instead — [analyzeModes].
         is ModalEffect -> {
+            val perMode = effect.modes.map { mode -> effectTags(mode.effect) }
+            val union = perMode.flatMapTo(HashSet()) { it }
+            if (perMode.all { IntentTag.COUNTERSPELL in it }) union else union - IntentTag.COUNTERSPELL
+        }
+
+        // "Choose up to five {P} worth of modes" (the Bloomburrow Seasons) can spend its budget on
+        // any one mode, so it reads as the union of its modes exactly as "choose one" does.
+        is BudgetModalEffect -> {
             val perMode = effect.modes.map { mode -> effectTags(mode.effect) }
             val union = perMode.flatMapTo(HashSet()) { it }
             if (perMode.all { IntentTag.COUNTERSPELL in it }) union else union - IntentTag.COUNTERSPELL
@@ -834,6 +848,9 @@ object CardIntentAnalyzer {
     }
 
     private fun keywordTags(keyword: String): Set<IntentTag> {
+        // A keyword string also carries an [AbilityFlag]'s name: "can't be blocked" is the purest
+        // evasion there is, and "can't be blocked by more than one creature" is menace's cousin.
+        if (keyword in EVASION_FLAGS) return setOf(IntentTag.EVASION_GRANT)
         val parsed = runCatching { Keyword.valueOf(keyword.uppercase()) }.getOrNull()
             ?: return emptySet()
         return when (parsed) {
@@ -855,6 +872,7 @@ object CardIntentAnalyzer {
             effect.counterType.ptDelta?.second?.takeIf { it < 0 && hitsAnotherPermanent(effect.target) }?.let { -it * effect.count }
         // The largest creature any one mode answers, the union [tagsOf] reads for the tags.
         is ModalEffect -> effect.modes.flatMap { readingLeaves(it.effect) }.mapNotNull { reachOf(it) }.maxOrNull()
+        is BudgetModalEffect -> effect.modes.flatMap { readingLeaves(it.effect) }.mapNotNull { reachOf(it) }.maxOrNull()
         else -> null
     }
 
@@ -1175,6 +1193,10 @@ object CardIntentAnalyzer {
         Keyword.FLYING, Keyword.MENACE, Keyword.FEAR, Keyword.INTIMIDATE, Keyword.SHADOW,
         Keyword.TRAMPLE,
     ) + Keyword.LANDWALK
+
+    private val EVASION_FLAGS = setOf(
+        AbilityFlag.CANT_BE_BLOCKED.name, AbilityFlag.CANT_BE_BLOCKED_BY_MORE_THAN_ONE.name,
+    )
 
     /** Riders that leave nothing behind once resolved — see [isExpiringProtectionTrick]. */
     private val SPENT_ON_RESOLUTION = setOf(IntentTag.CARD_SELECTION, IntentTag.LIFEGAIN)

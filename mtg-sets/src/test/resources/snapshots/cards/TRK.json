@@ -453,6 +453,114 @@
     ]
 }
 
+// Captain Jonathan Archer
+{
+    "name": "Captain Jonathan Archer",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Creature — Human Officer",
+    "oracleText": "When Captain Archer enters, create Porthos, a legendary 1/1 green Dog creature token.\nFederation — {G}, {T}: Target creature you control gets +X/+X until end of turn, where X is the number of creature types among non-Borg creatures you control. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Captain Jonathan Archer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Dog"
+                    ],
+                    "name": "Porthos",
+                    "legendary": true
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Captain Jonathan Archer:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{G}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "Borg"
+                                }
+                            ]
+                        },
+                        "aggregation": "DISTINCT_CREATURE_TYPES"
+                    },
+                    "toughnessModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "Borg"
+                                }
+                            ]
+                        },
+                        "aggregation": "DISTINCT_CREATURE_TYPES"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "186",
+        "rarity": "RARE",
+        "artist": "Julia Metzger",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a4518ea3-5f56-4f1d-9024-2bf06ac98786.jpg?1792508262"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Captain's Tutelage
 {
     "name": "Captain's Tutelage",
@@ -2912,6 +3020,100 @@
     ]
 }
 
+// Plasma Cascade
+{
+    "name": "Plasma Cascade",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Plasma Cascade deals 3 damage to any target. You may discard a card. If you do, draw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        },
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "descriptionOverride": "You may discard a card. If you do, draw a card."
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "164",
+        "artist": "Narendra Bintara Adi",
+        "flavorText": "\"Fire in engineering! Response teams, move!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/c/3c786a2f-3de4-4b24-a3a0-15b1f2a07324.jpg?1785981557"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Primary Unimatrix Adjunct
 {
     "name": "Primary Unimatrix Adjunct",
@@ -3366,6 +3568,84 @@
         "rarity": "UNCOMMON",
         "artist": "Charles Chaisson",
         "imageUri": "https://cards.scryfall.io/normal/front/1/6/16a4d8ed-a918-4dfe-9976-0b68adb26afa.jpg?1792753861"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Saavik, Stoic Student
+{
+    "name": "Saavik, Stoic Student",
+    "manaCost": "{4}{W}",
+    "typeLine": "Legendary Creature — Vulcan Advisor",
+    "oracleText": "Flash\nFederation — When Saavik enters, she deals X damage to target attacking or blocking creature an opponent controls, where X is the number of creature types among non-Borg creatures you control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Saavik, Stoic Student:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "Borg"
+                                }
+                            ]
+                        },
+                        "aggregation": "DISTINCT_CREATURE_TYPES"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                {
+                                    "type": "StateOr",
+                                    "predicates": [
+                                        "IsAttacking",
+                                        "IsBlocking"
+                                    ]
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByOpponent"
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "rarity": "UNCOMMON",
+        "artist": "Mushk Rizvi",
+        "flavorText": "\"I don't believe this was a fair test of my command abilities.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/3783c530-a2da-4dc1-811a-0a9a412c8e78.jpg?1785981363"
     },
     "colorIdentityOverride": [
         "WHITE"

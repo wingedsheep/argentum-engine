@@ -476,6 +476,12 @@ object Amounts {
                 "the number of basic land types among", Aggregation.DISTINCT_BASIC_LAND_SUBTYPES, null,
                 "you control", Player.You, "the basic land types on your battlefield",
             ),
+            // Star Trek's Federation ability word: "the number of creature types among non-Borg
+            // creatures you control" — `DynamicAmounts.federation()` builds exactly this aggregate.
+            battlefieldAggregate(
+                "the number of creature types among", Aggregation.DISTINCT_CREATURE_TYPES, null,
+                "you control", Player.You, "the creature types on your battlefield",
+            ),
             // Tarmogoyf's count and All-Seeing Arbiter's — the aggregations the corpus spells over a
             // *zone*. Bare rather than filtered because "among cards" is the only noun Oracle writes
             // them with — a filtered version would be a printed form no card uses.

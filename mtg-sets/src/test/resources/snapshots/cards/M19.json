@@ -2212,6 +2212,69 @@
     ]
 }
 
+// Graveyard Marshal
+{
+    "name": "Graveyard Marshal",
+    "manaCost": "{B}{B}",
+    "typeLine": "Creature — Zombie Soldier",
+    "oracleText": "{2}{B}, Exile a creature card from your graveyard: Create a tapped 2/2 black Zombie creature token.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Graveyard Marshal:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomExileFrom",
+                                "zone": "Graveyard",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/e/d/ed08aac1-9e82-4049-9926-618f15222024.jpg?1783934469",
+                    "tapped": true
+                },
+                "descriptionOverride": "{2}{B}, Exile a creature card from your graveyard: Create a tapped 2/2 black Zombie creature token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "rarity": "RARE",
+        "artist": "Mark Behm",
+        "flavorText": "\"Rise and shine, my dears. We have work to do.\"\n—Isareth the Awakener",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4dc5f62c-2d29-4a94-8501-13dc6a93c5a1.jpg?1783934570"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Greenwood Sentinel
 {
     "name": "Greenwood Sentinel",
@@ -2369,6 +2432,76 @@
     "colorIdentityOverride": [
         "WHITE",
         "RED"
+    ]
+}
+
+// Hieromancer's Cage
+{
+    "name": "Hieromancer's Cage",
+    "manaCost": "{3}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, exile target nonland permanent an opponent controls until this enchantment leaves the battlefield.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hieromancer's Cage:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ExileUntilLeaves",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "nonland permanent ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this enchantment enters, exile target nonland permanent an opponent controls until this enchantment leaves the battlefield."
+            },
+            {
+                "id": "Hieromancer's Cage:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "linked_return"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "linked_return",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Rainville",
+        "flavorText": "Law protects but also contains.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/197743cd-249c-42ba-ac8d-027c088f8418.jpg?1783934606"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -3284,6 +3417,75 @@
     ]
 }
 
+// Plague Mare
+{
+    "name": "Plague Mare",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Creature — Nightmare Horse",
+    "oracleText": "This creature can't be blocked by white creatures.\nWhen this creature enters, creatures your opponents control get -1/-1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Plague Mare:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "When this creature enters, creatures your opponents control get -1/-1 until end of turn."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "HasColor",
+                            "color": "WHITE"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "rarity": "UNCOMMON",
+        "artist": "G-host Lee",
+        "flavorText": "When it passes, those who sleep dream of sickness and death.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/995596a3-343d-4272-86bf-d76fd32ab78e.jpg?1783934564"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Poison-Tip Archer
 {
     "name": "Poison-Tip Archer",
@@ -3369,6 +3571,154 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Psychic Corrosion
+{
+    "name": "Psychic Corrosion",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you draw a card, each opponent mills two cards.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Psychic Corrosion:1",
+                "trigger": "DrawEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "player": "EachOpponent",
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "EachOpponent"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever you draw a card, each opponent mills two cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "rarity": "UNCOMMON",
+        "artist": "Bastien L. Deharme",
+        "flavorText": "\"To break another's mind is to deliver a fate worse than death. It is a terrifying power.\"\n—Jace Beleren",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/285d22fa-1623-463a-83c0-a9aa7c969ce2.jpg?1783934583"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Psychic Symbiont
+{
+    "name": "Psychic Symbiont",
+    "manaCost": "{4}{U}{B}",
+    "typeLine": "Creature — Nightmare Horror",
+    "oracleText": "Flying\nWhen this creature enters, target opponent discards a card and you draw a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Psychic Symbiont:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "TargetPlayer",
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "moveType": "Discard"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, target opponent discards a card and you draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "221",
+        "rarity": "UNCOMMON",
+        "artist": "Robbie Trevino",
+        "flavorText": "\"I turn around and see nothing, yet I know it is behind me. Its fingers rummage in my mind, crafting new ideas.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/3188e533-9a72-4a02-b169-a918f7c095ba.jpg?1783934519"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 
@@ -3949,6 +4299,55 @@
                 "text": "Sai's triggered ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
             }
         ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Salvager of Secrets
+{
+    "name": "Salvager of Secrets",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Merfolk Wizard",
+    "oracleText": "When this creature enters, return target instant or sorcery card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Salvager of Secrets:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "instant|sorcery own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, return target instant or sorcery card from your graveyard to your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "artist": "Lars Grant-West",
+        "flavorText": "The greatest treasure of the deep is an echo from above.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3a55f484-5734-469c-8d41-95ce44473ec1.jpg?1783934583"
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -5100,6 +5499,95 @@
     ]
 }
 
+// Transmogrifying Wand
+{
+    "name": "Transmogrifying Wand",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "This artifact enters with three charge counters on it.\n{1}, {T}, Remove a charge counter from this artifact: Destroy target creature. Its controller creates a 2/4 white Ox creature token. Activate only as a sorcery.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Transmogrifying Wand:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "CHARGE",
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        },
+                        {
+                            "type": "CreateToken",
+                            "power": 2,
+                            "toughness": 4,
+                            "colors": [
+                                "WHITE"
+                            ],
+                            "creatureTypes": [
+                                "Ox"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/8/f/8f1d69f9-d9d7-47a9-9236-351f81ffa9ae.jpg?1783934475",
+                            "controller": "TargetController"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "{1}, {T}, Remove a charge counter from this artifact: Destroy target creature. Its controller creates a 2/4 white Ox creature token. Activate only as a sorcery."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "CHARGE",
+                "count": 3,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "247",
+        "rarity": "RARE",
+        "artist": "Aaron Miller",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1b06b670-7238-4732-85fd-ac6abebea57f.jpg?1783934507"
+    },
+    "colorIdentityOverride": []
+}
+
 // Trusty Packbeast
 {
     "name": "Trusty Packbeast",
@@ -5291,6 +5779,70 @@
         "artist": "Daarken",
         "flavorText": "One day, they may be paragons of deadly elegance. For the moment, they possess nothing but thirst.",
         "imageUri": "https://cards.scryfall.io/normal/front/1/6/167822a5-2ab5-42f5-afa4-562fe2d7501b.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Vampire Sovereign
+{
+    "name": "Vampire Sovereign",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Vampire Noble",
+    "oracleText": "Flying\nWhen this creature enters, target opponent loses 3 life and you gain 3 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vampire Sovereign:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, target opponent loses 3 life and you gain 3 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "125",
+        "rarity": "UNCOMMON",
+        "artist": "Volkan Baǵa",
+        "flavorText": "\"Your service shall be rewarded.\"\n—Queen Lian",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/ee338221-ead9-4b89-8b0c-12745c4ca13d.jpg?1783934560"
     },
     "colorIdentityOverride": [
         "BLACK"

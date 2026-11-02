@@ -151,11 +151,11 @@ Cards are grouped by type. Status:
 - [ ] **Portent of Calamity** — Complex card selection. May need help
 - [ ] **Psychic Whorl** — Discard spell. Generic AI likely fine
 - [ ] **Ruthless Negotiation** — Control magic sorcery. Review targeting
-- [ ] **Season of Gathering** — Budget modal (5 pawprint). Complex mode optimization
-- [ ] **Season of Loss** — Budget modal (5 pawprint). Complex mode optimization
-- [ ] **Season of the Bold** — Budget modal (5 pawprint). Complex mode optimization
-- [ ] **Season of the Burrow** — Budget modal (5 pawprint). Complex mode optimization
-- [ ] **Season of Weaving** — Budget modal (5 pawprint). Complex mode optimization
+- [x] **Season of Gathering** — Budget modal (5 pawprint). Generic: `DecisionResponder` simulates every budget spend
+- [x] **Season of Loss** — Budget modal (5 pawprint). Generic: `DecisionResponder` simulates every budget spend
+- [x] **Season of the Bold** — Budget modal (5 pawprint). Generic: `DecisionResponder` simulates every budget spend
+- [x] **Season of the Burrow** — Budget modal (5 pawprint). Generic: `DecisionResponder` simulates every budget spend
+- [x] **Season of Weaving** — Budget modal (5 pawprint). Generic: `DecisionResponder` simulates every budget spend
 - [ ] **Splash Portal** — Token + bounce. Generic AI likely fine
 - [x] **Starfall Invocation** — BoardWipeAdvisor + GiftBoardWipeAdvisor
 - [ ] **Stargaze** — Look at 2X, keep X. Complex selection, may need help

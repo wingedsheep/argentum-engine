@@ -3776,6 +3776,50 @@
     ]
 }
 
+// Waterknot
+{
+    "name": "Waterknot",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen this Aura enters, tap enchanted creature.\nEnchanted creature doesn't untap during its controller's untap step.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Waterknot:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "EnchantedCreature"
+                },
+                "descriptionOverride": "When this Aura enters, tap enchanted creature."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOESNT_UNTAP"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "artist": "Wayne Reynolds",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8b4579ee-76c4-4ed6-9208-55d2b598d3b5.jpg?1783935316"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Wayward Swordtooth
 {
     "name": "Wayward Swordtooth",

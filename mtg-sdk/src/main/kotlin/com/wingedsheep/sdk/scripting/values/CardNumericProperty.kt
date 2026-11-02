@@ -78,6 +78,14 @@ enum class Aggregation {
      */
     DISTINCT_PLANESWALKER_SUBTYPES,
     /**
+     * Count distinct creature types (CR 205.3m) across all matched entities — "the number of
+     * creature types among non-Borg creatures you control" (Star Trek's Federation ability word).
+     * A Human Officer and a Human Scientist count three; non-creature subtypes (Equipment, Forest,
+     * Jace) never count. Reads projected subtypes on the battlefield, so a type-changing effect
+     * is honoured and a changeling contributes every creature type (CR 702.73a).
+     */
+    DISTINCT_CREATURE_TYPES,
+    /**
      * Count distinct kinds of counters across all matched entities — i.e. the number of
      * different [com.wingedsheep.sdk.core.CounterType]s present on at least one matched
      * permanent. A permanent with both +1/+1 and finality counters contributes two kinds;
