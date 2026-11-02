@@ -14246,6 +14246,68 @@
     ]
 }
 
+// Sphinx of the Guildpact
+{
+    "name": "Sphinx of the Guildpact",
+    "manaCost": "{7}",
+    "typeLine": "Artifact Creature — Sphinx",
+    "oracleText": "Sphinx of the Guildpact is all colors.\nFlying\nHexproof from monocolored (This creature can't be the target of monocolored spells or abilities your opponents control.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Hexproof",
+            "scope": "ProtectionScope.Monocolored"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "SetColors",
+                "colors": [
+                    "WHITE",
+                    "BLUE",
+                    "BLACK",
+                    "RED",
+                    "GREEN"
+                ],
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "241",
+        "rarity": "UNCOMMON",
+        "artist": "Milivoj Ćeran",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3d30399e-2ecb-4de2-b830-673a3f059197.jpg?1783933620",
+        "rulings": [
+            {
+                "date": "2020-08-07",
+                "text": "The ability that makes Sphinx of the Guildpact all colors applies in all zones, not just the battlefield."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "An object is monocolored if it has exactly one color. A colorless object isn't monocolored."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK",
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Spikewheel Acrobat
 {
     "name": "Spikewheel Acrobat",

@@ -295,6 +295,10 @@ data class CardDefinition(
      * "becomes blue" still applies on top, which is the order CR 613.3 asks for (CDAs first, then
      * other effects by timestamp).
      *
+     * A printed "[this] is all colors" / "[this] is blue" ([selfDefinedColors]) is the same kind of
+     * CDA (CR 604.3a), so it too replaces the mana-cost colors here, in every zone (Sphinx of the
+     * Guildpact is all colors in hand, on the stack and on the battlefield).
+     *
      * [colorIdentity] deliberately does **not** consult devoid: CR 903.4 builds identity out of the
      * mana symbols in the cost and rules text, and devoid defines *no* color for the CDA clause to
      * contribute. Ulamog's Nullifier is colorless and blue-identity at the same time.
@@ -302,6 +306,7 @@ data class CardDefinition(
     val colors: Set<Color>
         get() = when {
             hasDevoid -> emptySet()
+            selfDefinedColors != null -> selfDefinedColors!!
             colorIndicator == null -> manaCost.colors
             else -> manaCost.colors + colorIndicator
         }
@@ -314,6 +319,21 @@ data class CardDefinition(
      */
     private val hasDevoid: Boolean
         get() = Keyword.DEVOID in keywords || keywordAbilities.any { it.keyword == Keyword.DEVOID }
+
+    /**
+     * The colors this card's own "[this] is all colors" / "[this] is [color]" ability defines — the
+     * last top-level [com.wingedsheep.sdk.scripting.SetColors] in [script] whose filter is the source
+     * itself and that reaches no other zone's objects (Sphinx of the Guildpact: "Sphinx of the
+     * Guildpact is all colors."). Printed on the object it describes and unconditional, it is a
+     * characteristic-defining ability (CR 604.3a) that functions in every zone, so it is folded into
+     * [colors] (and [colorIdentity], CR 903.4) rather than projected as a battlefield-only layer-5
+     * effect. `null` when the card has no such ability. A self-`SetColors` wrapped in a condition is
+     * not a CDA and isn't counted; it stays an ordinary layer-5 effect.
+     */
+    val selfDefinedColors: Set<Color>?
+        get() = script.staticAbilities.lastOrNull { ability ->
+            ability is com.wingedsheep.sdk.scripting.SetColors && ability.isSelfColorShape
+        }?.let { (it as com.wingedsheep.sdk.scripting.SetColors).colors }
 
     /**
      * The subtypes this card's own "[this] is also a [subtype]" abilities define — every top-level
@@ -377,6 +397,7 @@ data class CardDefinition(
             colorIdentityOverride?.let { return it }
             val identity = manaCost.colors.toMutableSet()
             colorIndicator?.let(identity::addAll)
+            selfDefinedColors?.let(identity::addAll)
             if (oracleText.isNotBlank()) {
                 for (match in COLOR_SYMBOL_REGEX.findAll(oracleText)) {
                     for (ch in match.groupValues[1]) {
