@@ -5680,6 +5680,111 @@
     }
 }
 
+// The City on the Edge of Forever
+{
+    "name": "The City on the Edge of Forever",
+    "manaCost": "{3}{W}{B}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — All artifacts and creatures phase out. Create a 0/1 white Human creature token with \"Permanents can't phase in.\" (Treat phased-out permanents and anything attached to them as though they don't exist.)\nII — You draw two cards and each player loses 2 life.\nIII — Sacrifice a creature token. If you do, you gain 5 life.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "artifact|creature"
+                                }
+                            },
+                            "body": {
+                                "type": "PhaseOut",
+                                "target": "IterationEntity"
+                            }
+                        },
+                        {
+                            "type": "CreateToken",
+                            "power": 0,
+                            "toughness": 1,
+                            "colors": [
+                                "WHITE"
+                            ],
+                            "creatureTypes": [
+                                "Human"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/2/5/25b0644d-4934-4495-9b6e-c31d1d10c298.jpg?1784177188",
+                            "staticAbilities": [
+                                "CantPhaseIn"
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "Each"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.DoAction",
+                        "action": {
+                            "type": "Sacrifice",
+                            "filter": "creature token"
+                        },
+                        "successCriterion": "SuccessCriterion.PermanentsSacrificed"
+                    },
+                    "then": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 5
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "228",
+        "rarity": "RARE",
+        "artist": "Peter Diamond",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aac6f64d-d39a-4994-bc70-6b477b2640f8.jpg?1787205815"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // The Holodeck
 {
     "name": "The Holodeck",

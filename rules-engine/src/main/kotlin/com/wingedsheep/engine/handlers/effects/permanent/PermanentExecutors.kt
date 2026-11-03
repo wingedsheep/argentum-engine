@@ -269,7 +269,7 @@ class PermanentExecutors(
         // phasing
         PhaseOutExecutor(),
         PhaseOutUntilLeavesExecutor(),
-        PhaseInLinkedToSourceExecutor(),
+        PhaseInLinkedToSourceExecutor(cardRegistry, zones.predicateEvaluator),
         // protection
         ChooseColorThenExecutor(decisionHandler),
         GrantHexproofFromChosenColorExecutor(),

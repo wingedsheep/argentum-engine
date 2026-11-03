@@ -3,6 +3,7 @@ package com.wingedsheep.engine.core
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.handlers.effects.permanent.phasing.PhaseInLocks
 import com.wingedsheep.engine.handlers.predicates.receivedCounterThisTurn
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
@@ -132,9 +133,11 @@ class BeginningPhaseManager(
         // Phase in permanents that phased out under each active-team member's control. In a shared
         // team turn both teammates phase in together (CR 805.4); for a non-team game the active
         // team is just the active player. This happens during the untap step, before untapping
-        // (Rule 702.26a).
+        // (Rule 702.26a). A standing "permanents can't phase in" static is read once, before
+        // anything phases in, so the whole simultaneous phase-in is judged against it.
+        val phaseInLock = PhaseInLocks.of(newState, cardRegistry, predicateEvaluator)
         for (member in untappingTeam) {
-            newState = phaseInPermanents(newState, member, events)
+            newState = phaseInPermanents(newState, member, phaseInLock, events)
         }
 
         // CR 502.2 / 731.2 — the second turn-based action of the untap step: check the previous
@@ -413,10 +416,14 @@ class BeginningPhaseManager(
      *
      * Phased-out attachments share the controller stamped at phase-out time, so they
      * are picked up by the same scan and phase in alongside their host.
+     *
+     * A permanent [phaseInLock] forbids ([com.wingedsheep.sdk.scripting.CantPhaseIn]) stays
+     * phased out and tries again at its controller's next untap step.
      */
     private fun phaseInPermanents(
         state: GameState,
         activePlayer: EntityId,
+        phaseInLock: PhaseInLocks.Lock,
         events: MutableList<GameEvent>
     ): GameState {
         val toPhaseIn = state.allBattlefieldEntities().filter { entityId ->
@@ -426,7 +433,8 @@ class BeginningPhaseManager(
             // PhaseInLock to be released (see PhaseInLock's variants for who releases each).
             phased?.phasedOutByController == activePlayer &&
                 phased.phaseInOnSourceLeaves == null &&
-                phased.phaseInLock == null
+                phased.phaseInLock == null &&
+                !phaseInLock.forbids(entityId)
         }
 
         var newState = state
