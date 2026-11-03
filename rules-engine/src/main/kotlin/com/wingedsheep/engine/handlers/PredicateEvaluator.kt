@@ -308,7 +308,7 @@ class PredicateEvaluator(
             if (!matchesSnapshotController(state, snapshot, controllerPred, context)) return false
         }
         if (!filter.statePredicates.all { matchesSnapshotState(state, snapshot, it, context, onBattlefield) == true }) return false
-        if (!filter.cardPredicates.all { matchesSnapshotPredicate(snapshot, it) == true }) return false
+        if (!filter.cardPredicates.all { matchesSnapshotPredicate(state, snapshot, it, context) == true }) return false
         if (filter.anyOf.isNotEmpty()) {
             return filter.anyOf.any { matchesSnapshot(state, snapshot, it, context, onBattlefield) }
         }
@@ -445,7 +445,12 @@ class PredicateEvaluator(
      * operand should: `And` is false if any operand is false, unknown if any is unknown; `Or` is
      * true if any operand is true, unknown if any is unknown.
      */
-    private fun matchesSnapshotPredicate(snapshot: EntitySnapshot, predicate: CardPredicate): Boolean? {
+    private fun matchesSnapshotPredicate(
+        state: GameState,
+        snapshot: EntitySnapshot,
+        predicate: CardPredicate,
+        context: PredicateContext,
+    ): Boolean? {
         val typeLine = snapshot.typeLine
         return when (predicate) {
             CardPredicate.IsCreature -> typeLine?.isCreature
@@ -483,15 +488,34 @@ class PredicateEvaluator(
             // a negated one ("a creature not named …"). An uncaptured name stays unknown.
             is CardPredicate.NameEquals ->
                 if (snapshot.wasFaceDown) false else snapshot.name?.let { it == predicate.name }
+            // A name chosen earlier in this resolution, or durably by the context's source as it
+            // entered (Kai Winn) — read off the frozen name, so an ability whose source its own
+            // cost sacrificed still matches. Same face-down / uncaptured rules as NameEquals.
+            is CardPredicate.NameEqualsChosen -> {
+                val chosen = context.chosenValues[predicate.variableName]
+                when {
+                    chosen == null -> false
+                    snapshot.wasFaceDown -> false
+                    else -> snapshot.name?.equals(chosen, ignoreCase = true)
+                }
+            }
+            is CardPredicate.NameEqualsChosenComponent -> {
+                val chosen = chosenComponentText(state, context, predicate.slot)
+                when {
+                    chosen == null -> false
+                    snapshot.wasFaceDown -> false
+                    else -> snapshot.name?.equals(chosen, ignoreCase = true)
+                }
+            }
             is CardPredicate.HasKeyword -> snapshot.keywords.containsKeyword(predicate.keyword)
             CardPredicate.PowerGreaterThanBase -> {
                 val power = snapshot.power
                 val basePower = snapshot.basePower
                 if (power == null || basePower == null) null else power > basePower
             }
-            is CardPredicate.Not -> matchesSnapshotPredicate(snapshot, predicate.predicate)?.not()
+            is CardPredicate.Not -> matchesSnapshotPredicate(state, snapshot, predicate.predicate, context)?.not()
             is CardPredicate.And -> {
-                val results = predicate.predicates.map { matchesSnapshotPredicate(snapshot, it) }
+                val results = predicate.predicates.map { matchesSnapshotPredicate(state, snapshot, it, context) }
                 when {
                     results.any { it == false } -> false
                     results.any { it == null } -> null
@@ -499,7 +523,7 @@ class PredicateEvaluator(
                 }
             }
             is CardPredicate.Or -> {
-                val results = predicate.predicates.map { matchesSnapshotPredicate(snapshot, it) }
+                val results = predicate.predicates.map { matchesSnapshotPredicate(state, snapshot, it, context) }
                 when {
                     results.any { it == true } -> true
                     results.any { it == null } -> null
@@ -549,8 +573,6 @@ class PredicateEvaluator(
             is CardPredicate.ManaValueEqualsDynamic,
             CardPredicate.ManaValueIsEven,
             CardPredicate.ManaValueIsOdd,
-            is CardPredicate.NameEqualsChosen,
-            is CardPredicate.NameEqualsChosenComponent,
             CardPredicate.NameNotSharedWithControlledRoom,
             is CardPredicate.NotColor,
             is CardPredicate.NotKeyword,
@@ -596,6 +618,16 @@ class PredicateEvaluator(
             is CardPredicate.ToughnessEqualsDynamic,
             CardPredicate.ToughnessGreaterThanPower -> null
         }
+    }
+
+    /**
+     * The text durably chosen by the context's source permanent as it entered (a card name or card
+     * type in its [CastChoicesComponent] [slot]) — null without a source or a choice there.
+     */
+    private fun chosenComponentText(state: GameState, context: PredicateContext, slot: ChoiceSlot): String? {
+        val sourceId = context.sourceId ?: return null
+        return (state.getEntity(sourceId)?.get<CastChoicesComponent>()?.chosen?.get(slot)
+            as? ChoiceValue.TextChoice)?.text
     }
 
     /**
@@ -1532,10 +1564,7 @@ class PredicateEvaluator(
             // in static/projection contexts where there is no pipeline, as long as the predicate
             // context supplies the granting permanent as the source.
             is CardPredicate.NameEqualsChosenComponent -> {
-                val sourceId = context?.sourceId ?: return false
-                val chosenName = (state.getEntity(sourceId)
-                    ?.get<CastChoicesComponent>()?.chosen?.get(predicate.slot)
-                    as? ChoiceValue.TextChoice)?.text ?: return false
+                val chosenName = context?.let { chosenComponentText(state, it, predicate.slot) } ?: return false
                 card.name.equals(chosenName, ignoreCase = true)
             }
 

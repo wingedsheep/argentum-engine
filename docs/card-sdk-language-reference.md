@@ -7223,7 +7223,9 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   evaluated. Pair with `replacementEffect(EntersWithChoice(ChoiceType.CARD_NAME))` for a choice made as it enters,
   or `Effects.ChooseCardName(recordOnSource = true)` for one made by a resolving ability (Medomai's Prophecy).
   Fails closed (no match) before a name is chosen. Used by name-keyed static abilities (Petrified Hamlet — "sources with the chosen name … /
-  Lands with the chosen name …").
+  Lands with the chosen name …"). Also answered from last-known information: an activated-ability trigger's
+  `sourceFilter` matches a source its own cost sacrificed by its frozen name (Kai Winn, Faithless Leader —
+  `Triggers.anOpponent.activatesAbility(of = GameObjectFilter.Any.namedFromChosenComponent(), includeManaAbilities = true)`).
 - `.ofChosenCardTypeComponent(slot = ChoiceSlot.CARD_TYPE)` — `CardPredicate.CardTypeEqualsChosenComponent`:
   the card-type analogue of `.namedFromChosenComponent`. Matches cards whose **card type** equals the type
   **durably chosen by the source permanent** (read from its `CastChoicesComponent` under `slot`). Same
