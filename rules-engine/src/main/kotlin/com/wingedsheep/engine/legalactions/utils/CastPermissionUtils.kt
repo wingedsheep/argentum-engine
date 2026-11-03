@@ -569,14 +569,9 @@ class CastPermissionUtils(
         for (entityId in state.getBattlefield(playerId)) {
             val cardDef = state.getEntity(entityId)?.faceUpCardDefinition(cardRegistry) ?: continue
             for (wrapped in cardDef.liveStaticAbilities(state, entityId)) {
-                // Honour a conditional gate (Zefram Cochrane's "during each of your turns", The
-                // Lunar Whale's "as long as it attacked this turn") against the granting permanent,
-                // exactly as CastZoneResolver's cast-time re-check does.
-                val ability = if (wrapped is ConditionalStaticAbility) {
-                    val ctx = EffectContext(sourceId = entityId, controllerId = playerId)
-                    if (!conditionEvaluator.evaluate(state, wrapped.condition, ctx)) continue
-                    wrapped.ability
-                } else wrapped
+                // Honour a conditional gate (Zefram Cochrane's "during each of your turns") against
+                // the granting permanent, exactly as CastZoneResolver's cast-time re-check does.
+                val ability = activeStaticAbility(state, wrapped, entityId, playerId) ?: continue
                 if (ability is CastSpellTypesFromTopOfLibrary) {
                     val uses = state.getEntity(entityId)
                         ?.get<CastFromTopOfLibraryUsesThisTurnComponent>()?.uses ?: 0
