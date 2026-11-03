@@ -510,6 +510,10 @@ internal class EffectApplicator(
                     values.staticAbilities.clear()
                     values.staticAbilitySourceIds.clear()
                     values.manaAbilityLifeTax = 0
+                    // Mana abilities survive only while every removal so far spared them: a full
+                    // removal before or after "except mana abilities" takes them too.
+                    values.keepsManaAbilities = mod.exceptManaAbilities &&
+                        (!values.lostAllAbilities || values.keepsManaAbilities)
                     values.lostAllAbilities = true
                     values.lostAllAbilitiesTimestamp =
                         maxOf(values.lostAllAbilitiesTimestamp ?: effect.timestamp, effect.timestamp)

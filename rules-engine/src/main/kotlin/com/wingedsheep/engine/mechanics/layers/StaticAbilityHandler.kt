@@ -709,7 +709,7 @@ class StaticAbilityHandler(
                 affectsFilter = filter
             ),
             ContinuousEffectData(
-                modification = Modification.RemoveAllAbilities,
+                modification = Modification.RemoveAllAbilities(),
                 affectsFilter = filter
             ),
         )
@@ -1242,7 +1242,7 @@ class StaticAbilityHandler(
             }
             is LoseAllAbilities -> {
                 ContinuousEffectData(
-                    modification = Modification.RemoveAllAbilities,
+                    modification = Modification.RemoveAllAbilities(ability.exceptManaAbilities),
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }

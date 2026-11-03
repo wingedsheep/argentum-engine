@@ -89,7 +89,7 @@ class ManaAbilityEnumerator(
             // matching permanents for the affected player — "can't activate abilities of …".
             if (context.castPermissionUtils.isActivationPreventedForPlayer(state, entityId, playerId, abilityIsManaAbility = true)) continue
 
-            val entityLostAllAbilities = projected.hasLostAllAbilities(entityId)
+            val entityLostManaAbilities = projected.hasLostManaAbilities(entityId)
 
             // By definition id, not name: a renamed copy (CR 707.9 — Absorbing Man copying a mana
             // rock "except his name is Absorbing Man") keeps its printed name but presents the
@@ -124,7 +124,7 @@ class ManaAbilityEnumerator(
             // suppressed) — this includes intrinsic basic-land-subtype abilities: a Plains hit by
             // Imprisoned in the Moon keeps its "Plains" subtype (CR 205.4b types/subtypes are
             // untouched by ability removal) but per ruling "loses any intrinsic mana abilities
-            // associated with them", so `entityLostAllAbilities` must be checked before falling
+            // associated with them", so `entityLostManaAbilities` must be checked before falling
             // back to the intrinsic-subtype inference.
             val classLevel = container.get<com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent>()?.currentLevel
             val ownManaAbilities = when {
@@ -133,9 +133,9 @@ class ManaAbilityEnumerator(
                 // land's basic types also grants the type's intrinsic mana ability (CR 305.7),
                 // which survives the same effect's ability removal — so the land still taps for
                 // its new color. Intrinsic mana from a printed/unchanged subtype does NOT survive
-                // (Imprisoned in the Moon), which the plain `entityLostAllAbilities` branch keeps.
-                entityLostAllAbilities && projected.hasBasicLandTypesSetByEffect(entityId) -> intrinsicManaAbilities
-                entityLostAllAbilities -> emptyList()
+                // (Imprisoned in the Moon), which the plain `entityLostManaAbilities` branch keeps.
+                entityLostManaAbilities && projected.hasBasicLandTypesSetByEffect(entityId) -> intrinsicManaAbilities
+                entityLostManaAbilities -> emptyList()
                 intrinsicManaAbilities.isNotEmpty() -> intrinsicManaAbilities
                 cardDef == null -> emptyList()
                 else -> cardDef.script.effectiveActivatedAbilities(classLevel).filter { it.isManaAbility && it.activateFromZone == Zone.BATTLEFIELD }

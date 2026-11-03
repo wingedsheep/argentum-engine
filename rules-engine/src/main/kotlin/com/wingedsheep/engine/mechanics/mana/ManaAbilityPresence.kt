@@ -41,7 +41,7 @@ object ManaAbilityPresence {
         val card = container.get<CardComponent>() ?: return false
         val onBattlefield = entityId in state.getBattlefield()
         val faceDown = container.has<FaceDownComponent>()
-        val removed = onBattlefield && projected.hasLostAllAbilities(entityId)
+        val removed = onBattlefield && projected.hasLostManaAbilities(entityId)
         val intrinsic = if (onBattlefield) {
             projected.hasType(entityId, "LAND") && projected.getSubtypes(entityId).any { it in basicLandTypes }
         } else {

@@ -79,7 +79,13 @@ object EffectEntryChoices {
                 ?: state.getEntity(id)?.get<CardComponent>()
                 ?: continue
             val enteringDef = registry.getCard(entering.cardDefinitionId)
+            // Its own "as this enters, choose" is gone if a battlefield static will strip its
+            // abilities as it arrives (Blood Sun, Blood Moon — CR 614.12).
             val printed = enteringDef?.script?.replacementEffects?.filterIsInstance<EntersWithChoice>().orEmpty()
+                .takeUnless {
+                    it.isNotEmpty() &&
+                        EntryCharacteristics.wouldLoseAllAbilities(state, id, controller, registry, predicateEvaluator)
+                }.orEmpty()
             // Granted read ahead, matched against the controller it enters under (only a Saga
             // can have it, so nothing else pays for the re-controlled state).
             val readAhead = if (enteringDef?.isSaga == true) ReadAheadSynthesis.grantedChoice(

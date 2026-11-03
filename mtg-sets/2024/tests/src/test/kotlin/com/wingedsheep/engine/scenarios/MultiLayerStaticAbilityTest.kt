@@ -145,7 +145,7 @@ class MultiLayerStaticAbilityTest : FunSpec({
             ))
             // Silencer removes all abilities from the animate source (the ability generating the effect).
             driver.addContinuousEffects(silencer, listOf(
-                ContinuousEffectData(Modification.RemoveAllAbilities, AffectsFilter.SpecificEntities(setOf(source))),
+                ContinuousEffectData(Modification.RemoveAllAbilities(), AffectsFilter.SpecificEntities(setOf(source))),
             ))
 
             val projected = projector.project(driver.state)
@@ -173,7 +173,7 @@ class MultiLayerStaticAbilityTest : FunSpec({
                 ContinuousEffectData(Modification.SetPowerToughness(2, 2), noncreatureArtifactYouControl),
             ))
             driver.addContinuousEffects(silencer, listOf(
-                ContinuousEffectData(Modification.RemoveAllAbilities, AffectsFilter.SpecificEntities(setOf(source))),
+                ContinuousEffectData(Modification.RemoveAllAbilities(), AffectsFilter.SpecificEntities(setOf(source))),
             ))
 
             val projected = projector.project(driver.state)
@@ -245,7 +245,7 @@ class MultiLayerStaticAbilityTest : FunSpec({
             val idol = driver.putPermanentOnBattlefield(p, "Big Idol")
             val silencer = driver.putPermanentOnBattlefield(p, "Silencer")
             driver.addContinuousEffects(silencer, listOf(
-                ContinuousEffectData(Modification.RemoveAllAbilities, AffectsFilter.SpecificEntities(setOf(bello))),
+                ContinuousEffectData(Modification.RemoveAllAbilities(), AffectsFilter.SpecificEntities(setOf(bello))),
             ))
 
             val projected = projector.project(driver.state)

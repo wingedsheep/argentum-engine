@@ -45,6 +45,8 @@ object ActivatedAbilityPresence {
         val onBattlefield = entityId in state.getBattlefield()
         val faceDown = container.has<FaceDownComponent>()
         val removed = onBattlefield && projected.hasLostAllAbilities(entityId)
+        // "Except mana abilities" (Blood Sun) strips everything but the mana abilities.
+        val manaRemoved = onBattlefield && projected.hasLostManaAbilities(entityId)
         fun counted(ability: ActivatedAbility) = !(excludeManaAbilities && ability.isManaAbility)
 
         var total = 0
@@ -53,8 +55,12 @@ object ActivatedAbilityPresence {
         // one). They reach a face-down permanent too, and survive ability removal only when the same
         // effect set the basic type (Blood Moon), as in [com.wingedsheep.engine.mechanics.mana.ManaAbilityPresence].
         val intrinsic = if (onBattlefield) IntrinsicManaAbilities.forEntity(state, projected, entityId) else emptyList()
-        if (!excludeManaAbilities && (!removed || projected.hasBasicLandTypesSetByEffect(entityId))) {
+        if (!excludeManaAbilities && (!manaRemoved || projected.hasBasicLandTypesSetByEffect(entityId))) {
             total += intrinsic.size
+        }
+        if (!faceDown && removed && !manaRemoved && !excludeManaAbilities && intrinsic.isEmpty()) {
+            val level = container.get<ClassLevelComponent>()?.currentLevel
+            total += ownActivatedAbilities(card, registry.getCard(card.cardDefinitionId), level).count { it.isManaAbility }
         }
         if (!faceDown && !removed) {
             val definition = registry.getCard(card.cardDefinitionId)

@@ -10854,6 +10854,16 @@ staticAbility {
   An **empty** `landTypes` is "loses all land types and abilities": pair it with
   `filter = GroupFilter(GameObjectFilter.Land, scope = Scope.AttachedTo)` and `GrantActivatedAbility` for the replacement mana
   abilities (granted abilities survive the wipe). (Lithoform Blight)
+- `LoseAllAbilities(filter = attachedCreature(), exceptManaAbilities = false)` — Layer 6: the
+  affected objects lose every ability (keywords, statics, triggered and activated abilities) —
+  Deep Freeze, Lignify, Titania's Song. `exceptManaAbilities = true` is "lose all abilities except
+  mana abilities" (Blood Sun, `filter = GroupFilter.AllLands`): each affected object keeps its own
+  mana abilities (CR 605.1a — abilities that *produce* mana; printed or from a basic land type) and
+  loses the rest; a full removal alongside it, in either timestamp order, still takes the mana
+  abilities. Engine readers of mana abilities ask `ProjectedState.hasLostManaAbilities`, everything
+  else `hasLostAllAbilities`. An object entering while a battlefield static would strip it has
+  already lost its own "enters tapped", "enters with", "as this enters" and "enters as a copy"
+  replacements and its enters triggers (CR 614.12) — this also holds under Blood Moon.
 - `SetEnchantedLandTypeFromChosen` — "Enchanted land is the chosen type" — same, but reads the
   type from the source's `ChosenLandTypeComponent` (paired with
   `EntersWithChoice(ChoiceType.BASIC_LAND_TYPE)`). Chosen-value counterpart to

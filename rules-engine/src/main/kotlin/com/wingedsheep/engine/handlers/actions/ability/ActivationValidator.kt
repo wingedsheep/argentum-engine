@@ -324,7 +324,10 @@ internal class ActivationValidator(
             val isOwnAbility = (com.wingedsheep.engine.state.components.identity.ownActivatedAbilities(cardComponent, cardDef, classLevel).any { it.id == action.abilityId })
                 || action.abilityId.value.startsWith("class_level_up_")
                 || isIntrinsicMana
-            if (isOwnAbility && !intrinsicSurvives) {
+            // "Except mana abilities" (Blood Sun) spares the permanent's own mana abilities.
+            val manaSpared = (ability.isManaAbility || isIntrinsicMana) &&
+                !state.projectedState.hasLostManaAbilities(action.sourceId)
+            if (isOwnAbility && !intrinsicSurvives && !manaSpared) {
                 return "This permanent has lost all abilities"
             }
         }
