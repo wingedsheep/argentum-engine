@@ -17,7 +17,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
  * Whenever this creature attacks or blocks, if you control a Vraska planeswalker, target opponent
  * loses 2 life and you gain 2 life.
  *
- * "Attacks or blocks" is two triggered abilities sharing the intervening-if (CR 603.4).
+ * "Attacks or blocks" is modelled as two triggered abilities sharing the intervening-if (CR 603.4).
  */
 val VraskasConquistador = card("Vraska's Conquistador") {
     manaCost = "{1}{B}"
