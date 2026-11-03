@@ -1138,6 +1138,38 @@ internal class PermanentEntry(
      * Scorch: "Other creatures you control enter with additional +1/+1 counters").
      * Thin wrapper over [EntersWithReplacements] carrying the cast context (X, mana spent).
      */
+    internal fun applyEntersWithReplacements(
+        state: GameState,
+        entityId: EntityId,
+        cardDef: com.wingedsheep.sdk.model.CardDefinition,
+        controllerId: EntityId,
+        xValue: Int? = null,
+        totalManaSpent: Int = 0
+    ): Pair<GameState, List<GameEvent>> {
+        var newState = state
+        val events = mutableListOf<GameEvent>()
+
+        val (ownState, ownEvents) = EntersWithReplacements.applyFromDefinition(
+            newState, entityId, cardDef, controllerId, xValue, totalManaSpent,
+            predicateEvaluator = conditionEvaluator.predicates
+        )
+        newState = ownState
+        events.addAll(ownEvents)
+
+        val (sunburstState, sunburstEvents) = applySunburst(newState, entityId, cardDef, controllerId)
+        newState = sunburstState
+        events.addAll(sunburstEvents)
+
+        val (globalState, globalEvents) = EntersWithReplacements.applyGlobal(
+            newState, entityId, controllerId, cardRegistry,
+            predicateEvaluator = conditionEvaluator.predicates
+        )
+        newState = globalState
+        events.addAll(globalEvents)
+
+        return newState to events
+    }
+
     /**
      * Sunburst (CR 702.44a) — "If this object is entering the battlefield from the stack as a
      * creature, it enters with a +1/+1 counter on it for each color of mana spent to cast it.
@@ -1174,37 +1206,5 @@ internal class PermanentEntry(
         return EntersWithReplacements.placeEntryCounters(
             state, entityId, kind, colors, controllerId, name, predicateEvaluator = predicates
         )
-    }
-
-    internal fun applyEntersWithReplacements(
-        state: GameState,
-        entityId: EntityId,
-        cardDef: com.wingedsheep.sdk.model.CardDefinition,
-        controllerId: EntityId,
-        xValue: Int? = null,
-        totalManaSpent: Int = 0
-    ): Pair<GameState, List<GameEvent>> {
-        var newState = state
-        val events = mutableListOf<GameEvent>()
-
-        val (ownState, ownEvents) = EntersWithReplacements.applyFromDefinition(
-            newState, entityId, cardDef, controllerId, xValue, totalManaSpent,
-            predicateEvaluator = conditionEvaluator.predicates
-        )
-        newState = ownState
-        events.addAll(ownEvents)
-
-        val (sunburstState, sunburstEvents) = applySunburst(newState, entityId, cardDef, controllerId)
-        newState = sunburstState
-        events.addAll(sunburstEvents)
-
-        val (globalState, globalEvents) = EntersWithReplacements.applyGlobal(
-            newState, entityId, controllerId, cardRegistry,
-            predicateEvaluator = conditionEvaluator.predicates
-        )
-        newState = globalState
-        events.addAll(globalEvents)
-
-        return newState to events
     }
 }
