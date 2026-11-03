@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.tracking
 
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.state.components.battlefield.DamageSourceLki
 import com.wingedsheep.engine.state.components.player.CombatDamageSourcesThisTurnComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Keyword
@@ -49,6 +50,19 @@ class CombatDamageSourcesThisTurnTest : ScenarioTestBase() {
         cardRegistry.register(pirate("Test Pirate B"))
         cardRegistry.register(pirate("Test Pirate C"))
         cardRegistry.register(pirate("Test Double-Strike Pirate", Keyword.DOUBLE_STRIKE))
+
+        test("a source recorded with two different snapshots is still one source") {
+            // First-strike damage as a Pirate, regular damage after it stopped being one.
+            val you = EntityId.generate()
+            val source = EntityId.generate()
+            val asPirate = DamageSourceLki(you, source, sourceSubtypes = setOf(Subtype.PIRATE), amount = 1)
+            val asOther = DamageSourceLki(you, source, sourceSubtypes = emptySet(), amount = 1)
+            val record = CombatDamageSourcesThisTurnComponent().adding(asPirate).adding(asOther).adding(asPirate)
+
+            record.sources.size shouldBe 2
+            record.countMatching(pirates, you) shouldBe 1
+            record.countMatching(GameObjectFilter.Creature, you) shouldBe 1
+        }
 
         test("each distinct Pirate that connects counts; a non-Pirate doesn't") {
             val game = scenario()

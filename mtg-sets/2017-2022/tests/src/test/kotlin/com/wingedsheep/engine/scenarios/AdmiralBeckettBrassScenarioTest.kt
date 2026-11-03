@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -53,7 +54,12 @@ class AdmiralBeckettBrassScenarioTest : ScenarioTestBase() {
             game.declareNoBlockers()
             game.passUntilPhase(Phase.ENDING, Step.END)
 
-            withClue("the trigger asks for its target") { game.hasPendingDecision() shouldBe true }
+            val decision = game.getPendingDecision()
+            withClue("the trigger asks for its target") { (decision is ChooseTargetsDecision) shouldBe true }
+            withClue("only the damaged player's nonland permanents are legal: not Beckett's own, not the Forest") {
+                (decision as ChooseTargetsDecision).legalTargets[0]!!.toSet() shouldBe
+                    setOf(game.findPermanent("Grizzly Bears")!!)
+            }
             game.selectTargets(listOf(game.findPermanent("Grizzly Bears")!!)).error shouldBe null
             game.resolveStack()
 

@@ -17,3 +17,15 @@ val AdmiralBeckettBrassReprint = Printing(
     releaseDate = "2023-12-06",
     rarity = Rarity.MYTHIC,
 )
+
+val AdmiralBeckettBrassReprint2 = Printing(
+    oracleId = "43b5e462-d860-473d-828f-6c513fc7768a",
+    name = "Admiral Beckett Brass",
+    setCode = "SLD",
+    collectorNumber = "1561",
+    scryfallId = "22d69040-2065-4975-88d3-60bd32731771",
+    artist = "Fajareka Setiawan",
+    imageUri = "https://cards.scryfall.io/normal/front/2/2/22d69040-2065-4975-88d3-60bd32731771.jpg",
+    releaseDate = "2024-06-24",
+    rarity = Rarity.MYTHIC,
+)

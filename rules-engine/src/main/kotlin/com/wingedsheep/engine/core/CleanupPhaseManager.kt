@@ -97,6 +97,7 @@ import com.wingedsheep.engine.state.components.player.SacrificedFoodThisTurnComp
 import com.wingedsheep.engine.state.components.player.ScriedOrSurveiledThisTurnComponent
 import com.wingedsheep.engine.state.components.player.SurveiledThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CombatDamageReceivedThisTurnComponent
+import com.wingedsheep.engine.state.components.player.CombatDamageSourcesThisTurnComponent
 import com.wingedsheep.engine.state.components.player.WasDealtCombatDamageThisTurnComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.player.ArtifactsDiedThisTurnComponent
@@ -1122,8 +1123,8 @@ class CleanupPhaseManager(
                 if (result.has<CombatDamageReceivedThisTurnComponent>()) {
                     result = result.without<CombatDamageReceivedThisTurnComponent>()
                 }
-                if (result.has<com.wingedsheep.engine.state.components.player.CombatDamageSourcesThisTurnComponent>()) {
-                    result = result.without<com.wingedsheep.engine.state.components.player.CombatDamageSourcesThisTurnComponent>()
+                if (result.has<CombatDamageSourcesThisTurnComponent>()) {
+                    result = result.without<CombatDamageSourcesThisTurnComponent>()
                 }
                 result
             }

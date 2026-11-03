@@ -2418,7 +2418,8 @@ data class CombatDamageReceivedThisTurnComponent(
 /**
  * Every source that dealt *combat* damage to this player this turn, each frozen as it stood when it
  * dealt the damage ([com.wingedsheep.engine.state.components.battlefield.DamageSourceLki]: controller,
- * creature-ness, card types, subtypes, name). Recorded at the one place all damage to a player funnels
+ * creature-ness, card types, legendary-ness, subtypes, name). Amounts aren't kept — only which
+ * sources connected. Recorded at the one place all damage to a player funnels
  * through ([com.wingedsheep.engine.handlers.effects.DamageUtils.trackDamageReceivedByPlayer]), so only
  * damage actually dealt is recorded; cleared at end of turn by CleanupPhaseManager.
  *
@@ -2433,12 +2434,10 @@ data class CombatDamageReceivedThisTurnComponent(
 data class CombatDamageSourcesThisTurnComponent(
     val sources: Set<com.wingedsheep.engine.state.components.battlefield.DamageSourceLki> = emptySet()
 ) : Component {
-    /** Record a hit; a source already on record with the same snapshot adds to its tally instead. */
+    /** Record a hit; a source already on record with the same snapshot is not added twice. */
     fun adding(source: com.wingedsheep.engine.state.components.battlefield.DamageSourceLki): CombatDamageSourcesThisTurnComponent {
         val key = source.copy(amount = 0)
-        val existing = sources.firstOrNull { it.copy(amount = 0) == key }
-            ?: return copy(sources = sources + source)
-        return copy(sources = sources - existing + existing.copy(amount = existing.amount + source.amount))
+        return if (key in sources) this else copy(sources = sources + key)
     }
 
     /**
