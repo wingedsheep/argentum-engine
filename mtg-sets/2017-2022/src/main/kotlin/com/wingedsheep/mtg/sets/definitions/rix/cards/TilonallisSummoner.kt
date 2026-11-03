@@ -48,6 +48,9 @@ val TilonallisSummoner = card("Tilonalli's Summoner") {
         trigger = Triggers.self.attacks()
         effect = Effects.MayPayX(
             additionalCost = ManaCost.parse("{R}"),
+            descriptionOverride = "You may pay {X}{R}. If you do, create X 1/1 red Elemental creature tokens " +
+                "that are tapped and attacking. At the beginning of the next end step, exile those tokens " +
+                "unless you have the city's blessing.",
             then = Effects.CreateToken(
                 count = DynamicAmounts.xValue(),
                 power = 1,
