@@ -133,5 +133,34 @@ class ExchangeLifeTotalsTest : FunSpec({
         result.state.lifeTotal(p[0]) shouldBe 3
         result.state.lifeTotal(p[1]) shouldBe -2
     }
+    test("two target players exchange: the controller's own total is untouched") {
+        val result = GameInitializer(registry).initializeGame(GameConfig(
+            players = listOf(
+                PlayerConfig("A", Deck.of("Forest" to 40)),
+                PlayerConfig("B", Deck.of("Forest" to 40)),
+                PlayerConfig("C", Deck.of("Forest" to 40)),
+            ),
+            startingPlayerIndex = 0, skipMulligans = true,
+        ))
+        val p = result.playerIds
+        val state = result.state.withLifeTotal(p[0], 7).withLifeTotal(p[1], 12).withLifeTotal(p[2], 30)
+        val swapped = executor.execute(state,
+            ExchangeLifeTotalsEffect(EffectTarget.ContextTarget(1), player = EffectTarget.ContextTarget(0)),
+            EffectContext(sourceId = null, controllerId = p[0],
+                targets = listOf(ChosenTarget.Player(p[1]), ChosenTarget.Player(p[2]))))
+        swapped.state.lifeTotal(p[0]) shouldBe 7
+        swapped.state.lifeTotal(p[1]) shouldBe 30
+        swapped.state.lifeTotal(p[2]) shouldBe 12
+    }
+    test("two target players: a prohibition on either side cancels the whole exchange") {
+        val (base, p) = boot()
+        val state = base.withLifeTotal(p[0], 10).withLifeTotal(p[1], 20)
+            .updateEntity(p[0]) { it.with(CantGainLifeComponent()) }
+        val result = executor.execute(state,
+            ExchangeLifeTotalsEffect(EffectTarget.ContextTarget(1), player = EffectTarget.ContextTarget(0)),
+            EffectContext(sourceId = null, controllerId = p[1],
+                targets = listOf(ChosenTarget.Player(p[0]), ChosenTarget.Player(p[1]))))
+        result.state shouldBe state
+    }
 
 })

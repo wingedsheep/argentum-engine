@@ -237,10 +237,13 @@ data class ExchangeLifeAndStatEffect(
 @Serializable
 data class ExchangeLifeTotalsEffect(
     val target: EffectTarget = EffectTarget.ContextTarget(0),
-    val drawEqualToLifeLost: Boolean = false
+    val drawEqualToLifeLost: Boolean = false,
+    /** The other side of the exchange — the controller by default; a second target for "two target players". */
+    val player: EffectTarget = EffectTarget.Controller
 ) : Effect {
     override val description: String = buildString {
-        append("Exchange life totals with ${target.description}")
+        if (player == EffectTarget.Controller) append("Exchange life totals with ${target.description}")
+        else append("${player.description} and ${target.description} exchange life totals")
         if (drawEqualToLifeLost) append(". If you lost life this way, draw that many cards")
     }
 }

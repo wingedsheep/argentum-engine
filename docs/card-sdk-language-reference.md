@@ -1834,10 +1834,12 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   `ContextTarget` for "target opponent's life total". The creature's *projected* stat is what the
   player receives, while the creature's **base** stat is set at Layer 7b — so counters, Auras, and
   Equipment apply on top of the new value. No-op if the creature has left the battlefield.
-- `ExchangeLifeTotals(target, drawEqualToLifeLost)` — swap the controller's life total with `target`
-  player's (CR 701.12c): each player gains/loses the life needed to reach the other's former total,
-  applied through the shared gain/lose-life primitives so gain prevention/replacements and loss
-  modification apply and gain/loss triggers fire. Before either total changes, a prohibition on the
+- `ExchangeLifeTotals(target, drawEqualToLifeLost, player)` — swap `player`'s life total (the controller
+  by default) with `target` player's (CR 701.12c); for "two target players exchange life totals" pass
+  both positional targets, `player = ContextTarget(0)`, `target = ContextTarget(1)` (Axis of
+  Mortality). Each player gains/loses the life needed to reach the other's former total, applied
+  through the shared gain/lose-life primitives so gain prevention/replacements and loss modification
+  apply and gain/loss triggers fire. Before either total changes, a prohibition on the
   required gain or loss cancels the **entire exchange** (CR 119.7–8); ordinary amount replacements
   still modify a permitted exchange. Loss prohibitions use the existing `ModifyLifeLoss` zero-multiplier,
   nonpositive-modifier shape, respecting its player scope and restrictions. Equal totals and self

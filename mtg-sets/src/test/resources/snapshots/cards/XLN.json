@@ -77,6 +77,56 @@
     ]
 }
 
+// Axis of Mortality
+{
+    "name": "Axis of Mortality",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your upkeep, you may have two target players exchange life totals.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Axis of Mortality:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "ExchangeLifeTotals",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0[1]"
+                        },
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0[0]"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "count": 2,
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "rarity": "MYTHIC",
+        "artist": "Bastien L. Deharme",
+        "flavorText": "The Church of Dusk teaches there is no gain without loss, no triumph without sacrifice, no drink of exquisite crimson without a dying gasp.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3b9d72a8-8acf-42c6-8adf-cbaecb4a985a.jpg?1783935805"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Belligerent Brontodon
 {
     "name": "Belligerent Brontodon",

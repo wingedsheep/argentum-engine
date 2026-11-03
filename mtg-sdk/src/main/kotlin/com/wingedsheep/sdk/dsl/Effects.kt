@@ -629,12 +629,15 @@ object Effects {
     /**
      * Exchange the controller's life total with [target] player's (CR 701.12c). When
      * [drawEqualToLifeLost] is true, the controller then draws a card for each point of life they
-     * lost in the exchange (Mister Negative).
+     * lost in the exchange (Mister Negative). [player] is the other side of the exchange — the
+     * controller by default; pass a second target for "two target players exchange life totals"
+     * (Axis of Mortality).
      */
     fun ExchangeLifeTotals(
         target: EffectTarget,
-        drawEqualToLifeLost: Boolean = false
-    ): Effect = com.wingedsheep.sdk.scripting.effects.ExchangeLifeTotalsEffect(target, drawEqualToLifeLost)
+        drawEqualToLifeLost: Boolean = false,
+        player: EffectTarget = EffectTarget.Controller
+    ): Effect = com.wingedsheep.sdk.scripting.effects.ExchangeLifeTotalsEffect(target, drawEqualToLifeLost, player)
 
     /**
      * "Redistribute any number of players' life totals." — the controller hands each player one of
