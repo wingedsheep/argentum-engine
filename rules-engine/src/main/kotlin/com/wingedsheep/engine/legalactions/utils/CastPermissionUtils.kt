@@ -1393,12 +1393,17 @@ class CastPermissionUtils(
      * [anyZone][PlayersCantActivateAbilities.anyZone] set; the others speak of permanents only.
      * Yuriko, Blade of the Mighty: "During combat, players can't cast spells or activate
      * abilities that aren't mana abilities."
+     *
+     * A [loyaltyAbilitiesOnly][PlayersCantActivateAbilities.loyaltyAbilitiesOnly] prohibition
+     * (The Immortal Sun) only catches a call with [abilityIsLoyaltyAbility] set; per-permanent
+     * callers that don't know the ability leave it false and so never drop a whole permanent.
      */
     fun isActivationPreventedForPlayer(
         state: GameState,
         sourceId: EntityId,
         activatingPlayerId: EntityId,
-        abilityIsManaAbility: Boolean = false
+        abilityIsManaAbility: Boolean = false,
+        abilityIsLoyaltyAbility: Boolean = false
     ): Boolean {
         if (abilityIsManaAbility && !state.manaAbilitySourceAllowed(activatingPlayerId, sourceId, predicateEvaluator)) return true
         val projected = state.projectedState
@@ -1411,6 +1416,7 @@ class CastPermissionUtils(
             for (sa in cardDef.liveStaticAbilities(state, permanentId)) {
                 if (sa !is PlayersCantActivateAbilities) continue
                 if (sa.nonManaAbilitiesOnly && abilityIsManaAbility) continue
+                if (sa.loyaltyAbilitiesOnly && !abilityIsLoyaltyAbility) continue
                 if (!sourceOnBattlefield && !sa.anyZone) continue
                 val controller = projected.getController(permanentId)
                     ?: container.get<ControllerComponent>()?.playerId

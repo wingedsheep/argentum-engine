@@ -1663,11 +1663,20 @@ data class PlayersCantCastSpells(
  *    condition = IsInPhase(COMBAT, yoursOnly = false), nonManaAbilitiesOnly = true, anyZone = true)`
  *    ("During combat, players can't … activate abilities that aren't mana abilities.")
  *
+ * A third axis, [loyaltyAbilitiesOnly], narrows the prohibition to loyalty abilities (the
+ * ability's `isPlaneswalkerAbility` flag, CR 606) — the static counterpart of the one-shot
+ * `CantActivateLoyaltyAbilitiesEffect`, mirroring `IncreaseActivatedAbilityCost.loyaltyAbilitiesOnly`:
+ *  - The Immortal Sun: `PlayersCantActivateAbilities(Player.Each,
+ *    permanentFilter = GameObjectFilter.Planeswalker, loyaltyAbilitiesOnly = true)`
+ *    ("Players can't activate planeswalkers' loyalty abilities.")
+ *
  * @property affected Who is forbidden, relative to the source's controller.
  * @property permanentFilter Which permanents' abilities are forbidden (matched against the source).
  * @property condition Optional timing/state gate, evaluated in the controller's context; null = always.
  * @property nonManaAbilitiesOnly When true, mana abilities stay activatable.
  * @property anyZone When true, abilities of cards outside the battlefield are forbidden too.
+ * @property loyaltyAbilitiesOnly When true, only loyalty abilities are forbidden; every other
+ *   activated ability of a matching permanent stays activatable.
  */
 @SerialName("PlayersCantActivateAbilities")
 @Serializable
@@ -1676,7 +1685,8 @@ data class PlayersCantActivateAbilities(
     val permanentFilter: GameObjectFilter = GameObjectFilter.Any,
     val condition: Condition? = null,
     val nonManaAbilitiesOnly: Boolean = false,
-    val anyZone: Boolean = false
+    val anyZone: Boolean = false,
+    val loyaltyAbilitiesOnly: Boolean = false
 ) : StaticAbility {
     override val description: String = buildString {
         when (condition) {
@@ -1690,9 +1700,13 @@ data class PlayersCantActivateAbilities(
             else -> append("${affected.description} can't activate ")
         }
         append(
-            if (permanentFilter == GameObjectFilter.Any) {
-                if (nonManaAbilitiesOnly) "abilities that aren't mana abilities" else "activated abilities"
-            } else "abilities of ${permanentFilter.description}"
+            when {
+                loyaltyAbilitiesOnly && permanentFilter == GameObjectFilter.Any -> "loyalty abilities"
+                loyaltyAbilitiesOnly -> "loyalty abilities of ${permanentFilter.description}"
+                permanentFilter == GameObjectFilter.Any ->
+                    if (nonManaAbilitiesOnly) "abilities that aren't mana abilities" else "activated abilities"
+                else -> "abilities of ${permanentFilter.description}"
+            }
         )
         when (condition) {
             is IsYourTurn, is IsNotYourTurn, null -> {}

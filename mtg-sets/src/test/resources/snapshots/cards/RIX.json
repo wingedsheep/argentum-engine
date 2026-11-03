@@ -4148,6 +4148,71 @@
     ]
 }
 
+// The Immortal Sun
+{
+    "name": "The Immortal Sun",
+    "manaCost": "{6}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "Players can't activate planeswalkers' loyalty abilities.\nAt the beginning of your draw step, draw an additional card.\nSpells you cast cost {1} less to cast.\nCreatures you control get +1/+1.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "The Immortal Sun:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "DRAW"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "PlayersCantActivateAbilities",
+                "affected": "Each",
+                "permanentFilter": {
+                    "cardPredicates": [
+                        "IsPlaneswalker"
+                    ]
+                },
+                "loyaltyAbilitiesOnly": true
+            },
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": {}
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            },
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "180",
+        "rarity": "MYTHIC",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/d/adeccd88-8dc0-4cc1-943f-27d540d248bb.jpg?1783935265"
+    },
+    "colorIdentityOverride": []
+}
+
 // Thrashing Brontodon
 {
     "name": "Thrashing Brontodon",

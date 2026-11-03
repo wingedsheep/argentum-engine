@@ -299,7 +299,8 @@ internal class ActivationValidator(
         // activating and *when* — "During your turn, your opponents can't activate abilities
         // of artifacts, creatures, or enchantments." Scoped to the activating player.
         if (castPermissionUtils.isActivationPreventedForPlayer(
-                state, action.sourceId, action.playerId, abilityIsManaAbility = ability.isManaAbility
+                state, action.sourceId, action.playerId, abilityIsManaAbility = ability.isManaAbility,
+                abilityIsLoyaltyAbility = ability.isPlaneswalkerAbility
             )
         ) {
             return "An effect prevents you from activating that ability right now"

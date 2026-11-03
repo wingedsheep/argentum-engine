@@ -12793,7 +12793,7 @@ staticAbility {
   Conditions.Not(Conditions.CouldCastSorcery), conditionFromCaster = true)` ("Each opponent can cast
   spells only any time they could cast a sorcery" — CR 307.5; it outranks any flash permission the
   opponent holds).
-- `PlayersCantActivateAbilities(affected = Player.EachOpponent, permanentFilter = GameObjectFilter.Any, condition = null)`
+- `PlayersCantActivateAbilities(affected = Player.EachOpponent, permanentFilter = GameObjectFilter.Any, condition = null, nonManaAbilitiesOnly = false, anyZone = false, loyaltyAbilitiesOnly = false)`
   — continuous *activation* prohibition, the activated-ability twin of `PlayersCantCastSpells`,
   parameterized along the same three axes: **who** (`affected`, relative to the source's controller),
   **which** (`permanentFilter`, matched in projected state against the *permanent whose ability is being
@@ -12813,6 +12813,11 @@ staticAbility {
   checked like any battlefield ability. Yuriko, Blade of the Mighty = `PlayersCantActivateAbilities(Player.Each,
   condition = IsInPhase(listOf(COMBAT), yoursOnly = false), nonManaAbilitiesOnly = true, anyZone = true)`
   plus `PlayersCantCastSpells(Player.Each, condition = IsInPhase(listOf(COMBAT), yoursOnly = false))`.
+  A third axis, `loyaltyAbilitiesOnly = true`, narrows the prohibition to loyalty abilities (the
+  ability's `isPlaneswalkerAbility`) and leaves every other activated ability of a matching permanent
+  alone — the static counterpart of the one-shot `CantActivateLoyaltyAbilitiesEffect`. The Immortal Sun =
+  `PlayersCantActivateAbilities(Player.Each, permanentFilter = GameObjectFilter.Planeswalker,
+  loyaltyAbilitiesOnly = true)` ("Players can't activate planeswalkers' loyalty abilities.").
 - `ExtraOnceOnlyActivations(kind, extraActivations = null, condition = null)`
   — the *permission* counterpart of the above, over the keyword-prefixed activation limits: exhaust
   (CR 702.177) and power-up (CR 702.193) "Activate this ability only once", and boast (CR 702.142) "only
