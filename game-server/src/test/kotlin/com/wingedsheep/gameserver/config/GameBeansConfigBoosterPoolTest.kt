@@ -144,6 +144,60 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
         boosterGenerator.getBasicLands("KHM").keys shouldBe setOf("Plains", "Island", "Swamp", "Mountain", "Forest")
     }
 
+    test("Core Set 2019 draft pack opens 10 commons, 3 uncommons, a rare or mythic and a land-slot card") {
+        // M19 draft sheets (taw/magic-search-engine, mtg.wtf/pack/m19): 10 commons, 3 uncommons,
+        // 1 rare/mythic (rares weighted 2, mythics 1 -> 16/122), and a land slot of 30 cards at 1/30 each:
+        // the ten common dual taplands and the twenty basic arts. The foil replacing a common in 9 of 40
+        // packs is cosmetic and not modelled. The Planeswalker Deck cards (#281-314) never open.
+        val m19 = boosterGenerator.availableSets["M19"].shouldNotBeNull()
+        m19.fullyImplemented shouldBe true
+        val strategy = m19.boosterStrategy.shouldBeInstanceOf<LandSlotBooster>()
+        strategy.base shouldBe StandardBooster(commons = 10, mythicChance = 16.0 / 122)
+        strategy.nonbasicChance shouldBe 10.0 / 30
+        strategy.basicLands.map { it.name }.toSet() shouldBe setOf("Plains", "Island", "Swamp", "Mountain", "Forest")
+        strategy.basicLands.size shouldBe 20
+        val slotLands = strategy.nonbasicLandNames
+        slotLands.size shouldBe 10
+        // The taplands are reprints here: the pool must resolve every one of them from its canonical.
+        m19.cards.map { it.name }.toSet().containsAll(slotLands) shouldBe true
+        val eligible = m19.cards.filter {
+            it.metadata.inBooster && !it.typeLine.isBasicLand && !it.meldResult && it.name !in slotLands
+        }
+        eligible.distinctBy { it.name }.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.COMMON to 101, Rarity.UNCOMMON to 80, Rarity.RARE to 53, Rarity.MYTHIC to 16,
+        )
+        val eligibleNames = eligible.map { it.name }.toSet()
+        // Planeswalker Deck exclusives and the Buy-a-Box promo stay out of packs.
+        listOf("Ajani, Wise Counselor", "Tezzeret's Gatebreaker", "Nexus of Fate", "Shivan Dragon").forEach {
+            eligibleNames shouldNotContain it
+        }
+        var mythics = 0
+        var nonbasicPacks = 0
+        val packs = 3000
+        repeat(packs) {
+            val pack = boosterGenerator.generateBooster("M19")
+            pack.size shouldBe 15
+            pack.map { it.name }.toSet().size shouldBe 15
+            withClue("pack ${pack.map { it.name }} holds an off-sheet card outside the land slot") {
+                pack.dropLast(1).all { it.name in eligibleNames } shouldBe true
+            }
+            pack.dropLast(1).count { it.metadata.rarity == Rarity.COMMON } shouldBe 10
+            pack.count { it.metadata.rarity == Rarity.UNCOMMON } shouldBe 3
+            val land = pack.last()
+            (land.name in slotLands || land.typeLine.isBasicLand) shouldBe true
+            if (land.name in slotLands) nonbasicPacks++
+            mythics += pack.count { it.metadata.rarity == Rarity.MYTHIC }
+        }
+        (nonbasicPacks.toDouble() / packs) shouldBe (10.0 / 30 plusOrMinus 0.035)
+        (mythics.toDouble() / packs) shouldBe (16.0 / 122 plusOrMinus 0.025)
+        // A host ban on every land-slot nonbasic leaves the land slot to the basics.
+        repeat(20) {
+            val pack = boosterGenerator.generateBooster("M19", bannedCardNames = slotLands)
+            pack.size shouldBe 15
+            pack.last().typeLine.isBasicLand shouldBe true
+        }
+    }
+
     test("Core Set 2020 draft pack opens 10 commons, 3 uncommons, a rare or mythic and a land-slot card") {
         // M20 draft sheets (taw/magic-search-engine, mtg.wtf/pack/m20): 10 commons, 3 uncommons,
         // 1 rare/mythic (rares weighted 2, mythics 1 -> 15/121), and a land slot of 31 cards at 1/31 each:

@@ -723,6 +723,33 @@ object SetArchetypes {
                     "Stack mutate creatures on a non-Human, collecting every enters and mutate trigger on one huge threat. A value deck built around a single towering monster."),
             )
         ),
+        "M19" to SetSynergies(
+            setCode = "M19",
+            setName = "Core Set 2019",
+            archetypes = listOf(
+                Archetype("Artifacts", listOf(Color.WHITE, Color.BLUE),
+                    "Play cheap artifacts so Aerial Engineer and other artifact payoffs switch on, holding the ground with artifact creatures while the payoffs take to the air. A midrange deck that rewards counting artifacts."),
+                Archetype("Card Advantage Control", listOf(Color.BLUE, Color.BLACK),
+                    "Trade with removal and card-advantage creatures like Psychic Symbiont, stripping the opponent's hand while refilling yours. A control deck that wins the long game on cards."),
+                Archetype("Sacrifice Aggro", listOf(Color.BLACK, Color.RED),
+                    "Turn small creatures and tokens into fuel for Brawl-Bash Ogre and other sacrifice outlets, attacking with menace while removal clears the way. An aggressive deck that cashes in its own creatures."),
+                Archetype("Dragons", listOf(Color.RED, Color.GREEN),
+                    "Ramp with mana creatures like Draconic Disciple into Dragons and Dragon payoffs like Dragon Egg, closing with big fliers. A ramp deck that goes over the top.",
+                    creatureTypes = listOf("Dragon")),
+                Archetype("Enchantments", listOf(Color.GREEN, Color.WHITE),
+                    "Cast Auras and other enchantments to draw cards with Satyr Enchanter and suit up a few sturdy creatures. A midrange deck that grows its threats while keeping a full hand."),
+                Archetype("Lifegain", listOf(Color.WHITE, Color.BLACK),
+                    "Gain life in small bursts so Regal Bloodlord and other lifegain payoffs make Bats and drain the opponent. A grindy deck that stays out of reach while its fliers peck away."),
+                Archetype("Spells", listOf(Color.BLUE, Color.RED),
+                    "Fill the graveyard with instants and sorceries so Enigma Drake hits hard, burning and countering your way past blockers. A tempo deck that leans on cheap spells."),
+                Archetype("Deathtouch Attrition", listOf(Color.BLACK, Color.GREEN),
+                    "Trade creatures freely and turn every death into lost life with Poison-Tip Archer, holding the board with deathtouch and recursion. A grindy midrange deck that wins the war of attrition."),
+                Archetype("Go Wide Aggro", listOf(Color.RED, Color.WHITE),
+                    "Flood the board with cheap creatures and Soldier tokens, then pump the whole team with Heroic Reinforcements for a hasty alpha strike. A fast aggro deck that ends the game early."),
+                Archetype("Flying Counters", listOf(Color.GREEN, Color.BLUE),
+                    "Grow creatures with +1/+1 counters and grant them flying with Skyrider Patrol, pairing big green bodies with blue evasion. A midrange deck that takes over the skies."),
+            )
+        ),
         "M20" to SetSynergies(
             setCode = "M20",
             setName = "Core Set 2020",
