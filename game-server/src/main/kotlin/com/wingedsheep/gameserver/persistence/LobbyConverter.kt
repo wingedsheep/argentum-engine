@@ -90,6 +90,7 @@ fun TournamentLobby.toPersistent(): PersistentTournamentLobby {
         ffaGameSessionId = ffaGameSessionId,
         ffaGamesPlayed = ffaGamesPlayed,
         playingForAnte = playingForAnte,
+        chaosRules = chaosRules,
     )
 }
 
@@ -144,6 +145,7 @@ fun restoreTournamentLobby(
             ?.let { runCatching { com.wingedsheep.sdk.core.AttackMode.valueOf(it) }.getOrNull() },
         randomTeams = persistent.randomTeams,
         playingForAnte = persistent.playingForAnte,
+        chaosRules = persistent.chaosRules,
     )
     lobby.bannedCardNames = persistent.bannedCardNames
     lobby.includedSetProducts = persistent.includedSetProducts

@@ -241,6 +241,15 @@ class GameSession(
     var playingForAnte: Boolean = false
 
     /**
+     * Whether this game uses the Chaos house variant ([com.wingedsheep.sdk.chaos.ChaosRules]): every
+     * upkeep, the active player rolls a random chaos rule. Set by the lobby handler before [startGame]
+     * and forwarded to [GameConfig.chaosRules]; never true for ranked games. Recorded in the
+     * [com.wingedsheep.gameserver.replay.ReplaySetup] because the rolls consume RNG.
+     */
+    @Volatile
+    var chaosRules: Boolean = false
+
+    /**
      * Team partitioning for team variants (Two-Headed Giant — CR 810), as lists of seat indices
      * into the join/turn order; each entry is one team. Set by the lobby / scenario handler before
      * [startGame] and forwarded to [GameConfig.teams], which stamps [TeamComponent] on each player.
@@ -718,6 +727,7 @@ class GameSession(
             format = engineFormat,
             attackMode = attackMode,
             playingForAnte = playingForAnte,
+            chaosRules = chaosRules,
             // Team partitioning for Two-Headed Giant (CR 810); null for non-team games. The seat
             // indices line up with playerConfigs, which preserves the join/turn order of `players`.
             teams = teams,
@@ -736,6 +746,7 @@ class GameSession(
             format = engineFormat,
             attackMode = attackMode,
             playingForAnte = config.playingForAnte,
+            chaosRules = config.chaosRules,
             startingHandSize = config.startingHandSize,
             skipMulligans = config.skipMulligans,
             useHandSmoother = config.useHandSmoother,

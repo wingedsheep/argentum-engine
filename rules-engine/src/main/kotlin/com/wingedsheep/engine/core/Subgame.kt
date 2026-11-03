@@ -130,6 +130,9 @@ class Subgames(
             sub = sub.withEntity(playerId, newGame.newPlayer(parked.getEntity(playerId)!!, playerId == starting, idMap))
         }
 
+        // A subgame is a game of Magic of its own (CR 729.1) played under the same house rules.
+        if (sub.chaosRules) sub = com.wingedsheep.engine.mechanics.chaos.ChaosVariant.install(sub, players)
+
         val (dealt, dealEvents) = newGame.dealOpeningHands(sub, players)
         sub = dealt.copy(mainGame = parked.copy(
             rng = dealt.rng, nextEntityId = dealt.nextEntityId, nextRoutingId = dealt.nextRoutingId,

@@ -228,6 +228,7 @@ private class ReplayEngine(
             format = setup.format,
             attackMode = setup.attackMode,
             playingForAnte = setup.playingForAnte,
+            chaosRules = setup.chaosRules,
             teams = setup.teams,
             seed = setup.seed,
             preserveGraveyardOrder = setup.preserveGraveyardOrder,

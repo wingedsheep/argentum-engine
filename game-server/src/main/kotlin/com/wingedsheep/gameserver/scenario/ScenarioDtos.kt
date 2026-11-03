@@ -66,6 +66,11 @@ data class ScenarioRequest(
     /** Play the scenario for ante (CR 407) — shows the ante zones and lets ante cards work. */
     val playingForAnte: Boolean? = false,
     /**
+     * Play the scenario with the Chaos house variant: every seat gets a Chaos emblem and rolls a
+     * random chaos rule at the beginning of each of their upkeeps.
+     */
+    val chaosRules: Boolean? = false,
+    /**
      * Run the scenario as a Commander game (`Format.Commander`): 40 starting life for every seat
      * that sets no [PlayerConfig.lifeTotal], and commander damage tallied against the 21 threshold.
      * Pair it with [PlayerConfig.commanders]. Nullable like [teamVsTeam]: an absent field is null.

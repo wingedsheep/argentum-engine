@@ -223,6 +223,12 @@ sealed interface ClientMessage {
          * ranked games are never played for ante.
          */
         val playingForAnte: Boolean = false,
+        /**
+         * Play the lobby's games with the Chaos house variant ([com.wingedsheep.sdk.chaos.ChaosRules]):
+         * every upkeep, the active player rolls a random chaos rule. Ignored (forced off) when the
+         * lobby is ranked — ranked games are played by the standard rules.
+         */
+        val chaosRules: Boolean = false,
     ) : ClientMessage
 
     /**
@@ -405,6 +411,8 @@ sealed interface ClientMessage {
         val ranked: Boolean? = null,
         /** Play for ante (CR 407). Null = unchanged. Rejected while the lobby is ranked. */
         val playingForAnte: Boolean? = null,
+        /** Play the Chaos house variant. Null = unchanged. Rejected while the lobby is ranked. */
+        val chaosRules: Boolean? = null,
     ) : ClientMessage
 
     /**
@@ -625,6 +633,8 @@ sealed interface ClientMessage {
         val ranked: Boolean = false,
         /** Play for ante (CR 407). Forced off when the lobby ends up [ranked]. */
         val playingForAnte: Boolean = false,
+        /** Play the Chaos house variant. Forced off when the lobby ends up [ranked]. */
+        val chaosRules: Boolean = false,
     ) : ClientMessage
 
     /**
@@ -752,6 +762,15 @@ sealed interface ClientMessage {
     @Serializable
     @SerialName("setQuickGameLobbyAnte")
     data class SetQuickGameLobbyAnte(val playingForAnte: Boolean) : ClientMessage
+
+    /**
+     * Toggle the Chaos house variant in the quick-game lobby (host-only): every upkeep, the active
+     * player rolls a random chaos rule ([com.wingedsheep.sdk.chaos.ChaosRules]). Rejected while the
+     * lobby is ranked.
+     */
+    @Serializable
+    @SerialName("setQuickGameLobbyChaos")
+    data class SetQuickGameLobbyChaos(val chaosRules: Boolean) : ClientMessage
 
     /**
      * Set the deck-format restriction for the lobby (host-only). Null = no restriction.

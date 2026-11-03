@@ -30,6 +30,14 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'mode-chaos-rules',
+    date: '2026-11-03',
+    kind: 'mode',
+    title: 'Chaos rules',
+    body:
+      'A new house variant for casual games: switch on Chaos rules in a lobby and, at the beginning of every upkeep, the active player rolls a random chaos rule — Day of Judgment, Time Walk, Wheel of Fortune, a Mindslaver on your opponent, swapped life totals and more than a hundred others. The game plays each rule for you, targets and dice included, and nobody rolls the same rule twice.',
+  },
+  {
     id: 'set-m19',
     date: '2026-11-03',
     kind: 'set',

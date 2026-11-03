@@ -484,6 +484,7 @@ export {
   createSetQuickGameLobbyPublicMessage,
   createSetQuickGameLobbyRankedMessage,
   createSetQuickGameLobbyAnteMessage,
+  createSetQuickGameLobbyChaosMessage,
   createJoinMatchmakingMessage,
   createLeaveMatchmakingMessage,
   createRespondToMatchMessage,

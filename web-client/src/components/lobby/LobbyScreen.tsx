@@ -230,7 +230,7 @@ export function LobbyScreen() {
             <h1 className={lobby.title}>{view.title}</h1>
           </div>
           <p className={lobby.subtitle}>{view.subtitle}</p>
-          <LobbyAxisSummary axes={view.axes} jumpstart={Boolean(lobbyState?.settings.jumpstartActive)} ante={view.ante.on} />
+          <LobbyAxisSummary axes={view.axes} jumpstart={Boolean(lobbyState?.settings.jumpstartActive)} ante={view.ante.on} chaos={view.chaos.on} />
           {view.isWaiting && view.isHost && (
             <button
               type="button"
@@ -445,6 +445,12 @@ export function LobbyScreen() {
               if (id === 'RULES' && view.ante.available) {
                 rows.push(
                   <AnteRow key="ante" on={view.ante.on} lockedReason={view.ante.lockedReason} onChange={commands.setAnte} />,
+                )
+              }
+              // Chaos is a house rules variant too: a random rule every upkeep, for every player.
+              if (id === 'RULES' && view.chaos.available) {
+                rows.push(
+                  <ChaosRow key="chaos" on={view.chaos.on} lockedReason={view.chaos.lockedReason} onChange={commands.setChaos} />,
                 )
               }
               if (id === 'TABLE') rows.push(<TableAxisBody key="axis" view={view} />)
@@ -750,6 +756,57 @@ function AnteRow({
             : on
               ? 'Each player antes a random card from their deck. The winner takes the ante — in a Limited tournament it joins their pool for the rest of the event; otherwise it’s a trophy on their profile. Enables the ante cards (Contract from Below, Darkpact, …).'
               : 'Wager a random card from each deck on the outcome.'}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * The Chaos house variant: at the beginning of each upkeep, the active player rolls a random chaos
+ * rule and the engine plays it. Ranked forces it off server-side, so — like {@link AnteRow} — the
+ * row stays on screen but disabled while ranked is on, with the reason.
+ */
+function ChaosRow({
+  on,
+  lockedReason,
+  onChange,
+}: {
+  on: boolean
+  lockedReason: string | null
+  onChange: (chaosRules: boolean) => void
+}) {
+  const locked = lockedReason !== null
+  return (
+    <div className={styles.settingsRow} data-testid="chaos-row">
+      <SettingsLabel topicId="chaos-rules">Chaos rules</SettingsLabel>
+      <div className={styles.variantGroup}>
+        <div className={styles.settingsButtons}>
+          <button
+            type="button"
+            onClick={() => onChange(false)}
+            disabled={locked}
+            className={`${styles.settingsButton} ${!on ? styles.settingsButtonActive : ''}`}
+            title={lockedReason ?? 'Play by the normal rules'}
+          >
+            Off
+          </button>
+          <button
+            type="button"
+            onClick={() => onChange(true)}
+            disabled={locked}
+            className={`${styles.settingsButton} ${on ? styles.settingsButtonActive : ''}`}
+            title={lockedReason ?? 'Every upkeep, the active player rolls a random chaos rule'}
+          >
+            Chaos
+          </button>
+        </div>
+        <div className={styles.variantCaption}>
+          {locked
+            ? lockedReason
+            : on
+              ? 'Every player gets a Chaos emblem. At the beginning of each upkeep, the active player rolls one of over a hundred chaos rules — Day of Judgment, Time Walk, Wheel of Fortune, a Lightning Helix to aim… — and it happens right away. Nobody rolls the same rule twice.'
+              : 'A random rule every turn: wraths, extra turns, swapped life totals and stolen creatures.'}
         </div>
       </div>
     </div>

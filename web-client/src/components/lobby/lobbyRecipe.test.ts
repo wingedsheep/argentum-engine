@@ -245,6 +245,13 @@ describe('validateRecipe', () => {
       ?.recipe.settings.playingForAnte).toBeUndefined()
   })
 
+  it('keeps a boolean Chaos rules setting and drops anything else', () => {
+    expect(validateRecipe({ ...base, settings: { ...base.settings, chaosRules: true } }, ctx)
+      ?.recipe.settings.chaosRules).toBe(true)
+    expect(validateRecipe({ ...base, settings: { ...base.settings, chaosRules: 1 } }, ctx)
+      ?.recipe.settings.chaosRules).toBeUndefined()
+  })
+
   it('falls back to no deck when the stored reference is unusable', () => {
     expect(validateRecipe({ ...base, deck: { kind: 'SAVED', name: '' } }, ctx)?.recipe.deck)
       .toEqual({ kind: 'NONE' })

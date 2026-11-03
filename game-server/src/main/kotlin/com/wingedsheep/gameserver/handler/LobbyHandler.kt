@@ -817,6 +817,8 @@ class LobbyHandler(
             ranked = message.ranked && gameMode == LobbyGameMode.TOURNAMENT,
             // Ranked games are never played for ante (CR 407); ranked wins the conflict.
             playingForAnte = message.playingForAnte && !(message.ranked && gameMode == LobbyGameMode.TOURNAMENT),
+            // Ranked games are played by the standard rules, so never with the Chaos house variant.
+            chaosRules = message.chaosRules && !(message.ranked && gameMode == LobbyGameMode.TOURNAMENT),
         )
         lobby.addPlayer(identity)
         lobbyRepository.saveLobby(lobby)
@@ -2797,6 +2799,14 @@ class LobbyHandler(
         }
         if (lobby.ranked) lobby.playingForAnte = false
         if (anteBefore && !lobby.playingForAnte) unsubmitAnteDecks(lobby)
+
+        // Chaos house variant: like ante, never on a ranked lobby — turning ranked on clears it.
+        if (message.chaosRules == true && lobby.ranked) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Ranked games can't use Chaos rules")
+        } else {
+            message.chaosRules?.let { lobby.chaosRules = it }
+        }
+        if (lobby.ranked) lobby.chaosRules = false
 
         // Re-roll only when an axis that determines the AI deck changed. Under Commander rules,
         // ensureAiPremadeDeck deliberately leaves Auto unsubmitted until the host picks a deck.

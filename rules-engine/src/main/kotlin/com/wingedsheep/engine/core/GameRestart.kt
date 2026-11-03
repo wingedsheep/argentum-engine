@@ -143,6 +143,10 @@ class GameRestarter(
             }
         }
 
+        // House rules carry over (CR 727 restarts the game, not the variant): the new game's
+        // players get fresh Chaos emblems, with no memory of the old game's rolls.
+        if (fresh.chaosRules) fresh = com.wingedsheep.engine.mechanics.chaos.ChaosVariant.install(fresh, involved)
+
         val (dealt, dealEvents) = newGame.dealOpeningHands(fresh, involved)
         fresh = dealt
         val events = listOf<GameEvent>(GameRestartedEvent(starting)) + dealEvents

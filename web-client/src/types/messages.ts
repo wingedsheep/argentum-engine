@@ -1884,6 +1884,12 @@ export interface LobbySettings {
    * an older server.
    */
   readonly playingForAnte?: boolean
+  /**
+   * The Chaos house variant, host-controlled: every upkeep, the active player rolls a random chaos
+   * rule and the engine plays it. The server forces it off while [ranked] is on. Absent on an
+   * older server.
+   */
+  readonly chaosRules?: boolean
 }
 
 export type LobbyGameMode = 'TOURNAMENT' | 'FREE_FOR_ALL' | 'TWO_HEADED_GIANT' | 'TEAM_VS_TEAM'
@@ -2500,6 +2506,7 @@ export type ClientMessage =
   | SetQuickGameLobbyPublicMessage
   | SetQuickGameLobbyRankedMessage
   | SetQuickGameLobbyAnteMessage
+  | SetQuickGameLobbyChaosMessage
   | SetQuickGameAiDeckMessage
   | AddQuickGameAiMessage
   | RemoveQuickGameAiMessage
@@ -2876,6 +2883,8 @@ export interface CreateTournamentLobbyMessage {
   readonly ranked?: boolean
   /** Start the lobby playing for ante (CR 407). Omit for the default (off); requires `ranked: false`. */
   readonly playingForAnte?: boolean
+  /** Start the lobby with Chaos rules. Omit for the default (off); requires `ranked: false`. */
+  readonly chaosRules?: boolean
 }
 
 export interface JoinLobbyMessage {
@@ -2991,6 +3000,8 @@ export interface UpdateLobbySettingsMessage {
   readonly ranked?: boolean
   /** Toggle playing for ante (CR 407). Ignored while ranked is on. Omit to leave unchanged. */
   readonly playingForAnte?: boolean
+  /** Toggle the Chaos house variant. Ignored while ranked is on. Omit to leave unchanged. */
+  readonly chaosRules?: boolean
 }
 
 // Tournament Client Messages
@@ -3170,11 +3181,13 @@ export function createCreateTournamentLobbyMessage(
   gameMode: LobbyGameMode = 'TOURNAMENT',
   rules: GameRules = 'STANDARD',
   playingForAnte: boolean = false,
+  chaosRules: boolean = false,
 ): CreateTournamentLobbyMessage {
   return {
     type: 'createTournamentLobby', setCodes, format, boosterCount, maxPlayers, pickTimeSeconds, isPublic, gameMode, rules,
-    // Ranked defaults on server-side for a bracket and forces ante off, so ante opts out of it.
+    // Ranked defaults on server-side for a bracket and forces ante and Chaos off, so either opts out of it.
     ...(playingForAnte ? { playingForAnte, ranked: false } : {}),
+    ...(chaosRules ? { chaosRules, ranked: false } : {}),
   }
 }
 
@@ -3271,6 +3284,7 @@ export function createUpdateLobbySettingsMessage(
     teamAssignments?: Readonly<Record<string, number>>
     ranked?: boolean
     playingForAnte?: boolean
+    chaosRules?: boolean
   }
 ): UpdateLobbySettingsMessage {
   return { type: 'updateLobbySettings', ...settings }
@@ -3517,6 +3531,12 @@ export interface QuickGameLobbyStateMessage {
    * winner takes the ante. The server forces it off while [ranked] is on. Absent on an older server.
    */
   readonly playingForAnte?: boolean
+  /**
+   * The Chaos house variant, host-controlled: every upkeep, the active player rolls a random chaos
+   * rule and the engine plays it. The server forces it off while [ranked] is on. Absent on an
+   * older server.
+   */
+  readonly chaosRules?: boolean
 }
 
 /**
@@ -3742,6 +3762,8 @@ export interface CreateQuickGameLobbyMessage {
   readonly ranked?: boolean
   /** Start the lobby playing for ante (CR 407). Ignored for a ranked lobby. */
   readonly playingForAnte?: boolean
+  /** Start the lobby with Chaos rules. Ignored for a ranked lobby. */
+  readonly chaosRules?: boolean
 }
 
 export interface JoinQuickGameLobbyMessage {
@@ -3820,6 +3842,12 @@ export interface SetQuickGameLobbyAnteMessage {
   readonly playingForAnte: boolean
 }
 
+/** Host toggles the Chaos house variant. The server rejects it while the lobby is ranked. */
+export interface SetQuickGameLobbyChaosMessage {
+  readonly type: 'setQuickGameLobbyChaos'
+  readonly chaosRules: boolean
+}
+
 export interface JoinMatchmakingMessage {
   readonly type: 'joinMatchmaking'
   readonly mode: MatchmakingMode
@@ -3845,6 +3873,7 @@ export function createCreateQuickGameLobbyMessage(
   momirBasic?: boolean,
   ranked?: boolean,
   playingForAnte?: boolean,
+  chaosRules?: boolean,
 ): CreateQuickGameLobbyMessage {
   return {
     type: 'createQuickGameLobby',
@@ -3855,6 +3884,7 @@ export function createCreateQuickGameLobbyMessage(
     ...(momirBasic ? { momirBasic } : {}),
     ...(ranked ? { ranked } : {}),
     ...(playingForAnte ? { playingForAnte } : {}),
+    ...(chaosRules ? { chaosRules } : {}),
   }
 }
 export function createJoinQuickGameLobbyMessage(lobbyId: string): JoinQuickGameLobbyMessage {
@@ -3911,6 +3941,10 @@ export function createSetQuickGameLobbyRankedMessage(ranked: boolean): SetQuickG
 
 export function createSetQuickGameLobbyAnteMessage(playingForAnte: boolean): SetQuickGameLobbyAnteMessage {
   return { type: 'setQuickGameLobbyAnte', playingForAnte }
+}
+
+export function createSetQuickGameLobbyChaosMessage(chaosRules: boolean): SetQuickGameLobbyChaosMessage {
+  return { type: 'setQuickGameLobbyChaos', chaosRules }
 }
 export function createJoinMatchmakingMessage(
   mode: MatchmakingMode,

@@ -21706,6 +21706,28 @@ The client displays the public counter total on player orbs and opponent seats. 
 can stage player counters with `player1.counters` / `player2.counters` (for example `{"RAD": 4}`).
 `GainLifeInsteadOfLosingLife(origin = LifeLossOrigin.RADIATION)` turns the radiation life loss into gain.
 
+### Chaos house variant
+
+`com.wingedsheep.sdk.chaos.ChaosRules` is the rule table of the **Chaos** house variant — not CR, a
+lobby option (`GameConfig.chaosRules`): every player gets a Chaos emblem, and at the beginning of each
+of their upkeeps it rolls a random chaos rule. Like `Dungeons`, the table is pure data composed from
+the ordinary facades, so it adds no SDK vocabulary:
+
+- each `ChaosRule(id, name, text, mode)` is a `Mode` whose effect is wrapped in a `CompositeEffect`
+  with `descriptionOverride = "<name> — <text>"`, so the stack and log show the rule by name;
+- `ChaosRules.roll` is one `ModalEffect` over every rule with `chooseAtRandom = true` (drawn from the
+  game RNG as the trigger goes on the stack, rules with no legal target left out) and
+  `excludePreviouslyChosenModes = true` (the emblem's memory: no player rolls a rule twice);
+- `ChaosRules.upkeepRoll` is the emblem's ability, `Triggers.you.beginningOf(Step.UPKEEP)`.
+
+The engine half is `ChaosVariant` (`rules-engine/.../mechanics/chaos`): it mints one colorless,
+zone-less emblem per player (CR 114.3 shape, the source of anything a rule does) and
+`TriggerDetector.detectPhaseStepTriggers` puts `upkeepRoll` on the stack for each emblem's controller
+while `GameState.chaosRules` is set — a game-rule constant like the monarch's draw, so the rule table
+is never copied into saved state. Restarted games and subgames keep the variant. A new rule is one more
+`rule(id, name, text) { … }` entry; rules the engine can't express yet are listed with a reason in
+`ChaosRules.notAutomated`. Dev scenarios take `"chaosRules": true`.
+
 ### Secret simultaneous choices
 
 `Effects.SecretChoice(choice, participants = listOf(Player.Each), then = null)` collects private

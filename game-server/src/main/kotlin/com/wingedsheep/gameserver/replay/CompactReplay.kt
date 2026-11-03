@@ -236,6 +236,11 @@ data class ReplaySetup(
     val preserveGraveyardOrder: Boolean = false,
     /** Whether the game was played for ante (CR 407); anteing consumes RNG. Absent in old replays. */
     val playingForAnte: Boolean = false,
+    /**
+     * Whether the game used the Chaos house variant ([com.wingedsheep.sdk.chaos.ChaosRules]); its
+     * upkeep rolls consume RNG, so a replay has to know. Absent (false) in older replays.
+     */
+    val chaosRules: Boolean = false,
 )
 
 /** Flattened, serializable form of [com.wingedsheep.engine.core.PlayerConfig]. */

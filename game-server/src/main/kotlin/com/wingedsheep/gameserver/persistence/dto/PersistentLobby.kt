@@ -77,6 +77,8 @@ data class PersistentTournamentLobby(
     val ffaGamesPlayed: Int = 0,
     /** Whether the lobby's games are played for ante (CR 407). Absent (false) in older rows. */
     val playingForAnte: Boolean = false,
+    /** Whether the lobby's games use the Chaos house variant. Absent (false) in older rows. */
+    val chaosRules: Boolean = false,
 )
 
 /**

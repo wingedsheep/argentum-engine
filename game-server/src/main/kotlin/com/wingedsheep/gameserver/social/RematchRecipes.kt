@@ -21,6 +21,8 @@ data class RematchRecipe(
     val recordedAt: Long = System.currentTimeMillis(),
     /** Whether the game was played for ante (CR 407). */
     val playingForAnte: Boolean = false,
+    /** Whether the game used the Chaos house variant. */
+    val chaosRules: Boolean = false,
 ) {
     companion object {
         /** The recipe for a started [lobby], or null when it isn't a human 1v1 a rematch can replay. */
@@ -34,6 +36,7 @@ data class RematchRecipe(
                 setCode = lobby.setCode,
                 seats = lobby.players.map { it.copy(ready = false) },
                 playingForAnte = lobby.playingForAnte,
+                chaosRules = lobby.chaosRules,
             )
         }
     }

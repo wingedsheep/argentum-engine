@@ -126,6 +126,11 @@ export interface UnifiedLobbyView {
    * visible but disabled and says why.
    */
   ante: { available: boolean; on: boolean; lockedReason: string | null }
+  /**
+   * The Chaos house variant: every upkeep, the active player rolls a random chaos rule. Shaped like
+   * {@link ante} — ranked games are played by the standard rules, so ranked locks the row off.
+   */
+  chaos: { available: boolean; on: boolean; lockedReason: string | null }
   teams: LobbyTeams
   /**
    * The settings group holding the reason Start is disabled, when one does.
@@ -232,6 +237,12 @@ export function fromQuickGameLobby(
       // A matchmade lobby's settings are fixed by the queue, which never plays for ante.
       !lobby.matchmade,
       lobby.playingForAnte ?? false,
+      (lobby.rankedEligible ?? false) && (lobby.ranked ?? false),
+    ),
+    chaos: chaosView(
+      // A matchmade lobby's rules are fixed by the queue, which plays the standard game.
+      !lobby.matchmade,
+      lobby.chaosRules ?? false,
       (lobby.rankedEligible ?? false) && (lobby.ranked ?? false),
     ),
     // The server's `QuickGameLobby.twoHeadedGiant` exists but no client has ever reached it (gap
@@ -447,6 +458,7 @@ export function fromTournamentLobby(
     // Ranked is a 1v1-bracket-only concept server-side (`TournamentLobby.rankedEligible`).
     ranked: { available: axes.table === 'ONE_V_ONE', on: s.ranked ?? false },
     ante: anteView(true, s.playingForAnte ?? false, axes.table === 'ONE_V_ONE' && (s.ranked ?? false)),
+    chaos: chaosView(true, s.chaosRules ?? false, axes.table === 'ONE_V_ONE' && (s.ranked ?? false)),
     teams: tournamentTeams(lobbyState),
   }
 }
@@ -457,6 +469,15 @@ function anteView(available: boolean, on: boolean, rankedOn: boolean): UnifiedLo
     available,
     on: on && !rankedOn,
     lockedReason: rankedOn ? 'Ranked games never play for ante — switch to Casual first' : null,
+  }
+}
+
+/** Shared by both lobby kinds: ranked games are played by the standard rules, so ranked locks Chaos off. */
+function chaosView(available: boolean, on: boolean, rankedOn: boolean): UnifiedLobbyView['chaos'] {
+  return {
+    available,
+    on: on && !rankedOn,
+    lockedReason: rankedOn ? 'Ranked games use the standard rules — switch to Casual first' : null,
   }
 }
 

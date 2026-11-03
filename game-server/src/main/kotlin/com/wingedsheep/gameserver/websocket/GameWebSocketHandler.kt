@@ -155,6 +155,7 @@ class GameWebSocketHandler(
                 is ClientMessage.SetQuickGameLobbyPublic,
                 is ClientMessage.SetQuickGameLobbyRanked,
                 is ClientMessage.SetQuickGameLobbyAnte,
+                is ClientMessage.SetQuickGameLobbyChaos,
                 is ClientMessage.SetQuickGameAiDeck,
                 is ClientMessage.AddQuickGameAi,
                 is ClientMessage.RemoveQuickGameAi,

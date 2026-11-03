@@ -107,6 +107,8 @@ export function useApplyRecipe(): (recipe: LobbyRecipe, notes?: readonly string[
         settings.ranked ?? false,
         // Ranked forces ante off server-side; don't ask for both.
         (settings.playingForAnte ?? false) && !(settings.ranked ?? false),
+        // Likewise Chaos rules.
+        (settings.chaosRules ?? false) && !(settings.ranked ?? false),
       )
       const aiDeck = aiDeckSpecFor(recipe)
       const randomSetCodes = recipe.deck.kind === 'RANDOM' ? recipe.deck.setCodes ?? [] : []
@@ -136,6 +138,8 @@ export function useApplyRecipe(): (recipe: LobbyRecipe, notes?: readonly string[
       settings.rules ?? spec.rules,
       // Sends `ranked: false` with it — the bracket's ranked default would otherwise force ante off.
       settings.playingForAnte ?? false,
+      // Likewise for Chaos rules.
+      settings.chaosRules ?? false,
     )
 
     const cube = cubeUpdateFor(settings)

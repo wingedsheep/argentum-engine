@@ -49,6 +49,7 @@ internal class NewGameProcedure(private val cardRegistry: CardRegistry) {
         preserveGraveyardOrder = from.preserveGraveyardOrder,
         format = from.format,
         attackMode = from.attackMode,
+        chaosRules = from.chaosRules,
         rng = from.rng,
         nextEntityId = from.nextEntityId,
         nextRoutingId = from.nextRoutingId,

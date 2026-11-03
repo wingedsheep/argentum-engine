@@ -112,6 +112,14 @@ class QuickGameLobby(
     var playingForAnte: Boolean = false
 
     /**
+     * Play the Chaos house variant ([com.wingedsheep.sdk.chaos.ChaosRules]): every upkeep, the
+     * active player rolls a random chaos rule and it happens. Never on together with [ranked] — the
+     * handler clears it when ranked is set.
+     */
+    @Volatile
+    var chaosRules: Boolean = false
+
+    /**
      * Set when matchmaking paired the two players. Format and [ranked] were the queue they agreed to,
      * so the host-only settings are locked, and either player leaving closes the lobby — there's no
      * host to wait for a replacement opponent.

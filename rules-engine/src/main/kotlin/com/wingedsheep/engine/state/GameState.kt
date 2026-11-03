@@ -57,6 +57,16 @@ data class GameState(
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
     val playingForAnte: Boolean = false,
 
+    /**
+     * Fixed at setup: this game uses the **Chaos** house variant — every player has a Chaos emblem
+     * and rolls a random chaos rule at the beginning of their upkeep
+     * ([com.wingedsheep.sdk.chaos.ChaosRules], installed by
+     * [com.wingedsheep.engine.mechanics.chaos.ChaosVariant]). Kept on the state so a restarted game
+     * (CR 727) or a subgame (CR 729) is played with the same house rules.
+     */
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val chaosRules: Boolean = false,
+
     /** All entities in the game, keyed by their ID */
     val entities: Map<EntityId, ComponentContainer> = emptyMap(),
 

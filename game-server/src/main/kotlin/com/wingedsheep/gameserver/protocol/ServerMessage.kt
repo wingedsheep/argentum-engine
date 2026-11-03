@@ -631,6 +631,8 @@ sealed interface ServerMessage {
         val rankedEligible: Boolean = false,
         /** Whether the lobby's games are played for ante (CR 407). Never true together with [ranked]. */
         val playingForAnte: Boolean = false,
+        /** Whether the lobby's games use the Chaos house variant. Never true together with [ranked]. */
+        val chaosRules: Boolean = false,
     )
 
     /**
@@ -1305,6 +1307,8 @@ sealed interface ServerMessage {
         val matchmade: Boolean = false,
         /** Whether the game is played for ante (CR 407). Never true together with [ranked]. */
         val playingForAnte: Boolean = false,
+        /** Whether the game uses the Chaos house variant. Never true together with [ranked]. */
+        val chaosRules: Boolean = false,
     ) : ServerMessage
 
     /**

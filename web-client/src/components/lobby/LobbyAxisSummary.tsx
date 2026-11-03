@@ -28,11 +28,14 @@ export function LobbyAxisSummary({
   axes,
   jumpstart = false,
   ante = false,
+  chaos = false,
 }: {
   axes: AxisSelection
   jumpstart?: boolean
   /** Playing for ante (CR 407) — like Commander, the one fact a joining player must not miss. */
   ante?: boolean
+  /** The Chaos house variant — it changes every turn of the game, so a joining player must see it. */
+  chaos?: boolean
 }) {
   return (
     <div className={styles.axisSummary} data-testid="lobby-axis-summary">
@@ -43,6 +46,7 @@ export function LobbyAxisSummary({
       <AxisChip name="Table" value={tableLabel(axes.table)} topicId={tableTopicId(axes.table)} />
       <AxisChip name="Event" value={eventLabel(axes.event)} topicId={eventTopicId(axes.event)} />
       {ante && <AxisChip name="Stakes" value="For ante" topicId="playing-for-ante" />}
+      {chaos && <AxisChip name="Variant" value="Chaos" topicId="chaos-rules" />}
     </div>
   )
 }

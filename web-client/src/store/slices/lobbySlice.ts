@@ -41,7 +41,7 @@ export interface LobbySliceState {
 }
 
 export interface LobbySliceActions {
-  createTournamentLobby: (setCodes: string[], format?: TournamentFormat, boosterCount?: number, maxPlayers?: number, pickTimeSeconds?: number, isPublic?: boolean, gameMode?: LobbyGameMode, rules?: GameRules, playingForAnte?: boolean) => void
+  createTournamentLobby: (setCodes: string[], format?: TournamentFormat, boosterCount?: number, maxPlayers?: number, pickTimeSeconds?: number, isPublic?: boolean, gameMode?: LobbyGameMode, rules?: GameRules, playingForAnte?: boolean, chaosRules?: boolean) => void
   joinLobby: (lobbyId: string) => void
   startLobby: () => void
   leaveLobby: () => void
@@ -100,11 +100,11 @@ export const createLobbySlice: SliceCreator<LobbySlice> = (set, get) => ({
   disconnectedPlayers: {},
 
   // Actions
-  createTournamentLobby: (setCodes, format = 'SEALED', boosterCount = 6, maxPlayers = 8, pickTimeSeconds = 45, isPublic = false, gameMode = 'TOURNAMENT', rules = 'STANDARD', playingForAnte = false) => {
+  createTournamentLobby: (setCodes, format = 'SEALED', boosterCount = 6, maxPlayers = 8, pickTimeSeconds = 45, isPublic = false, gameMode = 'TOURNAMENT', rules = 'STANDARD', playingForAnte = false, chaosRules = false) => {
     clearDeckState()
     set({ deckBuildingState: null })
-    trackEvent('tournament_lobby_created', { set_codes: setCodes, format, booster_count: boosterCount, max_players: maxPlayers, is_public: isPublic, game_mode: gameMode, rules, playing_for_ante: playingForAnte })
-    getWebSocket()?.send(createCreateTournamentLobbyMessage(setCodes, format, boosterCount, maxPlayers, pickTimeSeconds, isPublic, gameMode, rules, playingForAnte))
+    trackEvent('tournament_lobby_created', { set_codes: setCodes, format, booster_count: boosterCount, max_players: maxPlayers, is_public: isPublic, game_mode: gameMode, rules, playing_for_ante: playingForAnte, chaos_rules: chaosRules })
+    getWebSocket()?.send(createCreateTournamentLobbyMessage(setCodes, format, boosterCount, maxPlayers, pickTimeSeconds, isPublic, gameMode, rules, playingForAnte, chaosRules))
   },
 
   joinLobby: (lobbyId) => {

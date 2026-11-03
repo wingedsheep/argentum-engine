@@ -93,6 +93,8 @@ export interface RecipeSettings {
   readonly ranked?: boolean
   /** Play for ante (CR 407). Never true alongside `ranked` — ranked forces ante off. */
   readonly playingForAnte?: boolean
+  /** The Chaos house variant. Never true alongside `ranked` — ranked forces it off. */
+  readonly chaosRules?: boolean
   readonly cube?: RecipeCube
 }
 
@@ -259,6 +261,7 @@ export function recipeFromLobby(
         isPublic: s.isPublic,
         ranked: s.ranked ?? false,
         playingForAnte: view.ante.on,
+        chaosRules: view.chaos.on,
         ...(cube ? { cube } : {}),
       }
     : {
@@ -267,6 +270,7 @@ export function recipeFromLobby(
         isPublic: view.isPublic,
         ranked: view.ranked.on,
         playingForAnte: view.ante.on,
+        chaosRules: view.chaos.on,
       }
 
   if (s?.cubeName && !cube) {
@@ -468,6 +472,7 @@ function trimSettings(
   if (typeof raw.isPublic === 'boolean') out.isPublic = raw.isPublic
   if (typeof raw.ranked === 'boolean') out.ranked = raw.ranked
   if (typeof raw.playingForAnte === 'boolean') out.playingForAnte = raw.playingForAnte
+  if (typeof raw.chaosRules === 'boolean') out.chaosRules = raw.chaosRules
   if (raw.rules === 'STANDARD' || raw.rules === 'COMMANDER') out.rules = raw.rules
   if (raw.attackMode === 'MULTIPLE' || raw.attackMode === 'LEFT' || raw.attackMode === 'RIGHT') {
     out.attackMode = raw.attackMode
@@ -540,6 +545,7 @@ function settingsTail(recipe: LobbyRecipe, availableSets: readonly AvailableSet[
       .join(' + ')}`)
   }
   if (s.playingForAnte && !s.ranked) tail.push('For ante')
+  if (s.chaosRules && !s.ranked) tail.push('Chaos rules')
   return tail
 }
 

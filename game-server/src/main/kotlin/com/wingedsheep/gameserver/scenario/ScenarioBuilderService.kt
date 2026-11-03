@@ -181,6 +181,7 @@ class ScenarioBuilderService(
         if (request.playingForAnte == true || seats.any { !it.second?.ante.isNullOrEmpty() }) {
             builder.playingForAnte()
         }
+        if (request.chaosRules == true) builder.chaosRules()
         request.monarch?.let { builder.withDesignation(it, com.wingedsheep.sdk.core.PlayerDesignation.MONARCH) }
         request.initiative?.let { builder.withDesignation(it, com.wingedsheep.sdk.core.PlayerDesignation.INITIATIVE) }
         request.dayNight?.let { builder.withDayNight(it) }
@@ -437,6 +438,12 @@ class ScenarioBuilderService(
         /** Mark the game as played for ante (CR 407), as the lobby option does. */
         fun playingForAnte(): ScenarioBuilder {
             state = state.copy(playingForAnte = true)
+            return this
+        }
+
+        /** Play the Chaos house variant, as the lobby option does: every seat gets a Chaos emblem. */
+        fun chaosRules(): ScenarioBuilder {
+            state = com.wingedsheep.engine.mechanics.chaos.ChaosVariant.install(state, playerIds.toList())
             return this
         }
 

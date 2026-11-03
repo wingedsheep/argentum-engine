@@ -41,6 +41,8 @@ export interface LobbyCommands {
   setRanked: (ranked: boolean) => void
   /** Play for ante (CR 407). The server rejects it while the lobby is ranked. */
   setAnte: (playingForAnte: boolean) => void
+  /** The Chaos house variant. The server rejects it while the lobby is ranked. */
+  setChaos: (chaosRules: boolean) => void
   /** Tear this lobby down and stand it back up on the other server implementation. */
   recreate: (spec: RecreateSpec) => void
   /** The one button beside Leave — ready / cancel ready / start, per {@link UnifiedLobbyView}. */
@@ -63,6 +65,7 @@ const NO_LOBBY: LobbyCommands = {
   setPublic: noop,
   setRanked: noop,
   setAnte: noop,
+  setChaos: noop,
   recreate: noop,
   runPrimary: noop,
   leave: noop,
@@ -191,6 +194,11 @@ export function useLobbyCommands(
       setAnte: (playingForAnte) => {
         if (isQuick) s().setQuickGameLobbyAnte(playingForAnte)
         else s().updateLobbySettings({ playingForAnte })
+      },
+
+      setChaos: (chaosRules) => {
+        if (isQuick) s().setQuickGameLobbyChaos(chaosRules)
+        else s().updateLobbySettings({ chaosRules })
       },
 
       runPrimary: () => {

@@ -1147,7 +1147,7 @@ export type GameStore = {
   tournamentState: TournamentState | null
   ffaState: FfaState | null
   spectatingState: SpectatingState | null
-  createTournamentLobby: (setCodes: string[], format?: TournamentFormat, boosterCount?: number, maxPlayers?: number, pickTimeSeconds?: number, isPublic?: boolean, gameMode?: LobbyGameMode, rules?: GameRules, playingForAnte?: boolean) => void
+  createTournamentLobby: (setCodes: string[], format?: TournamentFormat, boosterCount?: number, maxPlayers?: number, pickTimeSeconds?: number, isPublic?: boolean, gameMode?: LobbyGameMode, rules?: GameRules, playingForAnte?: boolean, chaosRules?: boolean) => void
   joinLobby: (lobbyId: string) => void
   startLobby: () => void
   leaveLobby: () => void
@@ -1182,7 +1182,7 @@ export type GameStore = {
 
   // Quick Game Lobby slice
   quickGameLobbyState: QuickGameLobbyStateMessage | null
-  createQuickGameLobby: (vsAi?: boolean, setCode?: string, isPublic?: boolean, format?: DeckFormat, momirBasic?: boolean, ranked?: boolean, playingForAnte?: boolean) => void
+  createQuickGameLobby: (vsAi?: boolean, setCode?: string, isPublic?: boolean, format?: DeckFormat, momirBasic?: boolean, ranked?: boolean, playingForAnte?: boolean, chaosRules?: boolean) => void
   addQuickGameAi: () => void
   removeQuickGameAi: () => void
   joinQuickGameLobby: (lobbyId: string) => void
@@ -1203,6 +1203,8 @@ export type GameStore = {
   setQuickGameLobbyPublic: (isPublic: boolean) => void
   setQuickGameLobbyRanked: (ranked: boolean) => void
   setQuickGameLobbyAnte: (playingForAnte: boolean) => void
+  /** Host-only: toggle the Chaos house variant. The server rejects it while the lobby is ranked. */
+  setQuickGameLobbyChaos: (chaosRules: boolean) => void
   setQuickGameLobbyFormat: (format: DeckFormat | null, momirBasic?: boolean) => void
   /** Host-only: choose what the AI opponent plays (auto / built from sets / an exact list). */
   setQuickGameAiDeck: (spec: AiDeckSpec) => void

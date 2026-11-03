@@ -27,6 +27,7 @@ import {
   createSetQuickGameLobbyPublicMessage,
   createSetQuickGameLobbyRankedMessage,
   createSetQuickGameLobbyAnteMessage,
+  createSetQuickGameLobbyChaosMessage,
   createSetQuickGameLobbyFormatMessage,
   createSetQuickGameAiDeckMessage,
   createAddQuickGameAiMessage,
@@ -60,6 +61,7 @@ export interface QuickGameLobbySliceActions {
     momirBasic?: boolean,
     ranked?: boolean,
     playingForAnte?: boolean,
+    chaosRules?: boolean,
   ) => void
   joinQuickGameLobby: (lobbyId: string) => void
   leaveQuickGameLobby: () => void
@@ -80,6 +82,8 @@ export interface QuickGameLobbySliceActions {
   setQuickGameLobbyRanked: (ranked: boolean) => void
   /** Host-only: toggle playing for ante (CR 407). The server ignores it while the lobby is ranked. */
   setQuickGameLobbyAnte: (playingForAnte: boolean) => void
+  /** Host-only: toggle the Chaos house variant. The server rejects it while the lobby is ranked. */
+  setQuickGameLobbyChaos: (chaosRules: boolean) => void
   setQuickGameLobbyFormat: (format: DeckFormat | null, momirBasic?: boolean) => void
   /** Host-only: choose what the AI opponent plays. No-op in a human lobby (server rejects). */
   setQuickGameAiDeck: (spec: AiDeckSpec) => void
@@ -101,8 +105,8 @@ export const createQuickGameLobbySlice: SliceCreator<QuickGameLobbySlice> = (set
   matchOffer: null,
   matchmakingQueues: null,
 
-  createQuickGameLobby: (vsAi, setCode, isPublic, format, momirBasic, ranked, playingForAnte) => {
-    getWebSocket()?.send(createCreateQuickGameLobbyMessage(vsAi, setCode, isPublic, format, momirBasic, ranked, playingForAnte))
+  createQuickGameLobby: (vsAi, setCode, isPublic, format, momirBasic, ranked, playingForAnte, chaosRules) => {
+    getWebSocket()?.send(createCreateQuickGameLobbyMessage(vsAi, setCode, isPublic, format, momirBasic, ranked, playingForAnte, chaosRules))
   },
 
   joinQuickGameLobby: (lobbyId) => {
@@ -140,6 +144,10 @@ export const createQuickGameLobbySlice: SliceCreator<QuickGameLobbySlice> = (set
 
   setQuickGameLobbyAnte: (playingForAnte) => {
     getWebSocket()?.send(createSetQuickGameLobbyAnteMessage(playingForAnte))
+  },
+
+  setQuickGameLobbyChaos: (chaosRules) => {
+    getWebSocket()?.send(createSetQuickGameLobbyChaosMessage(chaosRules))
   },
 
   setQuickGameLobbyFormat: (format, momirBasic) => {

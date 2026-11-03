@@ -121,6 +121,14 @@ data class GameConfig(
      * server's deck validation enforces that, not the engine.
      */
     val playingForAnte: Boolean = false,
+    /**
+     * Play the **Chaos** house variant: each player gets a Chaos emblem — "At the beginning of your
+     * upkeep, roll a random chaos rule" — and the rolled rule happens automatically
+     * ([com.wingedsheep.sdk.chaos.ChaosRules]). Off by default; it is not part of the Comprehensive
+     * Rules. Minting the emblems draws no randomness, so a seed replays the same with it on or off up
+     * to the first roll.
+     */
+    val chaosRules: Boolean = false,
 )
 
 /**
@@ -493,6 +501,11 @@ class GameInitializer(
                     )
                 )
             }
+        }
+
+        // 4c. Chaos house variant: every player gets the Chaos emblem before the game begins.
+        if (config.chaosRules) {
+            state = com.wingedsheep.engine.mechanics.chaos.ChaosVariant.install(state, state.turnOrder)
         }
 
         // 5. Draw initial hands

@@ -797,6 +797,8 @@ class TournamentMatchHandler(
         }
         // CR 407 — the lobby handlers keep this off whenever the lobby is ranked.
         gameSession.playingForAnte = lobby.playingForAnte && !lobby.ranked
+        // The Chaos house variant — likewise kept off whenever the lobby is ranked.
+        gameSession.chaosRules = lobby.chaosRules && !lobby.ranked
         val ps1 = player1State.identity.toPlayerSession()
         val ps2 = player2State.identity.toPlayerSession()
 

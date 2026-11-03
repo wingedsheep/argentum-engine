@@ -88,6 +88,7 @@ class QuickGameLobbyHandler(
             is ClientMessage.SetQuickGameLobbyPublic -> handleSetPublic(session, message)
             is ClientMessage.SetQuickGameLobbyRanked -> handleSetRanked(session, message)
             is ClientMessage.SetQuickGameLobbyAnte -> handleSetAnte(session, message)
+            is ClientMessage.SetQuickGameLobbyChaos -> handleSetChaos(session, message)
             is ClientMessage.SetQuickGameLobbyFormat -> handleSetFormat(session, message)
             is ClientMessage.SetQuickGameAiDeck -> handleSetAiDeck(session, message)
             is ClientMessage.AddQuickGameAi -> handleAddAi(session)
@@ -318,6 +319,8 @@ class QuickGameLobbyHandler(
                 current.playingForAnte = false
                 unreadyAnteDecks(current)
             }
+            // Ranked games are played by the standard rules, so never with Chaos rules.
+            if (effective) current.chaosRules = false
             broadcastState(current)
         }
     }
@@ -347,6 +350,34 @@ class QuickGameLobbyHandler(
             if (current.playingForAnte == message.playingForAnte) return@withLock
             current.playingForAnte = message.playingForAnte
             if (!message.playingForAnte) unreadyAnteDecks(current)
+            broadcastState(current)
+        }
+    }
+
+    private fun handleSetChaos(session: WebSocketSession, message: ClientMessage.SetQuickGameLobbyChaos) {
+        val playerSession = sessionRegistry.getPlayerSession(session.id) ?: run {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected"); return
+        }
+        val lobby = lobbyRepository.findContainingPlayer(playerSession.playerId) ?: run {
+            sender.sendError(session, ErrorCode.GAME_NOT_FOUND, "Not in a lobby"); return
+        }
+        lobbyRepository.withLock(lobby.lobbyId) { current ->
+            if (current == null) return@withLock
+            val host = current.players.firstOrNull { !it.isAi }
+            if (host?.playerId != playerSession.playerId) {
+                sender.sendError(session, ErrorCode.INVALID_ACTION, "Only the host can change Chaos rules")
+                return@withLock
+            }
+            if (current.matchmade) {
+                sender.sendError(session, ErrorCode.INVALID_ACTION, "A matchmade game's rules are set by the queue")
+                return@withLock
+            }
+            if (message.chaosRules && current.ranked) {
+                sender.sendError(session, ErrorCode.INVALID_ACTION, "Ranked games can't use Chaos rules")
+                return@withLock
+            }
+            if (current.chaosRules == message.chaosRules) return@withLock
+            current.chaosRules = message.chaosRules
             broadcastState(current)
         }
     }
@@ -437,6 +468,8 @@ class QuickGameLobbyHandler(
         lobby.ranked = message.ranked && lobby.rankedEligible
         // Ranked games are never played for ante (CR 407); ranked wins the conflict.
         lobby.playingForAnte = message.playingForAnte && !lobby.ranked
+        // Ranked games are played by the standard rules, so never with the Chaos house variant.
+        lobby.chaosRules = message.chaosRules && !lobby.ranked
         lobby.players += QuickGameLobbyPlayer(
             playerId = playerSession.playerId,
             playerName = playerSession.playerName
@@ -522,6 +555,7 @@ class QuickGameLobbyHandler(
         lobby.matchmade = true
         lobby.ranked = recipe.ranked && lobby.rankedEligible
         lobby.playingForAnte = recipe.playingForAnte && !lobby.ranked
+        lobby.chaosRules = recipe.chaosRules && !lobby.ranked
         recipe.seats.forEach { lobby.players += it.copy(ready = true) }
         lobbyRepository.save(lobby)
         recipe.seats.forEach { markPlayerInLobby(it.playerId, lobby.lobbyId) }
@@ -818,6 +852,8 @@ class QuickGameLobbyHandler(
         }
         // CR 407 — ranked games are never played for ante (the handlers already keep the two apart).
         gameSession.playingForAnte = lobby.playingForAnte && !gameSession.ranked
+        // The Chaos house variant — likewise never in a ranked game.
+        gameSession.chaosRules = lobby.chaosRules && !gameSession.ranked
         // Commander rules run on the engine's Commander format; everything else falls through to
         // Standard. Brawl-specific tweaks (60 cards, alternative life total) are Phase 4 territory —
         // Phase 1 covers Commander.
@@ -1074,6 +1110,7 @@ class QuickGameLobbyHandler(
             aiDeck = if (lobby.vsAi) AiDeckSpecView.of(lobby.aiDeckSpec) else null,
             matchmade = lobby.matchmade,
             playingForAnte = lobby.playingForAnte,
+            chaosRules = lobby.chaosRules,
         )
 
     private fun broadcastClosed(lobby: QuickGameLobby, reason: String) {

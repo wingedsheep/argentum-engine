@@ -602,6 +602,19 @@ moved between the players' pools for the rest of the event; `refilledWith` names
 loser's deck at 40. `SPOILS` means they were recorded on signed-in players' profiles, readable with
 `GET /api/stats/me/spoils` → `{ won: Spoil[], lost: Spoil[] }`, `Spoil = { cardName, imageUri, opponentName, gameId, at }`.
 
+## 3f. Chaos rules (WebSocket / REST)
+
+The Chaos house variant: an opt-in lobby setting, never on together with ranked. Lobby fields:
+`LobbySettings.chaosRules` (set with `updateLobbySettings { chaosRules }`), `QuickGameLobbyState.chaosRules`
+(set with **`setQuickGameLobbyChaos`** `{ chaosRules }`), and `chaosRules` on both create messages. Asking
+for it on a ranked lobby is refused with `INVALID_ACTION`; turning ranked on clears it. The replay setup
+records `chaosRules` (the rolls consume RNG), and the Scenario Builder request takes `"chaosRules": true`.
+
+In game nothing new crosses the wire: each player's Chaos emblem arrives as an ordinary emblem badge in
+their `activeEffects` ("Chaos Emblem"), and a rolled rule is a triggered ability on the stack whose chosen
+mode reads "<rule name> — <rule text>". Rules that last the turn ("until end of turn, whenever …") show as
+their own badges.
+
 ## 4. Scenario Builder Payload (REST / HTTP)
 
 The Scenario Builder lets any player construct an arbitrary board state and play it. It is a

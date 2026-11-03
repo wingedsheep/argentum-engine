@@ -514,7 +514,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     title: 'Rules: Standard',
     summary:
       'The ordinary rules for whichever table you picked — 20 life at 1v1, no command zone, and 4 copies of a card if the deck legality allows it.',
-    related: ['rules-commander', 'axes', 'playing-for-ante'],
+    related: ['rules-commander', 'axes', 'playing-for-ante', 'chaos-rules'],
   },
   {
     id: 'rules-commander',
@@ -606,7 +606,28 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       { kind: 'h', text: 'Ante cards' },
       { kind: 'p', text: 'Cards that only work with ante — Contract from Below, Darkpact, Demonic Attorney, Jeweled Bird and Bronze Tablet — are legal only in a game played for ante. A deck holding one is refused in any other lobby. When one of them targets a card in the ante (Darkpact), you pick it from a browser of every player’s ante.' },
     ],
-    related: ['ranked', 'profile', 'tournament-flow', 'lobby-screen', 'game-over'],
+    related: ['ranked', 'profile', 'tournament-flow', 'lobby-screen', 'game-over', 'chaos-rules'],
+  },
+  {
+    id: 'chaos-rules',
+    section: 'modes',
+    title: 'Chaos rules',
+    summary:
+      'An opt-in house variant: at the beginning of every upkeep, the active player rolls a random chaos rule — a wrath, an extra turn, a stolen creature, a swapped life total — and the game plays it for you. Ranked games never use it.',
+    body: [
+      { kind: 'p', text: 'The host turns it on with the Chaos rules row in the lobby’s Rules settings — in a quick game, a tournament or a Free-for-All lobby. A “Variant: Chaos” chip at the top of the lobby tells everyone who joins. Ranked games are played by the standard rules, so while Ranked is on the row is locked off.' },
+      { kind: 'p', text: 'Every player starts the game with a Chaos emblem, listed with the effects beside their life total. At the beginning of your upkeep it triggers, and the rule is rolled as the trigger goes on the stack — so the stack shows exactly what is coming (“Lightning Helix — Deal 3 damage to any target. You gain 3 life.”) and anyone can respond before it happens.' },
+      { kind: 'h', text: 'How a roll works' },
+      { kind: 'ul', items: [
+        '“You” in a rule is the player whose upkeep it is, and every choice the rule asks for — targets, which card to discard, how much life to pay — is theirs.',
+        'A rule that couldn’t happen right now, such as Shatter with no artifact on the battlefield, isn’t in the roll; you get a different rule instead.',
+        'You never roll the same rule twice in one game. Your opponent keeps their own list, so the same rule can come up once for each of you.',
+        'Damage a rule deals comes from your Chaos emblem, a colourless source.',
+        'Dice in a rule (“roll a six-sided die”) are rolled by the game and shown in the game log.',
+      ] },
+      { kind: 'p', text: 'The rules come from a long-running kitchen-table chaos list. A few of its entries aren’t in the online roll yet — the ones that change the roll itself (Calm, Storm, Master of Chaos) and a handful that need rules the game can’t express yet.' },
+    ],
+    related: ['playing-for-ante', 'rules-standard', 'lobby-screen', 'ranked'],
   },
   {
     id: 'ranked',

@@ -432,6 +432,11 @@ class TournamentLobby(
      * (CR 407.3). Never on together with [ranked] — the handlers clear one when the other is set.
      */
     var playingForAnte: Boolean = false,
+    /**
+     * Whether this lobby's games use the Chaos house variant ([com.wingedsheep.sdk.chaos.ChaosRules]):
+     * every upkeep, the active player rolls a random chaos rule. Never on together with [ranked].
+     */
+    var chaosRules: Boolean = false,
     /** When the lobby opened, for the public list's newest-first order. Not persisted: a restored lobby restarts its clock. */
     val createdAt: Long = System.currentTimeMillis(),
 ) {
@@ -2195,6 +2200,7 @@ class TournamentLobby(
                 ranked = ranked,
                 rankedEligible = rankedEligible,
                 playingForAnte = playingForAnte,
+                chaosRules = chaosRules,
             ),
             isHost = isHost(forPlayerId)
         )

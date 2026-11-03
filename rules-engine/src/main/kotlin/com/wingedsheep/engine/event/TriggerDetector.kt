@@ -863,6 +863,25 @@ class TriggerDetector(
             }
         }
 
+        // The Chaos house variant: each player's Chaos emblem rolls a random chaos rule at the
+        // beginning of its controller's upkeep. The ability is a game-rule constant, like the
+        // monarch's and the initiative's, so it isn't stored on the state; the emblem is its source.
+        if (state.chaosRules && step == com.wingedsheep.sdk.core.Step.UPKEEP) {
+            val ability = com.wingedsheep.sdk.chaos.ChaosRules.upkeepRoll
+            for ((controller, emblemId) in com.wingedsheep.engine.mechanics.chaos.ChaosVariant.emblems(state)) {
+                if (!matcher.matchesStepTrigger(ability.trigger, step, controller, state, emblemId)) continue
+                triggers.add(
+                    PendingTrigger(
+                        ability = ability,
+                        sourceId = emblemId,
+                        sourceName = com.wingedsheep.sdk.chaos.ChaosRules.SOURCE_NAME,
+                        controllerId = controller,
+                        triggerContext = TriggerContext(step = step, triggeringEntityId = activePlayerId)
+                    )
+                )
+            }
+        }
+
         // The initiative's inherent upkeep venture (CR 726.2) — sourceless, controlled by the holder.
         state.initiative?.let { holder ->
             val ability = InitiativeAbilities.upkeepVenture
