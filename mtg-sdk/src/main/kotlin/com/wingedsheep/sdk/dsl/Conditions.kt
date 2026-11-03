@@ -2141,9 +2141,25 @@ object Conditions {
      * legendary creature this turn."
      */
     val AnOpponentWasDealtCombatDamageByLegendaryCreatureThisTurn: ConditionInterface =
-        trackerAtLeast(
-            com.wingedsheep.sdk.scripting.values.TurnTracker.DEALT_COMBAT_DAMAGE_BY_LEGENDARY_CREATURE,
-            player = Player.EachOpponent,
+        PlayerWasDealtCombatDamageThisTurnBy(GameObjectFilter.Creature.legendary(), player = Player.EachOpponent)
+
+    /**
+     * If [player] was dealt combat damage this turn by [atLeast] or more distinct sources matching
+     * [sourceFilter], each judged as it was when it dealt the damage — a [Compare] over
+     * [DynamicAmount.CombatDamageSourcesThisTurn]. "A player who was dealt combat damage by three or
+     * more Pirates this turn" (Admiral Beckett Brass, inside `StatePredicate.ControllerMeets`, where
+     * [Player.You] is the candidate's controller); "an opponent was dealt combat damage by a legendary
+     * creature this turn" (Blitzball).
+     */
+    fun PlayerWasDealtCombatDamageThisTurnBy(
+        sourceFilter: GameObjectFilter,
+        atLeast: Int = 1,
+        player: Player = Player.You,
+    ): ConditionInterface =
+        Compare(
+            DynamicAmount.CombatDamageSourcesThisTurn(player, sourceFilter),
+            ComparisonOperator.GTE,
+            DynamicAmount.Fixed(atLeast)
         )
 
     /**

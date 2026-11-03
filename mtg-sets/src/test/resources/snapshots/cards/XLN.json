@@ -1,3 +1,86 @@
+// Admiral Beckett Brass
+{
+    "name": "Admiral Beckett Brass",
+    "manaCost": "{1}{U}{B}{R}",
+    "typeLine": "Legendary Creature — Human Pirate",
+    "oracleText": "Other Pirates you control get +1/+1.\nAt the beginning of your end step, gain control of target nonland permanent controlled by a player who was dealt combat damage by three or more Pirates this turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Admiral Beckett Brass:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsNonland",
+                                "IsPermanent"
+                            ],
+                            "statePredicates": [
+                                {
+                                    "type": "ControllerMeets",
+                                    "condition": {
+                                        "type": "Compare",
+                                        "left": {
+                                            "type": "CombatDamageSourcesThisTurn",
+                                            "sourceFilter": "creature Pirate"
+                                        },
+                                        "operator": "GTE",
+                                        "right": {
+                                            "type": "Fixed",
+                                            "amount": 3
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "permanent Pirate ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "217",
+        "rarity": "MYTHIC",
+        "artist": "Jason Rainville",
+        "flavorText": "\"You and your ship will make a fine addition to my fleet.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/9854c2ec-0e53-4ac7-b417-554a9331c5e0.jpg?1783935715"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Ancient Brontodon
 {
     "name": "Ancient Brontodon",

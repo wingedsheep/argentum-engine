@@ -8013,7 +8013,9 @@ work for abilities-on-stack (which carry no `CardComponent`).
   condition is rebound to the *candidate's* controller, not the ability's — `PredicateEvaluator`
   evaluates it with an `EffectContext` whose `controllerId` is the candidate's (projected) controller.
   That is the whole point: the constraint is about whose creature it is right now, not about who is
-  casting. Not usable in a group-static projection filter (it reads as no match there).
+  casting. Not usable in a group-static projection filter (it reads as no match there). "Controlled by
+  a player who was dealt combat damage by three or more Pirates this turn" (Admiral Beckett Brass) is
+  `controllerMeets(Conditions.PlayerWasDealtCombatDamageThisTurnBy(Creature.withSubtype(PIRATE), 3))`.
 - `IsCombatPairedWithSource` (filter builder `blockingOrBlockedBySource()`) — the same CR 509
   pairing read **live in both directions**: the candidate blocks the source, or the source blocks
   the candidate. "Each creature blocking or blocked by this creature" (Spitting Slug =
@@ -17543,6 +17545,21 @@ both spellings, and the ability its bare-noun line grants says "Regenerate this 
   named dungeon you've completed" (Ellywick Tumblestrum's emblem).
 - `TurnCount(player)` — turn number for that player.
 - `TurnTracking(player, TurnTracker)` — value of a per-turn counter (see below).
+- `CombatDamageSourcesThisTurn(player, sourceFilter)` — how many **distinct sources** matching
+  `sourceFilter` dealt *combat* damage to `player` this turn, each judged as it stood **when it dealt the
+  damage** (recorded per player in `DamageUtils.trackDamageReceivedByPlayer`, cleared at cleanup). A
+  source that has since left the battlefield or stopped matching still counts; double strike counts once.
+  The frozen record holds controller, creature-ness, card types, legendary-ness, subtypes and name, so the
+  filter may use `youControl()`/`opponentControls()`, `Creature`, `legendary()`, `withSubtype(...)`,
+  `named(...)` and `or` unions; anything else fails closed. Summed over several players. Facade
+  `Conditions.PlayerWasDealtCombatDamageThisTurnBy(sourceFilter, atLeast, player)`:
+  - "an opponent was dealt combat damage by a legendary creature this turn" (Blitzball:
+    `Conditions.AnOpponentWasDealtCombatDamageByLegendaryCreatureThisTurn`, i.e.
+    `PlayerWasDealtCombatDamageThisTurnBy(Creature.legendary(), player = Player.EachOpponent)`);
+  - "target nonland permanent controlled by a player who was dealt combat damage by three or more
+    Pirates this turn" (Admiral Beckett Brass: `NonlandPermanent.controllerMeets(
+    Conditions.PlayerWasDealtCombatDamageThisTurnBy(Creature.withSubtype(PIRATE), atLeast = 3))` — inside
+    `ControllerMeets`, `Player.You` is the candidate's controller).
 - `SpellsCastThisTurn(player, filter?, excludeSelf?, fromZone?, countDistinctCardTypes?, beforeTriggeringSpell?)` — count of spells `player` has cast
   this turn, read from the per-player cast history (`GameState.spellsCastThisTurnByPlayer`). `filter`
   matches a spell characteristic captured at cast time — type/color/mana value (face-down casts
@@ -18520,11 +18537,8 @@ of `AddMana`, `AddColorlessMana` and `AddDynamicMana` / `AddManaInAnyCombination
   creatures entering attacking do not count. In shared-team declarations each player is credited
   only for creatures they controlled at declaration. History survives departures and resets at cleanup.
 - `DEALT_COMBAT_DAMAGE` — combat damage dealt.
-- `DEALT_COMBAT_DAMAGE_BY_LEGENDARY_CREATURE` — indicator (0/1) that the player was dealt combat
-  damage by a legendary creature this turn (recorded in `CombatDamageManager`, cleared at end of
-  turn). Powers "an opponent was dealt combat damage by a legendary creature this turn" — Blitzball —
-  via `Compare(TurnTracking(EachOpponent, DEALT_COMBAT_DAMAGE_BY_LEGENDARY_CREATURE), GTE, 1)`
-  (facade `Conditions.AnOpponentWasDealtCombatDamageByLegendaryCreatureThisTurn`).
+- "Dealt combat damage *by* a kind of source" is not a tracker — it is
+  `DynamicAmount.CombatDamageSourcesThisTurn(player, sourceFilter)`, below.
 - `DEALT_NONCOMBAT_DAMAGE` — indicator (0/1) that the player was dealt noncombat damage this turn
   (more than zero after prevention, any source; recorded in `DamageUtils.dealDamageToTarget` on
   `GameState.playersDealtNoncombatDamageThisTurn`). Facade

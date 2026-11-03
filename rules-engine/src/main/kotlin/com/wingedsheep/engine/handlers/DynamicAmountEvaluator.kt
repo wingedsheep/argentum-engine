@@ -238,6 +238,7 @@ class DynamicAmountEvaluator(
         is DynamicAmount.Speed,
         is DynamicAmount.DungeonsCompleted,
         DynamicAmount.SpellsCastLastTurn,
+        is DynamicAmount.CombatDamageSourcesThisTurn,
         is DynamicAmount.SpellsCastThisTurn,
         is DynamicAmount.StartingLifeTotal,
         DynamicAmount.StationCharge,
@@ -954,10 +955,6 @@ class DynamicAmountEvaluator(
                             ?.get<com.wingedsheep.engine.state.components.player.LastTurnActivityComponent>()
                             ?.nontokenPermanentsPutOntoBattlefield ?: 0
                     }
-                    TurnTracker.DEALT_COMBAT_DAMAGE_BY_LEGENDARY_CREATURE -> playerIds.count { playerId ->
-                        state.getEntity(playerId)
-                            ?.has<com.wingedsheep.engine.state.components.player.WasDealtCombatDamageByLegendaryCreatureThisTurnComponent>() == true
-                    }
                     TurnTracker.COUNTERS_PUT_ON_CREATURE -> playerIds.count { playerId ->
                         state.getEntity(playerId)
                             ?.has<com.wingedsheep.engine.state.components.player.PutCounterOnCreatureThisTurnComponent>() == true
@@ -1132,6 +1129,16 @@ class DynamicAmountEvaluator(
                 }
             }
 
+            // Each player's frozen record of the sources that dealt them combat damage this turn,
+            // counted once per source object (Admiral Beckett Brass, Blitzball).
+            is DynamicAmount.CombatDamageSourcesThisTurn -> {
+                val you = context.controllerId
+                resolveUnifiedPlayerIds(state, amount.player, context, projectedState).sumOf { playerId ->
+                    state.getEntity(playerId)
+                        ?.get<com.wingedsheep.engine.state.components.player.CombatDamageSourcesThisTurnComponent>()
+                        ?.countMatching(amount.sourceFilter, you) ?: 0
+                }
+            }
             is DynamicAmount.SpellsCastThisTurn -> {
                 val playerIds = resolveUnifiedPlayerIds(state, amount.player, context, projectedState)
                 // excludeSelf drops the resolving spell's own record, matched by the spell's

@@ -86,13 +86,6 @@ enum class TurnTracker {
     /** Indicator (0 or 1) that the player was dealt combat damage this turn. */
     DEALT_COMBAT_DAMAGE,
     /**
-     * Indicator (0 or 1) that the player was dealt combat damage by a legendary creature this
-     * turn. Backed by `WasDealtCombatDamageByLegendaryCreatureThisTurnComponent`, set when a
-     * legendary creature deals combat damage to the player and cleared at end of turn. Powers
-     * "if an opponent was dealt combat damage by a legendary creature this turn" (Blitzball).
-     */
-    DEALT_COMBAT_DAMAGE_BY_LEGENDARY_CREATURE,
-    /**
      * Indicator (0 or 1) that the player was dealt noncombat damage this turn — any source, any
      * amount above zero after prevention. Powers "as long as an opponent was dealt noncombat damage
      * this turn" (Whiplash Wordsmith, Grim Repriser).
@@ -453,8 +446,6 @@ enum class TurnTracker {
         PLAYER_ATTACKED -> "whether ${player.description} attacked this turn"
         OPPONENTS_ATTACKED -> "the number of opponents ${player.description} attacked this turn"
         DEALT_COMBAT_DAMAGE -> "whether ${player.description} were dealt combat damage this turn"
-        DEALT_COMBAT_DAMAGE_BY_LEGENDARY_CREATURE ->
-            "whether ${player.description} were dealt combat damage by a legendary creature this turn"
         DEALT_NONCOMBAT_DAMAGE -> "whether ${player.description} were dealt noncombat damage this turn"
         DEALT_NONCOMBAT_DAMAGE_LAST_TURN -> "whether ${player.description} were dealt noncombat damage last turn"
         PERMANENT_DEALT_EXCESS_DAMAGE ->
@@ -2104,6 +2095,39 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
             if (beforeTriggeringSpell) append(" before it")
             append(" this turn")
         }
+    }
+
+    /**
+     * How many distinct sources matching [sourceFilter] dealt *combat* damage to [player] this turn,
+     * each judged as it stood **when it dealt the damage** — "a player who was dealt combat damage by
+     * three or more Pirates this turn" (Admiral Beckett Brass, read through
+     * `StatePredicate.ControllerMeets` so "you" is the target's controller), "if an opponent was dealt
+     * combat damage by a legendary creature this turn" (Blitzball).
+     *
+     * A source that has since left the battlefield or stopped matching still counts as it was; one
+     * that dealt combat damage more than once (double strike) counts once. The damage-time record
+     * holds the source's controller, creature-ness, card types, legendary-ness, subtypes and name, so
+     * [sourceFilter] may use `youControl()` / `opponentControls()`, `Creature`, `legendary()`,
+     * `withSubtype(...)`, `named(...)` and `or` unions of them; anything else fails closed. "You" in
+     * the filter is the evaluating context's controller. Summed when [player] resolves to several
+     * players.
+     *
+     * Closest types: [TurnTracking] reads fixed per-player counters with no source axis (its
+     * `DEALT_COMBAT_DAMAGE` indicator is "by any source"); `StatePredicate.WasDealtDamageThisTurnBy`
+     * reads the same frozen source record, but on a damaged *permanent*, and only asks "any".
+     */
+    @SerialName("CombatDamageSourcesThisTurn")
+    @Serializable
+    data class CombatDamageSourcesThisTurn(
+        val player: Player = Player.You,
+        val sourceFilter: GameObjectFilter = GameObjectFilter.Creature,
+    ) : DynamicAmount {
+        override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount {
+            val newFilter = sourceFilter.applyTextReplacement(replacer)
+            return if (newFilter !== sourceFilter) copy(sourceFilter = newFilter) else this
+        }
+        override val description: String =
+            "the number of ${sourceFilter.description}s that dealt combat damage to ${player.description} this turn"
     }
 
     /**

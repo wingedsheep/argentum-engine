@@ -24,7 +24,6 @@ import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.DealtCombatDamageToPlayersThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.HasDealtCombatDamageToPlayerComponent
 import com.wingedsheep.engine.state.components.battlefield.WasDealtDamageThisTurnComponent
-import com.wingedsheep.engine.state.components.player.WasDealtCombatDamageByLegendaryCreatureThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CombatDamageReceivedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.WasDealtCombatDamageThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.AttackerOrderComponent
@@ -1401,12 +1400,6 @@ internal class CombatDamageManager(
             container.with(WasDealtCombatDamageThisTurnComponent)
                 .with(CombatDamageReceivedThisTurnComponent(priorCombat + effectiveAmount))
         }
-        // Track when the damaging source is a legendary creature (Blitzball etc.)
-        if (state.projectedState.isCreature(sourceId) && state.projectedState.isLegendary(sourceId)) {
-            newState = newState.updateEntity(targetId) { container ->
-                container.with(WasDealtCombatDamageByLegendaryCreatureThisTurnComponent)
-            }
-        }
 
         val sourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Creature"
         events.add(DamageDealtEvent(sourceId, targetId, effectiveAmount, true,
@@ -1702,12 +1695,6 @@ internal class CombatDamageManager(
                 val priorCombat = container.get<CombatDamageReceivedThisTurnComponent>()?.amount ?: 0
                 container.with(WasDealtCombatDamageThisTurnComponent)
                     .with(CombatDamageReceivedThisTurnComponent(priorCombat + amount))
-            }
-            // Track when the damaging source is a legendary creature (Blitzball etc.)
-            if (projected.isCreature(sourceId) && projected.isLegendary(sourceId)) {
-                newState = newState.updateEntity(targetId) { container ->
-                    container.with(WasDealtCombatDamageByLegendaryCreatureThisTurnComponent)
-                }
             }
             val sourceName = newState.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Creature"
             events.add(DamageDealtEvent(sourceId, targetId, amount, true,

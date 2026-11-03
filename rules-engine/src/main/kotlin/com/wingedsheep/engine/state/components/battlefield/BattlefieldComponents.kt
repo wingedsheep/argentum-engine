@@ -1097,6 +1097,13 @@ data class DamageSourceLki(
     /** The source's name when it dealt the damage; null for a nameless (face-down) source. */
     val sourceName: String? = null,
     /**
+     * Whether the source was legendary when it dealt the damage — "dealt combat damage by a legendary
+     * creature this turn" (Blitzball) asks it of a player's combat-damage-source record.
+     */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val sourceWasLegendary: Boolean = false,
+    /**
      * Total damage this source dealt to the bearer this turn — summed across hits by
      * [DamagedBySourcesThisTurnComponent.adding], read by `DynamicAmount.LastKnownDamageDealtToSource`.
      */
@@ -1104,7 +1111,7 @@ data class DamageSourceLki(
 ) {
     /**
      * Does this source, as it stood when it dealt the damage, match [filter]? "You" is [youId]. The
-     * snapshot holds only controller, creature-ness, instant/sorcery-ness, subtypes and name, so a
+     * snapshot holds only controller, creature-ness, instant/sorcery-ness, legendary-ness, subtypes and name, so a
      * filter asking for anything else fails closed rather than matching every source.
      */
     fun matches(filter: com.wingedsheep.sdk.scripting.GameObjectFilter, youId: EntityId): Boolean {
@@ -1121,6 +1128,7 @@ data class DamageSourceLki(
 
     private fun matchesCard(predicate: com.wingedsheep.sdk.scripting.predicates.CardPredicate): Boolean = when (predicate) {
         com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature -> sourceWasCreature
+        com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsLegendary -> sourceWasLegendary
         com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsInstant ->
             com.wingedsheep.sdk.core.CardType.INSTANT in sourceCardTypes
         com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsSorcery ->
