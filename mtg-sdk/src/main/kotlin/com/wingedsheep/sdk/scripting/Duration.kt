@@ -320,6 +320,25 @@ sealed interface Duration {
     }
 
     /**
+     * Effect applies only **during** the affected player's next turn — "each opponent can't cast
+     * instant or sorcery spells during that player's next turn" (Sphinx's Decree, Azor, the
+     * Lawbringer). Unlike the "until …" durations it doesn't start at once: it lies dormant through
+     * the rest of the current turn and every other player's turn, binds from the start of the
+     * affected player's next turn, and ends at that turn's cleanup (CR 514.2). The current turn
+     * never counts, even when it is the affected player's own.
+     *
+     * Keyed per affected player, so "each opponent … during that player's next turn" gives every
+     * opponent their own window. Honoured by
+     * [com.wingedsheep.sdk.scripting.effects.CantCastSpellsEffect], whose per-player ban records a
+     * `turnNumber + 1` floor and binds only while its holder is the active player at or after it.
+     */
+    @SerialName("DuringAffectedPlayersNextTurn")
+    @Serializable
+    data object DuringAffectedPlayersNextTurn : Duration {
+        override val description = "during that player's next turn"
+    }
+
+    /**
      * Effect lasts until the beginning of the affected card's **owner's** next turn — "until that
      * player's next turn" where "that player" is the player whose hand the card went to (Firestorm
      * Phoenix). The affected-object mirror of [UntilYourNextTurn], which is keyed to the effect's

@@ -472,6 +472,7 @@ internal class PlayerActiveEffectsProjector(
                     PlayerEffectRemoval.EndOfTurn -> "this_turn" to " this turn"
                     PlayerEffectRemoval.UntilYourNextTurn -> "until_next_turn" to " until your next turn"
                     PlayerEffectRemoval.EndOfYourNextTurn -> "end_of_next_turn" to " until the end of your next turn"
+                    PlayerEffectRemoval.DuringYourNextTurn -> "during_next_turn" to " during your next turn"
                     PlayerEffectRemoval.Permanent -> "permanent" to ""
                 }
                 effects.add(

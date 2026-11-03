@@ -732,6 +732,9 @@ class CleanupPhaseManager(
                             floatingEffect.effect.affectedEntities.any { projectedController(it) in activeTeam })
                     }
                 }
+                // Only CantCastSpellsEffect's player ban honours it; a floating effect can't sleep
+                // until a later turn, so fail closed like an "until end of turn" effect.
+                is Duration.DuringAffectedPlayersNextTurn -> false
                 is Duration.UntilNextEndStep -> true  // Expired on entry to the next end step (performNextEndStepExpiry)
                 is Duration.Permanent -> true  // Never expires
                 // Event-bounded ("until this card is cast from exile"): never a turn boundary. Only
@@ -920,6 +923,10 @@ class CleanupPhaseManager(
                                 floor != null && owner != null &&
                                     !(newState.turnNumber >= floor && newState.isActiveTurnFor(owner))
                             }
+                            // "During that player's next turn" (Sphinx's Decree): ends at the cleanup
+                            // of the holder's first turn at or after its floor.
+                            PlayerEffectRemoval.DuringYourNextTurn ->
+                                ban.expiresAfterTurn != null && !ban.isHoldersNextTurn(newState, playerId)
                             else -> true
                         }
                     }

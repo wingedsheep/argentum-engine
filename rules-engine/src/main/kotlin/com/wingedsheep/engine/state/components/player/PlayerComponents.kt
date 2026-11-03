@@ -1163,6 +1163,14 @@ enum class PlayerEffectRemoval {
      * [CantCastSpellsComponent] honours it so far.
      */
     EndOfYourNextTurn,
+    /**
+     * Applies only during the holding player's next turn, then is removed at that turn's cleanup —
+     * the player-component analogue of
+     * [com.wingedsheep.sdk.scripting.Duration.DuringAffectedPlayersNextTurn] (Sphinx's Decree).
+     * Pair it with a turn-number floor, as [SpellCastRestriction] does: dormant before the first
+     * turn of the holder numbered at or after the floor. Only [CantCastSpellsComponent] honours it.
+     */
+    DuringYourNextTurn,
     /** Never removed automatically — must be explicitly cleared */
     Permanent
 }
@@ -1239,7 +1247,9 @@ data class CantCastSpellsComponent(
  *
  * @property expiresAfterTurn For [PlayerEffectRemoval.EndOfYourNextTurn]: the ban ends at the
  *   cleanup of the first turn of [controllerId] numbered at or after this floor (the
- *   `Duration.EndOfYourNextTurn` mechanism). Null for every other removal.
+ *   `Duration.EndOfYourNextTurn` mechanism). For [PlayerEffectRemoval.DuringYourNextTurn]: the ban
+ *   binds only on a turn of its holder numbered at or after this floor, and ends at that turn's
+ *   cleanup. Null for every other removal.
  * @property activeFromSpellCount The ban only binds once the player has cast this many spells this
  *   turn ([GameState.playerSpellsCastThisTurn]) — "You can cast only one more spell this turn"
  *   records the count at resolution plus one. Null binds at once.
@@ -1254,7 +1264,12 @@ data class SpellCastRestriction(
     val activeFromSpellCount: Int? = null
 ) {
     fun bindsNow(state: GameState, playerId: EntityId): Boolean =
-        activeFromSpellCount == null || (state.playerSpellsCastThisTurn[playerId] ?: 0) >= activeFromSpellCount
+        (activeFromSpellCount == null || (state.playerSpellsCastThisTurn[playerId] ?: 0) >= activeFromSpellCount) &&
+            (removeOn != PlayerEffectRemoval.DuringYourNextTurn || isHoldersNextTurn(state, playerId))
+
+    /** On the holder's first turn at or after the floor — a [PlayerEffectRemoval.DuringYourNextTurn] window. */
+    fun isHoldersNextTurn(state: GameState, playerId: EntityId): Boolean =
+        expiresAfterTurn != null && state.turnNumber >= expiresAfterTurn && state.isActiveTurnFor(playerId)
 }
 
 /** The [CantCastSpellsComponent] bans on [playerId] that bind right now. */

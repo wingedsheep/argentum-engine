@@ -726,7 +726,8 @@ enum class HijackScope {
  *
  * @param target The player(s) who can't cast matching spells
  * @param duration EndOfTurn (default), EndOfYourNextTurn (the effect controller's next turn —
- *   Single Combat), or Permanent
+ *   Single Combat), UntilYourNextTurn, DuringAffectedPlayersNextTurn (only during each banned
+ *   player's own next turn — Sphinx's Decree), or Permanent
  * @param spellFilter Which announced spells are prohibited; Any preserves the blanket ban.
  * @param moreAllowed How many more spells each target may still cast before the ban takes hold,
  *   counted from resolution — "You can cast only one more spell this turn" (Irencrag Feat) is
