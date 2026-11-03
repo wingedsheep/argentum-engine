@@ -239,7 +239,7 @@
 - [ ] The City on the Edge of Forever
 - [ ] The Doctor, EMH
 - [ ] The Duras Sisters
-- [ ] The Holodeck
+- [x] The Holodeck
 - [ ] The Inner Light
 - [ ] The Measure of a Man
 - [ ] The Traveler

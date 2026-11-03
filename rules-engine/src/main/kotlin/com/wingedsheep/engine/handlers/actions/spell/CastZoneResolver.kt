@@ -1120,16 +1120,31 @@ class CastZoneResolver(
     ): LegalityKernel.LinkedExileGranter? = legality.linkedExileGranterFor(state, playerId, cardId)
 
     /**
-     * The permanent whose `MayPlayCardsFromExile(oncePerTurn = true)` allowance casting [cardId]
-     * from exile spends (Evelyn, the Covetous), or null. Read before the card leaves exile.
+     * The permanent whose `MayPlayCardsFromExile(oncePerTurn = true)` allowance this cast spends —
+     * Evelyn, the Covetous from exile; The Holodeck from the caster's graveyard or sideboard — or
+     * null. Read before the card leaves its zone.
+     *
+     * A cast that goes through a route of the card's own, or through a graveyard permission that
+     * isn't a may-play grant (Muldrotha's per-type allowance, a `MayCastFromGraveyard` static), is
+     * charged to that route instead: those routes record their own use, and charging both would
+     * burn two allowances for one cast.
      */
-    fun findOncePerTurnExileGranter(
+    fun findOncePerTurnPlayGranter(
         state: GameState,
-        playerId: EntityId,
-        cardId: EntityId
-    ): EntityId? = if (state.turnOrder.any { cardId in state.getExile(it) }) {
-        state.oncePerTurnGranterToSpend(cardId, playerId, conditionEvaluator, cardRegistry)
-    } else null
+        action: CastSpell,
+        cardComponent: CardComponent,
+    ): EntityId? {
+        val playerId = action.playerId
+        val cardId = action.cardId
+        val inGraveyard = cardId in state.getGraveyard(playerId)
+        val reachable = inGraveyard ||
+            state.turnOrder.any { cardId in state.getExile(it) } ||
+            cardId in state.getZone(ZoneKey(playerId, Zone.SIDEBOARD))
+        if (!reachable) return null
+        if (castGoesThroughOwnRoute(state, action, cardComponent)) return null
+        if (inGraveyard && hasMayCastFromGraveyardPermission(state, playerId, cardId, cardComponent)) return null
+        return state.oncePerTurnGranterToSpend(cardId, playerId, conditionEvaluator, cardRegistry)
+    }
 
     private fun findGraveyardPlayPermissionSource(
         state: GameState,

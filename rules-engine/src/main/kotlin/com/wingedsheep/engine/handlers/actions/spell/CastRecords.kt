@@ -43,8 +43,8 @@ internal class CastAuthorization(
     val limitedTopLibraryCastSource: EntityId?,
     /** The Tomb of Aclazotz / Bilbo: the rider-bearing graveyard-cast grant that authorized this cast. */
     val graveyardCastRiderGrant: com.wingedsheep.sdk.scripting.MayCastFromGraveyard?,
-    /** A `MayPlayCardsFromExile(oncePerTurn)` granter (Evelyn, the Covetous) whose allowance this cast spends. */
-    val oncePerTurnExileGranter: EntityId?,
+    /** A `MayPlayCardsFromExile(oncePerTurn)` granter (Evelyn, the Covetous; The Holodeck) whose allowance this cast spends. */
+    val oncePerTurnPlayGranter: EntityId?,
     /** Glimpse the Cosmos: the exile rider of the card's own `MayCastSelfFromZones` permission this cast went through. */
     val selfZoneExileRider: CastThisWayExile = CastThisWayExile.NONE,
     /** Kaldring, the Rimestaff: the `entersTapped` riders of the may-play permission this cast goes through. */
@@ -92,7 +92,7 @@ internal class CastRecords(
         graveyardCastRiderGrant = zoneResolver.findMayCastFromGraveyardGrant(
             state, action.playerId, action.cardId, cardComponent, action.graveyardCastRider
         ),
-        oncePerTurnExileGranter = zoneResolver.findOncePerTurnExileGranter(state, action.playerId, action.cardId),
+        oncePerTurnPlayGranter = zoneResolver.findOncePerTurnPlayGranter(state, action, cardComponent),
         selfZoneExileRider = zoneResolver.findMayCastSelfFromZoneAbility(state, action.playerId, action.cardId, action)
             ?.exileCastThisWay ?: CastThisWayExile.NONE,
         mayPlayEntersTapped = zoneResolver.castEntersTappedRiders(state, action, cardComponent),
@@ -300,7 +300,7 @@ internal class CastRecords(
      *
      * - Muldrotha: one permanent type per turn, recorded when [castingFromGraveyardViaMuldrotha].
      * - A once-per-turn linked-exile permission (Maralen, Fae Ascendant) marks its granter, and so
- *   does a once-per-turn filter-defined exile grant (Evelyn, the Covetous).
+ *   does a once-per-turn filter-defined play grant (Evelyn, the Covetous; The Holodeck).
      * - A limited top-of-library permission belongs to its granting permanent, not to the player: the
      *   source captured before the card left the library is marked; a source that leaves and returns
      *   is a new object with a fresh allowance, and an unlimited matching source consumes nothing.
@@ -331,7 +331,7 @@ internal class CastRecords(
         if (linkedExileGranter?.ability?.oncePerTurn == true) {
             newState = newState.updateEntity(linkedExileGranter.granterId) { c -> c.with(MayCastFromLinkedExileUsedThisTurnComponent) }
         }
-        authorization.oncePerTurnExileGranter?.let { granter ->
+        authorization.oncePerTurnPlayGranter?.let { granter ->
             newState = newState.updateEntity(granter) { c -> c.with(MayCastFromLinkedExileUsedThisTurnComponent) }
         }
 

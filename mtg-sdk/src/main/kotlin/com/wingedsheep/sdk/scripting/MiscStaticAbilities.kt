@@ -1033,6 +1033,9 @@ data object MayPlayLandsFromGraveyard : ProjectedStaticAbility {
 /**
  * You may play cards in exile matching [filter] — "play", so lands and spells alike (CR 601.3:
  * a permission from an effect is what lets a player cast a card from a zone other than their hand).
+ * Exile is the default zone; [zones] widens the same grant to the player's own graveyard and to
+ * outside the game (their sideboard) — The Holodeck's "Once during each of your turns, you may play
+ * a permanent card you own from outside the game or from your graveyard".
  *
  * Unlike [GrantMayCastFromLinkedExile], the playable set is defined by a *filter over every exile
  * zone* rather than by the cards linked to this permanent. That difference is load-bearing for
@@ -1074,7 +1077,12 @@ data object MayPlayLandsFromGraveyard : ProjectedStaticAbility {
  *   authorizes one play per turn — a land or a spell, the player's choice. The allowance belongs to
  *   the *granting permanent*, exactly as [GrantMayCastFromLinkedExile.oncePerTurn]'s does: two
  *   granters are two allowances, and one that leaves and returns comes back with a fresh one. A
- *   play is charged to it only when no unlimited grant also covered the card.
+ *   play is charged to it only when no unlimited grant also covered the card. One allowance
+ *   covers every zone in [zones]: The Holodeck's graveyard play and sideboard play share it.
+ * @property zones The zones the grant reaches. [Zone.EXILE] means every player's exile (cards
+ *   exiled from an opponent's library stay in that player's exile); [Zone.GRAVEYARD] and
+ *   [Zone.SIDEBOARD] ("outside the game", CR 400.11a) mean only the granted player's own — "a card
+ *   you own". Defaults to exile alone, the shape every exile grant (Tinybones, Evelyn) already has.
  */
 @SerialName("MayPlayCardsFromExile")
 @Serializable
@@ -1085,16 +1093,25 @@ data class MayPlayCardsFromExile(
     val withAnyManaColor: Boolean = false,
     val oncePerTurn: Boolean = false,
     val spendAsAnyColor: ManaSpentAsAnyColor? = null,
+    val zones: Set<Zone> = setOf(Zone.EXILE),
 ) : StaticAbility {
     init {
         require(!(withAnyManaColor && spendAsAnyColor != null)) {
             "withAnyManaColor already lets all mana stand in for a color; spendAsAnyColor narrows it — set one"
         }
+        require(zones.isNotEmpty() && zones.all { it in PLAYABLE_ZONES }) {
+            "MayPlayCardsFromExile.zones must be a non-empty subset of $PLAYABLE_ZONES, was $zones"
+        }
     }
 
     override val description: String = buildString {
-        if (oncePerTurn) append("Once each turn, you may play ${filter.description} from exile")
-        else append("You may play ${filter.description} from exile")
+        val from = listOfNotNull(
+            "from exile".takeIf { Zone.EXILE in zones },
+            "from your graveyard".takeIf { Zone.GRAVEYARD in zones },
+            "from outside the game".takeIf { Zone.SIDEBOARD in zones },
+        ).joinToString(" or ")
+        if (oncePerTurn) append("Once each turn, you may play ${filter.description} $from")
+        else append("You may play ${filter.description} $from")
         if (condition != null) append(" ${condition.description}")
         if (withAnyManaType) append(", and mana of any type can be spent to cast those spells")
         else if (withAnyManaColor) append(", and you may spend mana as though it were mana of any color to cast it")
@@ -1109,6 +1126,9 @@ data class MayPlayCardsFromExile(
         } else this
     }
 }
+
+/** The zones a [MayPlayCardsFromExile] grant can reach. */
+private val PLAYABLE_ZONES = setOf(Zone.EXILE, Zone.GRAVEYARD, Zone.SIDEBOARD)
 
 /**
  * Prevents all players from cycling cards.

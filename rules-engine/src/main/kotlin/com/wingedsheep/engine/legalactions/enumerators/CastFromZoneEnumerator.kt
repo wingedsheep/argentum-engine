@@ -17,6 +17,7 @@ import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.sdk.model.CardLayout
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.engine.state.permissions.MayPlayPermission
+import com.wingedsheep.engine.state.permissions.StaticMayPlayGrants
 import com.wingedsheep.engine.mechanics.AlternativeFaceCasts
 import com.wingedsheep.engine.mechanics.ModalDfcCasts
 import com.wingedsheep.engine.core.CastSpell
@@ -549,9 +550,13 @@ class CastFromZoneEnumerator(
         val exileCandidates = state.turnOrder.flatMap { pid -> state.getExile(pid).map { it to "EXILE" } }
         val graveyardCandidates = state.turnOrder.flatMap { pid -> state.getGraveyard(pid).map { it to "GRAVEYARD" } }
         // "You may play a card you own from outside the game this turn" (Wish): the player's own
-        // sideboard (CR 400.11a) under a stored permission. Only their own — "a card you own".
-        // A Limited sideboard is the whole unplayed pool, so skip it outright without a grant.
-        val sideboardCandidates = if (state.mayPlayPermissions.none { it.controllerId == playerId }) emptyList()
+        // sideboard (CR 400.11a) under a stored permission, or under a static grant reaching it (The
+        // Holodeck). Only their own — "a card you own". A Limited sideboard is the whole unplayed
+        // pool, so skip it outright without a grant.
+        val sideboardCandidates = if (
+            state.mayPlayPermissions.none { it.controllerId == playerId } &&
+            !StaticMayPlayGrants.coversZone(state, playerId, Zone.SIDEBOARD, context.cardRegistry)
+        ) emptyList()
         else state.getZone(ZoneKey(playerId, Zone.SIDEBOARD)).map { it to "SIDEBOARD" }
         for ((cardId, sourceZoneLabel) in exileCandidates + graveyardCandidates + sideboardCandidates) {
             val container = state.getEntity(cardId) ?: continue

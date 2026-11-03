@@ -327,7 +327,7 @@ class PlayLandHandler(
         if (entryRedirect.destinationZone != Zone.BATTLEFIELD) {
             val ownerId = printedCardComponent.ownerId ?: action.playerId
             val destination = entryRedirect.destinationZone
-            newState = spendExilePlayAllowances(state, newState, action, fromZone)
+            newState = spendPlayAllowances(state, newState, action, fromZone)
                 .updateEntity(action.cardId) { c ->
                     c.without<ControllerComponent>()
                         .without<com.wingedsheep.engine.state.components.battlefield.EnteredFromZoneComponent>()
@@ -425,7 +425,7 @@ class PlayLandHandler(
 
         // The land's may-play grants went as it entered the battlefield (a new object, CR 400.7);
         // what's left is the once-per-turn bookkeeping and the linked-exile pile.
-        newState = spendExilePlayAllowances(state, newState, action, fromZone)
+        newState = spendPlayAllowances(state, newState, action, fromZone)
         // CR 712.8f — a modal double-faced permanent has only the characteristics of the face
         // that's up. Everything below (the entry event's name, enters-tapped, the as-enters
         // replacements) has to read the face actually played, not the printed front.
@@ -909,16 +909,34 @@ class PlayLandHandler(
     }
 
     /**
-     * A land played from exile spends the once-per-turn allowance it was played through (Hauken's
-     * Insight, Evelyn) and leaves any linked-exile pile. Granters are resolved against the pre-play
-     * [state]; the result builds on [newState].
+     * A land played from exile, a graveyard or a sideboard spends the once-per-turn allowance it was
+     * played through (Hauken's Insight, Evelyn, The Holodeck); one played from exile also leaves any
+     * linked-exile pile. Granters are resolved against the pre-play [state]; the result builds on
+     * [newState].
      */
-    private fun spendExilePlayAllowances(
+    private fun spendPlayAllowances(
         state: GameState,
         newState: GameState,
         action: PlayLand,
         fromZone: Zone
     ): GameState {
+        if (fromZone == Zone.GRAVEYARD || fromZone == Zone.SIDEBOARD) {
+            // A graveyard land a non-permission route already plays (Crucible of Worlds, Muldrotha's
+            // land allowance — recorded on its own — or Mayhem) leaves a filter-defined once-per-turn
+            // grant (The Holodeck) untouched.
+            if (fromZone == Zone.GRAVEYARD && hasNonPermissionGraveyardLandPlay(state, action.playerId, action.cardId)) {
+                return newState
+            }
+            return state.oncePerTurnGranterToSpend(action.cardId, action.playerId, conditionEvaluator, cardRegistry)
+                ?.let { granter ->
+                    newState.updateEntity(granter) { c ->
+                        c.with(
+                            com.wingedsheep.engine.state.components.battlefield
+                                .MayCastFromLinkedExileUsedThisTurnComponent
+                        )
+                    }
+                } ?: newState
+        }
         if (fromZone != Zone.EXILE) return newState
         var result = newState
         // Record once-per-turn linked-exile permission usage (Hauken's Insight — "Once during

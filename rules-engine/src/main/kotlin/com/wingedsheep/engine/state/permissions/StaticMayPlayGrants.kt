@@ -9,13 +9,16 @@ import com.wingedsheep.engine.state.components.battlefield.MayCastFromLinkedExil
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.emblemStaticAbilitiesOf
+import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.MayPlayCardsFromExile
 
 /**
  * Live [MayPlayPermission]s derived from [MayPlayCardsFromExile] static abilities on the
  * battlefield and on emblems — "During your turn, you may play cards you don't own with stash counters on them
- * from exile" (Tinybones, Bauble Burglar).
+ * from exile" (Tinybones, Bauble Burglar), or "you may play a permanent card you own from outside the
+ * game or from your graveyard" (The Holodeck).
  *
  * These permissions are *not* stored on [GameState]: a filter-defined static grant has to be
  * recomputed on every read, because the playable set changes as cards gain the filter's property,
@@ -36,12 +39,12 @@ import com.wingedsheep.sdk.scripting.MayPlayCardsFromExile
 internal object StaticMayPlayGrants {
 
     /**
-     * Every static grant that authorizes [playerId] to play [cardId] from exile right now.
+     * Every static grant that authorizes [playerId] to play [cardId] from where it is right now.
      *
      * Ordered cheapest-check-first, because the permission read path runs per card over every exile
      * and graveyard zone on each legal-action enumeration: the zone test comes before the battlefield
-     * scan for granting statics (so graveyard cards cost only a zone lookup), and the filter is
-     * evaluated last.
+     * scan for granting statics (so an opponent's graveyard card costs only a zone lookup), each
+     * grant's [MayPlayCardsFromExile.zones] is checked next, and the filter is evaluated last.
      */
     fun forCard(
         state: GameState,
@@ -50,20 +53,25 @@ internal object StaticMayPlayGrants {
         cardRegistry: CardRegistry,
         predicateEvaluator: PredicateEvaluator
     ): List<MayPlayPermission> {
-        // The grant only covers cards in exile — a stash-countered card that has since been played or
-        // moved on is no longer playable this way.
-        if (state.turnOrder.none { ownerId -> cardId in state.getExile(ownerId) }) return emptyList()
+        // The grant covers only cards still in a zone it reaches — a stash-countered card that has
+        // since been played or moved on is no longer playable this way. Exile is any player's; a
+        // graveyard or sideboard grant ("a card you own") reaches only the granted player's own.
+        val zone = when {
+            state.turnOrder.any { ownerId -> cardId in state.getExile(ownerId) } -> Zone.EXILE
+            cardId in state.getGraveyard(playerId) -> Zone.GRAVEYARD
+            cardId in state.getZone(ZoneKey(playerId, Zone.SIDEBOARD)) -> Zone.SIDEBOARD
+            else -> return emptyList()
+        }
 
         val grants = grantsFor(state, playerId, cardRegistry)
         if (grants.isEmpty()) return emptyList()
 
         val projected = state.projectedState
         return grants.mapNotNull { (granterId, ability) ->
-            // "Once each turn" (Evelyn, the Covetous): a granter whose allowance is spent offers
-            // nothing until its marker is cleared at end of turn.
-            if (ability.oncePerTurn &&
-                state.getEntity(granterId)?.has<MayCastFromLinkedExileUsedThisTurnComponent>() == true
-            ) return@mapNotNull null
+            if (zone !in ability.zones) return@mapNotNull null
+            // "Once each turn" (Evelyn, the Covetous; The Holodeck): a granter whose allowance is
+            // spent offers nothing until its marker is cleared at end of turn.
+            if (allowanceSpent(state, granterId, ability)) return@mapNotNull null
             val matches = predicateEvaluator.matches(
                 state, projected, cardId, ability.filter,
                 PredicateContext(controllerId = playerId, sourceId = granterId),
@@ -89,6 +97,25 @@ internal object StaticMayPlayGrants {
             )
         }
     }
+
+    /**
+     * True when [playerId] has a static grant reaching [zone] whose allowance isn't spent this turn.
+     * The enumerator asks this before walking a sideboard, which a Limited game fills with the whole
+     * unplayed pool — so the walk only happens while a grant (The Holodeck) could play from it. The
+     * grant's own gate (its condition) is left to the per-card read.
+     */
+    fun coversZone(
+        state: GameState,
+        playerId: EntityId,
+        zone: Zone,
+        cardRegistry: CardRegistry,
+    ): Boolean = grantsFor(state, playerId, cardRegistry).any { (granterId, ability) ->
+        zone in ability.zones && !allowanceSpent(state, granterId, ability)
+    }
+
+    private fun allowanceSpent(state: GameState, granterId: EntityId, ability: MayPlayCardsFromExile): Boolean =
+        ability.oncePerTurn &&
+            state.getEntity(granterId)?.has<MayCastFromLinkedExileUsedThisTurnComponent>() == true
 
     /**
      * The [MayPlayCardsFromExile] abilities [playerId] controls, paired with the permanent that
