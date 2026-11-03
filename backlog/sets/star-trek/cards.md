@@ -150,7 +150,7 @@
 - [ ] Lieutenant Commander Data
 - [ ] Live Long and Prosper
 - [x] Locutus, the One Who Speaks
-- [ ] Lore, Positronic Provocateur
+- [x] Lore, Positronic Provocateur
 - [ ] Lt. Cmdr. Geordi La Forge
 - [ ] Lwaxana Troi, Charming Guest
 - [ ] Make It So
@@ -207,8 +207,8 @@
 - [x] Scotty, Miracle Worker
 - [x] Sela, Tal Shiar Paradox
 - [x] Set Phasers to . . .
-- [ ] Seven of Nine
-- [ ] Seven of Nine, Unassimilated
+- [x] Seven of Nine
+- [x] Seven of Nine, Unassimilated
 - [x] Shields Up!
 - [x] Shuttle Ace
 - [x] Silicate Surveyor
