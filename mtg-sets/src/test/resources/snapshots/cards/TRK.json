@@ -7388,6 +7388,66 @@
     ]
 }
 
+// Khan, Vengeful Heart
+{
+    "name": "Khan, Vengeful Heart",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Legendary Creature — Human Warrior",
+    "oracleText": "When Khan enters, you may sacrifice another creature or artifact. If you do, draw two cards.\nYou may cast this card from exile.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Khan, Vengeful Heart:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "Sacrifice",
+                            "filter": "creature|artifact",
+                            "excludeSource": true
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                },
+                "descriptionOverride": "When Khan enters, you may sacrifice another creature or artifact. If you do, draw two cards."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "MayCastSelfFromZones",
+                "zones": [
+                    "Exile"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "rarity": "MYTHIC",
+        "artist": "Sam Kennedy",
+        "flavorText": "\"Surely, I have made my meaning plain. I mean to avenge myself upon you, Admiral.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a6f47b34-02fb-41d2-978a-a6d0a47ee8ba.jpg?1792551016"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Kira Nerys, Firebrand
 {
     "name": "Kira Nerys, Firebrand",
@@ -8857,6 +8917,59 @@
     ]
 }
 
+// Obsidian Order Operative
+{
+    "name": "Obsidian Order Operative",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Cardassian Officer Spy",
+    "oracleText": "Whenever you face a dilemma, each opponent loses 1 life and you gain 1 life. (You face a dilemma as you choose one or more modes for a spell or ability.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Obsidian Order Operative:1",
+                "trigger": "DilemmaFacedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "120",
+        "artist": "Wero Gallo",
+        "flavorText": "\"Your resistance is wasted energy, and in time you'll wish you hadn't wasted it.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/7/17a7b0a8-baaf-4e6a-8536-f511c796a713.jpg?1793361289"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Open Communications
 {
     "name": "Open Communications",
@@ -9000,6 +9113,113 @@
     "colorIdentityOverride": [
         "GREEN",
         "RED"
+    ]
+}
+
+// Overflow Submatrix
+{
+    "name": "Overflow Submatrix",
+    "manaCost": "{2}{B}",
+    "typeLine": "Artifact Creature — Borg",
+    "oracleText": "Once during each of your turns, you may cast an artifact creature spell from your graveyard. If you cast a spell this way, that artifact creature enters with a finality counter on it. (If a creature with a finality counter on it would die, exile it instead.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "MayCastFromGraveyard",
+                "filter": "artifact creature",
+                "duringYourTurnOnly": true,
+                "entersWithCounter": "FINALITY",
+                "oncePerTurn": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "rarity": "RARE",
+        "artist": "Carlos Dattoli",
+        "flavorText": "\"When they decide to come, they're going to come in force. They don't do anything piecemeal.\"\n—Guinan",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7e5654a7-ce83-4801-8978-7294a39dbef8.jpg?1793100705"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Pattern Buffer Preservation
+{
+    "name": "Pattern Buffer Preservation",
+    "manaCost": "{1}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Look at the top two cards of your library. Put one of them into your hand and the other into your graveyard.\nBeam me up {1}{B} (You may cast this card from your graveyard for {1}{B} if you also return a creature you control to its owner's hand. Then exile this spell.)",
+    "keywords": [
+        "BEAM_ME_UP"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "BeamMeUp",
+            "cost": "{1}{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "storeAs": "looked"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "looked",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "kept",
+                    "storeRemainder": "rest",
+                    "selectedLabel": "Put in hand",
+                    "remainderLabel": "Put in graveyard"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "kept",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "rest",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "123",
+        "artist": "Alex Negrea",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/23166580-9676-4025-916b-864568c2e59d.jpg?1793361304"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -9716,6 +9936,73 @@
     "colorIdentityOverride": []
 }
 
+// Resistance Is Futile
+{
+    "name": "Resistance Is Futile",
+    "manaCost": "{1}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Destroy target nonartifact creature.\n• Return target artifact creature card with mana value 3 or less from your graveyard to the battlefield.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature nonartifact"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Destroy target nonartifact creature"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "destination": "Battlefield",
+                        "fromZone": "Graveyard"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact creature mv<=3 own:you",
+                                "zone": "Graveyard"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Return target artifact creature card with mana value 3 or less from your graveyard to the battlefield"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "125",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/81d88257-466d-4729-862f-591885b3d875.jpg?1785981518"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Risa
 {
     "name": "Risa",
@@ -10352,6 +10639,119 @@
     ]
 }
 
+// Salt Vampire
+{
+    "name": "Salt Vampire",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Vampire Shapeshifter",
+    "oracleText": "Lifelink\nWhen this creature enters, look at target opponent's hand. You may choose a nonland card from it. If you do, that player exiles that card, then draws a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Salt Vampire:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LookAtTargetHand",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered1",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "nonland",
+                            "storeSelected": "selected2",
+                            "prompt": "You may choose a nonland card for that player to exile",
+                            "showAllCards": true,
+                            "alwaysPrompt": true
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "selected2",
+                            "ifNotEmpty": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "selected2",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Exile",
+                                            "player": {
+                                                "type": "BoundVariable",
+                                                "name": "t0"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "type": "DrawCards",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, look at target opponent's hand. You may choose a nonland card from it. If you do, that player exiles that card, then draws a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "rarity": "RARE",
+        "artist": "Bastien L. Deharme",
+        "flavorText": "After the collapse of their civilization, the people of M-113 became little more than predators, but they never abandoned their need for love.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/78faba81-01a3-489f-927e-1adaa8fe4436.jpg?1784036770"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Scotty, Miracle Worker
 {
     "name": "Scotty, Miracle Worker",
@@ -10402,6 +10802,72 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Sela, Tal Shiar Paradox
+{
+    "name": "Sela, Tal Shiar Paradox",
+    "manaCost": "{3}{B}",
+    "typeLine": "Legendary Creature — Romulan Human Rogue",
+    "oracleText": "Whenever Sela attacks, exile up to one target card from a graveyard.\nWhenever one or more cards leave your graveyard, create a tapped 2/2 black Romulan creature token.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sela, Tal Shiar Paradox:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": {},
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever Sela attacks, exile up to one target card from a graveyard."
+            },
+            {
+                "id": "Sela, Tal Shiar Paradox:2",
+                "trigger": "CardsLeftYourGraveyardEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Romulan"
+                    ],
+                    "tapped": true
+                },
+                "descriptionOverride": "Whenever one or more cards leave your graveyard, create a tapped 2/2 black Romulan creature token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "128",
+        "rarity": "RARE",
+        "artist": "Tony Foti",
+        "flavorText": "Her mother shouldn't have existed, and young Sela ensured she did not.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/b/cb680a44-3395-4c96-a73d-af1e0b7b8a9f.jpg?1793101376"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -11047,6 +11513,162 @@
     ]
 }
 
+// Storied Veteran
+{
+    "name": "Storied Veteran",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Klingon Advisor",
+    "oracleText": "This creature can't block.\nYou may cast this card from your graveyard. If you do, it enters with a finality counter on it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            "CantBlock",
+            {
+                "type": "MayCastSelfFromZones",
+                "zones": [
+                    "Graveyard"
+                ]
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "FINALITY",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "WasCastFromZone",
+                    "zone": "Graveyard"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "129",
+        "rarity": "UNCOMMON",
+        "artist": "Ana Teresa Rivera",
+        "flavorText": "\"There we were at the K-7 cantina. Kirk's savage crew breathing down our necks. Their tribbles with fangs as sharp as a *mek'leth*.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3b80995c-8e9a-4a9c-8854-59439a58166f.jpg?1792753937"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Stray from History
+{
+    "name": "Stray from History",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Rewrite the Past — Return one or two target creature and/or Spacecraft cards from your graveyard to your hand.\n• Repair the Timeline — Target opponent reveals their hand. You choose a nonland card from it. Exile that card.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": "IterationSpace.Targets",
+                        "body": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
+                            "destination": "Hand"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "count": 2,
+                            "minCount": 1,
+                            "filter": {
+                                "baseFilter": "creature|Spacecraft own:you",
+                                "zone": "Graveyard"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Rewrite the Past — Return one or two target creature and/or Spacecraft cards from your graveyard to your hand"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "RevealHand",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                }
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t1"
+                                    }
+                                },
+                                "storeAs": "gathered1"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered1",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "filter": "nonland",
+                                "storeSelected": "selected2",
+                                "prompt": "Choose a nonland card to exile",
+                                "showAllCards": true,
+                                "alwaysPrompt": true
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected2",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t1"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetOpponent",
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Repair the Timeline — Target opponent reveals their hand. You choose a nonland card from it. Exile that card"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "130",
+        "artist": "Joel Chaim Holtzman",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aac57a7f-a28b-486a-8d85-c620702a9cc0.jpg?1793359454"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Subcommander T'Pol
 {
     "name": "Subcommander T'Pol",
@@ -11562,6 +12184,67 @@
     ]
 }
 
+// Tal Shiar Operative
+{
+    "name": "Tal Shiar Operative",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Romulan Officer Spy",
+    "oracleText": "Whenever this creature attacks, choose one —\n• Target creature you control gains deathtouch until end of turn.\n• Surveil 1. (Look at the top card of your library. You may put it into your graveyard.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tal Shiar Operative:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "GrantKeyword",
+                                "keyword": "DEATHTOUCH",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Target creature you control gains deathtouch until end of turn."
+                        },
+                        {
+                            "effect": {
+                                "type": "Surveil",
+                                "count": 1
+                            },
+                            "description": "Surveil 1."
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "artist": "Irina Nordsol",
+        "flavorText": "\"What gave me away? My emotions or the disruptor?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/ebe9c7bd-5528-41fd-9c51-2306086c7887.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Tea, Earl Grey, Hot
 {
     "name": "Tea, Earl Grey, Hot",
@@ -11648,6 +12331,137 @@
     }
 }
 
+// Tell Me What You See
+{
+    "name": "Tell Me What You See",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, target opponent may have you draw a card. If they don't, they lose 4 life and you surveil 1.\nWhenever you face a dilemma, you may return this enchantment to its owner's hand. (You face a dilemma as you choose one or more modes for a spell or ability.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tell Me What You See:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Let your opponent draw a card? If you don't, you lose 4 life and they surveil 1."
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "otherwise": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "Surveil",
+                                "count": 1
+                            }
+                        ]
+                    },
+                    "decisionMaker": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "descriptionOverride": "Target opponent may have you draw a card. If they don't, they lose 4 life and you surveil 1."
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this enchantment enters, target opponent may have you draw a card. If they don't, they lose 4 life and you surveil 1."
+            },
+            {
+                "id": "Tell Me What You See:2",
+                "trigger": "DilemmaFacedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Hand"
+                    }
+                },
+                "descriptionOverride": "Whenever you face a dilemma, you may return this enchantment to its owner's hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "rarity": "UNCOMMON",
+        "artist": "Douglas Shuler",
+        "flavorText": "\"I don't understand how you can be so mistaken.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e339c8fb-26d2-4514-aeb7-014274df0c9c.jpg?1793013584"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Tenacious Drone
+{
+    "name": "Tenacious Drone",
+    "manaCost": "{1}{B}",
+    "typeLine": "Artifact Creature — Borg",
+    "oracleText": "When this creature dies, create a 1/1 colorless Borg artifact creature token.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tenacious Drone:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Borg"
+                    ],
+                    "artifactToken": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "artist": "Anton Solovianchyk",
+        "flavorText": "\"They regenerate and keep coming. Eventually you will weaken. Your reserves will be gone. They are relentless.\"\n—Q",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/206ae042-09af-4fc1-8441-69cecdd087de.jpg?1793359485"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Test of Conviction
 {
     "name": "Test of Conviction",
@@ -11720,6 +12534,86 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Test of Loyalty
+{
+    "name": "Test of Loyalty",
+    "manaCost": "{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Plain, Simple Garak — Exile target card from a graveyard. Draw a card.\n• Of the Obsidian Order — Return target creature card from your graveyard to your hand.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Exile"
+                            },
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {},
+                                "zone": "Graveyard"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Plain, Simple Garak — Exile target card from a graveyard. Draw a card"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "destination": "Hand",
+                        "fromZone": "Graveyard"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature own:you",
+                                "zone": "Graveyard"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Of the Obsidian Order — Return target creature card from your graveyard to your hand"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "134",
+        "rarity": "UNCOMMON",
+        "artist": "Bartek Fedyczak",
+        "flavorText": "\"Lately I've noticed that everyone seems to trust me. It's quite unnerving.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/2/722eeb21-be3c-4ae6-abd2-c3281d53c035.jpg?1792753889"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -12002,6 +12896,103 @@
     },
     "colorIdentityOverride": [
         "WHITE",
+        "BLACK"
+    ]
+}
+
+// The Destruction of Praxis
+{
+    "name": "The Destruction of Praxis",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Strange new worlds — All creatures get -X/-X until end of turn, where X is the number of differently named lands you control. If X is 6 or more, create two 2/1 red Klingon Warrior creature tokens with haste.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Multiply",
+                            "amount": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "land",
+                                "aggregation": "DISTINCT_NAMES"
+                            },
+                            "multiplier": -1
+                        },
+                        "toughnessModifier": {
+                            "type": "Multiply",
+                            "amount": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "land",
+                                "aggregation": "DISTINCT_NAMES"
+                            },
+                            "multiplier": -1
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "land",
+                                "aggregation": "DISTINCT_NAMES"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 6
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "CreateToken",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "power": 2,
+                        "toughness": 1,
+                        "colors": [
+                            "RED"
+                        ],
+                        "creatureTypes": [
+                            "Klingon",
+                            "Warrior"
+                        ],
+                        "keywords": [
+                            "HASTE"
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "103",
+        "rarity": "RARE",
+        "artist": "Pace Wilder",
+        "flavorText": "Centuries of unregulated dilithium mining left the only moon of Qo'noS a ticking time bomb.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3d33ac2a-73a9-4804-bf9f-c8cf4eea1c76.jpg?1793187997"
+    },
+    "colorIdentityOverride": [
         "BLACK"
     ]
 }
@@ -13216,6 +14207,165 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// U.S.S. Reliant, From Hell's Heart
+{
+    "name": "U.S.S. Reliant, From Hell's Heart",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Legendary Artifact — Spacecraft",
+    "oracleText": "Whenever U.S.S. Reliant enters or deals combat damage to a player, return target creature card with mana value 4 or less from your graveyard to the battlefield with a finality counter on it.\nStation (Tap another creature you control: Put charge counters equal to its power on this Spacecraft. Station only as a sorcery. It's an artifact creature at 10+.)\n10+ | Flying",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "U.S.S. Reliant, From Hell's Heart:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard",
+                    "entryCounters": [
+                        {
+                            "counterType": "FINALITY"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature mv<=4 own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "U.S.S. Reliant, From Hell's Heart:2",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard",
+                    "entryCounters": [
+                        {
+                            "counterType": "FINALITY"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature mv<=4 own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t1"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "U.S.S. Reliant, From Hell's Heart:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomTapPermanents",
+                        "filter": "creature",
+                        "excludeSelf": true
+                    }
+                },
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "CHARGE",
+                    "amount": "StationCharge",
+                    "target": "Self"
+                },
+                "timing": "SorcerySpeed"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantCardType",
+                    "cardType": "CREATURE"
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "CHARGE"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 10
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "CHARGE"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 10
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "rarity": "RARE",
+        "artist": "Dofresh",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a4c6fc55-f585-4529-b549-31d4d838c9af.jpg?1792551037"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
