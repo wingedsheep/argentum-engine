@@ -1102,6 +1102,7 @@ Ayula, Queen Among Bears	polarity: FightEffect
 Azami, Lady of Scrolls
 Aziza, Mage Tower Captain	intent: CopyTargetSpellEffect
 Azog, Moria's Ruin
+Azor, the Lawbringer	intent: CantCastSpellsEffect
 Azorius Chancery
 Azorius Charm	polarity: MoveToZoneEffect
 Azorius Guildgate
@@ -15712,6 +15713,7 @@ Sphinx of the Guildpact
 Sphinx of the Second Sun	intent: AddBeginningPhaseEffect
 Sphinx of the Steel Wind
 Sphinx's Approach
+Sphinx's Decree	intent: CantCastSpellsEffect
 Sphinx's Insight
 Sphinx's Revelation
 Spicy Oatmeal Pizza
@@ -17140,6 +17142,7 @@ The Horus Heresy
 The Hunger Tide Rises
 The Hunter Maze
 The Huntsman's Redemption
+The Immortal Sun
 The Infamous Cruelclaw	intent: GatherUntilMatchEffect; intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithAdditionalCostEffect; intent: GrantPlayWithoutPayingCostEffect; intent: Pipeline(?→exile)
 The Inner Light
 The Irencrag	intent: BecomeArtifactEffect

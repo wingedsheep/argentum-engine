@@ -202,6 +202,7 @@ object AiCardRating {
         IntentTag.TUTOR to "Tutor",
         IntentTag.CARD_SELECTION to "Card selection",
         IntentTag.RAMP to "Ramp",
+        IntentTag.COST_REDUCER to "Cost reducer",
         IntentTag.ANTHEM to "Anthem",
         IntentTag.PUMP to "Pump",
         IntentTag.COMBAT_TRICK to "Combat trick",

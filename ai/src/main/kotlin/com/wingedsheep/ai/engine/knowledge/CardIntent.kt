@@ -293,6 +293,19 @@ enum class IntentTag {
     /** Produces mana, or puts extra lands onto the battlefield. */
     RAMP,
 
+    /**
+     * Makes its controller's own spells or activated abilities cheaper — "Equipment spells you cast
+     * cost {1} less" (Bladegraft Aspirant), "activated abilities you activate cost {1} less"
+     * (Training Grounds, Silver-Fur Master).
+     *
+     * Tagged apart from [RAMP] because a discount is not a mana source: it pays for nothing on its
+     * own, can't be tapped for a colour, and only matters for the spells and abilities it names —
+     * folding it into [RAMP] would price it as a mana rock in [CardIntent.staticPriorValue] and hand
+     * it the ramp slot of a deck's mana curve. Only a discount on the controller's own side reads
+     * this way; a symmetric one (Helm of Awakening) helps the opponent as much and earns no tag.
+     */
+    COST_REDUCER,
+
     /** A continuous P/T bonus to a group of creatures — a lord or an anthem. */
     ANTHEM,
 

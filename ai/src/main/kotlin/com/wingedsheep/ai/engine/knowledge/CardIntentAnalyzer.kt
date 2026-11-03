@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.scripting.ActivatedAbilityReach
 import com.wingedsheep.sdk.scripting.CostModification
 import com.wingedsheep.sdk.scripting.IncreaseActivatedAbilityCost
 import com.wingedsheep.sdk.scripting.ModifySpellCost
+import com.wingedsheep.sdk.scripting.ReduceActivatedAbilityCost
 import com.wingedsheep.sdk.scripting.SpellCostTarget
 import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantBlock
@@ -1132,10 +1133,19 @@ object CardIntentAnalyzer {
         // "Spells your opponents cast that target a Merfolk you control cost {2} more" and its
         // activated-ability twin are a ward-like tax on answering our permanents (Kopala, Warden
         // of Waves; Sphinx of New Prahv) — Ward is a [PROTECTIVE_KEYWORDS] member, so the same tag.
-        is ModifySpellCost ->
-            if (static.target is SpellCostTarget.OpponentsCastTargeting && taxes(static.modification)) {
+        is ModifySpellCost -> when {
+            static.target is SpellCostTarget.OpponentsCastTargeting && taxes(static.modification) ->
                 setOf(IntentTag.PROTECTION)
-            } else emptySet()
+            // "Equipment spells you cast cost {1} less": a discount on our own spells only.
+            static.target is SpellCostTarget.YouCast && !taxes(static.modification) ->
+                setOf(IntentTag.COST_REDUCER)
+            else -> emptySet()
+        }
+        // "Activated abilities of Equipment you control that target this creature cost {1} less",
+        // "Abilities you activate cost {1} less": every printed reduction discounts the
+        // controller's own permanents or activations, so only an opponents' reach is excluded.
+        is ReduceActivatedAbilityCost ->
+            if (static.reach != ActivatedAbilityReach.ACTIVATED_BY_OPPONENTS) setOf(IntentTag.COST_REDUCER) else emptySet()
         is IncreaseActivatedAbilityCost ->
             if (static.targeting != null && static.reach == ActivatedAbilityReach.ACTIVATED_BY_OPPONENTS) {
                 setOf(IntentTag.PROTECTION)
