@@ -121,7 +121,7 @@ internal class EffectSorter {
     private fun changesKeywords(modification: Modification, keywords: Set<Keyword>): Boolean = when (modification) {
         is Modification.GrantKeyword -> keywords.any { modification.keyword.isKeyword(it) }
         is Modification.RemoveKeyword -> keywords.any { modification.keyword.isKeyword(it) }
-        Modification.RemoveAllAbilities,
+        is Modification.RemoveAllAbilities,
         Modification.GrantLandwalkFromChosen,
         is Modification.GrantKeywordsOfCards -> true
         else -> false

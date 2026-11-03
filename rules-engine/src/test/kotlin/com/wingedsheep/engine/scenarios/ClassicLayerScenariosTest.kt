@@ -84,7 +84,7 @@ class ClassicLayerScenariosTest : FunSpec({
     // Uses direct ContinuousEffectData injection since LoseAllAbilities only supports GroupFilter scope.
     val HumilityEffects = listOf(
         ContinuousEffectData(
-            modification = Modification.RemoveAllAbilities,
+            modification = Modification.RemoveAllAbilities(),
             affectsFilter = AffectsFilter.AllCreatures
         ),
         ContinuousEffectData(

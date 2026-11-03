@@ -422,14 +422,22 @@ data class AddLandTypeByCounter(
  * This is a Layer 6 (ABILITY) continuous effect that clears all keywords and
  * suppresses activated, triggered, and static abilities.
  *
+ * [exceptManaAbilities] is "lose all abilities except mana abilities" (Blood Sun): keywords,
+ * statics, triggered and non-mana activated abilities go, but each affected object keeps its
+ * mana abilities (CR 605.1a — abilities that produce mana, not ones that cost it). A full
+ * removal applied alongside it still takes the mana abilities too.
+ *
  * @property filter What this ability applies to (typically AttachedCreature for auras)
+ * @property exceptManaAbilities Whether the affected objects keep their mana abilities
  */
 @SerialName("LoseAllAbilities")
 @Serializable
 data class LoseAllAbilities(
-    val filter: GroupFilter = GroupFilter.attachedCreature()
+    val filter: GroupFilter = GroupFilter.attachedCreature(),
+    val exceptManaAbilities: Boolean = false
 ) : StaticAbility {
-    override val description: String = "loses all abilities"
+    override val description: String =
+        if (exceptManaAbilities) "loses all abilities except mana abilities" else "loses all abilities"
 }
 
 /**

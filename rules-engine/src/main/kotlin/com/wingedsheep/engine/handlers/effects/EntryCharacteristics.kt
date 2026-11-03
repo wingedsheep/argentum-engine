@@ -4,6 +4,8 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.copy.EffectCopyEntry
 import com.wingedsheep.engine.handlers.effects.copy.EntryCopyChoice
 import com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy
+import com.wingedsheep.engine.mechanics.layers.ContinuousEffectSourceComponent
+import com.wingedsheep.engine.mechanics.layers.Modification
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
@@ -75,5 +77,28 @@ object EntryCharacteristics {
             scratch = com.wingedsheep.engine.handlers.effects.zones.CharacteristicsEntry.apply(scratch, entityId, controller, it)
         }
         return scratch.projectedState
+    }
+
+    /**
+     * Whether [entityId] would have lost all its abilities as it exists on the battlefield — so its
+     * own "enters tapped" and other entry replacements never apply (CR 614.12; Blood Sun's and Blood
+     * Moon's rulings). Only a battlefield static that removes abilities can do that to an object
+     * that isn't there yet (a floating effect's affected set is locked before it arrives), so the
+     * scratch projection is built only when one exists.
+     */
+    fun wouldLoseAllAbilities(
+        state: GameState,
+        entityId: EntityId,
+        controllerId: EntityId?,
+        cardRegistry: CardRegistry,
+        predicateEvaluator: PredicateEvaluator,
+    ): Boolean {
+        val anyRemover = state.getBattlefield().any { id ->
+            state.getEntity(id)?.get<ContinuousEffectSourceComponent>()?.effects
+                ?.any { it.modification is Modification.RemoveAllAbilities } == true
+        }
+        if (!anyRemover) return false
+        return projectedAsEntering(state, entityId, controllerId, null, cardRegistry, predicateEvaluator)
+            ?.hasLostAllAbilities(entityId) == true
     }
 }

@@ -432,6 +432,10 @@ class PlayLandHandler(
         val cardComponent = newState.getEntity(action.cardId)?.get<CardComponent>()
             ?: printedCardComponent
         val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId)
+        // The land's own entry replacements, read off it as it exists on the battlefield (CR
+        // 614.12): under Blood Sun or Blood Moon it has already lost "enters tapped", "enters with
+        // counters", "as this enters, choose" and "enters as a copy", so none of them apply.
+        val ownEntryDef = cardDef?.takeUnless { newState.projectedState.hasLostAllAbilities(action.cardId) }
 
         // "This land enters with two charge counters on it" (the vivid lands) and the global
         // enters-with replacements other permanents carry (Doubling Season's extra counters,
@@ -456,8 +460,8 @@ class PlayLandHandler(
         val grantedReadAhead = com.wingedsheep.engine.mechanics.ReadAheadSynthesis
             .grantedChoice(newState, action.cardId, cardDef, cardRegistry, predicateEvaluator)
         val entersWithEvents: List<com.wingedsheep.engine.core.GameEvent> = landRiderEvents + (if (cardDef != null) {
-            val (afterOwn, ownEvents) = com.wingedsheep.engine.handlers.effects.EntersWithReplacements
-                .applyFromDefinition(newState, action.cardId, cardDef, action.playerId, predicateEvaluator = predicateEvaluator, preEntryZone = sourceZoneKey)
+            val (afterOwn, ownEvents) = if (ownEntryDef == null) newState to emptyList<com.wingedsheep.engine.core.GameEvent>() else com.wingedsheep.engine.handlers.effects.EntersWithReplacements
+                .applyFromDefinition(newState, action.cardId, ownEntryDef, action.playerId, predicateEvaluator = predicateEvaluator, preEntryZone = sourceZoneKey)
             val (afterGlobal, globalEvents) = com.wingedsheep.engine.handlers.effects.EntersWithReplacements
                 .applyGlobal(afterOwn, action.cardId, action.playerId, cardRegistry, predicateEvaluator = predicateEvaluator, preEntryZone = sourceZoneKey)
             newState = afterGlobal
@@ -491,9 +495,9 @@ class PlayLandHandler(
         // synchronously with entry. That rider consults EnterUntappedReplacements itself, so
         // returning early here doesn't skip "lands enter untapped". May pause for player input
         // via continuations.
-        if (cardDef != null) {
+        if (ownEntryDef != null) {
             val onEnter = com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements
-                .onEnterRunEffectFor(cardDef)
+                .onEnterRunEffectFor(ownEntryDef)
             if (onEnter != null) {
                 // Use up the land drop and emit the entry event before running the
                 // effect — by this point the land is fully on the battlefield and
@@ -549,8 +553,8 @@ class PlayLandHandler(
         // characteristics onto this land, adds the extra subtype, taps it if the rider says so, and
         // fires the entry's ETB triggers. Only engaged when a candidate exists — otherwise the land
         // just enters as its printed self via the normal finish below.
-        if (cardDef != null) {
-            val entersAsCopy = cardDef.script.replacementEffects
+        if (ownEntryDef != null) {
+            val entersAsCopy = ownEntryDef.script.replacementEffects
                 .filterIsInstance<EntersAsCopy>()
                 .firstOrNull { it.copyOf == null }
             if (entersAsCopy != null &&
@@ -590,8 +594,8 @@ class PlayLandHandler(
         // EntersUntapped effect (The Wandering Minstrel) applies — the land falls through to the
         // normal untapped finish, so a shock land's "pay life or enter tapped" prompt is elided
         // (paying is moot when the land enters untapped regardless).
-        if (cardDef != null && !landEntersUntapped) {
-            val entersTapped = cardDef.script.replacementEffects.filterIsInstance<EntersTapped>().firstOrNull()
+        if (ownEntryDef != null && !landEntersUntapped) {
+            val entersTapped = ownEntryDef.script.replacementEffects.filterIsInstance<EntersTapped>().firstOrNull()
             if (entersTapped != null) {
                 // Permission already forced tapped — skip the shock-land "pay life" prompt
                 // and any conditional script logic; the land is already on the battlefield tapped.
@@ -680,7 +684,7 @@ class PlayLandHandler(
         // Process first choice in priority order: COLOR → CREATURE_TYPE
         // Continuations handle chaining to subsequent choices.
         if (cardDef != null) {
-            val printedChoices = cardDef.script.replacementEffects.filterIsInstance<EntersWithChoice>()
+            val printedChoices = ownEntryDef?.script?.replacementEffects.orEmpty().filterIsInstance<EntersWithChoice>()
             // Granted Riot (a land that is a Spider with riot granted — vanishingly rare, but wired
             // for consistency with the token/spell entry seams; one choice per grant, CR 702.136b).
             val grantedRiotCount = com.wingedsheep.engine.mechanics.RiotSynthesis

@@ -178,7 +178,7 @@ object LandManaColorInspector {
         // mana ability too. Only granted abilities (handled below) survive.
         // A face-down permanent has none of its card's abilities either (CR 708.2) — and it is a
         // land only if an effect made it one.
-        val ownAbilitiesSuppressed = projected.hasLostAllAbilities(entityId) || projected.isFaceDown(entityId)
+        val ownAbilitiesSuppressed = projected.hasLostManaAbilities(entityId) || projected.isFaceDown(entityId)
 
         if (!ownAbilitiesSuppressed) {
             // Intrinsic abilities derived from projected basic-land subtypes (Plains/Island/...).

@@ -113,6 +113,12 @@ data class ProjectedValues(
      * which it survives, from a later one, which strips it (CR 613.7).
      */
     val lostAllAbilitiesTimestamp: Long? = null,
+    /**
+     * True when every "loses all abilities" effect on this object spared its mana abilities
+     * (Blood Sun: "all lands lose all abilities except mana abilities"). Only meaningful with
+     * [lostAllAbilities]; readers of mana abilities ask [ProjectedState.hasLostManaAbilities].
+     */
+    val keepsManaAbilities: Boolean = false,
     /** See [Modification.GrantExileOnDeathAbility]. */
     val hasExileOnDeathAbility: Boolean = false,
     /**
@@ -467,6 +473,14 @@ class ProjectedState(
         projectedValues[entityId]?.lostAllAbilities == true
 
     /**
+     * Whether this object's own mana abilities (CR 605.1a) are gone: it lost all abilities and no
+     * "except mana abilities" clause spared them. Every reader of a permanent's mana abilities asks
+     * this rather than [hasLostAllAbilities], which also covers Blood Sun's lands.
+     */
+    fun hasLostManaAbilities(entityId: EntityId): Boolean =
+        projectedValues[entityId]?.let { it.lostAllAbilities && !it.keepsManaAbilities } == true
+
+    /**
      * Whether an ability-adding effect with layer-6 [timestamp] is undone by a "loses all
      * abilities" effect on [entityId] — one with a later timestamp (CR 613.7). See
      * [ProjectedValues.lostAllAbilitiesTimestamp].
@@ -537,6 +551,7 @@ internal fun buildIntermediateProjectedState(
             manaAbilityLifeTax = v.manaAbilityLifeTax,
             lostAllAbilities = v.lostAllAbilities,
             lostAllAbilitiesTimestamp = v.lostAllAbilitiesTimestamp,
+            keepsManaAbilities = v.keepsManaAbilities,
             hasExileOnDeathAbility = v.hasExileOnDeathAbility,
             name = v.name
         )

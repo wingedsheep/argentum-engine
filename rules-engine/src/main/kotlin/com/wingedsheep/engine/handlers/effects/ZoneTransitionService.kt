@@ -1954,6 +1954,11 @@ class ZoneTransitionService(
             .filterIsInstance<EntersTapped>()
             .firstOrNull()
             ?: return false
+        // A land entering under Blood Sun (or Blood Moon) has already lost "enters tapped" as it
+        // would exist on the battlefield, so the replacement never applies (CR 614.12).
+        if (EntryCharacteristics.wouldLoseAllAbilities(state, entityId, controllerId, cardRegistry, predicateEvaluator)) {
+            return false
+        }
         val unlessCondition = entersTapped.unlessCondition ?: return true
         return !conditionEvaluator.evaluate(
             state,

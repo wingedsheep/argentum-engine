@@ -371,6 +371,51 @@
     ]
 }
 
+// Blood Sun
+{
+    "name": "Blood Sun",
+    "manaCost": "{2}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, draw a card.\nAll lands lose all abilities except mana abilities.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Blood Sun:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "LoseAllAbilities",
+                "filter": {
+                    "baseFilter": "land"
+                },
+                "exceptManaAbilities": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "rarity": "RARE",
+        "artist": "Emrah Elmasli",
+        "flavorText": "As the struggle raged for control of the Immortal Sun, the world grew dark under a blood-red sky.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/875832f4-e541-4c87-8479-731e0eab2cc6.jpg?1783935303"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Bombard
 {
     "name": "Bombard",

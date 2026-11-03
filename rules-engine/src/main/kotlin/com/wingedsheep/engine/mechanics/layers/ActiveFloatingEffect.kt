@@ -1020,5 +1020,5 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.DoubleDamageToPlayer -> Modification.NoOp
     // OverrideImage is display-only - it changes no characteristic, read directly by ClientStateTransformer
     is SerializableModification.OverrideImage -> Modification.NoOp
-    is SerializableModification.RemoveAllAbilities -> Modification.RemoveAllAbilities
+    is SerializableModification.RemoveAllAbilities -> Modification.RemoveAllAbilities()
 }

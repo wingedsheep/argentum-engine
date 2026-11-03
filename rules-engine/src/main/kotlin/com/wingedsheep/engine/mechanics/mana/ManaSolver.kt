@@ -1631,7 +1631,7 @@ class ManaSolver private constructor(
             val cardDef = cardRegistry.getCard(card.cardDefinitionId)
             // Suppress the card's own activated abilities when projection has stripped them
             // (e.g., Noggle the Mind / Humility / Deep Freeze). Granted abilities are kept.
-            val allAbilities = if (cardDef == null || projected.hasLostAllAbilities(entityId)) emptyList()
+            val allAbilities = if (cardDef == null || projected.hasLostManaAbilities(entityId)) emptyList()
                 else cardDef.script.activatedAbilities
 
             // Include mana abilities granted by static effects from other permanents
@@ -3352,7 +3352,7 @@ class ManaSolver private constructor(
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
 
             // Skip own abilities that have been stripped by a continuous effect (Humility, Noggle the Mind, etc.)
-            if (projected.hasLostAllAbilities(entityId)) continue
+            if (projected.hasLostManaAbilities(entityId)) continue
 
             for (ability in cardDef.script.activatedAbilities) {
                 if (!ability.isManaAbility || ability.activateFromZone != Zone.BATTLEFIELD) continue
@@ -3449,7 +3449,7 @@ class ManaSolver private constructor(
             if (container.has<FaceDownComponent>()) continue
             val card = container.get<CardComponent>() ?: continue
 
-            val ownAbilities = if (projected.hasLostAllAbilities(entityId)) emptyList()
+            val ownAbilities = if (projected.hasLostManaAbilities(entityId)) emptyList()
                 else cardRegistry.getCard(card.cardDefinitionId)?.script?.activatedAbilities.orEmpty()
             val abilities = ownAbilities + getStaticGrantedManaAbilities(entityId, state, manaStatics) +
                 runtimeGrants[entityId].orEmpty()
@@ -3668,7 +3668,7 @@ class ManaSolver private constructor(
             val card = container.get<CardComponent>() ?: continue
             // Own abilities stripped by Humility / similar — skip the printed mana ability; an
             // ability a resolved effect granted still counts.
-            val printed = if (projected.hasLostAllAbilities(entityId)) emptyList()
+            val printed = if (projected.hasLostManaAbilities(entityId)) emptyList()
                 else cardRegistry.getCard(card.cardDefinitionId)?.script?.activatedAbilities.orEmpty()
             val abilities = printed + runtimeGrants[entityId].orEmpty()
             if (abilities.isEmpty()) continue
@@ -3792,7 +3792,7 @@ class ManaSolver private constructor(
             if (container.has<TappedComponent>()) continue
             val card = container.get<CardComponent>() ?: continue
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
-            if (projected.hasLostAllAbilities(entityId)) continue
+            if (projected.hasLostManaAbilities(entityId)) continue
 
             val isCreature = projected.isCreature(entityId)
             if (isCreature &&
