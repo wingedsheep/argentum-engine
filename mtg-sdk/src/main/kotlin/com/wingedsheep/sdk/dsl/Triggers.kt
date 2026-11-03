@@ -1000,14 +1000,12 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
         byOpponent: Boolean = false,
         spellsOnly: Boolean = false,
         abilitiesOnly: Boolean = false,
-        firstTimeEachTurn: Boolean = false,
     ): TriggerSpec {
         only("becomesTarget", Player.You, Player.EachOpponent, Player.Each)
         return spec(
             BecomesTargetEvent(
                 byYou = byYou,
                 byOpponent = byOpponent,
-                firstTimeEachTurn = firstTimeEachTurn,
                 spellsOnly = spellsOnly,
                 playerTargets = player,
                 abilitiesOnly = abilitiesOnly,

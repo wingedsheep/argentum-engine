@@ -2362,7 +2362,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * [includeObjectTargets] `false` drops the object half entirely, leaving a **player-only**
      * trigger — "whenever **you** become the target of a spell or ability an opponent controls"
      * (Amulet of Safekeeping), built by `Triggers.you.becomesTarget(...)`. It needs [playerTargets],
-     * and [targetFilter] / [includeSpellTargets] / [targetsOnlyIt] have nothing left to narrow.
+     * and [targetFilter] / [includeSpellTargets] / [targetsOnlyIt] / [batch] have nothing left to narrow.
      *
      * Note that [spellsOnly] / [abilitiesOnly] / [sourceFilter] narrow *what did the targeting*,
      * while [includeSpellTargets] / [playerTargets] widen *what got targeted*; the two axes
@@ -2389,8 +2389,8 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
             require(includeObjectTargets || playerTargets != null) {
                 "BecomesTargetEvent with includeObjectTargets = false needs playerTargets — nothing would match"
             }
-            require(includeObjectTargets || (targetFilter == GameObjectFilter.Any && !includeSpellTargets && !targetsOnlyIt)) {
-                "A player-only BecomesTargetEvent has no object half for targetFilter/includeSpellTargets/targetsOnlyIt to narrow"
+            require(includeObjectTargets || (targetFilter == GameObjectFilter.Any && !includeSpellTargets && !targetsOnlyIt && !batch)) {
+                "A player-only BecomesTargetEvent has no object half for targetFilter/includeSpellTargets/targetsOnlyIt/batch to narrow"
             }
             require(!(spellsOnly && (abilitiesOnly || backupAbilitiesOnly))) {
                 "BecomesTargetEvent cannot be both spellsOnly and abilitiesOnly — nothing would match"
