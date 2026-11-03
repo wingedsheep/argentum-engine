@@ -113,6 +113,76 @@
     ]
 }
 
+// A Good Day to Die
+{
+    "name": "A Good Day to Die",
+    "manaCost": "{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +2/+0 until end of turn. When that creature dies this turn, you draw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "trigger": {
+                        "event": {
+                            "type": "ZoneChangeEvent",
+                            "from": "Battlefield",
+                            "to": "Graveyard"
+                        }
+                    },
+                    "watchedTarget": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "fireOnce": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "artist": "Monztre",
+        "flavorText": "There are no old warriors.\n—Klingon proverb",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e2b350b2-0eda-4c2b-b9d6-b58ab4848545.jpg?1785981483"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // All Good Things...
 {
     "name": "All Good Things...",
@@ -618,6 +688,136 @@
     ]
 }
 
+// Armus, Skin of Evil
+{
+    "name": "Armus, Skin of Evil",
+    "manaCost": "{5}{B}{B}",
+    "typeLine": "Legendary Creature — Ooze Horror",
+    "oracleText": "Menace\nAt the beginning of your end step, target opponent discards two cards.\n{2}{B}, Discard this card: Target creature gets -4/-4 until end of turn.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Armus, Skin of Evil:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "chooser": "TargetPlayer",
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 2 cards to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "At the beginning of your end step, target opponent discards two cards."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Armus, Skin of Evil:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{B}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -4
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "activateFromZone": "Hand",
+                "descriptionOverride": "{2}{B}, Discard this card: Target creature gets -4/-4 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "91",
+        "rarity": "RARE",
+        "artist": "Camille Alquier",
+        "flavorText": "The Vagrans cast off their evil, and it coalesced into a singular will.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c3ba1e0d-5e3d-4fa7-9b58-5b90944b43c5.jpg?1793013559"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Assault Drone
 {
     "name": "Assault Drone",
@@ -691,6 +891,57 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Automated Warfare System
+{
+    "name": "Automated Warfare System",
+    "manaCost": "{2}{B}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "Flying\nWhenever this creature attacks, you may sacrifice another creature or artifact. If you do, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Automated Warfare System:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "Sacrifice",
+                            "filter": "creature|artifact",
+                            "excludeSource": true
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "descriptionOverride": "Whenever this creature attacks, you may sacrifice another creature or artifact. If you do, draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "artist": "Pierre Raveneau",
+        "flavorText": "Peace through superior firepower.\n—Minosian motto, pre-extinction",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3deae89b-b207-487b-9e82-1fa7fcd7854b.jpg?1785981442"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -883,6 +1134,101 @@
         "artist": "John Di Giovanni",
         "flavorText": "\"I will rest when my blade knows vengeance.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/c/5/c567253e-a2ee-45de-b3c6-3aeafbf8237b.jpg?1785981454"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Blastoneuron
+{
+    "name": "Blastoneuron",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Jellyfish Leech",
+    "oracleText": "Flying\nWhen this creature enters, exile target creature card with mana value 3 or less from your graveyard. Create a token that's a copy of it. That token gains haste. Sacrifice it at the beginning of the next end step.\nWhenever one or more cards leave your graveyard, each opponent loses 1 life and you gain 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Blastoneuron:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "CreateTokenCopyOfTarget",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "addedKeywords": [
+                                "HASTE"
+                            ],
+                            "sacrificeAtStep": "END"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature mv<=3 own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Blastoneuron:2",
+                "trigger": "CardsLeftYourGraveyardEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "rarity": "UNCOMMON",
+        "artist": "Bastien L. Deharme",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/1/c1855a4c-c7d1-407c-b134-4c43968cbdd3.jpg?1792753729"
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -2146,6 +2492,63 @@
     ]
 }
 
+// Collation Trimatrix
+{
+    "name": "Collation Trimatrix",
+    "manaCost": "{B}",
+    "typeLine": "Artifact Creature — Borg",
+    "oracleText": "Tap three untapped artifact creatures you control: You draw a card and lose 1 life.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Collation Trimatrix:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomTapPermanents",
+                        "count": 3,
+                        "filter": "artifact creature"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "98",
+        "rarity": "RARE",
+        "artist": "Bryan Sola",
+        "flavorText": "Every new species the Borg encounter holds potential to improve the entire Collective. Its culture is analyzed, its technology is studied, and its flesh is disassembled.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/2/92c19351-0592-4269-90f4-2475d5529400.jpg?1793359423"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Collective Drone
 {
     "name": "Collective Drone",
@@ -2902,6 +3305,84 @@
     }
 }
 
+// D'Ghor Bloodletter
+{
+    "name": "D'Ghor Bloodletter",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Klingon Assassin",
+    "oracleText": "When this creature enters, choose one —\n• All other creatures get -1/-1 until end of turn.\n• Each player sacrifices a creature of their choice.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "D'Ghor Bloodletter:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature",
+                                        "excludeSelf": true
+                                    }
+                                },
+                                "body": {
+                                    "type": "ModifyStats",
+                                    "powerModifier": {
+                                        "type": "Fixed",
+                                        "amount": -1
+                                    },
+                                    "toughnessModifier": {
+                                        "type": "Fixed",
+                                        "amount": -1
+                                    },
+                                    "target": "IterationEntity"
+                                }
+                            },
+                            "description": "All other creatures get -1/-1 until end of turn"
+                        },
+                        {
+                            "effect": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Players",
+                                    "players": "Each"
+                                },
+                                "body": {
+                                    "type": "ForceSacrifice",
+                                    "filter": "creature",
+                                    "target": "Controller"
+                                }
+                            },
+                            "description": "Each player sacrifices a creature"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "rarity": "UNCOMMON",
+        "artist": "Patricia Pria",
+        "flavorText": "\"I am eager to know if his blood runs as readily as his ship.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/5075645d-ef69-4559-953e-c3140153bd75.jpg?1792753733"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // D'Vana Tendi, Optimistic Ensign
 {
     "name": "D'Vana Tendi, Optimistic Ensign",
@@ -3248,6 +3729,80 @@
         "flavorText": "Director of Project Genesis, Dr. Carol Marcus, along with her son David, revolutionized the science of terraforming. While Kirk voyaged to discover strange new worlds, his estranged family built them from scratch.",
         "imageUri": "https://cards.scryfall.io/normal/front/5/5/55d21155-647e-4892-b349-86b8d4e6d9b9.jpg?1793188281"
     }
+}
+
+// De-evolve
+{
+    "name": "De-evolve",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets -4/-0, can't block, and is a Salamander. (It loses all other creature types.)\nThreshold — At the beginning of each upkeep, if there are seven or more cards in your graveyard, exile enchanted creature.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "De-evolve:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "EnchantedCreature",
+                    "destination": "Exile"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 7
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": -4,
+                "toughnessBonus": 0
+            },
+            {
+                "type": "CantBlock",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "TransformPermanent",
+                "setCreatureSubtypes": [
+                    "Salamander"
+                ]
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "rarity": "UNCOMMON",
+        "artist": "Néstor Ossandón Leal",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/81d798f1-07dd-46b1-b0b3-411280a2e257.jpg?1793101370"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Deanna Troi, Psychic Counsel
@@ -3780,6 +4335,82 @@
     "colorIdentityOverride": [
         "GREEN",
         "BLUE"
+    ]
+}
+
+// Eject the Warp Core
+{
+    "name": "Eject the Warp Core",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Kicker—Sacrifice an artifact or creature. (You may sacrifice an artifact or creature in addition to any other costs as you cast this spell.)\nTarget creature gets -2/-2 until end of turn. If this spell was kicked, that creature gets -6/-6 until end of turn instead.",
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "additionalCost": {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "artifact|creature"
+                }
+            }
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": "WasKicked"
+            },
+            "then": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": -6
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": -6
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            },
+            "otherwise": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": -2
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": -2
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "105",
+        "artist": "Pierre Raveneau",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/04a479be-8093-4775-a5d9-8b0e1683bf12.jpg?1785981475"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -4889,6 +5520,133 @@
     ]
 }
 
+// Fugitive Listener
+{
+    "name": "Fugitive Listener",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — El-Aurian Scout",
+    "oracleText": "When this creature enters, each opponent discards a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fugitive Listener:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "discarded"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "107",
+        "artist": "Bastien L. Deharme",
+        "flavorText": "A precious handful of El-Aurians survived the Borg invasion, scattered throughout the Galaxy with no planet to call home.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/d/bd04c738-b4e3-481e-9a68-d257524bf40e.jpg?1793361283"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Gabriel Lorca, Mirror Menace
+{
+    "name": "Gabriel Lorca, Mirror Menace",
+    "manaCost": "{4}{B}",
+    "typeLine": "Legendary Creature — Human Rogue Officer",
+    "oracleText": "Menace\nWhenever you face a dilemma, you may pay {B}. If you do, return this card from your graveyard to your hand. (You face a dilemma as you choose one or more modes for a spell or ability.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gabriel Lorca, Mirror Menace:1",
+                "trigger": "DilemmaFacedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{B}"
+                        }
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Hand",
+                        "fromZone": "Graveyard"
+                    }
+                },
+                "activeZones": [
+                    "Graveyard"
+                ],
+                "descriptionOverride": "Whenever you face a dilemma, you may pay {B}. If you do, return Gabriel Lorca, Mirror Menace from your graveyard to your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "rarity": "UNCOMMON",
+        "artist": "Kevin Glint",
+        "flavorText": "\"The Federation is a social experiment doomed to failure. Childish idealism.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a98d0f01-8e5e-4ff1-88e5-684b8f4c015c.jpg?1793100690"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Gaseous Anomaly
 {
     "name": "Gaseous Anomaly",
@@ -5018,6 +5776,96 @@
     ]
 }
 
+// Georgiou, Terran Emperor
+{
+    "name": "Georgiou, Terran Emperor",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Legendary Creature — Human Rogue Noble",
+    "oracleText": "You don't lose the game for having 0 or less life.\nAt the beginning of your end step, you lose 3 life and draw a card. Then if your life total is 0 or less, create ten 1/1 red Officer creature tokens.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Georgiou, Terran Emperor:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": "Controller"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "LifeTotal",
+                                        "player": "You"
+                                    },
+                                    "operator": "LTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "CreateToken",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 10
+                                },
+                                "power": 1,
+                                "toughness": 1,
+                                "colors": [
+                                    "RED"
+                                ],
+                                "creatureTypes": [
+                                    "Officer"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/d/6/d676cbef-8e31-4ae6-8dfe-6b84160f71e0.jpg?1793363893"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            "GrantCantLoseGameFromLife"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "110",
+        "rarity": "MYTHIC",
+        "artist": "Julia Metzger",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a68361a3-83fa-44b5-92b5-b7905866fc99.jpg?1792753873"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Ghost of Illyria
 {
     "name": "Ghost of Illyria",
@@ -5085,6 +5933,68 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Grand Nagus Zek
+{
+    "name": "Grand Nagus Zek",
+    "manaCost": "{2}{B}",
+    "typeLine": "Legendary Creature — Ferengi Noble",
+    "oracleText": "Grand Nagus Zek gets +1/+1 for each Treasure you control.\nWhenever another creature dies, create a Treasure token. This ability triggers only once each turn. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Grand Nagus Zek:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                },
+                "oncePerTurn": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "artifact Treasure ctrl:you"
+                },
+                "toughnessBonus": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "artifact Treasure ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "rarity": "RARE",
+        "artist": "Wei Guan",
+        "flavorText": "\"You always know what to expect when you do business with the Ferengi.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/47488f1e-512d-4dc6-a82d-1ead24d3276a.jpg?1793013572"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -5758,6 +6668,66 @@
     ]
 }
 
+// Hive Mind Coprocessor
+{
+    "name": "Hive Mind Coprocessor",
+    "manaCost": "{4}{B}",
+    "typeLine": "Artifact Creature — Borg",
+    "oracleText": "Artifact creatures you control have \"Whenever this creature deals combat damage to a player, you may pay 1 life. If you do, draw a card.\"",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Hive Mind Coprocessor:1",
+                    "trigger": {
+                        "type": "DealsDamageEvent",
+                        "damageType": "DamageCombat",
+                        "recipient": {
+                            "type": "RecipientPlayer",
+                            "player": "Any"
+                        }
+                    },
+                    "effect": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.MayPay",
+                            "cost": {
+                                "type": "PayLife",
+                                "amount": 1
+                            }
+                        },
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    }
+                },
+                "filter": {
+                    "baseFilter": "artifact creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "115",
+        "rarity": "UNCOMMON",
+        "artist": "Andrey Kuzinskiy",
+        "flavorText": "\"Consensus achieved. Disseminating.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a4734c59-ff41-47ac-bbb4-c8c3bf052fe6.jpg?1785981497"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Hologram Janeway
 {
     "name": "Hologram Janeway",
@@ -5989,6 +6959,164 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Impossible Choice
+{
+    "name": "Impossible Choice",
+    "manaCost": "{2}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Surgical Separation — Destroy target creature. Its controller creates two 1/1 red Officer creature tokens.\n• Remain Fused — You draw two cards and each player loses 2 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Graveyard",
+                                "byDestruction": true
+                            },
+                            {
+                                "type": "CreateToken",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "power": 1,
+                                "toughness": 1,
+                                "colors": [
+                                    "RED"
+                                ],
+                                "creatureTypes": [
+                                    "Officer"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/d/6/d676cbef-8e31-4ae6-8dfe-6b84160f71e0.jpg?1793363893",
+                                "controller": "TargetController"
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Surgical Separation — Destroy target creature. Its controller creates two 1/1 red Officer creature tokens"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "Each"
+                                }
+                            }
+                        ]
+                    },
+                    "description": "Remain Fused — You draw two cards and each player loses 2 life"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "116",
+        "rarity": "UNCOMMON",
+        "artist": "Douglas Shuler",
+        "flavorText": "Saving Neelix and Tuvok meant destroying the person they'd become.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/c/6c5a87cf-7790-4335-8497-ff793bbdcb05.jpg?1793013157"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// In the Pale Moonlight
+{
+    "name": "In the Pale Moonlight",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — Each opponent sacrifices a nontoken creature of their choice.\nII — Investigate. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")\nIII — You may sacrifice an artifact or creature. If you do, create two 2/2 black Romulan creature tokens.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": "creature nontoken",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": "Investigate"
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "Sacrifice",
+                            "filter": "artifact|creature"
+                        }
+                    },
+                    "then": {
+                        "type": "CreateToken",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "power": 2,
+                        "toughness": 2,
+                        "colors": [
+                            "BLACK"
+                        ],
+                        "creatureTypes": [
+                            "Romulan"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "rarity": "UNCOMMON",
+        "artist": "Charles Chaisson",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/47c8262c-e0c6-4c1a-b1c1-3b5fe5252a9c.jpg?1784065713"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
