@@ -12990,7 +12990,7 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   abilities and applies to every other equip ability its controller activates. Mutually exclusive with
   `onlyOwnEquip`.
 - `ReduceActivatedAbilityCost(filter, amount, manaFloor = 0, onceOnlyKind = null,
-  onlyIfTargetIsSource = false, excludeManaAbilities = false, reach = ActivatedAbilityReach.MATCHING_PERMANENTS,
+  targeting = null, excludeManaAbilities = false, reach = ActivatedAbilityReach.MATCHING_PERMANENTS,
   keyword = null, firstEachTurn = false)`
   — the activated abilities of permanents
   matching `filter` cost the dynamic `amount` of generic mana less to activate, with the mana in each
@@ -13028,14 +13028,14 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   ability's own `ActivatedAbility.keyword` marker. Silver-Fur Master: "Ninjutsu abilities you activate
   cost {1} less to activate" →
   `ReduceActivatedAbilityCost(GroupFilter(GameObjectFilter.Any), DynamicAmounts.fixed(1), reach = ActivatedAbilityReach.ACTIVATED_BY_YOU, keyword = Keyword.NINJUTSU)`.
-  `onlyIfTargetIsSource = true` narrows it to activations that **target the static's own source** —
-  Bladegraft Aspirant: "Activated abilities of Equipment you control that target this creature cost
-  {1} less to activate" →
-  `ReduceActivatedAbilityCost(GroupFilter(GameObjectFilter.Artifact.withSubtype(Subtype.EQUIPMENT).youControl()), DynamicAmounts.fixed(1), onlyIfTargetIsSource = true)`.
+  `targeting = <GroupFilter>` narrows it to activations with a chosen target the group matches, read
+  relative to the static's source (`GroupFilter.source()` is "this creature") — Bladegraft Aspirant:
+  "Activated abilities of Equipment you control that target this creature cost {1} less to activate" →
+  `ReduceActivatedAbilityCost(GroupFilter(GameObjectFilter.Artifact.withSubtype(Subtype.EQUIPMENT).youControl()), DynamicAmounts.fixed(1), targeting = GroupFilter.source())`.
   Targets are chosen before the total cost is determined (CR 601.2c → 601.2f), so the handler
   prices it against the chosen targets exactly; the enumerator, running before targets exist,
-  offers it optimistically for any *targeted* ability while the source is a creature (an untargeted
-  ability is never reduced). It covers every activated ability of a matching source, equip
+  offers it optimistically for any *targeted* ability (an untargeted ability is never reduced). The
+  same axis as `IncreaseActivatedAbilityCost.targeting`. It covers every activated ability of a matching source, equip
   included — `ReduceEquipCost.targetFilter` is the equip-only sibling keyed on the player.
   `reach` says which activations it sees. The default `MATCHING_PERMANENTS` covers abilities of
   permanents **on the battlefield** only (Training Grounds' ruling: cycling and unearth aren't
@@ -13099,6 +13099,13 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   activate unless they're mana abilities" →
   `ConditionalStaticAbility(IncreaseActivatedAbilityCost(GroupFilter(GameObjectFilter.Any), DynamicAmounts.fixed(1), excludeManaAbilities = true, reach = ActivatedAbilityReach.ACTIVATED_BY_OPPONENTS), Conditions.IsYourTurn)`
   (its spell half is `ModifySpellCost(SpellCostTarget.OpponentsCast(GameObjectFilter.Any), CostModification.IncreaseGeneric(1), gating = CostGating.OnlyIf(Conditions.IsYourTurn))`).
+  `targeting = <GroupFilter>` taxes only activations with a chosen target the group matches
+  (relative to the static's source) — Kopala, Warden of Waves: "Abilities your opponents activate that
+  target a Merfolk you control cost {2} more to activate" →
+  `IncreaseActivatedAbilityCost(GroupFilter(GameObjectFilter.Any), DynamicAmounts.fixed(2), reach = ActivatedAbilityReach.ACTIVATED_BY_OPPONENTS, targeting = GroupFilter(GameObjectFilter.Permanent.withSubtype(Subtype.MERFOLK).youControl()))`.
+  Several matching targets are taxed once (Kopala's ruling); triggered abilities are never taxed.
+  The handler prices the chosen targets exactly (CR 601.2c → 601.2f); the enumerator, before targets
+  exist, offers the ability untaxed. Its spell-side twin is `SpellCostTarget.OpponentsCastTargeting`.
 - `LoyaltyAbilitiesCostAdditional(amount = 1)` — planeswalkers' loyalty abilities this permanent's
   controller activates cost an additional [+`amount`]. Carth the Lion: "Planeswalkers' loyalty abilities
   you activate cost an additional [+1] to activate" → `LoyaltyAbilitiesCostAdditional(1)`. The surcharge is

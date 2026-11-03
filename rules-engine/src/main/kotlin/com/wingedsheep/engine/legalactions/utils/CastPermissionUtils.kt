@@ -22,6 +22,7 @@ import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.mechanics.mana.anyTargetInGroup
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.PendingOneSpellAnyManaType
@@ -944,13 +945,12 @@ class CastPermissionUtils(
      * [applyPowerUpSelfReduction], which is pip-wise rather than generic-only and so runs as its own
      * step before the statics above. CR 601.2f lets multiple cost reductions apply in any order.
      *
-     * [chosenTargetIds] are the activation's chosen targets, for a
-     * [ReduceActivatedAbilityCost.onlyIfTargetIsSource] static (Bladegraft Aspirant), which reduces
-     * only an activation targeting the static's own source. Targets are chosen before the total
-     * cost is determined (CR 601.2c, 601.2f), so at payment the list is exact. `null` means "this
-     * ability targets, but the targets aren't chosen yet" — enumeration — and offers the reduction
-     * optimistically while the static's source is a creature, as [equipReductionApplies] does. The
-     * default (no targets) never meets the restriction.
+     * [chosenTargetIds] are the activation's chosen targets, for a `targeting`-gated static
+     * (Bladegraft Aspirant's reduction, Kopala's tax), which modifies only an activation targeting
+     * a permanent its group matches. Targets are chosen before the total cost is determined
+     * (CR 601.2c, 601.2f), so at payment the list is exact. `null` means "this ability targets,
+     * but the targets aren't chosen yet" — enumeration — which offers a gated reduction
+     * optimistically and leaves a gated tax off. The default (no targets) never meets the gate.
      *
      * [activatorId] is the player activating the ability. A
      * [ReduceActivatedAbilityCost.reach] of `ACTIVATED_BY_YOU` (Zirda, the Dawnwaker — "Abilities
@@ -1090,8 +1090,8 @@ class CastPermissionUtils(
      * [abilityKeyword] (the ability's `ActivatedAbility.keyword`) is that keyword. An `excludeManaAbilities` *increase*
      * contributes nothing when [isManaAbility] is set (Suppression Field), and a `loyaltyAbilitiesOnly`
      * one unless [isLoyaltyAbility] is (Eidolon of Obstruction). An
-     * `onlyIfTargetIsSource` reduction contributes only when [chosenTargetIds] include the static's
-     * own source (see [applyActivatedAbilityCostReduction] for the `null` enumeration case).
+     * `targeting` reduction or increase contributes only when one of [chosenTargetIds] matches its
+     * group (see [applyActivatedAbilityCostReduction] for the `null` enumeration case).
      */
     private fun sumActivatedAbilityCostModifications(
         state: GameState,
@@ -1123,12 +1123,12 @@ class CastPermissionUtils(
                         if (ability.onceOnlyKind != null && ability.onceOnlyKind != onceOnlyKind) continue
                         if (ability.keyword != null && ability.keyword != abilityKeyword) continue
                         if (ability.excludeManaAbilities && isManaAbility) continue
-                        if (ability.onlyIfTargetIsSource) {
-                            val targetsSource = chosenTargetIds?.contains(entityId)
-                                ?: state.projectedState.isCreature(entityId)
-                            if (!targetsSource) continue
-                        }
                         val owner = controllerId ?: continue
+                        // Optimistic at enumeration (null: targets not chosen yet).
+                        val reductionGate = ability.targeting
+                        if (reductionGate != null && chosenTargetIds != null &&
+                            !anyTargetInGroup(state, predicateEvaluator, entityId, owner, reductionGate, chosenTargetIds)
+                        ) continue
                         if (ability.firstEachTurn &&
                             (activatorId != owner || activatedMatchingPermanentThisTurn(state, entityId, owner, ability.filter))
                         ) continue
@@ -1152,6 +1152,13 @@ class CastPermissionUtils(
                         // Eidolon of Obstruction taxes only loyalty abilities (CR 606).
                         if (ability.loyaltyAbilitiesOnly && !isLoyaltyAbility) continue
                         val owner = controllerId ?: continue
+                        // Kopala's "that target a Merfolk you control": untaxed at enumeration
+                        // (null: targets not chosen yet), exact at payment (CR 601.2c before 601.2f).
+                        val taxGate = ability.targeting
+                        if (taxGate != null &&
+                            (chosenTargetIds == null ||
+                                !anyTargetInGroup(state, predicateEvaluator, entityId, owner, taxGate, chosenTargetIds))
+                        ) continue
                         // The default reach has always taxed a matching source wherever it is
                         // (Skyseer's Chariot names a card, and its hand copy's cycling pays too).
                         if (!activationReached(
