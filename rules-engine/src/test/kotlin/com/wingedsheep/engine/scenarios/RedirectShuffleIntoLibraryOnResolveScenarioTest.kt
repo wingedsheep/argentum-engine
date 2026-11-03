@@ -121,6 +121,7 @@ class RedirectShuffleIntoLibraryOnResolveScenarioTest : FunSpec({
         val cardId = driver.cast(you, "Test Nexus Searching")
         var guard = 0
         while (!driver.isPaused && driver.state.stack.isNotEmpty() && guard++ < 10) driver.bothPass()
+        withClue("the search pauses for a card selection") { driver.isPaused shouldBe true }
         driver.submitCardSelection(you, listOf(creatureId))
         driver.settle()
 

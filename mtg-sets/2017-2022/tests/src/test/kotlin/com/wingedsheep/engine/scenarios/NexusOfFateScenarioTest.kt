@@ -67,7 +67,7 @@ class NexusOfFateScenarioTest : ScenarioTestBase() {
             game.castSpell(1, "Nexus of Fate").error shouldBe null
             game.passPriority().error shouldBe null
             game.castSpellTargetingStackSpell(2, "Cancel", "Nexus of Fate").error shouldBe null
-            game.resolveStack()
+            val events = game.resolveStack().flatMap { it.events }
 
             withClue("no extra turn — the spell never resolved") {
                 game.state.getEntity(game.player2Id)?.has<SkipNextTurnComponent>() shouldBe false
@@ -76,6 +76,9 @@ class NexusOfFateScenarioTest : ScenarioTestBase() {
                 game.isInGraveyard(1, "Nexus of Fate") shouldBe false
                 game.nexusInLibrary() shouldBe true
                 game.isInGraveyard(2, "Cancel") shouldBe true
+            }
+            withClue("it is shuffled in, not placed on top") {
+                events.count { it is LibraryShuffledEvent && it.playerId == game.player1Id } shouldBe 1
             }
         }
     }

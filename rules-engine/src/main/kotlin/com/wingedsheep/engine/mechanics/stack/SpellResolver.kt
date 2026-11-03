@@ -238,7 +238,8 @@ internal class SpellResolver(
         }
         val destinationObject = newState.objectRef(spellId)
         // A card-intrinsic redirect into the library shuffles the card in (Progenitus).
-        if (destZone == Zone.LIBRARY && fizzleRedirect.shuffleIntoLibrary) {
+        val shuffledIn = destZone == Zone.LIBRARY && fizzleRedirect.shuffleIntoLibrary
+        if (shuffledIn) {
             newState = SpellZoneMoves.shuffleOwnerLibrary(newState, ownerId)
         }
         if (destZone == Zone.EXILE && fizzleRedirect.linkSourceId != null) {
@@ -267,7 +268,7 @@ internal class SpellResolver(
                     destZone,
                     ownerId, oldObject = state.objectRef(spellId), newObject = destinationObject
                 )
-            ) + riderEvents
+            ) + listOfNotNull(LibraryShuffledEvent(ownerId).takeIf { shuffledIn }) + riderEvents
         )
     }
 }
