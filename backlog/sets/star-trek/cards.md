@@ -1,13 +1,13 @@
 # Star Trek (TRK) - Card Checklist
 
-**Set Size:** 254 cards
+**Set Size:** 256 cards
 **Release Date:** November 13, 2026
 **Implemented:** 90 / 256
 > Preview snapshot from October 28, 2026. Scryfall currently marks every TRK printing as `booster: false`, so all cards appear under Extras. Refresh the bootstrap as previews and booster classifications change; this is not the final set size.
 
 | Section    | Total | Done |
 |------------|-------|------|
-| Extras     | 254   | 75   |
+| Extras     | 256   | 90   |
 
 > Verify status anytime with `scripts/card-status --set TRK` (and `--list`). That command's count is authoritative — keep this file's `Implemented:` line in sync (`just fix-backlog`) as boxes are checked. The set's mechanics are catalogued in [`mechanics.md`](mechanics.md).
 
