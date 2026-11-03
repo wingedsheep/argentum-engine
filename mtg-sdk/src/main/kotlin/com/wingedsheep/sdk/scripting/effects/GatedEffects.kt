@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting.effects
 
+import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.conditions.Condition
@@ -165,7 +166,7 @@ data class GatedEffect(
                 if (otherwiseText != null) append(". If you don't, ${otherwiseText.lowercaseFirst()}")
             }
             is Gate.MayPayX -> buildString {
-                append("You may pay {X}. If you do, ${thenText.lowercaseFirst()}")
+                append("You may pay {X}${g.additionalCost}. If you do, ${thenText.lowercaseFirst()}")
                 if (otherwiseText != null) append(". Otherwise, ${otherwiseText.lowercaseFirst()}")
             }
             is Gate.MayPayAnyAmountOfLife -> buildString {
@@ -315,16 +316,21 @@ sealed interface Gate {
     /**
      * Optionally pay a *variable* amount of generic mana — "You may pay {X}. If you do, [then]."
      * Unlike [MayPay] (a fixed cost), the *amount* is also a decision: after "Pay {X}?" (no →
-     * [GatedEffect.otherwise]) the decision-maker names a number from 0 to the most generic mana
-     * they can currently produce, and [GatedEffect.then] runs with that X bound into the resolution
-     * context (read via `DynamicAmount.XValue`). X = 0 is a real payment, not a decline — Isareth
-     * the Awakener can return a mana value 0 creature card; with no mana available, "yes" pays
-     * X = 0 without the number prompt. Carries no fields — the {X} cost is implicit and the amount is chosen at
-     * resolution. Replaces the `Effects.MayPayX` wrapper (see its facade).
+     * [GatedEffect.otherwise]) the decision-maker names a number from 0 to the largest X they can
+     * currently afford, and [GatedEffect.then] runs with that X bound into the resolution context
+     * (read via `DynamicAmount.XValue`). X = 0 is a real payment, not a decline — Isareth the
+     * Awakener can return a mana value 0 creature card; when nothing beyond [additionalCost] is
+     * affordable, "yes" pays X = 0 without the number prompt.
+     *
+     * @property additionalCost The fixed part paid alongside X in the same payment — the `{R}` of
+     *   "you may pay {X}{R}" (Tilonalli's Summoner), the `{W}{U}{U}` of "you may pay {X}{W}{U}{U}"
+     *   (Azor, the Lawbringer). Empty for a bare "{X}". When it can't be paid at resolution the
+     *   "yes" is impossible, so the prompt is skipped and [GatedEffect.otherwise] runs.
+     *   Replaces the `Effects.MayPayX` wrapper (see its facade).
      */
     @SerialName("Gate.MayPayX")
     @Serializable
-    data object MayPayX : Gate {
+    data class MayPayX(val additionalCost: ManaCost = ManaCost.ZERO) : Gate {
         override fun applyTextReplacement(replacer: TextReplacer): Gate = this
     }
 

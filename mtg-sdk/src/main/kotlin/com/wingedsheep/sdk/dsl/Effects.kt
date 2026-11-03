@@ -4778,9 +4778,15 @@ object Effects {
      *
      * @param decisionMaker Who chooses X and pays it ("that player may pay any amount of mana" —
      *   Power Leak). Defaults to the controller.
+     * @param additionalCost The fixed mana paid with X — `ManaCost.parse("{R}")` for "you may pay
+     *   {X}{R}" (Tilonalli's Summoner). Empty for a bare "{X}".
      */
-    fun MayPayX(then: Effect, decisionMaker: EffectTarget? = null): GatedEffect =
-        GatedEffect(gate = Gate.MayPayX, then = then, decisionMaker = decisionMaker)
+    fun MayPayX(
+        then: Effect,
+        decisionMaker: EffectTarget? = null,
+        additionalCost: ManaCost = ManaCost.ZERO
+    ): GatedEffect =
+        GatedEffect(gate = Gate.MayPayX(additionalCost), then = then, decisionMaker = decisionMaker)
 
     /**
      * "You may pay any amount of life. If you do, [then]." — prompts for X (0 to the most life the

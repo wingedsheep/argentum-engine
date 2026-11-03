@@ -148,6 +148,8 @@ data class MayPayManaSelectionContinuation(
  * Example: Decree of Justice cycling trigger - "you may pay {X}. If you do,
  * create X 1/1 white Soldier creature tokens."
  *
+ * @property additionalCost The gate's fixed part ("{R}" of "{X}{R}"), paid together with X — so
+ *   the ceiling is the largest X the payer can afford *on top of* it, and X = 0 still pays it.
  * @property maxX Null while the yes/no is pending; the offered ceiling once the number is asked.
  * @property decisionContext The context both prompts show (source, resolution phase); null only
  *   on a continuation saved before it was recorded.
@@ -156,6 +158,7 @@ data class MayPayManaSelectionContinuation(
 data class MayPayXContinuation(
     val playerId: EntityId,
     val sourceName: String?,
+    val additionalCost: ManaCost = ManaCost.ZERO,
     val effect: Effect,
     val otherwise: Effect? = null,
     val maxX: Int? = null,

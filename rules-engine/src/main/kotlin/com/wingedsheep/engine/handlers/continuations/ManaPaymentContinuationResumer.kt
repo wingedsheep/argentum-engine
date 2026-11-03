@@ -1356,8 +1356,8 @@ class ManaPaymentContinuationResumer(
                 if (result.error != null || result.outcome is Outcome.Paused) return result
                 return checkForMore(result.state, result.events.toList())
             }
-            val maxX = services.manaSolver.getAvailableManaCount(state, continuation.playerId)
-            if (maxX <= 0) return runMayPayXEffect(state, continuation, 0, emptyList(), checkForMore)
+            val maxX = maxAffordableX(state, continuation.playerId, continuation.additionalCost)
+            if (maxX <= 0) return payMayPayX(state, continuation, 0, checkForMore)
             val question = { decisionId: String -> ChooseNumberDecision(
                 id = decisionId,
                 playerId = continuation.playerId,
@@ -1382,9 +1382,37 @@ class ManaPaymentContinuationResumer(
 
         val chosenX = response.number
         if (chosenX < 0) return ExecutionResult.error(state, "X can't be negative")
-        if (chosenX == 0) return runMayPayXEffect(state, continuation, 0, emptyList(), checkForMore)
+        if (chosenX > continuation.maxX) return ExecutionResult.error(state, "X exceeds ${continuation.maxX}")
+        return payMayPayX(state, continuation, chosenX, checkForMore)
+    }
 
-        // Player chose to pay X mana — auto-tap sources
+    /**
+     * The largest X the payer can pay *on top of* [additionalCost] — the number chooser's ceiling.
+     * A bare "{X}" is the generic mana they can produce; with a fixed part, the coloured pips may
+     * consume sources a pure count would spend on X, so the ceiling is confirmed by the solver.
+     */
+    private fun maxAffordableX(state: GameState, playerId: EntityId, additionalCost: ManaCost): Int {
+        val ceiling = services.manaSolver.getAvailableManaCount(state, playerId) - additionalCost.cmc
+        if (additionalCost.isEmpty()) return ceiling.coerceAtLeast(0)
+        var x = ceiling
+        while (x > 0 && !services.manaSolver.canPay(state, playerId, additionalCost + genericMana(x))) x--
+        return x.coerceAtLeast(0)
+    }
+
+    private fun genericMana(amount: Int): ManaCost =
+        ManaCost(List(amount) { com.wingedsheep.sdk.core.ManaSymbol.generic(1) })
+
+    /** Auto-tap and pay {X} plus the gate's fixed part, then run the gated effect with X bound. */
+    private fun payMayPayX(
+        state: GameState,
+        continuation: MayPayXContinuation,
+        chosenX: Int,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        val xCost = genericMana(chosenX) + continuation.additionalCost
+        if (xCost.isEmpty()) return runMayPayXEffect(state, continuation, 0, emptyList(), checkForMore)
+
+        // Auto-tap sources for the payment
         val playerId = continuation.playerId
         val playerEntity = state.getEntity(playerId)
             ?: return ExecutionResult.error(state, "Paying player not found")
@@ -1404,11 +1432,6 @@ class ManaPaymentContinuationResumer(
             manaUnits = manaPoolComponent.manaUnits,
             snowColorless = manaPoolComponent.snowColorless
         ).withSpendingColors(state, playerId)
-
-        // Create a ManaCost of {X} generic mana
-        val xCost = com.wingedsheep.sdk.core.ManaCost(
-            List(chosenX) { com.wingedsheep.sdk.core.ManaSymbol.generic(1) }
-        )
 
         // Try to pay from floating mana first, then tap sources for the rest
         val partialResult = manaPool.payPartial(xCost)
