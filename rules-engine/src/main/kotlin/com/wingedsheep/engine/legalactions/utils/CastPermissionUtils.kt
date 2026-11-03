@@ -568,7 +568,10 @@ class CastPermissionUtils(
     ): List<TopOfLibraryCastGrant> = buildList {
         for (entityId in state.getBattlefield(playerId)) {
             val cardDef = state.getEntity(entityId)?.faceUpCardDefinition(cardRegistry) ?: continue
-            for (ability in cardDef.liveStaticAbilities(state, entityId)) {
+            for (wrapped in cardDef.liveStaticAbilities(state, entityId)) {
+                // Honour a conditional gate (Zefram Cochrane's "during each of your turns") against
+                // the granting permanent, exactly as CastZoneResolver's cast-time re-check does.
+                val ability = activeStaticAbility(state, wrapped, entityId, playerId) ?: continue
                 if (ability is CastSpellTypesFromTopOfLibrary) {
                     val uses = state.getEntity(entityId)
                         ?.get<CastFromTopOfLibraryUsesThisTurnComponent>()?.uses ?: 0

@@ -13702,7 +13702,11 @@ concerns — the `ClientStateTransformer` reveals the top card for `PlayFromTopO
   the top; no land play, no full public reveal. `maxCastsPerTurn` limits each granting permanent's
   permission independently and resets at cleanup; when that permanent leaves and returns, the new
   object has a fresh allowance. (Precognition Field = unlimited instants/sorceries; Johann,
-  Apprentice Sorcerer = one instant/sorcery each turn.) `additionalCost` is paid on top of the
+  Apprentice Sorcerer = one instant/sorcery each turn.) Wrap it in a `ConditionalStaticAbility` to
+  gate it — both legal-action enumeration and the cast-time re-check evaluate the gate against the
+  granting permanent; Zefram Cochrane, Warp Pioneer's "Once during each of your turns, you may cast an
+  artifact spell from the top" = `condition = Conditions.IsYourTurn` +
+  `CastSpellTypesFromTopOfLibrary(GameObjectFilter.Artifact, maxCastsPerTurn = 1)`. `additionalCost` is paid on top of the
   spell's other costs when the cast goes through this permission — Falco Spara, Pactweaver = `CastSpellTypesFromTopOfLibrary(
   GameObjectFilter.Nonland, additionalCost = Costs.additional.RemoveCounters(counterType = null,
   count = 1, filter = GameObjectFilter.Creature))`. It is surfaced and checked like any zone-cast
